@@ -67,12 +67,15 @@ class ProductSetService implements ProductSetServiceContract
             $lastChild = $parent->children()->reversed()->first();
 
             $order = $lastChild ? $lastChild->order + 1 : 0;
-            $slug = $dto->isSlugOverridden() ? $dto->getSlugSuffix() : $parent->slug . '-' . $dto->getSlugSuffix();
+            // Here slug is always string because slug_suffix is required when creating product set
+            /** @var string $slug */
+            $slug = $this->prepareSlug($dto->isSlugOverridden(), $dto->getSlugSuffix(), $parent->slug);
             $publicParent = $parent->public && $parent->public_parent;
         } else {
             $last = ProductSet::reversed()->first();
 
             $order = $last ? $last->order + 1 : 0;
+            /** @var string $slug */
             $slug = $dto->getSlugSuffix();
             $publicParent = true;
         }
@@ -88,8 +91,11 @@ class ProductSetService implements ProductSetServiceContract
             'public_parent' => $publicParent,
         ]);
 
-        $attributes = Collection::make($dto->getAttributesIds());
-        if ($attributes->isNotEmpty()) {
+        $attributes = null;
+        if (!$dto->getAttributesIds() instanceof Missing) {
+            $attributes = Collection::make($dto->getAttributesIds());
+        }
+        if ($attributes !== null && $attributes->isNotEmpty()) {
             $set->attributes()->sync($attributes);
         }
 
@@ -116,7 +122,7 @@ class ProductSetService implements ProductSetServiceContract
     public function updateChildren(
         Collection $children,
         string $parentId,
-        string $parentSlug,
+        ?string $parentSlug,
         bool $publicParent
     ): void {
         $children->each(
@@ -124,7 +130,7 @@ class ProductSetService implements ProductSetServiceContract
                 if ($child->slugOverride) {
                     $childSlug = $child->slug;
                 } else {
-                    $childSlug = $parentSlug . '-' . $child->slugSuffix;
+                    $childSlug = ($parentSlug ? $parentSlug . '-' : '') . $child->slugSuffix;
                 }
 
                 $this->updateChildren(
@@ -157,8 +163,7 @@ class ProductSetService implements ProductSetServiceContract
             }
 
             $publicParent = $parent->public && $parent->public_parent;
-            $slug = $dto->isSlugOverridden() ? $dto->getSlugSuffix() :
-                $parent->slug . '-' . $dto->getSlugSuffix();
+            $slug = $this->prepareSlug($dto->isSlugOverridden(), $dto->getSlugSuffix(), $parent->slug);
         } else {
             if ($set->parent_id !== null) {
                 $last = ProductSet::reversed()->first();
@@ -168,7 +173,7 @@ class ProductSetService implements ProductSetServiceContract
             }
 
             $publicParent = true;
-            $slug = $dto->getSlugSuffix();
+            $slug = $dto->getSlugSuffix() instanceof Missing ? $set->slug : $dto->getSlugSuffix();
         }
 
         Validator::make(['slug' => $slug], [
@@ -178,7 +183,7 @@ class ProductSetService implements ProductSetServiceContract
         $children = ProductSet::query()->whereIn('id', $dto->getChildrenIds())->get();
         $this->updateChildren($children, $set->getKey(), $slug, $publicParent && $dto->isPublic());
 
-        $rootOrder = ProductSet::reversed()->first()->order + 1;
+        $rootOrder = ProductSet::reversed()->first()?->order + 1;
 
         $set->children()
             ->whereNotIn('id', $dto->getChildrenIds())
@@ -290,34 +295,36 @@ class ProductSetService implements ProductSetServiceContract
     // TODO: fix this
     public function reorderProducts(ProductSet $set, ProductsReorderDto $dto): void
     {
-        $product = $set->products()->where('id', $dto->getProducts()[0]['id'])->first();
-        $order = $dto->getProducts()[0]['order'];
-        $orderedProductsAmount = $set->products()
-            ->whereNotNull('product_set_product.order')
-            ->whereNot('product_id', $dto->getProducts()[0]['id'])
-            ->count();
+        if (!$dto->getProducts() instanceof Missing) {
+            $product = $set->products()->where('id', $dto->getProducts()[0]['id'])->firstOrFail();
+            $order = $dto->getProducts()[0]['order'];
+            $orderedProductsAmount = $set->products()
+                ->whereNotNull('product_set_product.order')
+                ->whereNot('product_id', $dto->getProducts()[0]['id'])
+                ->count();
 
-        if ($order > $orderedProductsAmount) {
-            $order = $orderedProductsAmount;
-        }
-
-        if ($product->pivot->order === null) {
-            $this->setOrder($order);
-        } else {
-            if ($order < $product->pivot->order) {
-                $this->setHigherOrder($product, $order);
-            } else {
-                $this->setLowerOrder($product, $order);
+            if ($order > $orderedProductsAmount) {
+                $order = $orderedProductsAmount;
             }
+
+            if ($product->pivot->order === null) {
+                $this->setOrder($order);
+            } else {
+                if ($order < $product->pivot->order) {
+                    $this->setHigherOrder($product, $order);
+                } else {
+                    $this->setLowerOrder($product, $order);
+                }
+            }
+
+            $product->pivot->order = $order;
+            $product->pivot->save();
+
+            /** @var int $highestOrder */
+            $highestOrder = $set->products->max('pivot.order');
+
+            $this->assignOrderToNulls($highestOrder, $set->products->whereNull('pivot.order'));
         }
-
-        $product->pivot->order = $order;
-        $product->pivot->save();
-
-        /** @var int $highestOrder */
-        $highestOrder = $set->products->max('pivot.order');
-
-        $this->assignOrderToNulls($highestOrder, $set->products->whereNull('pivot.order'));
     }
 
     public function indexAllProducts(ProductSet $set): void
@@ -359,5 +366,19 @@ class ProductSetService implements ProductSetServiceContract
             $product->pivot->order = $highestOrder;
             $product->pivot->save();
         });
+    }
+
+    private function prepareSlug(
+        bool|Missing $isOverridden,
+        string|Missing|null $slugSuffix,
+        string $parentSlug
+    ): ?string
+    {
+        $slug = $slugSuffix instanceof Missing ? null : $slugSuffix;
+        if (!$isOverridden instanceof Missing && !$isOverridden) {
+            return "{$parentSlug}-{$slug}";
+        }
+
+        return $slug;
     }
 }

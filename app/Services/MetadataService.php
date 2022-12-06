@@ -50,12 +50,14 @@ class MetadataService implements MetadataServiceContract
         $className = 'App\\Models\\' . Str::studly(Str::singular($class));
 
         if (class_exists($className)) {
+            // @phpstan-ignore-next-line
             return new $className();
         }
 
         $className = 'App\\Models\\' . Str::studly($class);
 
         if (class_exists($className)) {
+            // @phpstan-ignore-next-line
             return new $className();
         }
 
@@ -65,10 +67,13 @@ class MetadataService implements MetadataServiceContract
     public function updateOrCreateMyPersonal(MetadataPersonalListDto $dto): Collection
     {
         $user = Auth::user();
-        foreach ($dto->getMetadata() as $metadata) {
-            $this->processMetadata($user, $metadata, 'metadataPersonal');
+        if ($user !== null) {
+            foreach ($dto->getMetadata() as $metadata) {
+                $this->processMetadata($user, $metadata, 'metadataPersonal');
+            }
+            return $user->metadataPersonal;
         }
-        return $user->metadataPersonal;
+        return Collection::make();
     }
 
     public function updateOrCreateUserPersonal(MetadataPersonalListDto $dto, string $userId): Collection

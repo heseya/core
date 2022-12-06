@@ -14,7 +14,7 @@ class PermissionResource extends Resource
             'name' => $this->resource->name,
             'display_name' => $this->resource->display_name,
             'description' => $this->resource->description,
-            'assignable' => Auth::user()->can($this->resource->name),
+            'assignable' => Auth::user()?->can($this->resource->name),
         ];
     }
 }

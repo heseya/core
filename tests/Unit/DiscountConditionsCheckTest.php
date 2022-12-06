@@ -1107,31 +1107,31 @@ class DiscountConditionsCheckTest extends TestCase
     {
         return [
             'min-max min value' => [
-                1,
-                2,
+                1.0,
+                2.0,
                 [
                     'min_value' => 3,
                     'max_value' => 10,
                 ],
             ],
             'min-max max value' => [
-                2,
-                3,
+                2.0,
+                3.0,
                 [
                     'min_value' => 3,
                     'max_value' => 5,
                 ],
             ],
             'only min value' => [
-                2,
-                3,
+                2.0,
+                3.0,
                 [
                     'min_value' => 3,
                 ],
             ],
             'only max value' => [
-                2,
-                2,
+                2.0,
+                2.0,
                 [
                     'max_value' => 5,
                 ],
@@ -1179,31 +1179,31 @@ class DiscountConditionsCheckTest extends TestCase
     {
         return [
             'min-max min value' => [
-                1,
-                2,
+                1.0,
+                2.0,
                 [
                     'min_value' => 5,
                     'max_value' => 10,
                 ],
             ],
             'min-max max value' => [
-                3,
-                3,
+                3.0,
+                3.0,
                 [
                     'min_value' => 3,
                     'max_value' => 5,
                 ],
             ],
             'only min value' => [
-                2,
-                3,
+                2.0,
+                3.0,
                 [
                     'min_value' => 10,
                 ],
             ],
             'only max value' => [
-                4,
-                5,
+                4.0,
+                5.0,
                 [
                     'max_value' => 5,
                 ],

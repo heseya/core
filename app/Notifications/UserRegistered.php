@@ -18,8 +18,10 @@ class UserRegistered extends Notification
 
     public function toMail(mixed $notifiable): MailMessage
     {
+        /** @var string $subject */
+        $subject = Lang::get('mail.subject-user-registered');
         return (new MailMessage())
-            ->subject(Lang::get('mail.subject-user-registered'))
+            ->subject($subject)
             ->view('mail.user-registered');
     }
 }

@@ -13,19 +13,19 @@ use Illuminate\Support\Facades\Config;
 
 class FavouriteService implements FavouriteServiceContract
 {
-    public function storeFavouriteProductSet(FavouriteProductSetDto $dto): FavouriteProductSet
+    public function storeFavouriteProductSet(FavouriteProductSetDto $dto): ?FavouriteProductSet
     {
-        return Auth::user()->favouriteProductSets()->create($dto->toArray());
+        return Auth::user()?->favouriteProductSets()->create($dto->toArray());
     }
 
     public function showProductSet(string $id): ?FavouriteProductSet
     {
-        return Auth::user()->favouriteProductSets()->where('product_set_id', $id)->first();
+        return Auth::user()?->favouriteProductSets()->where('product_set_id', $id)->first();
     }
 
-    public function index(): LengthAwarePaginator
+    public function index(): ?LengthAwarePaginator
     {
-        return Auth::user()->favouriteProductSets()->paginate(Config::get('pagination.per_page'));
+        return Auth::user()?->favouriteProductSets()->paginate(Config::get('pagination.per_page'));
     }
 
     /**
@@ -33,7 +33,7 @@ class FavouriteService implements FavouriteServiceContract
      */
     public function destroy(string $id): void
     {
-        $favouriteProductSet = Auth::user()->favouriteProductSets()->where('product_set_id', $id)->first();
+        $favouriteProductSet = Auth::user()?->favouriteProductSets()->where('product_set_id', $id)->first();
 
         if (!$favouriteProductSet) {
             throw new ClientException(Exceptions::PRODUCT_SET_IS_NOT_ON_FAVOURITES_LIST);
@@ -44,6 +44,6 @@ class FavouriteService implements FavouriteServiceContract
 
     public function destroyAll(): void
     {
-        Auth::user()->favouriteProductSets()->delete();
+        Auth::user()?->favouriteProductSets()->delete();
     }
 }

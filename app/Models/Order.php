@@ -128,8 +128,8 @@ class Order extends Model implements AuditableContract, SortableContract
     public function getPayableAttribute(): bool
     {
         return !$this->paid &&
-            !$this->status->cancel &&
-            $this->shippingMethod->paymentMethods->count() > 0;
+            !$this->status?->cancel &&
+            $this->shippingMethod?->paymentMethods->count() > 0;
     }
 
     public function isPaid(): bool
@@ -202,7 +202,7 @@ class Order extends Model implements AuditableContract, SortableContract
 
     public function preferredLocale(): string
     {
-        $country = Str::of($this->deliveryAddress?->country)->limit(2, '')->lower();
+        $country = Str::of($this->deliveryAddress?->country ?? '')->limit(2, '')->lower();
 
         if ($country->is('pl')) {
             return 'pl';

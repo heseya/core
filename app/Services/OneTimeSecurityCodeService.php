@@ -39,7 +39,7 @@ class OneTimeSecurityCodeService implements OneTimeSecurityCodeContract
         }
 
         if ($user->preferences !== null && $user->preferences->recovery_code_changed_alert) {
-            TfaRecoveryCodesChanged::dispatch(Auth::user());
+            TfaRecoveryCodesChanged::dispatch($user);
             $user->notify(new TFARecoveryCodes());
         }
 

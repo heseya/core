@@ -52,6 +52,7 @@ use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Role;
 use App\Models\SalesShortResource;
+use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Services\Contracts\DiscountServiceContract;
@@ -189,21 +190,28 @@ class DiscountService implements DiscountServiceContract
     public function checkCondition(
         DiscountCondition $condition,
         ?CartOrderDto $dto = null,
-        ?float $cartValue = 0,
+        float $cartValue = 0,
     ): bool {
         return match ($condition->type->value) {
             ConditionType::ORDER_VALUE => $this->checkConditionOrderValue($condition, $cartValue),
             ConditionType::USER_IN_ROLE => $this->checkConditionUserInRole($condition),
             ConditionType::USER_IN => $this->checkConditionUserIn($condition),
-            ConditionType::PRODUCT_IN_SET => $this->checkConditionProductInSet($condition, $dto->getProductIds()),
-            ConditionType::PRODUCT_IN => $this->checkConditionProductIn($condition, $dto->getProductIds()),
+            ConditionType::PRODUCT_IN_SET => $this->checkConditionProductInSet(
+                $condition,
+                $dto?->getProductIds() ?? []
+            ),
+            ConditionType::PRODUCT_IN => $this->checkConditionProductIn($condition, $dto?->getProductIds() ?? []),
             ConditionType::DATE_BETWEEN => $this->checkConditionDateBetween($condition),
             ConditionType::TIME_BETWEEN => $this->checkConditionTimeBetween($condition),
             ConditionType::MAX_USES => $this->checkConditionMaxUses($condition),
             ConditionType::MAX_USES_PER_USER => $this->checkConditionMaxUsesPerUser($condition),
             ConditionType::WEEKDAY_IN => $this->checkConditionWeekdayIn($condition),
-            ConditionType::CART_LENGTH => $this->checkConditionCartLength($condition, $dto->getCartLength()),
-            ConditionType::COUPONS_COUNT => $this->checkConditionCouponsCount($condition, count($dto->getCoupons())),
+            ConditionType::CART_LENGTH => $this->checkConditionCartLength($condition, $dto?->getCartLength() ?? 0),
+            ConditionType::COUPONS_COUNT => $this->checkConditionCouponsCount(
+                $condition,
+                $dto?->getCoupons() !== null && (!$dto->getCoupons() instanceof Missing)
+                    ? count($dto->getCoupons()) : 0,
+            ),
             default => false,
         };
     }
@@ -350,6 +358,7 @@ class DiscountService implements DiscountServiceContract
         $price = $product->price;
 
         foreach ($orderProductDto->getSchemas() as $schemaId => $value) {
+            /** @var Schema $schema */
             $schema = $product->schemas()->findOrFail($schemaId);
 
             $price += $schema->getPrice($value, $orderProductDto->getSchemas());
@@ -416,7 +425,7 @@ class DiscountService implements DiscountServiceContract
         if (
             ($discount->target_type->value === DiscountTargetType::ORDER_VALUE
                 || $discount->target_type->value === DiscountTargetType::SHIPPING_PRICE)
-            && $refreshedOrder->discounts->count() === 0) {
+            && $refreshedOrder?->discounts->count() === 0) {
             $order = $this->roundProductPrices($order);
         }
         return match ($discount->target_type->value) {
@@ -634,7 +643,7 @@ class DiscountService implements DiscountServiceContract
         }
 
         $refreshed = $order->fresh();
-        if ($refreshed->discounts->count() === 0) {
+        if ($refreshed?->discounts->count() === 0) {
             $order = $this->roundProductPrices($order);
         }
 
@@ -835,39 +844,41 @@ class DiscountService implements DiscountServiceContract
             ['quantity', 'asc'],
         ])->first();
 
-        $minimalProductPrice = $this->settingsService->getMinimalPrice('minimal_product_price');
+        if ($product !== null) {
+            $minimalProductPrice = $this->settingsService->getMinimalPrice('minimal_product_price');
 
-        if ($product->quantity > 1 && $product->price !== $minimalProductPrice) {
-            $product->update(['quantity' => $product->quantity - 1]);
+            if ($product->quantity > 1 && $product->price !== $minimalProductPrice) {
+                $product->update(['quantity' => $product->quantity - 1]);
 
-            /** @var OrderProduct $newProduct */
-            $newProduct = $order->products()->create([
-                'product_id' => $product->product_id,
-                'quantity' => 1,
-                'price' => $product->price,
-                'price_initial' => $product->price_initial,
-                'name' => $product->name,
-                'base_price_initial' => $product->price,
-                'base_price' => $product->price,
-                'vat_rate' => $product->vat_rate,
-            ]);
+                /** @var OrderProduct $newProduct */
+                $newProduct = $order->products()->create([
+                    'product_id' => $product->product_id,
+                    'quantity' => 1,
+                    'price' => $product->price,
+                    'price_initial' => $product->price_initial,
+                    'name' => $product->name,
+                    'base_price_initial' => $product->price,
+                    'base_price' => $product->price,
+                    'vat_rate' => $product->vat_rate,
+                ]);
 
-            $product->discounts->each(function (Discount $discount) use ($newProduct): void {
-                // @phpstan-ignore-next-line
-                $this->attachDiscount($newProduct, $discount, $discount->pivot->applied_discount);
-            });
+                $product->discounts->each(function (Discount $discount) use ($newProduct): void {
+                    // @phpstan-ignore-next-line
+                    $this->attachDiscount($newProduct, $discount, $discount->pivot->applied_discount);
+                });
 
-            $product = $newProduct;
+                $product = $newProduct;
+            }
+
+            $price = $product->price ?? 0;
+
+            if ($price !== $minimalProductPrice) {
+                $this->calcOrderProductDiscount($product, $discount);
+                $product->save();
+            }
+
+            $order->cart_total -= ($price - $product->price) * $product->quantity;
         }
-
-        $price = $product->price;
-
-        if ($price !== $minimalProductPrice) {
-            $this->calcOrderProductDiscount($product, $discount);
-            $product->save();
-        }
-
-        $order->cart_total -= ($price - $product->price) * $product->quantity;
 
         return $order;
     }
@@ -1282,7 +1293,7 @@ class DiscountService implements DiscountServiceContract
     private function checkConditionMaxUses(DiscountCondition $condition): bool
     {
         $conditionDto = MaxUsesConditionDto::fromArray($condition->value + ['type' => $condition->type]);
-        return $condition->conditionGroup->discounts()->first()->orders()->count() < $conditionDto->getMaxUses();
+        return $condition->conditionGroup?->discounts()->first()?->orders()->count() < $conditionDto->getMaxUses();
     }
 
     private function checkConditionMaxUsesPerUser(DiscountCondition $condition): bool
@@ -1292,9 +1303,9 @@ class DiscountService implements DiscountServiceContract
         if (Auth::user()) {
             return $condition
                 ->conditionGroup
-                ->discounts()
+                ?->discounts()
                 ->first()
-                ->orders()
+                ?->orders()
                 ->whereHasMorph('buyer', [User::class, App::class], function (Builder $query): void {
                     $query->where('buyer_id', Auth::id());
                 })
@@ -1312,14 +1323,14 @@ class DiscountService implements DiscountServiceContract
         return $conditionDto->getWeekday()[Carbon::now()->dayOfWeek];
     }
 
-    private function checkConditionCartLength(DiscountCondition $condition, int $cartLength): bool
+    private function checkConditionCartLength(DiscountCondition $condition, int|float $cartLength): bool
     {
         $conditionDto = CartLengthConditionDto::fromArray($condition->value + ['type' => $condition->type]);
 
         return $this->checkConditionLength($conditionDto, $cartLength);
     }
 
-    private function checkConditionCouponsCount(DiscountCondition $condition, int $couponsCount): bool
+    private function checkConditionCouponsCount(DiscountCondition $condition, int|float $couponsCount): bool
     {
         $conditionDto = CouponsCountConditionDto::fromArray($condition->value + ['type' => $condition->type]);
 
@@ -1328,7 +1339,7 @@ class DiscountService implements DiscountServiceContract
 
     private function checkConditionLength(
         CartLengthConditionDto|CouponsCountConditionDto $conditionDto,
-        int $count,
+        int|float $count,
     ): bool {
         if (!$conditionDto->getMinValue() instanceof Missing && !$conditionDto->getMaxValue() instanceof Missing) {
             return $count >= $conditionDto->getMinValue() && $count <= $conditionDto->getMaxValue();

@@ -37,7 +37,7 @@ class ConsentService implements ConsentServiceContract
 
     public function updateUserConsents(?Collection $consents, User $user): void
     {
-        if ($consents->isNotEmpty()) {
+        if ($consents?->isNotEmpty()) {
             $consents->each(function ($value, $key) use ($user): void {
                 ConsentUser::updateOrInsert(
                     [

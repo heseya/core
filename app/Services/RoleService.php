@@ -35,7 +35,7 @@ class RoleService implements RoleServiceContract
      */
     public function create(RoleCreateDto $dto): Role
     {
-        if (!Auth::user()->hasAllPermissions($dto->getPermissions())) {
+        if (!Auth::user()?->hasAllPermissions($dto->getPermissions())) {
             throw new ClientException(Exceptions::CLIENT_CREATE_ROLE_WITHOUT_PERMISSION);
         }
 
@@ -60,7 +60,7 @@ class RoleService implements RoleServiceContract
     {
         $user = Auth::user();
 
-        if (!$user->hasAllPermissions($role->getAllPermissions())) {
+        if (!$user?->hasAllPermissions($role->getAllPermissions())) {
             throw new ClientException(Exceptions::CLIENT_UPDATE_ROLE_WITHOUT_PERMISSION);
         }
 
@@ -98,7 +98,7 @@ class RoleService implements RoleServiceContract
             throw new ClientException(Exceptions::CLIENT_DELETE_BUILT_IN_ROLE);
         }
 
-        if (!Auth::user()->hasAllPermissions($role->getAllPermissions())) {
+        if (!Auth::user()?->hasAllPermissions($role->getAllPermissions())) {
             throw new ClientException(Exceptions::CLIENT_DELETE_ROLE_WITHOUT_PERMISSION);
         }
 

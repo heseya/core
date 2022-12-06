@@ -41,17 +41,17 @@ class ShippingMethodDto extends Dto implements InstantiateFromRequest
         );
     }
 
-    public function getName(): ?string
+    public function getName(): string|Missing
     {
         return $this->name;
     }
 
-    public function isPublic(): ?bool
+    public function isPublic(): bool|Missing
     {
         return $this->public;
     }
 
-    public function isBlockList(): ?bool
+    public function isBlockList(): bool|Missing
     {
         return $this->block_list;
     }

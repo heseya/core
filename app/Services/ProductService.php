@@ -85,7 +85,7 @@ class ProductService implements ProductServiceContract
 
         DB::commit();
 
-        Product::query()->where('id', $productId)->withTrashed()->first()->unsearchable();
+        Product::query()->where('id', $productId)->withTrashed()->first()?->unsearchable();
     }
 
     public function getMinMaxPrices(Product $product): array

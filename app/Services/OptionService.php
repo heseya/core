@@ -26,7 +26,7 @@ class OptionService implements OptionServiceContract
             );
 
             if (!$optionItem->getId() instanceof Missing) {
-                $option = Option::findOrFail($optionItem->getId());
+                $option = Option::where('id', $optionItem->getId())->firstOrFail();
                 $option->update($optionData);
             } else {
                 $option = $schema->options()->create($optionData);

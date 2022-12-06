@@ -14,7 +14,7 @@ class OrderUpdatedStatusListener
         $order = $event->getOrder();
 
         try {
-            if (!$order->status->no_notifications) {
+            if (!$order->status?->no_notifications) {
                 $order->notify(new OrderStatusUpdated($order));
             }
         } catch (Throwable) {
