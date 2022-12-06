@@ -186,11 +186,13 @@ class AvailabilityService implements AvailabilityServiceContract
             return $this->returnProductAvailability(true);
         }
 
+        /** @var Collection $requiredItems */
+        $requiredItems = $product->items;
         $items = $this->getAllRequiredItems($product, $requiredSchemas);
 
         // check only permutation when product don't have required schemas
         if ($requiredSchemasCount === 0) {
-            return $this->checkProductPermutation($quantityStep, $items, $product->items);
+            return $this->checkProductPermutation($quantityStep, $items, $requiredItems);
         }
 
         $available = false;
@@ -198,7 +200,7 @@ class AvailabilityService implements AvailabilityServiceContract
         $shipping_time = null;
         $shipping_date = null;
         $productAvailabilities = [];
-        $permutations = Collection::make($requiredSchemas->first()->options);
+        $permutations = $requiredSchemas->first()->options;
         $requiredSchemas->shift();
 
         foreach ($requiredSchemas as $schema) {
@@ -209,7 +211,7 @@ class AvailabilityService implements AvailabilityServiceContract
             $permutationResult = $this->checkProductPermutation(
                 $quantityStep,
                 $items,
-                $product->items,
+                $requiredItems,
                 $permutation instanceof Option ? [$permutation] : $permutation,
             );
 
@@ -259,7 +261,9 @@ class AvailabilityService implements AvailabilityServiceContract
                 return $this->returnProductAvailability(false, 0);
             }
 
-            $itemQuantity = floor($item->quantity / $requiredItem->pivot->required_quantity / $quantityStep) * $quantityStep;
+            $itemQuantity = floor(
+                $item->quantity / $requiredItem->pivot->required_quantity / $quantityStep
+            ) * $quantityStep;
             $item->quantity -= $requiredItem->pivot->required_quantity;
 
             $quantity = $quantity < $itemQuantity ? $itemQuantity : $quantity;

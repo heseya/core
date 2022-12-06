@@ -110,8 +110,9 @@ class ProductsAvailabilityTest extends TestCase
             'required' => true,
             'type' => SchemaType::SELECT,
         ]);
-        /** @var Option $option */
         $item = Item::factory()->create();
+
+        /** @var Option $option */
         $option = Option::factory()->create([
             'schema_id' => $schema->getKey(),
         ]);
