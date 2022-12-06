@@ -179,25 +179,25 @@ class AvailabilityService implements AvailabilityServiceContract
     {
         $quantityStep = $product->quantity_step ?? 1;
         $requiredSchemas = $this->getRequiredSchemasWithItems($product);
+        $requiredSchemasCount = $requiredSchemas->count();
 
         // simple return when no required schemas and items
-        if ($requiredSchemas->isEmpty() && $product->items->isEmpty()) {
+        if ($requiredSchemasCount === 0 && $product->items->isEmpty()) {
             return $this->returnProductAvailability(true);
         }
 
         $items = $this->getAllRequiredItems($product, $requiredSchemas);
 
         // check only permutation when product don't have required schemas
-        if ($requiredSchemas->isEmpty()) {
+        if ($requiredSchemasCount === 0) {
             return $this->checkProductPermutation($quantityStep, $items, $product->items);
         }
 
-        $available = true;
+        $available = false;
         $quantity = 0;
         $shipping_time = null;
         $shipping_date = null;
         $productAvailabilities = [];
-
         $permutations = Collection::make($requiredSchemas->first()->options);
         $requiredSchemas->shift();
 
@@ -206,35 +206,44 @@ class AvailabilityService implements AvailabilityServiceContract
         }
 
         foreach ($permutations as $permutation) {
-            $this->checkProductPermutation(
+            $permutationResult = $this->checkProductPermutation(
                 $quantityStep,
                 $items,
                 $product->items,
-                $permutation,
+                $permutation instanceof Option ? [$permutation] : $permutation,
             );
+
+            if ($permutationResult['available'] === true) {
+                $available = true;
+            }
         }
 
-        return [
-            'available' => $available,
-            'quantity' => $quantity,
-            'shipping_time' => $shipping_time,
-            'shipping_date' => $shipping_date,
-            'productAvailabilities' => $productAvailabilities,
-        ];
+        // return if all permutations all unavailable
+        if ($available === false) {
+            return $this->returnProductAvailability(false, 0);
+        }
+
+        return $this->returnProductAvailability(
+            true,
+            $quantity,
+            $shipping_time,
+            $shipping_date,
+            $productAvailabilities,
+        );
     }
 
     public function checkProductPermutation(
         float $quantityStep,
         Collection $items,
         Collection $requiredItems,
-        ?Collection $selectedOptions = null,
+        ?array $selectedOptions = null,
     ): array {
         $quantity = 0;
         $shipping_time = null;
         $shipping_date = null;
         $productAvailabilities = [];
 
-        if ($selectedOptions !== null && $selectedOptions->isNotEmpty()) {
+        if ($selectedOptions !== null && count($selectedOptions) > 0) {
             foreach ($selectedOptions as $option) {
                 foreach ($option->items as $item) {
                     $requiredItems->push($item);
@@ -250,7 +259,7 @@ class AvailabilityService implements AvailabilityServiceContract
                 return $this->returnProductAvailability(false, 0);
             }
 
-            $itemQuantity = floor(($item->quantity / $requiredItem->pivot->required_quantity) / $quantityStep) * $quantityStep;
+            $itemQuantity = floor($item->quantity / $requiredItem->pivot->required_quantity / $quantityStep) * $quantityStep;
             $item->quantity -= $requiredItem->pivot->required_quantity;
 
             $quantity = $quantity < $itemQuantity ? $itemQuantity : $quantity;
@@ -382,15 +391,18 @@ class AvailabilityService implements AvailabilityServiceContract
 
     private function getAllRequiredItems(Product $product, Collection $requiredSchemas): Collection
     {
-        $items = $product->items()->with('groupedDeposits')->get();;
+        $items = $product->items()->with('groupedDeposits')->get();
 
+        // TODO: do something with it xd
         foreach ($requiredSchemas as $schema) {
             foreach ($schema->options as $option) {
-                $items->merge($option->items()->with('groupedDeposits')->get());
+                foreach ($option->items()->with('groupedDeposits')->get() as $item) {
+                    if ($items->where('id', $item->getKey())->count() <= 0) {
+                        $items->push($item);
+                    }
+                }
             }
         }
-
-        $items->unique();
 
         return $items;
     }

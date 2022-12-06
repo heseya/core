@@ -105,23 +105,24 @@ class ProductsAvailabilityTest extends TestCase
     {
         /** @var Product $product */
         $product = Product::factory()->create();
-        $item = Item::factory()->create();
 
-        $schema1 = Schema::factory()->create([
+        $schema = Schema::factory()->create([
             'required' => true,
             'type' => SchemaType::SELECT,
         ]);
         /** @var Option $option */
-        $option = Option::factory()->create([
-            'schema_id' => $schema1->getKey(),
-        ]);
-        $option->items()->attach($item->getKey());
         $item = Item::factory()->create();
         $option = Option::factory()->create([
-            'schema_id' => $schema1->getKey(),
+            'schema_id' => $schema->getKey(),
         ]);
         $option->items()->attach($item->getKey());
-        $product->schemas()->attach($schema1->getKey());
+
+        $item = Item::factory()->create();
+        $option = Option::factory()->create([
+            'schema_id' => $schema->getKey(),
+        ]);
+        $option->items()->sync([$item->getKey() => ['required_quantity' => 1]]);
+        $product->schemas()->attach($schema->getKey());
 
         $availability = $this->availabilityService->getCalculateProductAvailability($product);
 

@@ -8,7 +8,7 @@ trait InteractsWithInaccessibleMethods
 {
     public function invokeMethod(&$object, string $method, array $params = []): mixed
     {
-        $reflectionClass = new ReflectionClass(get_class($object));
+        $reflectionClass = new ReflectionClass($object::class);
         $reflectionMethod = $reflectionClass->getMethod($method);
         $reflectionMethod->setAccessible(true);
 
