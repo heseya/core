@@ -177,6 +177,7 @@ class AvailabilityService implements AvailabilityServiceContract
 
     public function getCalculateProductAvailability(Product $product): array
     {
+        $quantityStep = $product->quantity_step ?? 1;
         $requiredSchemas = $this->getRequiredSchemasWithItems($product);
 
         // simple return when no required schemas and items
@@ -188,7 +189,7 @@ class AvailabilityService implements AvailabilityServiceContract
 
         // check only permutation when product don't have required schemas
         if ($requiredSchemas->isEmpty()) {
-            return $this->checkProductPermutation($items, $product->items);
+            return $this->checkProductPermutation($quantityStep, $items, $product->items);
         }
 
         $available = true;
@@ -205,7 +206,12 @@ class AvailabilityService implements AvailabilityServiceContract
         }
 
         foreach ($permutations as $permutation) {
-            $this->checkProductPermutation($items, $product->items, $permutation);
+            $this->checkProductPermutation(
+                $quantityStep,
+                $items,
+                $product->items,
+                $permutation,
+            );
         }
 
         return [
@@ -218,11 +224,11 @@ class AvailabilityService implements AvailabilityServiceContract
     }
 
     public function checkProductPermutation(
+        float $quantityStep,
         Collection $items,
         Collection $requiredItems,
         ?Collection $selectedOptions = null,
     ): array {
-        $available = true;
         $quantity = 0;
         $shipping_time = null;
         $shipping_date = null;
@@ -240,20 +246,26 @@ class AvailabilityService implements AvailabilityServiceContract
         foreach ($requiredItems as $requiredItem) {
             $item = $items->firstWhere('id', $requiredItem->getKey());
 
-            if ($requiredItem->pivot->required_quantity <= $item->quantity) {
-                $quantity = floor($item->quantity / $requiredItem->pivot->required_quantity);
-                $item->quantity -= $requiredItem->pivot->required_quantity;
-
-                return $this->returnProductAvailability(
-                    true,
-                    $quantity,
-                    $item->shipping_time,
-                    $item->shipping_date,
-                );
+            if ($requiredItem->pivot->required_quantity > $item->quantity) {
+                return $this->returnProductAvailability(false, 0);
             }
+
+            $itemQuantity = floor(($item->quantity / $requiredItem->pivot->required_quantity) / $quantityStep) * $quantityStep;
+            $item->quantity -= $requiredItem->pivot->required_quantity;
+
+            $quantity = $quantity < $itemQuantity ? $itemQuantity : $quantity;
+
+            $shipping_time = $item->shipping_time;
+            $shipping_date = $item->shipping_date;
         }
 
-        return $this->returnProductAvailability(false, 0);
+        return $this->returnProductAvailability(
+            true,
+            $quantity,
+            $shipping_time,
+            $shipping_date,
+            $productAvailabilities,
+        );
     }
 
     public function isProductAvailable(Product $product): bool

@@ -11,6 +11,9 @@ use App\Services\Contracts\AvailabilityServiceContract;
 use Tests\TestCase;
 use Tests\Traits\InteractsWithInaccessibleMethods;
 
+/**
+ * This is pseudo-unit test. Its test AvailabilityService but use database because laravel have some problems.
+ */
 class ProductsAvailabilityTest extends TestCase
 {
     use InteractsWithInaccessibleMethods;
@@ -120,27 +123,6 @@ class ProductsAvailabilityTest extends TestCase
         $option->items()->attach($item->getKey());
         $product->schemas()->attach($schema1->getKey());
 
-        $schema = Schema::factory()->create([
-            'required' => true,
-            'type' => SchemaType::SELECT,
-        ]);
-        $item = Item::factory()->create();
-        $option = Option::factory()->create([
-            'schema_id' => $schema->getKey(),
-        ]);
-        $option->items()->attach($item->getKey());
-        $item = Item::factory()->create();
-        $option = Option::factory()->create([
-            'schema_id' => $schema->getKey(),
-        ]);
-        $option->items()->attach($item->getKey());
-        $item = Item::factory()->create();
-        $option = Option::factory()->create([
-            'schema_id' => $schema->getKey(),
-        ]);
-        $option->items()->attach($item->getKey());
-        $product->schemas()->sync([$schema->getKey(), $schema1->getKey()]);
-
         $availability = $this->availabilityService->getCalculateProductAvailability($product);
 
         $this->assertFalse($availability['available']);
@@ -150,7 +132,7 @@ class ProductsAvailabilityTest extends TestCase
         $this->assertEmpty($availability['productAvailabilities']);
     }
 
-    // 10 items in warehouse but required quantity is 4 so only 2 products should be avaiable
+    // 10 items in warehouse but required quantity is 4 so only 2 products should be available
     public function testItem(): void
     {
         /** @var Product $product */
@@ -164,6 +146,48 @@ class ProductsAvailabilityTest extends TestCase
 
         $this->assertTrue($availability['available']);
         $this->assertEquals(2, $availability['quantity']);
+        $this->assertNull($availability['shipping_time']);
+        $this->assertNull($availability['shipping_date']);
+        $this->assertEmpty($availability['productAvailabilities']);
+    }
+
+    // 3 items in warehouse but required quantity is 3 so product should be unavailable
+    public function testNoEnoughItem(): void
+    {
+        /** @var Product $product */
+        $product = Product::factory()->create();
+        /** @var Item $item */
+        $item = Item::factory()->create();
+        $item->deposits()->create(['quantity' => 3]);
+        $product->items()->attach([$item->getKey() => ['required_quantity' => 4]]);
+
+        /** @var Item $item */
+        $item = Item::factory()->create();
+        $item->deposits()->create(['quantity' => 10]);
+        $product->items()->attach([$item->getKey() => ['required_quantity' => 4]]);
+
+        $availability = $this->availabilityService->getCalculateProductAvailability($product);
+
+        $this->assertFalse($availability['available']);
+        $this->assertEquals(0, $availability['quantity']);
+        $this->assertNull($availability['shipping_time']);
+        $this->assertNull($availability['shipping_date']);
+        $this->assertEmpty($availability['productAvailabilities']);
+    }
+
+    public function testItemRequiredQuantityStep(): void
+    {
+        /** @var Product $product */
+        $product = Product::factory()->create(['quantity_step' => 0.2]);
+        /** @var Item $item */
+        $item = Item::factory()->create();
+        $item->deposits()->create(['quantity' => 10]);
+        $product->items()->attach([$item->getKey() => ['required_quantity' => 1.2]]);
+
+        $availability = $this->availabilityService->getCalculateProductAvailability($product);
+
+        $this->assertTrue($availability['available']);
+        $this->assertEquals(8.2, round($availability['quantity'], 8)); // ehhhh....
         $this->assertNull($availability['shipping_time']);
         $this->assertNull($availability['shipping_date']);
         $this->assertEmpty($availability['productAvailabilities']);
