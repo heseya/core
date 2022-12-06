@@ -33,6 +33,12 @@ class ItemController extends Controller
 
     public function show(Item $item): JsonResource
     {
+        $item->load([
+            'options',
+            'options.schema',
+            'products',
+            'products.media',
+        ]);
         return ItemResource::make($item);
     }
 

@@ -624,4 +624,118 @@ class PerformanceTest extends TestCase
         // For 3 product, 2 discount on order and 2 discounts on products without load was 239 queries
         $this->assertQueryCountLessThan(100);
     }
+
+    public function testViewItemPerformance(): void
+    {
+        $this->user->givePermissionTo('items.show_details');
+
+        $attribute = Attribute::factory()->create();
+        AttributeOption::factory()->count(2)->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+        ]);
+
+        $tag = Tag::factory()->create();
+        $set = ProductSet::factory()->create([
+            'public' => true,
+            'hide_on_index' => false,
+        ]);
+
+        $productItem = Item::factory()->create();
+
+        $product = Product::factory()->create(['public' => true]);
+        $product->items()->sync([$productItem->getKey()]);
+        $product->attributes()->attach($attribute->getKey());
+        $product->metadata()->create([
+            'name' => 'Metadata',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+        $product->metadata()->create([
+            'name' => 'Metadata private',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => false,
+        ]);
+        $product->tags()->sync($tag->getKey());
+        $product->sets()->sync($set->getKey());
+
+        $product2 = Product::factory()->create(['public' => true]);
+        $product2->items()->sync([$productItem->getKey()]);
+        $product2->metadata()->create([
+            'name' => 'Metadata',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+        $product2->metadata()->create([
+            'name' => 'Metadata private',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => false,
+        ]);
+        $product2->tags()->sync($tag->getKey());
+        $product2->sets()->sync($set->getKey());
+
+        $product3 = Product::factory()->create(['public' => true]);
+        $product3->items()->sync([$productItem->getKey()]);
+        $product3->metadata()->create([
+            'name' => 'Metadata',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+        $product3->metadata()->create([
+            'name' => 'Metadata private',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => false,
+        ]);
+        $product3->tags()->sync($tag->getKey());
+        $product3->sets()->sync($set->getKey());
+
+        $schema = Schema::factory()->create([
+            'type' => 'select',
+            'price' => 0,
+            'hidden' => false,
+            'required' => true,
+        ]);
+        $product->schemas()->sync([$schema->getKey()]);
+        $product2->schemas()->sync([$schema->getKey()]);
+        $product3->schemas()->sync([$schema->getKey()]);
+
+        $option = $schema->options()->create([
+            'name' => 'XL',
+            'price' => 0,
+        ]);
+        $item = Item::factory()->create();
+        $option->items()->sync([$item->getKey(), $productItem->getKey()]);
+
+        $schema2 = Schema::factory()->create([
+            'type' => 'select',
+            'price' => 0,
+            'hidden' => false,
+            'required' => false,
+        ]);
+
+        $option2 = $schema2->options()->create([
+            'name' => 'XL',
+            'price' => 0,
+        ]);
+        $option2->items()->sync([$productItem->getKey()]);
+
+        $option3 = $schema2->options()->create([
+            'name' => 'XL',
+            'price' => 0,
+        ]);
+        $option3->items()->sync([$productItem->getKey()]);
+
+        $this
+            ->actingAs($this->user)
+            ->json('GET', '/items/id:' . $productItem->getKey())
+            ->assertOk();
+
+        $this->assertQueryCountLessThan(11);
+    }
 }

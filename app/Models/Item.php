@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
@@ -104,5 +105,16 @@ class Item extends Model implements AuditableContract, SortableContract
     public function options(): BelongsToMany
     {
         return $this->belongsToMany(Option::class, 'option_items');
+    }
+
+    public function getSchemasAttribute(): Collection
+    {
+        $schemas = Collection::make();
+
+        $this->options->each(function (Option $option) use ($schemas): void {
+            $schemas->push($option->schema);
+        });
+
+        return $schemas->unique();
     }
 }
