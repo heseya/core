@@ -622,6 +622,6 @@ class PerformanceTest extends TestCase
             ->json('GET', '/orders/id:' . $order->getKey())->assertOk();
 
         // For 3 product, 2 discount on order and 2 discounts on products without load was 239 queries
-        $this->assertQueryCountLessThan(100);
+        $this->assertQueryCountLessThan(103);
     }
 }

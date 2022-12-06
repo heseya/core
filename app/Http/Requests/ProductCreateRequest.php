@@ -20,7 +20,7 @@ class ProductCreateRequest extends FormRequest implements SeoRequestContract, Me
     protected array $booleanFields = [
         'public',
         'seo.no_index',
-        'is_digital',
+        'shipping_digital',
     ];
 
     public function rules(): array

@@ -30,11 +30,11 @@ class OrderProductTest extends TestCase
         $status = Status::factory()->create();
         $product = Product::factory()->create([
             'public' => true,
-            'is_digital' => false,
+            'shipping_digital' => false,
         ]);
         $digitalProduct = Product::factory()->create([
             'public' => true,
-            'is_digital' => true,
+            'shipping_digital' => true,
         ]);
 
         $this->order = Order::factory()->create([
