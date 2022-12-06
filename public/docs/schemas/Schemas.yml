@@ -192,3 +192,37 @@ SchemaRequest:
       items:
         type: string
         example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+
+SchemaShort:
+  type: object
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    type:
+      description: "multiply_schema(min, max, step) type uses one schema and multiplies\n     *     it's price by own numeric value"
+      type: string
+      enum:
+        - string
+        - numeric
+        - boolean
+        - date
+        - select
+        - file
+        - multiply
+        - multiply_schema
+    name:
+      type: string
+      example: Size
+    price:
+      description: "Additional price the customer will have to pay after selecting the option\n     *     (can be negative)"
+      type: number
+      example: 9.99
+    hidden:
+      type: boolean
+      example: false
+    required:
+      type: boolean
+      example: false
+    default:
+      type: string
