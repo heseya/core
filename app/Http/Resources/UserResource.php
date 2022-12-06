@@ -32,6 +32,7 @@ class UserResource extends Resource
             'phone' => $this->resource->phone,
             'phone_country' => $this->resource->phone_country,
             'phone_number' => $this->resource->phone_number,
+            'created_at' => $this->resource->created_at,
             'metadata_personal' => $this->processMetadata($this->resource->metadataPersonal),
         ], $this->metadataResource('users.show_metadata_private'));
     }
