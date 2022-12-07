@@ -11,7 +11,6 @@ use App\Models\Schema;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DepositServiceContract;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -218,6 +217,9 @@ class AvailabilityService implements AvailabilityServiceContract
             if ($permutationResult['available'] === true) {
                 $available = true;
             }
+
+            $shipping_time = $permutationResult['shipping_time'] < $shipping_time ? $permutationResult['shipping_time'] : $shipping_time;
+            $shipping_date = $this->compareShippingDate($shipping_date, $permutationResult['shipping_date'], true);
         }
 
         // return if all permutations all unavailable
@@ -234,6 +236,9 @@ class AvailabilityService implements AvailabilityServiceContract
         );
     }
 
+    /**
+     * Check single product permutation
+     */
     public function checkProductPermutation(
         float $quantityStep,
         Collection $items,
@@ -258,7 +263,18 @@ class AvailabilityService implements AvailabilityServiceContract
             $item = $items->firstWhere('id', $requiredItem->getKey());
 
             if ($requiredItem->pivot->required_quantity > $item->quantity) {
-                return $this->returnProductAvailability(false, 0);
+                if (
+                    $item->unlimited_stock_shipping_time === null &&
+                    $item->unlimited_stock_shipping_date === null
+                ) {
+                    return $this->returnProductAvailability(false, 0);
+                }
+
+                $quantity = null;
+                $shipping_time = $item->unlimited_stock_shipping_time > $shipping_time ? $item->unlimited_stock_shipping_time : $shipping_time;
+                $shipping_date = $this->compareShippingDate($item->unlimited_stock_shipping_date, $shipping_date);
+
+                continue;
             }
 
             $itemQuantity = floor(
@@ -268,8 +284,8 @@ class AvailabilityService implements AvailabilityServiceContract
 
             $quantity = $quantity < $itemQuantity ? $itemQuantity : $quantity;
 
-            $shipping_time = $item->shipping_time;
-            $shipping_date = $item->shipping_date;
+            $shipping_time = $item->shipping_time > $shipping_time ? $item->shipping_time : $shipping_time;
+            $shipping_date = $this->compareShippingDate($item->shipping_date, $shipping_date);
         }
 
         return $this->returnProductAvailability(
@@ -281,6 +297,9 @@ class AvailabilityService implements AvailabilityServiceContract
         );
     }
 
+    /**
+     * Helper method for always generating same return array
+     */
     private function returnProductAvailability(
         bool $available = false,
         ?float $quantity = null,
@@ -310,11 +329,13 @@ class AvailabilityService implements AvailabilityServiceContract
             ->get();
     }
 
+    /**
+     * Get all items required by products required items and required schemas
+     */
     private function getAllRequiredItems(Product $product, Collection $requiredSchemas): Collection
     {
         $items = $product->items()->with('groupedDeposits')->get();
 
-        // TODO: do something with it xd
         foreach ($requiredSchemas as $schema) {
             foreach ($schema->options as $option) {
                 foreach ($option->items()->with('groupedDeposits')->get() as $item) {
@@ -328,112 +349,9 @@ class AvailabilityService implements AvailabilityServiceContract
         return $items;
     }
 
-    private function calculateProductDeposits(
-        Collection $items,
-        Collection $timeDeposits,
-        Product $product,
-        string $type,
-        array $requiredQuantities,
-    ): mixed {
-        $quantity = 0;
-
-        $overstockedItems = [];
-        foreach ($items as $item) {
-            $overstockedItems[$item->getKey()] = 0.0;
-        }
-
-        /**
-         * @var string $period
-         * @var Collection $timeDeposit
-         */
-        foreach ($timeDeposits as $period => $timeDeposit) {
-            $onlyOverstocked = [];
-            if ($timeDeposit->count() < $items->count()) {
-                $itemsWithDeposit = $timeDeposit->pluck('item_id')->toArray();
-
-                $onlyOverstocked = Arr::where($overstockedItems, function ($value, $key) use ($itemsWithDeposit): bool {
-                    return !in_array($key, $itemsWithDeposit);
-                });
-            }
-
-            $quantities = $this->itemsMinQuantity(
-                $timeDeposit,
-                $overstockedItems,
-                $requiredQuantities,
-                $onlyOverstocked,
-            );
-
-            $minQuantity = $quantities->sort()->first();
-
-            if ($minQuantity === 0.0) {
-                foreach ($timeDeposit as $deposit) {
-                    $overstockedItems[$deposit->item_id] += $deposit->quantity;
-                }
-                continue;
-            }
-
-            $overstockedItems = $this->addProductAvailability(
-                $minQuantity,
-                $product,
-                $type,
-                $period,
-                $timeDeposit,
-                $overstockedItems,
-                $requiredQuantities,
-            );
-            $quantity += $minQuantity;
-        }
-
-        return $quantity;
-    }
-
-    private function addProductAvailability(
-        mixed $minQuantity,
-        Product $product,
-        string $type,
-        string $period,
-        Collection $timeDeposit,
-        array $overstockedItems,
-        array $requiredQuantities,
-    ): array {
-        foreach ($timeDeposit as  $deposit) {
-            $overstockedItems[$deposit->item_id] +=
-                $deposit->quantity - ($minQuantity * $requiredQuantities[$deposit->item_id]);
-        }
-
-        $product->productAvailabilities()->create([
-            'quantity' => $minQuantity,
-            $type => $period,
-        ]);
-
-        return $overstockedItems;
-    }
-
-    private function itemsMinQuantity(
-        Collection $timeDeposit,
-        array $overstockedItems,
-        array $requiredQuantities,
-        array $onlyOverstocked = [],
-    ): Collection {
-        $quantities = Collection::make();
-
-        foreach ($timeDeposit as  $deposit) {
-            $quantities
-                ->push(
-                    floor(
-                        ($deposit->quantity + $overstockedItems[$deposit->item_id])
-                        / $requiredQuantities[$deposit->item_id]
-                    )
-                );
-        }
-
-        foreach ($onlyOverstocked as $key => $value) {
-            $quantities->push(floor($value / $requiredQuantities[$key]));
-        }
-
-        return $quantities;
-    }
-
+    /**
+     * Compares whether $shippingDate1 is before $shippingDate2
+     */
     private function compareShippingDate(
         \Carbon\Carbon|null $shippingDate1,
         \Carbon\Carbon|null $shippingDate2,

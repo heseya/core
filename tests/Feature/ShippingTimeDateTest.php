@@ -25,6 +25,7 @@ class ShippingTimeDateTest extends TestCase
         $item = Item::factory()->create($itemData);
         $item2 = Item::factory()->create();
 
+        /** @var Product $product */
         $product = Product::factory()->create();
         $product->items()->attach($item->getKey(), ['required_quantity' => 1]);
 
@@ -166,6 +167,7 @@ class ShippingTimeDateTest extends TestCase
 
         $item = Item::factory()->create($itemData);
 
+        /** @var Product $product */
         $product = Product::factory()->create();
         $product->items()->attach($item->getKey(), ['required_quantity' => 1]);
 
