@@ -281,89 +281,6 @@ class AvailabilityService implements AvailabilityServiceContract
         );
     }
 
-    public function isProductAvailable(Product $product): bool
-    {
-        $flagPermutations = false;
-        /** @var Collection<int,mixed> $requiredSelectSchemas */
-        $requiredSelectSchemas = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
-        if (!$requiredSelectSchemas->isEmpty() &&
-            $requiredSelectSchemas->some(fn (Schema $schema) => $schema->options->count() > 0)
-        ) {
-            $flagPermutations = true;
-            $items = [];
-            foreach ($product->items as $productItem) {
-                $items[$productItem->getKey()] = $productItem->pivot->required_quantity;
-            }
-            $hasAvailablePermutations = $this->checkPermutations($requiredSelectSchemas, $items);
-
-            if ($hasAvailablePermutations) {
-                return true;
-            }
-        }
-        if (!$flagPermutations && $product->items->every(
-            fn (Item $item) => $item->pivot->required_quantity <= $item->quantity ||
-                !is_null($item->unlimited_stock_shipping_time) ||
-                (!is_null($item->unlimited_stock_shipping_date) &&
-                    $item->unlimited_stock_shipping_date >= Carbon::now())
-        )) {
-            return true;
-        }
-
-        return false;
-    }
-
-    public function checkPermutations(Collection $schemas, array $items): bool
-    {
-        $max = $schemas->count();
-        $options = new Collection();
-
-        return $this->getSchemaOptions($schemas->first(), $schemas, $options, $max, $items);
-    }
-
-    public function getSchemaOptions(
-        Schema $schema,
-        Collection $schemas,
-        Collection $options,
-        int $max,
-        array $items,
-        int $index = 0
-    ): bool {
-        foreach ($schema->options as $option) {
-            $options->put($schema->getKey(), $option);
-            if ($index < $max - 1) {
-                $newIndex = $index + 1;
-
-                return $this->getSchemaOptions($schemas->get($newIndex), $schemas, $options, $max, $items, $newIndex);
-            }
-            if ($index === $max - 1) {
-                if ($this->isOptionsItemsAvailable($options, $items)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @param Collection $options
-     * @param array<string, int> $items <unique id of item, quantity>
-     *
-     * @return bool
-     */
-    public function isOptionsItemsAvailable(Collection $options, array $items): bool
-    {
-        $itemsOptions = $options->pluck('items')->flatten()->groupBy('id');
-
-        return $itemsOptions->every(
-            function (Collection $item) use ($itemsOptions, $items) {
-                $requiredAmount = ($items[$item->first()->getKey()] ?? 0) +
-                    $itemsOptions->get($item->first()->getKey())->count();
-                return $item->first()->quantity >= $requiredAmount;
-            }
-        );
-    }
-
     private function returnProductAvailability(
         bool $available = false,
         ?float $quantity = null,
@@ -490,49 +407,6 @@ class AvailabilityService implements AvailabilityServiceContract
         ]);
 
         return $overstockedItems;
-    }
-
-    private function productRequiredItems(Product $product): array
-    {
-        $items = Collection::make($product->items()->with('groupedDeposits')->get());
-
-        $requiredItems = [];
-
-        foreach ($items as $item) {
-            $requiredItems[$item->getKey()] = $item->pivot->required_quantity;
-        }
-
-        $requiredQuantities = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
-
-        if (!$requiredQuantities->isEmpty()) {
-            /** @var Schema $requiredQuantity */
-            foreach ($requiredQuantities as $requiredQuantity) {
-                $itemsOptions = $requiredQuantity->options->pluck('items')->flatten();
-                foreach ($itemsOptions as $id => $item) {
-                    if (!array_key_exists($id, $requiredItems)) {
-                        $items->push($item->first());
-                    }
-                    $requiredItems[$id] = ($requiredItems[$id] ?? 0) + $item->pivot->reqired_quantity;
-                }
-            }
-        }
-
-        return [$items, $requiredItems];
-    }
-
-    private function itemsGroupedDeposits(Collection $items): array
-    {
-        $groupedDeposits = $items->pluck('groupedDeposits')->flatten(1);
-
-        $shippingTimeDeposits = $groupedDeposits->filter(
-            fn ($groupedDeposit): bool => $groupedDeposit->shipping_time !== null
-        )->sortBy('shipping_time')->groupBy('shipping_time');
-
-        $shippingDateDeposits = $groupedDeposits->filter(
-            fn ($groupDeposit): bool => $groupDeposit->shipping_date !== null
-        )->sortBy('shipping_date')->groupBy('shipping_date');
-
-        return [$shippingTimeDeposits, $shippingDateDeposits];
     }
 
     private function itemsMinQuantity(
