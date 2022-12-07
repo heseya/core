@@ -14,6 +14,7 @@ class WishlistTest extends TestCase
 
     protected array $items;
     protected array $address;
+    protected array $expected_structure;
 
     public function setUp(): void
     {
@@ -22,6 +23,35 @@ class WishlistTest extends TestCase
             'public' => true,
             'name' => 'test product',
         ]);
+
+        $this->expected_structure = [
+            'id',
+            'product' => [
+                'id',
+                'slug',
+                'name',
+                'price',
+                'price_min',
+                'price_max',
+                'price_min_initial',
+                'price_max_initial',
+                'public',
+                'visible',
+                'available',
+                'quantity_step',
+                'google_product_category',
+                'vat_rate',
+                'shipping_time',
+                'shipping_date',
+                'cover',
+                'tags',
+                'has_schemas',
+                'quantity',
+                'metadata',
+                'attributes',
+            ],
+            'created_at',
+        ];
     }
 
     /**
@@ -39,6 +69,11 @@ class WishlistTest extends TestCase
 
         $this->actingAs($this->$user)->json('GET', '/wishlist')
             ->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                    0 => $this->expected_structure,
+                ],
+            ])
             ->assertJson([
                 'data' => [
                     0 => [
@@ -86,6 +121,7 @@ class WishlistTest extends TestCase
 
         $this->actingAs($this->$user)->json('GET', '/wishlist/id:' . $this->product->getKey())
             ->assertOk()
+            ->assertJsonStructure(['data' => $this->expected_structure])
             ->assertJson([
                 'data' => [
                     'product' => [
@@ -145,6 +181,7 @@ class WishlistTest extends TestCase
             'product_id' => $this->product->getKey(),
         ])
             ->assertCreated()
+            ->assertJsonStructure(['data' => $this->expected_structure])
             ->assertJson([
                 'data' => [
                     'product' => [
@@ -210,6 +247,7 @@ class WishlistTest extends TestCase
             'product_id' => $this->product->getKey(),
         ])
             ->assertCreated()
+            ->assertJsonStructure(['data' => $this->expected_structure])
             ->assertJson([
                 'data' => [
                     'product' => [
@@ -273,5 +311,36 @@ class WishlistTest extends TestCase
             ->assertJsonFragment([
                 'key' => Exceptions::getKey(Exceptions::PRODUCT_IS_NOT_ON_WISHLIST),
             ]);
+    }
+
+    public function testDeleteAllUnauthorized(): void
+    {
+        $this->actingAs($this->user)->json('DELETE', '/wishlist')->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteAll($user): void
+    {
+        $this->$user->givePermissionTo('profile.wishlist_manage');
+
+        $wishlistProduct1 = $this->$user->wishlistProducts()->create([
+            'product_id' => $this->product->getKey(),
+        ]);
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'name' => 'another test product',
+        ]);
+
+        $wishlistProduct2 = $this->$user->wishlistProducts()->create([
+            'product_id' => $product->getKey(),
+        ]);
+
+        $this->actingAs($this->$user)->json('DELETE', '/wishlist')->assertNoContent();
+
+        $this->assertSoftDeleted($wishlistProduct1);
+        $this->assertSoftDeleted($wishlistProduct2);
     }
 }

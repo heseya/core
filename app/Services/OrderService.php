@@ -6,6 +6,7 @@ use App\Dtos\AddressDto;
 use App\Dtos\CartDto;
 use App\Dtos\OrderDto;
 use App\Dtos\OrderIndexDto;
+use App\Dtos\OrderUpdateDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\SchemaType;
 use App\Events\OrderCreated;
@@ -19,6 +20,7 @@ use App\Models\Address;
 use App\Models\CartResource;
 use App\Models\Order;
 use App\Models\OrderProduct;
+use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Services\Contracts\DepositServiceContract;
@@ -81,7 +83,7 @@ class OrderService implements OrderServiceContract
         $shippingMethod = ShippingMethod::findOrFail($dto->getShippingMethodId());
         $deliveryAddress = Address::firstOrCreate($dto->getDeliveryAddress()->toArray());
 
-        if ($this->checkAddress($dto->getInvoiceAddress())) {
+        if (!$dto->getInvoiceAddress() instanceof Missing && $this->checkAddress($dto->getInvoiceAddress())) {
             $invoiceAddress = Address::firstOrCreate($dto->getInvoiceAddress()->toArray());
         }
 
@@ -102,8 +104,8 @@ class OrderService implements OrderServiceContract
                 'status_id' => $status->getKey(),
                 'delivery_address_id' => $deliveryAddress->getKey(),
                 'invoice_address_id' => isset($invoiceAddress) ? $invoiceAddress->getKey() : null,
-                'buyer_id' => Auth::user()->getKey(),
-                'buyer_type' => Auth::user()::class,
+                'buyer_id' => Auth::user()?->getKey(),
+                'buyer_type' => Auth::user() ? Auth::user()::class : null,
             ]
         );
 
@@ -195,7 +197,7 @@ class OrderService implements OrderServiceContract
         return $order;
     }
 
-    public function update(OrderDto $dto, Order $order): JsonResponse
+    public function update(OrderUpdateDto $dto, Order $order): JsonResponse
     {
         DB::beginTransaction();
 
@@ -291,7 +293,7 @@ class OrderService implements OrderServiceContract
 
     private function modifyAddress(Order $order, string $attribute, AddressDto|Missing $addressDto): ?Address
     {
-        if (!$this->checkAddress($addressDto)) {
+        if ($addressDto instanceof Missing || !$this->checkAddress($addressDto)) {
             return null;
         }
 
@@ -304,6 +306,7 @@ class OrderService implements OrderServiceContract
     private function removeItemsFromWarehouse(OrderProduct $orderProduct, array $tempSchemaOrderProduct): bool
     {
         $itemsToRemove = [];
+        /** @var Product $product */
         $product = $orderProduct->product;
         $productItems = $product->items;
         foreach ($productItems as $productItem) {

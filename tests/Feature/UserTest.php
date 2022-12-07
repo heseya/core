@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\MetadataType;
 use App\Enums\RoleType;
+use App\Enums\ValidationError;
 use App\Events\UserCreated;
 use App\Events\UserDeleted;
 use App\Events\UserUpdated;
@@ -48,6 +49,12 @@ class UserTest extends TestCase
             'public' => true,
         ]);
 
+        $metadataPersonal = $this->user->metadataPersonal()->create([
+            'name' => 'Personal_metadata',
+            'value' => 'personal metadata test',
+            'value_type' => MetadataType::STRING,
+        ]);
+
         $this->user->preferences()->associate(UserPreference::create());
 
         $this->user->save();
@@ -61,6 +68,9 @@ class UserTest extends TestCase
             'is_tfa_active' => $this->user->is_tfa_active,
             'metadata' => [
                 $metadata->name => $metadata->value,
+            ],
+            'metadata_personal' => [
+                $metadataPersonal->name => $metadataPersonal->value,
             ],
         ];
 
@@ -231,6 +241,11 @@ class UserTest extends TestCase
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
                 'consents' => [],
+                'birthday_date' => null,
+                'phone' => null,
+                'phone_country' => null,
+                'phone_number' => null,
+                'metadata_personal' => [],
                 'metadata' => [],
             ]);
     }
@@ -259,6 +274,11 @@ class UserTest extends TestCase
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
                 'consents' => [],
+                'birthday_date' => null,
+                'phone' => null,
+                'phone_country' => null,
+                'phone_number' => null,
+                'metadata_personal' => [],
                 'metadata' => [],
             ]);
     }
@@ -286,6 +306,11 @@ class UserTest extends TestCase
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
                 'consents' => [],
+                'birthday_date' => null,
+                'phone' => null,
+                'phone_country' => null,
+                'phone_number' => null,
+                'metadata_personal' => [],
                 'metadata' => [],
             ]);
     }
@@ -313,6 +338,11 @@ class UserTest extends TestCase
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
                 'consents' => [],
+                'birthday_date' => null,
+                'phone' => null,
+                'phone_country' => null,
+                'phone_number' => null,
+                'metadata_personal' => [],
                 'metadata' => [],
             ]);
     }
@@ -354,6 +384,11 @@ class UserTest extends TestCase
                         'value' => true,
                     ],
                 ],
+                'birthday_date' => null,
+                'phone' => null,
+                'phone_country' => null,
+                'phone_number' => null,
+                'metadata_personal' => [],
                 'metadata' => [],
             ]);
     }
@@ -395,6 +430,11 @@ class UserTest extends TestCase
                         'value' => true,
                     ],
                 ],
+                'birthday_date' => null,
+                'phone' => null,
+                'phone_country' => null,
+                'phone_number' => null,
+                'metadata_personal' => [],
                 'metadata' => [],
             ]);
     }
@@ -612,6 +652,33 @@ class UserTest extends TestCase
             ->assertJsonFragment([
                 'metadata_private' => [
                     'attributeMetaPriv' => 'attributeValue',
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadataPersonal($user): void
+    {
+        $this->$user->givePermissionTo('users.add');
+
+        Event::fake([UserCreated::class]);
+
+        $data = User::factory()->raw() + [
+            'password' => $this->validPassword,
+            'metadata_personal' => [
+                'attributeMeta' => 'attributeValue',
+            ],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/users', $data)
+            ->assertCreated()
+            ->assertJsonFragment([
+                'metadata_personal' => [
+                    'attributeMeta' => 'attributeValue',
                 ],
             ]);
     }
@@ -884,12 +951,47 @@ class UserTest extends TestCase
             'roles' => [
                 match ($role) {
                     RoleType::AUTHENTICATED => $this->authenticated->getKey(),
-                        RoleType::UNAUTHENTICATED => $this->unauthenticated->getKey(),
+                    RoleType::UNAUTHENTICATED => $this->unauthenticated->getKey(),
                 },
             ],
         ];
 
         $this->actingAs($this->$user)->postJson('/users', $data)->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithPhone($user): void
+    {
+        $this->$user->givePermissionTo('users.add');
+
+        Event::fake([UserCreated::class]);
+
+        $data = User::factory()->raw()
+            + [
+                'password' => $this->validPassword,
+                'birthday_date' => '1990-01-01',
+                'phone' => '+48123456789',
+            ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/users', $data)
+            ->assertCreated()
+            ->assertJsonFragment([
+                'birthday_date' => '1990-01-01',
+                'phone' => '+48123456789',
+                'phone_country' => 'PL',
+                'phone_number' => '12 345 67 89',
+            ]);
+
+        $this->assertDatabaseHas('users', [
+            'email' => $data['email'],
+            'birthday_date' => '1990-01-01',
+            'phone_country' => 'PL',
+            'phone_number' => '12 345 67 89',
+        ]);
     }
 
     public function testUpdateUnauthorized(): void
@@ -916,22 +1018,59 @@ class UserTest extends TestCase
 
         $response = $this->actingAs($this->$user)->patchJson(
             '/users/id:' . $otherUser->getKey(),
-            $data,
+            $data + [
+                'birthday_date' => '1990-01-01',
+                'phone' => '+48123456789',
+            ],
         );
 
         $response
             ->assertOk()
             ->assertJsonPath('data.id', $otherUser->getKey())
             ->assertJsonPath('data.email', $data['email'])
-            ->assertJsonPath('data.name', $data['name']);
+            ->assertJsonPath('data.name', $data['name'])
+            ->assertJsonPath('data.birthday_date', '1990-01-01')
+            ->assertJsonPath('data.phone', '+48123456789')
+            ->assertJsonPath('data.phone_country', 'PL')
+            ->assertJsonPath('data.phone_number', '12 345 67 89');
 
         $this->assertDatabaseHas('users', [
             'id' => $otherUser->getKey(),
             'name' => $data['name'],
             'email' => $data['email'],
+            'birthday_date' => '1990-01-01',
+            'phone_country' => 'PL',
+            'phone_number' => '12 345 67 89',
         ]);
 
         Event::assertDispatched(UserUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateInvalidPhone($user): void
+    {
+        $this->$user->givePermissionTo('users.edit');
+
+        Event::fake([UserUpdated::class]);
+
+        $otherUser = User::factory()->create();
+
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/users/id:' . $otherUser->getKey(),
+            [
+                'phone' => '123456789',
+            ],
+        );
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::PHONE,
+            ]);
+
+        Event::assertNotDispatched(UserUpdated::class);
     }
 
     /**

@@ -73,7 +73,9 @@ class SeoMetadataService implements SeoMetadataServiceContract
 
         $morph_closure = $excluded_id instanceof Missing ? null :
             function (Builder $query, $type) use ($excluded_id, $excluded_model): void {
-                if ($type === SeoModelType::getValue(Str::upper(Str::snake($excluded_model)))) {
+                if (!$excluded_model instanceof Missing
+                    && $type === SeoModelType::getValue(Str::upper(Str::snake($excluded_model)))
+                ) {
                     $query->where('model_id', '!=', $excluded_id);
                 }
             };

@@ -38,7 +38,7 @@ class TokenService implements TokenServiceContract
     {
         $this->jwt->setToken($token);
 
-        return $this->jwt->check();
+        return (bool) $this->jwt->check();
     }
 
     public function getUser(string $token): ?Authenticatable

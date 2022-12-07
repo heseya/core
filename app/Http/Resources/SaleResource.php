@@ -26,12 +26,19 @@ class SaleResource extends Resource
             'type' => $this->resource->type,
             'priority' => $this->resource->priority,
             'uses' => $this->resource->uses,
-            'condition_groups' => ConditionGroupResource::collection($this->resource->conditionGroups),
             'target_type' => $this->resource->target_type,
+            'target_is_allow_list' => $this->resource->target_is_allow_list,
+            'active' => $this->resource->active,
+        ], $this->metadataResource('sales.show_metadata_private'));
+    }
+
+    public function view(Request $request): array
+    {
+        return [
+            'condition_groups' => ConditionGroupResource::collection($this->resource->conditionGroups),
             'target_products' => ProductResource::collection($this->resource->products),
             'target_sets' => ProductSetResource::collection($this->resource->productSets),
             'target_shipping_methods' => ShippingMethodResource::collection($this->resource->shippingMethods),
-            'target_is_allow_list' => $this->resource->target_is_allow_list,
-        ], $this->metadataResource('sales.show_metadata_private'));
+        ];
     }
 }

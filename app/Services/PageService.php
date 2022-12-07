@@ -26,7 +26,7 @@ class PageService implements PageServiceContract
 
     public function authorize(Page $page): void
     {
-        if (!Auth::user()->can('pages.show_hidden') && $page->public !== true) {
+        if (!Auth::user()?->can('pages.show_hidden') && $page->public !== true) {
             throw new NotFoundHttpException();
         }
     }
@@ -34,10 +34,10 @@ class PageService implements PageServiceContract
     public function getPaginated(?array $search): LengthAwarePaginator
     {
         $query = Page::query()
-            ->searchByCriteria($search)
+            ->searchByCriteria($search ?? [])
             ->with(['seo', 'metadata']);
 
-        if (!Auth::user()->can('pages.show_hidden')) {
+        if (!Auth::user()?->can('pages.show_hidden')) {
             $query->where('public', true);
         }
 
@@ -72,7 +72,7 @@ class PageService implements PageServiceContract
         $page->update($dto->toArray());
 
         $seo = $page->seo;
-        if ($seo !== null) {
+        if ($seo !== null && !$dto->getSeo() instanceof Missing) {
             $this->seoMetadataService->update($dto->getSeo(), $seo);
         }
 

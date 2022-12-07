@@ -23,19 +23,18 @@ class ProcessFailedLoginAttempts implements ShouldQueue
 
     /**
      * Execute the job.
-     *
-     * @return void
      */
     public function handle(): void
     {
         $now = Carbon::now();
-        $attempts = UserLoginAttempt::where('user_id', $this->userId)
+        $attempts = UserLoginAttempt::query()
+            ->where('user_id', $this->userId)
             ->where('created_at', '<=', $now->toDateTimeString())
             ->where('created_at', '>=', $now->subMinutes(5)->toDateTimeString())
             ->orderBy('created_at', 'desc')
             ->get();
 
-        if ($attempts->doesntContain(['logged' => true])) {
+        if ($attempts->doesntContain(['logged' => true]) && $attempts->first()) {
             FailedLoginAttempt::dispatch($attempts->first());
         }
     }

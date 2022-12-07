@@ -6,6 +6,7 @@ use App\Http\Requests\PaymentMethodIndexRequest;
 use App\Http\Resources\PaymentMethodResource;
 use App\Models\PaymentMethod;
 use App\Models\ShippingMethod;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -17,13 +18,14 @@ class PaymentMethodController extends Controller
     public function index(PaymentMethodIndexRequest $request): JsonResource
     {
         if ($request->has('shipping_method_id')) {
-            $shipping_method = ShippingMethod::find($request->input('shipping_method_id'));
-            $query = $shipping_method->paymentMethods();
+            $shipping_method = ShippingMethod::first($request->input('shipping_method_id'));
+            /** @var Builder $query */
+            $query = $shipping_method?->paymentMethods();
         } else {
             $query = PaymentMethod::query();
         }
 
-        if (!Auth::user()->can('payment_methods.show_hidden')) {
+        if (!Auth::user()?->can('payment_methods.show_hidden')) {
             $query->where('public', true);
         }
 

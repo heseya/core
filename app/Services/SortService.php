@@ -19,9 +19,9 @@ class SortService implements SortServiceContract
     /**
      * @throws Exception
      */
-    public function sortScout(ScoutBuilder $query, ?string $sortString): ScoutBuilder
+    public function sortScout(ScoutBuilder $query, ?string $sortString): Builder|ScoutBuilder
     {
-        if ($query->model instanceof SortableContract) {
+        if ($query->model instanceof SortableContract && $sortString !== null) {
             return $this->sort($query, $sortString, $query->model->getSortable());
         }
         throw new ClientException(Exceptions::CLIENT_MODEL_NOT_SORTABLE);
@@ -69,8 +69,8 @@ class SortService implements SortServiceContract
                             ->where('product_sets.slug', Str::after($field, 'set.'));
                     });
             })
-            ->select('product_set_product.order AS set_order', 'products.*')
-            ->orderBy('set_order', $order);
+                ->select('product_set_product.order AS set_order', 'products.*')
+                ->orderBy('set_order', $order);
         } else {
             $query->orderBy($field, $order);
         }

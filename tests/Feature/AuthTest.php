@@ -106,6 +106,33 @@ class AuthTest extends TestCase
             ->assertOk();
     }
 
+    public function testUserAgentLength(): void
+    {
+        $userAgent = 'Mozilla/5.0 (Linux; Android 10; moto e(7) power Build/QOMS30.288-52-10; wv)
+         AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/105.0.5195.136
+         Mobile Safari/537.36 Instagram 255.1.0.17.102
+         Android (29/10; 280dpi; 720x1472; motorola; moto e(7) power; malta; mt6762; pl_PL; 405431925)';
+        $this
+            ->actingAs($this->user)->json(
+                'POST',
+                '/login',
+                [
+                    'email' => $this->user->email,
+                    'password' => $this->password,
+                ],
+                [
+                    'User-Agent' => $userAgent,
+                ],
+            )
+            ->assertOk()
+            ->assertJsonStructure(['data' => $this->expected]);
+
+        $this->assertDatabaseHas('user_login_attempts', [
+            'user_id' => $this->user->getKey(),
+            'user_agent' => $userAgent,
+        ]);
+    }
+
     public function testSuccessfulLoginAttempt(): array
     {
         $this->user->preferences()->update([
@@ -1153,6 +1180,8 @@ class AuthTest extends TestCase
                     'permission.1',
                     'permission.2',
                 ],
+                'metadata' => [],
+                'metadata_personal' => [],
             ],
             ]);
     }
@@ -1193,6 +1222,8 @@ class AuthTest extends TestCase
         $user->save();
 
         $this->actingAs($user)->json('PATCH', '/auth/profile', [
+            'birthday_date' => '1990-01-01',
+            'phone' => '+48123456789',
             'preferences' => [
                 'successful_login_attempt_alert' => true,
                 'failed_login_attempt_alert' => 'off',
@@ -1206,6 +1237,10 @@ class AuthTest extends TestCase
                 'email' => $user->email,
                 'name' => $user->name,
                 'avatar' => $user->avatar,
+                'birthday_date' => '1990-01-01',
+                'phone' => '+48123456789',
+                'phone_country' => 'PL',
+                'phone_number' => '12 345 67 89',
             ])
             ->assertJsonFragment([
                 'successful_login_attempt_alert' => true,
@@ -1214,6 +1249,12 @@ class AuthTest extends TestCase
                 'recovery_code_changed_alert' => false,
             ]);
 
+        $this->assertDatabaseHas('users', [
+            'id' => $user->getKey(),
+            'birthday_date' => '1990-01-01',
+            'phone_number' => '12 345 67 89',
+            'phone_country' => 'PL',
+        ]);
         $this->assertDatabaseCount('user_preferences', 2); // +1 for $this->user
         $this->assertDatabaseHas('user_preferences', [
             'id' => $user->preferences_id,
@@ -2180,6 +2221,117 @@ class AuthTest extends TestCase
             'failed_login_attempt_alert' => true,
             'new_localization_login_alert' => true,
             'recovery_code_changed_alert' => true,
+        ]);
+
+        Notification::assertSentTo(
+            [$user],
+            UserRegistered::class,
+        );
+    }
+
+    public function testRegisterWithPhone(): void
+    {
+        Notification::fake();
+
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.register');
+
+        $email = $this->faker->email();
+        $this->json('POST', '/register', [
+            'name' => 'Registered user',
+            'email' => $email,
+            'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+            'phone' => '+48123456789',
+            'birthday_date' => '1990-01-01',
+        ])
+            ->assertCreated()
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'name',
+                    'email',
+                    'avatar',
+                    'roles',
+                    'preferences',
+                    'birthday_date',
+                    'phone',
+                    'phone_country',
+                    'phone_number',
+                ],
+            ])
+            ->assertJsonFragment([
+                'name' => 'Registered user',
+                'email' => $email,
+                'birthday_date' => '1990-01-01',
+                'phone' => '+48123456789',
+                'phone_country' => 'PL',
+                'phone_number' => '12 345 67 89',
+            ]);
+
+        $this->assertDatabaseHas('users', [
+            'email' => $email,
+            'phone_country' => 'PL',
+            'phone_number' => '12 345 67 89',
+            'birthday_date' => '1990-01-01',
+        ]);
+    }
+
+    public function testRegisterWithMetadata(): void
+    {
+        Notification::fake();
+
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.register');
+
+        $email = $this->faker->email();
+        $this->json('POST', '/register', [
+            'name' => 'Registered user',
+            'email' => $email,
+            'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+            'metadata' => [
+                'meta' => 'value',
+            ],
+            'metadata_private' => [
+                'meta_priv' => 'test',
+            ],
+            'metadata_personal' => [
+                'meta_personal' => 'test2',
+            ],
+        ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'metadata_personal' => [
+                    'meta_personal' => 'test2',
+                ],
+            ])
+            ->assertJsonMissing([
+                'metadata' => [
+                    'meta' => 'value',
+                ],
+            ])->assertJsonMissing([
+                'metadata_private' => [
+                    'meta_priv' => 'test',
+                ],
+            ]);
+
+        $user = User::where('email', $email)->first();
+
+        $this->assertDatabaseMissing('metadata', [
+            'model_id' => $user->getKey(),
+            'name' => 'meta',
+            'value' => 'value',
+        ]);
+
+        $this->assertDatabaseMissing('metadata', [
+            'model_id' => $user->getKey(),
+            'name' => 'meta_priv',
+            'value' => 'test',
+        ]);
+
+        $this->assertDatabaseHas('metadata_personals', [
+            'model_id' => $user->getKey(),
+            'name' => 'meta_personal',
+            'value' => 'test2',
         ]);
 
         Notification::assertSentTo(

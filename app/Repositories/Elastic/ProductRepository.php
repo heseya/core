@@ -59,7 +59,7 @@ class ProductRepository implements ProductRepositoryContract
 
     public function search(ProductSearchDto $dto): LengthAwarePaginator
     {
-        $query = Product::search($dto->getSearch());
+        $query = $dto->getSearch() === null ? Product::search() : Product::search($dto->getSearch());
 
         if ($dto->getSort() !== null) {
             $query = $this->sortService->sortScout($query, $dto->getSort());
@@ -376,7 +376,8 @@ class ProductRepository implements ProductRepositoryContract
         return $query->filter($value ? $term : Invert::query($term));
     }
 
-    private function handleElastic400(BadRequest400Exception $exception): void {
+    private function handleElastic400(BadRequest400Exception $exception): void
+    {
         $error = Str::of($exception->getMessage());
 
         if ($error->contains('] in order to sort on')) {

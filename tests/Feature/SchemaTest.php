@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\MetadataType;
 use App\Enums\SchemaType;
 use App\Models\Item;
 use App\Models\Option;
@@ -735,7 +736,7 @@ class SchemaTest extends TestCase
             'price' => 120,
             'required' => false,
             'options' => [[
-                'name' => "Test option",
+                'name' => 'Test option',
                 'price' => 0,
                 'disabled' => false,
             ],
@@ -963,7 +964,7 @@ class SchemaTest extends TestCase
     {
         $this->$user->givePermissionTo('products.edit');
 
-        $schema = Schema::factory()->create([
+        $schemaValues = [
             'name' => 'new schema',
             'description' => 'new schema description',
             'price' => 10,
@@ -971,7 +972,8 @@ class SchemaTest extends TestCase
             'required' => true,
             'max' => 10,
             'min' => 1,
-        ]);
+        ];
+        $schema = Schema::factory()->create($schemaValues);
 
         $item = Item::factory()->create();
         $item2 = Item::factory()->create();
@@ -991,7 +993,7 @@ class SchemaTest extends TestCase
 
         $response->assertOk();
 
-        $this->assertDatabaseHas('schemas', $schema->toArray());
+        $this->assertDatabaseHas('schemas', $schemaValues);
     }
 
     /**
@@ -1002,6 +1004,42 @@ class SchemaTest extends TestCase
         $this->$user->givePermissionTo('products.edit');
 
         $this->update($user);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithMetadata($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $schema = Schema::factory()->create();
+
+        $schema->metadata()->create([
+            'name' => 'first',
+            'value' => 'metadata',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+
+        $this->actingAs($this->$user)->json('PATCH', '/schemas/id:' . $schema->getKey(), [
+            'metadata' => [
+                'first' => 'new value',
+                'second' => 'new metadata',
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'metadata' => [
+                    'first' => 'metadata',
+                ],
+            ])
+            ->assertJsonMissing([
+                'first' => 'new value',
+            ])
+            ->assertJsonMissing([
+                'second' => 'new metadata',
+            ]);
     }
 
     /**

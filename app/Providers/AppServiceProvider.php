@@ -26,6 +26,7 @@ use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\DiscountStoreServiceContract;
 use App\Services\Contracts\DocumentServiceContract;
 use App\Services\Contracts\EventServiceContract;
+use App\Services\Contracts\FavouriteServiceContract;
 use App\Services\Contracts\GoogleCategoryServiceContract;
 use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\MediaServiceContract;
@@ -63,6 +64,7 @@ use App\Services\DiscountService;
 use App\Services\DiscountStoreService;
 use App\Services\DocumentService;
 use App\Services\EventService;
+use App\Services\FavouriteService;
 use App\Services\GoogleCategoryService;
 use App\Services\ItemService;
 use App\Services\MediaService;
@@ -147,6 +149,7 @@ class AppServiceProvider extends ServiceProvider
         ProviderServiceContract::class => ProviderService::class,
         GoogleCategoryServiceContract::class => GoogleCategoryService::class,
         WishlistServiceContract::class => WishlistService::class,
+        FavouriteServiceContract::class => FavouriteService::class,
     ];
 
     /**

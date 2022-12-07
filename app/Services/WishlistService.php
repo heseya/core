@@ -16,7 +16,7 @@ class WishlistService implements WishlistServiceContract
         return WishlistProduct::create([
             'product_id' => $id,
             'user_id' => Auth::id(),
-            'user_type' => Auth::user()::class,
+            'user_type' => Auth::user() ? Auth::user()::class : null,
         ]);
     }
 
@@ -25,12 +25,17 @@ class WishlistService implements WishlistServiceContract
      */
     public function destroy(Product $product): void
     {
-        $wishlistProduct = Auth::user()->wishlistProducts()->where('product_id', $product->getKey());
+        $wishlistProduct = Auth::user()?->wishlistProducts()->where('product_id', $product->getKey());
 
-        if ($wishlistProduct->first() === null) {
+        if ($wishlistProduct?->first() === null) {
             throw new ClientException(Exceptions::PRODUCT_IS_NOT_ON_WISHLIST);
         }
 
         $wishlistProduct->delete();
+    }
+
+    public function destroyAll(): void
+    {
+        Auth::user()?->wishlistProducts()->delete();
     }
 }

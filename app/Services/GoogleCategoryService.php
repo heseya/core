@@ -54,7 +54,7 @@ class GoogleCategoryService implements GoogleCategoryServiceContract
     {
         $path = $this->path($lang);
 
-        if (!Storage::exists($path)) {
+        if (!Storage::exists($path) || !file($path)) {
             throw new GoogleProductCategoryFileException();
         }
 

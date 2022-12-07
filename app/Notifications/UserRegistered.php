@@ -5,6 +5,7 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Lang;
 
 class UserRegistered extends Notification
 {
@@ -17,8 +18,10 @@ class UserRegistered extends Notification
 
     public function toMail(mixed $notifiable): MailMessage
     {
+        /** @var string $subject */
+        $subject = Lang::get('mail.subject-user-registered');
         return (new MailMessage())
-            ->subject('Witamy na pokładzie! Konto utworzono')
+            ->subject($subject)
             ->view('mail.user-registered');
     }
 }

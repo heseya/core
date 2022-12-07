@@ -24,7 +24,7 @@ class ShippingMethodService implements ShippingMethodServiceContract
     public function index(?array $search, ?string $country, float $cartValue): LengthAwarePaginator
     {
         $query = ShippingMethod::query()
-            ->searchByCriteria($search)
+            ->searchByCriteria($search ?? [])
             ->with('metadata')
             ->orderBy('order');
 
@@ -90,7 +90,8 @@ class ShippingMethodService implements ShippingMethodServiceContract
             $this->metadataService->sync($shippingMethod, $shippingMethodDto->getMetadata());
         }
 
-        foreach ($shippingMethodDto->getPriceRanges() as $range) {
+        $priceRanges = $shippingMethodDto->getPriceRanges() !== null ? $shippingMethodDto->getPriceRanges() : [];
+        foreach ($priceRanges as $range) {
             $priceRange = $shippingMethod->priceRanges()->firstOrCreate([
                 'start' => $range['start'],
             ]);

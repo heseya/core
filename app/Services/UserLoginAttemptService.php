@@ -39,7 +39,7 @@ class UserLoginAttemptService implements UserLoginAttemptServiceContract
 
     private function sendFailedLoginAttemptAlert(UserLoginAttempt $attempt): void
     {
-        $preferences = $attempt->user->preferences;
+        $preferences = $attempt->user?->preferences;
 
         if ($preferences !== null && $preferences->failed_login_attempt_alert) {
             ProcessFailedLoginAttempts::dispatch($attempt->user_id)->delay(now()->addMinutes(5));
@@ -48,7 +48,7 @@ class UserLoginAttemptService implements UserLoginAttemptServiceContract
 
     private function sendSuccessfulLoginAttemptAlert(UserLoginAttempt $attempt): void
     {
-        $preferences = $attempt->user->preferences;
+        $preferences = $attempt->user?->preferences;
 
         if ($preferences !== null && $preferences->successful_login_attempt_alert) {
             SuccessfulLoginAttempt::dispatch($attempt);
@@ -57,7 +57,7 @@ class UserLoginAttemptService implements UserLoginAttemptServiceContract
 
     private function sendNewLocalizationLoginAlert(UserLoginAttempt $attempt): void
     {
-        $preferences = $attempt->user->preferences;
+        $preferences = $attempt->user?->preferences;
 
         if ($preferences !== null && $preferences->new_localization_login_alert) {
             $attempts = UserLoginAttempt::where('user_id', $attempt->user_id)

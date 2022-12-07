@@ -64,7 +64,7 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
         return $result;
     }
 
-    public function getCartLength(): int
+    public function getCartLength(): int|float
     {
         $length = 0;
         /** @var CartItemDto $item */

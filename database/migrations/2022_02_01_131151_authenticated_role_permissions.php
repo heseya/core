@@ -33,7 +33,6 @@ class AuthenticatedRolePermissions extends Migration
             'products.show_details',
             'settings.show',
             'tags.show',
-            'seo.show',
         ]);
 
         $authenticated->save();
@@ -66,7 +65,6 @@ class AuthenticatedRolePermissions extends Migration
             'products.show_details',
             'settings.show',
             'tags.show',
-            'seo.show',
         ]);
 
         $authenticated->save();

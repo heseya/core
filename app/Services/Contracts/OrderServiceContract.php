@@ -5,6 +5,7 @@ namespace App\Services\Contracts;
 use App\Dtos\CartDto;
 use App\Dtos\OrderDto;
 use App\Dtos\OrderIndexDto;
+use App\Dtos\OrderUpdateDto;
 use App\Models\CartResource;
 use App\Models\Order;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -16,7 +17,7 @@ interface OrderServiceContract
 
     public function store(OrderDto $dto): Order;
 
-    public function update(OrderDto $dto, Order $order): JsonResponse;
+    public function update(OrderUpdateDto $dto, Order $order): JsonResponse;
 
     public function indexUserOrder(OrderIndexDto $dto): LengthAwarePaginator;
 

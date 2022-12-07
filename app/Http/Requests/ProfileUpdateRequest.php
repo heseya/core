@@ -24,6 +24,8 @@ class ProfileUpdateRequest extends FormRequest
     {
         return [
             'name' => ['nullable', 'string', 'max:255'],
+            'birthday_date' => ['nullable', 'date', 'before_or_equal:now'],
+            'phone' => ['nullable', 'phone:AUTO'],
             'consents.*' => [new ConsentExists(), new Boolean()],
             'consents' => ['nullable', 'array', new RequiredConsentsUpdate()],
             'preferences' => ['array'],

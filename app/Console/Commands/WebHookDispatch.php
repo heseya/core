@@ -1,9 +1,9 @@
 <?php
 
-namespace Heseya\Demo\Console\Commands;
+namespace App\Console\Commands;
 
 use App\Events\OrderEvent;
-use App\Events\WebHookEvent;
+use App\Models\Model;
 use App\Models\Order;
 use Illuminate\Console\Command;
 
@@ -25,18 +25,12 @@ class WebHookDispatch extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return int
      */
     public function handle(): int
     {
+        /** @var string $eventType */
         $eventType = $this->argument('event');
         $event = '\\App\\Events\\' . $eventType;
-
-        if (!is_subclass_of($event, WebHookEvent::class)) {
-            $this->error('Invalid event type');
-            return 0;
-        }
 
         if (is_subclass_of($event, OrderEvent::class)) {
             $order = Order::query()
@@ -45,17 +39,22 @@ class WebHookDispatch extends Command
                 ->first();
 
             if (!($order instanceof Order)) {
-                $this->error('Order not found');
+                $this->error('Order not found.');
                 return 0;
             }
 
-            $this->info('WebHook dispatching...');
-            $event::dispatch($order);
-            $this->info('WebHook dispatched');
+            $this->dispatch($event, $order);
             return 1;
         }
 
-        $this->error('Not supported event type');
+        $this->error('Not supported event type.');
         return 0;
+    }
+
+    private function dispatch(string $event, Model $model): void
+    {
+        $this->info('WebHook dispatching...');
+        $event::dispatch($model);
+        $this->info('WebHook dispatched.');
     }
 }

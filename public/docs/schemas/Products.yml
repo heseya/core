@@ -145,3 +145,48 @@ ProductIndex:
           type: array
           items:
             $ref: './Attributes.yml#/AttributeProductList'
+
+ProductShort:
+  type: object
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    slug:
+      description: 'Name used in the URL path'
+      type: string
+      example: white-socks
+    name:
+      description: 'Displayed product name'
+      type: string
+      example: 'White socks'
+    price:
+      description: 'Base price of the product excluding schemas'
+      type: number
+      example: 10.99
+    price_min:
+      description: 'Min price after applied all sales'
+      type: number
+      example: 11.99
+    price_max:
+      description: 'Max price after applied all sales'
+      type: number
+      example: 19.99
+    public:
+      description: 'Whether product is not set to be hidden.'
+      type: boolean
+      example: true
+    visible:
+      description: 'Whether product is visible due to public setting and set visibility'
+      type: boolean
+      example: true
+    available:
+      description: 'Whether all parts for minimum product config are available'
+      type: boolean
+      example: true
+    quantity:
+      description: 'Product quantity summary'
+      type: number
+      example: 20
+    cover:
+      $ref: './Media.yml#/Media'
