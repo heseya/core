@@ -262,7 +262,7 @@ class AvailabilityService implements AvailabilityServiceContract
             }
 
             $itemQuantity = floor(
-                $item->quantity / $requiredItem->pivot->required_quantity / $quantityStep
+                ($item->quantity / $requiredItem->pivot->required_quantity) / $quantityStep
             ) * $quantityStep;
             $item->quantity -= $requiredItem->pivot->required_quantity;
 
