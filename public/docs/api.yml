@@ -505,7 +505,7 @@ components:
     Consents:
       $ref: './schemas/Consents.yml#/Consent'
     Wishlist:
-      $ref: './schemas/Wishlist.yml#/WishlistProductFull'
+      $ref: './schemas/Wishlist.yml#/WishlistProduct'
     UserPreferences:
       $ref: './schemas/Auth.yml#/Preferences'
   requestBodies:
