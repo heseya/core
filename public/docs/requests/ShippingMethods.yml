@@ -78,6 +78,13 @@ ShippingMethodStore:
         allOf:
           - $ref: '#/ShippingMethod'
           - properties:
+              shipping_type:
+                type: string
+                enum:
+                  - digital
+                  - address
+                  - point
+                  - point-external
               metadata:
                 $ref: './../schemas/Metadata.yml#/Metadata'
               metadata_private:

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\MetadataType;
+use App\Enums\ShippingType;
 use App\Enums\ValidationError;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
@@ -46,7 +47,9 @@ class OrderTest extends TestCase
 
         Product::factory()->create();
 
-        $this->shippingMethod = ShippingMethod::factory()->create();
+        $this->shippingMethod = ShippingMethod::factory()->create([
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
         $status = Status::factory()->create();
         $product = Product::factory()->create();
 
@@ -1225,7 +1228,7 @@ class OrderTest extends TestCase
         $response = $this->actingAs($this->user)->json('POST', '/orders', [
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'shipping_address' => [
+            'shipping_place' => [
                 'name' => 'Wojtek Testowy',
                 'phone' => '+48123321123',
                 'address' => 'Gdańska 89/1',
@@ -1280,13 +1283,14 @@ class OrderTest extends TestCase
         $this->actingAs($this->$user)->json('POST', '/orders', [
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'shipping_address' => [
+            'shipping_place' => [
                 'name' => 'Wojtek Testowy',
                 'phone' => '+48123321123',
                 'address' => 'Gdańska 89/1',
                 'zip' => '12-123',
                 'city' => 'Bydgoszcz',
                 'country' => 'PL',
+                'vat' => null,
             ],
             'billing_address' => [
                 'name' => 'Wojtek Testowy',
