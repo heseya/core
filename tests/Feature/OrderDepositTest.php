@@ -100,7 +100,9 @@ class OrderDepositTest extends TestCase
             ->json('POST', '/orders', $this->request);
 
         $response->assertCreated();
-        $order = Order::find($response->getData()->data->id);
+
+        /** @var Order $order */
+        $order = Order::query()->find($response->getData()->data->id);
 
         $this->assertDatabaseHas('orders', [
             'id' => $order->getKey(),
@@ -398,7 +400,9 @@ class OrderDepositTest extends TestCase
             ->json('POST', '/orders', $request);
 
         $response->assertCreated();
-        $order = Order::find($response->getData()->data->id); //order created
+
+        /** @var Order $order */
+        $order = Order::query()->find($response->getData()->data->id); //order created
 
         $this->assertDatabaseHas('deposits', [ //was taken from the deposit of 20 items in shipping time 10
             'quantity' => -20,
@@ -449,7 +453,9 @@ class OrderDepositTest extends TestCase
             ->json('POST', '/orders', $request);
 
         $response->assertCreated();
-        $order = Order::find($response->getData()->data->id); //order created
+
+        /** @var Order $order */
+        $order = Order::query()->find($response->getData()->data->id); //order created
 
         $this->assertDatabaseHas('deposits', [ //was taken from the deposit of 3 items in shipping time 3
             'quantity' => -3,
@@ -500,7 +506,9 @@ class OrderDepositTest extends TestCase
             ->json('POST', '/orders', $request);
 
         $response->assertCreated();
-        $order = Order::find($response->getData()->data->id); //order created
+
+        /** @var Order $order */
+        $order = Order::query()->find($response->getData()->data->id); //order created
 
         $this->assertDatabaseHas('deposits', [ //was taken from the deposit of 1 items in shipping time 1
             'quantity' => -1,
@@ -531,6 +539,7 @@ class OrderDepositTest extends TestCase
 
         $this->product->items()->attach($this->item->getKey(), ['required_quantity' => 2]);
 
+        /** @var Order $order */
         $order = Order::factory()->create();
         $orderProduct = $order->products()->create([
             'product_id' => $this->product->getKey(),

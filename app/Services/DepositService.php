@@ -222,7 +222,7 @@ class DepositService implements DepositServiceContract
                 $orderProduct,
                 $item,
                 $quantity,
-                ['shipping_time' => $groupedDepositsByTime['shipping_time'], 'shipping_date' => null]
+                ['shipping_time' => $groupedDepositsByTime['shipping_time'], 'shipping_date' => null],
             );
         }
         if (!is_null($item->unlimited_stock_shipping_time)) {
@@ -230,7 +230,7 @@ class DepositService implements DepositServiceContract
                 $orderProduct,
                 $item,
                 $quantity,
-                ['shipping_time' => $item->unlimited_stock_shipping_time, 'shipping_date' => null]
+                ['shipping_time' => $item->unlimited_stock_shipping_time, 'shipping_date' => null],
             );
         }
         $groupedDepositsByDate = $this->getShippingDateForQuantity($item, $groupedDepositsByTime['quantity']);
@@ -239,7 +239,7 @@ class DepositService implements DepositServiceContract
                 $orderProduct,
                 $item,
                 $quantity,
-                ['shipping_time' => null, 'shipping_date' => $groupedDepositsByDate['shipping_date']]
+                ['shipping_time' => null, 'shipping_date' => $groupedDepositsByDate['shipping_date']],
             );
         }
         if (
@@ -250,7 +250,7 @@ class DepositService implements DepositServiceContract
                 $orderProduct,
                 $item,
                 $quantity,
-                ['shipping_time' => null, 'shipping_date' => $item->unlimited_stock_shipping_date]
+                ['shipping_time' => null, 'shipping_date' => $item->unlimited_stock_shipping_date],
             );
         }
         $deposits = $this->getDepositWithoutShipping($item);

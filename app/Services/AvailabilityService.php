@@ -353,10 +353,19 @@ class AvailabilityService implements AvailabilityServiceContract
      * Compares whether $shippingDate1 is before $shippingDate2
      */
     private function compareShippingDate(
-        \Carbon\Carbon|null $shippingDate1,
-        \Carbon\Carbon|null $shippingDate2,
+        \Carbon\Carbon|string|null $shippingDate1,
+        \Carbon\Carbon|string|null $shippingDate2,
         bool $isAfter = false,
     ): \Carbon\Carbon|null {
+
+        // TODO: find why this is string and remove this section
+        if (is_string($shippingDate1)) {
+            $shippingDate1 = Carbon::createFromTimeString($shippingDate1);
+        }
+        if (is_string($shippingDate2)) {
+            $shippingDate2 = Carbon::createFromTimeString($shippingDate2);
+        }
+
         if ($shippingDate1 === null || ($shippingDate1 instanceof Carbon &&
                 ((!$isAfter && $shippingDate1->isBefore($shippingDate2)) ||
                     ($isAfter && $shippingDate1->isAfter($shippingDate2))))) {
