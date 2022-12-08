@@ -2,11 +2,19 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\Boolean;
 use App\Rules\ShippingPlaceValidation;
+use App\Traits\BooleanRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class OrderUpdateRequest extends FormRequest
 {
+    use BooleanRules;
+
+    protected array $booleanFields = [
+        'invoice_requested',
+    ];
+
     public function rules(): array
     {
         return [
@@ -25,7 +33,7 @@ class OrderUpdateRequest extends FormRequest
             'billing_address.country' => ['string', 'size:2'],
             'billing_address.vat' => ['nullable', 'string', 'max:15'],
 
-            'invoice_requested' => ['boolean'],
+            'invoice_requested' => [new Boolean()],
             'shipping_place' => ['nullable', new ShippingPlaceValidation()],
         ];
     }

@@ -112,7 +112,7 @@ class Order extends Model implements AuditableContract, SortableContract
 
     protected $casts = [
         'paid' => 'boolean',
-        'invoice_request' => 'boolean',
+        'invoice_requested' => 'boolean',
     ];
 
     /**
