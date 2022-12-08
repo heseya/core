@@ -14,9 +14,7 @@ use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Services\Contracts\OrderServiceContract;
 use App\Services\OrderService;
-use Faker\Factory;
 use Illuminate\Database\Seeder;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\App;
 
 class OrderSeeder extends Seeder
@@ -32,8 +30,6 @@ class OrderSeeder extends Seeder
         $digital_methods = ShippingMethod::where('shipping_type', ShippingType::DIGITAL)->get();
         $statuses = Status::all();
 
-        $faker = Factory::create();
-
         /** @var OrderService $orderService */
         $orderService = App::make(OrderServiceContract::class);
 
@@ -41,7 +37,7 @@ class OrderSeeder extends Seeder
             ->count(50)
             ->create()
             ->each(
-                function ($order) use ($shipping_methods, $statuses, $orderService, $digital_methods, $faker,): void {
+                function ($order) use ($shipping_methods, $statuses, $orderService, $digital_methods): void {
                     if (rand(0, 1)) {
                         $digital_shipping_method = $digital_methods->random();
                     } else {
@@ -61,7 +57,7 @@ class OrderSeeder extends Seeder
                     if ($shipping_method && in_array($shipping_method->shipping_type, [ShippingType::ADDRESS, ShippingType::POINT])) {
                         $order->shipping_address_id = Address::factory()->create()->getKey();
                     } elseif ($shipping_method && $shipping_method->shipping_type === ShippingType::POINT_EXTERNAL) {
-                        $order->shipping_place = $faker->streetAddress();
+                        $order->shipping_place = fake()->streetAddress();
                     }
 
                     if (rand(0, 1)) {
