@@ -60,8 +60,10 @@ class AvailabilityService implements AvailabilityServiceContract
 
     public function calculateProductAvailability(Product $product): void
     {
-        $product->productAvailabilities()->delete();
         $product->update($this->getCalculateProductAvailability($product));
+
+        // TODO: refactor this
+        $product->productAvailabilities()->delete();
 
         if ($product->wasChanged()) {
             ProductUpdated::dispatch($product);
@@ -74,7 +76,6 @@ class AvailabilityService implements AvailabilityServiceContract
     public function getCalculateOptionAvailability(Option $option): array
     {
         // If option don't have any related items is always avaiable
-        $available = true;
         $shipping_time = null;
         $shipping_date = null;
 
@@ -126,7 +127,7 @@ class AvailabilityService implements AvailabilityServiceContract
         }
 
         return [
-            'available' => $available,
+            'available' => true,
             'shipping_time' => $shipping_time,
             'shipping_date' => $shipping_date,
         ];
@@ -218,8 +219,13 @@ class AvailabilityService implements AvailabilityServiceContract
                 $available = true;
             }
 
-            $shipping_time = $permutationResult['shipping_time'] < $shipping_time ? $permutationResult['shipping_time'] : $shipping_time;
-            $shipping_date = $this->compareShippingDate($shipping_date, $permutationResult['shipping_date'], true);
+            $shipping_time = $permutationResult['shipping_time'] < $shipping_time ?
+                $permutationResult['shipping_time'] : $shipping_time;
+            $shipping_date = $this->compareShippingDate(
+                $shipping_date,
+                $permutationResult['shipping_date'],
+                true,
+            );
         }
 
         // return if all permutations all unavailable
@@ -271,8 +277,12 @@ class AvailabilityService implements AvailabilityServiceContract
                 }
 
                 $quantity = null;
-                $shipping_time = $item->unlimited_stock_shipping_time > $shipping_time ? $item->unlimited_stock_shipping_time : $shipping_time;
-                $shipping_date = $this->compareShippingDate($item->unlimited_stock_shipping_date, $shipping_date);
+                $shipping_time = $item->unlimited_stock_shipping_time > $shipping_time ?
+                    $item->unlimited_stock_shipping_time : $shipping_time;
+                $shipping_date = $this->compareShippingDate(
+                    $item->unlimited_stock_shipping_date,
+                    $shipping_date,
+                );
 
                 continue;
             }
