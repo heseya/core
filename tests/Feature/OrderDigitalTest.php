@@ -31,7 +31,9 @@ class OrderDigitalTest extends TestCase
         $this->physicalProduct = Product::factory()->create([
             'public' => true,
         ]);
-        $this->physicalShippingMethod = ShippingMethod::factory()->create();
+        $this->physicalShippingMethod = ShippingMethod::factory()->create([
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
 
         $this->billingAddress = [
             'name' => 'Wojtek Testowy',

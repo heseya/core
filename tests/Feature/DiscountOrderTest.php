@@ -6,6 +6,7 @@ use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\SchemaType;
+use App\Enums\ShippingType;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
 use App\Models\Item;
@@ -40,7 +41,7 @@ class DiscountOrderTest extends TestCase
             'price' => 100,
         ]);
 
-        $this->shippingMethod = $this->createShippingMethod(10);
+        $this->shippingMethod = $this->createShippingMethod(10, ['shipping_type' => ShippingType::ADDRESS]);
 
         $this->items = [[
             'product_id' => $this->product->getKey(),
@@ -75,7 +76,7 @@ class DiscountOrderTest extends TestCase
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address,
-            'shipping_address' => $this->address,
+            'shipping_place' => $this->address,
             'items' => $this->items,
             'coupons' => [
                 $discount->code,
@@ -111,7 +112,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'shipping_address' => $this->address,
+            'shipping_place' => $this->address,
             'billing_address' => $this->address,
             'items' => $this->items,
             'coupons' => [
@@ -140,7 +141,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'shipping_address' => $this->address,
+            'shipping_place' => $this->address,
             'billing_address' => $this->address,
             'items' => $this->items,
             'coupons' => [
@@ -241,7 +242,7 @@ class DiscountOrderTest extends TestCase
     {
         $this->$user->givePermissionTo('orders.add');
 
-        $shippingMethod = $this->createShippingMethod(20);
+        $shippingMethod = $this->createShippingMethod(20, ['shipping_type' => ShippingType::ADDRESS]);
 
         $product1 = Product::factory()->create([
             'public' => true,
@@ -324,6 +325,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address,
             'billing_address' => $this->address,
             'items' => [
                 [
@@ -409,6 +411,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address,
             'billing_address' => $this->address,
             'items' => [
                 [
@@ -505,6 +508,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address,
             'billing_address' => $this->address,
             'items' => [
                 [
@@ -553,6 +557,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address,
             'billing_address' => $this->address,
             'items' => [
                 [
@@ -610,6 +615,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address,
             'billing_address' => $this->address,
             'items' => $items,
         ]);
@@ -655,6 +661,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address,
             'billing_address' => $this->address,
             'items' => $items,
         ]);
@@ -697,6 +704,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address,
             'billing_address' => $this->address,
             'items' => [
                 [
@@ -747,6 +755,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address,
             'billing_address' => $this->address,
             'items' => [
                 [
@@ -797,6 +806,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address,
             'billing_address' => $this->address,
             'items' => [
                 [
@@ -848,6 +858,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address,
             'billing_address' => $this->address,
             'items' => [
                 [
@@ -901,7 +912,8 @@ class DiscountOrderTest extends TestCase
             'price' => $productPrice,
         ]);
 
-        $shippingMethod = ShippingMethod::factory()->create(['public' => true]);
+        $shippingMethod = ShippingMethod::factory()
+            ->create(['public' => true, 'shipping_type' => ShippingType::ADDRESS]);
         $shippingPriceNonDiscounted = 8.11;
         $baseRange = PriceRange::create(['start' => 0]);
         $baseRange->prices()->create(['value' => $shippingPriceNonDiscounted]);
@@ -923,6 +935,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->json('POST', '/orders', [
             'email' => 'example@example.com',
             'shipping_method_id' => $shippingMethod->getKey(),
+            'shipping_place' => $this->address,
             'billing_address' => $this->address,
             'items' => [
                 [

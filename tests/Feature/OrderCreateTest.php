@@ -252,7 +252,10 @@ class OrderCreateTest extends TestCase
 
         $productQuantity = 1;
 
-        $freeShipping = ShippingMethod::factory()->create(['public' => true]);
+        $freeShipping = ShippingMethod::factory()->create([
+            'public' => true,
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
         $lowRange = PriceRange::create(['start' => 0]);
         $lowRange->prices()->create(['value' => 0]);
 
@@ -732,7 +735,9 @@ class OrderCreateTest extends TestCase
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
         ]);
-        $shippingMethod = ShippingMethod::factory()->create();
+        $shippingMethod = ShippingMethod::factory()->create([
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
         $discount->products()->attach($this->product->getKey());
 
         $conditionGroup = ConditionGroup::create();
@@ -782,7 +787,9 @@ class OrderCreateTest extends TestCase
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
         ]);
-        $shippingMethod = ShippingMethod::factory()->create();
+        $shippingMethod = ShippingMethod::factory()->create([
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
         $discount->products()->attach($this->product->getKey());
 
         $response = $this->actingAs($this->$user)->json('POST', '/orders', [
@@ -859,7 +866,10 @@ class OrderCreateTest extends TestCase
 
         $discount->products()->attach($product->getKey());
 
-        $shippingMethod = ShippingMethod::factory()->create(['public' => true]);
+        $shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
         $lowRange = PriceRange::create(['start' => 0]);
         $lowRange->prices()->create(['value' => 10]);
 

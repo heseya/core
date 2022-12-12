@@ -43,7 +43,10 @@ class CartTest extends TestCase
 
         $this->email = $this->faker->freeEmail;
 
-        $this->shippingMethod = ShippingMethod::factory()->create(['public' => true]);
+        $this->shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
         $lowRange = PriceRange::create(['start' => 0]);
         $lowRange->prices()->create(['value' => 8.11]);
 
@@ -521,7 +524,10 @@ class CartTest extends TestCase
     {
         $this->$user->givePermissionTo('cart.verify');
 
-        $shippingMethod = ShippingMethod::factory()->create(['public' => true]);
+        $shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
         $lowRange = PriceRange::create(['start' => 0]);
         $lowRange->prices()->create(['value' => 10]);
 
