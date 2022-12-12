@@ -62,9 +62,6 @@ class AvailabilityService implements AvailabilityServiceContract
     {
         $product->update($this->getCalculateProductAvailability($product));
 
-        // TODO: refactor this
-        $product->productAvailabilities()->delete();
-
         if ($product->wasChanged()) {
             ProductUpdated::dispatch($product);
         }
@@ -199,7 +196,6 @@ class AvailabilityService implements AvailabilityServiceContract
         $quantity = 0;
         $shipping_time = null;
         $shipping_date = null;
-        $productAvailabilities = [];
         $permutations = $requiredSchemas->first()->options;
         $requiredSchemas->shift();
 
@@ -238,7 +234,6 @@ class AvailabilityService implements AvailabilityServiceContract
             $quantity,
             $shipping_time,
             $shipping_date,
-            $productAvailabilities,
         );
     }
 
@@ -254,7 +249,6 @@ class AvailabilityService implements AvailabilityServiceContract
         $quantity = 0;
         $shipping_time = null;
         $shipping_date = null;
-        $productAvailabilities = [];
 
         if ($selectedOptions !== null && count($selectedOptions) > 0) {
             foreach ($selectedOptions as $option) {
@@ -288,7 +282,7 @@ class AvailabilityService implements AvailabilityServiceContract
             }
 
             $itemQuantity = floor(
-                $item->quantity / $requiredItem->pivot->required_quantity / $quantityStep
+                $item->quantity / $requiredItem->pivot->required_quantity / $quantityStep,
             ) * $quantityStep;
             $item->quantity -= $requiredItem->pivot->required_quantity;
 
@@ -303,7 +297,6 @@ class AvailabilityService implements AvailabilityServiceContract
             $quantity,
             $shipping_time,
             $shipping_date,
-            $productAvailabilities,
         );
     }
 
@@ -315,14 +308,12 @@ class AvailabilityService implements AvailabilityServiceContract
         ?float $quantity = null,
         ?int $shipping_time = null,
         ?string $shipping_date = null,
-        array $productAvailabilities = [],
     ): array {
         return [
             'available' => $available,
             'quantity' => $quantity,
             'shipping_time' => $shipping_time,
             'shipping_date' => $shipping_date,
-            'productAvailabilities' => $productAvailabilities,
         ];
     }
 
@@ -344,11 +335,11 @@ class AvailabilityService implements AvailabilityServiceContract
      */
     private function getAllRequiredItems(Product $product, Collection $requiredSchemas): Collection
     {
-        $items = $product->items()->with('groupedDeposits')->get();
+        $items = $product->items;
 
         foreach ($requiredSchemas as $schema) {
             foreach ($schema->options as $option) {
-                foreach ($option->items()->with('groupedDeposits')->get() as $item) {
+                foreach ($option->items as $item) {
                     if ($items->where('id', $item->getKey())->count() <= 0) {
                         $items->push($item);
                     }

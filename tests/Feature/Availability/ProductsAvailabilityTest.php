@@ -40,7 +40,6 @@ class ProductsAvailabilityTest extends TestCase
         $this->assertNull($availability['quantity']);
         $this->assertNull($availability['shipping_time']);
         $this->assertNull($availability['shipping_date']);
-        $this->assertEmpty($availability['productAvailabilities']);
     }
 
     // Product have only non required schemas
@@ -67,7 +66,6 @@ class ProductsAvailabilityTest extends TestCase
         $this->assertEquals(null, $availability['quantity']);
         $this->assertNull($availability['shipping_time']);
         $this->assertNull($availability['shipping_date']);
-        $this->assertEmpty($availability['productAvailabilities']);
     }
 
     // Product have schema and options but without any items
@@ -100,7 +98,6 @@ class ProductsAvailabilityTest extends TestCase
         $this->assertEquals(null, $availability['quantity']);
         $this->assertNull($availability['shipping_time']);
         $this->assertNull($availability['shipping_date']);
-        $this->assertEmpty($availability['productAvailabilities']);
     }
 
     // Product have schema and options with required items but item is not available
@@ -128,7 +125,6 @@ class ProductsAvailabilityTest extends TestCase
         $this->assertEquals(0, $availability['quantity']);
         $this->assertNull($availability['shipping_time']);
         $this->assertNull($availability['shipping_date']);
-        $this->assertEmpty($availability['productAvailabilities']);
     }
 
     // Product have schema and options with required items but item is not available
@@ -161,7 +157,6 @@ class ProductsAvailabilityTest extends TestCase
         $this->assertEquals(0, $availability['quantity']);
         $this->assertNull($availability['shipping_time']);
         $this->assertNull($availability['shipping_date']);
-        $this->assertEmpty($availability['productAvailabilities']);
     }
 
     // 10 items in warehouse but required quantity is 4 so only 2 products should be available
@@ -180,7 +175,6 @@ class ProductsAvailabilityTest extends TestCase
         $this->assertEquals(2, $availability['quantity']);
         $this->assertNull($availability['shipping_time']);
         $this->assertNull($availability['shipping_date']);
-        $this->assertEmpty($availability['productAvailabilities']);
     }
 
     // 3 items in warehouse but required quantity is 3 so product should be unavailable
@@ -204,7 +198,6 @@ class ProductsAvailabilityTest extends TestCase
         $this->assertEquals(0, $availability['quantity']);
         $this->assertNull($availability['shipping_time']);
         $this->assertNull($availability['shipping_date']);
-        $this->assertEmpty($availability['productAvailabilities']);
     }
 
     public function testItemRequiredQuantityStep(): void
@@ -222,7 +215,6 @@ class ProductsAvailabilityTest extends TestCase
         $this->assertEquals(8.2, round($availability['quantity'], 8)); // ehhhh....
         $this->assertNull($availability['shipping_time']);
         $this->assertNull($availability['shipping_date']);
-        $this->assertEmpty($availability['productAvailabilities']);
     }
 
     public function testRequiredSchemasAndItemsUnavailableSchema(): void
@@ -251,7 +243,6 @@ class ProductsAvailabilityTest extends TestCase
         $this->assertEquals(0, $availability['quantity']);
         $this->assertNull($availability['shipping_time']);
         $this->assertNull($availability['shipping_date']);
-        $this->assertEmpty($availability['productAvailabilities']);
     }
 
     public function testRequiredSchemasAndItemsUnavailableItem(): void
@@ -279,6 +270,5 @@ class ProductsAvailabilityTest extends TestCase
         $this->assertEquals(0, $availability['quantity']);
         $this->assertNull($availability['shipping_time']);
         $this->assertNull($availability['shipping_date']);
-        $this->assertEmpty($availability['productAvailabilities']);
     }
 }

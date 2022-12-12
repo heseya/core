@@ -53,15 +53,10 @@ class ProductAvailabilityTest extends TestCase
                 'shipping_time' => 1,
             ]);
 
-        $this->assertDatabaseHas('product_availabilities', [
-            'product_id' => $this->product->getKey(),
-            'quantity' => 16,
-            'shipping_time' => 1,
-        ]);
-
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
             'quantity' => 26, // 10 from previous deposit + 16 from new
+            'shipping_time' => 1,
         ]);
     }
 
@@ -79,15 +74,10 @@ class ProductAvailabilityTest extends TestCase
                 'shipping_time' => 2,
             ]);
 
-        $this->assertDatabaseHas('product_availabilities', [
-            'product_id' => $this->product->getKey(),
-            'quantity' => 4,
-            'shipping_time' => 2,
-        ]);
-
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
             'quantity' => 4, // 10 from previous deposit -6 from new
+            'shipping_time' => 2,
         ]);
     }
 
@@ -105,15 +95,10 @@ class ProductAvailabilityTest extends TestCase
                 'shipping_time' => 2,
             ]);
 
-        $this->assertDatabaseMissing('product_availabilities', [
-            'product_id' => $this->product->getKey(),
-            'quantity' => 10,
-            'shipping_time' => 2,
-        ]);
-
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
             'quantity' => 0, // 10 from previous deposit -10 from new
+            'shipping_time' => 2,
         ]);
     }
 
@@ -153,20 +138,6 @@ class ProductAvailabilityTest extends TestCase
                 'quantity' => 2,
                 'shipping_time' => 2,
             ]);
-
-        $this->assertDatabaseCount('product_availabilities', 2);
-
-        $this->assertDatabaseHas('product_availabilities', [
-            'product_id' => $this->product->getKey(),
-            'quantity' => 6,
-            'shipping_time' => 2,
-        ]);
-
-        $this->assertDatabaseHas('product_availabilities', [
-            'product_id' => $this->product->getKey(),
-            'quantity' => 6,
-            'shipping_time' => 3,
-        ]);
     }
 
     /**
@@ -233,17 +204,10 @@ class ProductAvailabilityTest extends TestCase
                 'shipping_time' => 2,
             ]);
 
-        $this->assertDatabaseCount('product_availabilities', 1);
-
-        $this->assertDatabaseHas('product_availabilities', [
-            'product_id' => $this->product->getKey(),
-            'quantity' => 4,
-            'shipping_time' => 2,
-        ]);
-
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
             'quantity' => 4,
+            'shipping_time' => 2,
         ]);
     }
 
@@ -338,17 +302,10 @@ class ProductAvailabilityTest extends TestCase
                 'shipping_time' => 3,
             ]);
 
-        $this->assertDatabaseCount('product_availabilities', 1);
-
-        $this->assertDatabaseHas('product_availabilities', [
-            'product_id' => $product->getKey(),
-            'quantity' => 5,
-            'shipping_time' => 3,
-        ]);
-
         $this->assertDatabaseHas('products', [
             'id' => $product->getKey(),
             'quantity' => 5,
+            'shipping_time' => 3,
         ]);
     }
 
@@ -382,23 +339,10 @@ class ProductAvailabilityTest extends TestCase
                 'shipping_time' => 3,
             ]);
 
-        $this->assertDatabaseCount('product_availabilities', 2);
-
-        $this->assertDatabaseHas('product_availabilities', [
-            'product_id' => $this->product->getKey(),
-            'quantity' => 3,
-            'shipping_time' => 2,
-        ]);
-
-        $this->assertDatabaseHas('product_availabilities', [
-            'product_id' => $this->product->getKey(),
-            'quantity' => 1,
-            'shipping_time' => 3,
-        ]);
-
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
             'quantity' => 4,
+            'shipping_time' => 2,
         ]);
     }
 
@@ -432,17 +376,10 @@ class ProductAvailabilityTest extends TestCase
                 'shipping_time' => 2,
             ]);
 
-        $this->assertDatabaseCount('product_availabilities', 1);
-
-        $this->assertDatabaseHas('product_availabilities', [
-            'product_id' => $this->product->getKey(),
-            'quantity' => 2,
-            'shipping_time' => 2,
-        ]);
-
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
             'quantity' => 2,
+            'shipping_time' => 2,
         ]);
     }
 
@@ -480,23 +417,10 @@ class ProductAvailabilityTest extends TestCase
                 'shipping_time' => 3,
             ]);
 
-        $this->assertDatabaseCount('product_availabilities', 2);
-
-        $this->assertDatabaseHas('product_availabilities', [
-            'product_id' => $this->product->getKey(),
-            'quantity' => 2,
-            'shipping_time' => 2,
-        ]);
-
-        $this->assertDatabaseHas('product_availabilities', [
-            'product_id' => $this->product->getKey(),
-            'quantity' => 1,
-            'shipping_time' => 3,
-        ]);
-
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
             'quantity' => 3,
+            'shipping_time' => 2,
         ]);
     }
 
@@ -530,23 +454,10 @@ class ProductAvailabilityTest extends TestCase
                 'shipping_time' => 3,
             ]);
 
-        $this->assertDatabaseCount('product_availabilities', 2);
-
-        $this->assertDatabaseHas('product_availabilities', [
-            'product_id' => $this->product->getKey(),
-            'quantity' => 1,
-            'shipping_time' => 2,
-        ]);
-
-        $this->assertDatabaseHas('product_availabilities', [
-            'product_id' => $this->product->getKey(),
-            'quantity' => 1,
-            'shipping_time' => 3,
-        ]);
-
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
             'quantity' => 2,
+            'shipping_time' => 2,
         ]);
     }
 }
