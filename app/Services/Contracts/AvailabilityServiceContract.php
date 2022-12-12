@@ -9,7 +9,7 @@ use App\Models\Schema;
 
 interface AvailabilityServiceContract
 {
-    public function calculateAvailabilityOnOrderAndRestock(Item $item): void;
+    public function calculateItemAvailability(Item $item): void;
 
     public function calculateOptionAvailability(Option $option): void;
     public function calculateSchemaAvailability(Schema $schema): void;

@@ -121,7 +121,7 @@ class ProductTest extends TestCase
         $this->product->attributes()->attach($attribute->getKey());
         $this->product->attributes->first()->pivot->options()->attach($option->getKey());
 
-        $availabilityService->calculateAvailabilityOnOrderAndRestock($item);
+        $availabilityService->calculateItemAvailability($item);
 
         /**
          * Expected short response

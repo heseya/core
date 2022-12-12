@@ -26,7 +26,7 @@ class AvailabilityService implements AvailabilityServiceContract
      * used after changing Item's quantity, usually after including Item in Order or creating Deposit
      * containing this item.
      */
-    public function calculateAvailabilityOnOrderAndRestock(Item $item): void
+    public function calculateItemAvailability(Item $item): void
     {
         // Options
         $options = $item->options;

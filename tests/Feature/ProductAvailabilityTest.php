@@ -7,6 +7,8 @@ use App\Models\Item;
 use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
+use App\Services\AvailabilityService;
+use App\Services\Contracts\AvailabilityServiceContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -402,13 +404,13 @@ class ProductAvailabilityTest extends TestCase
             ],
         ]);
 
-        $this->product->schemas()->save($schema);
+        $this->product->schemas()->attach($schema->getKey());
 
         $option = Option::factory()->create([
             'schema_id' => $schema->getKey(),
         ]);
 
-        $this->item->options()->save($option);
+        $option->items()->attach([$this->item->getKey() => ['required_quantity' => 1]]);
 
         $this
             ->actingAs($this->$user)
@@ -419,6 +421,7 @@ class ProductAvailabilityTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
+            'available' => true,
             'quantity' => 3,
             'shipping_time' => 2,
         ]);
@@ -439,9 +442,6 @@ class ProductAvailabilityTest extends TestCase
         ]);
 
         $this->product->items()->sync([
-            $this->item->getKey() => [
-                'required_quantity' => 1,
-            ],
             $item->getKey() => [
                 'required_quantity' => 1,
             ],
@@ -456,6 +456,7 @@ class ProductAvailabilityTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
+            'available' => true,
             'quantity' => 2,
             'shipping_time' => 2,
         ]);
