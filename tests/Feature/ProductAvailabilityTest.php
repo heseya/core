@@ -7,8 +7,6 @@ use App\Models\Item;
 use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
-use App\Services\AvailabilityService;
-use App\Services\Contracts\AvailabilityServiceContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

@@ -223,7 +223,6 @@ class AvailabilityService implements AvailabilityServiceContract
                 $available = true;
             }
 
-
             $shipping_time = $shipping_time === null ?
                 $permutationResult['shipping_time'] : min($permutationResult['shipping_time'], $shipping_time);
             $shipping_date = $this->compareShippingDate(
@@ -263,7 +262,6 @@ class AvailabilityService implements AvailabilityServiceContract
             }
         }
 
-
         if ($requiredItems->count() <= 0) {
             return $this->returnProductAvailability(true);
         }
@@ -283,7 +281,7 @@ class AvailabilityService implements AvailabilityServiceContract
 
             // check if item is used again in same permutation
             $requiredQuantity = array_key_exists($item->getKey(), $usedItems) ?
-                ($usedItems[$item->getKey()] + $requiredItem->pivot->required_quantity) :
+                $usedItems[$item->getKey()] + $requiredItem->pivot->required_quantity :
                 $requiredItem->pivot->required_quantity;
 
             if ($requiredQuantity > $item->quantity) {

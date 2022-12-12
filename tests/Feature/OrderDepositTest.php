@@ -361,8 +361,11 @@ class OrderDepositTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $product->getKey(),
+            'available' => true,
+            'quantity' => 5,
             'shipping_time' => 1, //product got 1 days shipping time
         ]);
+
         //first order 20 product
         $request = [
             'email' => 'test@example.com',
@@ -402,9 +405,9 @@ class OrderDepositTest extends TestCase
         $response->assertCreated();
 
         /** @var Order $order */
-        $order = Order::query()->find($response->getData()->data->id); //order created
+        $order = Order::query()->find($response->getData()->data->id); // order created
 
-        $this->assertDatabaseHas('deposits', [ //was taken from the deposit of 20 items in shipping time 10
+        $this->assertDatabaseHas('deposits', [ // was taken from the deposit of 20 items in shipping time 10
             'quantity' => -20,
             'item_id' => $this->item->getKey(),
             'order_product_id' => $order->products->first()->getKey(),
@@ -413,7 +416,7 @@ class OrderDepositTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $product->getKey(),
-            'shipping_time' => 1, //product now got 1 days shipping time
+            'shipping_time' => 1, // product now got 1 days shipping time
         ]);
 
         // second order 3 product
