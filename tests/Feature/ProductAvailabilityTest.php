@@ -306,18 +306,16 @@ class ProductAvailabilityTest extends TestCase
         $schema = Schema::factory()->create([
             'required' => true,
             'type' => SchemaType::SELECT,
-            'available' => false,
         ]);
-
-        $this->product->schemas()->save($schema);
-
-        $item = Item::factory()->create();
-
         $option = Option::factory()->create([
             'schema_id' => $schema->getKey(),
         ]);
 
-        $item->options()->save($option);
+        $item = Item::factory()->create();
+        $item->options()->attach($option->getKey());
+
+        $product = Product::factory()->create();
+        $product->schemas()->attach($schema->getKey());
 
         $this
             ->actingAs($this->$user)
@@ -327,7 +325,7 @@ class ProductAvailabilityTest extends TestCase
             ]);
 
         $this->assertDatabaseHas('products', [
-            'id' => $this->product->getKey(),
+            'id' => $product->getKey(),
             'available' => true,
             'quantity' => 2,
             'shipping_time' => 2,

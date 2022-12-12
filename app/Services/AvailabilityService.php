@@ -235,7 +235,7 @@ class AvailabilityService implements AvailabilityServiceContract
 
         // return if all permutations all unavailable
         if ($available === false) {
-            return $this->returnProductAvailability(false, 0);
+            return $this->returnProductAvailability(false, 0.0);
         }
 
         return $this->returnProductAvailability(
@@ -263,11 +263,12 @@ class AvailabilityService implements AvailabilityServiceContract
             }
         }
 
+
         if ($requiredItems->count() <= 0) {
             return $this->returnProductAvailability(true);
         }
 
-        $quantity = 0;
+        $quantity = 0.0;
         $shipping_time = null;
         $shipping_date = null;
         $usedItems = [];
@@ -280,16 +281,21 @@ class AvailabilityService implements AvailabilityServiceContract
                 throw new ServerException('Not found item with id ' . $requiredItem->getKey());
             }
 
-            if ($requiredItem->pivot->required_quantity > $item->quantity) {
+            // check if item is used again in same permutation
+            $requiredQuantity = array_key_exists($item->getKey(), $usedItems) ?
+                ($usedItems[$item->getKey()] + $requiredItem->pivot->required_quantity) :
+                $requiredItem->pivot->required_quantity;
+
+            if ($requiredQuantity > $item->quantity) {
                 if (
                     $item->unlimited_stock_shipping_time === null &&
                     $item->unlimited_stock_shipping_date === null
                 ) {
-                    return $this->returnProductAvailability(false, 0);
+                    return $this->returnProductAvailability(false, 0.0);
                 }
 
                 // set null only if quantity is 0
-                $quantity = $quantity === 0 ? null : $quantity;
+                $quantity = $quantity === 0.0 ? null : $quantity;
                 $shipping_time = max($item->unlimited_stock_shipping_time, $shipping_time);
                 $shipping_date = $this->compareShippingDate(
                     $item->unlimited_stock_shipping_date,
@@ -299,18 +305,14 @@ class AvailabilityService implements AvailabilityServiceContract
                 continue;
             }
 
-            // check if item is used again in sam permutation
-            $requiredQuantity = array_key_exists($item->getKey(), $usedItems) ?
-                ($usedItems[$item->getKey()] + $requiredItem->pivot->required_quantity) :
-                $requiredItem->pivot->required_quantity;
-
+            // save used item in permutation
             $usedItems[$item->getKey()] = $requiredItem->pivot->required_quantity;
 
             // round product quantity to product qty step
             $itemQuantity = floor($item->quantity / $requiredQuantity / $quantityStep) * $quantityStep;
 
             // override default 0 when got any result
-            if ($quantity === 0 || $itemQuantity < $quantity) {
+            if ($quantity === 0.0 || $itemQuantity < $quantity) {
                 $quantity = $itemQuantity;
             }
 
@@ -362,7 +364,7 @@ class AvailabilityService implements AvailabilityServiceContract
      */
     private function getAllRequiredItems(Product $product, Collection $requiredSchemas): Collection
     {
-        $items = $product->items;
+        $items = clone $product->items;
 
         foreach ($requiredSchemas as $schema) {
             foreach ($schema->options as $option) {
