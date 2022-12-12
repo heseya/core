@@ -53,8 +53,10 @@ class ProductTest extends TestCase
         parent::setUp();
 
         $this->productService = App::make(ProductServiceContract::class);
-        $availabilityService = App::make(AvailabilityServiceContract::class);
         $this->discountService = App::make(DiscountServiceContract::class);
+
+        /** @var AvailabilityServiceContract $availabilityService */
+        $availabilityService = App::make(AvailabilityServiceContract::class);
 
         $this->product = Product::factory()->create([
             'public' => true,
@@ -73,6 +75,7 @@ class ProductTest extends TestCase
         $l = $schema->options()->create([
             'name' => 'L',
             'price' => 0,
+            'order' => 2,
         ]);
 
         $l->items()->create([
@@ -85,6 +88,7 @@ class ProductTest extends TestCase
         $xl = $schema->options()->create([
             'name' => 'XL',
             'price' => 0,
+            'order' => 1,
         ]);
 
         $item = $xl->items()->create([
@@ -115,7 +119,6 @@ class ProductTest extends TestCase
         ]);
 
         $this->product->attributes()->attach($attribute->getKey());
-
         $this->product->attributes->first()->pivot->options()->attach($option->getKey());
 
         $availabilityService->calculateAvailabilityOnOrderAndRestock($item);
@@ -157,7 +160,7 @@ class ProductTest extends TestCase
             'id' => $attribute->getKey(),
             'slug' => $attribute->slug,
             'description' => $attribute->description,
-            'type' => $attribute->type,
+            'type' => $attribute->type->value,
             'global' => $attribute->global,
             'sortable' => $attribute->sortable,
         ];
@@ -345,16 +348,15 @@ class ProductTest extends TestCase
     {
         $this->$user->givePermissionTo('products.show_details');
 
-        $response = $this->actingAs($this->$user)
-            ->getJson('/products/' . $this->product->slug);
-
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/products/' . $this->product->slug)
             ->assertOk()
             ->assertJson(['data' => $this->expected]);
 
-        $response = $this->actingAs($this->$user)
-            ->getJson('/products/id:' . $this->product->getKey());
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/products/id:' . $this->product->getKey())
             ->assertOk()
             ->assertJson(['data' => $this->expected]);
     }
@@ -373,10 +375,9 @@ class ProductTest extends TestCase
             'public' => true,
         ]);
 
-        $response = $this->actingAs($this->$user)
-            ->getJson('/products/' . $this->product->slug);
-
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/products/' . $this->product->slug)
             ->assertOk()
             ->assertJson(['data' => $this->expected])
             ->assertJsonFragment([

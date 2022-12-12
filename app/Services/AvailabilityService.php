@@ -192,16 +192,21 @@ class AvailabilityService implements AvailabilityServiceContract
             return $this->checkProductPermutation($quantityStep, $items, $requiredItems);
         }
 
-        $available = false;
-        $quantity = 0;
-        $shipping_time = null;
-        $shipping_date = null;
         $permutations = $requiredSchemas->first()->options;
         $requiredSchemas->shift();
 
         foreach ($requiredSchemas as $schema) {
             $permutations = $permutations->crossJoin($schema->options);
         }
+
+        if ($requiredSchemas->count() <= 0) {
+            return $this->returnProductAvailability(true);
+        }
+
+        $available = false;
+        $quantity = 0;
+        $shipping_time = null;
+        $shipping_date = null;
 
         foreach ($permutations as $permutation) {
             $permutationResult = $this->checkProductPermutation(
@@ -246,10 +251,6 @@ class AvailabilityService implements AvailabilityServiceContract
         Collection $requiredItems,
         ?array $selectedOptions = null,
     ): array {
-        $quantity = 0;
-        $shipping_time = null;
-        $shipping_date = null;
-
         if ($selectedOptions !== null && count($selectedOptions) > 0) {
             foreach ($selectedOptions as $option) {
                 foreach ($option->items as $item) {
@@ -257,6 +258,14 @@ class AvailabilityService implements AvailabilityServiceContract
                 }
             }
         }
+
+        if ($requiredItems->count() <= 0) {
+            return $this->returnProductAvailability(true);
+        }
+
+        $quantity = 0;
+        $shipping_time = null;
+        $shipping_date = null;
 
         /** @var Item $requiredItem */
         foreach ($requiredItems as $requiredItem) {
