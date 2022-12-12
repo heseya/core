@@ -371,7 +371,7 @@ class ProductAvailabilityTest extends TestCase
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
             'available' => true,
-            'quantity' => 4, // in stock is 10 + 2 when required qty is 3
+            'quantity' => 3, // in stock is 10 + 2 when required qty is 3 x by item and 1 x by schema
             'shipping_time' => 2,
         ]);
     }

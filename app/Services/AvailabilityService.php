@@ -270,6 +270,7 @@ class AvailabilityService implements AvailabilityServiceContract
         $quantity = 0;
         $shipping_time = null;
         $shipping_date = null;
+        $usedItems = [];
 
         /** @var Item $requiredItem */
         foreach ($requiredItems as $requiredItem) {
@@ -298,21 +299,22 @@ class AvailabilityService implements AvailabilityServiceContract
                 continue;
             }
 
-            $itemQuantity = floor(
-                $item->quantity / $requiredItem->pivot->required_quantity * $quantityStep,
-            ) / $quantityStep;
+            // check if item is used again in sam permutation
+            $requiredQuantity = array_key_exists($item->getKey(), $usedItems) ?
+                ($usedItems[$item->getKey()] + $requiredItem->pivot->required_quantity) :
+                $requiredItem->pivot->required_quantity;
 
+            $usedItems[$item->getKey()] = $requiredItem->pivot->required_quantity;
+
+            // round product quantity to product qty step
+            $itemQuantity = floor($item->quantity / $requiredQuantity / $quantityStep) * $quantityStep;
+
+            // override default 0 when got any result
             if ($quantity === 0 || $itemQuantity < $quantity) {
                 $quantity = $itemQuantity;
             }
 
-//            dd(
-//                $quantity,
-//                $item->quantity,
-//                $requiredItem->pivot->required_quantity,
-//                $quantityStep,
-//            );
-
+            // TODO: change delivery times when multiple items ar used
             $shipping_time = max($item->shipping_time, $shipping_time);
             $shipping_date = $this->compareShippingDate($item->shipping_date, $shipping_date);
         }

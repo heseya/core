@@ -236,20 +236,22 @@ class AvailabilityTest extends TestCase
         $this->$user->givePermissionTo('deposits.add');
 
         $data = $this->createDataPatternOne();
-
         $data->get('item')->options()->saveMany([$data->get('optionOne'), $data->get('optionTwo')]);
 
         $this->product->schemas()->saveMany([$data->get('schemaOne'), $data->get('schemaTwo')]);
 
-        $this->actingAs($this->$user)->postJson('/items/id:' . $data->get('item')->getKey() . '/deposits', [
-            'quantity' => 1,
-        ]);
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/items/id:' . $data->get('item')->getKey() . '/deposits', [
+                'quantity' => 1,
+            ]);
 
-        $this->assertTrue(!$this->product->refresh()->available);
-        $this->assertDatabaseHas('products', [
-            'id' => $this->product->getKey(),
-            'available' => false,
-        ])
+        $this
+            ->assertDatabaseHas('products', [
+                'id' => $this->product->getKey(),
+                'available' => false,
+                'quantity' => 0,
+            ])
             ->assertDatabaseHas('schemas', [
                 'id' => $data->get('schemaOne')->getKey(),
                 'available' => true,
