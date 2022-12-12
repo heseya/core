@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\SchemaType;
 use App\Events\ProductUpdated;
+use App\Exceptions\ServerException;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Product;
@@ -199,12 +200,12 @@ class AvailabilityService implements AvailabilityServiceContract
             $permutations = $permutations->crossJoin($schema->options);
         }
 
-        if ($requiredSchemas->count() <= 0) {
+        if ($permutations->count() <= 0) {
             return $this->returnProductAvailability(true);
         }
 
         $available = false;
-        $quantity = 0;
+        $quantity = 0.0;
         $shipping_time = null;
         $shipping_date = null;
 
@@ -216,12 +217,15 @@ class AvailabilityService implements AvailabilityServiceContract
                 $permutation instanceof Option ? [$permutation] : $permutation,
             );
 
+            $quantity = max($quantity, $permutationResult['quantity']);
+
             if ($permutationResult['available'] === true) {
                 $available = true;
             }
 
-            $shipping_time = $permutationResult['shipping_time'] < $shipping_time ?
-                $permutationResult['shipping_time'] : $shipping_time;
+
+            $shipping_time = $shipping_time === null ?
+                $permutationResult['shipping_time'] : min($permutationResult['shipping_time'], $shipping_time);
             $shipping_date = $this->compareShippingDate(
                 $shipping_date,
                 $permutationResult['shipping_date'],
@@ -251,7 +255,7 @@ class AvailabilityService implements AvailabilityServiceContract
         Collection $requiredItems,
         ?array $selectedOptions = null,
     ): array {
-        if ($selectedOptions !== null && count($selectedOptions) > 0) {
+        if ($selectedOptions !== null) {
             foreach ($selectedOptions as $option) {
                 foreach ($option->items as $item) {
                     $requiredItems->push($item);
@@ -271,6 +275,10 @@ class AvailabilityService implements AvailabilityServiceContract
         foreach ($requiredItems as $requiredItem) {
             $item = $items->firstWhere('id', $requiredItem->getKey());
 
+            if (!($item instanceof Item)) {
+                throw new ServerException('Not found item with id ' . $requiredItem->getKey());
+            }
+
             if ($requiredItem->pivot->required_quantity > $item->quantity) {
                 if (
                     $item->unlimited_stock_shipping_time === null &&
@@ -279,9 +287,9 @@ class AvailabilityService implements AvailabilityServiceContract
                     return $this->returnProductAvailability(false, 0);
                 }
 
-                $quantity = null;
-                $shipping_time = $item->unlimited_stock_shipping_time > $shipping_time ?
-                    $item->unlimited_stock_shipping_time : $shipping_time;
+                // set null only if quantity is 0
+                $quantity = $quantity === 0 ? null : $quantity;
+                $shipping_time = max($item->unlimited_stock_shipping_time, $shipping_time);
                 $shipping_date = $this->compareShippingDate(
                     $item->unlimited_stock_shipping_date,
                     $shipping_date,
@@ -291,13 +299,21 @@ class AvailabilityService implements AvailabilityServiceContract
             }
 
             $itemQuantity = floor(
-                $item->quantity / $requiredItem->pivot->required_quantity / $quantityStep,
-            ) * $quantityStep;
-            $item->quantity -= $requiredItem->pivot->required_quantity;
+                $item->quantity / $requiredItem->pivot->required_quantity * $quantityStep,
+            ) / $quantityStep;
 
-            $quantity = $quantity < $itemQuantity ? $itemQuantity : $quantity;
+            if ($quantity === 0 || $itemQuantity < $quantity) {
+                $quantity = $itemQuantity;
+            }
 
-            $shipping_time = $item->shipping_time > $shipping_time ? $item->shipping_time : $shipping_time;
+//            dd(
+//                $quantity,
+//                $item->quantity,
+//                $requiredItem->pivot->required_quantity,
+//                $quantityStep,
+//            );
+
+            $shipping_time = max($item->shipping_time, $shipping_time);
             $shipping_date = $this->compareShippingDate($item->shipping_date, $shipping_date);
         }
 

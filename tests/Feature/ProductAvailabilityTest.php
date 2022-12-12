@@ -57,6 +57,7 @@ class ProductAvailabilityTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
+            'available' => true,
             'quantity' => 26, // 10 from previous deposit + 16 from new
             'shipping_time' => 1,
         ]);
@@ -78,6 +79,7 @@ class ProductAvailabilityTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
+            'available' => true,
             'quantity' => 4, // 10 from previous deposit -6 from new
             'shipping_time' => 2,
         ]);
@@ -99,47 +101,10 @@ class ProductAvailabilityTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
+            'available' => false,
             'quantity' => 0, // 10 from previous deposit -10 from new
-            'shipping_time' => 2,
+            'shipping_time' => null,
         ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testTwoItemsDeposits($user): void
-    {
-        $this->$user->givePermissionTo('deposits.add');
-
-        $item2 = Item::factory()->create();
-
-        $item2->deposits()->create([
-            'quantity' => 6,
-            'shipping_time' => 2,
-        ]);
-
-        $item2->deposits()->create([
-            'quantity' => 8,
-            'shipping_time' => 3,
-        ]);
-
-        $this->product->items()->sync(
-            [
-                $this->item->getKey() => [
-                    'required_quantity' => 1,
-                ],
-                $item2->getKey() => [
-                    'required_quantity' => 1,
-                ],
-            ]
-        );
-
-        $this
-            ->actingAs($this->$user)
-            ->json('POST', "/items/id:{$this->item->getKey()}/deposits", [
-                'quantity' => 2,
-                'shipping_time' => 2,
-            ]);
     }
 
     /**
@@ -150,19 +115,16 @@ class ProductAvailabilityTest extends TestCase
         $this->$user->givePermissionTo('deposits.add');
 
         $item2 = Item::factory()->create();
-
         $item2->deposits()->create([
             'quantity' => 6,
             'shipping_time' => 2,
         ]);
-
         $item2->deposits()->create([
             'quantity' => 8,
             'shipping_time' => 3,
         ]);
 
         $item3 = Item::factory()->create();
-
         $item3->deposits()->create([
             'quantity' => 4,
             'shipping_time' => 2,
@@ -171,34 +133,17 @@ class ProductAvailabilityTest extends TestCase
         $this->product->items()->sync(
             [
                 $this->item->getKey() => [
-                    'required_quantity' => 1,
+                    'required_quantity' => 1, // 10
                 ],
                 $item2->getKey() => [
-                    'required_quantity' => 1,
+                    'required_quantity' => 1, // 6 + 8 = 14
                 ],
                 $item3->getKey() => [
-                    'required_quantity' => 1,
+                    'required_quantity' => 1, // 4
                 ],
             ]
         );
 
-        // After adding this deposit should be:
-        //
-        // Shipping time 2:
-        // item | quantity | overstock |
-        //------------------------------
-        //   1  |  10 + 2  |     0     | // +2 from request
-        //   2  |    6     |     0     |
-        //   3  |    4     |     0     |
-        // Only 4 products can be sold in shipping_time = 2
-        //
-        // Shipping time 3:
-        // item | quantity | overstock |
-        //------------------------------
-        //   1  |    0     |     8     |
-        //   2  |    8     |     2     |
-        //   3  |    0     |     0     |
-        // 0 product can be sold in shipping_time = 3 (no item 3 in deposit)
         $this
             ->actingAs($this->$user)
             ->json('POST', "/items/id:{$this->item->getKey()}/deposits", [
@@ -208,6 +153,7 @@ class ProductAvailabilityTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
+            'available' => true,
             'quantity' => 4,
             'shipping_time' => 2,
         ]);
@@ -306,6 +252,7 @@ class ProductAvailabilityTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $product->getKey(),
+            'available' => true,
             'quantity' => 5,
             'shipping_time' => 3,
         ]);
@@ -343,6 +290,7 @@ class ProductAvailabilityTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
+            'available' => true,
             'quantity' => 4,
             'shipping_time' => 2,
         ]);
@@ -380,6 +328,7 @@ class ProductAvailabilityTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
+            'available' => true,
             'quantity' => 2,
             'shipping_time' => 2,
         ]);
@@ -410,7 +359,7 @@ class ProductAvailabilityTest extends TestCase
             'schema_id' => $schema->getKey(),
         ]);
 
-        $option->items()->attach([$this->item->getKey() => ['required_quantity' => 1]]);
+        $option->items()->attach($this->item->getKey());
 
         $this
             ->actingAs($this->$user)
@@ -422,7 +371,7 @@ class ProductAvailabilityTest extends TestCase
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
             'available' => true,
-            'quantity' => 3,
+            'quantity' => 4, // in stock is 10 + 2 when required qty is 3
             'shipping_time' => 2,
         ]);
     }
