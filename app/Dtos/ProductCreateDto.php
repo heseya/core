@@ -16,7 +16,7 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
     public string $slug;
     public float $price;
     public bool $public;
-    public bool $is_digital;
+    public bool $shipping_digital;
 
     public int|Missing $order;
     public float|Missing $quantity_step;
@@ -43,7 +43,7 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
             slug: $request->input('slug'),
             price: $request->input('price'),
             public: $request->boolean('public'),
-            is_digital: $request->boolean('is_digital'),
+            shipping_digital: $request->boolean('shipping_digital'),
             order: $request->input('order', new Missing()),
             quantity_step: $request->input('quantity_step', new Missing()),
             google_product_category: $request->input('google_product_category', new Missing()),

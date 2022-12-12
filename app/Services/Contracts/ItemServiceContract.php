@@ -16,6 +16,8 @@ interface ItemServiceContract
 
     public function checkCartItems(array &$items): Collection;
 
+    public function checkHasItemType(Collection $items, ?bool $physical, ?bool $digital): bool;
+
     public function store(ItemDto $dto): Item;
 
     public function update(Item $item, ItemDto $dto): Item;

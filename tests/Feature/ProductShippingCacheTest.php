@@ -135,7 +135,7 @@ class ProductShippingCacheTest extends TestCase
             'description_html' => '<h1>Description</h1>',
             'description_short' => 'So called short description...',
             'public' => true,
-            'is_digital' => false,
+            'shipping_digital' => false,
             'vat_rate' => 23,
             'items' => [
                 [

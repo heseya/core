@@ -67,7 +67,7 @@ Product:
       type: string
       format: date-time
       example: '2021-09-13T11:11'
-    is_digital:
+    shipping_digital:
       description: 'Whether product is digital and not delivered by physical means'
       type: boolean
       example: true

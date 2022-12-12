@@ -30,4 +30,6 @@ interface OrderServiceContract
     public function indexMyOrderProducts(OrderProductSearchDto $dto): LengthAwarePaginator;
 
     public function sendUrls(Order $order): void;
+
+    public function shippingList(Order $order, string $packageTemplateId): Order;
 }

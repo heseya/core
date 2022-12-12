@@ -100,6 +100,11 @@ class App extends Model implements
         return $this->belongsTo(Role::class);
     }
 
+    public function shippingMethods(): HasMany
+    {
+        return $this->hasMany(ShippingMethod::class);
+    }
+
     public function hasRole(
         string|int|array|\Spatie\Permission\Contracts\Role|Collection $roles,
         ?string $guard = null
