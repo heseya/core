@@ -13,13 +13,16 @@ use App\Events\ItemUpdatedQuantity;
 use App\Exceptions\ClientException;
 use App\Models\Item;
 use App\Models\Option;
+use App\Models\OrderProduct;
 use App\Models\Product;
 use App\Models\Schema;
+use App\Models\User;
 use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 class ItemService implements ItemServiceContract
 {
@@ -89,10 +92,13 @@ class ItemService implements ItemServiceContract
         return $products;
     }
 
-    public function checkCartItems(array $items): Collection
+    public function checkCartItems(array $items): array
     {
         $selectedItems = [];
+        $purchasedProducts = [];
+        $cartItemToRemove = [];
         $products = Collection::make();
+        $relation = Auth::user() instanceof User ? 'user' : 'app';
 
         /** @var CartItemDto $item */
         foreach ($items as $item) {
@@ -100,6 +106,30 @@ class ItemService implements ItemServiceContract
 
             if ($product === null) {
                 continue;
+            }
+
+            // Checking purchased limit
+            if ($product->purchase_limit_per_user !== null) {
+                if (key_exists($product->getKey(), $purchasedProducts)) {
+                    $purchasedCount = $purchasedProducts[$product->getKey()];
+                } else {
+                    $purchasedCount = OrderProduct::searchByCriteria([
+                        $relation => Auth::id(),
+                        'product_id' => $product->getKey(),
+                    ])
+                        ->sum('quantity');
+                    $purchasedProducts[$product->getKey()] = $purchasedCount;
+                }
+
+                $available = $product->purchase_limit_per_user - $purchasedCount;
+
+                if ($available === 0.0) {
+                    $cartItemToRemove[] = $item->getCartItemId();
+                    continue;
+                }
+                $quantity = min($available, $item->getQuantity());
+                $purchasedProducts[$product->getKey()] += $quantity;
+                $item->setQuantity($quantity);
             }
 
             $schemas = $item->getSchemas();
@@ -130,7 +160,13 @@ class ItemService implements ItemServiceContract
             }
         }
 
-        return $products;
+        // Removing cartitems with exceeded limit
+        if (count($cartItemToRemove)) {
+            /** @var CartItemDto $item */
+            $items = array_filter($items, fn ($item) => !in_array($item->getCartItemId(), $cartItemToRemove));
+        }
+
+        return [$products, $items];
     }
 
     public function checkHasItemType(Collection $products, ?bool $physical, ?bool $digital): bool
@@ -207,12 +243,22 @@ class ItemService implements ItemServiceContract
     private function checkItems(array $items): array
     {
         $selectedItems = [];
+        $purchasedProducts = [];
         $products = Collection::make();
 
-        /** @var OrderProductDto|CartItemDto $item */
+        /** @var OrderProductDto $item */
         foreach ($items as $item) {
             $product = Product::findOrFail($item->getProductId());
             $schemas = $item->getSchemas();
+
+            if ($product->purchase_limit_per_user !== null) {
+                $purchasedProducts = $this->checkProductPurchaseLimit(
+                    $product->getKey(),
+                    $product->purchase_limit_per_user,
+                    $purchasedProducts,
+                    $item->getQuantity(),
+                );
+            }
 
             /** @var Schema $schema */
             foreach ($product->schemas as $schema) {
@@ -230,5 +276,36 @@ class ItemService implements ItemServiceContract
             $products->push($product);
         }
         return [$products, $selectedItems];
+    }
+
+    private function checkProductPurchaseLimit(
+        string $productId,
+        float $limit,
+        array $purchasedProducts,
+        float $quantity
+    ): array {
+        $relation = Auth::user() instanceof User ? 'user' : 'app';
+        if (key_exists($productId, $purchasedProducts)) {
+            $quantity += $purchasedProducts[$productId];
+        } else {
+            $quantity += OrderProduct::searchByCriteria([
+                $relation => Auth::id(),
+                'product_id' => $productId,
+            ])
+                ->sum('quantity');
+        }
+
+        if ($limit < $quantity) {
+            throw new ClientException(
+                Exceptions::PRODUCT_PURCHASE_LIMIT,
+                errorArray: [
+                    'id' => $productId,
+                    'limit' => $limit,
+                ],
+            );
+        }
+
+        $purchasedProducts[$productId] = $quantity;
+        return $purchasedProducts;
     }
 }

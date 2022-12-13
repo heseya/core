@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Criteria\WhereHasUser;
+use App\Criteria\WhereHasBuyer;
 use App\Traits\HasOrderDiscount;
 use App\Traits\Sortable;
 use Heseya\Searchable\Traits\HasCriteria;
@@ -39,7 +39,9 @@ class OrderProduct extends Model
 
     protected array $criteria = [
         'shipping_digital',
-        'user' => WhereHasUser::class,
+        'user' => WhereHasBuyer::class,
+        'app' => WhereHasBuyer::class,
+        'product_id',
     ];
 
     protected array $sortable = [

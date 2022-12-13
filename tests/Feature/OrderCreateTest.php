@@ -1465,4 +1465,82 @@ class OrderCreateTest extends TestCase
             'vat' => null,
         ]);
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderPurchaseLimit($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $this->product->update([
+            'price' => 10,
+            'vat_rate' => 23,
+            'purchase_limit_per_user' => 10,
+        ]);
+
+        $productQuantity = 20;
+
+        $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'billing_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'message' => Exceptions::PRODUCT_PURCHASE_LIMIT,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderPurchaseLimitAlreadyPurchased($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $this->product->update([
+            'price' => 10,
+            'vat_rate' => 23,
+            'purchase_limit_per_user' => 1,
+        ]);
+
+        $order = Order::factory()->create();
+        $this->$user->orders()->save($order);
+        $order->products()->create([
+            'product_id' => $this->product->getKey(),
+            'quantity' => 1,
+            'price_initial' => 4600,
+            'price' => 4600,
+            'name' => $this->product->name,
+        ]);
+
+        $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'billing_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                ],
+            ],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'message' => Exceptions::PRODUCT_PURCHASE_LIMIT,
+            ]);
+    }
 }

@@ -46,6 +46,14 @@ final class CartDto extends CartOrderDto implements InstantiateFromRequest
         return $this->items;
     }
 
+    /**
+     * @param array<CartItemDto> $items
+     */
+    public function setItems(array $items): void
+    {
+        $this->items = $items;
+    }
+
     public function getCoupons(): Missing|array
     {
         return $this->coupons;
