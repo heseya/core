@@ -72,10 +72,13 @@ class AvailabilityTest extends TestCase
             'quantity' => 6,
         ]);
 
-        $this->assertDatabaseHas('products', [
-            'id' => $this->product->getKey(),
-            'available' => true,
-        ])
+        $this
+            ->assertDatabaseHas('products', [
+                'id' => $this->product->getKey(),
+                'quantity' => 6,
+                'available' => true,
+                'shipping_time' => null,
+            ])
             ->assertDatabaseHas('schemas', [
                 'id' => $schema->getKey(),
                 'available' => true,

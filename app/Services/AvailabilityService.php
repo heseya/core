@@ -310,13 +310,21 @@ class AvailabilityService implements AvailabilityServiceContract
             $itemQuantity = floor($item->quantity / $requiredQuantity / $quantityStep) * $quantityStep;
 
             // override default 0 when got any result
-            if ($quantity === 0.0 || $itemQuantity < $quantity) {
+            if ($quantity <= 0.0 || $itemQuantity < $quantity) {
                 $quantity = $itemQuantity;
             }
 
-            // TODO: change delivery times when multiple items ar used
-            $shipping_time = max($item->shipping_time, $shipping_time);
-            $shipping_date = $this->compareShippingDate($item->shipping_date, $shipping_date);
+            foreach ($item->groupedDeposits as $deposit) {
+                if ($requiredQuantity > 0.0 && $deposit->quantity >= $requiredQuantity) {
+                    $shipping_time = max($deposit->shipping_time, $shipping_time);
+                    $shipping_date = $this->compareShippingDate($deposit->shipping_date, $shipping_date);
+                }
+
+                $requiredQuantity -= $deposit->quantity;
+            }
+
+            $shipping_time ??= $item->unlimited_stock_shipping_time;
+            $shipping_date ??= $item->unlimited_stock_shipping_date;
         }
 
         return $this->returnProductAvailability(
@@ -362,11 +370,11 @@ class AvailabilityService implements AvailabilityServiceContract
      */
     private function getAllRequiredItems(Product $product, Collection $requiredSchemas): Collection
     {
-        $items = clone $product->items;
+        $items = $product->items()->with('groupedDeposits')->get();
 
         foreach ($requiredSchemas as $schema) {
             foreach ($schema->options as $option) {
-                foreach ($option->items as $item) {
+                foreach ($option->items()->with('groupedDeposits')->get() as $item) {
                     if ($items->where('id', $item->getKey())->count() <= 0) {
                         $items->push($item);
                     }

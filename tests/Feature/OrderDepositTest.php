@@ -363,10 +363,10 @@ class OrderDepositTest extends TestCase
             'id' => $product->getKey(),
             'available' => true,
             'quantity' => 5,
-            'shipping_time' => 1, //product got 1 days shipping time
+            'shipping_time' => 1, // product got 1 days shipping time
         ]);
 
-        //first order 20 product
+        // first order 20 product
         $request = [
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -416,6 +416,8 @@ class OrderDepositTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $product->getKey(),
+            'available' => true,
+            'quantity' => 5,
             'shipping_time' => 1, // product now got 1 days shipping time
         ]);
 
