@@ -171,7 +171,7 @@ class OrderTest extends TestCase
             ],
             ]);
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(21);
     }
 
     /**
@@ -193,7 +193,7 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(21);
+        $this->assertQueryCountLessThan(22);
     }
 
     /**
@@ -285,7 +285,7 @@ class OrderTest extends TestCase
                 'id' => $order_no_user->getKey(),
             ]);
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(21);
     }
 
     /**
@@ -310,7 +310,7 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(21);
     }
 
     /**
@@ -342,7 +342,7 @@ class OrderTest extends TestCase
             ],
             ]);
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(21);
     }
 
     /**
@@ -385,7 +385,7 @@ class OrderTest extends TestCase
             ],
             ]);
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(21);
     }
 
     public function testIndexUserUnauthenticated(): void

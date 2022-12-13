@@ -313,6 +313,8 @@ class OrderService implements OrderServiceContract
                 'status',
                 'shippingMethod',
                 'shippingMethod.paymentMethods',
+                'digitalShippingMethod',
+                'digitalShippingMethod.paymentMethods',
                 'shippingAddress',
                 'metadata',
                 'documents',
@@ -466,6 +468,20 @@ class OrderService implements OrderServiceContract
         return !$itemsToRemove || $this->depositService->removeItemsFromWarehouse($itemsToRemove, $orderProduct);
     }
 
+    public function sendUrls(Order $order): void
+    {
+        $products = $order->products()->has('urls')->get();
+        if (!$products->isEmpty()) {
+            $order->notify(new SendUrls($order, $products));
+
+            $products->toQuery()->update([
+                'is_delivered' => true,
+            ]);
+
+            SendOrderUrls::dispatch($order);
+        }
+    }
+
     private function resolveShippingAddress(
         Address|string|null|Missing $shippingPlace,
         string $shippingType,
@@ -506,19 +522,5 @@ class OrderService implements OrderServiceContract
             ShippingType::POINT_EXTERNAL => $shippingPlace,
             default => null,
         };
-    }
-
-    public function sendUrls(Order $order): void
-    {
-        $products = $order->products()->has('urls')->get();
-        if (!$products->isEmpty()) {
-            $order->notify(new SendUrls($order, $products));
-
-            $products->toQuery()->update([
-                'is_delivered' => true,
-            ]);
-
-            SendOrderUrls::dispatch($order);
-        }
     }
 }

@@ -67,6 +67,8 @@ class OrderController extends Controller
                 'status',
                 'shippingMethod',
                 'shippingMethod.paymentMethods',
+                'digitalShippingMethod',
+                'digitalShippingMethod.paymentMethods',
                 'shippingAddress',
                 'metadata',
                 'documents',

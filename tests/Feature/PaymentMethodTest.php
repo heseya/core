@@ -79,6 +79,48 @@ class PaymentMethodTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexByOrderCodeDigitalShipping($user): void
+    {
+        $this->$user->givePermissionTo('payment_methods.show');
+
+        $order = Order::factory()->create([
+            'digital_shipping_method_id' => $this->shipping_method->getKey(),
+        ]);
+
+        $this->actingAs($this->$user)
+            ->json('GET', '/payment-methods', ['order_code' => $order->code])
+            ->assertOk()
+            ->assertJsonCount(1, 'data') // Should show only public payment methods.
+            ->assertJsonFragment(['id' => $this->payment_method_related->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexByOrderCodeOnlyPhysicalShipping($user): void
+    {
+        $this->$user->givePermissionTo('payment_methods.show');
+
+        $digitalShipping = ShippingMethod::factory()->create(['public' => true]);
+        $digitalPayment = PaymentMethod::factory()->create(['public' => true]);
+        $digitalPayment->shippingMethods()->attach($digitalShipping);
+
+        $order = Order::factory()->create([
+            'shipping_method_id' => $this->shipping_method->getKey(),
+            'digital_shipping_method_id' => $digitalShipping->getKey(),
+        ]);
+
+        $this->actingAs($this->$user)
+            ->json('GET', '/payment-methods', ['order_code' => $order->code])
+            ->assertOk()
+            ->assertJsonCount(1, 'data') // Should show only public payment methods.
+            ->assertJsonFragment(['id' => $this->payment_method_related->getKey()])
+            ->assertJsonMissing(['id' => $digitalPayment->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexByShippingMethod($user): void
     {
         $this->$user->givePermissionTo('payment_methods.show');

@@ -66,7 +66,12 @@ class ShippingMethod extends Model implements AuditableContract
 
     public function orders(): HasMany
     {
-        return $this->hasMany(Order::class);
+        return $this->hasMany(Order::class, 'shipping_method_id', 'id');
+    }
+
+    public function digitalOrders(): HasMany
+    {
+        return $this->hasMany(Order::class, 'digital_shipping_method_id', 'id');
     }
 
     public function paymentMethodsPublic(): BelongsToMany
