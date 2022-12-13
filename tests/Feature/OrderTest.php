@@ -57,6 +57,7 @@ class OrderTest extends TestCase
         $this->order = Order::factory()->create([
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'status_id' => $status->getKey(),
+            'invoice_requested' => false,
         ]);
 
         $item_product = $this->order->products()->create([

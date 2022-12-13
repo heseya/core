@@ -41,6 +41,7 @@ class OrderProductTest extends TestCase
             'shipping_method_id' => $shippingMethod->getKey(),
             'status_id' => $status->getKey(),
             'email' => $this->faker->freeEmail,
+            'paid' => true,
         ]);
 
         $this->user->orders()->save($this->order);
@@ -111,6 +112,69 @@ class OrderProductTest extends TestCase
             ->assertJsonFragment([
                 'id' => $this->product->getKey(),
                 'shipping_digital' => false,
+            ]);
+    }
+
+    public function testIndexMyProductsOnlyPaidOrders(): void
+    {
+        $shippingMethod = ShippingMethod::factory()->create();
+        $status = Status::factory()->create();
+        $product = Product::factory()->create([
+            'public' => true,
+            'shipping_digital' => false,
+        ]);
+        $digitalProduct = Product::factory()->create([
+            'public' => true,
+            'shipping_digital' => true,
+        ]);
+
+        $orderPaid = Order::factory()->create([
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+            'email' => $this->faker->freeEmail,
+            'paid' => true,
+        ]);
+
+        $orderNoPaid = Order::factory()->create([
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+            'email' => $this->faker->freeEmail,
+            'paid' => false,
+        ]);
+
+        $this->user->orders()->delete();
+        $this->user->orders()->saveMany([$orderPaid, $orderNoPaid]);
+
+        $productPaid = $orderPaid->products()->create([
+            'product_id' => $digitalProduct->getKey(),
+            'quantity' => 1,
+            'price' => 247.47,
+            'price_initial' => 247.47,
+            'name' => $digitalProduct->name,
+            'shipping_digital' => true,
+        ]);
+
+        $productNoPaid = $orderNoPaid->products()->create([
+            'product_id' => $product->getKey(),
+            'quantity' => 1,
+            'price' => 300,
+            'price_initial' => 300,
+            'name' => $product->name,
+            'shipping_digital' => false,
+        ]);
+
+        $this
+            ->actingAs($this->user)
+            ->json('GET', '/orders/my-products')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $productPaid->getKey(),
+                'price' => 247.47,
+            ])
+            ->assertJsonMissing([
+                'id' => $productNoPaid->getKey(),
+                'price' => 300,
             ]);
     }
 
