@@ -37,6 +37,7 @@ class OrderTest extends TestCase
     private Order $order;
     private ShippingMethod $shippingMethod;
     private array $expected;
+    private array $expected_summary;
     private array $expected_summary_structure;
     private array $expected_full_structure;
     private array $expected_full_view_structure;
@@ -90,7 +91,7 @@ class OrderTest extends TestCase
         /**
          * Expected response
          */
-        $this->expected = [
+        $this->expected_summary = [
             'code' => $this->order->code,
             'status' => [
                 'id' => $status->getKey(),
@@ -102,6 +103,8 @@ class OrderTest extends TestCase
             ],
             'paid' => $this->order->paid,
         ];
+
+        $this->expected = $this->expected_summary + ['invoice_requested' => false];
 
         $this->expected_summary_structure = [
             'code',
@@ -644,7 +647,7 @@ class OrderTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonStructure(['data' => $this->expected_summary_structure])
-            ->assertJson(['data' => $this->expected]);
+            ->assertJson(['data' => $this->expected_summary]);
     }
 
     /**

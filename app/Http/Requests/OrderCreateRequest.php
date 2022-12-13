@@ -2,12 +2,20 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\Boolean;
 use App\Rules\ShippingPlaceValidation;
+use App\Traits\BooleanRules;
 use App\Traits\MetadataRules;
 use Illuminate\Validation\Rule;
 
 class OrderCreateRequest extends OrderItemsRequest
 {
+    use BooleanRules;
+
+    protected array $booleanFields = [
+        'invoice_requested',
+    ];
+
     use MetadataRules;
 
     public function rules(): array
@@ -40,7 +48,7 @@ class OrderCreateRequest extends OrderItemsRequest
                     }),
                 ],
 
-                'invoice_requested' => ['boolean'],
+                'invoice_requested' => [new Boolean()],
                 'shipping_place' => ['nullable', new ShippingPlaceValidation()],
             ]
         );
