@@ -1753,6 +1753,89 @@ class CartTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCartProcessPurchaseLimitWithSale($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $sale = Discount::factory()->create([
+            'code' => null,
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'name' => 'Sale for limited product',
+            'type' => DiscountType::AMOUNT,
+            'value' => 300,
+            'target_is_allow_list' => true,
+        ]);
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'type' => ConditionType::PRODUCT_IN,
+            'value' => [
+                'products' => [
+                    $this->product->getKey(),
+                ],
+                'is_allow_list' => true,
+            ],
+        ]);
+
+        $sale->conditionGroups()->attach($conditionGroup);
+
+        $this->product->update([
+            'purchase_limit_per_user' => 0,
+        ]);
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 1000,
+        ]);
+
+        $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+                [
+                    'cartitem_id' => '2',
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 1000,
+                'cart_total' => 1000,
+                'shipping_price_initial' => 0,
+                'shipping_price' => 0,
+                'summary' => 1000,
+                'coupons' => [],
+            ])
+            ->assertJsonCount(1, 'data.items')
+            ->assertJsonMissing([
+                'id' => $sale->getKey(),
+                'name' => $sale->name,
+                'value' => 300,
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '2',
+                'price' => 1000,
+                'price_discounted' => 1000,
+            ])
+            ->assertJsonMissing([
+                'cartitem_id' => '1',
+                'price' => 4600,
+                'price_discounted' => 4600,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCartProcessPurchaseLimitAlreadyPurchased($user): void
     {
         $this->$user->givePermissionTo('cart.verify');

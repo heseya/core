@@ -92,7 +92,7 @@ class ItemService implements ItemServiceContract
         return $products;
     }
 
-    public function checkCartItems(array &$items): Collection
+    public function checkCartItems(array $items): array
     {
         $selectedItems = [];
         $purchasedProducts = [];
@@ -166,7 +166,7 @@ class ItemService implements ItemServiceContract
             $items = array_filter($items, fn ($item) => !in_array($item->getCartItemId(), $cartItemToRemove));
         }
 
-        return $products;
+        return [$products, $items];
     }
 
     public function checkHasItemType(Collection $products, ?bool $physical, ?bool $digital): bool
@@ -252,7 +252,7 @@ class ItemService implements ItemServiceContract
             $schemas = $item->getSchemas();
 
             if ($product->purchase_limit_per_user !== null) {
-                $this->checkProductPurchaseLimit(
+                $purchasedProducts = $this->checkProductPurchaseLimit(
                     $product->getKey(),
                     $product->purchase_limit_per_user,
                     $purchasedProducts,
@@ -281,9 +281,9 @@ class ItemService implements ItemServiceContract
     private function checkProductPurchaseLimit(
         string $productId,
         float $limit,
-        array &$purchasedProducts,
+        array $purchasedProducts,
         float $quantity
-    ): void {
+    ): array {
         $relation = Auth::user() instanceof User ? 'user' : 'app';
         if (key_exists($productId, $purchasedProducts)) {
             $quantity += $purchasedProducts[$productId];
@@ -306,5 +306,6 @@ class ItemService implements ItemServiceContract
         }
 
         $purchasedProducts[$productId] = $quantity;
+        return $purchasedProducts;
     }
 }
