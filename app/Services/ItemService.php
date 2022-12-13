@@ -171,7 +171,7 @@ class ItemService implements ItemServiceContract
     /**
      * Refresh serchable index on all related products.
      */
-    public function refreshSerchable(Item $item): void
+    public function refreshSearchable(Item $item): void
     {
         $ids = $item->products()->select('id')->pluck('id');
 

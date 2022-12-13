@@ -12,6 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::dropIfExists('product_availabilities');
+
+        Schema::table('deposits', function (Blueprint $table): void {
+            $table->boolean('from_unlimited')->default(false);
+        });
     }
 
     /**
@@ -19,6 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('deposits', function (Blueprint $table): void {
+            $table->dropColumn('from_unlimited');
+        });
+
         Schema::create('product_availabilities', function (Blueprint $table): void {
             $table->uuid('id')->primary()->index();
             $table->uuid('product_id');

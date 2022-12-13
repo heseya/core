@@ -11,6 +11,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Models\Status;
+use App\Services\Contracts\AvailabilityServiceContract;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
@@ -123,6 +124,7 @@ class OrderDepositTest extends TestCase
             'quantity' => -2,
             'item_id' => $this->item->getKey(),
             'order_product_id' => $order->products->first()->getKey(),
+            'from_unlimited' => false,
         ]);
         $this->assertDatabaseHas('items', [
             'id' => $this->item->getKey(),
@@ -412,7 +414,12 @@ class OrderDepositTest extends TestCase
             'item_id' => $this->item->getKey(),
             'order_product_id' => $order->products->first()->getKey(),
             'shipping_time' => 10,
+            'from_unlimited' => true,
         ]);
+
+        /** @var AvailabilityServiceContract $service */
+        $service = app(AvailabilityServiceContract::class);
+        $service->calculateItemAvailability($this->item);
 
         $this->assertDatabaseHas('products', [
             'id' => $product->getKey(),
@@ -467,6 +474,7 @@ class OrderDepositTest extends TestCase
             'item_id' => $this->item->getKey(),
             'order_product_id' => $order->products->first()->getKey(),
             'shipping_time' => 3,
+            'from_unlimited' => false,
         ]);
 
         $this->assertDatabaseHas('products', [
@@ -520,6 +528,7 @@ class OrderDepositTest extends TestCase
             'item_id' => $this->item->getKey(),
             'order_product_id' => $order->products->first()->getKey(),
             'shipping_time' => 1,
+            'from_unlimited' => false,
         ]);
 
         $this->assertDatabaseHas('products', [
@@ -588,6 +597,7 @@ class OrderDepositTest extends TestCase
             'id' => $deposit->getKey(),
             'quantity' => -6,
             'shipping_date' => $date,
+            'from_unlimited' => true,
         ]);
         $this->assertDatabaseHas('items', [
             'id' => $this->item->getKey(),

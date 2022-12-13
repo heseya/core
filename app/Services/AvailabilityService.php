@@ -284,7 +284,7 @@ class AvailabilityService implements AvailabilityServiceContract
                 $usedItems[$item->getKey()] + $requiredItem->pivot->required_quantity :
                 $requiredItem->pivot->required_quantity;
 
-            if ($requiredQuantity > $item->quantity) {
+            if ($requiredQuantity > $item->quantity_real) {
                 if (
                     $item->unlimited_stock_shipping_time === null &&
                     $item->unlimited_stock_shipping_date === null
@@ -307,7 +307,7 @@ class AvailabilityService implements AvailabilityServiceContract
             $usedItems[$item->getKey()] = $requiredItem->pivot->required_quantity;
 
             // round product quantity to product qty step
-            $itemQuantity = floor($item->quantity / $requiredQuantity / $quantityStep) * $quantityStep;
+            $itemQuantity = floor($item->quantity_real / $requiredQuantity / $quantityStep) * $quantityStep;
 
             // override default 0 when got any result
             if ($quantity <= 0.0 || $itemQuantity < $quantity) {

@@ -17,6 +17,6 @@ class ItemUpdatedQuantityListener
     public function handle(ItemUpdatedQuantity $event): void
     {
         $this->availabilityService->calculateItemAvailability($event->getItem());
-        $this->itemServiceContract->refreshSerchable($event->getItem());
+        $this->itemServiceContract->refreshSearchable($event->getItem());
     }
 }
