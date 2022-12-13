@@ -20,3 +20,5 @@ Deposit:
       type: string
       format: date-time
       example: '2021-09-13T11:11'
+    from_unlimited:
+      type: boolean
