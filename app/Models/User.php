@@ -180,4 +180,9 @@ class User extends Model implements
     {
         return $this->morphMany(FavouriteProductSet::class, 'user');
     }
+
+    public function providers(): HasMany
+    {
+        return $this->hasMany(UserProvider::class, 'user_id', 'id');
+    }
 }

@@ -58,6 +58,8 @@ use App\Observers\PaymentObserver;
 use App\Observers\SchemaObserver;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
+use SocialiteProviders\Apple\AppleExtendSocialite;
+use SocialiteProviders\Manager\SocialiteWasCalled;
 use Spatie\WebhookServer\Events\FinalWebhookCallFailedEvent;
 
 class EventServiceProvider extends ServiceProvider
@@ -135,6 +137,7 @@ class EventServiceProvider extends ServiceProvider
         parent::boot();
 
         Event::listen($this->webhookEvents, WebHookEventListener::class);
+        Event::listen(SocialiteWasCalled::class, AppleExtendSocialite::class);
 
         // Ugly observers 🤮
         AttributeOption::observe(AttributeOptionObserver::class);

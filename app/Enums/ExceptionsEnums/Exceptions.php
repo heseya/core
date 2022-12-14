@@ -85,6 +85,10 @@ final class Exceptions extends Enum
 
     public const CDN_NOT_ALLOWED_TO_CHANGE_ALT = 'You cannot change alt attribute of this image';
 
+    public const CLIENT_PROVIDER_IS_NOT_ACTIVE = 'Chosen auth provider is not active';
+    public const CLIENT_PROVIDER_HAS_NO_CONFIG = 'Chosen auth provider is not active';
+    public const CLIENT_PROVIDER_NOT_FOUND = 'Provider cannot be found';
+
     public const SERVER_CDN_ERROR = 'CDN responded with an error';
     public const SERVER_ERROR = 'Server responded with an error';
     public const SERVER_ORDER_STATUSES_NOT_CONFIGURED = 'Order statuses are not configured';

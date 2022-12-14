@@ -9,7 +9,7 @@ use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Collection;
 
-final class CartDto extends CartOrderDto implements InstantiateFromRequest
+class CartDto extends CartOrderDto implements InstantiateFromRequest
 {
     private array $items;
     private array|Missing $coupons;
@@ -74,6 +74,7 @@ final class CartDto extends CartOrderDto implements InstantiateFromRequest
         return $length;
     }
 
+    // @phpstan-ignore-next-line
     private static function prepareItems(array $items): array
     {
         $result = Collection::make();

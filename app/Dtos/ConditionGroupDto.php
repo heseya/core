@@ -22,6 +22,7 @@ class ConditionGroupDto extends Dto
         return $this->conditions;
     }
 
+    // @phpstan-ignore-next-line
     private static function transformArrayToConditionDtos(array $conditions): array
     {
         $result = [];
