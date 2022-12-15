@@ -123,6 +123,11 @@ class ProductRepository implements ProductRepositoryContract
             'public',
             'available',
             'google_product_category',
+            'shipping_digital',
+            'shipping_date',
+            'shipping_time',
+            'quantity',
+            'purchase_limit_per_user',
         ]));
         $product->forceFill(['description_html' => $hit['_source']['description']]);
 
