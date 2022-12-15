@@ -14,6 +14,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\ProviderServiceContract;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Collection;
@@ -76,6 +77,7 @@ class ProviderService implements ProviderServiceContract
             throw new ClientException(Exceptions::CLIENT_PROVIDER_NOT_FOUND);
         }
 
+        /** @var AuthProvider $provider */
         $provider = $providerQuery->first();
 
         if (!$provider->active) {
@@ -117,6 +119,7 @@ class ProviderService implements ProviderServiceContract
         });
 
         if ($apiUserQuery->exists()) {
+            /** @var Authenticatable $apiUser */
             $apiUser = $apiUserQuery->first();
 
             $data = $this->authService->loginWithUser(
@@ -135,6 +138,7 @@ class ProviderService implements ProviderServiceContract
                 'user_id' => $newUser->getKey(),
             ]);
 
+            /** @var Role $authenticated */
             $authenticated = Role::where('type', RoleType::AUTHENTICATED)->first();
             $newUser->syncRoles($authenticated);
 

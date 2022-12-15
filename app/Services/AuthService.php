@@ -468,7 +468,9 @@ class AuthService implements AuthServiceContract
 
     private function checkCredentials(User $user, string $password): void
     {
-        if (!Hash::check($password, $user->password)) {
+        /** @var string $password */
+        $password = $user->password;
+        if (!Hash::check($password, $password)) {
             throw new ClientException(Exceptions::CLIENT_INVALID_PASSWORD, simpleLogs: true);
         }
     }
@@ -554,13 +556,15 @@ class AuthService implements AuthServiceContract
 
     private function createTokens(string|bool $token, string $uuid): array
     {
+        /** @var JWTSubject $user */
+        $user = Auth::user();
         $identityToken = $this->tokenService->createToken(
-            Auth::user(),
+            $user,
             new TokenType(TokenType::IDENTITY),
             $uuid,
         );
         $refreshToken = $this->tokenService->createToken(
-            Auth::user(),
+            $user,
             new TokenType(TokenType::REFRESH),
             $uuid,
         );

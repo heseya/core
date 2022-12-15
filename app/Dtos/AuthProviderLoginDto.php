@@ -20,12 +20,15 @@ class AuthProviderLoginDto extends Dto implements InstantiateFromRequest
     {
         $params = parse_url($request->input('return_url'), PHP_URL_QUERY);
         $returnUrl = Str::before($request->input('return_url'), '?');
-        parse_str($params, $params);
+        $resultParams = [];
+        if (is_string($params)) {
+            parse_str($params, $resultParams);
+        }
         return new self(
             return_url: $returnUrl,
             ip: $request->ip(),
             user_agent: $request->userAgent(),
-            params: $params,
+            params: $resultParams,
         );
     }
 

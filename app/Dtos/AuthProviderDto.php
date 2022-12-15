@@ -23,17 +23,17 @@ class AuthProviderDto extends Dto implements InstantiateFromRequest
         );
     }
 
-    public function getClientId(): string|Missing
+    public function getClientId(): string|Missing|null
     {
         return $this->client_id;
     }
 
-    public function getClientSecret(): string|Missing
+    public function getClientSecret(): string|Missing|null
     {
         return $this->client_secret;
     }
 
-    public function getActive(): bool|Missing
+    public function getActive(): bool|Missing|null
     {
         return $this->active;
     }
