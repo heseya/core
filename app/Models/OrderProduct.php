@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Criteria\WhereHasBuyer;
+use App\Criteria\WhereOrderProductPaid;
 use App\Traits\HasOrderDiscount;
 use App\Traits\Sortable;
 use Heseya\Searchable\Traits\HasCriteria;
@@ -42,6 +43,7 @@ class OrderProduct extends Model
         'user' => WhereHasBuyer::class,
         'app' => WhereHasBuyer::class,
         'product_id',
+        'paid' => WhereOrderProductPaid::class,
     ];
 
     protected array $sortable = [

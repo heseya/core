@@ -369,7 +369,9 @@ class OrderService implements OrderServiceContract
 
     public function indexMyOrderProducts(OrderProductSearchDto $dto): LengthAwarePaginator
     {
-        return OrderProduct::searchByCriteria(['user' => Auth::id()] + $dto->toArray())
+        return OrderProduct::searchByCriteria(
+            ['user' => Auth::id(), 'paid' => true] + $dto->toArray()
+        )
             ->sort('created_at:desc')
             ->with(['urls', 'product'])
             ->paginate(Config::get('pagination.per_page'));
