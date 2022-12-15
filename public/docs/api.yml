@@ -133,6 +133,8 @@ paths:
     $ref: './paths/Orders.yml#/OrdersStatus'
   '/orders/id:{id}/shipping-lists':
     $ref: './paths/Orders.yml#/OrdersShippingLists'
+  '/orders/id:{id}/send-urls':
+    $ref: './paths/Orders.yml#/OrdersSendUrls'
   /orders/my:
     $ref: './paths/Orders.yml#/OrdersMy'
   '/orders/my/{code}':
