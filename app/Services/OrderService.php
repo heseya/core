@@ -27,6 +27,7 @@ use App\Models\CartResource;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\PackageTemplate;
+use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Notifications\SendUrls;
@@ -148,6 +149,7 @@ class OrderService implements OrderServiceContract
             $tempSchemaOrderProduct = [];
             try {
                 foreach ($dto->getItems() as $item) {
+                    /** @var Product $product */
                     $product = $products->firstWhere('id', $item->getProductId());
 
                     $orderProduct = new OrderProduct([
@@ -159,6 +161,7 @@ class OrderService implements OrderServiceContract
                         'base_price' => $product->price,
                         'name' => $product->name,
                         'vat_rate' => $product->vat_rate,
+                        'shipping_digital' => $product->shipping_digital,
                     ]);
 
                     $order->products()->save($orderProduct);
