@@ -25,7 +25,7 @@ class CanDownloadDocument
         /** @var Order $order */
         $order = $request->route('order');
 
-        if ($order->buyer_id === Auth::id() || Auth::user()->hasPermissionTo('orders.show_details')) {
+        if ($order->buyer_id === Auth::id() || Auth::user()?->hasPermissionTo('orders.show_details')) {
             return $next($request);
         }
 

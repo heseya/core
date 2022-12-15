@@ -3,7 +3,6 @@
 namespace App\Dtos;
 
 use App\Dtos\Contracts\InstantiateFromRequest;
-use App\Enums\TwitterCardType;
 use App\Http\Requests\Contracts\SeoRequestContract;
 use Exception;
 use Heseya\Dto\Dto;
@@ -57,7 +56,7 @@ class SeoMetadataDto extends Dto implements InstantiateFromRequest
         return $this->keywords;
     }
 
-    public function getTwitterCard(): Missing|TwitterCardType|null
+    public function getTwitterCard(): Missing|string|null
     {
         return $this->twitter_card;
     }

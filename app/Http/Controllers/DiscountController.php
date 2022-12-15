@@ -20,6 +20,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class DiscountController extends Controller
 {
@@ -47,6 +48,17 @@ class DiscountController extends Controller
         Gate::inspect('coupon', [$coupon]);
 
         return CouponResource::make($coupon);
+    }
+
+    public function showCouponByCode(Discount $coupon): JsonResource
+    {
+        Gate::inspect('coupon', [$coupon]);
+
+        if ($coupon->active) {
+            return CouponResource::make($coupon);
+        }
+
+        throw new NotFoundHttpException();
     }
 
     public function showSale(Discount $sale): JsonResource

@@ -47,7 +47,7 @@ class SeoMetadata extends Model
 
     public function getKeywordsAttribute(string|null $value): mixed
     {
-        return json_decode($value);
+        return $value ? json_decode($value) : null;
     }
 
     public function setKeywordsAttribute(mixed $value): void

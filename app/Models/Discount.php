@@ -12,6 +12,7 @@ use App\Enums\DiscountType;
 use App\Traits\HasMetadata;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
@@ -36,12 +37,14 @@ class Discount extends Model implements AuditableContract
         'target_type',
         'target_is_allow_list',
         'priority',
+        'active',
     ];
 
     protected $casts = [
         'type' => DiscountType::class,
         'target_type' => DiscountTargetType::class,
         'target_is_allow_list' => 'boolean',
+        'active' => 'boolean',
     ];
 
     protected array $criteria = [
@@ -105,5 +108,10 @@ class Discount extends Model implements AuditableContract
         }
 
         return $products->unique();
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('active', true);
     }
 }

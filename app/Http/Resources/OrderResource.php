@@ -76,7 +76,8 @@ class OrderResource extends Resource
             'shipping_number' => $this->resource->shipping_number,
             'discounts' => $orderDiscounts,
             'buyer' => $this->resource->buyer instanceof User
-                ? UserResource::make($this->resource->buyer)->baseOnly() : AppResource::make($this->resource->buyer),
+                ? UserResource::make($this->resource->buyer)->baseOnly()
+                : AppResource::make($this->resource->buyer),
         ];
     }
 }

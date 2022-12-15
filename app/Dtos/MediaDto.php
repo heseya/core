@@ -41,7 +41,7 @@ class MediaDto extends Dto implements InstantiateFromRequest
         return $this->alt;
     }
 
-    public function getFile(): UploadedFile|Missing
+    public function getFile(): UploadedFile|Missing|null
     {
         return $this->file;
     }

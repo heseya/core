@@ -7,7 +7,8 @@ use App\Models\PaymentMethod;
 use App\Models\ShippingMethod;
 use Illuminate\Database\Seeder;
 
-class ShippingMethodSeeder extends Seeder
+class
+ShippingMethodSeeder extends Seeder
 {
     /**
      * Run the database seeds.

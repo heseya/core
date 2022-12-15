@@ -67,15 +67,12 @@ class SchemaCrudService implements SchemaCrudServiceContract
         if (!$dto->getUsedSchemas() instanceof Missing) {
             $schema->usedSchemas()->detach();
 
-            foreach ($dto->getUsedSchemas() as $input) {
+            $usedSchemas = $dto->getUsedSchemas() !== null ? $dto->getUsedSchemas() : [];
+            foreach ($usedSchemas as $input) {
                 $used_schema = Schema::query()->findOrFail($input);
 
                 $schema->usedSchemas()->attach($used_schema);
             }
-        }
-
-        if (!($dto->getMetadata() instanceof Missing)) {
-            $this->metadataService->sync($schema, $dto->getMetadata());
         }
 
         $schema->products->each(

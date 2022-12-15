@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Dtos\UserCreateDto;
 use App\Dtos\UserDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
@@ -36,7 +37,7 @@ class UserService implements UserServiceContract
             ->paginate(Config::get('pagination.per_page'));
     }
 
-    public function create(UserDto $dto): User
+    public function create(UserCreateDto $dto): User
     {
         if (!$dto->getRoles() instanceof Missing) {
             $roleModels = Role::whereIn('id', $dto->getRoles())->orWhere('type', RoleType::AUTHENTICATED)->get();
@@ -48,7 +49,7 @@ class UserService implements UserServiceContract
             fn ($role) => $role->type->value !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
         )->unique();
 
-        if (!Auth::user()->hasAllPermissions($permissions)) {
+        if (!Auth::user()?->hasAllPermissions($permissions)) {
             throw new ClientException(Exceptions::CLIENT_GIVE_ROLE_THAT_USER_DOESNT_HAVE, simpleLogs: true);
         }
 
@@ -90,7 +91,7 @@ class UserService implements UserServiceContract
                 fn ($role) => $role->type->value !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
             )->unique();
 
-            if (!$authenticable->hasAllPermissions($permissions)) {
+            if (!$authenticable?->hasAllPermissions($permissions)) {
                 throw new ClientException(Exceptions::CLIENT_GIVE_ROLE_THAT_USER_DOESNT_HAVE);
             }
 
@@ -102,7 +103,7 @@ class UserService implements UserServiceContract
                 throw new ClientException(Exceptions::CLIENT_REMOVE_ROLE_THAT_USER_DOESNT_HAVE);
             }
 
-            $owner = Role::where('type', RoleType::OWNER)->first();
+            $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
 
             if ($newRoles->contains($owner) && !$authenticable->hasRole($owner)) {
                 throw new ClientException(Exceptions::CLIENT_ONLY_OWNER_GRANTS_OWNER_ROLE);
@@ -137,10 +138,10 @@ class UserService implements UserServiceContract
     {
         $authenticable = Auth::user();
 
-        $owner = Role::where('type', RoleType::OWNER)->first();
+        $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
 
         if ($user->hasRole($owner)) {
-            if (!$authenticable->hasRole($owner)) {
+            if (!$authenticable?->hasRole($owner)) {
                 throw new ClientException(Exceptions::CLIENT_ONLY_OWNER_REMOVES_OWNER_ROLE);
             }
 

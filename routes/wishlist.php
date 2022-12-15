@@ -10,4 +10,5 @@ Route::prefix('wishlist')
         Route::get('/id:{product:id}', [WishlistController::class, 'show']);
         Route::post(null, [WishlistController::class, 'store']);
         Route::delete('/id:{product:id}', [WishlistController::class, 'destroy']);
+        Route::delete(null, [WishlistController::class, 'destroyAll']);
     });

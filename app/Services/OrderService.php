@@ -6,6 +6,7 @@ use App\Dtos\AddressDto;
 use App\Dtos\CartDto;
 use App\Dtos\OrderDto;
 use App\Dtos\OrderIndexDto;
+use App\Dtos\OrderUpdateDto;
 use App\Dtos\OrderProductSearchDto;
 use App\Dtos\OrderProductUpdateDto;
 use App\Dtos\OrderProductUrlDto;
@@ -26,6 +27,7 @@ use App\Models\Address;
 use App\Models\CartResource;
 use App\Models\Order;
 use App\Models\OrderProduct;
+use App\Models\Product;
 use App\Models\PackageTemplate;
 use App\Models\Product;
 use App\Models\ShippingMethod;
@@ -243,7 +245,7 @@ class OrderService implements OrderServiceContract
         }
     }
 
-    public function update(OrderDto $dto, Order $order): JsonResponse
+    public function update(OrderUpdateDto $dto, Order $order): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -428,7 +430,7 @@ class OrderService implements OrderServiceContract
 
     private function modifyAddress(Order $order, string $attribute, AddressDto|Missing $addressDto): ?Address
     {
-        if (!$this->checkAddress($addressDto)) {
+        if ($addressDto instanceof Missing || !$this->checkAddress($addressDto)) {
             return null;
         }
 
@@ -441,6 +443,7 @@ class OrderService implements OrderServiceContract
     private function removeItemsFromWarehouse(OrderProduct $orderProduct, array $tempSchemaOrderProduct): bool
     {
         $itemsToRemove = [];
+        /** @var Product $product */
         $product = $orderProduct->product;
         $productItems = $product->items;
         foreach ($productItems as $productItem) {

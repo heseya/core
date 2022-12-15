@@ -6,6 +6,8 @@ use App\Dtos\PaymentMethodIndexDto;
 use App\Http\Requests\PaymentMethodIndexRequest;
 use App\Http\Resources\PaymentMethodResource;
 use App\Models\PaymentMethod;
+use App\Models\ShippingMethod;
+use Illuminate\Database\Eloquent\Builder;
 use App\Services\Contracts\PaymentMethodServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

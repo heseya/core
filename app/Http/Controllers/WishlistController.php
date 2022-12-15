@@ -22,13 +22,13 @@ class WishlistController extends Controller
     public function index(): JsonResource
     {
         return WishlistProductResource::collection(
-            Auth::user()->wishlistProducts()->paginate(Config::get('pagination.per_page'))
+            Auth::user()?->wishlistProducts()->paginate(Config::get('pagination.per_page'))
         );
     }
 
     public function show(Product $product): JsonResource|JsonResponse
     {
-        $wishlistProduct = Auth::user()->wishlistProducts()->where('product_id', $product->getKey())->first();
+        $wishlistProduct = Auth::user()?->wishlistProducts()->where('product_id', $product->getKey())->first();
         return $wishlistProduct === null ?
             Response::json(null, ResponseAlias::HTTP_NOT_FOUND) : WishlistProductResource::make($wishlistProduct);
     }
@@ -45,6 +45,12 @@ class WishlistController extends Controller
     public function destroy(Product $product): JsonResponse
     {
         $this->wishlistService->destroy($product);
+        return Response::json(null, ResponseAlias::HTTP_NO_CONTENT);
+    }
+
+    public function destroyAll(): JsonResponse
+    {
+        $this->wishlistService->destroyAll();
         return Response::json(null, ResponseAlias::HTTP_NO_CONTENT);
     }
 }

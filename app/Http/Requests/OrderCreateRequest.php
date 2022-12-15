@@ -38,13 +38,19 @@ class OrderCreateRequest extends OrderItemsRequest
                 'billing_address.vat' => ['nullable', 'string', 'max:15'],
 
                 'coupons' => ['nullable', 'array'],
-                'coupons.*' => ['string', 'max:64', 'exists:discounts,code'],
+                'coupons.*' => [
+                    'string',
+                    'max:64',
+                    Rule::exists('discounts', 'code')->where(function ($query) {
+                       return $query->where('active', true);
+                    }),
+                ],
 
                 'sale_ids' => ['nullable'],
                 'sale_ids.*' => [
                     'uuid',
                     Rule::exists('discounts', 'id')->where(function ($query) {
-                        return $query->where('code', null);
+                        return $query->where('code', null)->where('active', true);
                     }),
                 ],
 

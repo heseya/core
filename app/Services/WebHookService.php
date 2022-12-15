@@ -26,8 +26,8 @@ class WebHookService implements WebHookServiceContract
             'events' => $request['events'],
             'with_issuer' => $request['with_issuer'],
             'with_hidden' => $request['with_hidden'],
-            'model_type' => Auth::user()::class,
-            'creator_id' => Auth::user()->getKey(),
+            'model_type' => Auth::user() ? Auth::user()::class : null,
+            'creator_id' => Auth::user()?->getKey(),
         ]);
     }
 

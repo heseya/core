@@ -34,8 +34,8 @@ class FurgonetkaController extends Controller
             'provider' => ['required', 'string'],
         ]);
 
-        $order = Order::findOrFail($validated['order_id']);
-        $packageTemplate = PackageTemplate::findOrFail($validated['package_template_id']);
+        $order = Order::where('id', $validated['order_id'])->firstOrFail();
+        $packageTemplate = PackageTemplate::where('id', $validated['package_template_id'])->firstOrFail();
         $service_type = $validated['provider'];
 
         if ($order->shippingAddress === null) {
@@ -212,7 +212,7 @@ class FurgonetkaController extends Controller
         ], 201);
     }
 
-    private function getApiKey(bool $refresh = false): string
+    private function getApiKey(bool $refresh = false): ?string
     {
         if (Storage::missing('furgonetka.key') || $refresh) {
             $response = Http::withBasicAuth(

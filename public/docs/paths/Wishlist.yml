@@ -35,6 +35,16 @@ WishlistProduct:
                 data:
                   $ref: './../schemas/Wishlist.yml#/WishlistProduct'
 
+  delete:
+    tags:
+      - Wishlist
+    summary: 'Remove all user wishlist products'
+    security:
+      - BearerAuth: [ ]
+    responses:
+      204:
+        description: No content
+
 WishlistProductParams:
   get:
     tags:

@@ -13,7 +13,6 @@ use App\Traits\Sortable;
 use BenSampo\Enum\Exceptions\InvalidEnumKeyException;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
-use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -139,8 +138,10 @@ class Schema extends Model implements SortableContract
 
         $option = $this->options()->find($value);
 
-        foreach ($option->items as $item) {
-            $items[$item->getKey()] = $quantity;
+        if ($option?->items) {
+            foreach ($option->items as $item) {
+                $items[$item->getKey()] = $quantity;
+            }
         }
 
         return $items;
@@ -173,13 +174,12 @@ class Schema extends Model implements SortableContract
     }
 
     /**
-     * @template TMakeKey of array-key
-     * @template TMakeValue
-     *
      * @param mixed $value
-     * @param Arrayable<TMakeKey, TMakeValue>|iterable<TMakeKey, TMakeValue>|null $schemas
+     * @param array $schemas
+     *
+     * @return float
      */
-    public function getPrice(mixed $value, $schemas): float
+    public function getPrice(mixed $value, array $schemas): float
     {
         $schemaKeys = Collection::make($schemas)->keys();
 
@@ -211,13 +211,12 @@ class Schema extends Model implements SortableContract
     }
 
     /**
-     * @template TMakeKey of array-key
-     * @template TMakeValue
-     *
      * @param mixed $value
-     * @param Arrayable<TMakeKey, TMakeValue>|iterable<TMakeKey, TMakeValue>|null $schemas
+     * @param array $schemas
+     *
+     * @return float
      */
-    private function getUsedPrice(mixed $value, $schemas): float
+    private function getUsedPrice(mixed $value, array $schemas): float
     {
         $price = $this->price;
 
@@ -247,6 +246,7 @@ class Schema extends Model implements SortableContract
         }
 
         if ($this->type->is(SchemaType::MULTIPLY_SCHEMA)) {
+            /** @var Schema $usedSchema */
             $usedSchema = $this->usedSchemas()->firstOrFail();
             $price = $value * $usedSchema->getUsedPrice($schemas[$usedSchema->getKey()], $schemas);
         }

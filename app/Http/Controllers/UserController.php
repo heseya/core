@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\UserCreateDto;
 use App\Dtos\UserDto;
 use App\Http\Requests\UserCreateRequest;
 use App\Http\Requests\UserIndexRequest;
@@ -51,7 +52,7 @@ class UserController extends Controller
     public function store(UserCreateRequest $request): JsonResource
     {
         $user = $this->userService->create(
-            UserDto::instantiateFromRequest($request)
+            UserCreateDto::instantiateFromRequest($request)
         );
 
         return UserResource::make($user);

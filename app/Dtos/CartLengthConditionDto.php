@@ -6,8 +6,8 @@ use Heseya\Dto\Missing;
 
 class CartLengthConditionDto extends ConditionDto
 {
-    private int|Missing $min_value;
-    private int|Missing $max_value;
+    private int|float|Missing $min_value;
+    private int|float|Missing $max_value;
 
     public static function fromArray(array $array): self
     {
@@ -18,12 +18,12 @@ class CartLengthConditionDto extends ConditionDto
         );
     }
 
-    public function getMinValue(): int|Missing
+    public function getMinValue(): int|float|Missing
     {
         return $this->min_value;
     }
 
-    public function getMaxValue(): int|Missing
+    public function getMaxValue(): int|float|Missing
     {
         return $this->max_value;
     }

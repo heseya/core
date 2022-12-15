@@ -57,4 +57,6 @@ final class ValidationError extends Enum
     public const REQUIREDWITHALL = 'VALIDATION_REQUIRED_WITH_ALL';
     public const GTE = 'VALIDATION_GTE';
     public const REQUIREDCONSENTSUPDATE = 'VALIDATION_REQUIRED_CONSENTS';
+    public const MEDIASLUG = 'VALIDATION_MEDIA_SLUG';
+    public const PHONE = 'VALIDATION_PHONE';
 }

@@ -29,7 +29,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
 
     public static function instantiateFromRequest(FormRequest|OrderCreateRequest|OrderUpdateRequest $request): self
     {
-        $orderProducts = $request->input('items', new Missing());
+        $orderProducts = $request->input('items', []);
         $items = [];
         if (!$orderProducts instanceof Missing) {
             foreach ($orderProducts as $orderProduct) {
@@ -116,7 +116,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
         return $result;
     }
 
-    public function getCartLength(): int
+    public function getCartLength(): int|float
     {
         $length = 0;
         /** @var OrderProductDto $item */

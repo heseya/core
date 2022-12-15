@@ -27,6 +27,7 @@ class SaleDto extends Dto implements InstantiateFromRequest
     protected array|Missing $target_products;
     protected array|Missing $target_sets;
     protected array|Missing $target_shipping_methods;
+    protected bool|Missing $active;
 
     protected array|Missing $metadata;
 
@@ -48,6 +49,7 @@ class SaleDto extends Dto implements InstantiateFromRequest
             target_sets: $request->input('target_sets', new Missing()),
             target_shipping_methods: $request->input('target_shipping_methods', new Missing()),
             metadata: self::mapMetadata($request),
+            active: $request->input('active', new Missing()),
         );
     }
 
@@ -104,5 +106,10 @@ class SaleDto extends Dto implements InstantiateFromRequest
     public function getTargetShippingMethods(): Missing|array
     {
         return $this->target_shipping_methods;
+    }
+
+    public function getActive(): Missing|bool
+    {
+        return $this->active;
     }
 }

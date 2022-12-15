@@ -6,6 +6,7 @@ use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Lang;
 
 class OrderStatusUpdated extends Notification
 {
@@ -14,6 +15,7 @@ class OrderStatusUpdated extends Notification
     public function __construct(Order $order)
     {
         $this->order = $order;
+        $this->locale = $order->preferredLocale();
     }
 
     /**
@@ -29,8 +31,10 @@ class OrderStatusUpdated extends Notification
      */
     public function toMail(mixed $notifiable): MailMessage
     {
+        /** @var string $subject */
+        $subject = Lang::get('mail.subject-status-changed', ['number' => $this->order->code], $this->locale);
         return (new MailMessage())
-            ->subject('Twoja przesyłka '. $this->order->code . ' bezpiecznie wyruszyła w drogę')
+            ->subject($subject)
             ->view('mail.status-change', [
                 'order' => $this->order,
             ]);

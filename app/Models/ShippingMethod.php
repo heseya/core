@@ -101,7 +101,7 @@ class ShippingMethod extends Model implements AuditableContract
             ->orderBy('start', 'desc')
             ->first();
 
-        return $priceRange ? $priceRange->prices()->first()->value : 0;
+        return $priceRange && $priceRange->prices()->first() ? ($priceRange->prices()->first()->value ?? 0.0) : 0.0;
     }
 
     public function priceRanges(): HasMany

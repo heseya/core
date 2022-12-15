@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Dtos\CartDto;
 use App\Dtos\OrderDto;
 use App\Dtos\OrderIndexDto;
+use App\Dtos\OrderUpdateDto;
 use App\Dtos\OrderProductSearchDto;
 use App\Dtos\OrderProductUpdateDto;
 use App\Enums\ExceptionsEnums\Exceptions;
@@ -39,6 +40,7 @@ use App\Services\Contracts\DocumentServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
@@ -81,99 +83,20 @@ class OrderController extends Controller
 
     public function show(Order $order): JsonResource
     {
-        $order->load([
-            'shippingMethod.priceRanges.prices',
-            // Order products product
-            'products.product',
-            'products.product.metadata',
-            'products.product.metadataPrivate',
-            'products.product.media',
-            'products.product.media.metadata',
-            'products.product.media.metadataPrivate',
-            'products.product.tags',
-            'products.product.sales',
-            'products.product.sales.orders',
-            'products.product.sales.conditionGroups',
-            'products.product.sales.conditionGroups.conditions',
-            'products.product.sales.conditionGroups.conditions.users',
-            'products.product.sales.conditionGroups.conditions.roles',
-            'products.product.sales.conditionGroups.conditions.products',
-            'products.product.sales.conditionGroups.conditions.productSets',
-            'products.product.sales.products',
-            'products.product.sales.productSets',
-            'products.product.sales.productSets.children',
-            'products.product.sales.productSets.childrenPublic',
-            'products.product.sales.shippingMethods',
-            'products.product.sales.shippingMethods.paymentMethods',
-            'products.product.sales.shippingMethods.countries',
-            'products.product.sales.shippingMethods.priceRanges',
-            'products.product.sales.shippingMethods.priceRanges.prices',
-            'products.product.sales.shippingMethods.metadata',
-            'products.product.sales.shippingMethods.metadataPrivate',
-            'products.product.sales.metadata',
-            'products.product.sales.metadataPrivate',
-            'products.product.items',
-            'products.product.schemas',
-            'products.product.schemas.usedSchemas',
-            'products.product.schemas.metadata',
-            'products.product.schemas.metadataPrivate',
-            'products.product.sets',
-            'products.product.sets.media',
-            'products.product.sets.children',
-            'products.product.sets.childrenPublic',
-            'products.product.sets.metadata',
-            'products.product.sets.metadataPrivate',
-            'products.product.attributes',
-            'products.product.attributes.metadata',
-            'products.product.attributes.metadataPrivate',
-            'products.product.seo',
-            'products.product.seo.media',
-            'products.product.productAvailabilities',
+        $order->loadMissing([
+            'discounts',
+            'discounts.metadata',
+            'products.discounts',
+            'products.discounts.metadata',
+            'products',
             'products.schemas',
             'products.deposits',
-            'products.deposits.order',
-            'products.deposits.order.status',
-            'products.deposits.order.metadata',
-            'products.deposits.order.metadataPrivate',
-            'products.discounts',
-            'products.discounts.orders',
-            'products.discounts.conditionGroups',
-            'products.discounts.conditionGroups.conditions',
-            'products.discounts.conditionGroups.conditions.users',
-            'products.discounts.conditionGroups.conditions.roles',
-            'products.discounts.conditionGroups.conditions.products',
-            'products.discounts.conditionGroups.conditions.productSets',
-            'products.discounts.products',
-            'products.discounts.productSets',
-            'products.discounts.productSets.children',
-            'products.discounts.productSets.childrenPublic',
-            'products.discounts.shippingMethods',
-            'products.discounts.shippingMethods.paymentMethods',
-            'products.discounts.shippingMethods.countries',
-            'products.discounts.shippingMethods.priceRanges',
-            'products.discounts.shippingMethods.priceRanges.prices',
-            'products.discounts.metadata',
-            'products.discounts.metadataPrivate',
-            // Discounts
-            'discounts.orders',
-            'discounts.conditionGroups',
-            'discounts.conditionGroups.conditions',
-            'discounts.conditionGroups.conditions.users',
-            'discounts.conditionGroups.conditions.roles',
-            'discounts.conditionGroups.conditions.products',
-            'discounts.conditionGroups.conditions.productSets',
-            'discounts.products',
-            'discounts.productSets',
-            'discounts.productSets.children',
-            'discounts.productSets.childrenPublic',
-            'discounts.shippingMethods',
-            'discounts.shippingMethods.paymentMethods',
-            'discounts.shippingMethods.countries',
-            'discounts.shippingMethods.priceRanges',
-            'discounts.shippingMethods.priceRanges.prices',
-            'discounts.metadata',
-            'discounts.metadataPrivate',
+            'products.product',
+            'products.product.media',
+            'products.product.tags',
+            'products.product.metadata',
         ]);
+
         return OrderResource::make($order);
     }
 
@@ -195,30 +118,43 @@ class OrderController extends Controller
             throw new ClientException(Exceptions::CLIENT_CHANGE_CANCELED_ORDER_STATUS);
         }
 
-        $status = Status::findOrFail($request->input('status_id'));
-        $order->update([
-            'status_id' => $status->getKey(),
-        ]);
+        $status = Status::query()->find($request->input('status_id'));
+        if (!($status instanceof Status)) {
+            throw new ClientException(Exceptions::CLIENT_UNKNOWN_STATUS);
+        }
+
+        $changed = false;
+
+        if ($order->status_id !== $status->getKey()) {
+            $order->update([
+                'status_id' => $status->getKey(),
+            ]);
+            $changed = true;
+        }
 
         if ($status->cancel) {
             $deposits = $order->deposits()->with('item')->get();
             $order->deposits()->delete();
             foreach ($deposits as $deposit) {
                 $item = $deposit->item;
-                $item->decrement('quantity', $deposit->quantity);
-                $deposit->item->update($this->depositService->getShippingTimeDateForQuantity($item));
-                ItemUpdatedQuantity::dispatch($item);
+                if ($item !== null) {
+                    $item->decrement('quantity', $deposit->quantity);
+                    $deposit->item?->update($this->depositService->getShippingTimeDateForQuantity($item));
+                    ItemUpdatedQuantity::dispatch($item);
+                }
             }
         }
 
-        OrderUpdatedStatus::dispatch($order);
+        if ($changed) {
+            OrderUpdatedStatus::dispatch($order);
+        }
 
-        return OrderResource::make($order)->response();
+        return Response::json([], 204);
     }
 
     public function update(OrderUpdateRequest $request, Order $order): JsonResponse
     {
-        $orderUpdateDto = OrderDto::instantiateFromRequest($request);
+        $orderUpdateDto = OrderUpdateDto::instantiateFromRequest($request);
 
         return $this->orderService->update($orderUpdateDto, $order);
     }
@@ -248,12 +184,14 @@ class OrderController extends Controller
 
     public function storeDocument(OrderDocumentRequest $request, Order $order): JsonResource
     {
+        /** @var UploadedFile $file */
+        $file = $request->file('file');
         $document = $this->documentService
             ->storeDocument(
                 $order,
                 $request->input('name'),
                 $request->input('type'),
-                $request->file('file'),
+                $file,
             );
         AddOrderDocument::dispatch($order, $document);
 

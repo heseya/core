@@ -37,10 +37,10 @@ class ProductSearchService implements ProductSearchServiceContract
                 'price_max' => $product->price_max,
                 'price_min_initial' => $product->price_min_initial,
                 'price_max_initial' => $product->price_max_initial,
-                'description' => strip_tags($product->description_html),
+                'description' => $product->description_html ? strip_tags($product->description_html) : null,
                 'description_short' => $product->description_short,
-                'created_at' => $product->created_at->toIso8601String(),
-                'updated_at' => $product->updated_at->toIso8601String(),
+                'created_at' => $product->created_at?->toIso8601String(),
+                'updated_at' => $product->updated_at?->toIso8601String(),
                 'order' => $product->order,
                 'shipping_digital' => $product->shipping_digital,
                 'shipping_date' => $product->shipping_date,
@@ -199,7 +199,7 @@ class ProductSearchService implements ProductSearchServiceContract
             'id' => $set->getKey(),
             'name' => $set->name,
             'slug' => $set->slug,
-            'description' => strip_tags($set->description_html),
+            'description' => $set->description_html ? strip_tags($set->description_html) : null,
         ];
     }
 

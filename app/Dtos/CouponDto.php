@@ -40,6 +40,7 @@ final class CouponDto extends SaleDto implements InstantiateFromRequest
             target_sets: $request->input('target_sets', new Missing()),
             target_shipping_methods: $request->input('target_shipping_methods', new Missing()),
             metadata: self::mapMetadata($request),
+            active: $request->input('active', new Missing()),
         );
     }
 

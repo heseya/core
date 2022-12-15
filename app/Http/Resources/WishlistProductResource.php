@@ -10,7 +10,7 @@ class WishlistProductResource extends Resource
     {
         return [
             'id' => $this->resource->getKey(),
-            'product' => $this->resource->product,
+            'product' => ProductResource::make($this->resource->product)->isIndex(),
             'created_at' => $this->resource->created_at,
         ];
     }

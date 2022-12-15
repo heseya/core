@@ -10,7 +10,7 @@ class PermissionSearch extends Criterion
 {
     public function query(Builder $query): Builder
     {
-        $permissions = Auth::user()->getAllPermissions()
+        $permissions = Auth::user()?->getAllPermissions()
             ->map(fn ($perm) => $perm->getKey())->toArray();
 
         if ($this->value === true) {
