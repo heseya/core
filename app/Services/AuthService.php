@@ -468,9 +468,9 @@ class AuthService implements AuthServiceContract
 
     private function checkCredentials(User $user, string $password): void
     {
-        /** @var string $password */
-        $password = $user->password;
-        if (!Hash::check($password, $password)) {
+        /** @var string $userPassword */
+        $userPassword = $user->password;
+        if (!Hash::check($password, $userPassword)) {
             throw new ClientException(Exceptions::CLIENT_INVALID_PASSWORD, simpleLogs: true);
         }
     }
