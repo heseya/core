@@ -108,6 +108,10 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
 
     public function getProductIds(): array
     {
+        if ($this->items instanceof Missing) {
+            return [];
+        }
+
         $result = [];
         /** @var OrderProductDto $item */
         foreach ($this->items as $item) {
@@ -116,9 +120,13 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
         return $result;
     }
 
-    public function getCartLength(): int|float
+    public function getCartLength(): float
     {
-        $length = 0;
+        if ($this->items instanceof Missing) {
+            return 0.0;
+        }
+
+        $length = 0.0;
         /** @var OrderProductDto $item */
         foreach ($this->items as $item) {
             $length += $item->getQuantity();

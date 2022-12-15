@@ -140,6 +140,7 @@ class Order extends Model implements AuditableContract, SortableContract
             ?? 0;
 
         return !$this->paid &&
+            $this->status !== null &&
             !$this->status->cancel &&
             $paymentMethodCount > 0;
     }

@@ -126,7 +126,7 @@ class OrderService implements OrderServiceContract
                 throw new ServerException(Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED);
             }
 
-            $order = Order::create(
+            $order = Order::query()->create(
                 [
                     'code' => $this->nameService->generate(),
                     'currency' => 'PLN',

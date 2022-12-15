@@ -20,8 +20,9 @@ use Illuminate\Support\Facades\Config;
 
 class ShippingMethodService implements ShippingMethodServiceContract
 {
-    public function __construct(private MetadataServiceContract $metadataService)
-    {
+    public function __construct(
+        private MetadataServiceContract $metadataService,
+    ) {
     }
 
     public function index(?array $search, ?string $country, float $cartValue): LengthAwarePaginator
@@ -165,13 +166,23 @@ class ShippingMethodService implements ShippingMethodServiceContract
 
     private function syncShippingPoints(ShippingMethodDto $shippingMethodDto, ShippingMethod $shippingMethod): void
     {
+        $shippingPoints = $shippingMethodDto->getShippingPoints();
+
+        if (!is_array($shippingPoints)) {
+            $shippingMethod->shippingPoints()->sync([]);
+        }
+
         $addresses = new Collection();
-        foreach ($shippingMethodDto->getShippingPoints() as $shippingPoint) {
+
+        // @phpstan-ignore-next-line
+        foreach ($shippingPoints as $shippingPoint) {
             if (array_key_exists('id', $shippingPoint)) {
-                Address::where('id', $shippingPoint['id'])->update($shippingPoint);
-                $address = Address::find($shippingPoint['id']);
+                Address::query()->where('id', $shippingPoint['id'])->update($shippingPoint);
+                /** @var Address $address */
+                $address = Address::query()->findOrFail($shippingPoint['id']);
             } else {
-                $address = Address::create($shippingPoint);
+                /** @var Address $address */
+                $address = Address::query()->create($shippingPoint);
             }
             $addresses->push($address->getKey());
         }
