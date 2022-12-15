@@ -18,8 +18,9 @@ class AnalyticsService implements AnalyticsServiceContract
 
         return Payment::select([$amount, $count, $key])
             ->where('paid', true)
-            ->whereDate('created_at', '>=', $from)
-            ->whereDate('created_at', '<=', $to)
+            // whereDate builds the same query as where, but compares only dates without time
+            ->where('created_at', '>=', $from)
+            ->where('created_at', '<=', $to)
             ->groupBy('key')
             ->get()
             ->mapWithKeys(fn ($item) => [
