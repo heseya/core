@@ -13,7 +13,7 @@ use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
-class ShippingMethodDto extends Dto implements InstantiateFromRequest
+class ShippingMethodUpdateDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
@@ -25,7 +25,7 @@ class ShippingMethodDto extends Dto implements InstantiateFromRequest
     protected ?array $price_ranges;
     protected int|Missing $shipping_time_min;
     protected int|Missing $shipping_time_max;
-    protected string $shipping_type;
+    protected string|Missing $shipping_type;
     protected string|null $integration_key;
     protected ?array $shipping_points;
     protected string|null $app_id;
@@ -47,7 +47,7 @@ class ShippingMethodDto extends Dto implements InstantiateFromRequest
             price_ranges: $request->input('price_ranges'),
             shipping_time_min: $request->input('shipping_time_min', new Missing()),
             shipping_time_max: $request->input('shipping_time_max', new Missing()),
-            shipping_type: $request->input('shipping_type'),
+            shipping_type: $request->input('shipping_type', new Missing()),
             shipping_points: $request->input('shipping_points'),
             integration_key: $request->input('integration_key'),
             app_id: $user instanceof App ? Auth::id() : null,
@@ -95,7 +95,7 @@ class ShippingMethodDto extends Dto implements InstantiateFromRequest
         return $this->shipping_time_max;
     }
 
-    public function getShippingType(): string
+    public function getShippingType(): Missing|string
     {
         return $this->shipping_type;
     }

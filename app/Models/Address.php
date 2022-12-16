@@ -35,7 +35,7 @@ class Address extends Model
         return $this->belongsTo(Country::class, 'country', 'code');
     }
 
-    public function getCountryNameAttribute(): string
+    public function getCountryNameAttribute(): string|null
     {
         $name = Cache::get('countryName.' . $this->country);
 

@@ -33,12 +33,12 @@ class ShippingMethodTest extends TestCase
             'shipping_time_max' => 2,
         ]);
 
-        $lowRange = PriceRange::create(['start' => 0]);
+        $lowRange = PriceRange::query()->create(['start' => 0]);
         $lowRange->prices()->create([
             'value' => rand(8, 15) + (rand(0, 99) / 100),
         ]);
 
-        $highRange = PriceRange::create(['start' => 210]);
+        $highRange = PriceRange::query()->create(['start' => 210]);
         $highRange->prices()->create(['value' => 0.0]);
 
         $this->shipping_method->priceRanges()->saveMany([$lowRange, $highRange]);
@@ -48,12 +48,12 @@ class ShippingMethodTest extends TestCase
             'block_list' => true,
         ]);
 
-        $lowRange = PriceRange::create(['start' => 0]);
+        $lowRange = PriceRange::query()->create(['start' => 0]);
         $lowRange->prices()->create([
             'value' => rand(8, 15) + (rand(0, 99) / 100),
         ]);
 
-        $highRange = PriceRange::create(['start' => 210]);
+        $highRange = PriceRange::query()->create(['start' => 210]);
         $highRange->prices()->create(['value' => 0.0]);
 
         $this->shipping_method_hidden->priceRanges()->saveMany([$lowRange, $highRange]);
@@ -267,6 +267,7 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test 4',
             'public' => false,
+            'shipping_type' => ShippingType::ADDRESS,
         ];
 
         $response = $this->actingAs($this->$user)->postJson(
@@ -337,6 +338,7 @@ class ShippingMethodTest extends TestCase
             'block_list' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
+            'shipping_type' => ShippingType::ADDRESS,
         ];
 
         $response = $this->actingAs($this->$user)
@@ -380,6 +382,7 @@ class ShippingMethodTest extends TestCase
             'block_list' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
+            'shipping_type' => ShippingType::ADDRESS,
             'metadata' => [
                 'attributeMeta' => 'attributeValue',
             ],
@@ -418,6 +421,7 @@ class ShippingMethodTest extends TestCase
             'block_list' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
+            'shipping_type' => ShippingType::ADDRESS,
             'metadata_private' => [
                 'attributeMetaPriv' => 'attributeValue',
             ],
@@ -456,6 +460,7 @@ class ShippingMethodTest extends TestCase
             'block_list' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
+            'shipping_type' => ShippingType::ADDRESS,
         ];
 
         $response = $this->actingAs($this->$user)
@@ -495,6 +500,7 @@ class ShippingMethodTest extends TestCase
                 'block_list' => false,
                 'shipping_time_min' => 3,
                 'shipping_time_max' => 2,
+                'shipping_type' => ShippingType::ADDRESS,
                 'price_ranges' => [
                     [
                         'start' => 0,
@@ -523,6 +529,7 @@ class ShippingMethodTest extends TestCase
             'block_list' => true,
             'shipping_time_min' => 2,
             'shipping_time_max' => 2,
+            'shipping_type' => ShippingType::ADDRESS,
         ];
 
         $response = $this->actingAs($this->$user)
@@ -555,6 +562,7 @@ class ShippingMethodTest extends TestCase
             'block_list' => $boolean,
             'shipping_time_min' => 2,
             'shipping_time_max' => 2,
+            'shipping_type' => ShippingType::ADDRESS,
         ];
 
         $response = $this->actingAs($this->$user)

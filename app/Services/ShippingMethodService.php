@@ -2,7 +2,8 @@
 
 namespace App\Services;
 
-use App\Dtos\ShippingMethodDto;
+use App\Dtos\ShippingMethodCreateDto;
+use App\Dtos\ShippingMethodUpdateDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
 use App\Exceptions\StoreException;
@@ -73,14 +74,15 @@ class ShippingMethodService implements ShippingMethodServiceContract
         return $shippingMethods;
     }
 
-    public function store(ShippingMethodDto $shippingMethodDto): ShippingMethod
+    public function store(ShippingMethodCreateDto $shippingMethodDto): ShippingMethod
     {
         $attributes = array_merge(
             $shippingMethodDto->toArray(),
-            ['order' => ShippingMethod::count()],
+            ['order' => ShippingMethod::query()->count()],
         );
 
-        $shippingMethod = ShippingMethod::create($attributes);
+        /** @var ShippingMethod $shippingMethod */
+        $shippingMethod = ShippingMethod::query()->create($attributes);
 
         if ($shippingMethodDto->getShippingPoints() !== null) {
             $this->syncShippingPoints($shippingMethodDto, $shippingMethod);
@@ -111,7 +113,7 @@ class ShippingMethodService implements ShippingMethodServiceContract
         return $shippingMethod;
     }
 
-    public function update(ShippingMethod $shippingMethod, ShippingMethodDto $shippingMethodDto): ShippingMethod
+    public function update(ShippingMethod $shippingMethod, ShippingMethodUpdateDto $shippingMethodDto): ShippingMethod
     {
         $shippingMethod->update(
             $shippingMethodDto->toArray(),
@@ -164,8 +166,10 @@ class ShippingMethodService implements ShippingMethodServiceContract
         $shippingMethod->delete();
     }
 
-    private function syncShippingPoints(ShippingMethodDto $shippingMethodDto, ShippingMethod $shippingMethod): void
-    {
+    private function syncShippingPoints(
+        ShippingMethodCreateDto|ShippingMethodUpdateDto $shippingMethodDto,
+        ShippingMethod $shippingMethod,
+    ): void {
         $shippingPoints = $shippingMethodDto->getShippingPoints();
 
         if (!is_array($shippingPoints)) {
