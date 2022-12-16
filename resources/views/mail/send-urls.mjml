@@ -24,13 +24,13 @@
                 </mj-text>
                 <mj-table>
                     @foreach ($products as $product)
-                    <tr style='border-bottom: 2px #244d8b solid; line-height: 38px;'>
-                        <td style="padding: 0 15px 0 0;">{{ $product->name }}</td>
+                    <tr style='border-bottom: 2px #244d8b solid;'>
+                        <td style="padding: 15px 15px 15px 0;" colspan="2">{{ $product->name }}</td>
                     </tr>
                     @foreach ($product->urls as $url)
                     <tr style='line-height: 38px;'>
                         <td style="padding: 0 15px 0 0;">{{ $url->name }}</td>
-                        <td style="padding: 0 15px 0 0; text-align: right"><a href="{{ $url->url }}">{{ $url->url }}</a></td>
+                        <td style="text-align: right"><a href="{{ $url->url }}">Pobierz</a></td>
                     </tr>
                     @endforeach
                     @endforeach
