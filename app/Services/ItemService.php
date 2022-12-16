@@ -123,7 +123,7 @@ class ItemService implements ItemServiceContract
 
                 $available = $product->purchase_limit_per_user - $purchasedCount;
 
-                if ($available === 0.0) {
+                if ($available <= 0.0) {
                     $cartItemToRemove[] = $item->getCartItemId();
                     continue;
                 }
