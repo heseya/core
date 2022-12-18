@@ -26,16 +26,6 @@ User:
       type: array
       items:
         $ref: './Consents.yml#/ConsentUser'
-    delivery_address:
-      description: 'Saved user delivery addresses'
-      type: array
-      items:
-        $ref: './../schemas/Addresses.yml#/Address'
-    invoice_address:
-      description: 'Saved user invoice addresses'
-      type: array
-      items:
-        $ref: './../schemas/Addresses.yml#/Address'
     birthdate_date:
       description: 'User birthday date'
       type: string
@@ -71,3 +61,31 @@ UserView:
             example: roles.show_details
         preferences:
           $ref: './Auth.yml#/Preferences'
+
+UserWithSavedAddresses:
+  type: object
+  allOf:
+    - $ref: '#/User'
+    - properties:
+        shipping_addresses:
+          type: array
+          items:
+            $ref: './SavedAddresses.yml#/SavedAddress'
+        billing_addresses:
+          type: array
+          items:
+            $ref: './SavedAddresses.yml#/SavedAddress'
+
+UserViewWithSavedAddresses:
+  type: object
+  allOf:
+    - $ref: '#/UserView'
+    - properties:
+        shipping_addresses:
+          type: array
+          items:
+            $ref: './SavedAddresses.yml#/SavedAddress'
+        billing_addresses:
+          type: array
+          items:
+            $ref: './SavedAddresses.yml#/SavedAddress'
