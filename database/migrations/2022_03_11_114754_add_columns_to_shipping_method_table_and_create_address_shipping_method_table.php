@@ -18,7 +18,7 @@ return new class extends Migration
         });
 
         Schema::table('shipping_methods', function (Blueprint $table) {
-            $table->string('shipping_type')->default('none');
+            $table->string('shipping_type')->default('address');
             $table->string('integration_key')->nullable();
             $table->foreignUuid('app_id')->nullable()->index()->references('id')->on('apps')->onDelete('cascade');
         });
