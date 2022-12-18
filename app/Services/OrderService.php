@@ -385,11 +385,11 @@ class OrderService implements OrderServiceContract
             // Validate whether delivery methods are the proper type
             $shippingMethod = $dto->getShippingMethodId() instanceof Missing ? null :
                 ShippingMethod::whereNot('shipping_type', ShippingType::DIGITAL)
-                    ->findOrFail($dto->getShippingMethodId());
+                ->findOrFail($dto->getShippingMethodId());
 
             $digitalShippingMethod = $dto->getDigitalShippingMethodId() instanceof Missing ? null :
                 ShippingMethod::where('shipping_type', ShippingType::DIGITAL)
-                    ->findOrFail($dto->getDigitalShippingMethodId());
+                ->findOrFail($dto->getDigitalShippingMethodId());
         } catch (Throwable $e) {
             throw new OrderException(Exceptions::CLIENT_SHIPPING_METHOD_INVALID_TYPE);
         }
