@@ -13,7 +13,8 @@ class DiscountSearch extends Criterion
             $query->where('description', 'LIKE', '%' . $this->value . '%')
                 ->orWhere('code', 'LIKE', '%' . $this->value . '%')
                 ->orWhere('type', 'LIKE', '%' . $this->value . '%')
-                ->orWhere('value', 'LIKE', '%' . $this->value . '%');
+                ->orWhere('value', 'LIKE', '%' . $this->value . '%')
+                ->orWhere('name', 'LIKE', '%' . $this->value . '%');
         });
     }
 }
