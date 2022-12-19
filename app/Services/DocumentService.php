@@ -16,13 +16,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DocumentService implements DocumentServiceContract
 {
-    public function __construct(private MediaServiceContract $mediaService)
-    {
+    public function __construct(
+        private MediaServiceContract $mediaService,
+    ) {
     }
 
-    /**
-     * @throws \Heseya\Dto\DtoException
-     */
     public function storeDocument(Order $order, ?string $name, string $type, UploadedFile $file): OrderDocument
     {
         $mediaDto = MediaDto::instantiateFromFile($file);
@@ -30,7 +28,7 @@ class DocumentService implements DocumentServiceContract
         $media = $this->mediaService->store($mediaDto, true);
         $order->documents()->attach($media, ['type' => $type, 'name' => $name ?? null]);
 
-        return OrderDocument::where([
+        return OrderDocument::query()->where([
             ['type', $type],
             ['name', $name],
             ['media_id', $media->getKey()],
@@ -42,10 +40,14 @@ class DocumentService implements DocumentServiceContract
     {
         /** @var string $url */
         $url = $document->media?->url;
+
+        // @phpstan-ignore-next-line
         $mime = Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
-            ->get($url . '/info')->json('mime');
+            ->get($url . '/info')
+            ->json('mime');
 
         return response()->streamDownload(function () use ($url): void {
+            // @phpstan-ignore-next-line
             echo Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
                 ->get($url);
         }, Str::of($url)->afterLast('/'), [
@@ -55,7 +57,7 @@ class DocumentService implements DocumentServiceContract
 
     public function removeDocument(Order $order, string $mediaId): OrderDocument
     {
-        $document = OrderDocument::where([
+        $document = OrderDocument::query()->where([
             ['media_id', $mediaId],
             ['order_id', $order->getKey()],
         ])->firstOrFail();
