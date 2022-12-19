@@ -121,8 +121,6 @@ paths:
     $ref: './paths/WebHooks.yml#/WebhooksEvents'
   /filters:
     $ref: './paths/Filters.yml#/Filters'
-  /furgonetka/create-package:
-    $ref: './paths/Furgonetka.yml#/FurgonetkaCreatePackage'
   /items:
     $ref: './paths/Items.yml#/Items'
   '/items/id:{id}':
