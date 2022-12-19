@@ -183,17 +183,8 @@ OrdersStatus:
                 type: integer
             type: object
     responses:
-      200:
+      204:
         description: Success
-        content:
-          application/json:
-            schema:
-              properties:
-                data:
-                  type: array
-                  items:
-                    $ref: './../schemas/Orders.yml#/Order'
-              type: object
     security:
       - BearerAuth: [ ]
 

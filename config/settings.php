@@ -27,6 +27,11 @@ return [
         'public' => false,
     ],
 
+    'mail_advice' => [
+        'value' => '',
+        'public' => false,
+    ],
+
     'order_number_template' => [
         'value' => '{r:6}',
         'public' => false,

@@ -201,24 +201,40 @@ class StatusTest extends TestCase
         $response->assertForbidden();
     }
 
+    public function statusUpdateProvider(): array
+    {
+        return [
+            'as user cancel false' => ['user', false],
+            'as user cancel true' => ['user', true],
+            'as app cancel false' => ['application', false],
+            'as app cancel true' => ['application', true],
+        ];
+    }
+
     /**
-     * @dataProvider authProvider
+     * @dataProvider statusUpdateProvider
      */
-    public function testUpdate($user): void
+    public function testUpdate($user, bool $cancel): void
     {
         $this->$user->givePermissionTo('statuses.edit');
+
+        $this->status_model->update([
+            'cancel' => $cancel,
+        ]);
 
         $status = [
             'name' => 'Test Status 2',
             'color' => '444444',
             'description' => 'Testowy opis testowego statusu 2.',
+            'cancel' => !$cancel,
         ];
 
-        $response = $this->actingAs($this->$user)->patchJson(
-            '/statuses/id:' . $this->status_model->getKey(),
-            $status,
-        );
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->patchJson(
+                '/statuses/id:' . $this->status_model->getKey(),
+                $status,
+            )
             ->assertOk()
             ->assertJson(['data' => $status]);
 
@@ -226,11 +242,15 @@ class StatusTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider statusUpdateProvider
      */
-    public function testUpdateWhenUsedByOrder($user): void
+    public function testUpdateWhenUsedByOrder($user, bool $cancel): void
     {
         $this->$user->givePermissionTo('statuses.edit');
+
+        $this->status_model->update([
+            'cancel' => $cancel,
+        ]);
 
         Order::factory()->create([
             'status_id' => $this->status_model->getKey(),
@@ -238,17 +258,86 @@ class StatusTest extends TestCase
 
         $data = [
             'name' => 'Test Status 2',
-            'cancel' => false,
+            'cancel' => !$cancel,
         ];
 
-        $response = $this->actingAs($this->$user)->patchJson(
-            '/statuses/id:' . $this->status_model->getKey(),
-            $data,
-        );
-
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->patchJson(
+                '/statuses/id:' . $this->status_model->getKey(),
+                $data,
+            )
             ->assertStatus(422)
             ->assertJsonFragment(['key' => Exceptions::getKey(Exceptions::CLIENT_STATUS_USED)]);
+
+        $this->assertDatabaseHas('statuses', [
+            'id' => $this->status_model->getKey(),
+            'cancel' => $cancel,
+        ]);
+    }
+
+    /**
+     * @dataProvider statusUpdateProvider
+     */
+    public function testUpdateWhenUsedByOrderSameCancel($user, bool $cancel): void
+    {
+        $this->$user->givePermissionTo('statuses.edit');
+
+        $this->status_model->update([
+            'cancel' => $cancel,
+        ]);
+
+        Order::factory()->create([
+            'status_id' => $this->status_model->getKey(),
+        ]);
+
+        $data = [
+            'name' => 'Test Status 2',
+            'cancel' => $cancel,
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'PATCH',
+                '/statuses/id:' . $this->status_model->getKey(),
+                $data,
+            )
+            ->assertOk();
+
+        $this->assertDatabaseHas('statuses', $data + ['id' => $this->status_model->getKey()]);
+    }
+
+    /**
+     * @dataProvider statusUpdateProvider
+     */
+    public function testUpdateHiddenWhenUsedByOrder($user, bool $hidden): void
+    {
+        $this->$user->givePermissionTo('statuses.edit');
+
+        $this->status_model->update([
+            'hidden' => $hidden,
+        ]);
+
+        Order::factory()->create([
+            'status_id' => $this->status_model->getKey(),
+        ]);
+
+        $data = [
+            'name' => 'Test Status 2',
+            'hidden' => !$hidden,
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'PATCH',
+                '/statuses/id:' . $this->status_model->getKey(),
+                $data,
+            )
+            ->assertOk();
+
+        $this->assertDatabaseHas('statuses', $data + ['id' => $this->status_model->getKey()]);
     }
 
     /**

@@ -2,7 +2,8 @@
 
 namespace App\Services;
 
-use App\Dtos\ShippingMethodDto;
+use App\Dtos\ShippingMethodCreateDto;
+use App\Dtos\ShippingMethodUpdateDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
 use App\Exceptions\StoreException;
@@ -20,14 +21,15 @@ use Illuminate\Support\Facades\Config;
 
 class ShippingMethodService implements ShippingMethodServiceContract
 {
-    public function __construct(private MetadataServiceContract $metadataService)
-    {
+    public function __construct(
+        private MetadataServiceContract $metadataService,
+    ) {
     }
 
     public function index(?array $search, ?string $country, float $cartValue): LengthAwarePaginator
     {
         $query = ShippingMethod::query()
-            ->searchByCriteria($search)
+            ->searchByCriteria($search ?? [])
             ->with('metadata')
             ->orderBy('order');
 
@@ -72,14 +74,15 @@ class ShippingMethodService implements ShippingMethodServiceContract
         return $shippingMethods;
     }
 
-    public function store(ShippingMethodDto $shippingMethodDto): ShippingMethod
+    public function store(ShippingMethodCreateDto $shippingMethodDto): ShippingMethod
     {
         $attributes = array_merge(
             $shippingMethodDto->toArray(),
-            ['order' => ShippingMethod::count()],
+            ['order' => ShippingMethod::query()->count()],
         );
 
-        $shippingMethod = ShippingMethod::create($attributes);
+        /** @var ShippingMethod $shippingMethod */
+        $shippingMethod = ShippingMethod::query()->create($attributes);
 
         if ($shippingMethodDto->getShippingPoints() !== null) {
             $this->syncShippingPoints($shippingMethodDto, $shippingMethod);
@@ -97,7 +100,8 @@ class ShippingMethodService implements ShippingMethodServiceContract
             $this->metadataService->sync($shippingMethod, $shippingMethodDto->getMetadata());
         }
 
-        foreach ($shippingMethodDto->getPriceRanges() as $range) {
+        $priceRanges = $shippingMethodDto->getPriceRanges() !== null ? $shippingMethodDto->getPriceRanges() : [];
+        foreach ($priceRanges as $range) {
             $priceRange = $shippingMethod->priceRanges()->firstOrCreate([
                 'start' => $range['start'],
             ]);
@@ -109,7 +113,7 @@ class ShippingMethodService implements ShippingMethodServiceContract
         return $shippingMethod;
     }
 
-    public function update(ShippingMethod $shippingMethod, ShippingMethodDto $shippingMethodDto): ShippingMethod
+    public function update(ShippingMethod $shippingMethod, ShippingMethodUpdateDto $shippingMethodDto): ShippingMethod
     {
         $shippingMethod->update(
             $shippingMethodDto->toArray(),
@@ -162,15 +166,27 @@ class ShippingMethodService implements ShippingMethodServiceContract
         $shippingMethod->delete();
     }
 
-    private function syncShippingPoints(ShippingMethodDto $shippingMethodDto, ShippingMethod $shippingMethod): void
-    {
+    private function syncShippingPoints(
+        ShippingMethodCreateDto|ShippingMethodUpdateDto $shippingMethodDto,
+        ShippingMethod $shippingMethod,
+    ): void {
+        $shippingPoints = $shippingMethodDto->getShippingPoints();
+
+        if (!is_array($shippingPoints)) {
+            $shippingMethod->shippingPoints()->sync([]);
+        }
+
         $addresses = new Collection();
-        foreach ($shippingMethodDto->getShippingPoints() as $shippingPoint) {
+
+        // @phpstan-ignore-next-line
+        foreach ($shippingPoints as $shippingPoint) {
             if (array_key_exists('id', $shippingPoint)) {
-                Address::where('id', $shippingPoint['id'])->update($shippingPoint);
-                $address = Address::find($shippingPoint['id']);
+                Address::query()->where('id', $shippingPoint['id'])->update($shippingPoint);
+                /** @var Address $address */
+                $address = Address::query()->findOrFail($shippingPoint['id']);
             } else {
-                $address = Address::create($shippingPoint);
+                /** @var Address $address */
+                $address = Address::query()->create($shippingPoint);
             }
             $addresses->push($address->getKey());
         }

@@ -121,4 +121,9 @@ class App extends Model implements
     {
         return false;
     }
+
+    public function favouriteProductSets(): MorphMany
+    {
+        return $this->morphMany(FavouriteProductSet::class, 'user');
+    }
 }

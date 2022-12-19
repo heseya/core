@@ -19,6 +19,7 @@ class MediaStoreRequest extends FormRequest
                 'file',
                 "mimetypes:${images}${videos}${documents}",
             ],
+            'slug' => ['string', 'max:64', 'unique:media'],
         ];
     }
 }

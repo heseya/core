@@ -21,6 +21,7 @@ class SaleUpdateRequest extends SaleCreateRequest
             'priority' => ['integer'],
             'target_type' => [new EnumValue(DiscountTargetType::class, false)],
             'target_is_allow_list' => [new Boolean()],
+            'active' => [new Boolean()],
         ]);
     }
 }

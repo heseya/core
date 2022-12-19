@@ -10,6 +10,9 @@ Route::prefix('banners')->group(function (): void {
     Route::get('/id:{banner:id}', [BannerController::class, 'show'])
         ->middleware('can:banners.show')
         ->whereUuid('banner');
+    Route::get('/{banner:slug}', [BannerController::class, 'show'])
+        ->middleware('can:banners.show')
+        ->where('banner', '^[a-z0-9]+(?:-[a-z0-9]+)*$');
     Route::post(null, [BannerController::class, 'store'])
         ->middleware('can:banners.add');
     Route::patch('/id:{banner:id}', [BannerController::class, 'update'])

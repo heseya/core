@@ -16,16 +16,22 @@ class ItemProductObserver
 
     public function created(ItemProduct $itemProduct): void
     {
-        $this->availabilityService->calculateProductAvailability($itemProduct->product);
+        if ($itemProduct->product !== null) {
+            $this->availabilityService->calculateProductAvailability($itemProduct->product);
+        }
     }
 
     public function updated(ItemProduct $itemProduct): void
     {
-        $this->availabilityService->calculateProductAvailability($itemProduct->product);
+        if ($itemProduct->product !== null) {
+            $this->availabilityService->calculateProductAvailability($itemProduct->product);
+        }
     }
 
     public function deleted(ItemProduct $itemProduct): void
     {
-        $this->availabilityService->calculateProductAvailability($itemProduct->product);
+        if ($itemProduct->product !== null) {
+            $this->availabilityService->calculateProductAvailability($itemProduct->product);
+        }
     }
 }

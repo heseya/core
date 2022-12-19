@@ -6,6 +6,7 @@ use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\GoogleProductCategoryFileException;
 use App\Exceptions\ServerException;
 use App\Services\Contracts\GoogleCategoryServiceContract;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -54,7 +55,7 @@ class GoogleCategoryService implements GoogleCategoryServiceContract
     {
         $path = $this->path($lang);
 
-        if (!Storage::exists($path)) {
+        if (!Storage::exists($path) || !file($path)) {
             throw new GoogleProductCategoryFileException();
         }
 
@@ -66,6 +67,7 @@ class GoogleCategoryService implements GoogleCategoryServiceContract
      */
     private function getFromGoogleServer(string $lang): array
     {
+        /** @var Response $response */
         $response = Http::get('https://www.google.com/basepages/producttype/taxonomy-with-ids.' . $lang . '.txt');
 
         if ($response->failed()) {

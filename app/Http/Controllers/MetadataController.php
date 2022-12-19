@@ -28,7 +28,8 @@ class MetadataController extends Controller
 
         # Workaround for attribute option metadata
         $model = $modelClass instanceof AttributeOption ?
-            $modelClass->findOrFail($request->route('option')) : $modelClass->findOrFail($modelId);
+            $modelClass->where('name', $request->route('option'))->firstOrFail()
+            : $modelClass->where('id', $modelId)->firstOrFail();
 
         $public = Collection::make($request->segments())->last() === 'metadata';
         foreach ($request->all() as $key => $value) {
@@ -43,9 +44,11 @@ class MetadataController extends Controller
         $model->refresh();
 
         if ($public) {
+            // @phpstan-ignore-next-line
             return MetadataResource::make($model->metadata);
         }
 
+        // @phpstan-ignore-next-line
         return MetadataResource::make($model->metadataPrivate);
     }
 

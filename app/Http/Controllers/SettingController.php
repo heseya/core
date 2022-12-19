@@ -28,7 +28,7 @@ class SettingController extends Controller
     public function index(Request $request): JsonResponse
     {
         $settings = $this->settingsService->getSettings(
-            !Auth::user()->can('settings.show_hidden'),
+            !Auth::user()?->can('settings.show_hidden'),
         );
 
         if ($request->has('array')) {
@@ -44,7 +44,7 @@ class SettingController extends Controller
     {
         $setting = $this->settingsService->getSetting($name);
 
-        if ($setting->public === false && !Auth::user()->can('settings.show_hidden')) {
+        if ($setting->public === false && !Auth::user()?->can('settings.show_hidden')) {
             throw new NotFoundHttpException();
         }
 

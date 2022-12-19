@@ -52,6 +52,7 @@ final class Exceptions extends Enum
 
     public const CLIENT_ORDER_EDIT_ERROR = 'Error in order update transaction. Check order and addresses data';
     public const CLIENT_CHANGE_CANCELED_ORDER_STATUS = 'Cannot change the status of a cancelled order';
+    public const CLIENT_UNKNOWN_STATUS = 'Unknown order status';
     public const CLIENT_MODEL_NOT_SORTABLE = 'Model is not sortable';
     public const CLIENT_ORDER_PAID = 'Order is already paid';
     public const CLIENT_UNKNOWN_PAYMENT_METHOD = 'Unknown payment method';
@@ -97,6 +98,7 @@ final class Exceptions extends Enum
     public const ORDER_SHIPPING_METHOD_TYPE_MISMATCH = 'Selected shipping methods don\'t match selected product types';
 
     public const PRODUCT_IS_NOT_ON_WISHLIST = 'Product is not on wishlist';
+    public const PRODUCT_SET_IS_NOT_ON_FAVOURITES_LIST = 'Product set is not on favourites list';
 
     public const PRODUCT_PURCHASE_LIMIT = 'The limit of purchased product units per user has been exceeded';
 

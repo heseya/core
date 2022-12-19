@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\MetadataType;
 use App\Enums\RoleType;
+use App\Enums\ValidationError;
 use App\Events\UserCreated;
 use App\Events\UserDeleted;
 use App\Events\UserUpdated;
@@ -658,6 +659,33 @@ class UserTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateWithMetadataPersonal($user): void
+    {
+        $this->$user->givePermissionTo('users.add');
+
+        Event::fake([UserCreated::class]);
+
+        $data = User::factory()->raw() + [
+            'password' => $this->validPassword,
+            'metadata_personal' => [
+                'attributeMeta' => 'attributeValue',
+            ],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/users', $data)
+            ->assertCreated()
+            ->assertJsonFragment([
+                'metadata_personal' => [
+                    'attributeMeta' => 'attributeValue',
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateWithWebHook($user): void
     {
         $this->$user->givePermissionTo('users.add');
@@ -923,7 +951,7 @@ class UserTest extends TestCase
             'roles' => [
                 match ($role) {
                     RoleType::AUTHENTICATED => $this->authenticated->getKey(),
-                        RoleType::UNAUTHENTICATED => $this->unauthenticated->getKey(),
+                    RoleType::UNAUTHENTICATED => $this->unauthenticated->getKey(),
                 },
             ],
         ];
@@ -1016,6 +1044,33 @@ class UserTest extends TestCase
         ]);
 
         Event::assertDispatched(UserUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateInvalidPhone($user): void
+    {
+        $this->$user->givePermissionTo('users.edit');
+
+        Event::fake([UserUpdated::class]);
+
+        $otherUser = User::factory()->create();
+
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/users/id:' . $otherUser->getKey(),
+            [
+                'phone' => '123456789',
+            ],
+        );
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::PHONE,
+            ]);
+
+        Event::assertNotDispatched(UserUpdated::class);
     }
 
     /**

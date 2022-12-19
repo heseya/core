@@ -118,7 +118,8 @@ class User extends Model implements
 
     public function getPhoneAttribute(): ?string
     {
-        return $this->phone_number ? PhoneNumber::make($this->phone_number, $this->phone_country) : null;
+        return $this->phone_number !== null && $this->phone_country !== null
+            ? PhoneNumber::make($this->phone_number, $this->phone_country) : null;
     }
 
     public function getJWTIdentifier(): string
@@ -173,5 +174,10 @@ class User extends Model implements
     public function loginAttempts(): HasMany
     {
         return $this->hasMany(UserLoginAttempt::class, 'user_id', 'id');
+    }
+
+    public function favouriteProductSets(): MorphMany
+    {
+        return $this->morphMany(FavouriteProductSet::class, 'user');
     }
 }

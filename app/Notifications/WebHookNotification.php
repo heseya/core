@@ -7,13 +7,15 @@ use App\Enums\IssuerType;
 use App\Http\Resources\AppIssuerResource;
 use App\Http\Resources\UserIssuerResource;
 use App\Models\Model;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Notifications\Notification;
 
 class WebHookNotification extends Notification
 {
     public function __construct(
         private array $data,
-        private Model|null $issuer,
+        private Model|Authenticatable|Pivot|null $issuer,
     ) {
     }
 

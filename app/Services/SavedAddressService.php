@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 
 class SavedAddressService implements SavedAddressServiceContract
 {
-    public function storeAddress(SavedAddressDto $addressDto, int $type): SavedAddress
+    public function storeAddress(SavedAddressDto $addressDto, int $type): ?SavedAddress
     {
         $savedAddress = null;
 
@@ -38,7 +38,7 @@ class SavedAddressService implements SavedAddressServiceContract
             ]);
         });
 
-        if ($savedAddress->default) {
+        if ($savedAddress?->default) {
             $this->defaultSet($savedAddress, $type);
         }
 
@@ -60,7 +60,7 @@ class SavedAddressService implements SavedAddressServiceContract
                 'name' => $addressDto->getName(),
             ]);
 
-            $address->address->update([
+            $address->address?->update([
                 'name' => $addressDto->getAddress()['name'],
                 'phone' => $addressDto->getAddress()['phone'],
                 'address' => $addressDto->getAddress()['address'],

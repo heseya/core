@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\RoleType;
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -10,6 +11,8 @@ class UserUpdateRequest extends FormRequest
 {
     public function rules(): array
     {
+        /** @var User $user */
+        $user = $this->route('user');
         return [
             'name' => ['nullable', 'string', 'max:255'],
             'email' => [
@@ -17,7 +20,7 @@ class UserUpdateRequest extends FormRequest
                 'email',
                 'max:255',
                 Rule::unique('users')
-                    ->ignoreModel($this->route('user'))
+                    ->ignoreModel($user)
                     ->whereNull('deleted_at'),
             ],
             'roles' => ['array'],

@@ -37,7 +37,7 @@ class ShippingMethodStoreRequest extends FormRequest
                 'shipping_time_min' => ['required', 'numeric', 'integer', 'min:0'],
                 'shipping_time_max' => ['required', 'numeric', 'integer', 'min:0', 'gte:shipping_time_min'],
                 'integration_key' => ['string'],
-                'shipping_type' => [new EnumValue(ShippingType::class, false)],
+                'shipping_type' => ['required', new EnumValue(ShippingType::class, false)],
                 'shipping_points' => ['array'],
                 'shipping_points.*.id' => ['string', 'exists:addresses,id'],
             ]

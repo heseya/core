@@ -21,7 +21,7 @@ return new class() extends Migration {
                     foreach ($product->schemas() as $schema) {
                         $schemaPrice += $schema->price_initial;
                     }
-                    $product::update([
+                    $product->update([
                         'base_price' => $product->price,
                         'base_price_initial' => $product->price_initial,
                         'price' => $product->price + $schemaPrice,
@@ -37,7 +37,7 @@ return new class() extends Migration {
         OrderProduct::chunk(
             100,
             fn ($products) => $products->each(
-                fn (OrderProduct $product) => $product::update([
+                fn (OrderProduct $product) => $product->update([
                     'price' => $product->base_price,
                     'price_initial' => $product->base_price_initial,
                 ])

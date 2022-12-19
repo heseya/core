@@ -61,3 +61,17 @@ AvailabilityResource:
       type: string
       format: date-time
       example: '2021-09-13T11:11'
+
+ItemWithProducts:
+  type: object
+  allOf:
+    - $ref: '#/Item'
+    - properties:
+        products:
+          type: array
+          items:
+            $ref: './Products.yml#/ProductShort'
+        schemas:
+          type: array
+          items:
+            $ref: './Schemas.yml#/SchemaShort'

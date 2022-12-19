@@ -13,7 +13,7 @@ use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
-class ShippingMethodDto extends Dto implements InstantiateFromRequest
+class ShippingMethodUpdateDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
@@ -55,17 +55,17 @@ class ShippingMethodDto extends Dto implements InstantiateFromRequest
         );
     }
 
-    public function getName(): ?string
+    public function getName(): string|Missing
     {
         return $this->name;
     }
 
-    public function isPublic(): ?bool
+    public function isPublic(): bool|Missing
     {
         return $this->public;
     }
 
-    public function isBlockList(): ?bool
+    public function isBlockList(): bool|Missing
     {
         return $this->block_list;
     }
@@ -95,7 +95,7 @@ class ShippingMethodDto extends Dto implements InstantiateFromRequest
         return $this->shipping_time_max;
     }
 
-    public function getShippingType(): string
+    public function getShippingType(): Missing|string
     {
         return $this->shipping_type;
     }
@@ -105,7 +105,7 @@ class ShippingMethodDto extends Dto implements InstantiateFromRequest
         return $this->shipping_points;
     }
 
-    public function getIntegrationKey(): string
+    public function getIntegrationKey(): string|null
     {
         return $this->integration_key;
     }

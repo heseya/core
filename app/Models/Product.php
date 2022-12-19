@@ -271,6 +271,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         $sales = $this->discounts->filter(function ($discount): bool {
             if (
                 $discount->code === null
+                && $discount->active
                 && $discount->target_type->is(DiscountTargetType::PRODUCTS)
                 && $discount->target_is_allow_list
             ) {

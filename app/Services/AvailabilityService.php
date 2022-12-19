@@ -227,7 +227,7 @@ class AvailabilityService implements AvailabilityServiceContract
         return $itemsOptions->every(
             function (Collection $item) use ($itemsOptions, $items) {
                 $requiredAmount = ($items[$item->first()->getKey()] ?? 0) +
-                    $itemsOptions->get($item->first()->getKey())->count();
+                    $itemsOptions->get($item->first()->getKey())?->count();
                 return $item->first()->quantity >= $requiredAmount;
             }
         );
@@ -254,7 +254,6 @@ class AvailabilityService implements AvailabilityServiceContract
         foreach ($timeDeposits as $period => $timeDeposit) {
             $onlyOverstocked = [];
             if ($timeDeposit->count() < $items->count()) {
-
                 $itemsWithDeposit = $timeDeposit->pluck('item_id')->toArray();
 
                 $onlyOverstocked = Arr::where($overstockedItems, function ($value, $key) use ($itemsWithDeposit): bool {

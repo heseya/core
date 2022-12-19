@@ -44,11 +44,12 @@ class AppService implements AppServiceContract
             throw new ClientException(Exceptions::CLIENT_ASSIGN_INVALID_PERMISSIONS);
         }
 
-        if (!Auth::user()->hasAllPermissions($permissions->toArray())) {
+        if (!Auth::user()?->hasAllPermissions($permissions->toArray())) {
             throw new ClientException(Exceptions::CLIENT_ADD_APP_WITH_PERMISSIONS_USER_DONT_HAVE);
         }
 
         try {
+            /** @var Response $response */
             $response = Http::get($dto->getUrl());
         } catch (Throwable) {
             throw new ClientException(Exceptions::CLIENT_FAILED_TO_CONNECT_WITH_APP);
@@ -79,7 +80,7 @@ class AppService implements AppServiceContract
             );
         }
 
-        /** @var Collection<int, mixed>|array $appConfig */
+        /** @var array $appConfig */
         $appConfig = $response->json();
         /** @var Collection<int, mixed> $requiredPermissions */
         $requiredPermissions = $appConfig['required_permissions'];
@@ -104,7 +105,7 @@ class AppService implements AppServiceContract
         $name = $dto->getName() ?? $appConfig['name'];
         $slug = Str::slug($name);
 
-        $app = App::create([
+        $app = App::query()->create([
             'url' => $dto->getUrl(),
             'name' => $name,
             'slug' => $slug,
@@ -138,6 +139,7 @@ class AppService implements AppServiceContract
         $url = $this->urlService->urlAppendPath($dto->getUrl(), '/install');
 
         try {
+            /** @var Response $response */
             $response = Http::post($url, [
                 'api_url' => Config::get('app.url'),
                 'api_name' => Config::get('app.name'),
@@ -221,6 +223,7 @@ class AppService implements AppServiceContract
         $url = $app->url . (Str::endsWith($app->url, '/') ? 'uninstall' : '/uninstall');
 
         try {
+            /** @var Response $response */
             $response = Http::post($url, [
                 'uninstall_token' => $app->uninstall_token,
             ]);
@@ -234,7 +237,9 @@ class AppService implements AppServiceContract
             }
         }
 
-        Permission::where('name', 'like', 'app.' . $app->slug . '%')->delete();
+        Permission::query()
+            ->where('name', 'like', 'app.' . $app->slug . '%')
+            ->delete();
 
         Artisan::call('permission:cache-reset');
 
@@ -298,7 +303,7 @@ class AppService implements AppServiceContract
             'role_id' => $role->getKey(),
         ]);
 
-        Auth::user()->assignRole($role);
+        Auth::user()?->assignRole($role);
     }
 
     /**

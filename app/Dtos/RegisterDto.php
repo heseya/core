@@ -19,6 +19,7 @@ class RegisterDto extends Dto implements InstantiateFromRequest
     private string|null|Missing $birthday_date;
     private string|null|Missing $phone_country;
     private string|null|Missing $phone_number;
+    protected array|Missing $metadata_personal;
 
     public static function instantiateFromRequest(FormRequest|RegisterRequest $request): self
     {
@@ -32,6 +33,7 @@ class RegisterDto extends Dto implements InstantiateFromRequest
             birthday_date: $request->input('birthday_date', new Missing()),
             phone_country: $phone instanceof PhoneNumber ? $phone->getCountry() : $phone,
             phone_number: $phone instanceof PhoneNumber ? $phone->formatNational() : $phone,
+            metadata_personal: self::mapMetadata($request),
         );
     }
 
@@ -68,5 +70,21 @@ class RegisterDto extends Dto implements InstantiateFromRequest
     public function getPhoneNumber(): Missing|string|null
     {
         return $this->phone_number;
+    }
+
+    public function getMetadataPersonal(): Missing|array
+    {
+        return $this->metadata_personal;
+    }
+
+    private static function mapMetadata(FormRequest|RegisterRequest $request): array|Missing
+    {
+        $metadata = Collection::make();
+        if ($request->has('metadata_personal')) {
+            foreach ($request->input('metadata_personal') as $key => $value) {
+                $metadata->push(MetadataPersonalDto::manualInit($key, $value));
+            }
+        }
+        return $metadata->isEmpty() ? new Missing() : $metadata->toArray();
     }
 }

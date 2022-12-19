@@ -4,26 +4,8 @@ WishlistProduct:
     id:
       type: string
       example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-    product_id:
-      type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    product:
+      $ref: './Products.yml#/ProductIndex'
     created_at:
       type: string
       example: '2017-07-21T17:32:28Z'
-
-WishlistProductFull:
-  type: object
-  properties:
-    id:
-      type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-    product_id:
-      type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-    user_id:
-      type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-    created_at:
-      type: string
-      example: '2017-07-21T17:32:28Z'
-

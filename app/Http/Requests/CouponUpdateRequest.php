@@ -28,6 +28,7 @@ class CouponUpdateRequest extends CouponCreateRequest
                 'max:64',
                 Rule::unique('discounts')->ignore($coupon->code, 'code'),
             ],
+            'active' => [new Boolean()],
         ]);
     }
 }

@@ -9,6 +9,7 @@ use App\Dtos\OrderIndexDto;
 use App\Dtos\OrderProductSearchDto;
 use App\Dtos\OrderProductUpdateDto;
 use App\Dtos\OrderProductUrlDto;
+use App\Dtos\OrderUpdateDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\SchemaType;
 use App\Enums\ShippingType;
@@ -23,6 +24,7 @@ use App\Exceptions\ServerException;
 use App\Exceptions\StoreException;
 use App\Http\Resources\OrderResource;
 use App\Models\Address;
+use App\Models\App;
 use App\Models\CartResource;
 use App\Models\Order;
 use App\Models\OrderProduct;
@@ -30,6 +32,7 @@ use App\Models\PackageTemplate;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
+use App\Models\User;
 use App\Notifications\SendUrls;
 use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
@@ -86,8 +89,14 @@ class OrderService implements OrderServiceContract
         DB::beginTransaction();
 
         try {
+            $items = $dto->getItems();
+
+            if ($items instanceof Missing) {
+                throw new OrderException('Attempted to create an order without products!');
+            }
+
             // Schema values and warehouse items validation
-            $products = $this->itemService->checkOrderItems($dto->getItems());
+            $products = $this->itemService->checkOrderItems($items);
 
             [$shippingMethod, $digitalShippingMethod] = $this->getDeliveryMethods($dto, $products, true);
 
@@ -95,11 +104,15 @@ class OrderService implements OrderServiceContract
             switch ($shippingMethod?->shipping_type) {
                 case ShippingType::ADDRESS:
                     $shippingPlace = null;
-                    $shippingAddressId = Address::firstOrCreate($dto->getShippingPlace()->toArray())->getKey();
+                    $shippingAddressId = Address::query()
+                        ->firstOrCreate($dto->getShippingPlace()->toArray()) // @phpstan-ignore-line
+                        ->getKey();
                     break;
                 case ShippingType::POINT:
                     $shippingPlace = null;
-                    $shippingAddressId = Address::find($dto->getShippingPlace())->getKey();
+                    $shippingAddressId = Address::query() // @phpstan-ignore-line
+                        ->find($dto->getShippingPlace())
+                        ->getKey();
                     break;
                 case ShippingType::POINT_EXTERNAL:
                     $shippingPlace = $dto->getShippingPlace();
@@ -125,7 +138,10 @@ class OrderService implements OrderServiceContract
                 throw new ServerException(Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED);
             }
 
-            $order = Order::create(
+            /** @var User|App $buyer */
+            $buyer = Auth::user();
+
+            $order = Order::query()->create(
                 [
                     'code' => $this->nameService->generate(),
                     'currency' => 'PLN',
@@ -136,8 +152,8 @@ class OrderService implements OrderServiceContract
                     'status_id' => $status->getKey(),
                     'shipping_address_id' => $shippingAddressId,
                     'billing_address_id' => isset($billingAddress) ? $billingAddress->getKey() : null,
-                    'buyer_id' => Auth::user()->getKey(),
-                    'buyer_type' => Auth::user()::class,
+                    'buyer_id' => $buyer->getKey(),
+                    'buyer_type' => $buyer::class,
                     'invoice_requested' => $getInvoiceRequested,
                     'shipping_place' => $shippingPlace,
                     'shipping_type' => $shippingMethod->shipping_type ?? $digitalShippingMethod->shipping_type,
@@ -148,7 +164,7 @@ class OrderService implements OrderServiceContract
             $cartValueInitial = 0;
             $tempSchemaOrderProduct = [];
             try {
-                foreach ($dto->getItems() as $item) {
+                foreach ($items as $item) {
                     /** @var Product $product */
                     $product = $products->firstWhere('id', $item->getProductId());
 
@@ -243,7 +259,7 @@ class OrderService implements OrderServiceContract
         }
     }
 
-    public function update(OrderDto $dto, Order $order): JsonResponse
+    public function update(OrderUpdateDto $dto, Order $order): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -251,7 +267,7 @@ class OrderService implements OrderServiceContract
 
             $shippingType = $shippingMethod
                 ? $shippingMethod->shipping_type
-                : $order->shippingMethod->shipping_type;
+                : $order->shippingMethod?->shipping_type;
 
             if ($shippingType !== ShippingType::POINT) {
                 $shippingPlace = $dto->getShippingPlace() instanceof AddressDto ?
@@ -262,7 +278,8 @@ class OrderService implements OrderServiceContract
                     ) : $dto->getShippingPlace();
             } else {
                 if (!($dto->getShippingPlace() instanceof Missing)) {
-                    $shippingPlace = Address::find($dto->getShippingPlace())->getKey();
+                    // @phpstan-ignore-next-line
+                    $shippingPlace = Address::query()->find($dto->getShippingPlace())->getKey();
                 } else {
                     $shippingPlace = null;
                 }
@@ -380,7 +397,11 @@ class OrderService implements OrderServiceContract
             ->paginate(Config::get('pagination.per_page'));
     }
 
-    private function getDeliveryMethods(OrderDto|CartDto $dto, Collection $products, bool $required): array {
+    private function getDeliveryMethods(
+        OrderDto|CartDto|OrderUpdateDto $dto,
+        Collection $products,
+        bool $required,
+    ): array {
         try {
             // Validate whether delivery methods are the proper type
             $shippingMethod = $dto->getShippingMethodId() instanceof Missing ? null :
@@ -432,7 +453,7 @@ class OrderService implements OrderServiceContract
 
     private function modifyAddress(Order $order, string $attribute, AddressDto|Missing $addressDto): ?Address
     {
-        if (!$this->checkAddress($addressDto)) {
+        if ($addressDto instanceof Missing || !$this->checkAddress($addressDto)) {
             return null;
         }
 
@@ -445,6 +466,7 @@ class OrderService implements OrderServiceContract
     private function removeItemsFromWarehouse(OrderProduct $orderProduct, array $tempSchemaOrderProduct): bool
     {
         $itemsToRemove = [];
+        /** @var Product $product */
         $product = $orderProduct->product;
         $productItems = $product->items;
         foreach ($productItems as $productItem) {
@@ -503,14 +525,20 @@ class OrderService implements OrderServiceContract
 
         switch ($shippingType) {
             case ShippingType::POINT:
-                if ($order->shippingMethod->shipping_type === ShippingType::POINT && !$shippingPlace) {
+                if ($order->shippingMethod?->shipping_type === ShippingType::POINT && !$shippingPlace) {
                     return $order->shipping_address_id;
                 }
 
                 return $shippingPlace;
             case ShippingType::ADDRESS:
-                if ($order->shippingMethod->shipping_type === ShippingType::ADDRESS && !$shippingPlace) {
+                if ($order->shippingMethod?->shipping_type === ShippingType::ADDRESS && !$shippingPlace) {
                     return $order->shipping_address_id;
+                }
+
+                if (!($shippingPlace instanceof Address)) {
+                    throw new ServerException(
+                        'Attempting to resolve shipping of type address but place is not Address',
+                    );
                 }
 
                 return $shippingPlace->getKey();

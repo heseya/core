@@ -33,6 +33,7 @@ class RegisterRequest extends FormRequest
             'consents' => ['array', new RequiredConsents()],
             'birthday_date' => ['date', 'before_or_equal:now'],
             'phone' => ['phone:AUTO'],
+            'metadata_personal' => ['array'],
         ];
     }
 }

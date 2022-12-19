@@ -88,6 +88,62 @@ class ProductSetUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateTreeFalse($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.edit');
+
+        Event::fake([ProductSetUpdated::class]);
+
+        $newSet = ProductSet::factory()->create([
+            'public' => false,
+            'order' => 40,
+        ]);
+
+        $set = [
+            'name' => 'Test Edit',
+            'public' => true,
+            'hide_on_index' => true,
+        ];
+
+        $parentId = [
+            'parent_id' => null,
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->patchJson(
+                '/product-sets/id:' . $newSet->getKey() . '?tree=0',
+                $set + $parentId + [
+                    'children_ids' => [],
+                    'slug_suffix' => 'test-edit',
+                    'slug_override' => false,
+                ],
+            )
+            ->assertOk()
+            ->assertJson([
+                'data' => $set + [
+                    'parent' => null,
+                    'children_ids' => [],
+                    'slug' => 'test-edit',
+                    'slug_suffix' => 'test-edit',
+                    'slug_override' => false,
+                ],
+            ])
+            ->assertJsonMissing(['data' => 'children']);
+
+        $this->assertDatabaseHas(
+            'product_sets',
+            $set + $parentId + [
+                'slug' => 'test-edit',
+            ]
+        );
+
+        Event::assertDispatched(ProductSetUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateWithPartialData($user): void
     {
         $this->$user->givePermissionTo('product_sets.edit');

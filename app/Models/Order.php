@@ -140,6 +140,7 @@ class Order extends Model implements AuditableContract, SortableContract
             ?? 0;
 
         return !$this->paid &&
+            $this->status !== null &&
             !$this->status->cancel &&
             $paymentMethodCount > 0;
     }
@@ -207,7 +208,7 @@ class Order extends Model implements AuditableContract, SortableContract
     {
         do {
             $code = Str::upper(Str::random(6));
-        } while (Order::where('code', $code)->exists());
+        } while (Order::query()->where('code', $code)->exists());
 
         return $code;
     }
@@ -215,5 +216,16 @@ class Order extends Model implements AuditableContract, SortableContract
     public function buyer(): MorphTo
     {
         return $this->morphTo('order', 'buyer_type', 'buyer_id', 'id');
+    }
+
+    public function preferredLocale(): string
+    {
+        $country = Str::of($this->deliveryAddress?->country ?? '')->limit(2, '')->lower();
+
+        if ($country->is('pl')) {
+            return 'pl';
+        }
+
+        return 'en';
     }
 }

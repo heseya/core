@@ -122,3 +122,27 @@ BannersParam:
     responses:
       204:
         description: No content
+
+BannersSlug:
+  get:
+    tags:
+      - Banners
+    summary: 'get specific banner by slug'
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+    security:
+      - BearerAuth: [ ]
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: './../schemas/Banners.yml#/BannerMetadata'

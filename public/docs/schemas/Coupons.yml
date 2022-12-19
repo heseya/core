@@ -33,6 +33,21 @@ CouponUpdate:
           type: array
           items:
             $ref: './DiscountConditions.yml#/ConditionGroup'
+        target_products:
+          type: array
+          items:
+            type: string
+            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+        target_sets:
+          type: array
+          items:
+            type: string
+            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+        target_shipping_methods:
+          type: array
+          items:
+            type: string
+            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
 
 CouponStore:
   type: object

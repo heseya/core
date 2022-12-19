@@ -204,6 +204,59 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUploadWithSlug($user): void
+    {
+        $this->$user->givePermissionTo('media.add');
+
+        $host = Config::get('silverbox.host');
+        Http::fake([
+            $host . '/' . Config::get('silverbox.client') => Http::response([0 => ['path' => 'image.jpeg']]),
+        ]);
+        Http::fake([$host . '/image.jpeg' => Http::response(['path' => 'new-filename.jpeg'])]);
+
+        $file = UploadedFile::fake()->image('image.jpeg');
+        $this->actingAs($this->$user)
+            ->postJson('/media', [
+                'file' => $file,
+                'alt' => 'test',
+                'slug' => 'new-filename',
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'type' => MediaType::PHOTO,
+                'alt' => 'test',
+                'slug' => 'new-filename',
+            ]);
+
+        $this->assertDatabaseHas('media', [
+            'slug' => 'new-filename',
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUploadWithExistingSlug($user): void
+    {
+        $this->$user->givePermissionTo('media.add');
+
+        Media::factory()->create([
+            'slug' => 'existing-filename',
+        ]);
+
+        $file = UploadedFile::fake()->image('image.jpeg');
+        $this->actingAs($this->$user)
+            ->postJson('/media', [
+                'file' => $file,
+                'alt' => 'test',
+                'slug' => 'existing-filename',
+            ])
+            ->assertUnprocessable();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUploadPdf($user): void
     {
         $this->$user->givePermissionTo('media.add');

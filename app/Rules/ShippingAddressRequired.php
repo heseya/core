@@ -15,20 +15,19 @@ class ShippingAddressRequired implements ImplicitRule, DataAwareRule
      * Determine if the validation rule passes.
      *
      * @param  string  $attribute
-     * @param  mixed  $value
-     *
-     * @return bool
      */
-    public function passes($attribute, $value)
+    public function passes(mixed $attribute, mixed $value): bool
     {
         if (!array_key_exists('shipping_method_id', $this->data)) {
             return true;
         }
 
-        $shippingMethod = ShippingMethod::find($this->data['shipping_method_id']);
-        if (($shippingMethod->shipping_type === ShippingType::POINT
-                || $shippingMethod->shipping_type === ShippingType::ADDRESS)
-            && $value === null
+        /** @var ShippingMethod|null $shippingMethod */
+        $shippingMethod = ShippingMethod::query()->find($this->data['shipping_method_id']);
+
+        if (
+            ($shippingMethod?->shipping_type === ShippingType::POINT ||
+                $shippingMethod?->shipping_type === ShippingType::ADDRESS) && $value === null
         ) {
             return false;
         }
@@ -38,10 +37,8 @@ class ShippingAddressRequired implements ImplicitRule, DataAwareRule
 
     /**
      * Get the validation error message.
-     *
-     * @return string
      */
-    public function message()
+    public function message(): string
     {
         return 'Shipping address is required with this shipping method type.';
     }

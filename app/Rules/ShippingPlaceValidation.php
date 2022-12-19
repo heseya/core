@@ -17,20 +17,18 @@ class ShippingPlaceValidation implements ImplicitRule, DataAwareRule
      * Determine if the validation rule passes.
      *
      * @param  string  $attribute
-     * @param  mixed  $value
-     *
-     * @return bool
      */
-    public function passes($attribute, $value): bool
+    public function passes($attribute, mixed $value): bool
     {
         if (!array_key_exists('shipping_method_id', $this->data) || $this->data['shipping_method_id'] === null) {
             return true;
         }
 
-        $shippingMethod = ShippingMethod::find($this->data['shipping_method_id']);
+        /** @var ShippingMethod|null $shippingMethod */
+        $shippingMethod = ShippingMethod::query()->find($this->data['shipping_method_id']);
 
-        return match ($shippingMethod->shipping_type) {
-            ShippingType::POINT => Address::where('id', $value)->exists(),
+        return match ($shippingMethod?->shipping_type) {
+            ShippingType::POINT => Address::query()->where('id', $value)->exists(),
             ShippingType::ADDRESS => !Validator::make($this->data, [
                 'shipping_place' => ['nullable', 'array', new ShippingAddressRequired()],
                 'shipping_place.name' => ['string', 'max:255'],
@@ -48,8 +46,6 @@ class ShippingPlaceValidation implements ImplicitRule, DataAwareRule
 
     /**
      * Get the validation error message.
-     *
-     * @return string
      */
     public function message(): string
     {

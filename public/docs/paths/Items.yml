@@ -131,7 +131,7 @@ ItemsParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Items.yml#/Item'
+                  $ref: './../schemas/Items.yml#/ItemWithProducts'
               type: object
     security:
       - BearerAuth: [ ]

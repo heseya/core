@@ -17,6 +17,7 @@ class ProductSetUpdateRequest extends FormRequest implements SeoRequestContract
         'public',
         'hide_on_index',
         'seo.no_index',
+        'tree',
     ];
 
     public function rules(): array
@@ -40,6 +41,7 @@ class ProductSetUpdateRequest extends FormRequest implements SeoRequestContract
                 'cover_id' => ['uuid', 'uuid', 'exists:media,id'],
                 'attributes' => ['array'],
                 'attributes.*' => ['uuid', 'exists:attributes,id'],
+                'tree' => [new Boolean()],
             ],
         );
     }

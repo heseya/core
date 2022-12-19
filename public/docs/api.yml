@@ -121,8 +121,6 @@ paths:
     $ref: './paths/WebHooks.yml#/WebhooksEvents'
   /filters:
     $ref: './paths/Filters.yml#/Filters'
-  /furgonetka/create-package:
-    $ref: './paths/Furgonetka.yml#/FurgonetkaCreatePackage'
   /items:
     $ref: './paths/Items.yml#/Items'
   '/items/id:{id}':
@@ -242,6 +240,10 @@ paths:
     $ref: './paths/ProductSets.yml#/ProductSetsProducts'
   '/product-sets/id:{id}/products/reorder':
     $ref: './paths/ProductSets.yml#/ProductSetsProductsReorder'
+  '/product-sets/favourites':
+    $ref: './paths/ProductSets.yml#/ProductSetsFavourites'
+  '/product-sets/favourites/id:{id}':
+    $ref: './paths/ProductSets.yml#/ProductSetsFavouritesParams'
   /roles:
     $ref: './paths/Roles.yml#/Roles'
   '/roles/id:{id}':
@@ -380,6 +382,8 @@ paths:
     $ref: './paths/Banners.yml#/Banners'
   '/banners/id:{id}':
     $ref: './paths/Banners.yml#/BannersParam'
+  '/banners/{slug}':
+    $ref: './paths/Banners.yml#/BannersSlug'
   '/google-categories/{lang}':
     $ref: './paths/GoogleCategories.yml#/GoogleCategories'
   '/wishlist':
@@ -507,7 +511,7 @@ components:
     Consents:
       $ref: './schemas/Consents.yml#/Consent'
     Wishlist:
-      $ref: './schemas/Wishlist.yml#/WishlistProductFull'
+      $ref: './schemas/Wishlist.yml#/WishlistProduct'
     UserPreferences:
       $ref: './schemas/Auth.yml#/Preferences'
   requestBodies:
