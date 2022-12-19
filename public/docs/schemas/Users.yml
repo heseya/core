@@ -26,16 +26,6 @@ User:
       type: array
       items:
         $ref: './Consents.yml#/ConsentUser'
-    delivery_address:
-      description: 'Saved user delivery addresses'
-      type: array
-      items:
-        $ref: './../schemas/Addresses.yml#/Address'
-    invoice_address:
-      description: 'Saved user invoice addresses'
-      type: array
-      items:
-        $ref: './../schemas/Addresses.yml#/Address'
     birthdate_date:
       description: 'User birthday date'
       type: string

@@ -85,6 +85,8 @@ final class Exceptions extends Enum
 
     public const CLIENT_SHIPPING_METHOD_NOT_OWNER = 'This shipping method belongs to other application';
 
+    public const CLIENT_SHIPPING_METHOD_INVALID_TYPE = 'Shipping method or digital shipping method type is invalid';
+
     public const CDN_NOT_ALLOWED_TO_CHANGE_ALT = 'You cannot change alt attribute of this image';
 
     public const SERVER_CDN_ERROR = 'CDN responded with an error';

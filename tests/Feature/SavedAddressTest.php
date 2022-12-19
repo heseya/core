@@ -26,11 +26,11 @@ class SavedAddressTest extends TestCase
 
     public function testCreateUnauthorized(): void
     {
-        $this->postJson('/auth/profile/delivery-addresses', [
+        $this->postJson('/auth/profile/shipping-addresses', [
             'name' => 'test',
             'default' => false,
             'address_id' => $this->address->getKey(),
-            'type' => SavedAddressType::DELIVERY,
+            'type' => SavedAddressType::SHIPPING,
         ])->assertForbidden();
     }
 
@@ -41,10 +41,10 @@ class SavedAddressTest extends TestCase
     {
         $this->$user->givePermissionTo('profile.addresses_manage');
 
-        $response = $this->actingAs($this->$user)->postJson('/auth/profile/delivery-addresses', [
+        $response = $this->actingAs($this->$user)->postJson('/auth/profile/shipping-addresses', [
             'name' => 'test',
             'default' => false,
-            'type' => SavedAddressType::DELIVERY,
+            'type' => SavedAddressType::SHIPPING,
             'address' => [
                 'name' => 'test',
                 'phone' => '123456789',
@@ -63,7 +63,7 @@ class SavedAddressTest extends TestCase
         $this->assertDatabaseHas('saved_addresses', [
             'name' => 'test',
             'default' => 0,
-            'type' => SavedAddressType::DELIVERY,
+            'type' => SavedAddressType::SHIPPING,
             'address_id' => $savedAddress->address->getKey(),
         ])
             ->assertDatabaseHas('addresses', [
@@ -89,13 +89,13 @@ class SavedAddressTest extends TestCase
             'default' => true,
             'user_id' => $this->$user->getKey(),
             'address_id' => $this->address->getKey(),
-            'type' => SavedAddressType::DELIVERY,
+            'type' => SavedAddressType::SHIPPING,
         ]);
 
-        $this->actingAs($this->$user)->postJson('/auth/profile/delivery-addresses', [
+        $this->actingAs($this->$user)->postJson('/auth/profile/shipping-addresses', [
             'name' => 'test2',
             'default' => true,
-            'type' => SavedAddressType::DELIVERY,
+            'type' => SavedAddressType::SHIPPING,
             'address' => [
                 'name' => 'test',
                 'phone' => '123456789',
@@ -114,12 +114,12 @@ class SavedAddressTest extends TestCase
             ->assertDatabaseHas('saved_addresses', [
                 'name' => 'test',
                 'default' => 0,
-                'type' => SavedAddressType::DELIVERY,
+                'type' => SavedAddressType::SHIPPING,
             ])
             ->assertDatabaseHas('saved_addresses', [
                 'name' => 'test2',
                 'default' => 1,
-                'type' => SavedAddressType::DELIVERY,
+                'type' => SavedAddressType::SHIPPING,
                 'address_id' => $savedAddress->address->getKey(),
             ])
             ->assertDatabaseHas('addresses', [
@@ -135,11 +135,11 @@ class SavedAddressTest extends TestCase
 
     public function testUpdateUnauthorized(): void
     {
-        $this->postJson('/auth/profile/delivery-addresses', [
+        $this->postJson('/auth/profile/shipping-addresses', [
             'name' => 'test',
             'default' => false,
             'address_id' => $this->address->getKey(),
-            'type' => SavedAddressType::DELIVERY,
+            'type' => SavedAddressType::SHIPPING,
         ])->assertForbidden();
     }
 
@@ -155,14 +155,14 @@ class SavedAddressTest extends TestCase
             'default' => false,
             'user_id' => $this->$user->getKey(),
             'address_id' => $this->address->getKey(),
-            'type' => SavedAddressType::DELIVERY,
+            'type' => SavedAddressType::SHIPPING,
         ]);
 
         $this->actingAs($this->$user)
-            ->patchJson('/auth/profile/delivery-addresses/id:' . $savedAddress->getKey(), [
+            ->patchJson('/auth/profile/shipping-addresses/id:' . $savedAddress->getKey(), [
                 'name' => 'test2',
                 'default' => true,
-                'type' => SavedAddressType::DELIVERY,
+                'type' => SavedAddressType::SHIPPING,
                 'address' => [
                     'name' => 'test',
                     'phone' => '123456789',
@@ -179,13 +179,13 @@ class SavedAddressTest extends TestCase
                 'name' => 'test',
                 'default' => false,
                 'address_id' => $this->address->getKey(),
-                'type' => SavedAddressType::DELIVERY,
+                'type' => SavedAddressType::SHIPPING,
             ])
             ->assertDatabaseHas('saved_addresses', [
                 'name' => 'test2',
                 'default' => true,
                 'address_id' => $savedAddress->address->getKey(),
-                'type' => SavedAddressType::DELIVERY,
+                'type' => SavedAddressType::SHIPPING,
             ])
             ->assertDatabaseHas('addresses', [
                 'name' => 'test',
@@ -210,13 +210,13 @@ class SavedAddressTest extends TestCase
             'default' => true,
             'user_id' => $this->$user->getKey(),
             'address_id' => $this->address->getKey(),
-            'type' => SavedAddressType::DELIVERY,
+            'type' => SavedAddressType::SHIPPING,
         ]);
 
-        $this->actingAs($this->$user)->postJson('/auth/profile/delivery-addresses', [
+        $this->actingAs($this->$user)->postJson('/auth/profile/shipping-addresses', [
             'name' => 'test2',
             'default' => false,
-            'type' => SavedAddressType::DELIVERY,
+            'type' => SavedAddressType::SHIPPING,
             'address' => [
                 'name' => 'test',
                 'phone' => '123456789',
@@ -235,10 +235,10 @@ class SavedAddressTest extends TestCase
             ->first();
 
         $this->actingAs($this->$user)
-            ->patchJson('/auth/profile/delivery-addresses/id:' . $savedAddress->getKey(), [
+            ->patchJson('/auth/profile/shipping-addresses/id:' . $savedAddress->getKey(), [
                 'name' => 'test2',
                 'default' => true,
-                'type' => SavedAddressType::DELIVERY,
+                'type' => SavedAddressType::SHIPPING,
                 'address' => [
                     'name' => 'test2',
                     'phone' => '987654321',
@@ -254,12 +254,12 @@ class SavedAddressTest extends TestCase
             ->assertDatabaseHas('saved_addresses', [
                 'name' => 'test2',
                 'default' => 1,
-                'type' => SavedAddressType::DELIVERY,
+                'type' => SavedAddressType::SHIPPING,
             ])
             ->assertDatabaseHas('saved_addresses', [
                 'name' => 'test1',
                 'default' => 0,
-                'type' => SavedAddressType::DELIVERY,
+                'type' => SavedAddressType::SHIPPING,
             ])
             ->assertDatabaseHas('addresses', [
                 'name' => 'test2',
@@ -291,15 +291,15 @@ class SavedAddressTest extends TestCase
         $savedAddress = SavedAddress::create([
             'default' => 0,
             'name' => 'test',
-            'type' => SavedAddressType::DELIVERY,
+            'type' => SavedAddressType::SHIPPING,
             'address_id' => $this->address->getKey(),
             'user_id' => $this->fakeUser->getKey(),
         ]);
 
-        $this->actingAs($this->$user)->patchJson('/auth/profile/delivery-addresses/id:' . $savedAddress->getKey(), [
+        $this->actingAs($this->$user)->patchJson('/auth/profile/shipping-addresses/id:' . $savedAddress->getKey(), [
             'name' => 'test2',
             'default' => false,
-            'type' => SavedAddressType::DELIVERY,
+            'type' => SavedAddressType::SHIPPING,
             'address' => [
                 'name' => 'test',
                 'phone' => '123456789',
@@ -325,14 +325,14 @@ class SavedAddressTest extends TestCase
             'default' => false,
             'user_id' => $this->$user->getKey(),
             'address_id' => $this->address->getKey(),
-            'type' => SavedAddressType::DELIVERY,
+            'type' => SavedAddressType::SHIPPING,
         ]);
 
         $this->actingAs($this->$user)
-            ->patchJson('/auth/profile/delivery-addresses/id:' . $savedAddress->getKey(), [
+            ->patchJson('/auth/profile/shipping-addresses/id:' . $savedAddress->getKey(), [
                 'name' => 'test2',
                 'default' => true,
-                'type' => SavedAddressType::DELIVERY,
+                'type' => SavedAddressType::SHIPPING,
                 'address' => [
                     'name' => 'test',
                     'phone' => '123456789',
@@ -362,12 +362,12 @@ class SavedAddressTest extends TestCase
         $savedAddress = SavedAddress::create([
             'default' => 0,
             'name' => 'test',
-            'type' => SavedAddressType::DELIVERY,
+            'type' => SavedAddressType::SHIPPING,
             'address_id' => $this->address->getKey(),
             'user_id' => $this->fakeUser->getKey(),
         ]);
 
-        $this->deleteJson('/auth/profile/delivery-addresses/id:' . $savedAddress->getKey())->assertForbidden();
+        $this->deleteJson('/auth/profile/shipping-addresses/id:' . $savedAddress->getKey())->assertForbidden();
     }
 
     /**
@@ -382,11 +382,11 @@ class SavedAddressTest extends TestCase
             'default' => false,
             'user_id' => $this->$user->getKey(),
             'address_id' => $this->address->getKey(),
-            'type' => SavedAddressType::DELIVERY,
+            'type' => SavedAddressType::SHIPPING,
         ]);
 
         $this->actingAs($this->$user)
-            ->deleteJson('/auth/profile/delivery-addresses/id:' . $savedAddress->getKey());
+            ->deleteJson('/auth/profile/shipping-addresses/id:' . $savedAddress->getKey());
 
         $this->assertDatabaseMissing('saved_addresses', [
             'id' => $savedAddress->getKey(),
@@ -405,11 +405,11 @@ class SavedAddressTest extends TestCase
             'default' => true,
             'user_id' => $this->$user->getKey(),
             'address_id' => $this->address->getKey(),
-            'type' => SavedAddressType::DELIVERY,
+            'type' => SavedAddressType::SHIPPING,
         ]);
 
         $this->actingAs($this->$user)
-            ->deleteJson('/auth/profile/delivery-addresses/id:' . $savedAddress->getKey())
+            ->deleteJson('/auth/profile/shipping-addresses/id:' . $savedAddress->getKey())
             ->assertStatus(422)
             ->assertJsonFragment(['message' => 'You cannot delete default address']);
     }
@@ -421,10 +421,10 @@ class SavedAddressTest extends TestCase
     {
         $this->$user->givePermissionTo('profile.addresses_manage');
 
-        $this->actingAs($this->$user)->postJson('/auth/profile/delivery-addresses', [
+        $this->actingAs($this->$user)->postJson('/auth/profile/shipping-addresses', [
             'name' => 'test',
             'default' => true,
-            'type' => SavedAddressType::DELIVERY,
+            'type' => SavedAddressType::SHIPPING,
             'address' => [
                 'name' => 'test',
                 'phone' => '123456789',
@@ -436,10 +436,10 @@ class SavedAddressTest extends TestCase
             ],
         ]);
 
-        $this->actingAs($this->$user)->postJson('/auth/profile/invoice-addresses', [
+        $this->actingAs($this->$user)->postJson('/auth/profile/billing-addresses', [
             'name' => 'test2',
             'default' => true,
-            'type' => SavedAddressType::INVOICE,
+            'type' => SavedAddressType::BILLING,
             'address' => [
                 'name' => 'test',
                 'phone' => '123456789',
@@ -457,8 +457,8 @@ class SavedAddressTest extends TestCase
             'data' => [
                 'id',
                 'name',
-                'delivery_addresses',
-                'invoice_addresses',
+                'shipping_addresses',
+                'billing_addresses',
             ],
         ]);
 
@@ -466,12 +466,12 @@ class SavedAddressTest extends TestCase
             ->assertDatabaseHas('saved_addresses', [
                 'name' => 'test',
                 'default' => 1,
-                'type' => SavedAddressType::DELIVERY,
+                'type' => SavedAddressType::SHIPPING,
             ])
             ->assertDatabaseHas('saved_addresses', [
                 'name' => 'test2',
                 'default' => 1,
-                'type' => SavedAddressType::INVOICE,
+                'type' => SavedAddressType::BILLING,
             ]);
     }
 }

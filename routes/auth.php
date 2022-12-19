@@ -16,19 +16,19 @@ Route::prefix('auth')->group(function (): void {
         ->middleware('can:authenticated');
     Route::prefix('profile')
         ->middleware('can:profile.addresses_manage')
-        ->group(callback: function (): void {
-            Route::post('delivery-addresses', [AuthController::class, 'storeSavedAddress'])
-                ->defaults('type', SavedAddressType::DELIVERY);
-            Route::patch('delivery-addresses/id:{address}', [AuthController::class, 'updateSavedAddress'])
-                ->defaults('type', SavedAddressType::DELIVERY);
-            Route::delete('delivery-addresses/id:{address}', [AuthController::class, 'deleteSavedAddress'])
-                ->defaults('type', SavedAddressType::DELIVERY);
-            Route::post('invoice-addresses', [AuthController::class, 'storeSavedAddress'])
-                ->defaults('type', SavedAddressType::INVOICE);
-            Route::patch('invoice-addresses/id:{address}', [AuthController::class, 'updateSavedAddress'])
-                ->defaults('type', SavedAddressType::INVOICE);
-            Route::delete('invoice-addresses/id:{address}', [AuthController::class, 'deleteSavedAddress'])
-                ->defaults('type', SavedAddressType::INVOICE);
+        ->group(function (): void {
+            Route::post('shipping-addresses', [AuthController::class, 'storeSavedAddress'])
+                ->defaults('type', SavedAddressType::SHIPPING);
+            Route::patch('shipping-addresses/id:{address}', [AuthController::class, 'updateSavedAddress'])
+                ->defaults('type', SavedAddressType::SHIPPING);
+            Route::delete('shipping-addresses/id:{address}', [AuthController::class, 'deleteSavedAddress'])
+                ->defaults('type', SavedAddressType::SHIPPING);
+            Route::post('billing-addresses', [AuthController::class, 'storeSavedAddress'])
+                ->defaults('type', SavedAddressType::BILLING);
+            Route::patch('billing-addresses/id:{address}', [AuthController::class, 'updateSavedAddress'])
+                ->defaults('type', SavedAddressType::BILLING);
+            Route::delete('billing-addresses/id:{address}', [AuthController::class, 'deleteSavedAddress'])
+                ->defaults('type', SavedAddressType::BILLING);
         });
 
     Route::post('refresh', [AuthController::class, 'refresh']);

@@ -19,6 +19,7 @@ use App\Models\ProductSet;
 use App\Models\Role;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
+use App\Models\Status;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Carbon;
@@ -1964,6 +1965,109 @@ class CartTest extends TestCase
                 'items' => [],
             ])
             ->assertJsonCount(0, 'data.items');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessPurchaseLimitSetAfterPurchase($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $order = Order::factory()->create([
+            'paid' => true,
+        ]);
+        $this->$user->orders()->save($order);
+        $order->products()->create([
+            'product_id' => $this->product->getKey(),
+            'quantity' => 2,
+            'price_initial' => 4600,
+            'price' => 4600,
+            'name' => $this->product->name,
+        ]);
+
+        $this->product->update([
+            'purchase_limit_per_user' => 1,
+        ]);
+
+        $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 0,
+                'cart_total' => 0,
+                'shipping_price_initial' => 8.11,
+                'shipping_price' => 8.11,
+                'summary' => 8.11,
+                'coupons' => [],
+                'sales' => [],
+                'items' => [],
+            ])
+            ->assertJsonCount(0, 'data.items');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessPurchaseLimitCanceledOrder($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $status = Status::factory()->create([
+            'cancel' => true,
+        ]);
+
+        $order = Order::factory()->create([
+            'status_id' => $status->getKey(),
+        ]);
+        $this->$user->orders()->save($order);
+        $order->products()->create([
+            'product_id' => $this->product->getKey(),
+            'quantity' => 1,
+            'price_initial' => 4600,
+            'price' => 4600,
+            'name' => $this->product->name,
+        ]);
+
+        $this->product->update([
+            'purchase_limit_per_user' => 1,
+        ]);
+
+        $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 4600,
+                'cart_total' => 4600,
+                'shipping_price_initial' => 0,
+                'shipping_price' => 0,
+                'summary' => 4600,
+                'coupons' => [],
+                'sales' => [],
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => 4600,
+                'price_discounted' => 4600,
+            ]);
     }
 
     /**

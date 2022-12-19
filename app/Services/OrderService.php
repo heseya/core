@@ -382,14 +382,18 @@ class OrderService implements OrderServiceContract
     }
 
     private function getDeliveryMethods(OrderDto|CartDto $dto, Collection $products, bool $required): array {
-        // Validate whether delivery methods are the proper type
-        $shippingMethod = $dto->getShippingMethodId() instanceof Missing ? null :
-            ShippingMethod::whereNot('shipping_type', ShippingType::DIGITAL)
-            ->findOrFail($dto->getShippingMethodId());
+        try {
+            // Validate whether delivery methods are the proper type
+            $shippingMethod = $dto->getShippingMethodId() instanceof Missing ? null :
+                ShippingMethod::whereNot('shipping_type', ShippingType::DIGITAL)
+                ->findOrFail($dto->getShippingMethodId());
 
-        $digitalShippingMethod = $dto->getDigitalShippingMethodId() instanceof Missing ? null :
-            ShippingMethod::where('shipping_type', ShippingType::DIGITAL)
-            ->findOrFail($dto->getDigitalShippingMethodId());
+            $digitalShippingMethod = $dto->getDigitalShippingMethodId() instanceof Missing ? null :
+                ShippingMethod::where('shipping_type', ShippingType::DIGITAL)
+                ->findOrFail($dto->getDigitalShippingMethodId());
+        } catch (Throwable $e) {
+            throw new OrderException(Exceptions::CLIENT_SHIPPING_METHOD_INVALID_TYPE);
+        }
 
         // Validate whether there are products suited to given delivery types
         // if delivery type isn't required, it's ignored when missing

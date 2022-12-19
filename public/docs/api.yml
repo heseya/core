@@ -79,13 +79,13 @@ paths:
     $ref: './paths/Auth.yml#/Refresh'
   /auth/profile:
     $ref: './paths/Auth.yml#/Profile'
-  /auth/profile/delivery-addresses:
+  /auth/profile/shipping-addresses:
     $ref: './paths/Auth.yml#/ShippingAddresses'
-  '/auth/profile/delivery-addresses/id:{id}':
+  /auth/profile/shipping-addresses/id:{id}:
     $ref: './paths/Auth.yml#/ShippingAddressesParams'
-  /auth/profile/invoice-addresses:
+  /auth/profile/billing-addresses:
     $ref: './paths/Auth.yml#/BillingAddresses'
-  '/auth/profile/invoice-addresses/id:{id}':
+  /auth/profile/billing-addresses/id:{id}:
     $ref: './paths/Auth.yml#/BillingAddressesParams'
   /auth/check:
     $ref: './paths/Auth.yml#/Check'
