@@ -948,7 +948,7 @@ class OrderTest extends TestCase
                     ->etc();
             });
 
-        $this->assertQueryCountLessThan(32);
+        $this->assertQueryCountLessThan(34);
     }
 
     public function testUpdateOrderStatusUnauthorized(): void
