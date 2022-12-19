@@ -280,10 +280,10 @@ class OrderService implements OrderServiceContract
                 : (!$dto->getBillingAddress() instanceof Missing ? ['billing_address_id' => null] : []);
 
             $order->update([
-                'shipping_address_id' => $this->resolveShippingAddress($shippingPlace, $shippingType, $order),
-                'shipping_place' => $this->resolveShippingPlace($shippingPlace, $shippingType, $order),
-                'shipping_type' => $shippingType,
-            ] + $dto->toArray() + $billingAddressId);
+                    'shipping_address_id' => $this->resolveShippingAddress($shippingPlace, $shippingType, $order),
+                    'shipping_place' => $this->resolveShippingPlace($shippingPlace, $shippingType, $order),
+                    'shipping_type' => $shippingType,
+                ] + $dto->toArray() + $billingAddressId);
 
             DB::commit();
 
@@ -381,7 +381,7 @@ class OrderService implements OrderServiceContract
             ->paginate(Config::get('pagination.per_page'));
     }
 
-    private function getDeliveryMethods(OrderDto|CartDto $dto, Collection $products, bool $required): array {
+    private function getDeliveryMethods(OrderDto|CartDto|OrderUpdateDto $dto, Collection $products, bool $required): array {
         try {
             // Validate whether delivery methods are the proper type
             $shippingMethod = $dto->getShippingMethodId() instanceof Missing ? null :
