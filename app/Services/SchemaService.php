@@ -8,8 +8,9 @@ use App\Services\Contracts\SchemaServiceContract;
 
 class SchemaService implements SchemaServiceContract
 {
-    public function __construct(private ReorderServiceContract $reorderService)
-    {
+    public function __construct(
+        private ReorderServiceContract $reorderService,
+    ) {
     }
 
     public function sync(Product $product, array $schemas = []): void

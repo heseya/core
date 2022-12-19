@@ -11,6 +11,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Models\Status;
+use App\Services\Contracts\AvailabilityServiceContract;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
@@ -100,7 +101,9 @@ class OrderDepositTest extends TestCase
             ->json('POST', '/orders', $this->request);
 
         $response->assertCreated();
-        $order = Order::find($response->getData()->data->id);
+
+        /** @var Order $order */
+        $order = Order::query()->find($response->getData()->data->id);
 
         $this->assertDatabaseHas('orders', [
             'id' => $order->getKey(),
@@ -121,6 +124,7 @@ class OrderDepositTest extends TestCase
             'quantity' => -2,
             'item_id' => $this->item->getKey(),
             'order_product_id' => $order->products->first()->getKey(),
+            'from_unlimited' => false,
         ]);
         $this->assertDatabaseHas('items', [
             'id' => $this->item->getKey(),
@@ -359,9 +363,12 @@ class OrderDepositTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $product->getKey(),
-            'shipping_time' => 1, //product got 1 days shipping time
+            'available' => true,
+            'quantity' => 5,
+            'shipping_time' => 1, // product got 1 days shipping time
         ]);
-        //first order 20 product
+
+        // first order 20 product
         $request = [
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -398,18 +405,27 @@ class OrderDepositTest extends TestCase
             ->json('POST', '/orders', $request);
 
         $response->assertCreated();
-        $order = Order::find($response->getData()->data->id); //order created
 
-        $this->assertDatabaseHas('deposits', [ //was taken from the deposit of 20 items in shipping time 10
+        /** @var Order $order */
+        $order = Order::query()->find($response->getData()->data->id); // order created
+
+        $this->assertDatabaseHas('deposits', [ // was taken from the deposit of 20 items in shipping time 10
             'quantity' => -20,
             'item_id' => $this->item->getKey(),
             'order_product_id' => $order->products->first()->getKey(),
             'shipping_time' => 10,
+            'from_unlimited' => true,
         ]);
+
+        /** @var AvailabilityServiceContract $service */
+        $service = app(AvailabilityServiceContract::class);
+        $service->calculateItemAvailability($this->item);
 
         $this->assertDatabaseHas('products', [
             'id' => $product->getKey(),
-            'shipping_time' => 1, //product now got 1 days shipping time
+            'available' => true,
+            'quantity' => 5,
+            'shipping_time' => 1, // product now got 1 days shipping time
         ]);
 
         // second order 3 product
@@ -449,13 +465,16 @@ class OrderDepositTest extends TestCase
             ->json('POST', '/orders', $request);
 
         $response->assertCreated();
-        $order = Order::find($response->getData()->data->id); //order created
+
+        /** @var Order $order */
+        $order = Order::query()->find($response->getData()->data->id); //order created
 
         $this->assertDatabaseHas('deposits', [ //was taken from the deposit of 3 items in shipping time 3
             'quantity' => -3,
             'item_id' => $this->item->getKey(),
             'order_product_id' => $order->products->first()->getKey(),
             'shipping_time' => 3,
+            'from_unlimited' => false,
         ]);
 
         $this->assertDatabaseHas('products', [
@@ -500,13 +519,16 @@ class OrderDepositTest extends TestCase
             ->json('POST', '/orders', $request);
 
         $response->assertCreated();
-        $order = Order::find($response->getData()->data->id); //order created
+
+        /** @var Order $order */
+        $order = Order::query()->find($response->getData()->data->id); //order created
 
         $this->assertDatabaseHas('deposits', [ //was taken from the deposit of 1 items in shipping time 1
             'quantity' => -1,
             'item_id' => $this->item->getKey(),
             'order_product_id' => $order->products->first()->getKey(),
             'shipping_time' => 1,
+            'from_unlimited' => false,
         ]);
 
         $this->assertDatabaseHas('products', [
@@ -531,6 +553,7 @@ class OrderDepositTest extends TestCase
 
         $this->product->items()->attach($this->item->getKey(), ['required_quantity' => 2]);
 
+        /** @var Order $order */
         $order = Order::factory()->create();
         $orderProduct = $order->products()->create([
             'product_id' => $this->product->getKey(),
@@ -574,6 +597,7 @@ class OrderDepositTest extends TestCase
             'id' => $deposit->getKey(),
             'quantity' => -6,
             'shipping_date' => $date,
+            'from_unlimited' => true,
         ]);
         $this->assertDatabaseHas('items', [
             'id' => $this->item->getKey(),

@@ -11,8 +11,9 @@ use Illuminate\Support\Collection;
 
 class OptionService implements OptionServiceContract
 {
-    public function __construct(private MetadataServiceContract $metadataService)
-    {
+    public function __construct(
+        private MetadataServiceContract $metadataService,
+    ) {
     }
 
     public function sync(Schema $schema, array $options = []): void
@@ -22,11 +23,12 @@ class OptionService implements OptionServiceContract
         foreach ($options as $order => $optionItem) {
             $optionData = array_merge(
                 $optionItem->toArray(),
-                ['order' => $order]
+                ['order' => $order],
             );
 
             if (!$optionItem->getId() instanceof Missing) {
-                $option = Option::findOrFail($optionItem->getId());
+                /** @var Option $option */
+                $option = Option::query()->findOrFail($optionItem->getId());
                 $option->update($optionData);
             } else {
                 $option = $schema->options()->create($optionData);
@@ -35,7 +37,7 @@ class OptionService implements OptionServiceContract
             $option->items()->sync(
                 !$optionItem->getItems() instanceof Missing ?
                     $optionItem->getItems() ?? []
-                    : []
+                    : [],
             );
 
             if (!($optionItem->getMetadata() instanceof Missing)) {

@@ -148,7 +148,11 @@ class ProductService implements ProductServiceContract
         [$priceMin, $priceMax] = $this->getMinMaxPrices($product);
         $product->price_min_initial = $priceMin;
         $product->price_max_initial = $priceMax;
-        $product->available = $this->availabilityService->isProductAvailable($product);
+        $availability = $this->availabilityService->getCalculateProductAvailability($product);
+        $product->quantity = $availability['quantity'];
+        $product->available = $availability['available'];
+        $product->shipping_time = $availability['shipping_time'];
+        $product->shipping_date = $availability['shipping_date'];
         $this->discountService->applyDiscountsOnProduct($product, false);
 
         return $product;
