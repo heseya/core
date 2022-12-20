@@ -78,6 +78,8 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'shipping_date',
         'has_schemas',
         'quantity',
+        'shipping_digital',
+        'purchase_limit_per_user',
     ];
 
     protected array $auditInclude = [
@@ -105,6 +107,8 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'vat_rate' => 'float',
         'has_schemas' => 'bool',
         'quantity' => 'float',
+        'shipping_digital' => 'bool',
+        'purchase_limit_per_user' => 'float',
     ];
 
     protected array $sortable = [

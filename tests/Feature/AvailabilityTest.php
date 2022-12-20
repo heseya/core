@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\SchemaType;
+use App\Enums\ShippingType;
 use App\Events\ProductUpdated;
 use App\Models\Address;
 use App\Models\Deposit;
@@ -293,8 +294,11 @@ class AvailabilityTest extends TestCase
 
         $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'test@test.test',
-            'shipping_method_id' => ShippingMethod::factory()->create()->getKey(),
-            'delivery_address' => Address::factory()->create()->toArray(),
+            'shipping_method_id' => ShippingMethod::factory()->create([
+                'shipping_type' => ShippingType::ADDRESS,
+            ])->getKey(),
+            'shipping_place' => Address::factory()->create()->toArray(),
+            'billing_address' => Address::factory()->create()->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -360,8 +364,11 @@ class AvailabilityTest extends TestCase
 
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'test@test.test',
-            'shipping_method_id' => ShippingMethod::factory()->create()->getKey(),
-            'delivery_address' => Address::factory()->create()->toArray(),
+            'shipping_method_id' => ShippingMethod::factory()->create([
+                'shipping_type' => ShippingType::ADDRESS,
+            ])->getKey(),
+            'shipping_place' => Address::factory()->create()->toArray(),
+            'billing_address' => Address::factory()->create()->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),

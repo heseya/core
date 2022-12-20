@@ -132,16 +132,16 @@ class User extends Model implements
         return [];
     }
 
-    public function deliveryAddresses(): HasMany
+    public function shippingAddresses(): HasMany
     {
         return $this->hasMany(SavedAddress::class)
-            ->where('type', '=', SavedAddressType::DELIVERY);
+            ->where('type', '=', SavedAddressType::SHIPPING);
     }
 
-    public function invoiceAddresses(): HasMany
+    public function billingAddresses(): HasMany
     {
         return $this->hasMany(SavedAddress::class)
-            ->where('type', '=', SavedAddressType::INVOICE);
+            ->where('type', '=', SavedAddressType::BILLING);
     }
 
     public function orders(): MorphMany

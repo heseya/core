@@ -39,6 +39,19 @@ ShippingMethod:
     shipping_time_max:
       type: number
       example: 3
+    shipping_points:
+      type: array
+      items:
+        properties:
+          name:
+            description: "name of the adress"
+            type: string
+            example: "test address"
+        type: object
+    integration_key:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+
 
 ShippingMethodReorder:
   content:
@@ -65,6 +78,13 @@ ShippingMethodStore:
         allOf:
           - $ref: '#/ShippingMethod'
           - properties:
+              shipping_type:
+                type: string
+                enum:
+                  - digital
+                  - address
+                  - point
+                  - point-external
               metadata:
                 $ref: './../schemas/Metadata.yml#/Metadata'
               metadata_private:

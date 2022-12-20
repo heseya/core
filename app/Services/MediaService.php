@@ -13,6 +13,7 @@ use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
 use Heseya\Dto\Missing;
+use Illuminate\Http\Client\Response;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
@@ -31,7 +32,7 @@ class MediaService implements MediaServiceContract
         $operations = $product->media()->sync($this->reorderService->reorder($media));
 
         if (array_key_exists('detached', $operations) && $operations['detached']) {
-            Media::whereIn('id', $operations['detached'])
+            Media::query()->whereIn('id', $operations['detached'])
                 ->each(function ($object): void {
                     $this->destroy($object);
                 });
@@ -59,6 +60,7 @@ class MediaService implements MediaServiceContract
         $file = $dto->getFile();
         $private = $private ? '?private' : '';
 
+        /** @var Response $response */
         $response = Http::attach('file', $file->getContent(), 'file')
             ->withHeaders(['x-api-key' => Config::get('silverbox.key')])
             ->post(Config::get('silverbox.host') . '/' . Config::get('silverbox.client') . $private);
@@ -124,6 +126,7 @@ class MediaService implements MediaServiceContract
             throw new ClientException(message: Exceptions::CDN_NOT_ALLOWED_TO_CHANGE_ALT);
         }
 
+        /** @var Response $response */
         $response = Http::asJson()
             ->acceptJson()
             ->withHeaders(['x-api-key' => Config::get('silverbox.key')])

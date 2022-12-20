@@ -17,11 +17,15 @@ Route::prefix('orders')->group(function (): void {
     Route::get('my/{order:code}', [OrderController::class, 'showUserOrder'])
         ->middleware('can:orders.show_own')
         ->whereAlphaNumeric('order');
+    Route::get('my-products', [OrderController::class, 'myOrderProducts'])
+        ->middleware('can:authenticated');
     Route::get('id:{order:id}', [OrderController::class, 'show'])
         ->middleware('can:orders.show_details')
         ->whereUuid('order');
     Route::patch('id:{order:id}/status', [OrderController::class, 'updateStatus'])
         ->middleware('can:orders.edit.status');
+    Route::post('id:{order:id}/shipping-lists', [OrderController::class, 'shippingLists'])
+        ->middleware('permission:orders.edit|orders.edit.status'); // !!
     Route::patch('id:{order:id}', [OrderController::class, 'update'])
         ->middleware('can:orders.edit')
         ->whereUuid('order');
@@ -29,6 +33,11 @@ Route::prefix('orders')->group(function (): void {
         ->middleware('can:orders.edit');
     Route::patch('id:{order:id}/metadata-private', [MetadataController::class, 'updateOrCreate'])
         ->middleware('can:orders.edit');
+    Route::patch('id:{order:id}/products/id:{product:id}', [OrderController::class, 'updateOrderProduct'])
+        ->middleware('can:orders.edit');
+    Route::post('id:{order:id}/send-urls', [OrderController::class, 'sendUrls'])
+        ->middleware('can:orders.show_details')
+        ->whereUuid('order');
     Route::get('{order:code}', [OrderController::class, 'showPublic'])
         ->middleware('can:orders.show_summary')
         ->whereAlphaNumeric('order');

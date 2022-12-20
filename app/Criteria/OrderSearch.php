@@ -24,7 +24,7 @@ class OrderSearch extends Criterion
                         ->where('id', 'LIKE', '%' . $this->value . '%')
                         ->orWhere('name', 'LIKE', '%' . $this->value . '%');
                 })
-                ->orWhereHas('deliveryAddress', fn (Builder $query) => $this->whereAddress($query))
+                ->orWhereHas('shippingAddress', fn (Builder $query) => $this->whereAddress($query))
                 ->orWhereHas('invoiceAddress', fn (Builder $query) => $this->whereAddress($query));
         });
     }

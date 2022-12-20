@@ -68,7 +68,7 @@ Orders:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Orders.yml#/OrderList'
+                    $ref: './../schemas/Orders.yml#/Order'
               type: object
     security:
       - BearerAuth: [ ]
@@ -187,6 +187,42 @@ OrdersStatus:
         description: Success
     security:
       - BearerAuth: [ ]
+
+OrdersShippingLists:
+  post:
+    tags:
+      - Orders
+    summary: 'create shipping list webhook'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              package_template_id:
+                type: string
+                example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+            type: object
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Orders.yml#/Order'
+              type: object
+    security:
+      - oauth: [ ]
 
 OrdersMy:
   get:
@@ -459,3 +495,72 @@ CartProcess:
                 data:
                   $ref: './../schemas/Cart.yml#/Cart'
               type: object
+
+OrderProductUrls:
+  patch:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
+      - name: order_product_id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+    tags:
+      - Orders
+    summary: 'Add links to order products'
+    requestBody:
+      $ref: './../requests/OrderProducts.yml#/OrderProductUrls'
+    responses:
+      204:
+        description: No content
+
+MyOrderProducts:
+  get:
+    tags:
+      - Orders
+    parameters:
+      - name: shipping_digital
+        in: query
+        required: false
+        schema:
+          type: boolean
+          example: true
+    summary: 'User ordered products list'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Orders.yml#/OrderProductPublic'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+OrdersSendUrls:
+  post:
+    tags:
+      - Orders
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+    summary:  'Send email with order products urls'
+    responses:
+      200:
+        description: Success
+    security:
+      - BearerAuth: [ ]

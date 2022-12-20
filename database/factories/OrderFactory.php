@@ -27,6 +27,7 @@ class OrderFactory extends Factory
             'shipping_price_initial' => $shipping_price,
             'shipping_price' => $shipping_price,
             'comment' => rand(0, 9) ? null : $this->faker->text,
+            'invoice_requested' => $this->faker->boolean,
         ];
     }
 }

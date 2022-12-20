@@ -276,9 +276,14 @@ class DiscountService implements DiscountServiceContract
     {
         $discounts = $this->getActiveSalesAndCoupons($cart->getCoupons());
         $shippingMethod = null;
+        $shippingMethodDigital = null;
 
         if (!$cart->getShippingMethodId() instanceof Missing) {
             $shippingMethod = ShippingMethod::findOrFail($cart->getShippingMethodId());
+        }
+
+        if (!$cart->getDigitalShippingMethodId() instanceof Missing) {
+            $shippingMethodDigital = ShippingMethod::findOrFail($cart->getDigitalShippingMethodId());
         }
 
         // Obliczanie wartości początkowej koszyka
@@ -304,6 +309,7 @@ class DiscountService implements DiscountServiceContract
         $cartShippingTimeAndDate = $this->shippingTimeDateService->getTimeAndDateForCart($cart, $products);
 
         $shippingPrice = $shippingMethod !== null ? $shippingMethod->getPrice($cartValue) : 0;
+        $shippingPrice += $shippingMethodDigital !== null ? $shippingMethodDigital->getPrice($cartValue) : 0;
         $summary = $cartValue + $shippingPrice;
 
         $cartResource = new CartResource(

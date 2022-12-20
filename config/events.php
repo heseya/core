@@ -7,6 +7,7 @@ return [
         EventType::ORDER_CREATED => ['orders.show_details', 'orders.show'],
         EventType::ORDER_UPDATED => ['orders.show_details', 'orders.show'],
         EventType::ORDER_UPDATED_STATUS => ['orders.show_details', 'orders.show'],
+        EventType::ORDER_REQUESTED_SHIPPING => ['orders.show_details', 'orders.show', 'packages.show'],
         EventType::PRODUCT_CREATED => ['products.show_details', 'products.show'],
         EventType::PRODUCT_UPDATED => ['products.show_details', 'products.show'],
         EventType::PRODUCT_DELETED => ['products.show_details', 'products.show'],
@@ -40,6 +41,7 @@ return [
         EventType::NEW_LOCALIZATION_LOGIN_ATTEMPT => ['users.show_details'],
         EventType::FAILED_LOGIN_ATTEMPT => ['users.show_details'],
         EventType::ORDER_UPDATED_SHIPPING_NUMBER => ['orders.show_details', 'orders.show'],
+        EventType::SEND_ORDER_URLS => ['orders.show_details', 'orders.show'],
     ],
 
     'permissions_hidden' => [

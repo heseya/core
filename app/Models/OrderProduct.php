@@ -2,7 +2,11 @@
 
 namespace App\Models;
 
+use App\Criteria\WhereHasBuyer;
+use App\Criteria\WhereOrderProductPaid;
 use App\Traits\HasOrderDiscount;
+use App\Traits\Sortable;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class OrderProduct extends Model
 {
-    use HasFactory, HasOrderDiscount;
+    use HasFactory, HasOrderDiscount, HasCriteria, Sortable;
 
     protected $fillable = [
         'quantity',
@@ -24,10 +28,26 @@ class OrderProduct extends Model
         'product_id',
         'name',
         'vat_rate',
+        'shipping_digital',
+        'is_delivered',
     ];
 
     protected $casts = [
         'vat_rate' => 'float',
+        'shipping_digital' => 'boolean',
+        'is_delivered' => 'boolean',
+    ];
+
+    protected array $criteria = [
+        'shipping_digital',
+        'user' => WhereHasBuyer::class,
+        'app' => WhereHasBuyer::class,
+        'product_id',
+        'paid' => WhereOrderProductPaid::class,
+    ];
+
+    protected array $sortable = [
+        'created_at',
     ];
 
     public function schemas(): HasMany
@@ -48,5 +68,10 @@ class OrderProduct extends Model
     public function deposits(): HasMany
     {
         return $this->hasMany(Deposit::class);
+    }
+
+    public function urls(): HasMany
+    {
+        return $this->hasMany(OrderProductUrl::class);
     }
 }
