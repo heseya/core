@@ -77,7 +77,6 @@ class RegisterDto extends Dto implements InstantiateFromRequest
         return $this->metadata_personal;
     }
 
-    // @phpstan-ignore-next-line
     private static function mapMetadata(FormRequest|RegisterRequest $request): array|Missing
     {
         $metadata = Collection::make();

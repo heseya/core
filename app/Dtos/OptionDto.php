@@ -55,7 +55,6 @@ class OptionDto extends Dto
         return $this->items;
     }
 
-    // @phpstan-ignore-next-line
     private static function valueOrMissing(array $array, string $key): mixed
     {
         return array_key_exists($key, $array) ? $array[$key] : new Missing();

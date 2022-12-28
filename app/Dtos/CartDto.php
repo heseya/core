@@ -89,7 +89,6 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
         return $length;
     }
 
-    // @phpstan-ignore-next-line
     private static function prepareItems(array $items): array
     {
         $result = Collection::make();
