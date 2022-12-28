@@ -21,6 +21,7 @@ class ProductUpdateRequest extends ProductCreateRequest
         $rules['name'] = ['string', 'max:255'];
         $rules['price'] = ['numeric', 'min:0'];
         $rules['public'] = [new Boolean()];
+        $rules['shipping_digital'] = [new Boolean()];
         $rules['slug'] = [
             'string',
             'max:255',

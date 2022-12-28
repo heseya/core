@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('shipping_methods', function (Blueprint $table): void {
+        Schema::table('shipping_methods', function (Blueprint $table) {
             $table->renameColumn('black_list', 'block_list');
         });
     }
@@ -25,7 +25,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('shipping_methods', function (Blueprint $table): void {
+        Schema::table('shipping_methods', function (Blueprint $table) {
             $table->renameColumn('block_list', 'black_list');
         });
     }

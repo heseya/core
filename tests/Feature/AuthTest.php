@@ -78,9 +78,10 @@ class AuthTest extends TestCase
                 'name',
                 'avatar',
                 'roles',
-                'delivery_addresses',
-                'invoice_addresses',
+                'shipping_addresses',
+                'billing_addresses',
                 'permissions',
+                'created_at',
             ],
         ];
 
@@ -1182,6 +1183,7 @@ class AuthTest extends TestCase
                 ],
                 'metadata' => [],
                 'metadata_personal' => [],
+                'created_at' => $user->created_at,
             ],
             ]);
     }
@@ -2199,6 +2201,7 @@ class AuthTest extends TestCase
                     'avatar',
                     'roles',
                     'preferences',
+                    'created_at',
                 ],
             ])
             ->assertJsonFragment([

@@ -2,34 +2,28 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\PaymentMethodIndexDto;
 use App\Http\Requests\PaymentMethodIndexRequest;
 use App\Http\Resources\PaymentMethodResource;
 use App\Models\PaymentMethod;
-use App\Models\ShippingMethod;
-use Illuminate\Database\Eloquent\Builder;
+use App\Services\Contracts\PaymentMethodServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 
 class PaymentMethodController extends Controller
 {
+    public function __construct(
+        private PaymentMethodServiceContract $paymentMethodService,
+    ) {
+    }
+
     public function index(PaymentMethodIndexRequest $request): JsonResource
     {
-        if ($request->has('shipping_method_id')) {
-            $shipping_method = ShippingMethod::first($request->input('shipping_method_id'));
-            /** @var Builder $query */
-            $query = $shipping_method?->paymentMethods();
-        } else {
-            $query = PaymentMethod::query();
-        }
-
-        if (!Auth::user()?->can('payment_methods.show_hidden')) {
-            $query->where('public', true);
-        }
-
-        return PaymentMethodResource::collection($query->get());
+        return PaymentMethodResource::collection(
+            $this->paymentMethodService->index(PaymentMethodIndexDto::instantiateFromRequest($request))
+        );
     }
 
     public function store(Request $request): JsonResource

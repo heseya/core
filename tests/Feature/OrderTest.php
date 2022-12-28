@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\MetadataType;
+use App\Enums\ShippingType;
 use App\Enums\ValidationError;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
@@ -36,6 +37,7 @@ class OrderTest extends TestCase
     private Order $order;
     private ShippingMethod $shippingMethod;
     private array $expected;
+    private array $expected_summary;
     private array $expected_summary_structure;
     private array $expected_full_structure;
     private array $expected_full_view_structure;
@@ -46,13 +48,16 @@ class OrderTest extends TestCase
 
         Product::factory()->create();
 
-        $this->shippingMethod = ShippingMethod::factory()->create();
+        $this->shippingMethod = ShippingMethod::factory()->create([
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
         $status = Status::factory()->create();
         $product = Product::factory()->create();
 
         $this->order = Order::factory()->create([
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'status_id' => $status->getKey(),
+            'invoice_requested' => false,
         ]);
 
         $item_product = $this->order->products()->create([
@@ -87,7 +92,7 @@ class OrderTest extends TestCase
         /**
          * Expected response
          */
-        $this->expected = [
+        $this->expected_summary = [
             'code' => $this->order->code,
             'status' => [
                 'id' => $status->getKey(),
@@ -100,6 +105,8 @@ class OrderTest extends TestCase
             'paid' => $this->order->paid,
         ];
 
+        $this->expected = $this->expected_summary + ['invoice_requested' => false];
+
         $this->expected_summary_structure = [
             'code',
             'status',
@@ -108,21 +115,26 @@ class OrderTest extends TestCase
         ];
 
         $this->expected_full_structure = [
+            'id',
             'code',
             'status',
             'paid',
+            'payable',
             'created_at',
             'shipping_method',
+            'digital_shipping_method',
             'comment',
             'email',
             'cart_total_initial',
             'cart_total',
             'shipping_price_initial',
             'shipping_price',
+            'shipping_type',
+            'invoice_requested',
+            'documents',
             'summary',
             'summary_paid',
             'currency',
-            'delivery_address',
             'metadata',
         ];
 
@@ -131,6 +143,8 @@ class OrderTest extends TestCase
             'products',
             'payments',
             'discounts',
+            'billing_address',
+            'shipping_number',
         ];
     }
 
@@ -161,7 +175,7 @@ class OrderTest extends TestCase
             ],
             ]);
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(21);
     }
 
     /**
@@ -183,7 +197,7 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(21);
+        $this->assertQueryCountLessThan(22);
     }
 
     /**
@@ -275,7 +289,7 @@ class OrderTest extends TestCase
                 'id' => $order_no_user->getKey(),
             ]);
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(21);
     }
 
     /**
@@ -300,7 +314,7 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(21);
     }
 
     /**
@@ -332,7 +346,7 @@ class OrderTest extends TestCase
             ],
             ]);
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(21);
     }
 
     /**
@@ -375,7 +389,7 @@ class OrderTest extends TestCase
             ],
             ]);
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(21);
     }
 
     public function testIndexUserUnauthenticated(): void
@@ -638,7 +652,7 @@ class OrderTest extends TestCase
             ->getJson('/orders/' . $this->order->code)
             ->assertOk()
             ->assertJsonStructure(['data' => $this->expected_summary_structure])
-            ->assertJson(['data' => $this->expected]);
+            ->assertJson(['data' => $this->expected_summary]);
     }
 
     /**
@@ -934,7 +948,7 @@ class OrderTest extends TestCase
                     ->etc();
             });
 
-        $this->assertQueryCountLessThan(32);
+        $this->assertQueryCountLessThan(34);
     }
 
     public function testUpdateOrderStatusUnauthorized(): void
@@ -1228,7 +1242,15 @@ class OrderTest extends TestCase
         $response = $this->actingAs($this->user)->json('POST', '/orders', [
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => [
+            'shipping_place' => [
+                'name' => 'Wojtek Testowy',
+                'phone' => '+48123321123',
+                'address' => 'Gdańska 89/1',
+                'zip' => '12-123',
+                'city' => 'Bydgoszcz',
+                'country' => 'PL',
+            ],
+            'billing_address' => [
                 'name' => 'Wojtek Testowy',
                 'phone' => '+48123321123',
                 'address' => 'Gdańska 89/1',
@@ -1275,7 +1297,16 @@ class OrderTest extends TestCase
         $this->actingAs($this->$user)->json('POST', '/orders', [
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => [
+            'shipping_place' => [
+                'name' => 'Wojtek Testowy',
+                'phone' => '+48123321123',
+                'address' => 'Gdańska 89/1',
+                'zip' => '12-123',
+                'city' => 'Bydgoszcz',
+                'country' => 'PL',
+                'vat' => null,
+            ],
+            'billing_address' => [
                 'name' => 'Wojtek Testowy',
                 'phone' => '+48123321123',
                 'address' => 'Gdańska 89/1',

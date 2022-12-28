@@ -79,13 +79,13 @@ paths:
     $ref: './paths/Auth.yml#/Refresh'
   /auth/profile:
     $ref: './paths/Auth.yml#/Profile'
-  /auth/profile/delivery-addresses:
+  /auth/profile/shipping-addresses:
     $ref: './paths/Auth.yml#/ShippingAddresses'
-  '/auth/profile/delivery-addresses/id:{id}':
+  /auth/profile/shipping-addresses/id:{id}:
     $ref: './paths/Auth.yml#/ShippingAddressesParams'
-  /auth/profile/invoice-addresses:
+  /auth/profile/billing-addresses:
     $ref: './paths/Auth.yml#/BillingAddresses'
-  '/auth/profile/invoice-addresses/id:{id}':
+  /auth/profile/billing-addresses/id:{id}:
     $ref: './paths/Auth.yml#/BillingAddressesParams'
   /auth/check:
     $ref: './paths/Auth.yml#/Check'
@@ -129,8 +129,6 @@ paths:
     $ref: './paths/WebHooks.yml#/WebhooksEvents'
   /filters:
     $ref: './paths/Filters.yml#/Filters'
-  /furgonetka/create-package:
-    $ref: './paths/Furgonetka.yml#/FurgonetkaCreatePackage'
   /items:
     $ref: './paths/Items.yml#/Items'
   '/items/id:{id}':
@@ -147,10 +145,16 @@ paths:
     $ref: './paths/Orders.yml#/OrdersCode'
   '/orders/id:{id}/status':
     $ref: './paths/Orders.yml#/OrdersStatus'
+  '/orders/id:{id}/shipping-lists':
+    $ref: './paths/Orders.yml#/OrdersShippingLists'
+  '/orders/id:{id}/send-urls':
+    $ref: './paths/Orders.yml#/OrdersSendUrls'
   /orders/my:
     $ref: './paths/Orders.yml#/OrdersMy'
   '/orders/my/{code}':
     $ref: './paths/Orders.yml#/OrdersMySingle'
+  '/orders/my-products':
+    $ref: './paths/Orders.yml#/MyOrderProducts'
   '/orders/id:{id}/docs':
     $ref: './paths/Orders.yml#/OrderAddDocument'
   '/orders/id:{order_id}/docs/id:{doc_id}':
@@ -159,6 +163,8 @@ paths:
     $ref: './paths/Orders.yml#/OrderDownloadDocument'
   '/orders/id:{id}/docs/send':
     $ref: './paths/Orders.yml#/OrdersDocumentsSend'
+  '/orders/id:{id}/products/id:{order_product_id}':
+    $ref: './paths/Orders.yml#/OrderProductUrls'
   /cart/process:
     $ref: './paths/Orders.yml#/CartProcess'
   /package-templates:

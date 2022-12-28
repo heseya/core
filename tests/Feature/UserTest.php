@@ -72,6 +72,7 @@ class UserTest extends TestCase
             'metadata_personal' => [
                 $metadataPersonal->name => $metadataPersonal->value,
             ],
+            'created_at' => $this->user->created_at,
         ];
 
         // Owner role needs to exist for user service to function properly
@@ -124,6 +125,7 @@ class UserTest extends TestCase
                     'name' => $otherUser->name,
                     'avatar' => $otherUser->avatar,
                     'roles' => [],
+                    'created_at' => $otherUser->created_at,
                 ],
             ],
             ]);
@@ -233,7 +235,7 @@ class UserTest extends TestCase
             ->getJson('/users?name=' . $otherUser->name)
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonPath('data.0', [
+            ->assertJsonFragment([
                 'id' => $otherUser->getKey(),
                 'email' => $otherUser->email,
                 'name' => $otherUser->name,
@@ -245,6 +247,7 @@ class UserTest extends TestCase
                 'phone' => null,
                 'phone_country' => null,
                 'phone_number' => null,
+                'created_at' => $otherUser->created_at,
                 'metadata_personal' => [],
                 'metadata' => [],
             ]);
@@ -266,7 +269,7 @@ class UserTest extends TestCase
             ->getJson("/users?email={$otherUser->email}")
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonPath('data.0', [
+            ->assertJsonFragment([
                 'id' => $otherUser->getKey(),
                 'email' => $otherUser->email,
                 'name' => $otherUser->name,
@@ -278,6 +281,7 @@ class UserTest extends TestCase
                 'phone' => null,
                 'phone_country' => null,
                 'phone_number' => null,
+                'created_at' => $otherUser->created_at,
                 'metadata_personal' => [],
                 'metadata' => [],
             ]);
@@ -298,7 +302,7 @@ class UserTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonPath('data.0', [
+            ->assertJsonFragment([
                 'id' => $otherUser->getKey(),
                 'email' => $otherUser->email,
                 'name' => $otherUser->name,
@@ -310,6 +314,7 @@ class UserTest extends TestCase
                 'phone' => null,
                 'phone_country' => null,
                 'phone_number' => null,
+                'created_at' => $otherUser->created_at,
                 'metadata_personal' => [],
                 'metadata' => [],
             ]);
@@ -330,7 +335,7 @@ class UserTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonPath('data.0', [
+            ->assertJsonFragment([
                 'id' => $otherUser->getKey(),
                 'email' => $otherUser->email,
                 'name' => $otherUser->name,
@@ -342,6 +347,7 @@ class UserTest extends TestCase
                 'phone' => null,
                 'phone_country' => null,
                 'phone_number' => null,
+                'created_at' => $otherUser->created_at,
                 'metadata_personal' => [],
                 'metadata' => [],
             ]);
@@ -368,7 +374,7 @@ class UserTest extends TestCase
             ->getJson('/users?consent_name=' . $consent->name)
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonPath('data.0', [
+            ->assertJsonFragment([
                 'id' => $otherUser->getKey(),
                 'email' => $otherUser->email,
                 'name' => $otherUser->name,
@@ -388,6 +394,7 @@ class UserTest extends TestCase
                 'phone' => null,
                 'phone_country' => null,
                 'phone_number' => null,
+                'created_at' => $otherUser->created_at,
                 'metadata_personal' => [],
                 'metadata' => [],
             ]);
@@ -414,7 +421,7 @@ class UserTest extends TestCase
             ->getJson('/users?consent_id=' . $consent->getKey())
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonPath('data.0', [
+            ->assertJsonFragment([
                 'id' => $otherUser->getKey(),
                 'email' => $otherUser->email,
                 'name' => $otherUser->name,
@@ -434,6 +441,7 @@ class UserTest extends TestCase
                 'phone' => null,
                 'phone_country' => null,
                 'phone_number' => null,
+                'created_at' => $otherUser->created_at,
                 'metadata_personal' => [],
                 'metadata' => [],
             ]);

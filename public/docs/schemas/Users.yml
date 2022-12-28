@@ -26,16 +26,6 @@ User:
       type: array
       items:
         $ref: './Consents.yml#/ConsentUser'
-    delivery_address:
-      description: 'Saved user delivery addresses'
-      type: array
-      items:
-        $ref: './../schemas/Addresses.yml#/Address'
-    invoice_address:
-      description: 'Saved user invoice addresses'
-      type: array
-      items:
-        $ref: './../schemas/Addresses.yml#/Address'
     birthdate_date:
       description: 'User birthday date'
       type: string
@@ -53,6 +43,11 @@ User:
       description: 'National formatted phone number'
       type: string
       example: '12 345 67 89'
+    created_at:
+      description: 'User registration date'
+      type: string
+      format: date-time
+      example: '2022-12-06T09:11'
     metadata:
       $ref: './../schemas/Metadata.yml#/Metadata'
     metadata_private:

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Dtos\CartDto;
 use App\Dtos\OrderDto;
 use App\Dtos\OrderIndexDto;
+use App\Dtos\OrderProductSearchDto;
+use App\Dtos\OrderProductUpdateDto;
 use App\Dtos\OrderUpdateDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Events\AddOrderDocument;
@@ -17,15 +19,21 @@ use App\Http\Requests\CartRequest;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderDocumentRequest;
 use App\Http\Requests\OrderIndexRequest;
+use App\Http\Requests\OrderProductSearchRequest;
+use App\Http\Requests\OrderProductUpdateRequest;
+use App\Http\Requests\OrderShippingListRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Http\Requests\SendDocumentRequest;
 use App\Http\Resources\CartResource;
 use App\Http\Resources\OrderDocumentResource;
+use App\Http\Resources\OrderProductResource;
+use App\Http\Resources\OrderProductResourcePublic;
 use App\Http\Resources\OrderPublicResource;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Models\OrderDocument;
+use App\Models\OrderProduct;
 use App\Models\Status;
 use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DocumentServiceContract;
@@ -61,7 +69,9 @@ class OrderController extends Controller
                 'status',
                 'shippingMethod',
                 'shippingMethod.paymentMethods',
-                'deliveryAddress',
+                'digitalShippingMethod',
+                'digitalShippingMethod.paymentMethods',
+                'shippingAddress',
                 'metadata',
                 'documents',
             ]);
@@ -165,6 +175,13 @@ class OrderController extends Controller
         return OrderResource::make($order);
     }
 
+    public function shippingLists(Order $order, OrderShippingListRequest $request): JsonResource
+    {
+        return OrderResource::make(
+            $this->orderService->shippingList($order, $request->package_template_id)
+        );
+    }
+
     public function storeDocument(OrderDocumentRequest $request, Order $order): JsonResource
     {
         /** @var UploadedFile $file */
@@ -206,5 +223,30 @@ class OrderController extends Controller
     public function cartProcess(CartRequest $request): JsonResource
     {
         return CartResource::make($this->orderService->cartProcess(CartDto::instantiateFromRequest($request)));
+    }
+
+    public function updateOrderProduct(
+        OrderProductUpdateRequest $request,
+        Order $order,
+        OrderProduct $product,
+    ): JsonResource {
+        return OrderProductResource::make($this->orderService->processOrderProductUrls(
+            OrderProductUpdateDto::instantiateFromRequest($request),
+            $product,
+        ));
+    }
+
+    public function myOrderProducts(OrderProductSearchRequest $request): JsonResource
+    {
+        return OrderProductResourcePublic::collection(
+            $this->orderService->indexMyOrderProducts(OrderProductSearchDto::instantiateFromRequest($request))
+        );
+    }
+
+    public function sendUrls(Order $order): JsonResponse
+    {
+        $this->orderService->sendUrls($order);
+
+        return Response::json(null, JsonResponse::HTTP_OK);
     }
 }

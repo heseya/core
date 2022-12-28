@@ -21,7 +21,7 @@ class AddressDto extends Dto implements InstantiateFromRequest
 
     public static function instantiateFromRequest(
         FormRequest|OrderCreateRequest|OrderUpdateRequest $request,
-        ?string $prefix = ''
+        ?string $prefix = '',
     ): self {
         return new self(
             name: $request->input($prefix . 'name', new Missing()),
