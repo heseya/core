@@ -221,7 +221,7 @@ class Order extends Model implements AuditableContract, SortableContract
 
     public function preferredLocale(): string
     {
-        $country = Str::of($this->deliveryAddress?->country ?? '')
+        $country = Str::of($this->shippingAddress?->country ?? '')
             ->limit(2, '')
             ->lower()
             ->toString();
