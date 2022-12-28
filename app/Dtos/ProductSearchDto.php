@@ -83,7 +83,6 @@ class ProductSearchDto extends Dto implements InstantiateFromRequest
         return $this->price_max;
     }
 
-    // @phpstan-ignore-next-line
     private static function boolean(string $key, FormRequest|ProductIndexRequest $request): bool|Missing
     {
         if (!$request->has($key)) {
@@ -93,7 +92,6 @@ class ProductSearchDto extends Dto implements InstantiateFromRequest
         return $request->boolean($key);
     }
 
-    // @phpstan-ignore-next-line
     private static function array(string $key, FormRequest|ProductIndexRequest $request): array|Missing
     {
         if (!$request->has($key) || $request->input($key) === null) {

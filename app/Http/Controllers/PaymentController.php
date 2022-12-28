@@ -8,6 +8,7 @@ use App\Http\Requests\Payments\PaymentStoreRequest;
 use App\Http\Resources\PaymentResource;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\PaymentMethod;
 use App\Payments\PayPal;
 use App\Payments\PayU;
 use App\Payments\Przelewy24;
@@ -35,6 +36,15 @@ class PaymentController extends Controller
          * @var PayU|PayPal|Przelewy24 $methodClass
          */
         $methodClass = Config::get('payable.aliases')[$method];
+
+        $paymentMethod = PaymentMethod::searchByCriteria([
+            'order_code' => $order->code,
+            'alias' => $method,
+        ])->first();
+
+        if (!$paymentMethod) {
+            throw new ClientException(Exceptions::PAYMENT_METHOD_NOT_AVAILABLE_FOR_SHIPPING);
+        }
 
         /**
          * @var Payment $payment

@@ -44,7 +44,7 @@ class AnalyticsServiceTest extends TestCase
 
         $onEnd = Payment::factory([
             'paid' => true,
-            'created_at' => $to->copy()->addHours(5),
+            'created_at' => $to->copy(),
         ])->make();
 
         $after = Payment::factory([

@@ -20,6 +20,7 @@ class ProductCreateRequest extends FormRequest implements SeoRequestContract, Me
     protected array $booleanFields = [
         'public',
         'seo.no_index',
+        'shipping_digital',
     ];
 
     public function rules(): array
@@ -32,6 +33,7 @@ class ProductCreateRequest extends FormRequest implements SeoRequestContract, Me
                 'slug' => ['required', 'string', 'max:255', 'unique:products', 'alpha_dash'],
                 'price' => ['required', 'numeric', 'min:0'],
                 'public' => ['required', new Boolean()],
+                'shipping_digital' => ['required', new Boolean()],
 
                 'description_html' => ['nullable', 'string'],
                 'description_short' => ['nullable', 'string', 'between:30,5000'],
@@ -39,6 +41,7 @@ class ProductCreateRequest extends FormRequest implements SeoRequestContract, Me
                 'quantity_step' => ['numeric'],
                 'order' => ['nullable', 'numeric'],
                 'vat_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+                'purchase_limit_per_user' => ['nullable', 'numeric', 'min:0'],
 
                 'media' => ['nullable', 'array'],
                 'media.*' => ['uuid', 'exists:media,id'],

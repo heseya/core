@@ -32,6 +32,7 @@ class ItemProductTest extends TestCase
             'slug' => 'test',
             'price' => 50,
             'public' => true,
+            'shipping_digital' => false,
             'items' => [
                 [
                     'id' => $this->items->first()->getKey(),

@@ -13,6 +13,7 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
     public string|Missing $slug;
     public float|Missing $price;
     public bool|Missing $public;
+    public bool|Missing $shipping_digital;
 
     public int|Missing $order;
     public float|Missing $quantity_step;
@@ -21,6 +22,7 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
 
     public string|null|Missing $description_html;
     public string|null|Missing $description_short;
+    public float|null|Missing $purchase_limit_per_user;
 
     public array|Missing $media;
     public array|Missing $tags;
@@ -37,12 +39,14 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
             slug: $request->input('slug', new Missing()),
             price: $request->input('price', new Missing()),
             public: $request->input('public', new Missing()),
+            shipping_digital: $request->input('shipping_digital', new Missing()),
             order: $request->input('order', new Missing()),
             quantity_step: $request->input('quantity_step', new Missing()),
             google_product_category: $request->input('google_product_category', new Missing()),
             vat_rate: $request->input('vat_rate', new Missing()),
             description_html: $request->input('description_html', new Missing()),
             description_short: $request->input('description_short', new Missing()),
+            purchase_limit_per_user: $request->input('purchase_limit_per_user', new Missing()),
             media: $request->input('media', new Missing()),
             tags: $request->input('tags', new Missing()),
             schemas: $request->input('schemas', new Missing()),
@@ -91,5 +95,10 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
     public function getAttributes(): Missing|array
     {
         return $this->attributes;
+    }
+
+    public function getPurchaseLimitPerUser(): float|Missing|null
+    {
+        return $this->purchase_limit_per_user;
     }
 }

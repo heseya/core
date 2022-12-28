@@ -6,6 +6,9 @@ use App\Casts\MetadataValue;
 use App\Enums\MetadataType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * @mixin IdeHelperMetadataPersonal
+ */
 class MetadataPersonal extends Model
 {
     use HasFactory;

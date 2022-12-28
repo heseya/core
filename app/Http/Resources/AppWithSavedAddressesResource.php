@@ -11,8 +11,8 @@ class AppWithSavedAddressesResource extends AppResource
         return array_merge(
             parent::base($request),
             [
-                'delivery_addresses' => SavedAddressResource::collection($this->resource->deliveryAddresses),
-                'invoice_addresses' => SavedAddressResource::collection($this->resource->invoiceAddresses),
+                'shipping_addresses' => SavedAddressResource::collection($this->resource->shippingAddresses),
+                'billing_addresses' => SavedAddressResource::collection($this->resource->billingAddresses),
             ],
         );
     }

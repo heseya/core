@@ -78,16 +78,16 @@ class App extends Model implements
         return [];
     }
 
-    public function deliveryAddresses(): HasMany
+    public function shippingAddresses(): HasMany
     {
         return $this->hasMany(SavedAddress::class, 'user_id')
-            ->where('type', '=', SavedAddressType::DELIVERY);
+            ->where('type', '=', SavedAddressType::SHIPPING);
     }
 
-    public function invoiceAddresses(): HasMany
+    public function billingAddresses(): HasMany
     {
         return $this->hasMany(SavedAddress::class, 'user_id')
-            ->where('type', '=', SavedAddressType::INVOICE);
+            ->where('type', '=', SavedAddressType::BILLING);
     }
 
     public function orders(): MorphMany
@@ -98,6 +98,11 @@ class App extends Model implements
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function shippingMethods(): HasMany
+    {
+        return $this->hasMany(ShippingMethod::class);
     }
 
     public function hasRole(

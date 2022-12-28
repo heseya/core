@@ -22,12 +22,11 @@ class ConditionGroupDto extends Dto
         return $this->conditions;
     }
 
-    // @phpstan-ignore-next-line
     private static function transformArrayToConditionDtos(array $conditions): array
     {
         $result = [];
         foreach ($conditions as $condition) {
-            array_push($result, match ($condition['type']) {
+            $result[] = match ($condition['type']) {
                 ConditionType::ORDER_VALUE => OrderValueConditionDto::fromArray($condition),
                 ConditionType::USER_IN_ROLE => UserInRoleConditionDto::fromArray($condition),
                 ConditionType::USER_IN => UserInConditionDto::fromArray($condition),
@@ -41,7 +40,7 @@ class ConditionGroupDto extends Dto
                 ConditionType::CART_LENGTH => CartLengthConditionDto::fromArray($condition),
                 ConditionType::COUPONS_COUNT => CouponsCountConditionDto::fromArray($condition),
                 default => throw new Exception('Unknown condition type.')
-            });
+            };
         }
         return $result;
     }

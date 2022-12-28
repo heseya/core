@@ -29,7 +29,6 @@ class SaleIndexDto extends Dto implements InstantiateFromRequest
         );
     }
 
-    // @phpstan-ignore-next-line
     private static function array(string $key, FormRequest|SaleIndexRequest $request): array|Missing
     {
         if (!$request->has($key) || $request->input($key) === null) {

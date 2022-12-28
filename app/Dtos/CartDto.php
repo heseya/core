@@ -14,6 +14,7 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
     private array $items;
     private array|Missing $coupons;
     private string|Missing $shipping_method_id;
+    private string|Missing $digital_shipping_method_id;
 
     /**
      * @throws DtoException
@@ -24,6 +25,7 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
             items: self::prepareItems($request->input('items', [])),
             coupons: $request->input('coupons', new Missing()),
             shipping_method_id: $request->input('shipping_method_id', new Missing()),
+            digital_shipping_method_id: $request->input('digital_shipping_method_id', new Missing()),
         );
     }
 
@@ -44,6 +46,14 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
         return $this->items;
     }
 
+    /**
+     * @param array<CartItemDto> $items
+     */
+    public function setItems(array $items): void
+    {
+        $this->items = $items;
+    }
+
     public function getCoupons(): Missing|array
     {
         return $this->coupons;
@@ -52,6 +62,11 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
     public function getShippingMethodId(): Missing|string
     {
         return $this->shipping_method_id;
+    }
+
+    public function getDigitalShippingMethodId(): Missing|string
+    {
+        return $this->digital_shipping_method_id;
     }
 
     public function getProductIds(): array
@@ -74,7 +89,6 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
         return $length;
     }
 
-    // @phpstan-ignore-next-line
     private static function prepareItems(array $items): array
     {
         $result = Collection::make();

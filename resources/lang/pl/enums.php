@@ -8,6 +8,7 @@ return [
         EventType::ORDER_CREATED => 'Zdarzenie wyzwalane po utworzeniu nowych zamówień',
         EventType::ORDER_UPDATED => 'Zdarzenie wyzwalane po aktualizacji zamówienia',
         EventType::ORDER_UPDATED_STATUS => 'Zdarzenie wyzwalane po aktualizacji statusu zamówienia',
+        EventType::ORDER_REQUESTED_SHIPPING => 'Zdarzenie wyzwalane przy tworzeniu listu przewozowego',
         EventType::PRODUCT_CREATED => 'Zdarzenie wyzwalane po utworzeniu nowych produktów',
         EventType::PRODUCT_UPDATED => 'Zdarzenie wyzwalane po aktualizacji produktu',
         EventType::PRODUCT_DELETED => 'Zdarzenie wyzwalane po usunięciu produktu',
@@ -41,5 +42,6 @@ return [
         EventType::NEW_LOCALIZATION_LOGIN_ATTEMPT => 'Zdarzenie po pomyślnej próbie logowania z nowej lokalizacji',
         EventType::FAILED_LOGIN_ATTEMPT => 'Zdarzenie wyzwalane po niepomyślnej próbie logowania',
         EventType::ORDER_UPDATED_SHIPPING_NUMBER => 'Zdarzenie wyzwalane po aktualizacji numeru listu przewozowego',
+        EventType::SEND_ORDER_URLS => 'Zdarzenie wyzwalane po wysłaniu linków do zamówionych produktów',
     ],
 ];

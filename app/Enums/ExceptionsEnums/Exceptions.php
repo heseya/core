@@ -83,6 +83,10 @@ final class Exceptions extends Enum
     public const CLIENT_REMOVE_DEFAULT_ADDRESS = 'You cannot delete default address';
     public const CLIENT_STATUS_USED = 'Can\'t update or remove status that is currently used in order';
 
+    public const CLIENT_SHIPPING_METHOD_NOT_OWNER = 'This shipping method belongs to other application';
+
+    public const CLIENT_SHIPPING_METHOD_INVALID_TYPE = 'Shipping method or digital shipping method type is invalid';
+
     public const CDN_NOT_ALLOWED_TO_CHANGE_ALT = 'You cannot change alt attribute of this image';
 
     public const CLIENT_PROVIDER_IS_NOT_ACTIVE = 'Chosen auth provider is not active';
@@ -92,11 +96,18 @@ final class Exceptions extends Enum
     public const SERVER_CDN_ERROR = 'CDN responded with an error';
     public const SERVER_ERROR = 'Server responded with an error';
     public const SERVER_ORDER_STATUSES_NOT_CONFIGURED = 'Order statuses are not configured';
+    public const SERVER_TRANSACTION_ERROR = 'Unexpected error occurred during the database transaction.';
 
     public const ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE = 'Not every item is available';
+    public const ORDER_SHIPPING_METHOD_TYPE_MISMATCH = 'Selected shipping methods don\'t match selected product types';
 
     public const PRODUCT_IS_NOT_ON_WISHLIST = 'Product is not on wishlist';
     public const PRODUCT_SET_IS_NOT_ON_FAVOURITES_LIST = 'Product set is not on favourites list';
+
+    public const PRODUCT_PURCHASE_LIMIT = 'The limit of purchased product units per user has been exceeded';
+
+    public const PAYMENT_METHOD_NOT_AVAILABLE_FOR_SHIPPING =
+        'Payment method not available for selected shipping method';
 
     public static function getCode(string $value): int
     {
