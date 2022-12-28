@@ -34,6 +34,7 @@ use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UserLoginAttemptServiceContract;
 use Heseya\Dto\Missing;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -75,27 +76,28 @@ class AuthService implements AuthServiceContract
 
         $this->verifyTFA($code);
 
-        /** @var JWTSubject $user */
-        $user = Auth::user();
+        $this->userLoginAttemptService->store(true);
 
-        $identityToken = $this->tokenService->createToken(
-            $user,
-            new TokenType(TokenType::IDENTITY),
-            $uuid,
-        );
-        $refreshToken = $this->tokenService->createToken(
-            $user,
-            new TokenType(TokenType::REFRESH),
-            $uuid,
-        );
+        return $this->createTokens($token, $uuid);
+    }
+
+    public function loginWithUser(Authenticatable $user, ?string $ip, ?string $userAgent): array
+    {
+        $uuid = Str::uuid()->toString();
+
+        Auth::claims([
+            'iss' => Config::get('app.url'),
+            'typ' => TokenType::ACCESS,
+            'jti' => $uuid,
+        ]);
+        // @phpstan-ignore-next-line
+        Auth::login($user);
+        // @phpstan-ignore-next-line
+        $token = Auth::fromUser($user);
 
         $this->userLoginAttemptService->store(true);
 
-        return [
-            'token' => $token,
-            'identity_token' => $identityToken,
-            'refresh_token' => $refreshToken,
-        ];
+        return $this->createTokens($token, $uuid);
     }
 
     public function refresh(string $refreshToken, ?string $ip, ?string $userAgent): array
@@ -466,7 +468,9 @@ class AuthService implements AuthServiceContract
 
     private function checkCredentials(User $user, string $password): void
     {
-        if (!Hash::check($password, $user->password)) {
+        /** @var string $userPassword */
+        $userPassword = $user->password;
+        if (!Hash::check($password, $userPassword)) {
             throw new ClientException(Exceptions::CLIENT_INVALID_PASSWORD, simpleLogs: true);
         }
     }
@@ -548,5 +552,27 @@ class AuthService implements AuthServiceContract
             'tfa_secret' => null,
             'is_tfa_active' => false,
         ]);
+    }
+
+    private function createTokens(string|bool $token, string $uuid): array
+    {
+        /** @var JWTSubject $user */
+        $user = Auth::user();
+        $identityToken = $this->tokenService->createToken(
+            $user,
+            new TokenType(TokenType::IDENTITY),
+            $uuid,
+        );
+        $refreshToken = $this->tokenService->createToken(
+            $user,
+            new TokenType(TokenType::REFRESH),
+            $uuid,
+        );
+
+        return [
+            'token' => $token,
+            'identity_token' => $identityToken,
+            'refresh_token' => $refreshToken,
+        ];
     }
 }

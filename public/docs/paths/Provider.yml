@@ -1,0 +1,164 @@
+ProviderLogin:
+  post:
+    tags:
+      - Auth
+    summary: Login
+    parameters:
+      - name: AuthProviderKey
+        in: path
+        required: true
+        schema:
+          type: string
+          enum: [ 'facebook', 'google', 'apple', 'github', 'gitlab', 'bitbucket', 'linkedin' ]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              return_url:
+                type: string
+                example: https://example.com?code=1234
+                description: Must be same as the `return_url` used in the `/auth/providers/{provider}/redirect` endpoint
+                  and contains query params received from providers
+            type: object
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  properties:
+                    token:
+                      type: string
+                    identity_token:
+                      type: string
+                    refresh_token:
+                      type: string
+                    user:
+                      $ref: './../schemas/Users.yml#/User'
+                  type: object
+              type: object
+
+ProviderRedirect:
+  post:
+    tags:
+      - Auth
+    summary: Redirect to auth provider login
+    parameters:
+      - name: AuthProviderKey
+        in: path
+        required: true
+        schema:
+          type: string
+          enum: [ 'facebook', 'google', 'apple', 'github', 'gitlab', 'bitbucket', 'linkedin' ]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              return_url:
+                type: string
+                example: https://example.com
+            type: object
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  properties:
+                    redirect_url:
+                      type: string
+                  type: object
+              type: object
+
+Index:
+  get:
+    tags:
+      - Auth
+    summary: 'List of providers'
+    parameters:
+      - name: active
+        in: path
+        required: true
+        schema:
+          type: boolean
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Provider.yml#/ProviderResource'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+ProviderParams:
+  get:
+    tags:
+      - Auth
+    summary: 'Gets provider'
+    parameters:
+      - name: AuthProviderKey
+        in: path
+        required: true
+        schema:
+          type: string
+          enum: [ 'facebook', 'google', 'apple', 'github', 'gitlab', 'bitbucket', 'linkedin' ]
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Provider.yml#/ProviderResource'
+              type: object
+    security:
+      - BearerAuth: [ ]
+  patch:
+    tags:
+      - Auth
+    summary: 'Updates provider'
+    parameters:
+      - name: AuthProviderKey
+        in: path
+        required: true
+        schema:
+          type: string
+          enum: [ 'facebook', 'google', 'apple', 'github', 'gitlab', 'bitbucket', 'linkedin' ]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              client_id:
+                type: string
+                example: '38v92867932v48937y4'
+              client_secret:
+                type: string
+                example: '209-387vn20hfj'
+              active:
+                type: boolean
+                example: true
+            type: object
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Provider.yml#/Provider'
+              type: object

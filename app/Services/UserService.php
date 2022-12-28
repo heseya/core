@@ -107,6 +107,7 @@ class UserService implements UserServiceContract
                 throw new ClientException(Exceptions::CLIENT_GIVE_ROLE_THAT_USER_DOESNT_HAVE);
             }
 
+            // @phpstan-ignore-next-line
             $permissions = $removedRoles->flatMap(
                 fn (Role $role) => $role->type->value !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
             )->unique();
