@@ -114,10 +114,10 @@ class ItemService implements ItemServiceContract
                     $purchasedCount = $purchasedProducts[$product->getKey()];
                 } else {
                     $purchasedCount = OrderProduct::searchByCriteria([
-                            $relation => Auth::id(),
-                            'product_id' => $product->getKey(),
-                            'paid' => true,
-                        ])
+                        $relation => Auth::id(),
+                        'product_id' => $product->getKey(),
+                        'paid' => true,
+                    ])
                         ->sum('quantity');
                     $purchasedProducts[$product->getKey()] = $purchasedCount;
                 }
