@@ -16,7 +16,6 @@ class DepositResource extends Resource
             'created_at' => $this->resource->created_at,
             'shipping_time' => $this->resource->shipping_time,
             'shipping_date' => $this->resource->shipping_date,
-            'from_unlimited' => $this->resource->from_unlimited,
             'order' => OrderShortResource::make($this->resource->order),
         ];
     }

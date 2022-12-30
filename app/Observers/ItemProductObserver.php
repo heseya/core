@@ -7,9 +7,11 @@ use App\Services\Contracts\AvailabilityServiceContract;
 
 class ItemProductObserver
 {
-    public function __construct(
-        private AvailabilityServiceContract $availabilityService,
-    ) {
+    private AvailabilityServiceContract $availabilityService;
+
+    public function __construct(AvailabilityServiceContract $availabilityService)
+    {
+        $this->availabilityService = $availabilityService;
     }
 
     public function created(ItemProduct $itemProduct): void
