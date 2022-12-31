@@ -20,11 +20,6 @@ class ProductPriceUpdated extends WebHookEvent
         parent::__construct();
     }
 
-    public function isHidden(): bool
-    {
-        return false;
-    }
-
     public function getDataContent(): array
     {
         return [
@@ -35,6 +30,11 @@ class ProductPriceUpdated extends WebHookEvent
             'new_price_max' => $this->newPriceMax,
             'updated_at' => $this->updatedAt,
         ];
+    }
+
+    public function getEvent(): string
+    {
+        return 'ProductPriceUpdated';
     }
 
     public function getDataType(): string

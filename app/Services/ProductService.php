@@ -46,6 +46,13 @@ class ProductService implements ProductServiceContract
         $product->save();
 
         DB::commit();
+        ProductPriceUpdated::dispatch(
+            $product->getKey(),
+            null,
+            null,
+            $product->price_min,
+            $product->price_max,
+        );
         ProductCreated::dispatch($product);
         // @phpstan-ignore-next-line
         Product::where($product->getKeyName(), $product->getKey())->searchable();
