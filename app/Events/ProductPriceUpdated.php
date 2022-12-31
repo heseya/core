@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
 
 class ProductPriceUpdated extends WebHookEvent
 {
