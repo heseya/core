@@ -10,8 +10,8 @@ class ProductPriceUpdated extends WebHookEvent
 
     public function __construct(
         private string $id,
-        private float $oldPriceMin,
-        private float $oldPriceMax,
+        private ?float $oldPriceMin,
+        private ?float $oldPriceMax,
         private float $newPriceMin,
         private float $newPriceMax,
     )
