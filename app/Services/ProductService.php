@@ -7,6 +7,7 @@ use App\Dtos\ProductUpdateDto;
 use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
+use App\Events\ProductPriceUpdated;
 use App\Events\ProductUpdated;
 use App\Models\Option;
 use App\Models\Product;
@@ -45,6 +46,13 @@ class ProductService implements ProductServiceContract
         $product->save();
 
         DB::commit();
+        ProductPriceUpdated::dispatch(
+            $product->getKey(),
+            null,
+            null,
+            $product->price_min,
+            $product->price_max,
+        );
         ProductCreated::dispatch($product);
         // @phpstan-ignore-next-line
         Product::where($product->getKeyName(), $product->getKey())->searchable();
@@ -54,6 +62,9 @@ class ProductService implements ProductServiceContract
 
     public function update(Product $product, ProductUpdateDto $dto): Product
     {
+        $oldMinPrice = $product->price_min;
+        $oldMaxPrice = $product->price_max;
+
         DB::beginTransaction();
 
         $product->fill($dto->toArray());
@@ -61,6 +72,17 @@ class ProductService implements ProductServiceContract
         $product->save();
 
         DB::commit();
+
+        if ($oldMinPrice !== $product->price_min || $oldMaxPrice !== $product->price_max) {
+            ProductPriceUpdated::dispatch(
+                $product->getKey(),
+                $oldMinPrice,
+                $oldMaxPrice,
+                $product->price_min,
+                $product->price_max,
+            );
+        }
+
         ProductUpdated::dispatch($product);
         // @phpstan-ignore-next-line
         Product::query()->where($product->getKeyName(), $product->getKey())->searchable();

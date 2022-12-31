@@ -23,6 +23,7 @@ use App\Events\PageUpdated;
 use App\Events\PasswordReset;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
+use App\Events\ProductPriceUpdated;
 use App\Events\ProductSetCreated;
 use App\Events\ProductSetDeleted;
 use App\Events\ProductSetUpdated;
@@ -117,6 +118,7 @@ class EventServiceProvider extends ServiceProvider
         ProductSetDeleted::class,
         ProductSetUpdated::class,
         ProductUpdated::class,
+        ProductPriceUpdated::class,
         SaleCreated::class,
         SaleDeleted::class,
         SaleUpdated::class,
