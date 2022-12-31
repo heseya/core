@@ -14,6 +14,7 @@ final class EventType extends Enum implements LocalizedEnum
     public const PRODUCT_CREATED = 'ProductCreated';
     public const PRODUCT_UPDATED = 'ProductUpdated';
     public const PRODUCT_DELETED = 'ProductDeleted';
+    public const PRODUCT_PRICE_UPDATED = 'ProductPriceUpdated';
     public const ITEM_CREATED = 'ItemCreated';
     public const ITEM_UPDATED = 'ItemUpdated';
     public const ITEM_UPDATED_QUANTITY = 'ItemUpdatedQuantity';
