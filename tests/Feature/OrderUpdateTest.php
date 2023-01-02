@@ -1180,6 +1180,107 @@ class OrderUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateOrderDigitalShippingMethod($user): void
+    {
+        $this->$user->givePermissionTo('orders.edit');
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'shipping_digital' => true,
+        ]);
+
+        $digitalShippingMethodOld = $this->createShippingMethod(0, ['shipping_type' => ShippingType::DIGITAL]);
+        $digitalShippingMethodNew = $this->createShippingMethod(0, ['shipping_type' => ShippingType::DIGITAL]);
+
+        $order = Order::factory()->create([
+            'code' => 'ORDERCODE',
+            'email' => self::EMAIL,
+            'comment' => $this->comment,
+            'status_id' => $this->status->getKey(),
+            'digital_shipping_method_id' => $digitalShippingMethodOld->getKey(),
+            'billing_address_id' => $this->addressInvoice->getKey(),
+        ]);
+
+        $order->products()->create([
+            'product_id' => $product->getKey(),
+            'quantity' => 3,
+            'price' => 80.00,
+            'price_initial' => 80.00,
+            'name' => $product->name,
+            'shipping_digital' => true,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'PATCH',
+                "/orders/id:{$order->getKey()}",
+                [
+                    'digital_shipping_method_id' => $digitalShippingMethodNew->getKey(),
+                ]
+            )
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $digitalShippingMethodNew->getKey(),
+            ])->assertJsonMissing([
+                'id' => $digitalShippingMethodOld->getKey(),
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderDigital($user): void
+    {
+        $this->$user->givePermissionTo('orders.edit');
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'shipping_digital' => true,
+        ]);
+
+        $digitalShippingMethod = $this->createShippingMethod(0, ['shipping_type' => ShippingType::DIGITAL]);
+
+        $order = Order::factory()->create([
+            'code' => 'ORDERCODE',
+            'email' => self::EMAIL,
+            'comment' => $this->comment,
+            'status_id' => $this->status->getKey(),
+            'digital_shipping_method_id' => $digitalShippingMethod->getKey(),
+            'billing_address_id' => $this->addressInvoice->getKey(),
+        ]);
+
+        $order->products()->create([
+            'product_id' => $product->getKey(),
+            'quantity' => 3,
+            'price' => 80.00,
+            'price_initial' => 80.00,
+            'name' => $product->name,
+            'shipping_digital' => true,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'PATCH',
+                "/orders/id:{$order->getKey()}",
+                [
+                    'comment' => 'New comment',
+
+                ]
+            )
+            ->assertOk()
+            ->assertJsonFragment([
+                'comment' => 'New comment',
+            ])
+            ->assertJsonMissing([
+                'comment' => $this->comment,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testDeleteOrderProductUrl($user): void
     {
         $this->$user->givePermissionTo('orders.edit');

@@ -29,7 +29,7 @@ class OrderResource extends Resource
                 ShippingMethodResource::make($this->resource->shippingMethod) : null,
             'digital_shipping_method' => $this->resource->digitalShippingMethod ?
                 ShippingMethodResource::make($this->resource->digitalShippingMethod) : null,
-            'shipping_type' => $this->resource->shippingMethod ? $this->resource->shippingMethod->shipping_type : null,
+            'shipping_type' => $this->resource->shippingType,
             'invoice_requested' => $this->resource->invoice_requested,
             'shipping_place' =>  $this->resource->shippingAddress
                 ? AddressResource::make($this->resource->shippingAddress)

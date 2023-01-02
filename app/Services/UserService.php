@@ -95,7 +95,7 @@ class UserService implements UserServiceContract
                 ->get();
 
             $newRoles = $roleModels->diff($user->roles);
-            /** @var Collection<int, Role> $removedRoles */
+            /** @var \Illuminate\Database\Eloquent\Collection $removedRoles */
             $removedRoles = $user->roles->diff($roleModels);
 
             // @phpstan-ignore-next-line
