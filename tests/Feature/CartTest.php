@@ -1,6 +1,6 @@
 <?php
 
-namespace Feature;
+namespace Tests\Feature;
 
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
@@ -1932,7 +1932,9 @@ class CartTest extends TestCase
             'purchase_limit_per_user' => 1,
         ]);
 
-        $order = Order::factory()->create();
+        $order = Order::factory()->create([
+            'paid' => true,
+        ]);
         $this->$user->orders()->save($order);
         $order->products()->create([
             'product_id' => $this->product->getKey(),
@@ -1965,6 +1967,54 @@ class CartTest extends TestCase
                 'items' => [],
             ])
             ->assertJsonCount(0, 'data.items');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessPurchaseLimitAlreadyPurchasedNotPaid($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $this->product->update([
+            'purchase_limit_per_user' => 1,
+        ]);
+
+        $order = Order::factory()->create([
+            'paid' => false,
+        ]);
+        $this->$user->orders()->save($order);
+        $order->products()->create([
+            'product_id' => $this->product->getKey(),
+            'quantity' => 1,
+            'price_initial' => 4600,
+            'price' => 4600,
+            'name' => $this->product->name,
+        ]);
+
+        $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 4600,
+                'cart_total' => 4600,
+                'shipping_price_initial' => 8.11,
+                'shipping_price' => 8.11,
+                'summary' => 8.11,
+                'coupons' => [],
+                'sales' => [],
+                'items' => [],
+            ])
+            ->assertJsonCount(1, 'data.items');
     }
 
     /**
