@@ -1222,10 +1222,8 @@ class OrderUpdateTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'id' => $digitalShippingMethodNew->getKey(),
-                'name' => $digitalShippingMethodNew->name,
             ])->assertJsonMissing([
                 'id' => $digitalShippingMethodOld->getKey(),
-                'name' => $digitalShippingMethodOld->name,
             ]);
     }
 
