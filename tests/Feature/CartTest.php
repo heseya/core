@@ -2007,12 +2007,9 @@ class CartTest extends TestCase
             ->assertJsonFragment([
                 'cart_total_initial' => 4600,
                 'cart_total' => 4600,
-                'shipping_price_initial' => 8.11,
-                'shipping_price' => 8.11,
-                'summary' => 8.11,
-                'coupons' => [],
-                'sales' => [],
-                'items' => [],
+                'shipping_price_initial' => 0,
+                'shipping_price' => 0,
+                'summary' => 4600,
             ])
             ->assertJsonCount(1, 'data.items');
     }
