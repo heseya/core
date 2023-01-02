@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
@@ -227,12 +228,14 @@ class Order extends Model implements AuditableContract, SortableContract
 
     public function preferredLocale(): string
     {
-        $country = Str::of($this->deliveryAddress?->country ?? '')->limit(2, '')->lower();
+        $country = Str::of($this->shippingAddress?->country ?? '')
+            ->limit(2, '')
+            ->lower()
+            ->toString();
 
-        if ($country->is('pl')) {
-            return 'pl';
-        }
-
-        return 'en';
+        return match ($country) {
+            'pl', 'en' => $country,
+            default => Config::get('app.locale'),
+        };
     }
 }
