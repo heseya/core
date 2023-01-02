@@ -1273,7 +1273,7 @@ class OrderUpdateTest extends TestCase
             )
             ->assertOk()
             ->assertJsonFragment([
-                'comment' => 'New comment'
+                'comment' => 'New comment',
             ])
             ->assertJsonMissing([
                 'comment' => $this->comment,
