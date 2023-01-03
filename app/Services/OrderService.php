@@ -263,11 +263,16 @@ class OrderService implements OrderServiceContract
     {
         DB::beginTransaction();
         try {
-            [$shippingMethod] = $this->getDeliveryMethods($dto, $order->products, false);
+            [$shippingMethod, $digitalShippingMethod] = $this->getDeliveryMethods($dto, $order->products, false);
 
             $shippingType = $shippingMethod
                 ? $shippingMethod->shipping_type
                 : $order->shippingMethod?->shipping_type;
+
+            if ($shippingType === null) {
+                $shippingType = $digitalShippingMethod
+                    ? $digitalShippingMethod->shipping_type : $order->digitalShippingMethod?->shipping_type;
+            }
 
             if ($shippingType !== ShippingType::POINT) {
                 $shippingPlace = $dto->getShippingPlace() instanceof AddressDto ?

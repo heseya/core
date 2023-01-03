@@ -1614,7 +1614,9 @@ class OrderCreateTest extends TestCase
             'purchase_limit_per_user' => 1,
         ]);
 
-        $order = Order::factory()->create();
+        $order = Order::factory()->create([
+            'paid' => true,
+        ]);
         $this->$user->orders()->save($order);
         $order->products()->create([
             'product_id' => $this->product->getKey(),
@@ -1651,7 +1653,9 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $order = Order::factory()->create();
+        $order = Order::factory()->create([
+            'paid' => true,
+        ]);
         $this->$user->orders()->save($order);
         $order->products()->create([
             'product_id' => $this->product->getKey(),
@@ -1683,6 +1687,49 @@ class OrderCreateTest extends TestCase
             ->assertJsonFragment([
                 'message' => Exceptions::PRODUCT_PURCHASE_LIMIT,
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderPurchaseLimitSetAfterPurchaseNotPaid($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $order = Order::factory()->create([
+            'paid' => false,
+        ]);
+        $this->$user->orders()->save($order);
+        $order->products()->create([
+            'product_id' => $this->product->getKey(),
+            'quantity' => 2,
+            'price_initial' => 4600,
+            'price' => 4600,
+            'name' => $this->product->name,
+        ]);
+
+        $this->product->update([
+            'price' => 10,
+            'vat_rate' => 23,
+            'purchase_limit_per_user' => 1,
+        ]);
+
+        $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'billing_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                ],
+            ],
+        ])
+
+            ->assertCreated();
     }
 
     /**
