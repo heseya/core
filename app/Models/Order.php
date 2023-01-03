@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
@@ -145,6 +146,13 @@ class Order extends Model implements AuditableContract, SortableContract
             $paymentMethodCount > 0;
     }
 
+    public function getShippingTypeAttribute(): string|null
+    {
+        return $this->shippingMethod
+            ? $this->shippingMethod->shipping_type
+            : ($this->digitalShippingMethod ? $this->digitalShippingMethod->shipping_type : null);
+    }
+
     public function isPaid(): bool
     {
         return $this->paid_amount >= $this->summary;
@@ -220,12 +228,14 @@ class Order extends Model implements AuditableContract, SortableContract
 
     public function preferredLocale(): string
     {
-        $country = Str::of($this->deliveryAddress?->country ?? '')->limit(2, '')->lower();
+        $country = Str::of($this->shippingAddress?->country ?? '')
+            ->limit(2, '')
+            ->lower()
+            ->toString();
 
-        if ($country->is('pl')) {
-            return 'pl';
-        }
-
-        return 'en';
+        return match ($country) {
+            'pl', 'en' => $country,
+            default => Config::get('app.locale'),
+        };
     }
 }
