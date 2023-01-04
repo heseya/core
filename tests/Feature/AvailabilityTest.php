@@ -3,12 +3,15 @@
 namespace Tests\Feature;
 
 use App\Enums\SchemaType;
+use App\Events\ItemUpdatedQuantity;
+use App\Events\OrderCreated;
 use App\Events\ProductUpdated;
 use App\Models\Address;
 use App\Models\Deposit;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Order;
+use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
@@ -16,13 +19,14 @@ use App\Models\Status;
 use App\Services\AvailabilityService;
 use App\Services\Contracts\AvailabilityServiceContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
 class AvailabilityTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, WithFaker;
 
     private Item $item;
     private Option $option;
@@ -526,6 +530,106 @@ class AvailabilityTest extends TestCase
         Event::assertDispatched(ProductUpdated::class);
     }
 
+    public function multipleSchemasProvider(): array
+    {
+        return [
+            'as user three schemas' => ['user', 3],
+            'as user four schemas' => ['user', 4],
+            'as app three schemas' => ['application', 3],
+            'as app four schemas' => ['application', 4],
+        ];
+    }
+
+    /**
+     * @dataProvider multipleSchemasProvider
+     */
+    public function testCreateOrderProductWithMultipleSchemasWithOption($user, $schemaCount): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+        $email = $this->faker->freeEmail;
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $shippingMethod = ShippingMethod::factory()->create(['public' => true]);
+        $lowRange = PriceRange::create(['start' => 0]);
+        $lowRange->prices()->create(['value' => 8.11]);
+
+        $highRange = PriceRange::create(['start' => 210]);
+        $highRange->prices()->create(['value' => 0.0]);
+
+        $shippingMethod->priceRanges()->saveMany([$lowRange, $highRange]);
+
+        $address = Address::factory()->make();
+
+        Event::fake([OrderCreated::class]);
+
+        $schemas = $this->createSchemasWithOptions($schemaCount);
+
+        $product->schemas()->sync(array_keys($schemas));
+        $product->update([
+            'has_schemas' => true,
+            'price' => 100,
+        ]);
+
+        $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => $email,
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'delivery_address' => $address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => $schemas,
+                ],
+            ],
+        ])
+            ->assertCreated();
+
+        Event::assertDispatched(OrderCreated::class);
+    }
+
+    /**
+     * @dataProvider multipleSchemasProvider
+     */
+    public function testCreateWithMultipleSchemasWithOptions($user, int $schemaCount): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $schemas = $this->createSchemasWithOptions($schemaCount);
+
+        $this->actingAs($this->$user)->postJson('/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 10,
+            'public' => false,
+            'sets' => [],
+            'schemas' => array_keys($schemas),
+        ])->assertCreated();
+    }
+
+    /**
+     * @dataProvider multipleSchemasProvider
+     */
+    public function testAddDepositToItemInSchemaOption($user, int $schemaCount): void
+    {
+        $this->$user->givePermissionTo('deposits.add');
+
+        $schemas = $this->createSchemasWithOptions($schemaCount);
+
+        $schema = Schema::find(array_keys($schemas)[0])->with('options', 'options.items')->first();
+        $item = $schema->options->first()->items->first();
+
+        Event::fake(ItemUpdatedQuantity::class);
+
+        $this->actingAs($this->$user)->json('POST', "/items/id:{$item->getKey()}/deposits", [
+            'quantity' => 100,
+        ])->assertCreated();
+
+        Event::assertDispatched(ItemUpdatedQuantity::class);
+    }
+
     private function createDataPatternOne(): Collection
     {
         $schemaOne = Schema::factory()->create([
@@ -606,5 +710,60 @@ class AvailabilityTest extends TestCase
 
         $product->schemas()->attach($schema->getKey());
         return $product->refresh();
+    }
+
+    private function createSchemasWithOptions(int $schemaCount): array
+    {
+        $schemas = [];
+        for ($i = 0; $i < $schemaCount; $i++) {
+            $item1 = Item::factory()->create();
+            $item2 = Item::factory()->create();
+
+            Deposit::factory()->create([
+                'item_id' => $item1->getKey(),
+                'quantity' => 10,
+            ]);
+            Deposit::factory()->create([
+                'item_id' => $item2->getKey(),
+                'quantity' => 10,
+            ]);
+
+            $schema1 = Schema::factory()->create([
+                'required' => true,
+                'type' => SchemaType::SELECT,
+                'price' => 10,
+                'hidden' => false,
+                'available' => true,
+            ]);
+
+            $option1 = Option::factory()->create([
+                'name' => 'A',
+                'price' => 10,
+                'disabled' => false,
+                'available' => true,
+                'order' => 0,
+                'schema_id' => $schema1->getKey(),
+            ]);
+
+            $option1->items()->sync([
+                $item1->getKey() => ['required_quantity' => 1],
+            ]);
+
+            $option2 = Option::factory()->create([
+                'name' => 'B',
+                'price' => 10,
+                'disabled' => false,
+                'available' => true,
+                'order' => 2,
+                'schema_id' => $schema1->getKey(),
+            ]);
+
+            $option2->items()->sync([
+                $item1->getKey() => ['required_quantity' => 1],
+            ]);
+
+            $schemas[$schema1->getKey()] = $option1->getKey();
+        }
+        return $schemas;
     }
 }
