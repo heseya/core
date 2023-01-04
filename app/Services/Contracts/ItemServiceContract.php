@@ -22,5 +22,5 @@ interface ItemServiceContract
 
     public function destroy(Item $item): void;
 
-    public function refreshSearchable(Item $item): void;
+    public function refreshSerchable(Item $item): void;
 }

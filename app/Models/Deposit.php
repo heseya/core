@@ -22,15 +22,10 @@ class Deposit extends Model
         'order_product_id',
         'shipping_time',
         'shipping_date',
-        'from_unlimited',
     ];
 
     protected $dates = [
         'shipping_date',
-    ];
-
-    protected $casts = [
-        'from_unlimited' => 'bool',
     ];
 
     protected array $criteria = [

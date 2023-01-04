@@ -54,6 +54,7 @@ class ProductResource extends Resource
             'sets' => ProductSetResource::collection($sets),
             'attributes' => ProductAttributeResource::collection($this->resource->attributes),
             'seo' => SeoMetadataResource::make($this->resource->seo),
+            'availability' => ProductAvailabilityResource::collection($this->resource->productAvailabilities),
         ] + $sales;
     }
 
