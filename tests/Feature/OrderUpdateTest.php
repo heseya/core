@@ -1329,6 +1329,178 @@ class OrderUpdateTest extends TestCase
         ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testChangeOrderExternalShippingPointToShippingPoint($user): void
+    {
+        $this->$user->givePermissionTo('orders.edit');
+
+        $externalPointShipping = ShippingMethod::factory()->create([
+            'public' => true,
+            'name' => 'external point',
+            'shipping_type' => ShippingType::POINT_EXTERNAL,
+        ]);
+
+        $pointShipping = ShippingMethod::factory()->create([
+            'public' => true,
+            'name' => 'point',
+            'shipping_type' => ShippingType::POINT,
+        ]);
+
+        $address = Address::factory()->create();
+        $pointShipping->shippingPoints()->sync([$address->getKey()]);
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'shipping_digital' => false,
+        ]);
+
+        $order = Order::factory()->create([
+            'code' => 'NEWORDERCODE',
+            'email' => self::EMAIL,
+            'comment' => $this->comment,
+            'status_id' => $this->status->getKey(),
+            'shipping_method_id' => $externalPointShipping->getKey(),
+            'billing_address_id' => $this->addressInvoice->getKey(),
+            'shipping_place' => 'external shipping place',
+        ]);
+
+        $orderProduct = new OrderProduct([
+            'product_id' => $product->getKey(),
+            'quantity' => 1,
+            'price_initial' => $product->price,
+            'price' => $product->price,
+            'base_price_initial' => $product->price,
+            'base_price' => $product->price,
+            'name' => $product->name,
+            'vat_rate' => 0.23,
+            'shipping_digital' => $product->shipping_digital,
+        ]);
+
+        $order->products()->save($orderProduct);
+
+        $this->actingAs($this->$user)->json('PATCH', "/orders/id:{$order->getKey()}", [
+            'shipping_method_id' => $pointShipping->getKey(),
+            'shipping_place' => $address->getKey(),
+        ])
+            ->assertOk()
+            ->assertJsonMissing([
+                'id' => $externalPointShipping->getKey(),
+                'name' => $externalPointShipping->name,
+            ])
+            ->assertJsonMissing([
+                'shipping_place' => 'external shipping place',
+            ])
+            ->assertJsonFragment([
+                'id' => $pointShipping->getKey(),
+                'name' => $pointShipping->name,
+            ])
+            ->assertJsonFragment([
+                'id' => $address->getKey(),
+                'name' => $address->name,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testChangeOrderShippingPointToAddress($user): void
+    {
+        $this->$user->givePermissionTo('orders.edit');
+
+        $pointShipping = ShippingMethod::factory()->create([
+            'public' => true,
+            'name' => 'point',
+            'shipping_type' => ShippingType::POINT,
+        ]);
+
+        $address = Address::factory()->create([
+            'name' => 'Point address',
+        ]);
+        $pointShipping->shippingPoints()->sync([$address->getKey()]);
+
+        $addressShipping = ShippingMethod::factory()->create([
+            'public' => true,
+            'name' => 'shipping address',
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'shipping_digital' => false,
+        ]);
+
+        $order = Order::factory()->create([
+            'code' => 'NEWORDERCODE',
+            'email' => self::EMAIL,
+            'comment' => $this->comment,
+            'status_id' => $this->status->getKey(),
+            'shipping_method_id' => $pointShipping->getKey(),
+            'billing_address_id' => $this->addressInvoice->getKey(),
+            'shipping_address_id' => $address->getKey(),
+        ]);
+
+        $orderProduct = new OrderProduct([
+            'product_id' => $product->getKey(),
+            'quantity' => 1,
+            'price_initial' => $product->price,
+            'price' => $product->price,
+            'base_price_initial' => $product->price,
+            'base_price' => $product->price,
+            'name' => $product->name,
+            'vat_rate' => 0.23,
+            'shipping_digital' => $product->shipping_digital,
+        ]);
+
+        $order->products()->save($orderProduct);
+
+        $newAddress = [
+            'address' => 'Ulica 13',
+            'city' => 'Warszawa',
+            'country' => 'PL',
+            'name' => 'Nowy adres',
+            'phone' => '+48500200200',
+            'zip' => '33-333',
+        ];
+
+        $this->actingAs($this->$user)->json('PATCH', "/orders/id:{$order->getKey()}", [
+            'shipping_method_id' => $addressShipping->getKey(),
+            'shipping_place' => $newAddress,
+        ])
+            ->assertOk()
+            ->assertJsonMissing([
+                'id' => $pointShipping->getKey(),
+                'name' => $pointShipping->name,
+            ])
+            ->assertJsonMissing([
+                'id' => $address->getKey(),
+                'name' => $address->name,
+            ])
+            ->assertJsonFragment([
+                'id' => $addressShipping->getKey(),
+                'name' => $addressShipping->name,
+            ])
+            ->assertJsonFragment([
+                'name' => 'Nowy adres',
+            ]);
+
+        $this->assertDatabaseHas('addresses', [
+            'id' => $address->getKey(),
+            'name' => $address->name,
+            'phone' => $address->phone,
+            'address' => $address->address,
+            'city' => $address->city,
+            'zip' => $address->zip,
+            'country' => $address->country,
+        ]);
+
+        $this->assertDatabaseHas('addresses', $newAddress);
+        $this->assertDatabaseMissing('addresses', [
+            'id' => $address->getKey(),
+        ] + $newAddress);
+    }
+
     private function checkAddress(Address $address): void
     {
         $this->assertDatabaseHas('addresses', [

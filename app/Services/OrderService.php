@@ -306,6 +306,16 @@ class OrderService implements OrderServiceContract
                 'shipping_type' => $shippingType,
             ] + $dto->toArray() + $billingAddressId);
 
+            if ($shippingMethod) {
+                $order->shippingMethod()->dissociate();
+                $order->shippingMethod()->associate($shippingMethod);
+            }
+
+            if ($digitalShippingMethod) {
+                $order->digitalShippingMethod()->dissociate();
+                $order->digitalShippingMethod()->associate($digitalShippingMethod);
+            }
+
             DB::commit();
 
             // other event when only shipping number is updated
@@ -465,6 +475,9 @@ class OrderService implements OrderServiceContract
         $old = Address::find($order->$attribute);
         Cache::add('address.' . $order->$attribute, $old ? ((string) $old) : null);
         $order->forceAudit($attribute);
+        if ($attribute === 'shipping_address_id' && $order->shipping_type === ShippingType::POINT) {
+            return Address::create($addressDto->toArray());
+        }
         return Address::updateOrCreate(['id' => $order->$attribute], $addressDto->toArray());
     }
 
