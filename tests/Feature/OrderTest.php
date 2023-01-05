@@ -556,6 +556,154 @@ class OrderTest extends TestCase
             ->assertJsonFragment(['id' => $this->order->getKey()]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchByShippingMethod($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        $shippingMethod = ShippingMethod::factory()->create([
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
+
+        $status = Status::factory([
+            'hidden' => false,
+        ])->create();
+
+        $order = Order::factory([
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+        ])->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/orders', ['shipping_method_id' => $shippingMethod->getKey()])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonStructure(['data' => [
+                0 => $this->expected_full_structure,
+            ],
+            ])
+            ->assertJson(['data' => [
+                0 => [
+                    'code' => $order->code,
+                    'shipping_method' => [
+                        'id' => $shippingMethod->getKey(),
+                    ],
+                ],
+            ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchByDigitalShippingMethod($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        $digitalShippingMethod = ShippingMethod::factory()->create([
+            'shipping_type' => ShippingType::DIGITAL,
+        ]);
+
+        $status = Status::factory([
+            'hidden' => false,
+        ])->create();
+
+        $order = Order::factory([
+            'digital_shipping_method_id' => $digitalShippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+        ])->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/orders', ['digital_shipping_method_id' => $digitalShippingMethod->getKey()])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonStructure(['data' => [
+                0 => $this->expected_full_structure,
+            ],
+            ])
+            ->assertJson(['data' => [
+                0 => [
+                    'code' => $order->code,
+                    'digital_shipping_method' => [
+                        'id' => $digitalShippingMethod->getKey(),
+                    ],
+                    'shipping_method' => null,
+                ],
+            ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchByShippingMethodAndDigitalShippingMethod($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        $digitalShippingMethod = ShippingMethod::factory()->create([
+            'shipping_type' => ShippingType::DIGITAL,
+        ]);
+
+        $shippingMethod = ShippingMethod::factory()->create([
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
+
+        $status = Status::factory([
+            'hidden' => false,
+        ])->create();
+
+        $order = Order::factory([
+            'digital_shipping_method_id' => $digitalShippingMethod->getKey(),
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+        ])->create();
+
+        $orderDigital = Order::factory([
+            'digital_shipping_method_id' => $digitalShippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+        ])->create();
+
+        $orderPhysical = Order::factory([
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+        ])->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/orders', [
+                'digital_shipping_method_id' => $digitalShippingMethod->getKey(),
+                'shipping_method_id' => $shippingMethod->getKey(),
+            ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonStructure(['data' => [
+                0 => $this->expected_full_structure,
+            ],
+            ])
+            ->assertJson(['data' => [
+                0 => [
+                    'code' => $order->code,
+                    'digital_shipping_method' => [
+                        'id' => $digitalShippingMethod->getKey(),
+                    ],
+                    'shipping_method' => [
+                        'id' => $shippingMethod->getKey(),
+                    ],
+                ],
+            ],
+            ])
+            ->assertJsonMissing([
+                'id' => $orderDigital->getKey(),
+            ])
+            ->assertJsonMissing([
+                'id' => $orderPhysical->getKey(),
+            ]);
+    }
+
     public function testViewUnauthorized(): void
     {
         $response = $this->getJson('/orders/id:' . $this->order->getKey());

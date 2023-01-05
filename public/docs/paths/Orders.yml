@@ -25,6 +25,11 @@ Orders:
         description: 'Shipping Method UUID'
         schema:
           type: string
+      - name: digital_shipping_method_id
+        in: query
+        description: 'Digital Shipping Method UUID'
+        schema:
+          type: string
       - name: paid
         in: query
         description: 'Is order paid'
