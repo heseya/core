@@ -15,7 +15,6 @@ class ProductSetUpdateDto extends Dto implements InstantiateFromRequest
     private string|null|Missing $slug_suffix;
     private bool|Missing $slug_override;
     private bool|Missing $public;
-    private bool|Missing $hide_on_index;
     private string|null|Missing $parent_id;
     private array|Missing $children_ids;
     private SeoMetadataDto|Missing $seo;
@@ -31,7 +30,6 @@ class ProductSetUpdateDto extends Dto implements InstantiateFromRequest
             slug_suffix: $request->input('slug_suffix', new Missing()),
             slug_override: $request->input('slug_override', new Missing()),
             public: $request->input('public', new Missing()),
-            hide_on_index: $request->input('hide_on_index', new Missing()),
             parent_id: $request->input('parent_id', new Missing()),
             children_ids: $request->input('children_ids', new Missing()),
             seo: $request->has('seo') ? SeoMetadataDto::instantiateFromRequest($request) : new Missing(),
@@ -59,11 +57,6 @@ class ProductSetUpdateDto extends Dto implements InstantiateFromRequest
     public function isPublic(): Missing|bool
     {
         return $this->public;
-    }
-
-    public function isHiddenOnIndex(): Missing|bool
-    {
-        return $this->hide_on_index;
     }
 
     public function getParentId(): Missing|string|null

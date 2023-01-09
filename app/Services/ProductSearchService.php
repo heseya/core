@@ -29,7 +29,6 @@ class ProductSearchService implements ProductSearchServiceContract
                 'name_text' => $product->name,
                 'slug' => $product->slug,
                 'google_product_category' => $product->google_product_category,
-                'hide_on_index' => $this->mapHideOnIndex($product),
                 'available' => $product->available,
                 'public' => $product->public,
                 'price' => $product->price,
@@ -88,7 +87,6 @@ class ProductSearchService implements ProductSearchServiceContract
             'name_text' => 'text',
             'slug' => 'text',
             'google_product_category' => 'integer',
-            'hide_on_index' => 'boolean',
             'available' => 'boolean',
             'public' => 'boolean',
             'price' => 'float',
@@ -139,13 +137,6 @@ class ProductSearchService implements ProductSearchServiceContract
             'attributes.*^5',
             '*',
         ];
-    }
-
-    private function mapHideOnIndex(Product $product): bool
-    {
-        $sets = $this->productSetService->flattenParentsSetsTree($product->sets);
-
-        return $sets->contains(fn (ProductSet $set) => $set->hide_on_index);
     }
 
     private function mapCover(Product $product): ?array

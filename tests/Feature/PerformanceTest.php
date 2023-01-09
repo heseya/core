@@ -347,7 +347,6 @@ class PerformanceTest extends TestCase
         $tag = Tag::factory()->create();
         $set = ProductSet::factory()->create([
             'public' => true,
-            'hide_on_index' => false,
         ]);
 
         $productItem = Item::factory()->create();
@@ -638,7 +637,6 @@ class PerformanceTest extends TestCase
         $tag = Tag::factory()->create();
         $set = ProductSet::factory()->create([
             'public' => true,
-            'hide_on_index' => false,
         ]);
 
         $productItem = Item::factory()->create();

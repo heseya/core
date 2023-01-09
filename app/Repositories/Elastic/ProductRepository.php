@@ -65,22 +65,14 @@ class ProductRepository implements ProductRepositoryContract
             $query = $this->sortService->sortScout($query, $dto->getSort());
         }
 
-        $hide_on_index = true;
-
         foreach ($dto->toArray() as $key => $value) {
             if (array_key_exists($key, self::CRITERIA)) {
                 $query = $this->{self::CRITERIA[$key]}($query, $key, $value);
-                $hide_on_index = false;
             }
         }
 
         if (Gate::denies('products.show_hidden')) {
             $query->filter(new Term('public', true));
-
-            // If no criteria are set, toArray() will return sort and search.
-            if ($hide_on_index && $dto->getSearch() === null && count($dto->toArray()) < 3) {
-                $query->filter(new Term('hide_on_index', false));
-            }
         }
 
         try {

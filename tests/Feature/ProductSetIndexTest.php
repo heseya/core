@@ -82,7 +82,6 @@ class ProductSetIndexTest extends TestCase
                     'slug_override' => false,
                     'public' => $this->set->public,
                     'visible' => $this->set->public && $this->set->public_parent,
-                    'hide_on_index' => $this->set->hide_on_index,
                     'parent_id' => $this->set->parent_id,
                     'children_ids' => [
                         $this->childSet->getKey(),
@@ -95,7 +94,6 @@ class ProductSetIndexTest extends TestCase
                     'slug_override' => true,
                     'public' => $this->childSet->public,
                     'visible' => $this->childSet->public && $this->childSet->public_parent,
-                    'hide_on_index' => $this->childSet->hide_on_index,
                     'parent_id' => $this->childSet->parent_id,
                     'children_ids' => [],
                 ],
@@ -122,7 +120,6 @@ class ProductSetIndexTest extends TestCase
                     'slug_override' => false,
                     'public' => $this->set->public,
                     'visible' => $this->set->public && $this->set->public_parent,
-                    'hide_on_index' => $this->set->hide_on_index,
                     'parent_id' => $this->set->parent_id,
                     'children_ids' => [
                         $this->childSet->getKey(),
@@ -223,7 +220,6 @@ class ProductSetIndexTest extends TestCase
                     'slug_override' => false,
                     'public' => $this->set->public,
                     'visible' => $this->set->public && $this->set->public_parent,
-                    'hide_on_index' => $this->set->hide_on_index,
                     'parent_id' => null,
                     'children_ids' => [
                         $this->childSet->getKey(),
@@ -236,7 +232,6 @@ class ProductSetIndexTest extends TestCase
                     'slug_override' => false,
                     'public' => $this->privateSet->public,
                     'visible' => $this->privateSet->public && $this->privateSet->public_parent,
-                    'hide_on_index' => $this->privateSet->hide_on_index,
                     'parent_id' => null,
                     'children_ids' => [],
                 ],
@@ -247,7 +242,6 @@ class ProductSetIndexTest extends TestCase
                     'slug_override' => true,
                     'public' => $this->childSet->public,
                     'visible' => $this->childSet->public && $this->childSet->public_parent,
-                    'hide_on_index' => $this->childSet->hide_on_index,
                     'parent_id' => $this->childSet->parent_id,
                     'children_ids' => [
                         $this->subChildSet->getKey(),
@@ -260,7 +254,6 @@ class ProductSetIndexTest extends TestCase
                     'slug_override' => true,
                     'public' => $this->subChildSet->public,
                     'visible' => $this->subChildSet->public && $this->subChildSet->public_parent,
-                    'hide_on_index' => $this->subChildSet->hide_on_index,
                     'parent_id' => $this->subChildSet->parent_id,
                     'children_ids' => [],
                 ],
@@ -287,7 +280,6 @@ class ProductSetIndexTest extends TestCase
                     'slug_override' => false,
                     'public' => $this->set->public,
                     'visible' => $this->set->public && $this->set->public_parent,
-                    'hide_on_index' => $this->set->hide_on_index,
                     'parent_id' => $this->set->parent_id,
                     'children_ids' => [
                         $this->childSet->getKey(),
@@ -316,7 +308,6 @@ class ProductSetIndexTest extends TestCase
                     'slug_override' => false,
                     'public' => $this->set->public,
                     'visible' => $this->set->public && $this->set->public_parent,
-                    'hide_on_index' => $this->set->hide_on_index,
                     'parent_id' => null,
                     'children_ids' => [
                         $this->childSet->getKey(),
@@ -329,7 +320,6 @@ class ProductSetIndexTest extends TestCase
                     'slug_override' => false,
                     'public' => $this->privateSet->public,
                     'visible' => $this->privateSet->public && $this->privateSet->public_parent,
-                    'hide_on_index' => $this->privateSet->hide_on_index,
                     'parent_id' => null,
                     'children_ids' => [],
                 ],
@@ -357,7 +347,6 @@ class ProductSetIndexTest extends TestCase
                     'slug_override' => false,
                     'public' => $this->set->public,
                     'visible' => $this->set->public && $this->set->public_parent,
-                    'hide_on_index' => $this->set->hide_on_index,
                     'parent_id' => $this->set->parent_id,
                     'cover' => [],
                     'children' => [
@@ -368,7 +357,6 @@ class ProductSetIndexTest extends TestCase
                             'slug_override' => true,
                             'public' => $this->childSet->public,
                             'visible' => $this->childSet->public && $this->childSet->public_parent,
-                            'hide_on_index' => $this->childSet->hide_on_index,
                             'parent_id' => $this->childSet->parent_id,
                             'cover' => [],
                             'children' => [],
@@ -381,7 +369,6 @@ class ProductSetIndexTest extends TestCase
                     'slug' => $this->childSet->slug,
                     'public' => $this->childSet->public,
                     'visible' => $this->childSet->public && $this->childSet->public_parent,
-                    'hide_on_index' => $this->childSet->hide_on_index,
                     'parent_id' => $this->set->getKey(),
                 ],
             ],
@@ -419,7 +406,6 @@ class ProductSetIndexTest extends TestCase
                         'slug_override' => $set->slug_override,
                         'public' => $set->public,
                         'visible' => $set->public,
-                        'hide_on_index' => $set->hide_on_index,
                         'parent_id' => $set->parent_id,
                         'children_ids' => $set->children->pluck('id')->toArray(),
                     ],
@@ -460,7 +446,6 @@ class ProductSetIndexTest extends TestCase
                         'slug_override' => $set->slug_override,
                         'public' => $set->public,
                         'visible' => $set->public,
-                        'hide_on_index' => $set->hide_on_index,
                         'parent_id' => $set->parent_id,
                         'children' => [
                             [
@@ -560,7 +545,6 @@ class ProductSetIndexTest extends TestCase
                         'slug_override' => false,
                         'public' => $this->set->public,
                         'visible' => $this->set->public && $this->set->public_parent,
-                        'hide_on_index' => $this->set->hide_on_index,
                         'parent_id' => null,
                         'children' => [
                             [
@@ -570,7 +554,6 @@ class ProductSetIndexTest extends TestCase
                                 'slug_override' => true,
                                 'public' => $this->childSet->public,
                                 'visible' => $this->childSet->public && $this->childSet->public_parent,
-                                'hide_on_index' => $this->childSet->hide_on_index,
                                 'parent_id' => $this->childSet->parent_id,
                                 'children' => [
                                     [
@@ -580,7 +563,6 @@ class ProductSetIndexTest extends TestCase
                                         'slug_override' => true,
                                         'public' => $this->subChildSet->public,
                                         'visible' => $this->subChildSet->public && $this->subChildSet->public_parent,
-                                        'hide_on_index' => $this->subChildSet->hide_on_index,
                                         'parent_id' => $this->subChildSet->parent_id,
                                         'children' => [],
                                     ],
@@ -595,7 +577,6 @@ class ProductSetIndexTest extends TestCase
                         'slug_override' => false,
                         'public' => $this->privateSet->public,
                         'visible' => $this->privateSet->public && $this->privateSet->public_parent,
-                        'hide_on_index' => $this->privateSet->hide_on_index,
                         'parent_id' => null,
                         'children' => [],
                     ],
@@ -606,7 +587,6 @@ class ProductSetIndexTest extends TestCase
                         'slug_override' => true,
                         'public' => $this->childSet->public,
                         'visible' => $this->childSet->public && $this->childSet->public_parent,
-                        'hide_on_index' => $this->childSet->hide_on_index,
                         'parent_id' => $this->childSet->parent_id,
                         'children' => [
                             [
@@ -616,7 +596,6 @@ class ProductSetIndexTest extends TestCase
                                 'slug_override' => true,
                                 'public' => $this->subChildSet->public,
                                 'visible' => $this->subChildSet->public && $this->subChildSet->public_parent,
-                                'hide_on_index' => $this->subChildSet->hide_on_index,
                                 'parent_id' => $this->subChildSet->parent_id,
                                 'children' => [],
                             ],
@@ -629,7 +608,6 @@ class ProductSetIndexTest extends TestCase
                         'slug_override' => true,
                         'public' => $this->subChildSet->public,
                         'visible' => $this->subChildSet->public && $this->subChildSet->public_parent,
-                        'hide_on_index' => $this->subChildSet->hide_on_index,
                         'parent_id' => $this->subChildSet->parent_id,
                         'children' => [],
                     ],
