@@ -196,9 +196,7 @@ class AvailabilityService implements AvailabilityServiceContract
         $permutations = $requiredSchemas->first()->options;
         $requiredSchemas->shift();
 
-        foreach ($requiredSchemas as $schema) {
-            $permutations = $permutations->crossJoin($schema->options);
-        }
+        $permutations = $permutations->crossJoin(...$requiredSchemas->pluck('options'));
 
         if ($permutations->count() <= 0) {
             return $this->returnProductAvailability(true);
