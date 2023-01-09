@@ -61,7 +61,9 @@ class AvailabilityTest extends TestCase
 
         $this->product->schemas()->save($schema);
 
-        $item = Item::factory()->create([
+        /** @var Item $item */
+        $item = Item::factory()->create();
+        $item->deposits()->create([
             'quantity' => 0,
         ]);
 
@@ -76,10 +78,13 @@ class AvailabilityTest extends TestCase
             'quantity' => 6,
         ]);
 
-        $this->assertDatabaseHas('products', [
-            'id' => $this->product->getKey(),
-            'available' => true,
-        ])
+        $this
+            ->assertDatabaseHas('products', [
+                'id' => $this->product->getKey(),
+                'quantity' => 6,
+                'available' => true,
+                'shipping_time' => null,
+            ])
             ->assertDatabaseHas('schemas', [
                 'id' => $schema->getKey(),
                 'available' => true,
@@ -136,12 +141,16 @@ class AvailabilityTest extends TestCase
             'available' => false,
         ]);
 
-        $itemOne = Item::factory()->create([
+        /** @var Item $itemOne */
+        $itemOne = Item::factory()->create();
+        $itemOne->deposits()->create([
             'quantity' => 0,
         ]);
         $itemOne->options()->saveMany([$optionOne, $optionTwo]);
 
-        $itemTwo = Item::factory()->create([
+        /** @var Item $itemTwo */
+        $itemTwo = Item::factory()->create();
+        $itemTwo->deposits()->create([
             'quantity' => 0,
         ]);
         $itemTwo->options()->saveMany([$optionThree, $optionFour]);
@@ -240,20 +249,22 @@ class AvailabilityTest extends TestCase
         $this->$user->givePermissionTo('deposits.add');
 
         $data = $this->createDataPatternOne();
-
         $data->get('item')->options()->saveMany([$data->get('optionOne'), $data->get('optionTwo')]);
 
         $this->product->schemas()->saveMany([$data->get('schemaOne'), $data->get('schemaTwo')]);
 
-        $this->actingAs($this->$user)->postJson('/items/id:' . $data->get('item')->getKey() . '/deposits', [
-            'quantity' => 1,
-        ]);
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/items/id:' . $data->get('item')->getKey() . '/deposits', [
+                'quantity' => 1,
+            ]);
 
-        $this->assertTrue(!$this->product->refresh()->available);
-        $this->assertDatabaseHas('products', [
-            'id' => $this->product->getKey(),
-            'available' => false,
-        ])
+        $this
+            ->assertDatabaseHas('products', [
+                'id' => $this->product->getKey(),
+                'available' => false,
+                'quantity' => 0,
+            ])
             ->assertDatabaseHas('schemas', [
                 'id' => $data->get('schemaOne')->getKey(),
                 'available' => true,
@@ -390,10 +401,11 @@ class AvailabilityTest extends TestCase
             'status_id' => $statusCancel->getKey(),
         ]);
 
-        $this->assertDatabaseHas('products', [
-            'id' => $this->product->getKey(),
-            'available' => true,
-        ])
+        $this
+            ->assertDatabaseHas('products', [
+                'id' => $this->product->getKey(),
+                'available' => true,
+            ])
             ->assertDatabaseHas('schemas', [
                 'id' => $data->get('schemaOne')->getKey(),
                 'available' => true,
@@ -443,7 +455,9 @@ class AvailabilityTest extends TestCase
 
         $product = $this->createProductForAvailabilityCheckWithDirectItems();
 
-        $item = Item::factory()->create([
+        /** @var Item $item */
+        $item = Item::factory()->create();
+        $item->deposits()->create([
             'quantity' => 5,
         ]);
 
@@ -483,7 +497,9 @@ class AvailabilityTest extends TestCase
 
         $product = $this->createProductForAvailabilityCheckWithDirectItems();
 
-        $item = Item::factory()->create([
+        /** @var Item $item */
+        $item = Item::factory()->create();
+        $item->deposits()->create([
             'quantity' => 5,
         ]);
 
@@ -635,7 +651,9 @@ class AvailabilityTest extends TestCase
             'disabled' => false,
         ]);
 
-        $item = Item::factory()->create([
+        /** @var Item $item */
+        $item = Item::factory()->create();
+        $item->deposits()->create([
             'quantity' => 0,
         ]);
 
@@ -664,7 +682,9 @@ class AvailabilityTest extends TestCase
 
         $this->product->schemas()->attach($schema->getKey());
 
-        $item = Item::factory()->create([
+        /** @var Item $item */
+        $item = Item::factory()->create();
+        $item->deposits()->create([
             'quantity' => $itemQuantity,
         ]);
 
