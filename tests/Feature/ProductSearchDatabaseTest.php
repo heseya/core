@@ -27,7 +27,6 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
         $set = ProductSet::factory()->create([
             'public' => true,
-            'hide_on_index' => true,
         ]);
         $product->sets()->sync([$set->getKey()]);
 
@@ -39,41 +38,12 @@ class ProductSearchDatabaseTest extends TestCase
             ->actingAs($this->$user)
             ->json('GET', '/products', ['limit' => 100])
             ->assertOk()
-            ->assertJsonCount(1, 'data') // Should show only public products.
+            ->assertJsonCount(2, 'data')
             ->assertJsonFragment([
                 'id' => $product->getKey(),
             ]);
 
         $this->assertQueryCountLessThan(20);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testIndexHidden($user): void
-    {
-        $this->$user->givePermissionTo(['products.show', 'products.show_hidden']);
-
-        $product1 = Product::factory()->create([
-            'public' => true,
-        ]);
-        $set = ProductSet::factory()->create([
-            'public' => true,
-            'hide_on_index' => true,
-        ]);
-        $product1->sets()->sync([$set->getKey()]);
-
-        $product2 = Product::factory()->create([
-            'public' => false,
-        ]);
-
-        $this
-            ->actingAs($this->$user)
-            ->json('GET', '/products')
-            ->assertOk()
-            ->assertJsonCount(2, 'data')
-            ->assertJsonFragment(['id' => $product1->getKey()])
-            ->assertJsonFragment(['id' => $product2->getKey()]);
     }
 
     /**
@@ -154,7 +124,6 @@ class ProductSearchDatabaseTest extends TestCase
 
         $set = ProductSet::factory()->create([
             'public' => true,
-            'hide_on_index' => false,
         ]);
 
         $product = Product::factory()->create([
@@ -185,7 +154,6 @@ class ProductSearchDatabaseTest extends TestCase
 
         $set = ProductSet::factory()->create([
             'public' => true,
-            'hide_on_index' => false,
         ]);
 
         $product = Product::factory()->create([
@@ -1294,7 +1262,6 @@ class ProductSearchDatabaseTest extends TestCase
         $set = ProductSet::factory()->create([
             'slug' => 'test',
             'public' => true,
-            'hide_on_index' => false,
         ]);
         $set->products()->sync([
             $product1->getKey() => ['order' => 1],

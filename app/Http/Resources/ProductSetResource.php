@@ -24,7 +24,6 @@ class ProductSetResource extends Resource
             'slug_override' => $this->resource->slugOverride,
             'public' => $this->resource->public,
             'visible' => $this->resource->public_parent && $this->resource->public,
-            'hide_on_index' => $this->resource->hide_on_index,
             'parent_id' => $this->resource->parent_id,
             'children_ids' => $children->map(fn ($child) => $child->getKey())->toArray(),
             'cover' => MediaResource::make($this->resource->media),

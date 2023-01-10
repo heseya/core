@@ -38,7 +38,6 @@ class ProductSet extends Model
         'public',
         'public_parent',
         'order',
-        'hide_on_index',
         'parent_id',
         'description_html',
         'cover_id',
@@ -47,7 +46,6 @@ class ProductSet extends Model
     protected $casts = [
         'public' => 'boolean',
         'public_parent' => 'boolean',
-        'hide_on_index' => 'boolean',
     ];
 
     protected array $criteria = [

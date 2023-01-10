@@ -24,7 +24,6 @@ class ProductSetUpdateTest extends TestCase
             'name' => 'Test Edit',
             'slug' => 'test-edit',
             'public' => false,
-            'hide_on_index' => true,
             'parent_id' => null,
             'children_ids' => [],
         ];
@@ -52,7 +51,6 @@ class ProductSetUpdateTest extends TestCase
         $set = [
             'name' => 'Test Edit',
             'public' => true,
-            'hide_on_index' => true,
         ];
 
         $parentId = [
@@ -102,7 +100,6 @@ class ProductSetUpdateTest extends TestCase
         $set = [
             'name' => 'Test Edit',
             'public' => true,
-            'hide_on_index' => true,
         ];
 
         $parentId = [
@@ -203,7 +200,6 @@ class ProductSetUpdateTest extends TestCase
         $parent = ProductSet::factory()->create([
             'name' => 'Parent',
             'slug' => 'parent',
-            'hide_on_index' => false,
             'public' => true,
             'public_parent' => false,
         ]);
@@ -212,7 +208,6 @@ class ProductSetUpdateTest extends TestCase
             'parent_id' => $parent->getKey(),
             'name' => 'Child',
             'slug' => 'parent-child',
-            'hide_on_index' => false,
             'public' => true,
             'public_parent' => false,
         ]);
@@ -221,7 +216,6 @@ class ProductSetUpdateTest extends TestCase
             'parent_id' => $child->getKey(),
             'name' => 'Grandchild',
             'slug' => 'parent-child-grandchild',
-            'hide_on_index' => false,
             'public' => true,
             'public_parent' => false,
         ]);
@@ -231,7 +225,6 @@ class ProductSetUpdateTest extends TestCase
             [
                 'name' => 'New',
                 'public' => true,
-                'hide_on_index' => false,
                 'parent_id' => null,
                 'slug_suffix' => 'new',
                 'slug_override' => false,
@@ -283,7 +276,6 @@ class ProductSetUpdateTest extends TestCase
         $parent = ProductSet::factory()->create([
             'name' => 'Parent',
             'slug' => 'parent',
-            'hide_on_index' => false,
             'public' => true,
             'public_parent' => false,
         ]);
@@ -292,7 +284,6 @@ class ProductSetUpdateTest extends TestCase
             'parent_id' => $parent->getKey(),
             'name' => 'Child',
             'slug' => 'parent-child',
-            'hide_on_index' => false,
             'public' => true,
             'public_parent' => false,
         ]);
@@ -301,7 +292,6 @@ class ProductSetUpdateTest extends TestCase
             'parent_id' => $child->getKey(),
             'name' => 'Grandchild',
             'slug' => 'parent-child-grandchild',
-            'hide_on_index' => false,
             'public' => true,
             'public_parent' => false,
         ]);
@@ -311,7 +301,6 @@ class ProductSetUpdateTest extends TestCase
             [
                 'name' => 'New',
                 'public' => true,
-                'hide_on_index' => false,
                 'parent_id' => null,
                 'slug_suffix' => 'new',
                 'slug_override' => false,
@@ -336,7 +325,6 @@ class ProductSetUpdateTest extends TestCase
                         'slug_override' => false,
                         'public' => true,
                         'visible' => true,
-                        'hide_on_index' => false,
                         'parent_id' => $parent->getKey(),
                         'children' => [
                             [
@@ -347,7 +335,6 @@ class ProductSetUpdateTest extends TestCase
                                 'slug_override' => false,
                                 'public' => true,
                                 'visible' => true,
-                                'hide_on_index' => false,
                                 'parent_id' => $child->getKey(),
                                 'children' => [],
                             ],
@@ -375,7 +362,6 @@ class ProductSetUpdateTest extends TestCase
         $set = [
             'name' => 'Test Edit',
             'public' => true,
-            'hide_on_index' => true,
         ];
 
         $seo = SeoMetadata::factory()->create();
@@ -436,7 +422,6 @@ class ProductSetUpdateTest extends TestCase
         $set = [
             'name' => 'Test Edit',
             'public' => $boolean,
-            'hide_on_index' => $boolean,
         ];
 
         $seo = SeoMetadata::factory()->create();
@@ -460,7 +445,7 @@ class ProductSetUpdateTest extends TestCase
             ],
         );
 
-        $setResponse = array_merge($set, ['public' => $booleanValue, 'hide_on_index' => $booleanValue]);
+        $setResponse = array_merge($set, ['public' => $booleanValue]);
 
         $response
             ->assertOk()
@@ -517,7 +502,6 @@ class ProductSetUpdateTest extends TestCase
         $set = [
             'name' => 'Test Edit',
             'public' => true,
-            'hide_on_index' => true,
         ];
 
         $parentId = [
@@ -580,7 +564,6 @@ class ProductSetUpdateTest extends TestCase
         $set = [
             'name' => 'Test Edit',
             'public' => true,
-            'hide_on_index' => true,
         ];
 
         $parentId = [
@@ -638,7 +621,6 @@ class ProductSetUpdateTest extends TestCase
         $set = [
             'name' => 'Test Edit',
             'public' => true,
-            'hide_on_index' => true,
         ];
 
         $parentId = [

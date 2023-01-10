@@ -27,10 +27,6 @@ ProductSet:
       description: 'Is product visible'
       type: boolean
       example: true
-    hide_on_index:
-      description: 'Whether set products should be hidden from the main page'
-      type: boolean
-      example: false
     parent_id:
       description: 'Id of set, this set belongs to'
       type: string
@@ -74,10 +70,6 @@ ProductSetParent:
       description: 'When any parent node is set to private, this setting overrides set visibility'
       type: boolean
       example: true
-    hide_on_index:
-      description: 'Whether set products should be hidden from the main page'
-      type: boolean
-      example: false
     description_html:
       description: 'HTML formated text to be displayed as a product set description'
       type: string
@@ -129,10 +121,6 @@ ProductSetChildren:
       description: 'Is product visible'
       type: boolean
       example: true
-    hide_on_index:
-      description: 'Whether set products should be hidden from the main page'
-      type: boolean
-      example: false
     parent_id:
       description: 'Id of set, this set belongs to'
       type: string
@@ -178,10 +166,6 @@ ProductSetParentChildren:
       description: 'When any parent node is set to private, this setting overrides set visibility'
       type: boolean
       example: true
-    hide_on_index:
-      description: 'Whether set products should be hidden from the main page'
-      type: boolean
-      example: false
     parent:
       $ref: '#/ProductSet'
     children:
@@ -208,10 +192,6 @@ ProductSetChildrenEmpty:
       description: 'Whether set is visible to unauthorized users'
       type: boolean
       example: true
-    hide_on_index:
-      description: 'Whether set products should be hidden from the main page'
-      type: boolean
-      example: false
     parent_id:
       description: 'Id of set, this set belongs to'
       type: string

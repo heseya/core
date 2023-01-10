@@ -228,7 +228,6 @@ class ProductTest extends TestCase
         ]);
         $set = ProductSet::factory()->create([
             'public' => true,
-            'hide_on_index' => true,
         ]);
         $product->sets()->sync([$set->getKey()]);
 
@@ -236,7 +235,7 @@ class ProductTest extends TestCase
             ->actingAs($this->$user)
             ->json('GET', '/products', ['limit' => 100])
             ->assertOk()
-            ->assertJsonCount(1, 'data') // Should show only public products.
+            ->assertJsonCount(2, 'data')
             ->assertJson([
                 'data' => [
                     0 => $this->expected_short,
@@ -318,8 +317,7 @@ class ProductTest extends TestCase
             'public' => true,
         ]);
         $set = ProductSet::factory()->create([
-            'public' => true,
-            'hide_on_index' => true,
+            'public' => false,
         ]);
 
         $product->sets()->sync([$set->getKey()]);
@@ -440,7 +438,6 @@ class ProductTest extends TestCase
                     'slug_override' => $set1->slugOverride,
                     'public' => $set1->public,
                     'visible' => $set1->public_parent && $set1->public,
-                    'hide_on_index' => $set1->hide_on_index,
                     'parent_id' => $set1->parent_id,
                     'children_ids' => [],
                     'cover' => null,
@@ -454,7 +451,6 @@ class ProductTest extends TestCase
                     'slug_override' => $set2->slugOverride,
                     'public' => $set2->public,
                     'visible' => $set2->public_parent && $set2->public,
-                    'hide_on_index' => $set2->hide_on_index,
                     'parent_id' => $set2->parent_id,
                     'children_ids' => [],
                     'cover' => null,
@@ -497,7 +493,6 @@ class ProductTest extends TestCase
                     'slug_override' => $set1->slugOverride,
                     'public' => $set1->public,
                     'visible' => $set1->public_parent && $set1->public,
-                    'hide_on_index' => $set1->hide_on_index,
                     'parent_id' => $set1->parent_id,
                     'children_ids' => [],
                     'cover' => null,
@@ -540,7 +535,6 @@ class ProductTest extends TestCase
                     'slug_override' => $set1->slugOverride,
                     'public' => $set1->public,
                     'visible' => $set1->public_parent && $set1->public,
-                    'hide_on_index' => $set1->hide_on_index,
                     'parent_id' => $set1->parent_id,
                     'children_ids' => [],
                     'cover' => null,
@@ -554,7 +548,6 @@ class ProductTest extends TestCase
                     'slug_override' => $set2->slugOverride,
                     'public' => $set2->public,
                     'visible' => $set2->public_parent && $set2->public,
-                    'hide_on_index' => $set2->hide_on_index,
                     'parent_id' => $set2->parent_id,
                     'children_ids' => [],
                     'cover' => null,
@@ -609,7 +602,6 @@ class ProductTest extends TestCase
                     'slug_override' => $set1->slugOverride,
                     'public' => $set1->public,
                     'visible' => $set1->public_parent && $set1->public,
-                    'hide_on_index' => $set1->hide_on_index,
                     'parent_id' => $set1->parent_id,
                     'children_ids' => [],
                     'metadata' => [],
@@ -630,7 +622,6 @@ class ProductTest extends TestCase
                     'slug_override' => $set2->slugOverride,
                     'public' => $set2->public,
                     'visible' => $set2->public_parent && $set2->public,
-                    'hide_on_index' => $set2->hide_on_index,
                     'parent_id' => $set2->parent_id,
                     'children_ids' => [],
                     'metadata' => [],
