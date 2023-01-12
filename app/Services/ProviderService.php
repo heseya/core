@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Dtos\AuthProviderDto;
 use App\Dtos\AuthProviderLoginDto;
+use App\Dtos\AuthProviderMergeAccountDto;
 use App\Enums\AuthProviderKey;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
@@ -12,13 +13,17 @@ use App\Http\Resources\AuthProviderListResource;
 use App\Models\AuthProvider;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\UserProvider;
 use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\ProviderServiceContract;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use Throwable;
 
@@ -111,12 +116,14 @@ class ProviderService implements ProviderServiceContract
 
         $id = $user->getId();
 
-        $apiUserQuery = User::query()->whereHas('providers', function (Builder $query) use ($authProviderKey, $id) {
-            return $query->where([
-                'provider' => $authProviderKey,
-                'provider_user_id' => $id,
-            ]);
-        });
+        $apiUserQuery = User::query()
+            ->whereHas('providers', function (Builder $query) use ($authProviderKey, $id) {
+                return $query->where([
+                    'provider' => $authProviderKey,
+                    'provider_user_id' => $id,
+                ])
+                    ->whereNull('merge_token');
+            });
 
         if ($apiUserQuery->exists()) {
             /** @var Authenticatable $apiUser */
@@ -128,6 +135,22 @@ class ProviderService implements ProviderServiceContract
                 $dto->getUserAgent(),
             );
         } else {
+            $existingUser = User::query()->where('email', $user->getEmail())->first();
+            if ($existingUser) {
+                $mergeToken = Str::random(128);
+                $existingUser->providers()->updateOrCreate([
+                    'provider' => $authProviderKey,
+                    'provider_user_id' => $id,
+                    'user_id' => $existingUser->getKey(),
+                ], [
+                    'merge_token' => $mergeToken,
+                    'merge_token_expires_at' => Carbon::now()->addDay(),
+                ]);
+
+                throw new ClientException(Exceptions::CLIENT_ALREADY_HAS_ACCOUNT, errorArray: [
+                    'merge_token' => $mergeToken,
+                ]);
+            }
             $newUser = User::create([
                 'name' => $user->getName(),
                 'email' => $user->getEmail(),
@@ -149,5 +172,24 @@ class ProviderService implements ProviderServiceContract
             );
         }
         return $data;
+    }
+
+    public function mergeAccount(AuthProviderMergeAccountDto $dto): void
+    {
+        $userProvider = UserProvider::query()
+            ->whereHas('user', function (Builder $query) {
+                return $query->where('email', Auth::user()?->email);
+            })
+            ->where('merge_token', $dto->getMergeToken())
+            ->firstOrFail();
+
+        if (Carbon::now()->isAfter($userProvider->merge_token_expires_at)) {
+            throw new ClientException(Exceptions::CLIENT_PROVIDER_MERGE_TOKEN_EXPIRED);
+        }
+
+        $userProvider->update([
+            'merge_token' => null,
+            'merge_token_expires_at' => null,
+        ]);
     }
 }
