@@ -31,6 +31,7 @@ class OrderResource extends Resource
                 ShippingMethodResource::make($this->resource->digitalShippingMethod) : null,
             'shipping_type' => $this->resource->shippingType,
             'invoice_requested' => $this->resource->invoice_requested,
+            'billing_address' => AddressResource::make($this->resource->invoiceAddress),
             'shipping_place' =>  $this->resource->shippingAddress
                 ? AddressResource::make($this->resource->shippingAddress)
                 : $this->resource->shipping_place,
@@ -70,7 +71,6 @@ class OrderResource extends Resource
         });
 
         return [
-            'billing_address' => AddressResource::make($this->resource->invoiceAddress),
             'products' => OrderProductResource::collection($this->resource->products),
             'payments' => PaymentResource::collection($this->resource->payments),
             'shipping_number' => $this->resource->shipping_number,
