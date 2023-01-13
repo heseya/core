@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Events\OrderUpdatedPaid;
-use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\PaymentStatus;
 use App\Models\App;
 use App\Models\Order;
