@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Enums\ExceptionsEnums\Exceptions;
-use App\Events\OrderUpdatedPaid;
 use App\Enums\PaymentStatus;
+use App\Events\OrderUpdatedPaid;
 use App\Models\App;
 use App\Models\Order;
 use App\Models\Payment;
