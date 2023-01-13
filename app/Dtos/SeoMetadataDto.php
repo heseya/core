@@ -2,14 +2,15 @@
 
 namespace App\Dtos;
 
-use App\Enums\TwitterCardType;
+use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\Contracts\SeoRequestContract;
 use Exception;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 
-class SeoMetadataDto extends Dto
+class SeoMetadataDto extends Dto implements InstantiateFromRequest
 {
     private string|null|Missing $title;
     private string|null|Missing $description;
@@ -20,7 +21,7 @@ class SeoMetadataDto extends Dto
     private string|null|Missing $model_type;
     private bool|Missing $no_index;
 
-    public static function fromFormRequest(SeoRequestContract $request): self
+    public static function instantiateFromRequest(FormRequest|SeoRequestContract $request): self
     {
         if (!($request instanceof Request)) {
             throw new Exception('$request must be an instance of Illuminate\Http\Request');
@@ -55,7 +56,7 @@ class SeoMetadataDto extends Dto
         return $this->keywords;
     }
 
-    public function getTwitterCard(): Missing|TwitterCardType|null
+    public function getTwitterCard(): Missing|string|null
     {
         return $this->twitter_card;
     }

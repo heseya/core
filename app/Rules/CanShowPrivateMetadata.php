@@ -27,6 +27,6 @@ class CanShowPrivateMetadata implements Rule
      */
     public function message(): string
     {
-        return 'You do not have permission to filter by private metadata.';
+        return 'To filter by private metadata permission is required.';
     }
 }

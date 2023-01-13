@@ -9,7 +9,7 @@ Route::prefix('coupons')->group(function (): void {
         ->middleware('can:coupons.show');
     Route::get('id:{coupon:id}', [DiscountController::class, 'showCoupon'])
         ->middleware('can:coupons.show_details');
-    Route::get('{coupon:code}', [DiscountController::class, 'showCoupon'])
+    Route::get('{coupon:code}', [DiscountController::class, 'showCouponByCode'])
         ->middleware('can:coupons.show_details')
         ->whereAlphaNumeric('coupon');
     Route::post(null, [DiscountController::class, 'storeCoupon'])

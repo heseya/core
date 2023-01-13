@@ -19,14 +19,15 @@ trait ElasticTest
         );
     }
 
-    public function assertElasticQuery(array $query, ?int $limit = null): void
+    public function assertElasticQuery(array $query, ?int $limit = null, ?array $sort = null): void
     {
+        $sort = $sort ?? [];
         $this->assertEquals(
             [
                 'query' => $query,
                 'from' => 0,
                 'size' => $limit ?? Config::get('pagination.per_page'),
-            ],
+            ] + $sort,
             ElasticEngine::debug()->array(),
             'Failed to assert that elastic query matched the expected',
         );

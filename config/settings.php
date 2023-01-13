@@ -12,6 +12,11 @@ return [
         'public' => true,
     ],
 
+    'mail_logo' => [
+        'value' => null,
+        'public' => true,
+    ],
+
     'mail_order_created' => [
         'value' => 'Thank you for placing your order. You will receive a separate email when the status changes.',
         'public' => false,
@@ -19,6 +24,11 @@ return [
 
     'mail_footer' => [
         'value' => 'Powered by <a href="https://heseya.com">Heseya</a>',
+        'public' => false,
+    ],
+
+    'mail_advice' => [
+        'value' => '',
         'public' => false,
     ],
 

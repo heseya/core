@@ -2,17 +2,23 @@
 
 namespace App\Http\Requests;
 
+use App\Traits\MetadataRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RoleStoreRequest extends FormRequest
 {
+    use MetadataRules;
+
     public function rules(): array
     {
-        return [
-            'name' => ['required', 'string'],
-            'description' => ['nullable', 'string'],
-            'permissions' => ['array'],
-            'permissions.*' => ['string'],
-        ];
+        return array_merge(
+            $this->metadataRules(),
+            [
+                'name' => ['required', 'string', 'unique:roles,name'],
+                'description' => ['nullable', 'string'],
+                'permissions' => ['array'],
+                'permissions.*' => ['string'],
+            ]
+        );
     }
 }

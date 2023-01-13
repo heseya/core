@@ -17,7 +17,7 @@ class ShippingMethodPriceRangesTest extends TestCase
 
         $shippingMethod = ShippingMethod::factory()->create([
             'public' => true,
-            'black_list' => false,
+            'block_list' => false,
         ]);
 
         $shippingMethod->priceRanges()->saveMany([

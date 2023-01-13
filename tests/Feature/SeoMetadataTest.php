@@ -27,7 +27,7 @@ class SeoMetadataTest extends TestCase
 
     public function testShowUnauthenticated(): void
     {
-        $seo = SeoMetadata::where('global', 1)->first();
+        $seo = SeoMetadata::query()->where('global', true)->first();
 
         $this
             ->json('GET', '/seo')
@@ -55,7 +55,7 @@ class SeoMetadataTest extends TestCase
      */
     public function testShow($user): void
     {
-        $seo = SeoMetadata::where('global', 1)->first();
+        $seo = SeoMetadata::query()->where('global', true)->first();
 
         $this
             ->actingAs($this->$user)
@@ -74,6 +74,20 @@ class SeoMetadataTest extends TestCase
                     })
                     ->etc();
             });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowEmptyDatabase($user): void
+    {
+        SeoMetadata::query()->delete();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/seo')
+            ->assertOk()
+            ->assertJsonFragment(['title' => null]);
     }
 
     public function testCreateUnauthorized(): void
@@ -121,7 +135,7 @@ class SeoMetadataTest extends TestCase
                 'data' => $this->expected_structure,
             ]);
 
-        $seo = SeoMetadata::where('global', '=', true)->first();
+        $seo = SeoMetadata::query()->where('global', true)->first();
 
         $this->assertEquals(['key', 'words'], $seo->keywords);
 
@@ -139,7 +153,7 @@ class SeoMetadataTest extends TestCase
     {
         $this->$user->givePermissionTo('seo.edit');
 
-        SeoMetadata::where('global', 1)->delete();
+        SeoMetadata::query()->where('global', true)->delete();
 
         $seo = [
             'title' => 'title',
@@ -196,7 +210,7 @@ class SeoMetadataTest extends TestCase
                 'data' => $this->expected_structure,
             ]);
 
-        $seo2 = SeoMetadata::where('global', '=', true)->first();
+        $seo2 = SeoMetadata::query()->where('global', true)->first();
 
         $this->assertEquals(['key', 'words'], $seo2->keywords);
 
@@ -265,7 +279,7 @@ class SeoMetadataTest extends TestCase
     {
         $this->$user->givePermissionTo('seo.edit');
 
-        $seo = SeoMetadata::where('global', '=', true)->first();
+        $seo = SeoMetadata::query()->where('global', true)->first();
 
         $seo->update([
             'keywords' => [
@@ -459,5 +473,36 @@ class SeoMetadataTest extends TestCase
                 ],
             ],
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateProduct($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $product = Product::factory()->create();
+
+        $seo = [
+            'title' => 'product-title',
+            'description' => 'product-description',
+            'keywords' => ['product', 'key', 'words'],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/products/id:{$product->getKey()}", [
+                'seo' => $seo,
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('seo_metadata', [
+            'title' => $seo['title'],
+            'description' => $seo['description'],
+            'global' => false,
+            'model_id' => $product->getKey(),
+            'model_type' => Product::class,
+        ]);
     }
 }

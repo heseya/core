@@ -16,7 +16,7 @@ class IsAppPayment
         /** @var Payment $payment */
         $payment = $request->route('payment');
 
-        if (!($payment->paymentMethod->app_id === Auth::id())) {
+        if ($payment->paymentMethod?->app_id !== Auth::id()) {
             throw new ClientException(Exceptions::CLIENT_NO_ACCESS);
         }
 

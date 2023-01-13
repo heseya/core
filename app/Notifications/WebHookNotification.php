@@ -7,25 +7,24 @@ use App\Enums\IssuerType;
 use App\Http\Resources\AppIssuerResource;
 use App\Http\Resources\UserIssuerResource;
 use App\Models\Model;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Notifications\Notification;
 
 class WebHookNotification extends Notification
 {
-    private array $data;
-    private Model|null $issuer;
-
-    public function __construct(array $data, Model|null $issuer)
-    {
-        $this->data = $data;
-        $this->issuer = $issuer;
+    public function __construct(
+        private array $data,
+        private Model|Authenticatable|Pivot|null $issuer,
+    ) {
     }
 
-    public function via($notifiable)
+    public function via(mixed $notifiable): array
     {
         return [WebHookChannel::class];
     }
 
-    public function toWebHook($notifiable)
+    public function toWebHook(mixed $notifiable): array
     {
         if ($notifiable->with_issuer) {
             $this->data['issuer'] = match ($this->data['issuer_type']) {
@@ -34,6 +33,7 @@ class WebHookNotification extends Notification
                 default => null,
             };
         }
+
         return $this->data;
     }
 }

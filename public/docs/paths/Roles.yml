@@ -54,6 +54,7 @@ Roles:
               type: object
     security:
       - BearerAuth: [ ]
+
   post:
     tags:
       - Roles

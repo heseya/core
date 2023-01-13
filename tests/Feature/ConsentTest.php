@@ -54,6 +54,42 @@ class ConsentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testShow($user): void
+    {
+        $this->$user->givePermissionTo('consents.show_details');
+
+        Consent::factory()->count(10)->create();
+        $consent = Consent::factory()->create();
+
+        $response = $this->actingAs($this->$user)->json('get', '/consents/id:' . $consent->getKey());
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $consent->getKey(),
+                'name' => $consent->name,
+                'description_html' => $consent->description_html,
+                'required' => $consent->required,
+            ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowUnauthorized($user): void
+    {
+        Consent::factory()->count(10)->create();
+        $consent = Consent::factory()->create();
+
+        $response = $this->actingAs($this->$user)->json('get', '/consents/id:' . $consent->getKey());
+
+        $response->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testStoreUnauthorized($user): void
     {
         $consent = Consent::factory()->make();
@@ -253,6 +289,7 @@ class ConsentTest extends TestCase
             'value' => false,
         ]);
     }
+
     public function testUpdateUserConsents(): void
     {
         $consent = Consent::factory()->create([
@@ -295,5 +332,23 @@ class ConsentTest extends TestCase
                 'user_id' => $this->user->getKey(),
                 'value' => true,
             ]);
+    }
+
+    public function testCanUpdateProfileWithoutConsents(): void
+    {
+        $response = $this->actingAs($this->user)->json('PATCH', '/auth/profile', [
+            'name' => 'test test',
+        ]);
+        $response->assertOk()
+            ->assertJson(['data' => [
+                'consents' => [],
+            ],
+            ])
+            ->assertJsonFragment(['name' => 'test test']);
+
+        $this->assertDatabaseMissing('consent_user', [
+            'user_id' => $this->user->getKey(),
+            'consent_id' => $this->requiredConsent->getKey(),
+        ]);
     }
 }

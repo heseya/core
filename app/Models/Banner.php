@@ -21,7 +21,6 @@ class Banner extends Model
 
     protected $fillable = [
         'slug',
-        'url',
         'name',
         'active',
     ];
@@ -36,9 +35,9 @@ class Banner extends Model
         'metadata_private' => MetadataPrivateSearch::class,
     ];
 
-    public function responsiveMedia(): HasMany
+    public function bannerMedia(): HasMany
     {
-        return $this->hasMany(ResponsiveMedia::class, 'banner_id')
+        return $this->hasMany(BannerMedia::class, 'banner_id')
             ->orderBy('order');
     }
 }

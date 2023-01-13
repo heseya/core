@@ -2,26 +2,18 @@
 
 namespace App\Services\Contracts;
 
+use App\Dtos\UserCreateDto;
+use App\Dtos\UserDto;
 use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 interface UserServiceContract
 {
-    public function index(array $search, ?string $sort, int $limit): LengthAwarePaginator;
+    public function index(array $search, ?string $sort): LengthAwarePaginator;
 
-    public function create(
-        string $name,
-        string $email,
-        string $password,
-        array $roles,
-    ): User;
+    public function create(UserCreateDto $dto): User;
 
-    public function update(
-        User $user,
-        ?string $name,
-        ?string $email,
-        ?array $roles,
-    ): User;
+    public function update(User $user, UserDto $dto): User;
 
     public function destroy(User $user): void;
 }

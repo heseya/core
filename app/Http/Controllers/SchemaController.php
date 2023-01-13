@@ -2,24 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\SchemaDto;
 use App\Http\Requests\IndexSchemaRequest;
 use App\Http\Requests\SchemaStoreRequest;
 use App\Http\Requests\SchemaUpdateRequest;
 use App\Http\Resources\SchemaResource;
-use App\Models\Product;
 use App\Models\Schema;
-use App\Services\Contracts\OptionServiceContract;
-use App\Services\Contracts\ProductServiceContract;
+use App\Services\Contracts\SchemaCrudServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class SchemaController extends Controller
 {
     public function __construct(
-        protected OptionServiceContract $optionService,
-        protected ProductServiceContract $productService,
+        private SchemaCrudServiceContract $schemaService,
     ) {
     }
 
@@ -34,24 +33,9 @@ class SchemaController extends Controller
 
     public function store(SchemaStoreRequest $request): JsonResource
     {
-        $schema = Schema::create($request->validated());
-
-        if ($request->has('options')) {
-            $this->optionService->sync($schema, $request->input('options'));
-            $schema->refresh();
-        }
-
-        if ($request->has('used_schemas')) {
-            foreach ($request->input('used_schemas') as $input) {
-                $used_schema = Schema::findOrFail($input);
-
-                $schema->usedSchemas()->attach($used_schema);
-            }
-
-            $schema->refresh();
-        }
-
-        return SchemaResource::make($schema);
+        return SchemaResource::make($this->schemaService->store(
+            SchemaDto::instantiateFromRequest($request)
+        ));
     }
 
     public function show(Schema $schema): JsonResource
@@ -61,39 +45,16 @@ class SchemaController extends Controller
 
     public function update(SchemaUpdateRequest $request, Schema $schema): JsonResource
     {
-        $schema->update($request->validated());
-
-        if ($request->has('options')) {
-            $this->optionService->sync($schema, $request->input('options'));
-            $schema->refresh();
-        }
-
-        if ($request->has('used_schemas')) {
-            $schema->usedSchemas()->detach();
-
-            foreach ($request->input('used_schemas') as $input) {
-                $used_schema = Schema::findOrFail($input);
-
-                $schema->usedSchemas()->attach($used_schema);
-            }
-        }
-
-        $schema->products->each(
-            fn (Product $product) => $this->productService->updateMinMaxPrices($product),
-        );
-
-        return SchemaResource::make($schema);
+        return SchemaResource::make($this->schemaService->update(
+            $schema,
+            SchemaDto::instantiateFromRequest($request)
+        ));
     }
 
     public function destroy(Schema $schema): JsonResponse
     {
-        $products = $schema->products;
-        $schema->delete();
+        $this->schemaService->destroy($schema);
 
-        $products->each(
-            fn (Product $product) => $this->productService->updateMinMaxPrices($product),
-        );
-
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::json(null, SymfonyResponse::HTTP_NO_CONTENT);
     }
 }

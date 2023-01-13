@@ -23,7 +23,7 @@ class AttributeController extends Controller
     public function index(AttributeIndexRequest $request): JsonResource
     {
         $query = Attribute::searchByCriteria($request->validated())
-            ->with(['options', 'metadata', 'metadataPrivate']);
+            ->with(['metadata', 'metadataPrivate']);
 
         return AttributeResource::collection(
             $query->paginate(Config::get('pagination.per_page'))
@@ -32,15 +32,13 @@ class AttributeController extends Controller
 
     public function show(Attribute $attribute): JsonResource
     {
-        $attribute->load('options');
-
         return AttributeResource::make($attribute);
     }
 
     public function store(AttributeStoreRequest $request): JsonResource
     {
         $attribute = $this->attributeService->create(
-            AttributeDto::fromFormRequest($request)
+            AttributeDto::instantiateFromRequest($request)
         );
 
         return AttributeResource::make($attribute);
@@ -50,7 +48,7 @@ class AttributeController extends Controller
     {
         $attribute = $this->attributeService->update(
             $attribute,
-            AttributeDto::fromFormRequest($request)
+            AttributeDto::instantiateFromRequest($request)
         );
 
         return AttributeResource::make($attribute);

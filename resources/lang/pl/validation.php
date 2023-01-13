@@ -154,4 +154,6 @@ return [
      */
 
     'attributes' => [],
+
+    'phone' => 'Pole :attribute zawiera nieprawidłowy numer telefonu.',
 ];

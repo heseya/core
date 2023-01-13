@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Criteria\DiscountSearch;
+use App\Criteria\ForRoleDiscountSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\WhereHasCode;
@@ -11,10 +12,12 @@ use App\Enums\DiscountType;
 use App\Traits\HasMetadata;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
@@ -34,12 +37,14 @@ class Discount extends Model implements AuditableContract
         'target_type',
         'target_is_allow_list',
         'priority',
+        'active',
     ];
 
     protected $casts = [
         'type' => DiscountType::class,
         'target_type' => DiscountTargetType::class,
         'target_is_allow_list' => 'boolean',
+        'active' => 'boolean',
     ];
 
     protected array $criteria = [
@@ -49,6 +54,7 @@ class Discount extends Model implements AuditableContract
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'coupon' => WhereHasCode::class,
+        'for_role' => ForRoleDiscountSearch::class,
     ];
 
     public function getUsesAttribute(): int
@@ -67,7 +73,7 @@ class Discount extends Model implements AuditableContract
             Product::class,
             'model',
             'model_has_discounts'
-        );
+        )->with(['metadata', 'metadataPrivate', 'attributes', 'media', 'tags']);
     }
 
     public function productSets(): MorphToMany
@@ -76,7 +82,7 @@ class Discount extends Model implements AuditableContract
             ProductSet::class,
             'model',
             'model_has_discounts'
-        );
+        )->with(['metadata', 'metadataPrivate']);
     }
 
     public function shippingMethods(): MorphToMany
@@ -85,11 +91,27 @@ class Discount extends Model implements AuditableContract
             ShippingMethod::class,
             'model',
             'model_has_discounts',
-        );
+        )->with(['metadata', 'metadataPrivate']);
     }
 
     public function conditionGroups(): BelongsToMany
     {
         return $this->belongsToMany(ConditionGroup::class, 'discount_condition_groups');
+    }
+
+    public function allProductsIds(): Collection
+    {
+        $products = $this->products->pluck('id');
+
+        foreach ($this->productSets()->get() as $productSet) {
+            $products = $products->merge($productSet->allProductsIds());
+        }
+
+        return $products->unique();
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('active', true);
     }
 }

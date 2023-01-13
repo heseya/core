@@ -25,10 +25,10 @@ class CanDownloadDocument
         /** @var Order $order */
         $order = $request->route('order');
 
-        if ($order->buyer_id === Auth::id() || Auth::user()->hasPermissionTo('orders.show_details')) {
+        if ($order->buyer_id === Auth::id() || Auth::user()?->hasPermissionTo('orders.show_details')) {
             return $next($request);
         }
 
-        throw new ClientException(Exceptions::CLIENT_NO_ACCESS);
+        throw new ClientException(Exceptions::CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT);
     }
 }

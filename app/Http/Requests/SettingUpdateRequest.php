@@ -19,13 +19,16 @@ class SettingUpdateRequest extends FormRequest
 
     public function rules(): array
     {
+        /** @var Collection<int, mixed> $settings */
+        $settings = Config::get('settings');
+
         return [
             'name' => [
                 'string',
                 'max:255',
                 Rule::unique('settings')->whereNot('name', $this->setting),
                 Rule::notIn(
-                    Collection::make(Config::get('settings'))
+                    Collection::make($settings)
                         ->except($this->setting)->keys()->toArray(),
                 ),
             ],

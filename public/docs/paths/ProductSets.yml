@@ -7,22 +7,26 @@ ProductSets:
         in: query
         description: 'Return only root lists'
         allowEmptyValue: true
+        required: false
         schema:
           type: boolean
       - name: tree
         in: query
         description: 'Return sets starting from root with recursively nested children instead of id''s'
         allowEmptyValue: true
+        required: false
         schema:
           type: boolean
       - name: search
         in: query
         description: 'Full text search'
+        required: false
         schema:
           type: string
       - name: name
         in: query
         description: 'Name search'
+        required: false
         schema:
           type: string
       - name: slug
@@ -33,8 +37,16 @@ ProductSets:
       - name: public
         in: query
         description: 'Is public search'
+        required: false
         schema:
           type: boolean
+      - name: parent_id
+        in: query
+        description: 'UUID of parent set'
+        required: false
+        schema:
+          type: string
+          example: ' 019fc7e8-af32-476f-ba04-068b86833830'
       - name: metadata
         in: query
         description: search by metadata
@@ -238,6 +250,12 @@ ProductSetsProducts:
         description: 'Pagination limit'
         schema:
           type: number
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
     responses:
       200:
         description: Success
@@ -277,5 +295,111 @@ ProductSetsProducts:
                   items:
                     $ref: './../schemas/Products.yml#/Product'
               type: object
+    security:
+      - BearerAuth: [ ]
+ProductSetsProductsReorder:
+  post:
+    tags:
+      - 'Product Sets'
+    parameters:
+      - name: id
+        in: query
+        description: 'Product set id'
+        allowEmptyValue: false
+        schema:
+          type: string
+    requestBody:
+      $ref: './../requests/ProductSets.yml#/ProductSetProductReorder'
+    responses:
+      204:
+        description: No content
+    security:
+      - BearerAuth: [ ]
+
+ProductSetsFavourites:
+  get:
+    tags:
+      - 'Product Sets'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/ProductSets.yml#/FavouriteProductSet'
+              type: object
+    security:
+      - BearerAuth: [ ]
+  post:
+    tags:
+      - 'Product Sets'
+    requestBody:
+      $ref: './../requests/ProductSets.yml#/FavouriteProductSet'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: object
+                  $ref: './../schemas/ProductSets.yml#/FavouriteProductSet'
+              type: object
+    security:
+      - BearerAuth: [ ]
+  delete:
+    description: 'Delete all favourites product sets from logged user'
+    tags:
+      - 'Product Sets'
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]
+
+ProductSetsFavouritesParams:
+  get:
+    tags:
+      - 'Product Sets'
+    parameters:
+      - name: id
+        in: path
+        description: 'Product set id'
+        required: true
+        schema:
+          type: string
+          example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: object
+                  $ref: './../schemas/ProductSets.yml#/FavouriteProductSet'
+              type: object
+    security:
+      - BearerAuth: [ ]
+  delete:
+    tags:
+      - 'Product Sets'
+    parameters:
+      - name: id
+        in: path
+        description: 'Product set id'
+        required: true
+        schema:
+          type: string
+          example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+    responses:
+      204:
+        description: Success
     security:
       - BearerAuth: [ ]

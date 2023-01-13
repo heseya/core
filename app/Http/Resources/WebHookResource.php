@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 
-class WebHookResource extends Resource
+final class WebHookResource extends Resource
 {
     public function base(Request $request): array
     {
@@ -16,7 +16,6 @@ class WebHookResource extends Resource
             'with_issuer' => $this->resource->with_issuer,
             'with_hidden' => $this->resource->with_hidden,
             'events' => $this->resource->events,
-            'logs' => $this->resource->logs,
         ];
     }
 }

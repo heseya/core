@@ -18,17 +18,18 @@ interface AvailabilityServiceContract
 
     public function calculateProductAvailability(Product $product): void;
 
-    public function isProductAvaiable(Product $product): bool;
+    public function isProductAvailable(Product $product): bool;
 
-    public function checkPermutations(Collection $schemas): bool;
+    public function checkPermutations(Collection $schemas, array $items): bool;
 
     public function getSchemaOptions(
         Schema $schema,
         Collection $schemas,
         Collection $options,
         int $max,
+        array $items,
         int $index = 0
     ): bool;
 
-    public function isOptionsItemsAvailable(Collection $options): bool;
+    public function isOptionsItemsAvailable(Collection $options, array $items): bool;
 }

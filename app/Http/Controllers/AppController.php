@@ -36,7 +36,7 @@ class AppController extends Controller
     public function store(AppStoreRequest $request): JsonResource
     {
         $app = $this->appService->install(
-            AppInstallDto::fromAppStoreRequest($request),
+            AppInstallDto::instantiateFromRequest($request),
         );
 
         return AppResource::make($app);

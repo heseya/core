@@ -31,7 +31,6 @@ abstract class TestCase extends BaseTestCase
     public function setUp(): void
     {
         parent::setUp();
-        ini_set('memory_limit', '4096M');
 
         $this->fakeElastic();
 
@@ -40,7 +39,8 @@ abstract class TestCase extends BaseTestCase
 
         $this->tokenService = App::make(TokenServiceContract::class);
 
-        Role::where('type', RoleType::UNAUTHENTICATED)
+        Role::query()
+            ->where('type', RoleType::UNAUTHENTICATED)
             ->firstOrFail()
             ->syncPermissions([]);
 
@@ -49,13 +49,6 @@ abstract class TestCase extends BaseTestCase
         ]);
 
         $this->application = Application::factory()->create();
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        app()->forgetInstances();
     }
 
     public function authProvider(): array
@@ -104,5 +97,12 @@ abstract class TestCase extends BaseTestCase
             'as user no' => ['user', 'no', false],
             'as application false' => ['application', false, false],
         ];
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        app()->forgetInstances();
     }
 }

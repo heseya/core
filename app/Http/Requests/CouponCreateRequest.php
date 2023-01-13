@@ -8,7 +8,7 @@ class CouponCreateRequest extends SaleCreateRequest
     {
         $rules = parent::rules();
 
-        $rules['code'] = ['required', 'string', 'max:64', 'unique:discounts'];
+        $rules['code'] = ['required', 'alpha_dash', 'max:64', 'unique:discounts'];
 
         return $rules;
     }

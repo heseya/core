@@ -26,7 +26,32 @@ User:
       type: array
       items:
         $ref: './Consents.yml#/ConsentUser'
-
+    birthdate_date:
+      description: 'User birthday date'
+      type: string
+      format: date
+      example: '2000-01-01'
+    phone:
+      description: 'Full phone number'
+      type: string
+      example: '+48123456789'
+    phone_country:
+      description: 'Phone country code'
+      type: string
+      example: PL
+    phone_number:
+      description: 'National formatted phone number'
+      type: string
+      example: '12 345 67 89'
+    created_at:
+      description: 'User registration date'
+      type: string
+      format: date-time
+      example: '2022-12-06T09:11'
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
 
 UserView:
   type: object
@@ -39,3 +64,33 @@ UserView:
           items:
             type: string
             example: roles.show_details
+        preferences:
+          $ref: './Auth.yml#/Preferences'
+
+UserWithSavedAddresses:
+  type: object
+  allOf:
+    - $ref: '#/User'
+    - properties:
+        shipping_addresses:
+          type: array
+          items:
+            $ref: './SavedAddresses.yml#/SavedAddress'
+        billing_addresses:
+          type: array
+          items:
+            $ref: './SavedAddresses.yml#/SavedAddress'
+
+UserViewWithSavedAddresses:
+  type: object
+  allOf:
+    - $ref: '#/UserView'
+    - properties:
+        shipping_addresses:
+          type: array
+          items:
+            $ref: './SavedAddresses.yml#/SavedAddress'
+        billing_addresses:
+          type: array
+          items:
+            $ref: './SavedAddresses.yml#/SavedAddress'

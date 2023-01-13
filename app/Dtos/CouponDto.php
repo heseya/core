@@ -2,28 +2,32 @@
 
 namespace App\Dtos;
 
+use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\CouponCreateRequest;
 use App\Http\Requests\CouponUpdateRequest;
 use App\Http\Requests\SaleCreateRequest;
 use App\Http\Requests\StatusUpdateRequest;
+use App\Services\Contracts\DiscountStoreServiceContract;
+use App\Traits\MapMetadata;
 use Heseya\Dto\Missing;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\App;
 
-class CouponDto extends SaleDto
+final class CouponDto extends SaleDto implements InstantiateFromRequest
 {
-    protected string|Missing $code;
+    use MapMetadata;
 
-    public static function fromFormRequest(
-        CouponCreateRequest|CouponUpdateRequest|StatusUpdateRequest|SaleCreateRequest $request
+    protected string|Missing $code;
+    protected array|Missing $metadata;
+
+    public static function instantiateFromRequest(
+        FormRequest|CouponCreateRequest|CouponUpdateRequest|StatusUpdateRequest|SaleCreateRequest $request
     ): self {
-        $conditionGroups = $request->input('condition_groups', new Missing());
-        $conditionGroupDtos = [];
-        if (!$conditionGroups instanceof Missing) {
-            foreach ($conditionGroups as $conditionGroup) {
-                array_push($conditionGroupDtos, ConditionGroupDto::fromArray($conditionGroup['conditions']));
-            }
-        }
+        $conditionGroups = App::make(DiscountStoreServiceContract::class)
+            ->mapConditionGroups($request->input('condition_groups', new Missing()));
 
         return new self(
+            code: $request->input('code', new Missing()),
             name: $request->input('name', new Missing()),
             description: $request->input('description', new Missing()),
             value: $request->input('value', new Missing()),
@@ -31,11 +35,12 @@ class CouponDto extends SaleDto
             priority: $request->input('priority', new Missing()),
             target_type: $request->input('target_type', new Missing()),
             target_is_allow_list: $request->input('target_is_allow_list', new Missing()),
-            condition_groups: $conditionGroups instanceof Missing ? $conditionGroups : $conditionGroupDtos,
+            condition_groups: $conditionGroups,
             target_products: $request->input('target_products', new Missing()),
             target_sets: $request->input('target_sets', new Missing()),
             target_shipping_methods: $request->input('target_shipping_methods', new Missing()),
-            code: $request->input('code', new Missing()),
+            metadata: self::mapMetadata($request),
+            active: $request->input('active', new Missing()),
         );
     }
 

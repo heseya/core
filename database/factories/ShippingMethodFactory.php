@@ -25,7 +25,7 @@ class ShippingMethodFactory extends Factory
                 'inpostkurier',
             ]),
             'public' => $this->faker->boolean,
-            'black_list' => $this->faker->boolean,
+            'block_list' => $this->faker->boolean,
         ];
     }
 }

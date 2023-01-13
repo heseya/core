@@ -31,6 +31,9 @@ class RegisterRequest extends FormRequest
             'password' => ['required', 'string', Password::defaults()],
             'consents.*' => [new ConsentExists(), new Boolean()],
             'consents' => ['array', new RequiredConsents()],
+            'birthday_date' => ['date', 'before_or_equal:now'],
+            'phone' => ['phone:AUTO'],
+            'metadata_personal' => ['array'],
         ];
     }
 }

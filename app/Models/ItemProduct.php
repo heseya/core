@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 class ItemProduct extends Pivot
 {
     protected $casts = [
-        'quantity' => 'float',
+        'required_quantity' => 'float',
     ];
 
     public function product(): BelongsTo

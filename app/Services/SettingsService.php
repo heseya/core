@@ -10,11 +10,14 @@ use Illuminate\Support\Facades\Config;
 
 class SettingsService implements SettingsServiceContract
 {
-    public function getSettings($publicOnly = false): Collection
+    public function getSettings(bool $publicOnly = false): Collection
     {
         $settings = Setting::orderBy('name')->get();
 
-        Collection::make(Config::get('settings'))->each(function ($setting, $key) use ($settings): void {
+        /** @var Collection<int, mixed> $configSettings */
+        $configSettings = Config::get('settings');
+
+        Collection::make($configSettings)->each(function ($setting, $key) use ($settings): void {
             if (!$settings->contains('name', $key)) {
                 $settings->push(new Setting($setting + [
                     'name' => $key,
@@ -23,7 +26,7 @@ class SettingsService implements SettingsServiceContract
         });
 
         if ($publicOnly) {
-            $settings->filter(fn ($setting) => $setting->public);
+            $settings = $settings->filter(fn ($setting) => $setting->public);
         }
 
         return $settings;

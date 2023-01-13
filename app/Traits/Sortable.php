@@ -4,10 +4,11 @@ namespace App\Traits;
 
 use App\Services\Contracts\SortServiceContract;
 use Illuminate\Database\Eloquent\Builder;
+use Laravel\Scout\Builder as ScoutBuilder;
 
 trait Sortable
 {
-    public function scopeSort(Builder $query, ?string $sortString = null): Builder
+    public function scopeSort(Builder $query, ?string $sortString = null): Builder|ScoutBuilder
     {
         if ($sortString !== null) {
             $query = app(SortServiceContract::class)

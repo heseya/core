@@ -13,6 +13,13 @@ Cart:
     shipping_price:
       type: number
       example: 18.7
+    shipping_time:
+      type: integer
+      example: 5
+    shipping_date:
+      type: string
+      format: date-time
+      example: '2021-09-13T11:11'
     summary:
       type: number
       example: 189.4
@@ -41,6 +48,9 @@ CartItemResponse:
     price_discounted:
       type: number
       example: 180.7
+    quantity:
+      type: number
+      example: 1
 
 SalesShortResource:
   type: object

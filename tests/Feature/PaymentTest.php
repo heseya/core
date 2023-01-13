@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Enums\ExceptionsEnums\Exceptions;
+use App\Events\OrderUpdatedPaid;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\PaymentStatus;
 use App\Models\App;
 use App\Models\Order;
@@ -12,6 +14,7 @@ use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -27,6 +30,12 @@ class PaymentTest extends TestCase
         Product::factory()->create();
 
         $shipping_method = ShippingMethod::factory()->create();
+        $paymentMethod = PaymentMethod::factory()->create([
+            'public' => true,
+            'name' => 'Payu',
+            'alias' => 'payu',
+        ]);
+        $shipping_method->paymentMethods()->save($paymentMethod);
         $status = Status::factory()->create();
         $product = Product::factory()->create();
 
@@ -95,12 +104,116 @@ class PaymentTest extends TestCase
                 'continue_url' => 'continue_url',
             ]);
 
+        $payment = Payment::find($response->getData()->data->id);
+
         $response
             ->assertCreated()
             ->assertJsonFragment([
                 'method' => 'payu',
                 'status' => PaymentStatus::PENDING,
                 'amount' => $this->order->summary,
+                'date' => $payment->created_at,
+                'redirect_url' => 'payment_url',
+                'continue_url' => 'continue_url',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testNotAvailablePaymentMethod($user): void
+    {
+        $this->$user->givePermissionTo('payments.add');
+
+        $code = $this->order->code;
+        $this
+            ->actingAs($this->$user)
+            ->postJson("/orders/${code}/pay/przelewy24", [
+                'continue_url' => 'continue_url',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'message' => Exceptions::PAYMENT_METHOD_NOT_AVAILABLE_FOR_SHIPPING,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testNotAvailablePaymentMethodDigital($user): void
+    {
+        $this->$user->givePermissionTo('payments.add');
+
+        $paymentMethod = PaymentMethod::factory()->create([
+            'public' => true,
+            'name' => 'Przelewy24',
+            'alias' => 'przelewy',
+        ]);
+        $digitalShippingMethod = ShippingMethod::factory()->create(['public' => true]);
+        $digitalShippingMethod->paymentMethods()->save($paymentMethod);
+
+        $this->order->update([
+            'digital_shipping_method_id' => $digitalShippingMethod->getKey(),
+        ]);
+
+        $code = $this->order->code;
+        $this
+            ->actingAs($this->$user)
+            ->postJson("/orders/${code}/pay/przelewy24", [
+                'continue_url' => 'continue_url',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'message' => Exceptions::PAYMENT_METHOD_NOT_AVAILABLE_FOR_SHIPPING,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testPaymentMethodDigital($user): void
+    {
+        $this->$user->givePermissionTo('payments.add');
+
+        Http::fakeSequence()
+            ->push([
+                'access_token' => 'random_access_token',
+            ])
+            ->push([
+                'status' => [
+                    'statusCode' => 'SUCCESS',
+                ],
+                'redirectUri' => 'payment_url',
+                'orderId' => 'payu_id',
+            ]);
+
+        $code = $this->order->code;
+
+        $digitalShippingMethod = ShippingMethod::factory()->create();
+        $paymentMethod = PaymentMethod::factory()->create([
+            'public' => true,
+            'name' => 'Payu',
+            'alias' => 'payu',
+        ]);
+        $digitalShippingMethod->paymentMethods()->save($paymentMethod);
+
+        $this->order->shippingMethod()->dissociate();
+        $this->order->digitalShippingMethod()->associate($digitalShippingMethod);
+
+        $response = $this->actingAs($this->$user)
+            ->postJson("/orders/${code}/pay/payu", [
+                'continue_url' => 'continue_url',
+            ]);
+
+        $payment = Payment::find($response->getData()->data->id);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment([
+                'method' => 'payu',
+                'paid' => false,
+                'amount' => $this->order->summary,
+                'date' => $payment->created_at,
                 'redirect_url' => 'payment_url',
                 'continue_url' => 'continue_url',
             ]);
@@ -134,6 +247,8 @@ class PaymentTest extends TestCase
      */
     public function testPayuNotification($user): void
     {
+        Event::fake(OrderUpdatedPaid::class);
+
         $this->$user->givePermissionTo('payments.edit');
 
         $payment = Payment::factory()->make([
@@ -160,6 +275,8 @@ class PaymentTest extends TestCase
             'id' => $payment->getKey(),
             'status' => PaymentStatus::SUCCESSFUL,
         ]);
+
+        Event::assertDispatched(OrderUpdatedPaid::class);
     }
 
     /**
@@ -179,11 +296,15 @@ class PaymentTest extends TestCase
      */
     public function testOfflinePayment($user): void
     {
+        Event::fake(OrderUpdatedPaid::class);
+
         $this->$user->givePermissionTo('payments.offline');
 
         $code = $this->order->code;
         $response = $this->actingAs($this->$user)
             ->postJson("/orders/${code}/pay/offline");
+
+        $payment = Payment::find($response->getData()->data->id);
 
         $response
             ->assertCreated()
@@ -191,6 +312,7 @@ class PaymentTest extends TestCase
                 'method' => 'offline',
                 'status' => PaymentStatus::SUCCESSFUL,
                 'amount' => $this->order->summary,
+                'date' => $payment->created_at,
                 'redirect_url' => null,
                 'continue_url' => null,
             ]);
@@ -209,6 +331,26 @@ class PaymentTest extends TestCase
 
         $this->order->refresh();
         $this->assertTrue($this->order->paid);
+
+        Event::assertDispatched(OrderUpdatedPaid::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testPaymentHasDate($user): void
+    {
+        $this->$user->givePermissionTo('payments.offline');
+
+        $code = $this->order->code;
+        $response = $this->actingAs($this->$user)
+            ->postJson("/orders/${code}/pay/offline");
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment([
+                'date' => Payment::find($response->getData()->data->id)->created_at,
+            ]);
     }
 
     /**
@@ -230,12 +372,15 @@ class PaymentTest extends TestCase
         $response = $this->actingAs($this->$user)
             ->postJson("/orders/${code}/pay/offline");
 
+        $payment = Payment::find($response->getData()->data->id);
+
         $response
             ->assertCreated()
             ->assertJsonFragment([
                 'method' => 'offline',
                 'status' => PaymentStatus::SUCCESSFUL,
                 'amount' => $amount,
+                'date' => $payment->created_at,
                 'redirect_url' => null,
                 'continue_url' => null,
             ]);

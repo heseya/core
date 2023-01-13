@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Criteria\AttributeOptionSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Traits\HasMetadata;
+use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -35,8 +37,10 @@ class AttributeOption extends Model
     ];
 
     protected array $criteria = [
+        'search' => AttributeOptionSearch::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
+        'name' => Like::class,
     ];
 
     public function attribute(): BelongsTo

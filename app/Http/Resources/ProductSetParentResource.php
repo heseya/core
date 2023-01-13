@@ -24,7 +24,6 @@ class ProductSetParentResource extends Resource
             'slug_override' => $this->resource->slugOverride,
             'public' => $this->resource->public,
             'visible' => $this->resource->public_parent && $this->resource->public,
-            'hide_on_index' => $this->resource->hide_on_index,
             'parent' => ProductSetResource::make($this->resource->parent),
             'children_ids' => $children->map(fn ($child) => $child->getKey()),
             'seo' => SeoMetadataResource::make($this->resource->seo),

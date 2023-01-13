@@ -4,13 +4,18 @@ namespace App\Http\Middleware;
 
 use App\Exceptions\AppAccessException;
 use App\Models\App;
+use App\Models\User;
 use Closure;
+use Illuminate\Http\Request;
 
 class AppAccessRestrict
 {
-    public function handle($request, Closure $next): mixed
+    public function handle(Request $request, Closure $next): mixed
     {
-        if ($request->user() instanceof App) {
+        /** @var App|User|null $user */
+        $user = $request->user();
+
+        if ($user instanceof App) {
             throw new AppAccessException();
         }
 

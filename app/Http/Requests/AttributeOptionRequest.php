@@ -3,10 +3,12 @@
 namespace App\Http\Requests;
 
 use App\Enums\AttributeType;
+use App\Traits\MetadataRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AttributeOptionRequest extends FormRequest
 {
+    use MetadataRules;
     /**
      * Get the validation rules that apply to the request.
      *
@@ -19,10 +21,13 @@ class AttributeOptionRequest extends FormRequest
             default => 'nullable',
         };
 
-        return [
-            'name' => [$nameRule, 'string', 'max:255'],
-            'value_number' => ['nullable', 'numeric', 'regex:/^\d{1,6}(\.\d{1,2}|)$/'],
-            'value_date' => ['nullable', 'date'],
-        ];
+        return array_merge(
+            $this->metadataRules(),
+            [
+                'name' => [$nameRule, 'string', 'max:255'],
+                'value_number' => ['nullable', 'numeric', 'regex:/^\d{1,6}(\.\d{1,2}|)$/'],
+                'value_date' => ['nullable', 'date'],
+            ]
+        );
     }
 }

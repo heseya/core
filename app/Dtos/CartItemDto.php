@@ -4,7 +4,7 @@ namespace App\Dtos;
 
 use Heseya\Dto\Dto;
 
-class CartItemDto extends Dto
+final class CartItemDto extends Dto
 {
     private string $cartitem_id;
     private string $product_id;
@@ -21,7 +21,7 @@ class CartItemDto extends Dto
         );
     }
 
-    public function getCartitemId(): string
+    public function getCartItemId(): string
     {
         return $this->cartitem_id;
     }
@@ -34,6 +34,11 @@ class CartItemDto extends Dto
     public function getQuantity(): float
     {
         return $this->quantity;
+    }
+
+    public function setQuantity(float $quantity): void
+    {
+        $this->quantity = $quantity;
     }
 
     public function getSchemas(): array

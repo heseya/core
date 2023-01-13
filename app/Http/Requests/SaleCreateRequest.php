@@ -8,6 +8,7 @@ use App\Enums\DiscountType;
 use App\Rules\Boolean;
 use App\Traits\BooleanRules;
 use BenSampo\Enum\Rules\EnumValue;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SaleCreateRequest extends FormRequest
@@ -16,6 +17,7 @@ class SaleCreateRequest extends FormRequest
 
     protected array $booleanFields = [
         'target_is_allow_list',
+        'active',
         'condition_groups.*.conditions.*.weekday.*',
         'condition_groups.*.conditions.*.is_allow_list',
         'condition_groups.*.conditions.*.is_in_range',
@@ -35,6 +37,7 @@ class SaleCreateRequest extends FormRequest
             'priority' => ['required', 'integer'],
             'target_type' => ['required', new EnumValue(DiscountTargetType::class, false)],
             'target_is_allow_list' => ['required', new Boolean()],
+            'active' => [new Boolean()],
 
             'condition_groups' => ['array'],
             'condition_groups.*.conditions' => ['required', 'array'],
@@ -61,7 +64,7 @@ class SaleCreateRequest extends FormRequest
         ];
     }
 
-    public function withValidator($validator): void
+    public function withValidator(Validator $validator): void
     {
         $validator->sometimes('value', ['max:100'], function ($input, $item) {
             return $input->type === DiscountType::PERCENTAGE;

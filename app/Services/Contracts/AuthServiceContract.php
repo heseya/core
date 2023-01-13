@@ -6,17 +6,21 @@ use App\Dtos\RegisterDto;
 use App\Dtos\TFAConfirmDto;
 use App\Dtos\TFAPasswordDto;
 use App\Dtos\TFASetupDto;
+use App\Dtos\UpdateProfileDto;
 use App\Models\User;
+use Illuminate\Contracts\Auth\Authenticatable;
 
 interface AuthServiceContract
 {
     public function login(string $email, string $password, ?string $ip, ?string $userAgent, ?string $code): array;
 
+    public function loginWithUser(Authenticatable $user, ?string $ip, ?string $userAgent): array;
+
     public function refresh(string $refreshToken, ?string $ip, ?string $userAgent): array;
 
     public function logout(): void;
 
-    public function resetPassword(string $email): void;
+    public function resetPassword(string $email, string $redirect_url): void;
 
     public function showResetPasswordForm(?string $email, ?string $token): User;
 
@@ -44,5 +48,5 @@ interface AuthServiceContract
 
     public function register(RegisterDto $dto): User;
 
-    public function updateProfile(?string $name, array $consents): User;
+    public function updateProfile(UpdateProfileDto $dto): User;
 }

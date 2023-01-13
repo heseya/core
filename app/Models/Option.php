@@ -21,6 +21,8 @@ class Option extends Model
         'schema_id',
         'order',
         'available',
+        'shipping_time',
+        'shipping_date',
     ];
 
     protected $casts = [
@@ -29,13 +31,6 @@ class Option extends Model
         'available' => 'bool',
     ];
 
-    /**
-     * @OA\Property(
-     *   property="items",
-     *   type="array",
-     *   @OA\Items(ref="#/components/schemas/Item"),
-     * )
-     */
     public function items(): BelongsToMany
     {
         return $this->belongsToMany(Item::class, 'option_items');

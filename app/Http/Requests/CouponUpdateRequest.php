@@ -24,10 +24,11 @@ class CouponUpdateRequest extends CouponCreateRequest
             'target_type' => [new EnumValue(DiscountTargetType::class, false)],
             'target_is_allow_list' => [new Boolean()],
             'code' => [
-                'string',
+                'alpha_dash',
                 'max:64',
                 Rule::unique('discounts')->ignore($coupon->code, 'code'),
             ],
+            'active' => [new Boolean()],
         ]);
     }
 }

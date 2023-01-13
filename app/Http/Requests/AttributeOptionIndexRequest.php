@@ -9,8 +9,11 @@ class AttributeOptionIndexRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'search' => ['string'],
+
             'metadata' => ['nullable', 'array'],
             'metadata_private' => ['nullable', 'array'],
+            'name' => ['nullable', 'string'],
         ];
     }
 }

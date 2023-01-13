@@ -5,8 +5,8 @@ namespace Tests\Unit;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\Contracts\AnalyticsServiceContract;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class AnalyticsServiceTest extends TestCase
@@ -44,7 +44,7 @@ class AnalyticsServiceTest extends TestCase
 
         $onEnd = Payment::factory([
             'paid' => true,
-            'created_at' => $to->copy()->addHours(5),
+            'created_at' => $to->copy(),
         ])->make();
 
         $after = Payment::factory([

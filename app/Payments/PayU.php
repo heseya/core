@@ -36,7 +36,7 @@ class PayU implements PaymentMethod
             'notifyUrl' => $appUrl . '/payments/payu',
             'customerIp' => '127.0.0.1',
             'merchantPosId' => Config::get('payu.pos_id'),
-            'description' => 'Zakupy w sklepie internetowym.',
+            'description' => 'Zamowienie nr ' . $payment->order->code,
             'currencyCode' => $payment->order->currency,
             'totalAmount' => $amount,
             'extOrderId' => $payment->getKey(),
@@ -46,7 +46,7 @@ class PayU implements PaymentMethod
             ],
             'products' => [
                 [
-                    'name' => 'Zakupy w sklepie internetowym.',
+                    'name' => 'Zamowienie nr ' . $payment->order->code,
                     'unitPrice' => $amount,
                     'quantity' => '1',
                 ],

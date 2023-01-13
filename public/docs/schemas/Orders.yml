@@ -1,4 +1,5 @@
 Order:
+  type: object
   properties:
     id:
       type: string
@@ -9,6 +10,8 @@ Order:
     email:
       type: string
       example: admin@example.com
+    payable:
+      type: boolean
     currency:
       type: string
       example: PLN
@@ -39,9 +42,26 @@ Order:
       $ref: './Statuses.yml#/Status'
     shipping_method:
       $ref: './ShippingMethods.yml#/ShippingMethod'
-    delivery_address:
-      $ref: './Addresses.yml#/Address'
-  type: object
+    digital_shipping_method:
+      $ref: './ShippingMethods.yml#/ShippingMethod'
+    documents:
+      $ref: './Documents.yml#/Document'
+    shipping_type:
+      type: string
+      example: 'address'
+    invoice_requested:
+      type: boolean
+    shipping_place:
+      oneOf:
+        - $ref: './Addresses.yml#/Address'
+        - type: string
+          example: 'Test 12 11-111 Test'
+    created_at:
+      type: string
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
 
 OrderProduct:
   type: object
@@ -67,6 +87,16 @@ OrderProduct:
       type: array
       items:
         $ref: '#/OrderDiscount'
+    shipping_digital:
+      type: boolean
+      example: true
+    is_delivered:
+      type: boolean
+      example: true
+    urls:
+      type: array
+      items:
+        $ref: '#/OrderProductUrl'
 
 OrderDiscount:
   type: object
@@ -112,24 +142,12 @@ OrderSchema:
       type: number
       example: '59.99'
 
-OrderList:
-  type: object
-  allOf:
-    - $ref: '#/Order'
-    - properties:
-        payable:
-          type: boolean
-
-
 OrderView:
   type: object
   allOf:
     - $ref: '#/Order'
     - properties:
-        shipping_number:
-          type: string
-          example: '630552359128340015809770'
-        invoice_address:
+        billing_address:
           $ref: './Addresses.yml#/Address'
         products:
           type: array
@@ -139,6 +157,9 @@ OrderView:
           type: array
           items:
             $ref: './Payments.yml#/Payment'
+        shipping_number:
+          type: string
+          example: '630552359128340015809770'
         buyer:
           oneOf:
             - $ref: './Users.yml#/UserView'
@@ -179,8 +200,65 @@ OrderSummary:
       type: number
     shipping_method:
       $ref: './ShippingMethods.yml#/ShippingMethod'
+    digital_shipping_method:
+      $ref: './ShippingMethods.yml#/ShippingMethod'
     created_at:
       type: string
       format: date-time
       example: '2021-09-13T11:11'
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
   type: object
+
+OrderProductUrl:
+  type: object
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    name:
+      type: string
+      example: first_link
+    url:
+      type: string
+      example: https://example.com
+
+OrderProductPublic:
+  type: object
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    order_id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    name:
+      type: string
+      example: Produkt
+    quantity:
+      type: number
+      example: '12.4'
+    price:
+      type: number
+      example: '199.99'
+    price_initial:
+      type: number
+      example: '299.99'
+    vat_rate:
+      type: number
+      example: '0.23'
+    schemas:
+      type: array
+      items:
+        $ref: '#/OrderSchema'
+    shipping_digital:
+      type: boolean
+      example: true
+    product:
+      $ref: './Products.yml#/ProductView'
+    urls:
+      type: array
+      items:
+        $ref: '#/OrderProductUrl'

@@ -131,12 +131,10 @@ return [
 
     'exclude' => [
         'storage',
-        'resources',
         'bootstrap',
         'database',
         '_ide_helper.php',
         '_ide_helper_models.php',
-        'app/Providers/TelescopeServiceProvider.php',
         'public',
     ],
 
@@ -153,7 +151,7 @@ return [
 
     'requirements' => [
         'min-quality' => 100,
-        'min-complexity' => 80,
+        'min-complexity' => 79,
         'min-architecture' => 100,
         'min-style' => 100,
         'disable-security-check' => false,

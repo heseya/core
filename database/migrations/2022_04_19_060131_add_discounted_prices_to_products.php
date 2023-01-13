@@ -15,14 +15,14 @@ return new class() extends Migration {
     public function up(): void
     {
         Schema::table('products', function (Blueprint $table): void {
-            $table->float('min_price_discounted', 19, 4)->nullable();
-            $table->float('max_price_discounted', 19, 4)->nullable();
+            $table->float('price_min_initial', 19, 4)->nullable();
+            $table->float('price_max_initial', 19, 4)->nullable();
         });
 
         Product::chunk(100, fn (Collection $products) => $products->each(
             fn (Product $product) => $product->update([
-                'min_price_discounted' => $product->price_min,
-                'max_price_discounted' => $product->price_max,
+                'price_min_initial' => $product->price_min,
+                'price_max_initial' => $product->price_max,
             ]),
         ));
 
@@ -45,8 +45,8 @@ return new class() extends Migration {
     public function down(): void
     {
         Schema::table('products', function (Blueprint $table): void {
-            $table->dropColumn('min_price_discounted');
-            $table->dropColumn('max_price_discounted');
+            $table->dropColumn('price_min_initial');
+            $table->dropColumn('price_max_initial');
         });
     }
 };

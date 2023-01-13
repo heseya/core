@@ -6,6 +6,7 @@ use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Lang;
 
 class OrderCreated extends Notification
 {
@@ -14,12 +15,13 @@ class OrderCreated extends Notification
     public function __construct(Order $order)
     {
         $this->order = $order;
+        $this->locale = $order->preferredLocale();
     }
 
     /**
      * Get the notification's delivery channels.
      */
-    public function via($notifiable): array
+    public function via(mixed $notifiable): array
     {
         return ['mail'];
     }
@@ -27,10 +29,12 @@ class OrderCreated extends Notification
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail($notifiable): MailMessage
+    public function toMail(mixed $notifiable): MailMessage
     {
+        /** @var string $subject */
+        $subject = Lang::get('mail.subject-new-order', ['number' => $this->order->code], $this->locale);
         return (new MailMessage())
-            ->subject('Order confirmation')
+            ->subject($subject)
             ->view('mail.new-order', [
                 'order' => $this->order,
             ]);
@@ -39,7 +43,7 @@ class OrderCreated extends Notification
     /**
      * Get the array representation of the notification.
      */
-    public function toArray($notifiable): array
+    public function toArray(mixed $notifiable): array
     {
         return [
             'order' => new OrderResource($this->order),

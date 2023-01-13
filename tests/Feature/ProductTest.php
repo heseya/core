@@ -57,6 +57,7 @@ class ProductTest extends TestCase
         $this->discountService = App::make(DiscountServiceContract::class);
 
         $this->product = Product::factory()->create([
+            'shipping_digital' => false,
             'public' => true,
             'order' => 1,
         ]);
@@ -227,7 +228,6 @@ class ProductTest extends TestCase
         ]);
         $set = ProductSet::factory()->create([
             'public' => true,
-            'hide_on_index' => true,
         ]);
         $product->sets()->sync([$set->getKey()]);
 
@@ -235,14 +235,72 @@ class ProductTest extends TestCase
             ->actingAs($this->$user)
             ->json('GET', '/products', ['limit' => 100])
             ->assertOk()
-            ->assertJsonCount(1, 'data') // Should show only public products.
+            ->assertJsonCount(2, 'data')
             ->assertJson([
                 'data' => [
                     0 => $this->expected_short,
                 ],
             ])->assertJsonFragment([
-                'min_price_discounted' => $this->product->price_min,
-                'max_price_discounted' => $this->product->price_max,
+                'price_min' => $this->product->price_min,
+                'price_max' => $this->product->price_max,
+            ]);
+
+        $this->assertQueryCountLessThan(20);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSortPrice($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+            'price' => 1200,
+            'price_min' => 1100,
+        ]);
+        $product2 = Product::factory()->create([
+            'public' => true,
+            'price' => 1300,
+            'price_min' => 1050,
+        ]);
+        $product3 = Product::factory()->create([
+            'public' => true,
+            'price' => 1500,
+            'price_min' => 1000,
+        ]);
+
+        $this->product->update([
+            'price' => 1500,
+            'price_min' => 1200,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['sort' => 'price:asc'])
+            ->assertOk()
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'id' => $product3->id,
+                        'name' => $product3->name,
+                        'price' => $product3->price,
+                        'price_min' => $product3->price_min,
+                    ],
+                    1 => [
+                        'id' => $product2->id,
+                        'name' => $product2->name,
+                        'price' => $product2->price,
+                        'price_min' => $product2->price_min,
+                    ],
+                    2 => [
+                        'id' => $product1->id,
+                        'name' => $product1->name,
+                        'price' => $product1->price,
+                        'price_min' => $product1->price_min,
+                    ],
+                ],
             ]);
 
         $this->assertQueryCountLessThan(20);
@@ -259,8 +317,7 @@ class ProductTest extends TestCase
             'public' => true,
         ]);
         $set = ProductSet::factory()->create([
-            'public' => true,
-            'hide_on_index' => true,
+            'public' => false,
         ]);
 
         $product->sets()->sync([$set->getKey()]);
@@ -289,6 +346,7 @@ class ProductTest extends TestCase
 
         $response = $this->actingAs($this->$user)
             ->getJson('/products/' . $this->product->slug);
+
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected]);
@@ -298,6 +356,33 @@ class ProductTest extends TestCase
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWithAttributeMetadata($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $this->product->attributes->first()->metadata()->create([
+            'name' => 'testMeta',
+            'value' => 'testValue',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/' . $this->product->slug);
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => $this->expected])
+            ->assertJsonFragment([
+                'metadata' => [
+                    'testMeta' => 'testValue',
+                ],
+            ]);
     }
 
     /**
@@ -353,7 +438,6 @@ class ProductTest extends TestCase
                     'slug_override' => $set1->slugOverride,
                     'public' => $set1->public,
                     'visible' => $set1->public_parent && $set1->public,
-                    'hide_on_index' => $set1->hide_on_index,
                     'parent_id' => $set1->parent_id,
                     'children_ids' => [],
                     'cover' => null,
@@ -367,7 +451,103 @@ class ProductTest extends TestCase
                     'slug_override' => $set2->slugOverride,
                     'public' => $set2->public,
                     'visible' => $set2->public_parent && $set2->public,
-                    'hide_on_index' => $set2->hide_on_index,
+                    'parent_id' => $set2->parent_id,
+                    'children_ids' => [],
+                    'cover' => null,
+                    'metadata' => [],
+                ],
+            ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowPrivateSetsNoPermission($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $set1 = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+        $set2 = ProductSet::factory()->create([
+            'public' => false,
+        ]);
+
+        $product->sets()->sync([$set1->getKey(), $set2->getKey()]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/products/' . $product->slug)
+            ->assertOk()
+            ->assertJsonFragment(['sets' => [
+                [
+                    'id' => $set1->getKey(),
+                    'name' => $set1->name,
+                    'slug' => $set1->slug,
+                    'slug_suffix' => $set1->slugSuffix,
+                    'slug_override' => $set1->slugOverride,
+                    'public' => $set1->public,
+                    'visible' => $set1->public_parent && $set1->public,
+                    'parent_id' => $set1->parent_id,
+                    'children_ids' => [],
+                    'cover' => null,
+                    'metadata' => [],
+                ],
+            ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowPrivateSetsWithPermission($user): void
+    {
+        $this->$user->givePermissionTo(['products.show_details', 'product_sets.show_hidden']);
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $set1 = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+        $set2 = ProductSet::factory()->create([
+            'public' => false,
+        ]);
+
+        $product->sets()->sync([$set1->getKey(), $set2->getKey()]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/products/' . $product->slug)
+            ->assertOk()
+            ->assertJsonFragment(['sets' => [
+                [
+                    'id' => $set1->getKey(),
+                    'name' => $set1->name,
+                    'slug' => $set1->slug,
+                    'slug_suffix' => $set1->slugSuffix,
+                    'slug_override' => $set1->slugOverride,
+                    'public' => $set1->public,
+                    'visible' => $set1->public_parent && $set1->public,
+                    'parent_id' => $set1->parent_id,
+                    'children_ids' => [],
+                    'cover' => null,
+                    'metadata' => [],
+                ],
+                [
+                    'id' => $set2->getKey(),
+                    'name' => $set2->name,
+                    'slug' => $set2->slug,
+                    'slug_suffix' => $set2->slugSuffix,
+                    'slug_override' => $set2->slugOverride,
+                    'public' => $set2->public,
+                    'visible' => $set2->public_parent && $set2->public,
                     'parent_id' => $set2->parent_id,
                     'children_ids' => [],
                     'cover' => null,
@@ -422,7 +602,6 @@ class ProductTest extends TestCase
                     'slug_override' => $set1->slugOverride,
                     'public' => $set1->public,
                     'visible' => $set1->public_parent && $set1->public,
-                    'hide_on_index' => $set1->hide_on_index,
                     'parent_id' => $set1->parent_id,
                     'children_ids' => [],
                     'metadata' => [],
@@ -443,7 +622,6 @@ class ProductTest extends TestCase
                     'slug_override' => $set2->slugOverride,
                     'public' => $set2->public,
                     'visible' => $set2->public_parent && $set2->public,
-                    'hide_on_index' => $set2->hide_on_index,
                     'parent_id' => $set2->parent_id,
                     'children_ids' => [],
                     'metadata' => [],
@@ -637,8 +815,8 @@ class ProductTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
             'price' => 3000,
-            'price_min' => 2500,
-            'price_max' => 3500,
+            'price_min_initial' => 2500,
+            'price_max_initial' => 3500,
         ]);
 
         // Applied - product is on list
@@ -730,10 +908,10 @@ class ProductTest extends TestCase
                 'id' => $product->getKey(),
                 'name' => $product->name,
                 'price' => $product->price,
-                'price_min' => $product->price_min,
-                'price_max' => $product->price_max,
-                'min_price_discounted' => 2250,
-                'max_price_discounted' => 3150,
+                'price_min_initial' => $product->price_min_initial,
+                'price_max_initial' => $product->price_max_initial,
+                'price_min' => 2250,
+                'price_max' => 3150,
             ])
             ->assertJsonFragment([
                 'id' => $sale1->getKey(),
@@ -763,8 +941,8 @@ class ProductTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
             'price' => 3000,
-            'price_min' => 2500,
-            'price_max' => 3500,
+            'price_min_initial' => 2500,
+            'price_max_initial' => 3500,
         ]);
 
         // Applied - product is not on block list
@@ -789,10 +967,10 @@ class ProductTest extends TestCase
                 'id' => $product->getKey(),
                 'name' => $product->name,
                 'price' => $product->price,
-                'price_min' => $product->price_min,
-                'price_max' => $product->price_max,
-                'min_price_discounted' => 2250,
-                'max_price_discounted' => 3150,
+                'price_min_initial' => $product->price_min_initial,
+                'price_max_initial' => $product->price_max_initial,
+                'price_min' => 2250,
+                'price_max' => 3150,
             ])
             ->assertJsonFragment([
                 'id' => $sale->getKey(),
@@ -810,8 +988,8 @@ class ProductTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
             'price' => 3000,
-            'price_min' => 2500,
-            'price_max' => 3500,
+            'price_min_initial' => 2500,
+            'price_max_initial' => 3500,
         ]);
 
         $set = ProductSet::factory()->create([
@@ -882,10 +1060,10 @@ class ProductTest extends TestCase
                 'id' => $product->getKey(),
                 'name' => $product->name,
                 'price' => $product->price,
-                'price_min' => $product->price_min,
-                'price_max' => $product->price_max,
-                'min_price_discounted' => 2137.5,
-                'max_price_discounted' => 2992.5,
+                'price_min_initial' => $product->price_min_initial,
+                'price_max_initial' => $product->price_max_initial,
+                'price_min' => 2137.5,
+                'price_max' => 2992.5,
             ])
             ->assertJsonFragment([
                 'id' => $sale1->getKey(),
@@ -902,6 +1080,94 @@ class ProductTest extends TestCase
             ->assertJsonMissing([
                 'id' => $sale3->getKey(),
                 'name' => $sale3->name,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWithSalesProductSetsChildren($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 3000,
+            'price_min_initial' => 2500,
+            'price_max_initial' => 3500,
+        ]);
+
+        $parentSet = ProductSet::factory()->create([
+            'public' => true,
+            'name' => 'parent',
+        ]);
+
+        $childrenSet = ProductSet::factory()->create([
+            'public' => true,
+            'name' => 'children',
+            'public_parent' => true,
+            'parent_id' => $parentSet->getKey(),
+        ]);
+
+        $subChildrenSet = ProductSet::factory()->create([
+            'public' => true,
+            'name' => 'sub children',
+            'public_parent' => true,
+            'parent_id' => $childrenSet->getKey(),
+        ]);
+
+        $product->sets()->sync([$subChildrenSet->getKey()]);
+
+        // Applied - product set is on allow list
+        $sale1 = Discount::factory()->create([
+            'description' => 'Testowa promocja',
+            'name' => 'Testowa promocja obowiązująca',
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+            'code' => null,
+            'priority' => 1,
+        ]);
+
+        $sale1->productSets()->attach($parentSet);
+
+        // Not applied - product set is on block list
+        $sale2 = Discount::factory()->create([
+            'description' => 'Not applied - product set is on block list',
+            'name' => 'Set on block list',
+            'value' => 5,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => false,
+            'code' => null,
+        ]);
+
+        $sale2->productSets()->attach($parentSet);
+
+        $this->discountService->applyDiscountsOnProduct($product);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/id:' . $product->getKey());
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $product->getKey(),
+                'name' => $product->name,
+                'price' => $product->price,
+                'price_min_initial' => $product->price_min_initial,
+                'price_max_initial' => $product->price_max_initial,
+                'price_min' => 2250,
+                'price_max' => 3150,
+            ])
+            ->assertJsonFragment([
+                'id' => $sale1->getKey(),
+                'name' => $sale1->name,
+            ])
+            ->assertJsonMissing([
+                'id' => $sale2->getKey(),
+                'name' => $sale2->name,
             ]);
     }
 
@@ -928,6 +1194,8 @@ class ProductTest extends TestCase
             'description_html' => '<h1>Description</h1>',
             'description_short' => 'So called short description...',
             'public' => true,
+            'vat_rate' => 23,
+            'shipping_digital' => false,
         ]);
 
         $response
@@ -937,6 +1205,8 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => true,
+                'vat_rate' => 23,
+                'shipping_digital' => false,
                 'description_html' => '<h1>Description</h1>',
                 'description_short' => 'So called short description...',
                 'cover' => null,
@@ -949,6 +1219,8 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'price' => 100,
             'public' => true,
+            'vat_rate' => 23,
+            'shipping_digital' => false,
             'description_html' => '<h1>Description</h1>',
             'description_short' => 'So called short description...',
         ]);
@@ -992,6 +1264,7 @@ class ProductTest extends TestCase
             'price' => 100.00,
             'description_html' => '<h1>Description</h1>',
             'public' => true,
+            'shipping_digital' => false,
         ]);
 
         $response
@@ -1001,6 +1274,7 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => true,
+                'shipping_digital' => false,
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
@@ -1012,6 +1286,7 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'price' => 100,
             'public' => true,
+            'shipping_digital' => false,
             'description_html' => '<h1>Description</h1>',
         ]);
 
@@ -1061,6 +1336,7 @@ class ProductTest extends TestCase
             'price' => 100.00,
             'description_html' => '<h1>Description</h1>',
             'public' => true,
+            'shipping_digital' => false,
         ]);
 
         $response
@@ -1070,6 +1346,7 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => true,
+                'shipping_digital' => false,
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
@@ -1081,6 +1358,7 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'price' => 100,
             'public' => true,
+            'shipping_digital' => false,
             'description_html' => '<h1>Description</h1>',
         ]);
 
@@ -1130,6 +1408,7 @@ class ProductTest extends TestCase
             'price' => 100.00,
             'description_html' => '<h1>Description</h1>',
             'public' => false,
+            'shipping_digital' => false,
         ]);
 
         $response
@@ -1139,6 +1418,7 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => false,
+                'shipping_digital' => false,
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
@@ -1150,6 +1430,7 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'price' => 100,
             'public' => false,
+            'shipping_digital' => false,
             'description_html' => '<h1>Description</h1>',
         ]);
 
@@ -1192,6 +1473,7 @@ class ProductTest extends TestCase
             'price' => 100.00,
             'description_html' => '<h1>Description</h1>',
             'public' => false,
+            'shipping_digital' => false,
         ]);
 
         $response
@@ -1201,6 +1483,7 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => false,
+                'shipping_digital' => false,
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
@@ -1212,6 +1495,7 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'price' => 100,
             'public' => false,
+            'shipping_digital' => false,
             'description_html' => '<h1>Description</h1>',
         ]);
 
@@ -1249,6 +1533,7 @@ class ProductTest extends TestCase
                 'slug' => 'test',
                 'price' => 0,
                 'public' => true,
+                'shipping_digital' => false,
             ])
             ->assertCreated();
 
@@ -1256,6 +1541,74 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'name' => 'Test',
             'price' => 0,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateDigital($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/products', [
+                'name' => 'Test',
+                'slug' => 'test',
+                'price' => 100,
+                'public' => true,
+                'shipping_digital' => true,
+            ])
+            ->assertCreated()
+            ->assertJson(['data' => [
+                'slug' => 'test',
+                'name' => 'Test',
+                'price' => 100,
+                'public' => true,
+                'shipping_digital' => true,
+            ],
+            ]);
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 100,
+            'shipping_digital' => true,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateNonDigital($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/products', [
+                'name' => 'Test',
+                'slug' => 'test',
+                'price' => 100,
+                'public' => true,
+                'shipping_digital' => false,
+            ])
+            ->assertCreated()
+            ->assertJson(['data' => [
+                'slug' => 'test',
+                'name' => 'Test',
+                'price' => 100,
+                'public' => true,
+                'shipping_digital' => false,
+            ],
+            ]);
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 100,
+            'shipping_digital' => false,
         ]);
     }
 
@@ -1273,6 +1626,7 @@ class ProductTest extends TestCase
                 'slug' => 'test',
                 'price' => -100,
                 'public' => true,
+                'shipping_digital' => false,
             ])
             ->assertUnprocessable();
     }
@@ -1293,6 +1647,7 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'price' => 150,
             'public' => false,
+            'shipping_digital' => false,
             'schemas' => [
                 $schema->getKey(),
             ],
@@ -1306,6 +1661,7 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'price' => 150,
             'public' => false,
+            'shipping_digital' => false,
             'description_html' => null,
         ]);
 
@@ -1334,6 +1690,7 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'price' => 150,
             'public' => false,
+            'shipping_digital' => false,
             'sets' => [
                 $set1->getKey(),
                 $set2->getKey(),
@@ -1348,6 +1705,7 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'price' => 150,
             'public' => false,
+            'shipping_digital' => false,
             'description_html' => null,
         ]);
 
@@ -1382,6 +1740,7 @@ class ProductTest extends TestCase
             'price' => 100.00,
             'description_html' => '<h1>Description</h1>',
             'public' => $boolean,
+            'shipping_digital' => false,
             'seo' => [
                 'title' => 'seo title',
                 'description' => 'seo description',
@@ -1397,6 +1756,7 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => $booleanValue,
+                'shipping_digital' => false,
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
@@ -1416,6 +1776,7 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'price' => 100,
             'public' => $booleanValue,
+            'shipping_digital' => false,
             'description_html' => '<h1>Description</h1>',
         ]);
 
@@ -1443,6 +1804,7 @@ class ProductTest extends TestCase
             'price' => 100.00,
             'description_html' => '<h1>Description</h1>',
             'public' => true,
+            'shipping_digital' => false,
             'seo' => [
                 'title' => 'seo title',
                 'description' => 'seo description',
@@ -1456,6 +1818,7 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => true,
+                'shipping_digital' => false,
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
@@ -1472,6 +1835,7 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'price' => 100,
             'public' => true,
+            'shipping_digital' => false,
             'description_html' => '<h1>Description</h1>',
         ]);
 
@@ -1506,6 +1870,7 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'price' => $productPrice,
             'public' => false,
+            'shipping_digital' => false,
             'sets' => [],
             'schemas' => [
                 $schema->getKey(),
@@ -1521,6 +1886,7 @@ class ProductTest extends TestCase
             'price_min' => $productPrice,
             'price_max' => $productPrice + $schemaPrice,
             'public' => false,
+            'shipping_digital' => false,
             'description_html' => null,
         ]);
     }
@@ -1545,6 +1911,7 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'price' => $productPrice,
             'public' => false,
+            'shipping_digital' => false,
             'sets' => [],
             'schemas' => [
                 $schema->getKey(),
@@ -1560,6 +1927,7 @@ class ProductTest extends TestCase
             'price_min' => $productPrice + $schemaPrice,
             'price_max' => $productPrice + $schemaPrice,
             'public' => false,
+            'shipping_digital' => false,
             'description_html' => null,
         ]);
     }
@@ -1592,6 +1960,7 @@ class ProductTest extends TestCase
                 'slug' => 'test',
                 'price' => 0,
                 'public' => true,
+                'shipping_digital' => false,
                 'attributes' => [
                     $attribute->getKey() => [
                         $option->getKey(),
@@ -1700,6 +2069,7 @@ class ProductTest extends TestCase
                 'slug' => 'test',
                 'price' => 0,
                 'public' => true,
+                'shipping_digital' => false,
                 'attributes' => [
                     $attribute->getKey() => [
                         $option->getKey(),
@@ -1790,6 +2160,7 @@ class ProductTest extends TestCase
                 'slug' => 'test',
                 'price' => 0,
                 'public' => true,
+                'shipping_digital' => false,
                 'attributes' => [
                     $attribute->getKey() => [
                         $option->getKey(),
@@ -1822,6 +2193,7 @@ class ProductTest extends TestCase
                 'slug' => 'test',
                 'price' => 0,
                 'public' => true,
+                'shipping_digital' => false,
                 'attributes' => [
                     $attribute->getKey() => [
                         $option->getKey(),
@@ -1859,6 +2231,7 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'price' => 100.00,
             'public' => true,
+            'shipping_digital' => false,
         ]);
 
         $productId = $response->getData()->data->id;
@@ -1867,8 +2240,8 @@ class ProductTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment([
                 'id' => $productId,
-                'min_price_discounted' => 80,
-                'max_price_discounted' => 80,
+                'price_min' => 80,
+                'price_max' => 80,
             ])
             ->assertJsonFragment([
                 'id' => $saleApplied->getKey(),
@@ -1879,8 +2252,8 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $productId,
-            'min_price_discounted' => 80,
-            'max_price_discounted' => 80,
+            'price_min' => 80,
+            'price_max' => 80,
         ]);
     }
 
@@ -1898,6 +2271,7 @@ class ProductTest extends TestCase
             'description_html' => '<h1>Description</h1>',
             'description_short' => 'So called short description...',
             'public' => true,
+            'shipping_digital' => false,
             'google_product_category' => 123,
         ]);
 
@@ -1922,10 +2296,37 @@ class ProductTest extends TestCase
             'description_html' => '<h1>Description</h1>',
             'description_short' => 'So called short description...',
             'public' => true,
+            'shipping_digital' => false,
             'google_product_category' => 123456,
         ]);
 
-        $response->assertUnprocessable();
+        // no validation
+        $response->assertCreated();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithNullGoogleProductCategory($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $response = $this->actingAs($this->$user)->postJson('/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 100.00,
+            'description_html' => '<h1>Description</h1>',
+            'description_short' => 'So called short description...',
+            'public' => true,
+            'shipping_digital' => false,
+            'google_product_category' => null,
+        ]);
+
+        $response->assertCreated();
+
+        $this->assertDatabaseHas('products', [
+            'google_product_category' => null,
+        ]);
     }
 
     public function testUpdateUnauthorized(): void
@@ -1952,6 +2353,7 @@ class ProductTest extends TestCase
             'description_html' => '<h1>New description</h1>',
             'description_short' => 'New so called short description',
             'public' => false,
+            'vat_rate' => 5,
         ]);
 
         $response->assertOk();
@@ -1964,6 +2366,7 @@ class ProductTest extends TestCase
             'description_html' => '<h1>New description</h1>',
             'description_short' => 'New so called short description',
             'public' => false,
+            'vat_rate' => 5,
         ]);
 
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
@@ -1978,6 +2381,30 @@ class ProductTest extends TestCase
         $listener->handle($event);
 
         Queue::assertNotPushed(CallWebhookJob::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateDigital($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/products/id:' . $this->product->getKey(), [
+                'shipping_digital' => true,
+            ])
+            ->assertOk()
+            ->assertJson(['data' => [
+                'shipping_digital' => true,
+            ],
+            ]);
+
+        $this->assertDatabaseHas('products', [
+            $this->product->getKeyName() => $this->product->getKey(),
+            'shipping_digital' => true,
+        ]);
     }
 
     /**
@@ -2373,10 +2800,10 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('products', [
             $product->getKeyName() => $product->getKey(),
             'price' => $productNewPrice,
-            'price_min' => $productNewPrice,
-            'price_max' => $productNewPrice + $schemaPrice,
-            'min_price_discounted' => $productNewPrice - $saleValue,
-            'max_price_discounted' => $productNewPrice + $schemaPrice - $saleValue,
+            'price_min_initial' => $productNewPrice,
+            'price_max_initial' => $productNewPrice + $schemaPrice,
+            'price_min' => $productNewPrice - $saleValue,
+            'price_max' => $productNewPrice + $schemaPrice - $saleValue,
         ]);
     }
 
@@ -2468,10 +2895,10 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('products', [
             $product->getKeyName() => $product->getKey(),
             'price' => $productPrice,
-            'price_min' => $productPrice,
-            'price_max' => $productPrice + $schemaNewPrice,
-            'min_price_discounted' => $productPrice - $saleValue,
-            'max_price_discounted' => $productPrice + $schemaNewPrice - $saleValue,
+            'price_min_initial' => $productPrice,
+            'price_max_initial' => $productPrice + $schemaNewPrice,
+            'price_min' => $productPrice - $saleValue,
+            'price_max' => $productPrice + $schemaNewPrice - $saleValue,
         ]);
     }
 
@@ -2504,7 +2931,25 @@ class ProductTest extends TestCase
             'google_product_category' => 123456789,
         ]);
 
-        $response->assertUnprocessable();
+        $response->assertOk();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithNullGoogleProductCategory($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
+            'google_product_category' => null,
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            'google_product_category' => null,
+        ]);
     }
 
     /**
@@ -2583,10 +3028,10 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('products', [
             $product->getKeyName() => $product->getKey(),
             'price' => $productPrice,
-            'price_min' => $productPrice,
-            'price_max' => $productPrice,
-            'min_price_discounted' => $productPrice - $saleValue,
-            'max_price_discounted' => $productPrice - $saleValue,
+            'price_min_initial' => $productPrice,
+            'price_max_initial' => $productPrice,
+            'price_min' => $productPrice - $saleValue,
+            'price_max' => $productPrice - $saleValue,
         ]);
     }
 
@@ -2759,5 +3204,78 @@ class ProductTest extends TestCase
                 && $payload['data_type'] === 'Product'
                 && $payload['event'] === 'ProductDeleted';
         });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductHasSchemaOnSchemaDelete($user): void
+    {
+        $this->$user->givePermissionTo('schemas.remove');
+
+        Schema::query()->delete();
+        $schema = Schema::factory()->create([
+            'name' => 'test schema',
+        ]);
+
+        $this->product->schemas()->save($schema);
+        $this->product->update(['has_schemas' => true]);
+
+        $this->actingAs($this->$user)->json('delete', 'schemas/id:' . $schema->getKey());
+
+        $this->assertDatabaseHas('products', [
+            'id' => $this->product->getKey(),
+            'has_schemas' => false,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductHasSchemaOnSchemaAdded($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        Schema::query()->delete();
+        $schema = Schema::factory()->create([
+            'name' => 'test schema',
+        ]);
+
+        $this->actingAs($this->$user)->json('patch', 'products/id:' . $this->product->getKey(), [
+            'schemas' => [
+                $schema->getKey(),
+            ],
+        ]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $this->product->getKey(),
+            'has_schemas' => true,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductHasSchemaOnSchemasRemovedFromProduct($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        Schema::query()->delete();
+        $schema = Schema::factory()->create([
+            'name' => 'test schema',
+        ]);
+
+        $this->product->schemas()->save($schema);
+
+        $this->product->update(['has_schemas' => true]);
+
+        $this->actingAs($this->$user)->json('patch', 'products/id:' . $this->product->getKey(), [
+            'schemas' => [],
+        ]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $this->product->getKey(),
+            'has_schemas' => false,
+        ]);
     }
 }

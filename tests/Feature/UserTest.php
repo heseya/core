@@ -4,16 +4,20 @@ namespace Tests\Feature;
 
 use App\Enums\MetadataType;
 use App\Enums\RoleType;
+use App\Enums\ValidationError;
 use App\Events\UserCreated;
 use App\Events\UserDeleted;
 use App\Events\UserUpdated;
 use App\Listeners\WebHookEventListener;
+use App\Models\Consent;
+use App\Models\Metadata;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\UserPreference;
 use App\Models\WebHook;
-use Carbon\Carbon;
 use Illuminate\Events\CallQueuedListener;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
@@ -35,12 +39,25 @@ class UserTest extends TestCase
     {
         parent::setUp();
 
+        User::query()->where('email', 'admin@example.com')->delete();
+
+        /** @var Metadata $metadata */
         $metadata = $this->user->metadata()->create([
             'name' => 'Metadata',
             'value' => 'metadata test',
             'value_type' => MetadataType::STRING,
             'public' => true,
         ]);
+
+        $metadataPersonal = $this->user->metadataPersonal()->create([
+            'name' => 'Personal_metadata',
+            'value' => 'personal metadata test',
+            'value_type' => MetadataType::STRING,
+        ]);
+
+        $this->user->preferences()->associate(UserPreference::create());
+
+        $this->user->save();
 
         $this->expected = [
             'id' => $this->user->getKey(),
@@ -52,6 +69,10 @@ class UserTest extends TestCase
             'metadata' => [
                 $metadata->name => $metadata->value,
             ],
+            'metadata_personal' => [
+                $metadataPersonal->name => $metadataPersonal->value,
+            ],
+            'created_at' => $this->user->created_at,
         ];
 
         // Owner role needs to exist for user service to function properly
@@ -87,6 +108,7 @@ class UserTest extends TestCase
     {
         $this->$user->givePermissionTo('users.show');
 
+        /** @var User $otherUser */
         $otherUser = User::factory()->create();
         $otherUser->created_at = Carbon::now()->addHour();
         $otherUser->save();
@@ -103,6 +125,7 @@ class UserTest extends TestCase
                     'name' => $otherUser->name,
                     'avatar' => $otherUser->avatar,
                     'roles' => [],
+                    'created_at' => $otherUser->created_at,
                 ],
             ],
             ]);
@@ -115,13 +138,14 @@ class UserTest extends TestCase
     {
         $this->$user->givePermissionTo('users.show');
 
+        /** @var User $otherUser */
         $otherUser = User::factory()->create();
         $otherUser->created_at = Carbon::now()->addHour();
         $otherUser->save();
 
-        $response = $this->actingAs($this->$user)->getJson('/users?full');
-
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/users?full')
             ->assertOk()
             ->assertJsonCount(2, 'data')
             ->assertJson(['data' => [
@@ -145,6 +169,7 @@ class UserTest extends TestCase
     {
         $this->$user->givePermissionTo('users.show');
 
+        /** @var User $otherUser */
         $otherUser = User::factory()->create();
         $otherUser->created_at = Carbon::now()->addHour();
         $otherUser->save();
@@ -173,10 +198,12 @@ class UserTest extends TestCase
     {
         $this->$user->givePermissionTo('users.show');
 
+        /** @var User $firstUser */
         $firstUser = User::factory()->create();
         $firstUser->created_at = Carbon::now()->addHour();
         $firstUser->save();
 
+        /** @var User $secondUser */
         $secondUser = User::factory()->create();
         $secondUser->created_at = Carbon::now()->addHour();
         $secondUser->save();
@@ -198,6 +225,7 @@ class UserTest extends TestCase
     {
         $this->$user->givePermissionTo('users.show');
 
+        /** @var User $otherUser */
         $otherUser = User::factory([
             'is_tfa_active' => false,
         ])->create();
@@ -207,7 +235,7 @@ class UserTest extends TestCase
             ->getJson('/users?name=' . $otherUser->name)
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonPath('data.0', [
+            ->assertJsonFragment([
                 'id' => $otherUser->getKey(),
                 'email' => $otherUser->email,
                 'name' => $otherUser->name,
@@ -215,6 +243,12 @@ class UserTest extends TestCase
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
                 'consents' => [],
+                'birthday_date' => null,
+                'phone' => null,
+                'phone_country' => null,
+                'phone_number' => null,
+                'created_at' => $otherUser->created_at,
+                'metadata_personal' => [],
                 'metadata' => [],
             ]);
     }
@@ -232,10 +266,10 @@ class UserTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->getJson('/users?email=' . $otherUser->email)
+            ->getJson("/users?email={$otherUser->email}")
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonPath('data.0', [
+            ->assertJsonFragment([
                 'id' => $otherUser->getKey(),
                 'email' => $otherUser->email,
                 'name' => $otherUser->name,
@@ -243,6 +277,12 @@ class UserTest extends TestCase
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
                 'consents' => [],
+                'birthday_date' => null,
+                'phone' => null,
+                'phone_country' => null,
+                'phone_number' => null,
+                'created_at' => $otherUser->created_at,
+                'metadata_personal' => [],
                 'metadata' => [],
             ]);
     }
@@ -262,7 +302,7 @@ class UserTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonPath('data.0', [
+            ->assertJsonFragment([
                 'id' => $otherUser->getKey(),
                 'email' => $otherUser->email,
                 'name' => $otherUser->name,
@@ -270,6 +310,12 @@ class UserTest extends TestCase
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
                 'consents' => [],
+                'birthday_date' => null,
+                'phone' => null,
+                'phone_country' => null,
+                'phone_number' => null,
+                'created_at' => $otherUser->created_at,
+                'metadata_personal' => [],
                 'metadata' => [],
             ]);
     }
@@ -289,7 +335,7 @@ class UserTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonPath('data.0', [
+            ->assertJsonFragment([
                 'id' => $otherUser->getKey(),
                 'email' => $otherUser->email,
                 'name' => $otherUser->name,
@@ -297,8 +343,137 @@ class UserTest extends TestCase
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
                 'consents' => [],
+                'birthday_date' => null,
+                'phone' => null,
+                'phone_country' => null,
+                'phone_number' => null,
+                'created_at' => $otherUser->created_at,
+                'metadata_personal' => [],
                 'metadata' => [],
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexConsentNameSearch($user): void
+    {
+        $this->$user->givePermissionTo('users.show');
+
+        /** @var User $otherUser */
+        $otherUser = User::factory([
+            'is_tfa_active' => false,
+        ])->create();
+
+        $consent = Consent::factory()->create(['required' => false]);
+
+        $otherUser->consents()->save($consent, ['value' => true]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/users?consent_name=' . $consent->name)
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $otherUser->getKey(),
+                'email' => $otherUser->email,
+                'name' => $otherUser->name,
+                'avatar' => $otherUser->avatar,
+                'roles' => [],
+                'is_tfa_active' => $otherUser->is_tfa_active,
+                'consents' => [
+                    [
+                        'id' => $consent->getKey(),
+                        'name' => $consent->name,
+                        'description_html' => $consent->description_html,
+                        'required' => $consent->required,
+                        'value' => true,
+                    ],
+                ],
+                'birthday_date' => null,
+                'phone' => null,
+                'phone_country' => null,
+                'phone_number' => null,
+                'created_at' => $otherUser->created_at,
+                'metadata_personal' => [],
+                'metadata' => [],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexConsentIdSearch($user): void
+    {
+        $this->$user->givePermissionTo('users.show');
+
+        /** @var User $otherUser */
+        $otherUser = User::factory([
+            'is_tfa_active' => false,
+        ])->create();
+
+        $consent = Consent::factory()->create(['required' => false]);
+
+        $otherUser->consents()->save($consent, ['value' => true]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/users?consent_id=' . $consent->getKey())
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $otherUser->getKey(),
+                'email' => $otherUser->email,
+                'name' => $otherUser->name,
+                'avatar' => $otherUser->avatar,
+                'roles' => [],
+                'is_tfa_active' => $otherUser->is_tfa_active,
+                'consents' => [
+                    [
+                        'id' => $consent->getKey(),
+                        'name' => $consent->name,
+                        'description_html' => $consent->description_html,
+                        'required' => $consent->required,
+                        'value' => true,
+                    ],
+                ],
+                'birthday_date' => null,
+                'phone' => null,
+                'phone_country' => null,
+                'phone_number' => null,
+                'created_at' => $otherUser->created_at,
+                'metadata_personal' => [],
+                'metadata' => [],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexRolesSearchArray($user): void
+    {
+        $this->$user->givePermissionTo('users.show');
+
+        $role1 = Role::factory()->create();
+        $role2 = Role::factory()->create();
+
+        /** @var User $firstUser */
+        $firstUser = User::factory()->create();
+        $firstUser->assignRole($role1);
+
+        /** @var User $secondUser */
+        $secondUser = User::factory()->create();
+        $secondUser->assignRole($role2);
+
+        User::factory()->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/users', ['roles' => [$role1->getKey(), $role2->getKey()]])
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment(['id' => $firstUser->getKey()])
+            ->assertJsonFragment(['id' => $secondUser->getKey()]);
     }
 
     public function testShowUnauthorized(): void
@@ -317,7 +492,17 @@ class UserTest extends TestCase
         $response = $this->actingAs($this->$user)->getJson('/users/id:' . $this->user->getKey());
         $response
             ->assertOk()
-            ->assertJson(['data' => $this->expected + ['permissions' => []]]);
+            ->assertJson([
+                'data' => $this->expected + [
+                    'permissions' => [],
+                    'preferences' => [
+                        'successful_login_attempt_alert' => false,
+                        'failed_login_attempt_alert' => true,
+                        'new_localization_login_alert' => true,
+                        'recovery_code_changed_alert' => true,
+                    ],
+                ],
+            ]);
     }
 
     /**
@@ -386,12 +571,21 @@ class UserTest extends TestCase
             'password' => $this->validPassword,
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/users', $data);
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('POST', '/users', $data);
+
         $response
             ->assertCreated()
             ->assertJsonPath('data.email', $data['email'])
             ->assertJsonPath('data.name', $data['name'])
-            ->assertJsonFragment(['name' => 'Authenticated']);
+            ->assertJsonMissing(['name' => 'Authenticated'])
+            ->assertJsonFragment([
+                'successful_login_attempt_alert' => false,
+                'failed_login_attempt_alert' => true,
+                'new_localization_login_alert' => true,
+                'recovery_code_changed_alert' => true,
+            ]);
 
         $userId = $response->getData()->data->id;
 
@@ -405,7 +599,96 @@ class UserTest extends TestCase
         $this->assertTrue(Hash::check($data['password'], $user->password));
         $this->assertTrue($user->hasAllRoles([$this->authenticated]));
 
+        $this->assertDatabaseHas('user_preferences', [
+            'id' => $user->preferences_id,
+            'successful_login_attempt_alert' => false,
+            'failed_login_attempt_alert' => true,
+            'new_localization_login_alert' => true,
+            'recovery_code_changed_alert' => true,
+        ]);
+
         Event::assertDispatched(UserCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadata($user): void
+    {
+        $this->$user->givePermissionTo('users.add');
+
+        Event::fake([UserCreated::class]);
+
+        $data = User::factory()->raw() + [
+            'password' => $this->validPassword,
+            'metadata' => [
+                'attributeMeta' => 'attributeValue',
+            ],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/users', $data)
+            ->assertCreated()
+            ->assertJsonFragment([
+                'metadata' => [
+                    'attributeMeta' => 'attributeValue',
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadataPrivate($user): void
+    {
+        $this->$user->givePermissionTo(['users.add', 'users.show_metadata_private']);
+
+        Event::fake([UserCreated::class]);
+
+        $data = User::factory()->raw() + [
+            'password' => $this->validPassword,
+            'metadata_private' => [
+                'attributeMetaPriv' => 'attributeValue',
+            ],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/users', $data)
+            ->assertCreated()
+            ->assertJsonFragment([
+                'metadata_private' => [
+                    'attributeMetaPriv' => 'attributeValue',
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadataPersonal($user): void
+    {
+        $this->$user->givePermissionTo('users.add');
+
+        Event::fake([UserCreated::class]);
+
+        $data = User::factory()->raw() + [
+            'password' => $this->validPassword,
+            'metadata_personal' => [
+                'attributeMeta' => 'attributeValue',
+            ],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/users', $data)
+            ->assertCreated()
+            ->assertJsonFragment([
+                'metadata_personal' => [
+                    'attributeMeta' => 'attributeValue',
+                ],
+            ]);
     }
 
     /**
@@ -614,6 +897,7 @@ class UserTest extends TestCase
                 'description' => $role1->description,
                 'assignable' => true,
                 'deletable' => true,
+                'users_count' => null,
                 'metadata' => [],
             ],
             ])->assertJsonFragment([[
@@ -622,6 +906,7 @@ class UserTest extends TestCase
                 'description' => $role2->description,
                 'assignable' => true,
                 'deletable' => true,
+                'users_count' => null,
                 'metadata' => [],
             ],
             ])->assertJsonFragment([[
@@ -630,14 +915,7 @@ class UserTest extends TestCase
                 'description' => $role3->description,
                 'assignable' => true,
                 'deletable' => true,
-                'metadata' => [],
-            ],
-            ])->assertJsonFragment([[
-                'id' => $this->authenticated->getKey(),
-                'name' => $this->authenticated->name,
-                'description' => $this->authenticated->description,
-                'assignable' => false,
-                'deletable' => false,
+                'users_count' => null,
                 'metadata' => [],
             ],
             ])->assertJsonPath('data.permissions', $permissions);
@@ -681,12 +959,47 @@ class UserTest extends TestCase
             'roles' => [
                 match ($role) {
                     RoleType::AUTHENTICATED => $this->authenticated->getKey(),
-                        RoleType::UNAUTHENTICATED => $this->unauthenticated->getKey(),
+                    RoleType::UNAUTHENTICATED => $this->unauthenticated->getKey(),
                 },
             ],
         ];
 
         $this->actingAs($this->$user)->postJson('/users', $data)->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithPhone($user): void
+    {
+        $this->$user->givePermissionTo('users.add');
+
+        Event::fake([UserCreated::class]);
+
+        $data = User::factory()->raw()
+            + [
+                'password' => $this->validPassword,
+                'birthday_date' => '1990-01-01',
+                'phone' => '+48123456789',
+            ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/users', $data)
+            ->assertCreated()
+            ->assertJsonFragment([
+                'birthday_date' => '1990-01-01',
+                'phone' => '+48123456789',
+                'phone_country' => 'PL',
+                'phone_number' => '12 345 67 89',
+            ]);
+
+        $this->assertDatabaseHas('users', [
+            'email' => $data['email'],
+            'birthday_date' => '1990-01-01',
+            'phone_country' => 'PL',
+            'phone_number' => '12 345 67 89',
+        ]);
     }
 
     public function testUpdateUnauthorized(): void
@@ -713,22 +1026,59 @@ class UserTest extends TestCase
 
         $response = $this->actingAs($this->$user)->patchJson(
             '/users/id:' . $otherUser->getKey(),
-            $data,
+            $data + [
+                'birthday_date' => '1990-01-01',
+                'phone' => '+48123456789',
+            ],
         );
 
         $response
             ->assertOk()
             ->assertJsonPath('data.id', $otherUser->getKey())
             ->assertJsonPath('data.email', $data['email'])
-            ->assertJsonPath('data.name', $data['name']);
+            ->assertJsonPath('data.name', $data['name'])
+            ->assertJsonPath('data.birthday_date', '1990-01-01')
+            ->assertJsonPath('data.phone', '+48123456789')
+            ->assertJsonPath('data.phone_country', 'PL')
+            ->assertJsonPath('data.phone_number', '12 345 67 89');
 
         $this->assertDatabaseHas('users', [
             'id' => $otherUser->getKey(),
             'name' => $data['name'],
             'email' => $data['email'],
+            'birthday_date' => '1990-01-01',
+            'phone_country' => 'PL',
+            'phone_number' => '12 345 67 89',
         ]);
 
         Event::assertDispatched(UserUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateInvalidPhone($user): void
+    {
+        $this->$user->givePermissionTo('users.edit');
+
+        Event::fake([UserUpdated::class]);
+
+        $otherUser = User::factory()->create();
+
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/users/id:' . $otherUser->getKey(),
+            [
+                'phone' => '123456789',
+            ],
+        );
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::PHONE,
+            ]);
+
+        Event::assertNotDispatched(UserUpdated::class);
     }
 
     /**
@@ -886,6 +1236,7 @@ class UserTest extends TestCase
                 'description' => $role1->description,
                 'assignable' => true,
                 'deletable' => true,
+                'users_count' => null,
                 'metadata' => [],
             ],
             ])->assertJsonFragment([[
@@ -894,6 +1245,7 @@ class UserTest extends TestCase
                 'description' => $role2->description,
                 'assignable' => true,
                 'deletable' => true,
+                'users_count' => null,
                 'metadata' => [],
             ],
             ])->assertJsonFragment([[
@@ -902,14 +1254,7 @@ class UserTest extends TestCase
                 'description' => $role3->description,
                 'assignable' => true,
                 'deletable' => true,
-                'metadata' => [],
-            ],
-            ])->assertJsonFragment([[
-                'id' => $this->authenticated->getKey(),
-                'name' => $this->authenticated->name,
-                'description' => $this->authenticated->description,
-                'assignable' => false,
-                'deletable' => false,
+                'users_count' => null,
                 'metadata' => [],
             ],
             ])->assertJsonPath('data.permissions', $permissions);
@@ -1022,16 +1367,6 @@ class UserTest extends TestCase
         );
         $response
             ->assertOk()
-            ->assertJsonPath('data.roles', [
-                0 => [
-                    'id' => $this->authenticated->getKey(),
-                    'name' => $this->authenticated->name,
-                    'description' => $this->authenticated->description,
-                    'assignable' => false,
-                    'deletable' => false,
-                    'metadata' => [],
-                ],
-            ])
             ->assertJsonPath('data.permissions', $this->authenticatedPermissions->toArray());
         $otherUser->refresh();
 

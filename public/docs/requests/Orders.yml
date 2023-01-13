@@ -2,6 +2,11 @@ OrderCreate:
   content:
     application/json:
       schema:
+        type: object
+        required:
+          - email
+          - items
+          - billing_address
         properties:
           email:
             type: string
@@ -10,6 +15,9 @@ OrderCreate:
             type: string
             example: 'asap plz'
           shipping_method_id:
+            type: string
+            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+          digital_shipping_method_id:
             type: string
             example: 026bc5f6-8373-4aeb-972e-e78d72a67121
           items:
@@ -31,21 +39,26 @@ OrderCreate:
                       example: 'HE + YA'
                   type: object
               type: object
-          delivery_address:
+          shipping_place:
             $ref: './../schemas/Addresses.yml#/Address'
-          invoice_address:
+          billing_address:
             $ref: './../schemas/Addresses.yml#/Address'
           coupons:
             type: array
             items:
               type: string
               example: 8JVA0XRT
+          invoice_requested:
+            type: boolean
           sale_ids:
             type: array
             items:
               type: string
               example: '16277176-d819-417b-90af-8d8534995786'
-        type: object
+          metadata:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+          metadata_private:
+            $ref: './../schemas/Metadata.yml#/Metadata'
 
 OrderUpdate:
   content:
@@ -58,8 +71,19 @@ OrderUpdate:
           comment:
             type: string
             example: 'asap plz'
-          delivery_address:
+          shipping_number:
+            type: string
+            example: '630552359128340015809770'
+          shipping_method_id:
+            type: string
+            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+          digital_shipping_method_id:
+            type: string
+            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+          shipping_place:
             $ref: './../schemas/Addresses.yml#/Address'
-          invoice_address:
+          billing_address:
             $ref: './../schemas/Addresses.yml#/Address'
+          invoice_requested:
+            type: boolean
         type: object

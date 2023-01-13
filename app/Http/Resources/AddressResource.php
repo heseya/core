@@ -16,7 +16,7 @@ class AddressResource extends Resource
             'zip' => $this->resource->zip,
             'city' => $this->resource->city,
             'country' => $this->resource->country,
-            'country_name' => $this->resource->countryModel?->name,
+            'country_name' => $this->resource->country_name,
             'phone' => $this->resource->phone,
         ];
     }

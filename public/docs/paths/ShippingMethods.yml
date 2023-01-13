@@ -11,6 +11,7 @@ ShippingMethods:
           type: string
           example: DE
       - name: cart_value
+        description: 'cart total you want to display shipping price for'
         in: query
         required: false
         schema:
@@ -32,8 +33,6 @@ ShippingMethods:
         required: false
         schema:
           $ref: '../schemas/Metadata.yml#/MetadataQuery'
-    requestBody:
-      $ref: './../requests/ShippingMethods.yml#/ShippingMethodIndex'
     responses:
       200:
         description: Success

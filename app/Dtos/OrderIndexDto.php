@@ -2,17 +2,19 @@
 
 namespace App\Dtos;
 
+use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\OrderIndexRequest;
 use Heseya\Dto\Dto;
+use Illuminate\Foundation\Http\FormRequest;
 
-class OrderIndexDto extends Dto
+class OrderIndexDto extends Dto implements InstantiateFromRequest
 {
     private string|null $search;
     private string|null $sort;
     private string|null $status_id;
     private string|null $shipping_method_id;
 
-    public static function instantiateFromRequest(OrderIndexRequest $request): self
+    public static function instantiateFromRequest(FormRequest|OrderIndexRequest $request): self
     {
         return new self(
             search: $request->input('search'),

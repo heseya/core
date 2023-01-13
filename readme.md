@@ -25,7 +25,7 @@ If port is taken you can change DOCKER_PORT in .env to your liking
 Easy start only works with default dirname `store-api` for now.
 
 ## Git hooks
-Project uses git pre-commit hook to automaticly generate IDE Helper docs and fix style issues
+Project uses git pre-commit hook to automatically generate IDE Helper docs and fix style issues
 
 >### Attention
 >Hook scripts assume the project catalogue uses the default repository name: store-api.
@@ -47,7 +47,7 @@ When writing the code for this project, follow rules from [Laravel best practice
 
 You can test your code with [PHP Insights](https://phpinsights.com/).
 ```
-php artisan insights
+composer style
 ```
 
 Additional:
@@ -81,7 +81,6 @@ This project uses [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.htm
 
 - [ ] Check if migrations work,
 - [ ] Check if all tests pass,
-- [ ] Write down all changes to `changelog.md`,
 - [ ] Change version in `config/app.php`,
 - [ ] Change version in `app/Http/Controllers/Controller.php` (Swagger),
 - [ ] Create a version tag on the master branch.

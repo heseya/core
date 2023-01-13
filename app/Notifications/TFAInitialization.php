@@ -17,12 +17,12 @@ class TFAInitialization extends Notification
         $this->code = $code;
     }
 
-    public function via($notifiable): array
+    public function via(mixed $notifiable): array
     {
         return ['mail'];
     }
 
-    public function toMail($notifiable): MailMessage
+    public function toMail(mixed $notifiable): MailMessage
     {
         return (new MailMessage())
             ->subject('2FA confirmation')

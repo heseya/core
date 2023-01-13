@@ -24,10 +24,21 @@ trait BooleanRules
         $this->merge($data);
     }
 
-    private function toBooleanArrayInPath(string $fieldPath, string $fieldAfter, $data): array
+    private function toBoolean(mixed $booleable): bool|int
+    {
+        if ($booleable === '' || $booleable === null) {
+            return true;
+        }
+
+        $result = filter_var($booleable, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
+        return $result ?? -1;
+    }
+
+    private function toBooleanArrayInPath(string $fieldPath, string $fieldAfter, array $data): array
     {
         // Check if request array has given field
-        if (Arr::has($data, $fieldPath)) {
+        if (Arr::has($data, $fieldPath) && Arr::get($data, $fieldPath) !== null) {
             if (Str::contains($fieldAfter, '*')) {
                 $before = Str::before($fieldAfter, '.*');
                 $after = Str::after($fieldAfter, $before);
@@ -65,11 +76,5 @@ trait BooleanRules
             }
         }
         return $data;
-    }
-
-    private function toBoolean(mixed $booleable): bool|int
-    {
-        $result = filter_var($booleable, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-        return $result ?? -1;
     }
 }

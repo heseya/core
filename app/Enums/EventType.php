@@ -11,6 +11,7 @@ final class EventType extends Enum implements LocalizedEnum
     public const ORDER_CREATED = 'OrderCreated';
     public const ORDER_UPDATED = 'OrderUpdated';
     public const ORDER_UPDATED_STATUS = 'OrderUpdatedStatus';
+    public const ORDER_REQUESTED_SHIPPING = 'OrderRequestedShipping';
     public const PRODUCT_CREATED = 'ProductCreated';
     public const PRODUCT_UPDATED = 'ProductUpdated';
     public const PRODUCT_DELETED = 'ProductDeleted';
@@ -33,6 +34,28 @@ final class EventType extends Enum implements LocalizedEnum
     public const COUPON_CREATED = 'CouponCreated';
     public const COUPON_UPDATED = 'CouponUpdated';
     public const COUPON_DELETED = 'CouponDeleted';
+    public const TFA_INIT = 'TfaInit';
+    public const TFA_SECURITY_CODE = 'TfaSecurityCode';
+    public const TFA_RECOVERY_CODES_CHANGED = 'TfaRecoveryCodesChanged';
+    public const PASSWORD_RESET = 'PasswordReset';
+    public const SUCCESSFUL_LOGIN_ATTEMPT = 'SuccessfulLoginAttempt';
+    public const NEW_LOCALIZATION_LOGIN_ATTEMPT = 'NewLocalizationLoginAttempt';
+    public const FAILED_LOGIN_ATTEMPT = 'FailedLoginAttempt';
+    public const ADD_ORDER_DOCUMENT = 'AddOrderDocument';
+    public const REMOVE_ORDER_DOCUMENT = 'RemoveOrderDocument';
+    public const ORDER_UPDATED_PAID = 'OrderUpdatedPaid';
+    public const ORDER_UPDATED_SHIPPING_NUMBER = 'OrderUpdatedShippingNumber';
+    public const SEND_ORDER_URLS = 'SendOrderUrls';
+
+    public static array $securedEvents = [
+        self::TFA_INIT,
+        self::TFA_SECURITY_CODE,
+        self::TFA_RECOVERY_CODES_CHANGED,
+        self::PASSWORD_RESET,
+        self::SUCCESSFUL_LOGIN_ATTEMPT,
+        self::NEW_LOCALIZATION_LOGIN_ATTEMPT,
+        self::FAILED_LOGIN_ATTEMPT,
+    ];
 
     public static function getEventList(): array
     {
@@ -51,7 +74,7 @@ final class EventType extends Enum implements LocalizedEnum
         return $result;
     }
 
-    private static function getData(Enum $enum, $permissions, $hidden_permissions): array
+    private static function getData(Enum $enum, mixed $permissions, mixed $hidden_permissions): array
     {
         return [
             'key' => $enum->value,
@@ -59,6 +82,7 @@ final class EventType extends Enum implements LocalizedEnum
             'description' => $enum->description,
             'required_permissions' => $permissions,
             'required_hidden_permissions' => $hidden_permissions,
+            'encrypted' => in_array($enum->value, self::$securedEvents),
         ];
     }
 }

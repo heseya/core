@@ -1,10 +1,21 @@
 <?php
 
+use App\Http\Controllers\FavouriteController;
 use App\Http\Controllers\MetadataController;
 use App\Http\Controllers\ProductSetController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('product-sets')->group(function (): void {
+    Route::prefix('favourites')
+        ->middleware('can:profile.favourites_manage')
+        ->group(function (): void {
+            Route::get(null, [FavouriteController::class, 'index']);
+            Route::get('id:{product_set:id}', [FavouriteController::class, 'show']);
+            Route::post(null, [FavouriteController::class, 'store']);
+            Route::delete('id:{product_set:id}', [FavouriteController::class, 'destroy']);
+            Route::delete(null, [FavouriteController::class, 'destroyAll']);
+        });
+
     Route::get(null, [ProductSetController::class, 'index'])
         ->middleware('permission:product_sets.show|products.add|products.edit');
     Route::get('id:{product_set:id}', [ProductSetController::class, 'show'])
@@ -32,5 +43,7 @@ Route::prefix('product-sets')->group(function (): void {
         ->middleware('can:product_sets.show_details')
         ->whereUuid('product_set');
     Route::post('id:{product_set:id}/products', [ProductSetController::class, 'attach'])
+        ->middleware('can:product_sets.edit');
+    Route::post('id:{product_set:id}/products/reorder', [ProductSetController::class, 'reorderProducts'])
         ->middleware('can:product_sets.edit');
 });

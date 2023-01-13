@@ -25,6 +25,11 @@ Orders:
         description: 'Shipping Method UUID'
         schema:
           type: string
+      - name: digital_shipping_method_id
+        in: query
+        description: 'Digital Shipping Method UUID'
+        schema:
+          type: string
       - name: paid
         in: query
         description: 'Is order paid'
@@ -68,7 +73,7 @@ Orders:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Orders.yml#/OrderList'
+                    $ref: './../schemas/Orders.yml#/Order'
               type: object
     security:
       - BearerAuth: [ ]
@@ -162,40 +167,6 @@ OrdersCode:
                   $ref: './../schemas/Orders.yml#/OrderSummary'
               type: object
 
-OrdersVerify:
-  post:
-    tags:
-      - Orders
-    summary: 'verify cart'
-    requestBody:
-      content:
-        application/json:
-          schema:
-            properties:
-              items:
-                type: array
-                items:
-                  properties:
-                    product_id:
-                      type: string
-                      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-                    quantity:
-                      type: number
-                    schemas:
-                      properties:
-                        119c0a63-1ea1-4769-8d5f-169f68de5598:
-                          type: string
-                          example: 123459fb-39a4-4dd0-8240-14793aa1f73b
-                        02b97693-857c-4fb9-9999-47400ac5fbef:
-                          type: string
-                          example: 'HE + YA'
-                      type: object
-                  type: object
-            type: object
-    responses:
-      204:
-        description: Success
-
 OrdersStatus:
   patch:
     tags:
@@ -217,6 +188,33 @@ OrdersStatus:
                 type: integer
             type: object
     responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]
+
+OrdersShippingLists:
+  post:
+    tags:
+      - Orders
+    summary: 'create shipping list webhook'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              package_template_id:
+                type: string
+                example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+            type: object
+    responses:
       200:
         description: Success
         content:
@@ -229,7 +227,7 @@ OrdersStatus:
                     $ref: './../schemas/Orders.yml#/Order'
               type: object
     security:
-      - BearerAuth: [ ]
+      - oauth: [ ]
 
 OrdersMy:
   get:
@@ -285,18 +283,18 @@ OrdersMy:
     security:
       - BearerAuth: [ ]
 
-OrdersMyId:
+OrdersMySingle:
   get:
     tags:
       - Orders
     summary: 'user order view'
     parameters:
-      - name: id
+      - name: code
         in: path
         required: true
         schema:
           type: string
-          example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
+          example: 5B32FD
     responses:
       200:
         description: Success
@@ -502,3 +500,72 @@ CartProcess:
                 data:
                   $ref: './../schemas/Cart.yml#/Cart'
               type: object
+
+OrderProductUrls:
+  patch:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
+      - name: order_product_id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+    tags:
+      - Orders
+    summary: 'Add links to order products'
+    requestBody:
+      $ref: './../requests/OrderProducts.yml#/OrderProductUrls'
+    responses:
+      204:
+        description: No content
+
+MyOrderProducts:
+  get:
+    tags:
+      - Orders
+    parameters:
+      - name: shipping_digital
+        in: query
+        required: false
+        schema:
+          type: boolean
+          example: true
+    summary: 'User ordered products list'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Orders.yml#/OrderProductPublic'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+OrdersSendUrls:
+  post:
+    tags:
+      - Orders
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+    summary:  'Send email with order products urls'
+    responses:
+      200:
+        description: Success
+    security:
+      - BearerAuth: [ ]

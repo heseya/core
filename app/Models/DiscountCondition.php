@@ -22,7 +22,7 @@ class DiscountCondition extends Model
         'value' => 'array',
     ];
 
-    public function getValueAttribute($value): array
+    public function getValueAttribute(string $value): array
     {
         $value = json_decode($value, true);
 
@@ -36,7 +36,7 @@ class DiscountCondition extends Model
         return $value;
     }
 
-    public function setValueAttribute($value): void
+    public function setValueAttribute(mixed $value): void
     {
         if ($this->type->is(ConditionType::WEEKDAY_IN)) {
             $tmp = '';

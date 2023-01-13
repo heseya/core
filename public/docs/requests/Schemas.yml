@@ -1,0 +1,14 @@
+SchemaStore:
+  content:
+    application/json:
+      schema:
+        allOf:
+          - $ref: './../schemas/Schemas.yml#/SchemaRequest'
+
+SchemaUpdate:
+  content:
+    application/json:
+      schema:
+        type: object
+        allOf:
+          - $ref: './../schemas/Schemas.yml#/SchemaRequest'

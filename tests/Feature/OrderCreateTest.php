@@ -5,9 +5,10 @@ namespace Tests\Feature;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
-use App\Enums\IssuerType;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
 use App\Enums\SchemaType;
+use App\Enums\ShippingType;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Listeners\WebHookEventListener;
@@ -24,10 +25,11 @@ use App\Models\ProductSet;
 use App\Models\Role;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
+use App\Models\Status;
 use App\Models\WebHook;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
@@ -52,7 +54,10 @@ class OrderCreateTest extends TestCase
 
         $this->email = $this->faker->freeEmail;
 
-        $this->shippingMethod = ShippingMethod::factory()->create(['public' => true]);
+        $this->shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
         $lowRange = PriceRange::create(['start' => 0]);
         $lowRange->prices()->create(['value' => 8.11]);
 
@@ -75,7 +80,8 @@ class OrderCreateTest extends TestCase
         $response = $this->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -100,6 +106,7 @@ class OrderCreateTest extends TestCase
 
         $this->product->update([
             'price' => 10,
+            'vat_rate' => 23,
         ]);
 
         $productQuantity = 20;
@@ -107,7 +114,8 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -133,6 +141,7 @@ class OrderCreateTest extends TestCase
             'order_id' => $order->id,
             'product_id' => $this->product->getKey(),
             'quantity' => 20,
+            'vat_rate' => 23,
         ]);
 
         Event::assertDispatched(OrderCreated::class);
@@ -151,6 +160,86 @@ class OrderCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateSimpleOrderWithMetadata($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $this->product->update([
+            'price' => 10,
+        ]);
+
+        $productQuantity = 20;
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/orders', [
+                'email' => $this->email,
+                'shipping_method_id' => $this->shippingMethod->getKey(),
+                'billing_address' => $this->address->toArray(),
+                'shipping_place' => $this->address->toArray(),
+                'items' => [
+                    [
+                        'product_id' => $this->product->getKey(),
+                        'quantity' => $productQuantity,
+                    ],
+                ],
+                'metadata' => [
+                    'attributeMeta' => 'attributeValue',
+                ],
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'metadata' => [
+                    'attributeMeta' => 'attributeValue',
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateSimpleOrderWithMetadataPrivate($user): void
+    {
+        $this->$user->givePermissionTo(['orders.add', 'orders.show_metadata_private']);
+
+        Event::fake([OrderCreated::class]);
+
+        $this->product->update([
+            'price' => 10,
+        ]);
+
+        $productQuantity = 20;
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/orders', [
+                'email' => $this->email,
+                'shipping_method_id' => $this->shippingMethod->getKey(),
+                'billing_address' => $this->address->toArray(),
+                'shipping_place' => $this->address->toArray(),
+                'items' => [
+                    [
+                        'product_id' => $this->product->getKey(),
+                        'quantity' => $productQuantity,
+                    ],
+                ],
+                'metadata_private' => [
+                    'attributeMetaPriv' => 'attributeValue',
+                ],
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'metadata_private' => [
+                    'attributeMetaPriv' => 'attributeValue',
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateSimpleOrderPaid($user): void
     {
         $this->$user->givePermissionTo('orders.add');
@@ -163,7 +252,10 @@ class OrderCreateTest extends TestCase
 
         $productQuantity = 1;
 
-        $freeShipping = ShippingMethod::factory()->create(['public' => true]);
+        $freeShipping = ShippingMethod::factory()->create([
+            'public' => true,
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
         $lowRange = PriceRange::create(['start' => 0]);
         $lowRange->prices()->create(['value' => 0]);
 
@@ -172,7 +264,8 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $freeShipping->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -230,7 +323,8 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -278,7 +372,8 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->user)->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -290,6 +385,7 @@ class OrderCreateTest extends TestCase
         $order = Order::find($response->getData()->data->id)->with('shippingMethod')->first();
 
         Event::assertDispatched(OrderCreated::class);
+
         return [$order, new OrderCreated($order)];
     }
 
@@ -303,7 +399,8 @@ class OrderCreateTest extends TestCase
         $response = $this->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -316,56 +413,6 @@ class OrderCreateTest extends TestCase
 
         Event::assertDispatched(OrderCreated::class);
         return [$order, new OrderCreated($order)];
-    }
-
-    /**
-     * @dataProvider authProvider
-     *
-     * @depends testCreateSimpleOrderWithWebHookEvent
-     * @depends testCreateSimpleOrderUnauthenticatedWithWebHookEvent
-     */
-    public function testOrderCreatedWebHookDispatch($user, $payload, $payload2): void
-    {
-        $webHook = WebHook::factory()->create([
-            'events' => [
-                'OrderCreated',
-            ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
-            'with_issuer' => false,
-            'with_hidden' => false,
-        ]);
-
-        Bus::fake();
-
-        [$order, $event] = $payload;
-        [$orderUnauthenticated, $eventUnauthenticated] = $payload2;
-        $listener = new WebHookEventListener();
-
-        $listener->handle($event);
-
-        // Zalogowany użytkownik
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $order) {
-            $payload = $job->payload;
-            return $job->webhookUrl === $webHook->url
-                && isset($job->headers['Signature'])
-                && $payload['data']['id'] === $order->getKey()
-                && $payload['data_type'] === 'Order'
-                && $payload['event'] === 'OrderCreated';
-        });
-
-        $listener->handle($eventUnauthenticated);
-
-        // Niezalogowany użytkownik
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $orderUnauthenticated) {
-            $payload = $job->payload;
-            return $job->webhookUrl === $webHook->url
-                && isset($job->headers['Signature'])
-                && $payload['data']['id'] === $orderUnauthenticated->getKey()
-                && $payload['data_type'] === 'Order'
-                && $payload['event'] === 'OrderCreated'
-                && $payload['issuer_type'] === IssuerType::UNAUTHENTICATED;
-        });
     }
 
     /**
@@ -393,7 +440,8 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -412,12 +460,17 @@ class OrderCreateTest extends TestCase
             $schema->getKey() => 'Test',
         ]);
 
+        $shippingPrice = $this->shippingMethod->getPrice(
+            ($this->product->price + $schemaPrice) * $productQuantity,
+        );
+
         $this->assertDatabaseHas('orders', [
             'id' => $order->getKey(),
             'email' => $this->email,
             'shipping_price' => $this->shippingMethod->getPrice(
                 ($this->product->price + $schemaPrice) * $productQuantity,
             ),
+            'summary' => ($this->product->price + $schemaPrice) * $productQuantity + $shippingPrice,
         ]);
         $this->assertDatabaseHas('addresses', $this->address->toArray());
         $this->assertDatabaseHas('order_products', [
@@ -488,7 +541,8 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -572,7 +626,8 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -638,7 +693,8 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -679,7 +735,9 @@ class OrderCreateTest extends TestCase
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
         ]);
-        $shippingMethod = ShippingMethod::factory()->create();
+        $shippingMethod = ShippingMethod::factory()->create([
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
         $discount->products()->attach($this->product->getKey());
 
         $conditionGroup = ConditionGroup::create();
@@ -697,7 +755,8 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->json('POST', '/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -728,13 +787,16 @@ class OrderCreateTest extends TestCase
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
         ]);
-        $shippingMethod = ShippingMethod::factory()->create();
+        $shippingMethod = ShippingMethod::factory()->create([
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
         $discount->products()->attach($this->product->getKey());
 
         $response = $this->actingAs($this->$user)->json('POST', '/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -804,7 +866,10 @@ class OrderCreateTest extends TestCase
 
         $discount->products()->attach($product->getKey());
 
-        $shippingMethod = ShippingMethod::factory()->create(['public' => true]);
+        $shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
         $lowRange = PriceRange::create(['start' => 0]);
         $lowRange->prices()->create(['value' => 10]);
 
@@ -813,7 +878,8 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->json('POST', '/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $product->getKey(),
@@ -875,7 +941,7 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->json('POST', '/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
-            'delivery_address' => [
+            'shipping_place' => [
                 'name' => 'Wojtek Testowy',
                 'phone' => '+48123321123',
                 'address' => 'Gdańska 89/1',
@@ -887,6 +953,40 @@ class OrderCreateTest extends TestCase
         ]);
 
         $response->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCantCreateOrderWithoutBillingAddress($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $this->product->update([
+            'price' => 10,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson(
+                '/orders',
+                [
+                    'email' => $this->email,
+                    'shipping_method_id' => $this->shippingMethod->getKey(),
+                    'shipping_address' => $this->address->toArray(),
+                    'items' => [
+                        [
+                            'product_id' => $this->product->getKey(),
+                            'quantity' => 20,
+                        ],
+                    ],
+                ]
+            )
+            ->assertUnprocessable();
+
+        Event::assertNotDispatched(OrderCreated::class);
     }
 
     /**
@@ -922,7 +1022,8 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->json('POST', '/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -970,6 +1071,330 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->json('POST', '/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
+            'shipping_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                ],
+            ],
+            'coupons' => [
+                $discount->code,
+            ],
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderWithShippingMethodTypeAddress($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $schema = Schema::factory()->create([
+            'type' => 'string',
+            'price' => 10,
+            'hidden' => false,
+        ]);
+
+        $this->product->schemas()->sync([$schema->getKey()]);
+        $this->product->update([
+            'price' => 100,
+        ]);
+
+        $productQuantity = 2;
+
+        $shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'invoice_requested' => true,
+            'shipping_place' => $this->address,
+            'billing_address' => Address::factory()->create(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                    'schemas' => [
+                        $schema->getKey() => 'Test',
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertCreated();
+        $order = Order::find($response->getData()->data->id);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->getKey(),
+            'invoice_requested' => true,
+            'shipping_place' => null,
+            'shipping_address_id' => $order->shippingAddress->getKey(),
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
+
+        Event::assertDispatched(OrderCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderWithShippingMethodTypePoint($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $schema = Schema::factory()->create([
+            'type' => 'string',
+            'price' => 10,
+            'hidden' => false,
+        ]);
+
+        $this->product->schemas()->sync([$schema->getKey()]);
+        $this->product->update([
+            'price' => 100,
+        ]);
+
+        $productQuantity = 2;
+
+        $pointAddress = Address::factory()->create();
+
+        $shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'shipping_type' => ShippingType::POINT,
+        ]);
+
+        $shippingMethod->shippingPoints()->attach($pointAddress);
+
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'invoice_requested' => true,
+            'shipping_place' => $pointAddress->getKey(),
+            'billing_address' => Address::factory()->create(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                    'schemas' => [
+                        $schema->getKey() => 'Test',
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertCreated();
+        $order = Order::find($response->getData()->data->id);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->getKey(),
+            'invoice_requested' => true,
+            'shipping_place' => null,
+            'shipping_address_id' => $pointAddress->getKey(),
+            'shipping_type' => ShippingType::POINT,
+        ]);
+
+        Event::assertDispatched(OrderCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderWithShippingMethodTypePointExternal($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $schema = Schema::factory()->create([
+            'type' => 'string',
+            'price' => 10,
+            'hidden' => false,
+        ]);
+
+        $this->product->schemas()->sync([$schema->getKey()]);
+        $this->product->update([
+            'price' => 100,
+        ]);
+
+        $productQuantity = 2;
+
+        $shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'shipping_type' => ShippingType::POINT_EXTERNAL,
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'invoice_requested' => true,
+            'shipping_place' => 'Testowy numer domu w testowym mieście',
+            'billing_address' => Address::factory()->create(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                    'schemas' => [
+                        $schema->getKey() => 'Test',
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertCreated();
+        $order = Order::find($response->getData()->data->id);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->getKey(),
+            'invoice_requested' => true,
+            'shipping_address_id' => null,
+            'shipping_place' => 'Testowy numer domu w testowym mieście',
+            'shipping_type' => ShippingType::POINT_EXTERNAL,
+        ]);
+
+        Event::assertDispatched(OrderCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderWithMissingShippingAddress($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $schema = Schema::factory()->create([
+            'type' => 'string',
+            'price' => 10,
+            'hidden' => false,
+        ]);
+
+        $this->product->schemas()->sync([$schema->getKey()]);
+        $this->product->update([
+            'price' => 100,
+        ]);
+
+        $productQuantity = 2;
+
+        $shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'shipping_type' => ShippingType::POINT,
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'invoice_requested' => true,
+            'billing_address' => Address::factory()->create(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                    'schemas' => [
+                        $schema->getKey() => 'Test',
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(422);
+
+        Event::assertNotDispatched(OrderCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderWithMissingShippingPlace($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $schema = Schema::factory()->create([
+            'type' => 'string',
+            'price' => 10,
+            'hidden' => false,
+        ]);
+
+        $this->product->schemas()->sync([$schema->getKey()]);
+        $this->product->update([
+            'price' => 100,
+        ]);
+
+        $productQuantity = 2;
+
+        $shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'shipping_type' => ShippingType::POINT_EXTERNAL,
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'invoice_requested' => true,
+            'billing_address' => Address::factory()->create(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                    'schemas' => [
+                        $schema->getKey() => 'Test',
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(422);
+
+        Event::assertNotDispatched(OrderCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCantCreateOrderWithInactiveCoupon($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        $discount = Discount::factory()->create([
+            'description' => 'Testowy kupon',
+            'code' => 'S43SA2',
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => true,
+            'active' => false,
+        ]);
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'type' => ConditionType::DATE_BETWEEN,
+            'value' => [
+                'end_at' => Carbon::tomorrow(),
+                'is_in_range' => true,
+            ],
+        ]);
+
+        $discount->conditionGroups()->attach($conditionGroup);
+
+        $shippingMethod = ShippingMethod::factory()->create();
+
+        $response = $this->actingAs($this->$user)->json('POST', '/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
             'items' => [
                 [
@@ -979,6 +1404,55 @@ class OrderCreateTest extends TestCase
             ],
             'coupons' => [
                 $discount->code,
+            ],
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCantCreateOrderWithInactiveSale($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        $discount = Discount::factory()->create([
+            'description' => 'Testowy kupon',
+            'code' => null,
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => true,
+            'active' => false,
+        ]);
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'type' => ConditionType::DATE_BETWEEN,
+            'value' => [
+                'end_at' => Carbon::tomorrow(),
+                'is_in_range' => true,
+            ],
+        ]);
+
+        $discount->conditionGroups()->attach($conditionGroup);
+
+        $shippingMethod = ShippingMethod::factory()->create();
+
+        $response = $this->actingAs($this->$user)->json('POST', '/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'delivery_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                ],
+            ],
+            'sale_ids' => [
+                $discount->getKey(),
             ],
         ]);
 
@@ -1000,7 +1474,8 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -1019,5 +1494,285 @@ class OrderCreateTest extends TestCase
         ]);
 
         Event::assertDispatched(OrderCreated::class);
+    }
+
+    public function testCreateOrderWithoutAnyStatuses(): void
+    {
+        Status::query()->delete();
+
+        $this->user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $response = $this->actingAs($this->user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'billing_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertStatus(500)
+            ->assertJsonFragment(['message' => Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED]);
+
+        Event::assertNotDispatched(OrderCreated::class);
+    }
+
+    public function testCreateOrderWithEmptyVat(): void
+    {
+        $this->user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $address = [
+            'name' => 'Johny Mielony',
+            'address' => 'Street 89',
+            'zip' => '80-200',
+            'city' => 'City',
+            'country' => 'PL',
+            'phone' => '+48543234123',
+        ];
+
+        $this
+            ->actingAs($this->user)
+            ->postJson('/orders', [
+                'email' => $this->email,
+                'shipping_method_id' => $this->shippingMethod->getKey(),
+                'billing_address' => $address + [
+                    'vat' => '',
+                ],
+                'shipping_place' => $address + [
+                    'vat' => '',
+                ],
+                'items' => [
+                    [
+                        'product_id' => $this->product->getKey(),
+                        'quantity' => 20,
+                    ],
+                ],
+            ])
+            ->assertCreated();
+
+        $this->assertDatabaseHas('addresses', $address + [
+            'vat' => null,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderPurchaseLimit($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $this->product->update([
+            'price' => 10,
+            'vat_rate' => 23,
+            'purchase_limit_per_user' => 10,
+        ]);
+
+        $productQuantity = 20;
+
+        $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'billing_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'message' => Exceptions::PRODUCT_PURCHASE_LIMIT,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderPurchaseLimitAlreadyPurchased($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $this->product->update([
+            'price' => 10,
+            'vat_rate' => 23,
+            'purchase_limit_per_user' => 1,
+        ]);
+
+        $order = Order::factory()->create([
+            'paid' => true,
+        ]);
+        $this->$user->orders()->save($order);
+        $order->products()->create([
+            'product_id' => $this->product->getKey(),
+            'quantity' => 1,
+            'price_initial' => 4600,
+            'price' => 4600,
+            'name' => $this->product->name,
+        ]);
+
+        $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'billing_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                ],
+            ],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'message' => Exceptions::PRODUCT_PURCHASE_LIMIT,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderPurchaseLimitSetAfterPurchase($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $order = Order::factory()->create([
+            'paid' => true,
+        ]);
+        $this->$user->orders()->save($order);
+        $order->products()->create([
+            'product_id' => $this->product->getKey(),
+            'quantity' => 2,
+            'price_initial' => 4600,
+            'price' => 4600,
+            'name' => $this->product->name,
+        ]);
+
+        $this->product->update([
+            'price' => 10,
+            'vat_rate' => 23,
+            'purchase_limit_per_user' => 1,
+        ]);
+
+        $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'billing_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                ],
+            ],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'message' => Exceptions::PRODUCT_PURCHASE_LIMIT,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderPurchaseLimitSetAfterPurchaseNotPaid($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $order = Order::factory()->create([
+            'paid' => false,
+        ]);
+        $this->$user->orders()->save($order);
+        $order->products()->create([
+            'product_id' => $this->product->getKey(),
+            'quantity' => 2,
+            'price_initial' => 4600,
+            'price' => 4600,
+            'name' => $this->product->name,
+        ]);
+
+        $this->product->update([
+            'price' => 10,
+            'vat_rate' => 23,
+            'purchase_limit_per_user' => 1,
+        ]);
+
+        $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'billing_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                ],
+            ],
+        ])
+
+            ->assertCreated();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderPurchaseLimitCanceledOrder($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $status = Status::factory()->create([
+            'cancel' => true,
+        ]);
+        $order = Order::factory()->create([
+            'status_id' => $status->getKey(),
+        ]);
+        $this->$user->orders()->save($order);
+        $order->products()->create([
+            'product_id' => $this->product->getKey(),
+            'quantity' => 1,
+            'price_initial' => 4600,
+            'price' => 4600,
+            'name' => $this->product->name,
+        ]);
+
+        $this->product->update([
+            'price' => 10,
+            'vat_rate' => 23,
+            'purchase_limit_per_user' => 1,
+        ]);
+
+        $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'billing_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                ],
+            ],
+        ])->assertCreated();
     }
 }

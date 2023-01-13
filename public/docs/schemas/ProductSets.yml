@@ -11,14 +11,22 @@ ProductSet:
       description: 'Name used in the URL path'
       type: string
       example: agd
+    slug_suffix:
+      description: 'Slug suffix'
+      type: string
+      example: test
+    slug_override:
+      description: 'Slug override'
+      type: boolean
+      example: false
     public:
       description: 'Whether set is visible to unauthorized users'
       type: boolean
       example: true
-    hide_on_index:
-      description: 'Whether set products should be hidden from the main page'
+    visible:
+      description: 'Is product visible'
       type: boolean
-      example: false
+      example: true
     parent_id:
       description: 'Id of set, this set belongs to'
       type: string
@@ -31,6 +39,14 @@ ProductSet:
         example: 026bc5f6-8373-4aeb-972e-e78d72a67121
     cover:
       $ref: './../schemas/Media.yml#/Media'
+    attributes:
+      type: array
+      items:
+        $ref: './Attributes.yml#/AttributeMetadata'
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
   type: object
 
 ProductSetParent:
@@ -54,10 +70,6 @@ ProductSetParent:
       description: 'When any parent node is set to private, this setting overrides set visibility'
       type: boolean
       example: true
-    hide_on_index:
-      description: 'Whether set products should be hidden from the main page'
-      type: boolean
-      example: false
     description_html:
       description: 'HTML formated text to be displayed as a product set description'
       type: string
@@ -65,7 +77,7 @@ ProductSetParent:
     cover:
       $ref: './../schemas/Media.yml#/Media'
     parent:
-      $ref: '#ProductSet'
+      $ref: '#/ProductSet'
     children_ids:
       description: 'Ids of assigned subsets'
       type: array
@@ -74,6 +86,10 @@ ProductSetParent:
         example: 026bc5f6-8373-4aeb-972e-e78d72a67121
     seo:
       $ref: './Seo.yml#/SeoView'
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
   type: object
 
 ProductSetChildren:
@@ -89,14 +105,22 @@ ProductSetChildren:
       description: 'Name used in the URL path'
       type: string
       example: agd
+    slug_suffix:
+      description: 'Slug suffix'
+      type: string
+      example: test
+    slug_override:
+      description: 'Slug override'
+      type: boolean
+      example: false
     public:
       description: 'Whether set is visible to unauthorized users'
       type: boolean
       example: true
-    hide_on_index:
-      description: 'Whether set products should be hidden from the main page'
+    visible:
+      description: 'Is product visible'
       type: boolean
-      example: false
+      example: true
     parent_id:
       description: 'Id of set, this set belongs to'
       type: string
@@ -107,6 +131,18 @@ ProductSetChildren:
 #        Odwołanie do siebie nie działa poprawnie, chociaż przed rozbiciem na pliki działało
 #        $ref: '#ProductSetChildren'
         $ref: '#ProductSetChildrenEmpty'
+    attributes:
+      type: array
+      items:
+        $ref: './Attributes.yml#/Attribute'
+    metadata:
+      type: array
+      items:
+        $ref: './Metadata.yml#/Metadata'
+    metadata_private:
+      type: array
+      items:
+        $ref: './Metadata.yml#/Metadata'
   type: object
 
 ProductSetParentChildren:
@@ -130,17 +166,13 @@ ProductSetParentChildren:
       description: 'When any parent node is set to private, this setting overrides set visibility'
       type: boolean
       example: true
-    hide_on_index:
-      description: 'Whether set products should be hidden from the main page'
-      type: boolean
-      example: false
     parent:
-      $ref: '#ProductSet'
+      $ref: '#/ProductSet'
     children:
       description: 'Ids of assigned subsets'
       type: array
       items:
-        $ref: '#ProductSetChildren'
+        $ref: '#/ProductSetChildren'
   type: object
 
 ProductSetChildrenEmpty:
@@ -160,10 +192,6 @@ ProductSetChildrenEmpty:
       description: 'Whether set is visible to unauthorized users'
       type: boolean
       example: true
-    hide_on_index:
-      description: 'Whether set products should be hidden from the main page'
-      type: boolean
-      example: false
     parent_id:
       description: 'Id of set, this set belongs to'
       type: string
@@ -172,3 +200,16 @@ ProductSetChildrenEmpty:
       type: array
       items: []
   type: object
+
+FavouriteProductSet:
+  type: object
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    product_set:
+      $ref: '#/ProductSet'
+    created_at:
+      type: string
+      format: date-time
+      example: '2021-09-13T11:11'

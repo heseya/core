@@ -27,16 +27,12 @@ class AttributeService implements AttributeServiceContract
             $this->metadataService->sync($attribute, $dto->getMetadata());
         }
 
-        $this->processAttributeOptions($attribute, $dto);
-
         return $attribute;
     }
 
     public function update(Attribute $attribute, AttributeDto $dto): Attribute
     {
         $attribute->update($dto->toArray());
-
-        $this->processAttributeOptions($attribute, $dto);
 
         return $attribute;
     }
@@ -53,44 +49,27 @@ class AttributeService implements AttributeServiceContract
         $attributes = Arr::divide($data)[0];
 
         $product->attributes()->sync($attributes);
-        $product->attributes->each(
+        $product->attributes()->get()->each(
             fn (Attribute $attribute) => $attribute->pivot->options()->sync($data[$attribute->getKey()])
         );
     }
 
-    public function updateMinMax(Attribute $attribute): void
+    public function updateMinMax(?Attribute $attribute): void
     {
-        $attribute->refresh();
+        if ($attribute !== null) {
+            $attribute->refresh();
 
-        if ($attribute->type->value === AttributeType::NUMBER) {
-            $attribute->setAttribute('min_number', $attribute->options->min('value_number'));
-            $attribute->setAttribute('max_number', $attribute->options->max('value_number'));
-        }
-
-        if ($attribute->type->value === AttributeType::DATE) {
-            $attribute->setAttribute('min_date', $attribute->options->min('value_date'));
-            $attribute->setAttribute('max_date', $attribute->options->max('value_date'));
-        }
-
-        $attribute->update();
-    }
-
-    protected function processAttributeOptions(Attribute &$attribute, AttributeDto $dto): Attribute
-    {
-        $attribute->options
-            ->whereNotIn('id', array_map(fn ($option) => $option->getId(), $dto->getOptions()))
-            ->each(
-                fn ($missingOption) => $this->attributeOptionService->delete($missingOption)
-            );
-
-        foreach ($dto->getOptions() as $option) {
-            $attributeOption = $this->attributeOptionService->updateOrCreate($attribute->getKey(), $option);
-
-            if (!($option->getMetadata() instanceof Missing)) {
-                $this->metadataService->sync($attributeOption, $option->getMetadata());
+            if ($attribute->type->value === AttributeType::NUMBER) {
+                $attribute->setAttribute('min_number', $attribute->options->min('value_number'));
+                $attribute->setAttribute('max_number', $attribute->options->max('value_number'));
             }
-        }
 
-        return $attribute->refresh();
+            if ($attribute->type->value === AttributeType::DATE) {
+                $attribute->setAttribute('min_date', $attribute->options->min('value_date'));
+                $attribute->setAttribute('max_date', $attribute->options->max('value_date'));
+            }
+
+            $attribute->update();
+        }
     }
 }

@@ -16,5 +16,5 @@ interface AttributeServiceContract
 
     public function sync(Product $product, array $data): void;
 
-    public function updateMinMax(Attribute $attribute): void;
+    public function updateMinMax(?Attribute $attribute): void;
 }

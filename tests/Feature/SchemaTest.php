@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\MetadataType;
 use App\Enums\SchemaType;
 use App\Models\Item;
 use App\Models\Option;
@@ -305,6 +306,7 @@ class SchemaTest extends TestCase
             'hidden' => 0,
             'required' => 0,
             'default' => null,
+            'available' => true,
         ]);
 
         $this->assertDatabaseHas('options', [
@@ -314,6 +316,7 @@ class SchemaTest extends TestCase
             'disabled' => 0,
             'schema_id' => $schema->id,
             'order' => 0,
+            'available' => false,
         ]);
 
         $this->assertDatabaseHas('options', [
@@ -322,6 +325,7 @@ class SchemaTest extends TestCase
             'disabled' => 0,
             'schema_id' => $schema->id,
             'order' => 1,
+            'available' => true,
         ]);
 
         $this->assertDatabaseHas('options', [
@@ -330,6 +334,7 @@ class SchemaTest extends TestCase
             'disabled' => 0,
             'schema_id' => $schema->id,
             'order' => 2,
+            'available' => true,
         ]);
 
         $this->assertDatabaseHas('option_items', [
@@ -385,6 +390,363 @@ class SchemaTest extends TestCase
                 'price' => 0,
                 'disabled' => false,
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithEmptyNullableProperties($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/schemas', [
+                'name' => 'Test',
+                'type' => SchemaType::getKey(SchemaType::SELECT),
+                'description' => '',
+                'hidden' => '',
+                'required' => '',
+                'min' => '',
+                'max' => '',
+                'step' => '',
+                'default' => '',
+                'pattern' => '',
+                'validation' => '',
+                'used_schemas' => '',
+                'options' => '',
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'name' => 'Test',
+                'price' => 0,
+                'description' => null,
+                'hidden' => true,
+                'required' => true,
+                'min' => null,
+                'max' => null,
+                'step' => null,
+                'default' => null,
+                'pattern' => null,
+                'validation' => null,
+                'used_schemas' => [],
+                'options' => [],
+            ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/schemas', [
+                'name' => 'Test',
+                'type' => SchemaType::getKey(SchemaType::SELECT),
+                'description' => null,
+                'hidden' => null,
+                'required' => null,
+                'min' => null,
+                'max' => null,
+                'step' => null,
+                'default' => null,
+                'pattern' => null,
+                'validation' => null,
+                'used_schemas' => null,
+                'options' => null,
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'name' => 'Test',
+                'price' => 0,
+                'description' => null,
+                'hidden' => true,
+                'required' => true,
+                'min' => null,
+                'max' => null,
+                'step' => null,
+                'default' => null,
+                'pattern' => null,
+                'validation' => null,
+                'used_schemas' => [],
+                'options' => [],
+            ]);
+    }
+
+    /**
+     * @dataProvider booleanProvider
+     */
+    public function testCreateWithMetadata($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $response = $this->actingAs($this->$user)->json('POST', '/schemas', [
+            'name' => 'Test',
+            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'price' => 120,
+            'description' => 'test test',
+            'hidden' => $boolean,
+            'required' => $boolean,
+            'options' => [
+                [
+                    'name' => 'A',
+                    'price' => 1000,
+                    'disabled' => $boolean,
+                ],
+                [
+                    'name' => 'B',
+                    'price' => 0,
+                    'disabled' => 'off',
+                ],
+            ],
+            'metadata' => [
+                'attributeMeta' => 'attributeValue',
+            ],
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment([
+                'name' => 'Test',
+                'price' => 120,
+                'description' => 'test test',
+                'hidden' => $booleanValue,
+                'required' => $booleanValue,
+            ])
+            ->assertJsonFragment([
+                'name' => 'A',
+                'price' => 1000,
+                'disabled' => $booleanValue,
+            ])
+            ->assertJsonFragment([
+                'name' => 'B',
+                'price' => 0,
+                'disabled' => false,
+            ])
+            ->assertJsonFragment([
+                'metadata' => [
+                    'attributeMeta' => 'attributeValue',
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider booleanProvider
+     */
+    public function testCreateWithOptionMetadata($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $response = $this->actingAs($this->$user)->json('POST', '/schemas', [
+            'name' => 'Test',
+            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'price' => 120,
+            'description' => 'test test',
+            'hidden' => $boolean,
+            'required' => $boolean,
+            'options' => [
+                [
+                    'name' => 'A',
+                    'price' => 1000,
+                    'disabled' => $boolean,
+                    'metadata' => [
+                        'attributeMeta' => 'attributeValue',
+                    ],
+                ],
+                [
+                    'name' => 'B',
+                    'price' => 0,
+                    'disabled' => 'off',
+                    'metadata' => [
+                        'attributeMeta' => 'attributeValue',
+                    ],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment([
+                'name' => 'Test',
+                'price' => 120,
+                'description' => 'test test',
+                'hidden' => $booleanValue,
+                'required' => $booleanValue,
+            ])
+            ->assertJsonFragment([
+                'name' => 'A',
+                'price' => 1000,
+                'disabled' => $booleanValue,
+                'metadata' => [
+                    'attributeMeta' => 'attributeValue',
+                ],
+            ])
+            ->assertJsonFragment([
+                'name' => 'B',
+                'price' => 0,
+                'disabled' => false,
+                'metadata' => [
+                    'attributeMeta' => 'attributeValue',
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider booleanProvider
+     */
+    public function testCreateWithMetadataPrivate($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo(['products.add', 'schemas.show_metadata_private']);
+
+        $response = $this->actingAs($this->$user)->json('POST', '/schemas', [
+            'name' => 'Test',
+            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'price' => 120,
+            'description' => 'test test',
+            'hidden' => $boolean,
+            'required' => $boolean,
+            'options' => [
+                [
+                    'name' => 'A',
+                    'price' => 1000,
+                    'disabled' => $boolean,
+                ],
+                [
+                    'name' => 'B',
+                    'price' => 0,
+                    'disabled' => 'off',
+                ],
+            ],
+            'metadata_private' => [
+                'attributeMetaPriv' => 'attributeValue',
+            ],
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment([
+                'name' => 'Test',
+                'price' => 120,
+                'description' => 'test test',
+                'hidden' => $booleanValue,
+                'required' => $booleanValue,
+            ])
+            ->assertJsonFragment([
+                'name' => 'A',
+                'price' => 1000,
+                'disabled' => $booleanValue,
+            ])
+            ->assertJsonFragment([
+                'name' => 'B',
+                'price' => 0,
+                'disabled' => false,
+            ])
+            ->assertJsonFragment([
+                'metadata_private' => [
+                    'attributeMetaPriv' => 'attributeValue',
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider booleanProvider
+     */
+    public function testCreateWithOptionMetadataPrivate($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo(['products.add', 'options.show_metadata_private']);
+
+        $response = $this->actingAs($this->$user)->json('POST', '/schemas', [
+            'name' => 'Test',
+            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'price' => 120,
+            'description' => 'test test',
+            'hidden' => $boolean,
+            'required' => $boolean,
+            'options' => [
+                [
+                    'name' => 'A',
+                    'price' => 1000,
+                    'disabled' => $boolean,
+                    'metadata_private' => [
+                        'attributeMetaPriv' => 'attributeValue',
+                    ],
+                ],
+                [
+                    'name' => 'B',
+                    'price' => 0,
+                    'disabled' => 'off',
+                    'metadata_private' => [
+                        'attributeMetaPriv' => 'attributeValue',
+                    ],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment([
+                'name' => 'Test',
+                'price' => 120,
+                'description' => 'test test',
+                'hidden' => $booleanValue,
+                'required' => $booleanValue,
+            ])
+            ->assertJsonFragment([
+                'name' => 'A',
+                'price' => 1000,
+                'disabled' => $booleanValue,
+                'metadata_private' => [
+                    'attributeMetaPriv' => 'attributeValue',
+                ],
+            ])
+            ->assertJsonFragment([
+                'name' => 'B',
+                'price' => 0,
+                'disabled' => false,
+                'metadata_private' => [
+                    'attributeMetaPriv' => 'attributeValue',
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateAvailableSchemaNonSelect($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $response = $this->actingAs($this->$user)->json('POST', '/schemas', [
+            'name' => 'Test',
+            'type' => SchemaType::getKey(SchemaType::STRING),
+            'price' => 120,
+            'required' => false,
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonPath('data.available', true);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateAvailableSchemaAndOptionWithoutItem($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $response = $this->actingAs($this->$user)->json('POST', '/schemas', [
+            'name' => 'Test',
+            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'price' => 120,
+            'required' => false,
+            'options' => [[
+                'name' => 'Test option',
+                'price' => 0,
+                'disabled' => false,
+            ],
+            ],
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonPath('data.available', true)
+            ->assertJsonPath('data.options.0.available', true);
     }
 
     /**
@@ -602,7 +964,7 @@ class SchemaTest extends TestCase
     {
         $this->$user->givePermissionTo('products.edit');
 
-        $schema = Schema::factory()->create([
+        $schemaValues = [
             'name' => 'new schema',
             'description' => 'new schema description',
             'price' => 10,
@@ -610,7 +972,8 @@ class SchemaTest extends TestCase
             'required' => true,
             'max' => 10,
             'min' => 1,
-        ]);
+        ];
+        $schema = Schema::factory()->create($schemaValues);
 
         $item = Item::factory()->create();
         $item2 = Item::factory()->create();
@@ -630,7 +993,7 @@ class SchemaTest extends TestCase
 
         $response->assertOk();
 
-        $this->assertDatabaseHas('schemas', $schema->toArray());
+        $this->assertDatabaseHas('schemas', $schemaValues);
     }
 
     /**
@@ -641,6 +1004,42 @@ class SchemaTest extends TestCase
         $this->$user->givePermissionTo('products.edit');
 
         $this->update($user);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithMetadata($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $schema = Schema::factory()->create();
+
+        $schema->metadata()->create([
+            'name' => 'first',
+            'value' => 'metadata',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+
+        $this->actingAs($this->$user)->json('PATCH', '/schemas/id:' . $schema->getKey(), [
+            'metadata' => [
+                'first' => 'new value',
+                'second' => 'new metadata',
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'metadata' => [
+                    'first' => 'metadata',
+                ],
+            ])
+            ->assertJsonMissing([
+                'first' => 'new value',
+            ])
+            ->assertJsonMissing([
+                'second' => 'new metadata',
+            ]);
     }
 
     /**

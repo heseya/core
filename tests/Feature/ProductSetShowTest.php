@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Attribute;
+use App\Models\AttributeOption;
 use App\Models\ProductSet;
 use App\Models\SeoMetadata;
 use Tests\TestCase;
@@ -59,7 +60,6 @@ class ProductSetShowTest extends TestCase
             'slug_override',
             'public',
             'visible',
-            'hide_on_index',
             'parent',
             'seo',
         ];
@@ -89,7 +89,6 @@ class ProductSetShowTest extends TestCase
                 'slug_override' => false,
                 'public' => $this->set->public,
                 'visible' => $this->set->public && $this->set->public_parent,
-                'hide_on_index' => $this->set->hide_on_index,
                 'parent' => $this->set->parent,
                 'children_ids' => [
                     $this->childSet->getKey(),
@@ -152,7 +151,6 @@ class ProductSetShowTest extends TestCase
                 'slug_override' => false,
                 'public' => $this->privateSet->public,
                 'visible' => $this->privateSet->public && $this->privateSet->public_parent,
-                'hide_on_index' => $this->privateSet->hide_on_index,
                 'parent' => null,
                 'children_ids' => [],
                 'seo' => [
@@ -184,7 +182,6 @@ class ProductSetShowTest extends TestCase
                 'slug_override' => false,
                 'public' => $this->set->public,
                 'visible' => $this->set->public && $this->set->public_parent,
-                'hide_on_index' => $this->set->hide_on_index,
                 'parent' => $this->set->parent,
                 'seo' => [
                     'title' => $this->set->seo->title,
@@ -198,7 +195,6 @@ class ProductSetShowTest extends TestCase
                         'slug_override' => true,
                         'public' => $this->childSet->public,
                         'visible' => $this->childSet->public && $this->childSet->public_parent,
-                        'hide_on_index' => $this->childSet->hide_on_index,
                         'parent_id' => $this->childSet->parent_id,
                         'children' => null,
                     ],
@@ -228,7 +224,6 @@ class ProductSetShowTest extends TestCase
                 'slug_override' => false,
                 'public' => $this->set->public,
                 'visible' => $this->set->public && $this->set->public_parent,
-                'hide_on_index' => $this->set->hide_on_index,
                 'parent' => $this->set->parent,
                 'seo' => [
                     'title' => $this->set->seo->title,
@@ -242,7 +237,6 @@ class ProductSetShowTest extends TestCase
                         'slug_override' => true,
                         'public' => $this->childSet->public,
                         'visible' => $this->childSet->public && $this->childSet->public_parent,
-                        'hide_on_index' => $this->childSet->hide_on_index,
                         'parent_id' => $this->childSet->parent_id,
                         'children' => [
                             [
@@ -252,7 +246,6 @@ class ProductSetShowTest extends TestCase
                                 'slug_override' => true,
                                 'public' => $this->subChildSet->public,
                                 'visible' => $this->subChildSet->public && $this->subChildSet->public_parent,
-                                'hide_on_index' => $this->subChildSet->hide_on_index,
                                 'parent_id' => $this->subChildSet->parent_id,
                                 'children' => [],
                             ],
@@ -294,7 +287,6 @@ class ProductSetShowTest extends TestCase
                 'slug_override' => false,
                 'public' => $this->set->public,
                 'visible' => $this->set->public && $this->set->public_parent,
-                'hide_on_index' => $this->set->hide_on_index,
                 'parent' => $this->set->parent,
                 'children_ids' => [
                     $this->childSet->getKey(),
@@ -357,7 +349,6 @@ class ProductSetShowTest extends TestCase
                 'slug_override' => false,
                 'public' => $this->privateSet->public,
                 'visible' => $this->privateSet->public && $this->privateSet->public_parent,
-                'hide_on_index' => $this->privateSet->hide_on_index,
                 'parent' => null,
                 'children_ids' => [],
                 'seo' => [
@@ -389,7 +380,6 @@ class ProductSetShowTest extends TestCase
                 'slug_override' => false,
                 'public' => $this->set->public,
                 'visible' => $this->set->public && $this->set->public_parent,
-                'hide_on_index' => $this->set->hide_on_index,
                 'parent' => $this->set->parent,
                 'seo' => [
                     'title' => $this->set->seo->title,
@@ -403,7 +393,6 @@ class ProductSetShowTest extends TestCase
                         'slug_override' => true,
                         'public' => $this->childSet->public,
                         'visible' => $this->childSet->public && $this->childSet->public_parent,
-                        'hide_on_index' => $this->childSet->hide_on_index,
                         'parent_id' => $this->childSet->parent_id,
                         'children' => null,
                     ],
@@ -433,7 +422,6 @@ class ProductSetShowTest extends TestCase
                 'slug_override' => false,
                 'public' => $this->set->public,
                 'visible' => $this->set->public && $this->set->public_parent,
-                'hide_on_index' => $this->set->hide_on_index,
                 'parent' => $this->set->parent,
                 'seo' => [
                     'title' => $this->set->seo->title,
@@ -447,7 +435,6 @@ class ProductSetShowTest extends TestCase
                         'slug_override' => true,
                         'public' => $this->childSet->public,
                         'visible' => $this->childSet->public && $this->childSet->public_parent,
-                        'hide_on_index' => $this->childSet->hide_on_index,
                         'parent_id' => $this->childSet->parent_id,
                         'children' => [
                             [
@@ -457,7 +444,6 @@ class ProductSetShowTest extends TestCase
                                 'slug_override' => true,
                                 'public' => $this->subChildSet->public,
                                 'visible' => $this->subChildSet->public && $this->subChildSet->public_parent,
-                                'hide_on_index' => $this->subChildSet->hide_on_index,
                                 'parent_id' => $this->subChildSet->parent_id,
                                 'children' => [],
                             ],
@@ -508,7 +494,6 @@ class ProductSetShowTest extends TestCase
                 'slug_override' => false,
                 'public' => $this->set->public,
                 'visible' => $this->set->public && $this->set->public_parent,
-                'hide_on_index' => $this->set->hide_on_index,
                 'parent' => $this->set->parent,
                 'children_ids' => [
                     $this->childSet->getKey(),
@@ -523,5 +508,77 @@ class ProductSetShowTest extends TestCase
                 'data' => array_merge($this->expected_structure, ['attributes']),
             ])
             ->assertJsonCount(2, 'data.attributes');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductSetHasAttributesWithOptions($user): void
+    {
+        $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
+
+        $attribute = Attribute::factory()->create([
+            'name' => 'test',
+            'description' => 'test',
+            'type' => 'number',
+            'global' => false,
+        ]);
+
+        $attributeOption = AttributeOption::factory()->create([
+            'index' => 1,
+            'value_number' => 100,
+            'attribute_id' => $attribute->getKey(),
+        ]);
+
+        $this->set->attributes()->attach([
+            $attribute->getKey(),
+        ]);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/product-sets/id:' . $this->set->getKey());
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $this->set->getKey(),
+                'name' => $this->set->name,
+                'slug' => $this->set->slug,
+                'slug_override' => false,
+                'public' => $this->set->public,
+                'visible' => $this->set->public && $this->set->public_parent,
+                'parent' => $this->set->parent,
+                'children_ids' => [
+                    $this->childSet->getKey(),
+                ],
+                'seo' => [
+                    'title' => $this->set->seo->title,
+                    'description' => $this->set->seo->description,
+                ],
+                'attributes' => [
+                    [
+                        'id' => $attribute->getKey(),
+                        'name' => $attribute->name,
+                        'slug' => $attribute->slug,
+                        'description' => $attribute->description,
+                        'min' => 100,
+                        'max' => 100,
+                        'type' => $attribute->type->value,
+                        'global' => $attribute->global,
+                        'sortable' => $attribute->sortable,
+                    ],
+                ],
+            ],
+            ])->assertJsonMissing([
+                'options' => [
+                    [
+                        'id' => $attributeOption->getKey(),
+                        'name' => $attributeOption->name,
+                        'index' => $attributeOption->index,
+                        'value_number' => $attributeOption->value_number,
+                        'value_date' => $attributeOption->value_date,
+                        'attribute_id' => $attribute->getKey(),
+                    ],
+                ],
+            ]);
     }
 }

@@ -6,13 +6,19 @@ use App\Enums\ErrorCode;
 use App\Enums\ValidationError;
 use App\Http\Resources\ErrorResource;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenExpiredException;
+use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenInvalidException;
+use Spatie\Permission\Exceptions\UnauthorizedException;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
@@ -20,25 +26,44 @@ use Throwable;
 final class Handler extends ExceptionHandler
 {
     private const ERRORS = [
-        AuthenticationException::class => ErrorCode::UNAUTHORIZED,
-
-        NotFoundHttpException::class => ErrorCode::NOT_FOUND,
-        MethodNotAllowedHttpException::class => ErrorCode::NOT_FOUND,
-
-        ValidationException::class => ErrorCode::VALIDATION_ERROR,
-
+        // 400
         AppAccessException::class => ErrorCode::BAD_REQUEST,
         StoreException::class => ErrorCode::BAD_REQUEST,
 
+        // 401
+        AuthenticationException::class => ErrorCode::UNAUTHORIZED,
+        AccessDeniedHttpException::class => ErrorCode::UNAUTHORIZED,
+        TokenExpiredException::class => ErrorCode::UNAUTHORIZED,
+
+        // 403
+        AuthorizationException::class => ErrorCode::FORBIDDEN,
+        UnauthorizedException::class => ErrorCode::FORBIDDEN,
+
+        // 404
+        NotFoundHttpException::class => ErrorCode::NOT_FOUND,
+        MethodNotAllowedHttpException::class => ErrorCode::NOT_FOUND,
+        ModelNotFoundException::class => ErrorCode::NOT_FOUND,
+        TokenInvalidException::class => ErrorCode::NOT_FOUND,
+
+        // 422
+        ValidationException::class => ErrorCode::VALIDATION_ERROR,
         ClientException::class => ErrorCode::UNPROCESSABLE_ENTITY,
         TFAException::class => ErrorCode::UNPROCESSABLE_ENTITY,
+        GoogleProductCategoryFileException::class => ErrorCode::UNPROCESSABLE_ENTITY,
+        OrderException::class => ErrorCode::UNPROCESSABLE_ENTITY,
 
+        // 500
+        ServerException::class => ErrorCode::INTERNAL_SERVER_ERROR,
+
+        // 502
         PackageException::class => ErrorCode::BAD_GATEWAY,
         PackageAuthException::class => ErrorCode::BAD_GATEWAY,
     ];
 
     /**
      * A list of the inputs that are never flashed for validation exceptions.
+     *
+     * @var array<int, string>
      */
     protected $dontFlash = [
         'password',
@@ -63,7 +88,6 @@ final class Handler extends ExceptionHandler
                     ->response()
                     ->setStatusCode($exception->getCode());
             }
-
             $error = new Error(
                 $exception->getMessage(),
                 $exception instanceof StoreException ?
@@ -82,6 +106,10 @@ final class Handler extends ExceptionHandler
             }
 
             $error = new Error();
+        }
+
+        if (Config::get('app.debug') === true) {
+            $error->setStack($this->convertExceptionToArray($exception));
         }
 
         return ErrorResource::make($error)
@@ -135,8 +163,11 @@ final class Handler extends ExceptionHandler
         return $validationErrors;
     }
 
-    private function getExceptionData(Exception $exception): array
+    private function getExceptionData(Throwable|Exception $exception): array
     {
+        if ($exception instanceof ServerException && Config::get('app.debug') === true) {
+            return $exception->errors();
+        }
         if ($exception instanceof StoreException) {
             return $exception->errors();
         }

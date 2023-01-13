@@ -2,6 +2,7 @@ UserCreate:
   content:
     application/json:
       schema:
+        type: object
         properties:
           name:
             type: string
@@ -12,17 +13,29 @@ UserCreate:
           password:
             type: string
             example: '123@@#abYZ'
+          birthday_date:
+            type: string
+            format: date
+            example: '2000-01-01'
+          phone:
+            type: string
+            example: '+48123456789'
           roles:
             description: 'Ids of assigned roles'
             type: array
             items:
               type: string
               example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        type: object
+          metadata:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+          metadata_private:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+
 UserUpdate:
   content:
     application/json:
       schema:
+        type: object
         properties:
           name:
             type: string
@@ -30,10 +43,16 @@ UserUpdate:
           email:
             type: string
             example: admin@example.com
+          birthday_date:
+            type: string
+            format: date
+            example: '2000-01-01'
+          phone:
+            type: string
+            example: '+48123456789'
           roles:
             description: 'Ids of assigned roles'
             type: array
             items:
               type: string
               example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        type: object

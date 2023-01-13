@@ -13,8 +13,8 @@ class ProductSetChildrenResource extends Resource
     public function base(Request $request): array
     {
         $children = Gate::denies('product_sets.show_hidden')
-            ? $this->resource->childrenPublic
-            : $this->resource->children;
+            ? $this->resource->allChildrenPublic
+            : $this->resource->allChildren;
 
         return array_merge([
             'id' => $this->resource->getKey(),
@@ -24,11 +24,16 @@ class ProductSetChildrenResource extends Resource
             'slug_override' => $this->resource->slugOverride,
             'public' => $this->resource->public,
             'visible' => $this->resource->public_parent && $this->resource->public,
-            'hide_on_index' => $this->resource->hide_on_index,
             'parent_id' => $this->resource->parent_id,
             'children' => ProductSetChildrenResource::collection($children),
             'cover' => MediaResource::make($this->resource->media),
-            'attributes' => AttributeResource::collection($this->resource->attributes),
         ], $this->metadataResource('product_sets.show_metadata_private'));
+    }
+
+    public function view(Request $request): array
+    {
+        return [
+            'attributes' => AttributeResource::collection($this->resource->attributes),
+        ];
     }
 }

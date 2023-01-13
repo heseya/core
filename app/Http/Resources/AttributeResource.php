@@ -28,7 +28,6 @@ class AttributeResource extends Resource
             'type' => $this->resource->type,
             'global' => $this->resource->global,
             'sortable' => $this->resource->sortable,
-            'options' => AttributeOptionResource::collection($this->resource->options),
         ], $this->metadataResource('attributes.show_metadata_private'));
     }
 }

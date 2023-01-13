@@ -21,4 +21,8 @@ Payment:
     status:
       type: string
       example: pending
+    date:
+      type: string
+      format: date-time
+      example: '2022-05-04T12:14:45.000000Z'
   type: object

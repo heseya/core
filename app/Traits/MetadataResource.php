@@ -3,7 +3,8 @@
 namespace App\Traits;
 
 use App\Models\Metadata;
-use Illuminate\Database\Eloquent\Collection;
+use App\Models\MetadataPersonal;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 
 trait MetadataResource
@@ -19,7 +20,10 @@ trait MetadataResource
         return $data;
     }
 
-    private function processMetadata(Collection $data)
+    /**
+     * @param Collection<int, Metadata> $data
+     */
+    private function processMetadata(Collection $data): object
     {
         /**
          * Special workaround for frond-end requirements
@@ -28,6 +32,6 @@ trait MetadataResource
             return (object) [];
         }
 
-        return $data->mapWithKeys(fn (Metadata $meta) => [$meta->name => $meta->value]);
+        return $data->mapWithKeys(fn (Metadata|MetadataPersonal $meta) => [$meta->name => $meta->value]);
     }
 }

@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
@@ -33,6 +34,10 @@ class Item extends Model implements AuditableContract, SortableContract
         'name',
         'sku',
         'quantity',
+        'unlimited_stock_shipping_time',
+        'unlimited_stock_shipping_date',
+        'shipping_time',
+        'shipping_date',
     ];
 
     protected array $criteria = [
@@ -51,6 +56,15 @@ class Item extends Model implements AuditableContract, SortableContract
         'created_at',
         'updated_at',
         'quantity',
+        'unlimited_stock_shipping_time',
+        'unlimited_stock_shipping_date',
+        'shipping_time',
+        'shipping_date',
+    ];
+
+    protected $dates = [
+        'shipping_date',
+        'unlimited_stock_shipping_date',
     ];
 
     protected $casts = [
@@ -60,6 +74,14 @@ class Item extends Model implements AuditableContract, SortableContract
     public function deposits(): HasMany
     {
         return $this->hasMany(Deposit::class);
+    }
+
+    public function groupedDeposits(): HasMany
+    {
+        return $this->hasMany(Deposit::class)
+            ->selectRaw('item_id, SUM(quantity) as quantity, shipping_time, shipping_date')
+            ->groupBy(['shipping_time', 'shipping_date', 'item_id'])
+            ->having('quantity', '>', '0');
     }
 
     public function products(): BelongsToMany
@@ -83,5 +105,16 @@ class Item extends Model implements AuditableContract, SortableContract
     public function options(): BelongsToMany
     {
         return $this->belongsToMany(Option::class, 'option_items');
+    }
+
+    public function getSchemasAttribute(): Collection
+    {
+        $schemas = Collection::make();
+
+        $this->options->each(function (Option $option) use ($schemas): void {
+            $schemas->push($option->schema);
+        });
+
+        return $schemas->unique();
     }
 }

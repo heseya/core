@@ -43,6 +43,8 @@ class Schema extends Model implements SortableContract
         'pattern',
         'validation',
         'available',
+        'shipping_time',
+        'shipping_date',
     ];
 
     protected $casts = [
@@ -53,7 +55,7 @@ class Schema extends Model implements SortableContract
         'type' => SchemaType::class,
     ];
 
-    protected $criteria = [
+    protected array $criteria = [
         'search' => SchemaSearch::class,
         'name' => Like::class,
         'hidden',
@@ -126,7 +128,7 @@ class Schema extends Model implements SortableContract
         }
     }
 
-    public function getItems($value, float $quantity = 0): array
+    public function getItems(int|string|null $value, float $quantity = 0): array
     {
         $items = [];
 
@@ -136,8 +138,10 @@ class Schema extends Model implements SortableContract
 
         $option = $this->options()->find($value);
 
-        foreach ($option->items as $item) {
-            $items[$item->getKey()] = $quantity;
+        if ($option?->items) {
+            foreach ($option->items as $item) {
+                $items[$item->getKey()] = $quantity;
+            }
         }
 
         return $items;
@@ -146,6 +150,7 @@ class Schema extends Model implements SortableContract
     public function options(): HasMany
     {
         return $this->hasMany(Option::class)
+            ->with(['items', 'metadata', 'metadataPrivate'])
             ->orderBy('order')
             ->orderBy('created_at')
             ->orderBy('name', 'DESC');
@@ -154,7 +159,7 @@ class Schema extends Model implements SortableContract
     /**
      * @throws InvalidEnumKeyException
      */
-    public function setTypeAttribute($value): void
+    public function setTypeAttribute(mixed $value): void
     {
         if (!is_integer($value)) {
             $value = SchemaType::fromKey(Str::upper($value));
@@ -168,7 +173,13 @@ class Schema extends Model implements SortableContract
         return $this->belongsToMany(Product::class, 'product_schemas');
     }
 
-    public function getPrice($value, $schemas): float
+    /**
+     * @param mixed $value
+     * @param array $schemas
+     *
+     * @return float
+     */
+    public function getPrice(mixed $value, array $schemas): float
     {
         $schemaKeys = Collection::make($schemas)->keys();
 
@@ -199,7 +210,13 @@ class Schema extends Model implements SortableContract
         );
     }
 
-    private function getUsedPrice($value, $schemas): float
+    /**
+     * @param mixed $value
+     * @param array $schemas
+     *
+     * @return float
+     */
+    private function getUsedPrice(mixed $value, array $schemas): float
     {
         $price = $this->price;
 
@@ -229,6 +246,7 @@ class Schema extends Model implements SortableContract
         }
 
         if ($this->type->is(SchemaType::MULTIPLY_SCHEMA)) {
+            /** @var Schema $usedSchema */
             $usedSchema = $this->usedSchemas()->firstOrFail();
             $price = $value * $usedSchema->getUsedPrice($schemas[$usedSchema->getKey()], $schemas);
         }

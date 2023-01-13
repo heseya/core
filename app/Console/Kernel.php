@@ -3,6 +3,8 @@
 namespace App\Console;
 
 use App\Jobs\CheckActiveSales;
+use App\Jobs\GoogleCategoryJob;
+use App\Jobs\StopShippingUnlimitedStockDateJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -18,6 +20,11 @@ class Kernel extends ConsoleKernel
 
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->job(new CheckActiveSales())->everyFifteenMinutes();
+        $schedule->job(new CheckActiveSales())->everyThirtyMinutes();
+
+        // every hour at minute 43.
+        $schedule->job(new StopShippingUnlimitedStockDateJob())->cron('43 * * * *');
+
+        $schedule->job(new GoogleCategoryJob())->weekly();
     }
 }

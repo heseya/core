@@ -14,6 +14,7 @@ class EventResource extends Resource
             'description' => $this->resource->description,
             'required_permissions' => $this->resource->required_permissions,
             'required_hidden_permissions' => $this->resource->required_hidden_permissions,
+            'encrypted' => $this->resource->encrypted,
         ];
     }
 }

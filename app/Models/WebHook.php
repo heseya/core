@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Criteria\WebHookSearch;
 use App\Models\Contracts\SortableContract;
 use App\Traits\Sortable;
 use Heseya\Searchable\Criteria\Like;
@@ -43,6 +44,7 @@ class WebHook extends Model implements AuditableContract, SortableContract
     protected array $criteria = [
         'name' => Like::class,
         'url' => Like::class,
+        'search' => WebHookSearch::class,
     ];
 
     protected array $sortable = [
@@ -61,12 +63,12 @@ class WebHook extends Model implements AuditableContract, SortableContract
         return $this->hasMany(WebHookEventLogEntry::class);
     }
 
-    public function getEventsAttribute($value)
+    public function getEventsAttribute(string $value): mixed
     {
         return json_decode($value);
     }
 
-    public function setEventsAttribute($value): void
+    public function setEventsAttribute(mixed $value): void
     {
         $this->attributes['events'] = json_encode($value);
     }

@@ -17,8 +17,8 @@ class ProductSetStoreRequest extends FormRequest implements SeoRequestContract, 
     protected array $booleanFields = [
         'slug_override',
         'public',
-        'hide_on_index',
         'seo.no_index',
+        'tree',
     ];
 
     public function rules(): array
@@ -36,7 +36,6 @@ class ProductSetStoreRequest extends FormRequest implements SeoRequestContract, 
                 ],
                 'slug_override' => ['required', new Boolean()],
                 'public' => [new Boolean()],
-                'hide_on_index' => [new Boolean()],
                 'parent_id' => ['uuid', 'nullable', 'exists:product_sets,id'],
                 'children_ids' => ['array'],
                 'children_ids.*' => ['uuid', 'exists:product_sets,id'],
@@ -44,6 +43,7 @@ class ProductSetStoreRequest extends FormRequest implements SeoRequestContract, 
                 'cover_id' => ['uuid', 'uuid', 'exists:media,id'],
                 'attributes' => ['array'],
                 'attributes.*' => ['uuid', 'exists:attributes,id'],
+                'tree' => [new Boolean()],
             ],
         );
     }

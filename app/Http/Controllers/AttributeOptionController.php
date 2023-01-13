@@ -16,13 +16,16 @@ use Illuminate\Support\Facades\Response;
 
 class AttributeOptionController extends Controller
 {
-    public function __construct(private AttributeOptionServiceContract $attributeOptionService)
-    {
+    public function __construct(
+        private AttributeOptionServiceContract $attributeOptionService
+    ) {
     }
 
-    public function index(AttributeOptionIndexRequest $request): JsonResource
+    public function index(AttributeOptionIndexRequest $request, Attribute $attribute): JsonResource
     {
-        $query = AttributeOption::searchByCriteria($request->validated())
+        $query = $attribute
+            ->options()
+            ->searchByCriteria($request->validated())
             ->with(['metadata', 'metadataPrivate']);
 
         return AttributeOptionResource::collection(
@@ -34,7 +37,7 @@ class AttributeOptionController extends Controller
     {
         $attributeOption = $this->attributeOptionService->create(
             $attribute->getKey(),
-            AttributeOptionDto::fromFormRequest($request)
+            AttributeOptionDto::instantiateFromRequest($request)
         );
 
         return AttributeOptionResource::make($attributeOption);
@@ -48,7 +51,7 @@ class AttributeOptionController extends Controller
 
         $attributeOption = $this->attributeOptionService->updateOrCreate(
             $attribute->getKey(),
-            AttributeOptionDto::fromFormRequest($request)
+            AttributeOptionDto::instantiateFromRequest($request)
         );
 
         return AttributeOptionResource::make($attributeOption);

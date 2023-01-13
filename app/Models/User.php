@@ -2,13 +2,18 @@
 
 namespace App\Models;
 
+use App\Criteria\ConsentIdSearch;
+use App\Criteria\ConsentNameSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\RolesSearch;
 use App\Criteria\UserSearch;
 use App\Criteria\WhereInIds;
+use App\Enums\SavedAddressType;
 use App\Models\Contracts\SortableContract;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasMetadata;
+use App\Traits\HasMetadataPersonal;
 use App\Traits\HasWebHooks;
 use App\Traits\Sortable;
 use Heseya\Searchable\Criteria\Like;
@@ -20,6 +25,7 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -29,6 +35,7 @@ use Illuminate\Notifications\Notifiable;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
+use Propaganistas\LaravelPhone\PhoneNumber;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
@@ -55,10 +62,11 @@ class User extends Model implements
         Auditable,
         HasWebHooks,
         HasMetadata,
-        HasDiscountConditions;
+        HasDiscountConditions,
+        HasMetadataPersonal;
 
     // Bez tego nie działały testy, w których jako aplikacja tworzy się użytkownika z określoną rolą
-    protected $guard_name = 'api';
+    protected string $guard_name = 'api';
 
     protected $fillable = [
         'name',
@@ -67,6 +75,10 @@ class User extends Model implements
         'tfa_type',
         'tfa_secret',
         'is_tfa_active',
+        'preferences_id',
+        'birthday_date',
+        'phone_country',
+        'phone_number',
     ];
 
     protected $hidden = [
@@ -81,6 +93,9 @@ class User extends Model implements
         'ids' => WhereInIds::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
+        'consent_name' => ConsentNameSearch::class,
+        'consent_id' => ConsentIdSearch::class,
+        'roles' => RolesSearch::class,
     ];
 
     protected array $sortable = [
@@ -101,6 +116,12 @@ class User extends Model implements
         return '//www.gravatar.com/avatar/' . md5(strtolower(trim($this->email))) . '?d=mp&s=50x50';
     }
 
+    public function getPhoneAttribute(): ?string
+    {
+        return $this->phone_number !== null && $this->phone_country !== null
+            ? PhoneNumber::make($this->phone_number, $this->phone_country) : null;
+    }
+
     public function getJWTIdentifier(): string
     {
         return $this->getKey() ?? 'null';
@@ -109,6 +130,18 @@ class User extends Model implements
     public function getJWTCustomClaims(): array
     {
         return [];
+    }
+
+    public function shippingAddresses(): HasMany
+    {
+        return $this->hasMany(SavedAddress::class)
+            ->where('type', '=', SavedAddressType::SHIPPING);
+    }
+
+    public function billingAddresses(): HasMany
+    {
+        return $this->hasMany(SavedAddress::class)
+            ->where('type', '=', SavedAddressType::BILLING);
     }
 
     public function orders(): MorphMany
@@ -126,5 +159,30 @@ class User extends Model implements
     public function securityCodes(): HasMany
     {
         return $this->hasMany(OneTimeSecurityCode::class, 'user_id', 'id');
+    }
+
+    public function wishlistProducts(): MorphMany
+    {
+        return $this->morphMany(WishlistProduct::class, 'user');
+    }
+
+    public function preferences(): BelongsTo
+    {
+        return $this->belongsTo(UserPreference::class, 'preferences_id');
+    }
+
+    public function loginAttempts(): HasMany
+    {
+        return $this->hasMany(UserLoginAttempt::class, 'user_id', 'id');
+    }
+
+    public function favouriteProductSets(): MorphMany
+    {
+        return $this->morphMany(FavouriteProductSet::class, 'user');
+    }
+
+    public function providers(): HasMany
+    {
+        return $this->hasMany(UserProvider::class, 'user_id', 'id');
     }
 }

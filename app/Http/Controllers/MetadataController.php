@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Dtos\MetadataDto;
+use App\Dtos\MetadataPersonalListDto;
 use App\Http\Resources\MetadataResource;
+use App\Models\AttributeOption;
 use App\Services\Contracts\MetadataServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,17 +19,19 @@ class MetadataController extends Controller
     {
     }
 
-    public function updateOrCreate($modelId, Request $request): JsonResponse | JsonResource
+    public function updateOrCreate(int|string $modelId, Request $request): JsonResponse | JsonResource
     {
-        $model = $this->metadataService->returnModel($request->segments());
-
-        if ($model === null) {
+        $modelClass = $this->metadataService->returnModel($request->segments());
+        if ($modelClass === null) {
             return Response::json(null, JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $model = $model->findOrFail($modelId);
-        $public = Collection::make($request->segments())->last() === 'metadata';
+        # Workaround for attribute option metadata
+        $model = $modelClass instanceof AttributeOption ?
+            $modelClass->where('name', $request->route('option'))->firstOrFail()
+            : $modelClass->where('id', $modelId)->firstOrFail();
 
+        $public = Collection::make($request->segments())->last() === 'metadata';
         foreach ($request->all() as $key => $value) {
             $dto = MetadataDto::manualInit(name: $key, value: $value, public: $public);
 
@@ -40,9 +44,30 @@ class MetadataController extends Controller
         $model->refresh();
 
         if ($public) {
+            // @phpstan-ignore-next-line
             return MetadataResource::make($model->metadata);
         }
 
+        // @phpstan-ignore-next-line
         return MetadataResource::make($model->metadataPrivate);
+    }
+
+    public function updateOrCreateLoggedMyPersonal(Request $request): JsonResource
+    {
+        return MetadataResource::make(
+            $this->metadataService->updateOrCreateMyPersonal(
+                MetadataPersonalListDto::instantiateFromRequest($request)
+            )
+        );
+    }
+
+    public function updateOrCreateUserPersonal(string $modelId, Request $request): JsonResource
+    {
+        return MetadataResource::make(
+            $this->metadataService->updateOrCreateUserPersonal(
+                MetadataPersonalListDto::instantiateFromRequest($request),
+                $modelId,
+            )
+        );
     }
 }

@@ -9,8 +9,11 @@ class TFARecoveryCodesResource extends Resource
 {
     public function base(Request $request): array
     {
+        /** @var Collection<int, mixed> $resource */
+        $resource = $this->resource;
+
         return [
-            'recovery_codes' => Collection::make($this->resource)->toArray(),
+            'recovery_codes' => Collection::make($resource)->toArray(),
         ];
     }
 }

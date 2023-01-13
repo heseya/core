@@ -2,13 +2,16 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
 class OrderPublicResource extends Resource
 {
+    use MetadataResource;
+
     public function base(Request $request): array
     {
-        return [
+        return array_merge([
             'id' => $this->resource->getKey(),
             'code' => $this->resource->code,
             'status' => StatusResource::make($this->resource->status),
@@ -20,8 +23,9 @@ class OrderPublicResource extends Resource
             'shipping_price' => $this->resource->shipping_price,
             'summary' => $this->resource->summary,
             'currency' => $this->resource->currency,
-            'shipping_method_id' => ShippingMethodResource::make($this->resource->shippingMethod),
+            'shipping_method' => ShippingMethodResource::make($this->resource->shippingMethod),
+            'digital_shipping_method' => ShippingMethodResource::make($this->resource->digitalShippingMethod),
             'created_at' => $this->resource->created_at,
-        ];
+        ], $this->metadataResource('orders.show_metadata_private'));
     }
 }

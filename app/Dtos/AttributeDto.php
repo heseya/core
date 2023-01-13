@@ -2,27 +2,29 @@
 
 namespace App\Dtos;
 
+use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\AttributeStoreRequest;
 use App\Http\Requests\AttributeUpdateRequest;
 use App\Traits\MapMetadata;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
+use Illuminate\Foundation\Http\FormRequest;
 
-class AttributeDto extends Dto
+class AttributeDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    public array|Missing $metadata;
+    private array|Missing $metadata;
     private string $name;
     private string $slug;
     private string|null|Missing $description;
     private string $type;
     private bool $global;
     private bool $sortable;
-    private array $options;
 
-    public static function fromFormRequest(AttributeStoreRequest|AttributeUpdateRequest $request): self
-    {
+    public static function instantiateFromRequest(
+        FormRequest|AttributeStoreRequest|AttributeUpdateRequest $request
+    ): self {
         return new self(
             name: $request->input('name'),
             slug: $request->input('slug'),
@@ -30,10 +32,6 @@ class AttributeDto extends Dto
             type: $request->input('type'),
             global: $request->input('global'),
             sortable: $request->input('sortable'),
-            options: $request->has('options') ? array_map(
-                fn ($data) => AttributeOptionDto::fromDataArray($data),
-                $request->input('options')
-            ) : [],
             metadata: self::mapMetadata($request),
         );
     }
@@ -66,13 +64,5 @@ class AttributeDto extends Dto
     public function isSortable(): bool
     {
         return $this->sortable;
-    }
-
-    /**
-     * @return array
-     */
-    public function getOptions(): array
-    {
-        return $this->options;
     }
 }

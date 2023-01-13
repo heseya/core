@@ -1,0 +1,9 @@
+GoogleCategory:
+  type: object
+  properties:
+    id:
+      type: number
+      example: 2271
+    name:
+      type: string
+      example: 'Apparel & Accessories > Clothing > Dresses'

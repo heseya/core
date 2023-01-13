@@ -24,11 +24,14 @@ Sale:
     target_is_allow_list:
       type: boolean
       example: true
+    active:
+      type: boolean
+      example: true
 
 SaleShow:
   type: object
   allOf:
-    - $ref: '#Sale'
+    - $ref: '#/Sale'
     - properties:
         id:
           type: string
@@ -49,11 +52,15 @@ SaleShow:
           type: array
           items:
             $ref: './ShippingMethods.yml#/ShippingMethod'
+        metadata:
+          $ref: './../schemas/Metadata.yml#/Metadata'
+        metadata_private:
+          $ref: './../schemas/Metadata.yml#/Metadata'
 
-SaleStore:
+SaleUpdate:
   type: object
   allOf:
-    - $ref: '#Sale'
+    - $ref: '#/Sale'
     - properties:
         condition_groups:
           type: array
@@ -74,3 +81,13 @@ SaleStore:
           items:
             type: string
             example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+
+SaleStore:
+  type: object
+  allOf:
+    - $ref: '#/SaleUpdate'
+    - properties:
+        metadata:
+          $ref: './../schemas/Metadata.yml#/Metadata'
+        metadata_private:
+          $ref: './../schemas/Metadata.yml#/Metadata'

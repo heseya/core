@@ -7,7 +7,11 @@ PaymentMethods:
       - name: shipping_method_id
         in: query
         schema:
-          type: integer
+          type: string
+      - name: order_code
+        in: query
+        schema:
+          type: string
     responses:
       200:
         description: Success

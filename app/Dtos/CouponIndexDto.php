@@ -2,15 +2,17 @@
 
 namespace App\Dtos;
 
+use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\CouponIndexRequest;
 use App\Http\Requests\SaleIndexRequest;
 use Heseya\Dto\Missing;
+use Illuminate\Foundation\Http\FormRequest;
 
-class CouponIndexDto extends SaleIndexDto
+class CouponIndexDto extends SaleIndexDto implements InstantiateFromRequest
 {
     protected string|Missing $code;
 
-    public static function fromFormRequest(CouponIndexRequest|SaleIndexRequest $request): self
+    public static function instantiateFromRequest(FormRequest|CouponIndexRequest|SaleIndexRequest $request): self
     {
         return new self(
             search: $request->input('search', new Missing()),
@@ -19,6 +21,7 @@ class CouponIndexDto extends SaleIndexDto
             metadata: $request->input('metadata', new Missing()),
             metadata_private: $request->input('metadata_private', new Missing()),
             code: $request->input('code', new Missing()),
+            for_role: $request->input('for_role', new Missing()),
         );
     }
 

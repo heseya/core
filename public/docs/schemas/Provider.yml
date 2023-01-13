@@ -1,0 +1,32 @@
+Provider:
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    key:
+      type: string
+      example: google
+    active:
+      description: 'Is provider active'
+      type: boolean
+      example: true
+    client_id:
+      description: 'Client provider id'
+      type: string
+      example: '19279v71091hfd9u930'
+    client_secret:
+      description: 'Client provider secret key'
+      type: string
+      example: 'akfj90238vh23oui2v'
+  type: object
+
+ProviderResource:
+  properties:
+    key:
+      type: string
+      example: google
+    active:
+      description: 'Is provider active'
+      type: boolean
+      example: true
+  type: object

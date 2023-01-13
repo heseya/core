@@ -176,11 +176,11 @@ class MetadataTest extends TestCase
 
             'media as user' => [
                 'user',
-                ['model' => Media::class, 'prefix_url' => 'media', 'role' => 'products.edit'],
+                ['model' => Media::class, 'prefix_url' => 'media', 'role' => 'media.edit'],
             ],
             'media as application' => [
                 'application',
-                ['model' => Media::class, 'prefix_url' => 'media', 'role' => 'products.edit'],
+                ['model' => Media::class, 'prefix_url' => 'media', 'role' => 'media.edit'],
             ],
 
             'banners as user' => [
@@ -499,5 +499,242 @@ class MetadataTest extends TestCase
             ->assertJsonMissing([
                 $metadata2->name => $metadata2->value,
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexEmptyObject($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                "/products/id:{$product->getKey()}",
+            )
+            ->assertOk();
+
+        $this->assertStringContainsString('"metadata":{}', $response->getContent());
+    }
+
+    public function testAddMyMetadataPersonal(): void
+    {
+        $metadata = [
+            'sample text metadata' => 'Lorem ipsum dolor sit amet',
+            'sample numeric metadata' => 21.5,
+            'sample bool metadata' => true,
+        ];
+
+        $this->actingAs($this->user)->json(
+            'PATCH',
+            '/auth/profile/metadata-personal',
+            $metadata
+        )
+            ->assertOk()
+            ->assertJsonFragment(['data' => $metadata]);
+
+        $this->assertDatabaseHas('metadata_personals', [
+            'model_type' => $this->user::class,
+            'model_id' => $this->user->getKey(),
+            'name' => 'sample text metadata',
+            'value' => 'Lorem ipsum dolor sit amet',
+        ]);
+        $this->assertDatabaseHas('metadata_personals', [
+            'model_type' => $this->user::class,
+            'model_id' => $this->user->getKey(),
+            'name' => 'sample numeric metadata',
+            'value' => 21.5,
+        ]);
+        $this->assertDatabaseHas('metadata_personals', [
+            'model_type' => $this->user::class,
+            'model_id' => $this->user->getKey(),
+            'name' => 'sample bool metadata',
+            'value' => true,
+        ]);
+    }
+
+    public function testUpdateMyMetadataPersonal(): void
+    {
+        $this->user->metadataPersonal()->create([
+            'name' => 'sample text metadata',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+        ]);
+
+        $metadata = [
+            'sample text metadata' => 'Lorem ipsum dolor sit amet',
+        ];
+
+        $this->actingAs($this->user)->json(
+            'PATCH',
+            '/auth/profile/metadata-personal',
+            $metadata
+        )
+            ->assertOk()
+            ->assertJsonFragment(['data' => $metadata]);
+
+        $this->assertDatabaseHas('metadata_personals', [
+            'model_type' => $this->user::class,
+            'model_id' => $this->user->getKey(),
+            'name' => 'sample text metadata',
+            'value' => 'Lorem ipsum dolor sit amet',
+        ]);
+        $this->assertDatabaseMissing('metadata_personals', [
+            'model_type' => $this->user::class,
+            'model_id' => $this->user->getKey(),
+            'name' => 'sample text metadata',
+            'value' => 'metadata test',
+        ]);
+    }
+
+    public function testDeleteMyMetadataPersonal(): void
+    {
+        $this->user->metadataPersonal()->create([
+            'name' => 'sample text metadata',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+        ]);
+
+        $metadata = [
+            'sample text metadata' => null,
+        ];
+
+        $this->actingAs($this->user)->json(
+            'PATCH',
+            '/auth/profile/metadata-personal',
+            $metadata
+        )
+            ->assertOk()
+            ->assertJsonFragment(['data' => []]);
+
+        $this->assertDatabaseMissing('metadata_personals', [
+            'model_type' => $this->user::class,
+            'model_id' => $this->user->getKey(),
+            'name' => 'sample text metadata',
+            'value' => 'metadata test',
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testAddUserMetadataPersonal($user): void
+    {
+        $this->$user->givePermissionTo('users.edit');
+        $model = User::factory()->create();
+        $metadata = [
+            'sample text metadata' => 'Lorem ipsum dolor sit amet',
+            'sample numeric metadata' => 21.5,
+            'sample bool metadata' => true,
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'PATCH',
+                "/users/id:{$model->getKey()}/metadata-personal",
+                $metadata
+            )
+            ->assertOk()
+            ->assertJsonFragment(['data' => $metadata]);
+
+        $this->assertDatabaseHas('metadata_personals', [
+            'model_type' => $model::class,
+            'model_id' => $model->getKey(),
+            'name' => 'sample text metadata',
+            'value' => 'Lorem ipsum dolor sit amet',
+        ]);
+        $this->assertDatabaseHas('metadata_personals', [
+            'model_type' => $model::class,
+            'model_id' => $model->getKey(),
+            'name' => 'sample numeric metadata',
+            'value' => 21.5,
+        ]);
+        $this->assertDatabaseHas('metadata_personals', [
+            'model_type' => $model::class,
+            'model_id' => $model->getKey(),
+            'name' => 'sample bool metadata',
+            'value' => true,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateUserMetadataPersonal($user): void
+    {
+        $this->$user->givePermissionTo('users.edit');
+        $model = User::factory()->create();
+
+        $this->user->metadataPersonal()->create([
+            'name' => 'sample text metadata',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+        ]);
+
+        $metadata = [
+            'sample text metadata' => 'Lorem ipsum dolor sit amet',
+        ];
+
+        $this->actingAs($this->$user)->json(
+            'PATCH',
+            "/users/id:{$model->getKey()}/metadata-personal",
+            $metadata
+        )
+            ->assertOk()
+            ->assertJsonFragment(['data' => $metadata]);
+
+        $this->assertDatabaseHas('metadata_personals', [
+            'model_type' => $model::class,
+            'model_id' => $model->getKey(),
+            'name' => 'sample text metadata',
+            'value' => 'Lorem ipsum dolor sit amet',
+        ]);
+        $this->assertDatabaseMissing('metadata_personals', [
+            'model_type' => $model::class,
+            'model_id' => $model->getKey(),
+            'name' => 'sample text metadata',
+            'value' => 'metadata test',
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteUserMetadataPersonal($user): void
+    {
+        $this->$user->givePermissionTo('users.edit');
+        $model = User::factory()->create();
+
+        $model->metadataPersonal()->create([
+            'name' => 'sample text metadata',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+        ]);
+
+        $metadata = [
+            'sample text metadata' => null,
+        ];
+
+        $this->actingAs($this->$user)->json(
+            'PATCH',
+            "/users/id:{$model->getKey()}/metadata-personal",
+            $metadata
+        )
+            ->assertOk()
+            ->assertJsonFragment(['data' => []]);
+
+        $this->assertDatabaseMissing('metadata_personals', [
+            'model_type' => $model::class,
+            'model_id' => $model->getKey(),
+            'name' => 'sample text metadata',
+            'value' => 'metadata test',
+        ]);
     }
 }

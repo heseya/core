@@ -19,12 +19,35 @@ Users:
         description: 'Email search'
         schema:
           type: string
+        example: 'email@example.com'
+      - name: roles[]
+        in: query
+        description: 'Search for users in roles by role id'
+        schema:
+          type: string
+        example: '9e2206ff-1edf-49c4-ab6c-ab620f18b98d'
+      - name: consent_name
+        in: query
+        description: 'Accepted Consent name search'
+        schema:
+          type: string
+      - name: consent_id
+        in: query
+        description: 'Accepted Consent id search'
+        schema:
+          type: string
+        example: '9e2206ff-1edf-49c4-ab6c-ab620f18b98d'
       - name: sort
         in: query
         description: 'Sorting string'
         schema:
           type: string
         example: 'name:desc'
+      - name: full
+        in: query
+        description: 'Returns details resource'
+        schema:
+          type: boolean
       - name: limit
         in: query
         description: 'Number of elements per page'
@@ -75,7 +98,7 @@ Users:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Users.yml#/User'
+                  $ref: './../schemas/Users.yml#/UserView'
               type: object
     security:
       - BearerAuth: [ ]
@@ -100,7 +123,7 @@ UsersParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Users.yml#/User'
+                  $ref: './../schemas/Users.yml#/UserView'
               type: object
     security:
       - BearerAuth: [ ]
@@ -141,7 +164,7 @@ UsersParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Users.yml#/User'
+                  $ref: './../schemas/Users.yml#/UserView'
               type: object
     security:
       - BearerAuth: [ ]

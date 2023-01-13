@@ -6,7 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class PaymentMethodUpdateRequest extends FormRequest
 {
-    public function rules()
+    public function rules(): array
     {
         return [
             'name' => ['string', 'max:255'],

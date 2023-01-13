@@ -6,7 +6,6 @@ use App\Http\Requests\Contracts\MetadataRequestContract;
 use App\Http\Requests\Contracts\SeoRequestContract;
 use App\Rules\AttributeOptionExist;
 use App\Rules\Boolean;
-use App\Rules\GoogleProductCategoryExist;
 use App\Rules\ProductAttributeOptions;
 use App\Rules\UniqueIdInRequest;
 use App\Traits\BooleanRules;
@@ -21,6 +20,7 @@ class ProductCreateRequest extends FormRequest implements SeoRequestContract, Me
     protected array $booleanFields = [
         'public',
         'seo.no_index',
+        'shipping_digital',
     ];
 
     public function rules(): array
@@ -33,12 +33,15 @@ class ProductCreateRequest extends FormRequest implements SeoRequestContract, Me
                 'slug' => ['required', 'string', 'max:255', 'unique:products', 'alpha_dash'],
                 'price' => ['required', 'numeric', 'min:0'],
                 'public' => ['required', new Boolean()],
+                'shipping_digital' => ['required', new Boolean()],
 
                 'description_html' => ['nullable', 'string'],
                 'description_short' => ['nullable', 'string', 'between:30,5000'],
 
                 'quantity_step' => ['numeric'],
                 'order' => ['nullable', 'numeric'],
+                'vat_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+                'purchase_limit_per_user' => ['nullable', 'numeric', 'min:0'],
 
                 'media' => ['nullable', 'array'],
                 'media.*' => ['uuid', 'exists:media,id'],
@@ -52,7 +55,7 @@ class ProductCreateRequest extends FormRequest implements SeoRequestContract, Me
 
                 'items' => ['nullable', 'array', new UniqueIdInRequest()],
                 'items.*.id' => ['uuid'],
-                'items.*.quantity' => ['numeric'],
+                'items.*.required_quantity' => ['numeric'],
 
                 'schemas' => ['nullable', 'array'],
                 'schemas.*' => ['uuid', 'exists:schemas,id'],
@@ -62,7 +65,6 @@ class ProductCreateRequest extends FormRequest implements SeoRequestContract, Me
                 'google_product_category' => [
                     'nullable',
                     'integer',
-                    new GoogleProductCategoryExist(),
                 ],
             ],
         );

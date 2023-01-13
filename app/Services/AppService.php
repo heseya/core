@@ -12,8 +12,11 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\AppServiceContract;
+use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UrlServiceContract;
+use Heseya\Dto\Missing;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
@@ -28,6 +31,7 @@ class AppService implements AppServiceContract
     public function __construct(
         protected TokenServiceContract $tokenService,
         protected UrlServiceContract $urlService,
+        protected MetadataServiceContract $metadataService,
     ) {
     }
 
@@ -40,11 +44,12 @@ class AppService implements AppServiceContract
             throw new ClientException(Exceptions::CLIENT_ASSIGN_INVALID_PERMISSIONS);
         }
 
-        if (!Auth::user()->hasAllPermissions($permissions->toArray())) {
+        if (!Auth::user()?->hasAllPermissions($permissions->toArray())) {
             throw new ClientException(Exceptions::CLIENT_ADD_APP_WITH_PERMISSIONS_USER_DONT_HAVE);
         }
 
         try {
+            /** @var Response $response */
             $response = Http::get($dto->getUrl());
         } catch (Throwable) {
             throw new ClientException(Exceptions::CLIENT_FAILED_TO_CONNECT_WITH_APP);
@@ -52,13 +57,13 @@ class AppService implements AppServiceContract
 
         if ($response->failed()) {
             throw new ClientException(
-                Exceptions::CLIENT_APP_RESPONDED_WITH_INVALID_CODE,
+                Exceptions::CLIENT_APP_INFO_RESPONDED_WITH_INVALID_CODE,
                 0,
                 null,
                 false,
                 [
-                    "Status code: {$response->status()}",
-                    "Body: {$response->body()}",
+                    'code' => $response->status(),
+                    'body' => $response->body(),
                 ],
             );
         }
@@ -75,15 +80,18 @@ class AppService implements AppServiceContract
             );
         }
 
+        /** @var array $appConfig */
         $appConfig = $response->json();
+        /** @var Collection<int, mixed> $requiredPermissions */
+        $requiredPermissions = $appConfig['required_permissions'];
 
-        $requiredPerm = Collection::make($appConfig['required_permissions']);
+        $requiredPerm = Collection::make($requiredPermissions);
         $optionalPerm = key_exists('optional_permissions', $appConfig) ?
             $appConfig['optional_permissions'] : [];
         $advertisedPerm = $requiredPerm->concat($optionalPerm)->unique();
 
         if ($advertisedPerm->diff($allPermissions)->isNotEmpty()) {
-            throw new ClientException(Exceptions::CLIENT_APP_WANTS_INVALID_INFO);
+            throw new ClientException(Exceptions::CLIENT_APP_WANTS_INVALID_PERMISSION);
         }
 
         if ($permissions->intersect($requiredPerm)->count() < $requiredPerm->count()) {
@@ -91,13 +99,13 @@ class AppService implements AppServiceContract
         }
 
         if ($permissions->intersect($advertisedPerm)->count() < $permissions->count()) {
-            throw new ClientException(Exceptions::CLIENT_ADD_PERMISSION_AP_DOESNT_WANT);
+            throw new ClientException(Exceptions::CLIENT_ADD_PERMISSION_APP_DOESNT_WANT);
         }
 
         $name = $dto->getName() ?? $appConfig['name'];
         $slug = Str::slug($name);
 
-        $app = App::create([
+        $app = App::query()->create([
             'url' => $dto->getUrl(),
             'name' => $name,
             'slug' => $slug,
@@ -112,7 +120,7 @@ class AppService implements AppServiceContract
         ])->toArray());
 
         $app->givePermissionTo(
-            $permissions->concat(['auth.login', 'auth.check_identity']),
+            $permissions->concat(['auth.check_identity']),
         );
 
         $uuid = Str::uuid()->toString();
@@ -131,6 +139,7 @@ class AppService implements AppServiceContract
         $url = $this->urlService->urlAppendPath($dto->getUrl(), '/install');
 
         try {
+            /** @var Response $response */
             $response = Http::post($url, [
                 'api_url' => Config::get('app.url'),
                 'api_name' => Config::get('app.name'),
@@ -147,7 +156,7 @@ class AppService implements AppServiceContract
             $app->delete();
 
             throw new ClientException(
-                Exceptions::CLIENT_APP_RESPONDED_WITH_INVALID_CODE,
+                Exceptions::CLIENT_APP_INSTALLATION_RESPONDED_WITH_INVALID_CODE,
                 0,
                 null,
                 false,
@@ -177,7 +186,10 @@ class AppService implements AppServiceContract
             'uninstall_token' => $response->json('uninstall_token'),
         ]);
 
-        $internalPermissions = Collection::make($appConfig['internal_permissions'])
+        /** @var Collection<int, mixed> $internalPermissions */
+        $internalPermissions = $appConfig['internal_permissions'];
+
+        $internalPermissions = Collection::make($internalPermissions)
             ->map(fn ($permission) => Permission::create([
                 'name' => "app.{$app->slug}.{$permission['name']}",
                 'display_name' => $permission['display_name'] ?? null,
@@ -199,6 +211,10 @@ class AppService implements AppServiceContract
             );
         }
 
+        if (!($dto->getMetadata() instanceof Missing)) {
+            $this->metadataService->sync($app, $dto->getMetadata());
+        }
+
         return $app;
     }
 
@@ -207,6 +223,7 @@ class AppService implements AppServiceContract
         $url = $app->url . (Str::endsWith($app->url, '/') ? 'uninstall' : '/uninstall');
 
         try {
+            /** @var Response $response */
             $response = Http::post($url, [
                 'uninstall_token' => $app->uninstall_token,
             ]);
@@ -220,7 +237,9 @@ class AppService implements AppServiceContract
             }
         }
 
-        Permission::where('name', 'like', 'app.' . $app->slug . '%')->delete();
+        Permission::query()
+            ->where('name', 'like', 'app.' . $app->slug . '%')
+            ->delete();
 
         Artisan::call('permission:cache-reset');
 
@@ -234,7 +253,7 @@ class AppService implements AppServiceContract
         return 'app.' . $app->slug . '.';
     }
 
-    protected function isAppRootValid($response)
+    protected function isAppRootValid(Response $response): bool
     {
         return $this->isResponseValid($response, [
             'name' => ['required', 'string'],
@@ -256,7 +275,7 @@ class AppService implements AppServiceContract
         ]);
     }
 
-    protected function isResponseValid($response, $rules)
+    protected function isResponseValid(Response $response, array $rules): bool
     {
         if ($response->json() === null) {
             return false;
@@ -284,7 +303,7 @@ class AppService implements AppServiceContract
             'role_id' => $role->getKey(),
         ]);
 
-        Auth::user()->assignRole($role);
+        Auth::user()?->assignRole($role);
     }
 
     /**

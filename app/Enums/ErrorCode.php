@@ -15,7 +15,7 @@ final class ErrorCode extends Enum
     public const BAD_GATEWAY = 'Bad gateway';
     public const VALIDATION_ERROR = 'Validation error';
 
-    public static function getCode($value): int
+    public static function getCode(string $value): int
     {
         return match ($value) {
             self::NOT_FOUND => 404,
