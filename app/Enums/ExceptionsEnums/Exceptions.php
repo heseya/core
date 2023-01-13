@@ -109,6 +109,10 @@ final class Exceptions extends Enum
     public const PAYMENT_METHOD_NOT_AVAILABLE_FOR_SHIPPING =
         'Payment method not available for selected shipping method';
 
+    public const CLIENT_ALREADY_HAS_ACCOUNT = 'User with given email already exist.';
+
+    public const CLIENT_PROVIDER_MERGE_TOKEN_EXPIRED = 'Provider merge token has expired';
+
     public static function getCode(string $value): int
     {
         return match ($value) {

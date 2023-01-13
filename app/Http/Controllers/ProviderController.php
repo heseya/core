@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Dtos\AuthProviderDto;
 use App\Dtos\AuthProviderLoginDto;
+use App\Dtos\AuthProviderMergeAccountDto;
 use App\Enums\AuthProviderKey;
 use App\Http\Requests\AuthProviderIndexRequest;
 use App\Http\Requests\AuthProviderLoginRequest;
+use App\Http\Requests\AuthProviderMergeAccountRequest;
 use App\Http\Requests\AuthProviderRedirectRequest;
 use App\Http\Requests\AuthProviderUpdateRequest;
 use App\Http\Resources\AuthProviderRedirectResource;
@@ -71,5 +73,12 @@ class ProviderController extends Controller
                 ->redirect()
                 ->getTargetUrl(),
         ]);
+    }
+
+    public function mergeAccount(AuthProviderMergeAccountRequest $request): JsonResponse
+    {
+        $this->providerService->mergeAccount(AuthProviderMergeAccountDto::instantiateFromRequest($request));
+
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

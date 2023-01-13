@@ -50,6 +50,8 @@ Route::prefix('auth')->group(function (): void {
 
     Route::prefix('providers')->group(function (): void {
         Route::get(null, [ProviderController::class, 'getProvidersList']);
+        Route::post('merge-account', [ProviderController::class, 'mergeAccount'])
+            ->middleware('can:authenticated');
         Route::post('{authProviderKey}/login', [ProviderController::class, 'login'])
             ->middleware('can:auth.register');
         Route::post('{authProviderKey}/redirect', [ProviderController::class, 'redirect']);

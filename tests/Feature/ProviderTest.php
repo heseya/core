@@ -3,10 +3,18 @@
 namespace Tests\Feature;
 
 use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\RoleType;
 use App\Enums\ValidationError;
 use App\Models\AuthProvider as AuthProviderModel;
+use App\Models\Role;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
+use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
 class ProviderTest extends TestCase
@@ -316,25 +324,7 @@ class ProviderTest extends TestCase
     public function testLoginNewUser($key): void
     {
         $this->user->givePermissionTo(['auth.register']);
-        $user = \Mockery::mock('Laravel\Socialite\Two\User');
-        $user
-            ->shouldReceive('getId')
-            ->andReturn(rand())
-            ->shouldReceive('getName')
-            ->andReturn('test user')
-            ->shouldReceive('getEmail')
-            ->andReturn('test.user@gmail.com')
-            ->shouldReceive('getAvatar')
-            ->andReturn('https://en.gravatar.com/userimage');
-
-        $provider = \Mockery::mock('Laravel\Socialite\Contracts\Provider');
-        $provider
-            ->shouldReceive('stateless')
-            ->andReturn($provider)
-            ->shouldReceive('user')
-            ->andReturn($user);
-
-        Socialite::shouldReceive('driver')->with($key)->andReturn($provider);
+        $this->mockSocialiteUser($key);
 
         AuthProviderModel::factory()->create([
             'key' => $key,
@@ -378,25 +368,7 @@ class ProviderTest extends TestCase
     public function testLoginExistingUser($key): void
     {
         $this->user->givePermissionTo(['auth.register']);
-        $user = \Mockery::mock('Laravel\Socialite\Two\User');
-        $user
-            ->shouldReceive('getId')
-            ->andReturn(123456789)
-            ->shouldReceive('getName')
-            ->andReturn('test user')
-            ->shouldReceive('getEmail')
-            ->andReturn('test.user@gmail.com')
-            ->shouldReceive('getAvatar')
-            ->andReturn('https://en.gravatar.com/userimage');
-
-        $provider = \Mockery::mock('Laravel\Socialite\Contracts\Provider');
-        $provider
-            ->shouldReceive('stateless')
-            ->andReturn($provider)
-            ->shouldReceive('user')
-            ->andReturn($user);
-
-        Socialite::shouldReceive('driver')->with($key)->andReturn($provider);
+        $this->mockSocialiteUser($key);
 
         $authProvider = AuthProviderModel::factory()->create([
             'key' => $key,
@@ -444,5 +416,332 @@ class ProviderTest extends TestCase
                 ],
             ]
         );
+    }
+
+    /**
+     * @dataProvider socialMediaProvider
+     */
+    public function testLoginExistingStandardUserRegistered($key): void
+    {
+        $this->user->givePermissionTo(['auth.register']);
+        $this->mockSocialiteUser($key);
+
+        AuthProviderModel::factory()->create([
+            'key' => $key,
+            'active' => true,
+            'client_id' => 'test_id',
+            'client_secret' => 'test_secret',
+        ]);
+
+        $existingUser = User::factory()->create([
+            'name' => 'test user',
+            'email' => 'test.user@gmail.com',
+            'password' => Hash::make('password'),
+        ]);
+
+        $response = $this->actingAs($this->user)->json(
+            'POST',
+            "auth/providers/{$key}/login",
+            [
+                'return_url' => 'https://example.com?code=test',
+            ]
+        )
+            ->assertStatus(JsonResponse::HTTP_UNPROCESSABLE_ENTITY)
+            ->assertJsonFragment(['message' => Exceptions::CLIENT_ALREADY_HAS_ACCOUNT]);
+
+        $mergeToken = $response->json('error.errors.merge_token');
+
+        $this->assertDatabaseHas('user_providers', [
+            'provider' => $key,
+            'user_id' => $existingUser->getKey(),
+            'merge_token' => $mergeToken,
+        ]);
+    }
+
+    /**
+     * @dataProvider socialMediaProvider
+     */
+    public function testLoginExistingStandardUserRegisteredAndProviderAlreadyUsed($key): void
+    {
+        $this->user->givePermissionTo(['auth.register']);
+
+        $this->mockSocialiteUser($key);
+
+        $authProvider = AuthProviderModel::factory()->create([
+            'key' => $key,
+            'active' => true,
+            'client_id' => 'test_id',
+            'client_secret' => 'test_secret',
+        ]);
+
+        $existingUser = User::factory()->create([
+            'name' => 'test user',
+            'email' => 'test.user@gmail.com',
+            'password' => Hash::make('password'),
+        ]);
+
+        $oldMergeToken = Str::random(128);
+        $existingUser->providers()->create([
+            'provider' => $authProvider->key,
+            'provider_user_id' => 123456789,
+            'user_id' => $existingUser->getKey(),
+            'merge_token' => $oldMergeToken,
+            'merge_token_expires_at' => Carbon::now()->addDay(),
+        ]);
+
+        $response = $this->actingAs($this->user)->json(
+            'POST',
+            "auth/providers/{$key}/login",
+            [
+                'return_url' => 'https://example.com?code=test',
+            ]
+        )
+            ->assertStatus(JsonResponse::HTTP_UNPROCESSABLE_ENTITY)
+            ->assertJsonFragment(['message' => Exceptions::CLIENT_ALREADY_HAS_ACCOUNT]);
+
+        $mergeToken = $response->json('error.errors.merge_token');
+
+        $this->assertDatabaseCount('user_providers', 1);
+
+        $this->assertDatabaseHas('user_providers', [
+            'provider' => $key,
+            'user_id' => $existingUser->getKey(),
+            'merge_token' => $mergeToken,
+        ]);
+
+        $this->assertDatabaseMissing('user_providers', [
+            'provider' => $key,
+            'user_id' => $existingUser->getKey(),
+            'merge_token' => $oldMergeToken,
+        ]);
+    }
+
+    /**
+     * @dataProvider socialMediaProvider
+     */
+    public function testMergeAccountUnauthorized($key): void
+    {
+        $this->mockSocialiteUser($key);
+
+        $authProvider = AuthProviderModel::factory()->create([
+            'key' => $key,
+            'active' => true,
+            'client_id' => 'test_id',
+            'client_secret' => 'test_secret',
+        ]);
+
+        $existingUser = User::factory()->create([
+            'name' => 'test user',
+            'email' => 'test.user@gmail.com',
+            'password' => Hash::make('password'),
+        ]);
+
+        $mergeToken = Str::random(128);
+        $existingUser->providers()->create([
+            'provider' => $authProvider->key,
+            'provider_user_id' => 123456789,
+            'user_id' => $existingUser->getKey(),
+            'merge_token' => $mergeToken,
+            'merge_token_expires_at' => Carbon::now()->subDay(),
+        ]);
+
+        $this
+            ->json('POST', '/auth/providers/merge-account', [
+                'merge_token' => $mergeToken,
+            ])
+            ->assertStatus(JsonResponse::HTTP_FORBIDDEN);
+    }
+
+    /**
+     * @dataProvider socialMediaProvider
+     */
+    public function testMergeAccountExpiredToken($key): void
+    {
+        $this->mockSocialiteUser($key);
+
+        $authProvider = AuthProviderModel::factory()->create([
+            'key' => $key,
+            'active' => true,
+            'client_id' => 'test_id',
+            'client_secret' => 'test_secret',
+        ]);
+
+        $existingUser = User::factory()->create([
+            'name' => 'test user',
+            'email' => 'test.user@gmail.com',
+            'password' => Hash::make('password'),
+        ]);
+
+        $mergeToken = Str::random(128);
+        $existingUser->providers()->create([
+            'provider' => $authProvider->key,
+            'provider_user_id' => 123456789,
+            'user_id' => $existingUser->getKey(),
+            'merge_token' => $mergeToken,
+            'merge_token_expires_at' => Carbon::now()->subDay(),
+        ]);
+
+        $this
+            ->actingAs($existingUser)
+            ->json('POST', '/auth/providers/merge-account', [
+                'merge_token' => $mergeToken,
+            ])
+            ->assertStatus(JsonResponse::HTTP_UNPROCESSABLE_ENTITY)
+            ->assertJsonFragment(['message' => Exceptions::CLIENT_PROVIDER_MERGE_TOKEN_EXPIRED]);
+
+        $this->assertDatabaseHas('user_providers', [
+            'provider' => $key,
+            'user_id' => $existingUser->getKey(),
+            'merge_token' => $mergeToken,
+        ]);
+    }
+
+    /**
+     * @dataProvider socialMediaProvider
+     */
+    public function testMergeAccountDifferentUser($key): void
+    {
+        $this->mockSocialiteUser($key);
+
+        $authProvider = AuthProviderModel::factory()->create([
+            'key' => $key,
+            'active' => true,
+            'client_id' => 'test_id',
+            'client_secret' => 'test_secret',
+        ]);
+
+        $existingUser = User::factory()->create([
+            'name' => 'test user',
+            'email' => 'test.user@gmail.com',
+            'password' => Hash::make('password'),
+        ]);
+
+        $mergeToken = Str::random(128);
+        $existingUser->providers()->create([
+            'provider' => $authProvider->key,
+            'provider_user_id' => 123456789,
+            'user_id' => $existingUser->getKey(),
+            'merge_token' => $mergeToken,
+            'merge_token_expires_at' => Carbon::now()->subDay(),
+        ]);
+
+        $this
+            ->actingAs($this->user)
+            ->json('POST', '/auth/providers/merge-account', [
+                'merge_token' => $mergeToken,
+            ])
+            ->assertStatus(JsonResponse::HTTP_NOT_FOUND);
+
+        $this->assertDatabaseHas('user_providers', [
+            'provider' => $key,
+            'user_id' => $existingUser->getKey(),
+            'merge_token' => $mergeToken,
+        ]);
+    }
+
+    /**
+     * @dataProvider socialMediaProvider
+     */
+    public function testMergeAccount($key): void
+    {
+        $this->mockSocialiteUser($key);
+
+        $authProvider = AuthProviderModel::factory()->create([
+            'key' => $key,
+            'active' => true,
+            'client_id' => 'test_id',
+            'client_secret' => 'test_secret',
+        ]);
+
+        $existingUser = User::factory()->create([
+            'name' => 'test user',
+            'email' => 'test.user@gmail.com',
+            'password' => Hash::make('password'),
+        ]);
+
+        $mergeToken = Str::random(128);
+        $existingUser->providers()->create([
+            'provider' => $authProvider->key,
+            'provider_user_id' => 123456789,
+            'user_id' => $existingUser->getKey(),
+            'merge_token' => $mergeToken,
+            'merge_token_expires_at' => Carbon::now()->addDay(),
+        ]);
+
+        $this
+            ->actingAs($existingUser)
+            ->json('POST', '/auth/providers/merge-account', [
+                'merge_token' => $mergeToken,
+            ])
+            ->assertNoContent();
+
+        $this->assertDatabaseHas('user_providers', [
+            'provider' => $key,
+            'user_id' => $existingUser->getKey(),
+            'merge_token' => null,
+        ]);
+    }
+
+    /**
+     * @dataProvider socialMediaProvider
+     */
+    public function testStandardRegistrationAfterRegisteredWithProvider($key): void
+    {
+        $this->mockSocialiteUser($key);
+
+        $authProvider = AuthProviderModel::factory()->create([
+            'key' => $key,
+            'active' => true,
+            'client_id' => 'test_id',
+            'client_secret' => 'test_secret',
+        ]);
+
+        $existingUser = User::factory()->create([
+            'name' => 'test user',
+            'email' => 'test.user@gmail.com',
+            'password' => null,
+        ]);
+
+        $existingUser->providers()->create([
+            'provider' => $authProvider->key,
+            'provider_user_id' => 123456789,
+            'user_id' => $existingUser->getKey(),
+        ]);
+
+        Notification::fake();
+
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.register');
+
+        $this->json('POST', '/register', [
+            'name' => 'test user',
+            'email' => 'test.user@gmail.com',
+            'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+        ])->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+
+        Notification::assertNothingSent();
+    }
+
+    private function mockSocialiteUser(string $key): void
+    {
+        $user = \Mockery::mock('Laravel\Socialite\Two\User');
+        $user
+            ->shouldReceive('getId')
+            ->andReturn(123456789)
+            ->shouldReceive('getName')
+            ->andReturn('test user')
+            ->shouldReceive('getEmail')
+            ->andReturn('test.user@gmail.com')
+            ->shouldReceive('getAvatar')
+            ->andReturn('https://en.gravatar.com/userimage');
+
+        $provider = \Mockery::mock('Laravel\Socialite\Contracts\Provider');
+        $provider
+            ->shouldReceive('stateless')
+            ->andReturn($provider)
+            ->shouldReceive('user')
+            ->andReturn($user);
+
+        Socialite::shouldReceive('driver')->with($key)->andReturn($provider);
     }
 }

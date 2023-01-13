@@ -101,6 +101,8 @@ paths:
     $ref: './paths/Auth.yml#/TFARemove'
   /auth/providers:
     $ref: './paths/Provider.yml#/Index'
+  /auth/providers/merge-account:
+    $ref: './paths/Provider.yml#/MergeAccount'
   /auth/providers/{AuthProviderKey}:
     $ref: './paths/Provider.yml#/ProviderParams'
   /auth/providers/{AuthProviderKey}/login:
