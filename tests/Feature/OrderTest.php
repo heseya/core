@@ -136,6 +136,7 @@ class OrderTest extends TestCase
             'summary_paid',
             'currency',
             'metadata',
+            'billing_address',
         ];
 
         $this->expected_full_view_structure = $this->expected_full_structure + [

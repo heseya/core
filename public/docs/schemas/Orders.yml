@@ -51,6 +51,8 @@ Order:
       example: 'address'
     invoice_requested:
       type: boolean
+    billing_address:
+      $ref: './Addresses.yml#/Address'
     shipping_place:
       oneOf:
         - $ref: './Addresses.yml#/Address'
@@ -147,8 +149,6 @@ OrderView:
   allOf:
     - $ref: '#/Order'
     - properties:
-        billing_address:
-          $ref: './Addresses.yml#/Address'
         products:
           type: array
           items:
