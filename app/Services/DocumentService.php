@@ -41,13 +41,11 @@ class DocumentService implements DocumentServiceContract
         /** @var string $url */
         $url = $document->media?->url;
 
-        // @phpstan-ignore-next-line
         $mime = Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
             ->get($url . '/info')
             ->json('mime');
 
         return response()->streamDownload(function () use ($url): void {
-            // @phpstan-ignore-next-line
             echo Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
                 ->get($url);
         }, Str::of($url)->afterLast('/'), [

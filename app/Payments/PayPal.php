@@ -2,6 +2,7 @@
 
 namespace App\Payments;
 
+use App\Enums\PaymentStatus;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -58,14 +59,16 @@ class PayPal implements PaymentMethod
         ]);
         $response = $transaction->send();
 
-        $payment = Payment::where('external_id', $request->input('paymentId'))->firstOrFail();
+        $payment = Payment::query()
+            ->where('external_id', $request->input('paymentId'))
+            ->firstOrFail();
 
         if (!$response->isSuccessful()) {
             return $response->getMessage();
         }
 
         $payment->update([
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
         ]);
 
         return Redirect::to(Config::get('app.store_url') . '/status/' . $payment->order->code);

@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Enums\PaymentStatus;
 use App\Events\OrderUpdatedPaid;
 use App\Models\Payment;
 
@@ -22,7 +23,11 @@ class PaymentObserver
         $isPaid = $payment->order?->isPaid();
 
         // update only if paid status changed
-        if ($payment->order && $payment->order->paid !== $isPaid) {
+        if (
+            $payment->status->value === PaymentStatus::SUCCESSFUL &&
+            $payment->order &&
+            $payment->order->paid !== $isPaid
+        ) {
             $payment->order->update([
                 'paid' => $isPaid,
             ]);
