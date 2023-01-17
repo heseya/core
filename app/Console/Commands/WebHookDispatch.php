@@ -51,7 +51,10 @@ class WebHookDispatch extends Command
         return 0;
     }
 
-    private function dispatch(WebHookEvent|string $event, Model $model): void
+    /**
+     * @param class-string $event
+     */
+    private function dispatch(string $event, Model $model): void
     {
         $this->info('WebHook dispatching...');
         $event::dispatch($model);

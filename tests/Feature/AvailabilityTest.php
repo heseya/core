@@ -3,9 +3,9 @@
 namespace Tests\Feature;
 
 use App\Enums\SchemaType;
+use App\Enums\ShippingType;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
-use App\Enums\ShippingType;
 use App\Events\ProductUpdated;
 use App\Models\Address;
 use App\Models\Deposit;

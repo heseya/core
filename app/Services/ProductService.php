@@ -41,7 +41,8 @@ class ProductService implements ProductServiceContract
     {
         DB::beginTransaction();
 
-        $product = Product::create($dto->toArray());
+        /** @var Product $product */
+        $product = Product::query()->create($dto->toArray());
         $product = $this->setup($product, $dto);
         $product->save();
 
@@ -50,8 +51,8 @@ class ProductService implements ProductServiceContract
             $product->getKey(),
             null,
             null,
-            $product->price_min,
-            $product->price_max,
+            $product->price_min, // @phpstan-ignore-line
+            $product->price_max, // @phpstan-ignore-line
         );
         ProductCreated::dispatch($product);
         // @phpstan-ignore-next-line
@@ -78,8 +79,8 @@ class ProductService implements ProductServiceContract
                 $product->getKey(),
                 $oldMinPrice,
                 $oldMaxPrice,
-                $product->price_min,
-                $product->price_max,
+                $product->price_min, // @phpstan-ignore-line
+                $product->price_max, // @phpstan-ignore-line
             );
         }
 

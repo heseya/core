@@ -115,6 +115,7 @@ class UserService implements UserServiceContract
                 throw new ClientException(Exceptions::CLIENT_REMOVE_ROLE_THAT_USER_DOESNT_HAVE);
             }
 
+            /** @var Role $owner */
             $owner = Role::query()
                 ->where('type', RoleType::OWNER)
                 ->first();

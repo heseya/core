@@ -100,6 +100,12 @@ class Item extends Model implements AuditableContract, SortableContract
     {
         return $this->belongsToMany(Option::class, 'option_items');
     }
+
+    public function deposits(): HasMany
+    {
+        return $this->hasMany(Deposit::class);
+    }
+
     public function groupedDeposits(): HasMany
     {
         return $this->hasMany(Deposit::class)
@@ -114,9 +120,7 @@ class Item extends Model implements AuditableContract, SortableContract
     {
         $schemas = Collection::make();
 
-        $this->options->each(function (Option $option) use ($schemas): void {
-            $schemas->push($option->schema);
-        });
+        $this->options->each(fn (Option $option): Collection => $schemas->push($option->schema));
 
         return $schemas->unique();
     }

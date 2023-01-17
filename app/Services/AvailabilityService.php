@@ -69,7 +69,7 @@ class AvailabilityService implements AvailabilityServiceContract
     }
 
     /**
-     * @return array{available: bool, shipping_time: (int|null), shipping_date: (Carbon|null)}
+     * @return array{available: bool, shipping_time: (int|null), shipping_date: (\Carbon\Carbon|null)}
      */
     public function getCalculateOptionAvailability(Option $option): array
     {
@@ -132,7 +132,7 @@ class AvailabilityService implements AvailabilityServiceContract
     }
 
     /**
-     * @return array{available: bool, shipping_time: (int|null), shipping_date: (Carbon|null)}
+     * @return array{available: bool, shipping_time: (int|null), shipping_date: (\Carbon\Carbon|null)}
      */
     public function getCalculateSchemaAvailability(Schema $schema): array
     {
