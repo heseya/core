@@ -11,8 +11,10 @@ Route::prefix('payments')->group(function (): void {
         ->middleware('can:payments.show');
     Route::post(null, [PaymentController::class, 'store'])
         ->middleware('can:payments.add');
+
     Route::patch('id:{payment:id}', [PaymentController::class, 'updatePayment'])
         ->middleware(['permission:payments.edit', IsAppPayment::class]);
-    Route::any('{method}', [PaymentController::class, 'update'])
-        ->middleware('can:payments.edit');
+
+    // legacy endpoint for communication with payments providers
+    Route::any('{method}', [PaymentController::class, 'updatePaymentLegacy']);
 });

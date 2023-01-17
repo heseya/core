@@ -29,29 +29,18 @@ class PaymentController extends Controller
 
     public function pay(Order $order, string $method, PayRequest $request): JsonResource
     {
-        if ($order->paid) {
-            throw new ClientException(Exceptions::CLIENT_ORDER_PAID);
-        }
-
-        $payment = $this->paymentService->getPayment($order, $method, $request);
-        return PaymentResource::make($payment);
+        return PaymentResource::make(
+            $this->paymentService->getPayment($order, $method, $request),
+        );
     }
 
-    /**
-     * @throws ClientException
-     */
-    public function update(string $method, Request $request): mixed
+    public function updatePayment(PaymentUpdateRequest $request, Payment $payment): JsonResource
     {
-        if (!array_key_exists($method, Config::get('payable.aliases'))) {
-            throw new ClientException(Exceptions::CLIENT_UNKNOWN_PAYMENT_METHOD);
-        }
+        /** @var PaymentDto $dto */
+        $dto = PaymentDto::instantiateFromRequest($request);
+        $payment->update($dto->toArray());
 
-        /**
-         * @var PayU|PayPal|Przelewy24 $methodClass
-         */
-        $methodClass = Config::get('payable.aliases')[$method];
-
-        return $methodClass::translateNotification($request);
+        return PaymentResource::make($payment);
     }
 
     public function offlinePayment(Order $order): JsonResource
@@ -85,12 +74,24 @@ class PaymentController extends Controller
         );
     }
 
-    public function updatePayment(PaymentUpdateRequest $request, Payment $payment): JsonResource
+    /**
+     * Old method for translate communication with payments providers.
+     *
+     * @deprecated
+     *
+     * @throws ClientException
+     */
+    public function updatePaymentLegacy(string $method, Request $request): mixed
     {
-        /** @var PaymentDto $dto */
-        $dto = PaymentDto::instantiateFromRequest($request);
-        $payment->update($dto->toArray());
+        if (!array_key_exists($method, Config::get('payable.aliases'))) {
+            throw new ClientException(Exceptions::CLIENT_UNKNOWN_PAYMENT_METHOD);
+        }
 
-        return PaymentResource::make($payment);
+        /**
+         * @var PayU|PayPal|Przelewy24 $methodClass
+         */
+        $methodClass = Config::get('payable.aliases')[$method];
+
+        return $methodClass::translateNotification($request);
     }
 }

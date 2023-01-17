@@ -59,7 +59,9 @@ class PayPal implements PaymentMethod
         ]);
         $response = $transaction->send();
 
-        $payment = Payment::where('external_id', $request->input('paymentId'))->firstOrFail();
+        $payment = Payment::query()
+            ->where('external_id', $request->input('paymentId'))
+            ->firstOrFail();
 
         if (!$response->isSuccessful()) {
             return $response->getMessage();

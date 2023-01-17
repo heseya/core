@@ -98,12 +98,13 @@ class PaymentTest extends TestCase
             ]);
 
         $code = $this->order->code;
-        $response = $this->actingAs($this->$user)
-            ->postJson("/orders/${code}/pay/payu", [
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('POST', "/orders/${code}/pay/payu", [
                 'continue_url' => 'continue_url',
             ]);
 
-        $payment = Payment::find($response->getData()->data->id);
+        $payment = Payment::query()->find($response->getData()->data->id);
 
         $response
             ->assertCreated()
@@ -210,7 +211,6 @@ class PaymentTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment([
                 'method' => 'payu',
-                'paid' => false,
                 'amount' => $this->order->summary,
                 'date' => $payment->created_at,
                 'redirect_url' => 'payment_url',
@@ -218,10 +218,10 @@ class PaymentTest extends TestCase
             ]);
     }
 
-    public function testPayuNotificationUnauthorized(): void
+    public function testPayuNotificationBadSignature(): void
     {
         $payment = Payment::factory()->make([
-            'paid' => false,
+            'status' => PaymentStatus::PENDING,
         ]);
 
         $this->order->payments()->save($payment);
@@ -232,13 +232,13 @@ class PaymentTest extends TestCase
                 'extOrderId' => $payment->getKey(),
             ],
         ];
-        $signature = md5(json_encode($body) . Config::get('payu.second_key'));
+        $signature = 'random-signature';
 
         $response = $this->postJson('/payments/payu', $body, [
             'OpenPayu-Signature' => "signature=${signature};algorithm=MD5",
         ]);
 
-        $response->assertForbidden();
+        $response->assertStatus(422);
     }
 
     /**
@@ -251,7 +251,7 @@ class PaymentTest extends TestCase
         $this->$user->givePermissionTo('payments.edit');
 
         $payment = Payment::factory()->make([
-            'paid' => false,
+            'status' => PaymentStatus::PENDING,
         ]);
 
         $this->order->payments()->save($payment);
@@ -609,26 +609,4 @@ class PaymentTest extends TestCase
             'method_id' => $paymentMethod->getKey(),
         ]);
     }
-//    public function testPayPalNotification(): void
-//    {
-//        Http::fake();
-//
-//        $payment = Payment::factory()->make([
-//            'paid' => false,
-//        ]);
-//
-//        $this->order->payments()->save($payment);
-//
-//        $response = $this->post('payments/paypal', [
-//            'txn_id' => $payment->external_id,
-//            'mc_gross' => number_format($this->order->amount, 2, '.' ,''),
-//            'payment_status' => 'Completed',
-//        ]);
-//
-//        $response->assertOk();
-//        $this->assertDatabaseHas('payments', [
-//            'id' => $payment->getKey(),
-//            'paid' => true,
-//        ]);
-//    }
 }

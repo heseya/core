@@ -16,7 +16,6 @@ class Payment extends Model
     protected $fillable = [
         'external_id',
         'method',
-        'paid',
         'amount',
         'redirect_url',
         'continue_url',
@@ -27,7 +26,6 @@ class Payment extends Model
     ];
 
     protected $casts = [
-        'paid' => 'boolean',
         'amount' => 'float',
         'status' => PaymentStatus::class,
     ];

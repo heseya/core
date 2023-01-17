@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\PaymentStatus;
 use App\Exceptions\ClientException;
 use App\Exceptions\ServerException;
 use App\Models\Order;
@@ -24,6 +25,10 @@ class PaymentService implements PaymentServiceContract
      */
     public function getPayment(Order $order, string $method, Request $request): Payment
     {
+        if ($order->paid) {
+            throw new ClientException(Exceptions::CLIENT_ORDER_PAID);
+        }
+
         $paymentMethod = PaymentMethod::query()->where('id', $method)->first();
 
         return $paymentMethod instanceof PaymentMethod
@@ -85,7 +90,7 @@ class PaymentService implements PaymentServiceContract
         $payment = $order->payments()->create([
             'method' => $method,
             'amount' => $order->summary - $order->paid_amount,
-            'paid' => false,
+            'status' => PaymentStatus::PENDING,
             'continue_url' => $request->input('continue_url'),
         ]);
 
