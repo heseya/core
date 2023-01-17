@@ -38,11 +38,17 @@ class UserService implements UserServiceContract
     public function create(UserDto $dto): User
     {
         if (!$dto->getRoles() instanceof Missing) {
-            $roleModels = Role::whereIn('id', $dto->getRoles())->orWhere('type', RoleType::AUTHENTICATED)->get();
+            $roleModels = Role::query()
+                ->whereIn('id', $dto->getRoles())
+                ->orWhere('type', RoleType::AUTHENTICATED)
+                ->get();
         } else {
-            $roleModels = Role::where('type', RoleType::AUTHENTICATED)->get();
+            $roleModels = Role::query()
+                ->where('type', RoleType::AUTHENTICATED)
+                ->get();
         }
 
+        // @phpstan-ignore-next-line
         $permissions = $roleModels->flatMap(
             fn ($role) => $role->type->value !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
         )->unique();
@@ -51,13 +57,14 @@ class UserService implements UserServiceContract
             throw new ClientException(Exceptions::CLIENT_GIVE_ROLE_THAT_USER_DOESNT_HAVE, simpleLogs: true);
         }
 
-        $user = User::create([
+        /** @var User $user */
+        $user = User::query()->create([
             'name' => $dto->getName(),
             'email' => $dto->getEmail(),
             'password' => Hash::make($dto->getPassword()),
         ]);
 
-        $preferences = UserPreference::create();
+        $preferences = UserPreference::query()->create();
         $preferences->refresh();
 
         $user->preferences()->associate($preferences);
@@ -81,12 +88,16 @@ class UserService implements UserServiceContract
 
         if (!$dto->getRoles() instanceof Missing && $dto->getRoles() !== null) {
             /** @var Collection<int, Role> $roleModels */
-            $roleModels = Role::whereIn('id', $dto->getRoles())->orWhere('type', RoleType::AUTHENTICATED)->get();
+            $roleModels = Role::query()
+                ->whereIn('id', $dto->getRoles())
+                ->orWhere('type', RoleType::AUTHENTICATED)
+                ->get();
 
             $newRoles = $roleModels->diff($user->roles);
             /** @var Collection<int, Role> $removedRoles */
             $removedRoles = $user->roles->diff($roleModels);
 
+            // @phpstan-ignore-next-line
             $permissions = $newRoles->flatMap(
                 fn ($role) => $role->type->value !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
             )->unique();
@@ -103,7 +114,9 @@ class UserService implements UserServiceContract
                 throw new ClientException(Exceptions::CLIENT_REMOVE_ROLE_THAT_USER_DOESNT_HAVE);
             }
 
-            $owner = Role::where('type', RoleType::OWNER)->first();
+            $owner = Role::query()
+                ->where('type', RoleType::OWNER)
+                ->first();
 
             if ($newRoles->contains($owner) && !$authenticable->hasRole($owner)) {
                 throw new ClientException(Exceptions::CLIENT_ONLY_OWNER_GRANTS_OWNER_ROLE);
@@ -114,7 +127,7 @@ class UserService implements UserServiceContract
                     throw new ClientException(Exceptions::CLIENT_ONLY_OWNER_REMOVES_OWNER_ROLE);
                 }
 
-                $ownerCount = User::whereHas(
+                $ownerCount = User::query()->whereHas(
                     'roles',
                     fn (Builder $query) => $query->where('type', RoleType::OWNER),
                 )->count();
