@@ -16,6 +16,8 @@ class DepositIndexRequest extends FormRequest
         return [
             'search' => ['nullable', 'string', 'max:255'],
             'sku' => ['nullable', 'string', 'max:255'],
+            'ids' => ['array'],
+            'ids.*' => ['uuid'],
         ];
     }
 }

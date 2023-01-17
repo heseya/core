@@ -259,11 +259,9 @@ class ProductRepository implements ProductRepositoryContract
         );
     }
 
-    private function filterIds(Builder $query, string $key, string $ids): Builder
+    private function filterIds(Builder $query, string $key, array $ids): Builder
     {
-        $ids = Str::of($ids)->explode(',');
-
-        $query->filter(new Terms('id', $ids->toArray()));
+        $query->filter(new Terms('id', $ids));
 
         return $query;
     }

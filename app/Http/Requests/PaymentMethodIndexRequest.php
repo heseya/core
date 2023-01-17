@@ -16,6 +16,8 @@ class PaymentMethodIndexRequest extends FormRequest
         return [
             'shipping_method_id' => ['uuid', 'exists:shipping_methods,id'],
             'order_code' => ['string', 'exists:orders,code'],
+            'ids' => ['array'],
+            'ids.*' => ['uuid'],
         ];
     }
 }

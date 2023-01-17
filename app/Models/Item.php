@@ -6,6 +6,7 @@ use App\Criteria\ItemSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\WhereCreatedBefore;
+use App\Criteria\WhereInIds;
 use App\Criteria\WhereSoldOut;
 use App\Models\Contracts\SortableContract;
 use App\Traits\HasMetadata;
@@ -48,6 +49,7 @@ class Item extends Model implements AuditableContract, SortableContract
         'day' => WhereCreatedBefore::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
+        'ids' => WhereInIds::class,
     ];
 
     protected array $sortable = [

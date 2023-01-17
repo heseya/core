@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Criteria\AttributeSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\WhereInIds;
 use App\Enums\AttributeType;
 use App\Traits\HasMetadata;
 use Heseya\Searchable\Traits\HasCriteria;
@@ -49,6 +50,7 @@ class Attribute extends Model
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'search' => AttributeSearch::class,
+        'ids' => WhereInIds::class,
     ];
 
     public function options(): HasMany

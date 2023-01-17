@@ -65,6 +65,25 @@ class PaymentMethodTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexByIds($user): void
+    {
+        $this->$user->givePermissionTo('payment_methods.show');
+
+        $response = $this->actingAs($this->$user)->json('GET', '/payment-methods', [
+            'ids' => [
+                $this->payment_method->getKey(),
+            ],
+        ]);
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data') // Should show only public payment methods.
+            ->assertJsonFragment(['id' => $this->payment_method->getKey()])
+            ->assertJsonMissing(['id' => $this->payment_method_related->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexByOrderCode($user): void
     {
         $this->$user->givePermissionTo('payment_methods.show');

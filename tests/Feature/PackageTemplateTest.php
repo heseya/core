@@ -53,6 +53,30 @@ class PackageTemplateTest extends TestCase
             ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexByIds($user): void
+    {
+        $this->$user->givePermissionTo('packages.show');
+
+        PackageTemplate::factory()->count(10)->create();
+
+        $response = $this->actingAs($this->$user)->json('GET', '/package-templates', [
+            'ids' => [
+                $this->package->getKey(),
+            ],
+        ]);
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJson([
+                'data' => [
+                    0 => $this->expected,
+                ],
+            ]);
+    }
+
     public function testCreateUnauthorized(): void
     {
         $response = $this->postJson('/package-templates');

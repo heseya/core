@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Criteria\WebHookSearch;
+use App\Criteria\WhereInIds;
 use App\Models\Contracts\SortableContract;
 use App\Traits\Sortable;
 use Heseya\Searchable\Criteria\Like;
@@ -45,6 +46,7 @@ class WebHook extends Model implements AuditableContract, SortableContract
         'name' => Like::class,
         'url' => Like::class,
         'search' => WebHookSearch::class,
+        'ids' => WhereInIds::class,
     ];
 
     protected array $sortable = [

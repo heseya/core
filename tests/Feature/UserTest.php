@@ -212,7 +212,12 @@ class UserTest extends TestCase
         User::factory()->create();
 
         $response = $this->actingAs($this->$user)
-            ->getJson('/users?ids=' . $firstUser->getKey() . ',' . $secondUser->getKey());
+            ->json('GET', '/users', [
+                'ids' => [
+                    $firstUser->getKey(),
+                    $secondUser->getKey(),
+                ],
+            ]);
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data');

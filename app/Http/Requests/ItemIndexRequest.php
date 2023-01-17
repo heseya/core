@@ -28,6 +28,8 @@ class ItemIndexRequest extends FormRequest
             'day' => ['nullable', 'date', 'before_or_equal:now'],
             'metadata' => ['nullable', 'array'],
             'metadata_private' => ['nullable', 'array'],
+            'ids' => ['array'],
+            'ids.*' => ['uuid'],
         ];
     }
 

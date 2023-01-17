@@ -23,6 +23,8 @@ class RoleIndexRequest extends FormRequest
             'assignable' => [new Boolean()],
             'metadata' => ['nullable', 'array'],
             'metadata_private' => ['nullable', 'array'],
+            'ids' => ['array'],
+            'ids.*' => ['uuid'],
         ];
     }
 }

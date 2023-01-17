@@ -38,6 +38,23 @@ class AppOtherTest extends TestCase
             ->assertJsonCount(10, 'data');
     }
 
+    public function testIndexSearchByIds(): void
+    {
+        $this->user->givePermissionTo('apps.show');
+
+        App::factory()->count(9)->create(); // +1 from TestCase
+
+        $response = $this->actingAs($this->user)->json('GET', '/apps', [
+            'ids' => [
+                $this->application->getKey(),
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
+    }
+
     public function testShowUnauthorized(): void
     {
         $app = App::factory()->create();

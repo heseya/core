@@ -28,6 +28,8 @@ class OrderIndexRequest extends FormRequest
             'to' => ['nullable', 'date', 'after_or_equal:from'],
             'metadata' => ['nullable', 'array'],
             'metadata_private' => ['nullable', 'array'],
+            'ids' => ['array'],
+            'ids.*' => ['uuid'],
         ];
     }
 }
