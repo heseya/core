@@ -71,24 +71,6 @@ class Item extends Model implements AuditableContract, SortableContract
         'quantity' => 'float',
     ];
 
-    public function deposits(): HasMany
-    {
-        return $this->hasMany(Deposit::class);
-    }
-
-    public function groupedDeposits(): HasMany
-    {
-        return $this->hasMany(Deposit::class)
-            ->selectRaw('item_id, SUM(quantity) as quantity, shipping_time, shipping_date')
-            ->groupBy(['shipping_time', 'shipping_date', 'item_id'])
-            ->having('quantity', '>', '0');
-    }
-
-    public function products(): BelongsToMany
-    {
-        return $this->belongsToMany(Product::class);
-    }
-
     public function getQuantity(string|null $day): float
     {
         if ($day) {
@@ -102,9 +84,30 @@ class Item extends Model implements AuditableContract, SortableContract
         return $this->quantity ?? 0;
     }
 
+    public function getQuantityRealAttribute(): float
+    {
+        return $this->deposits
+            ->where('from_unlimited', false)
+            ->sum('quantity');
+    }
+
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class);
+    }
+
     public function options(): BelongsToMany
     {
         return $this->belongsToMany(Option::class, 'option_items');
+    }
+    public function groupedDeposits(): HasMany
+    {
+        return $this->hasMany(Deposit::class)
+            ->selectRaw('item_id, SUM(quantity) as quantity, shipping_time, shipping_date')
+            ->groupBy(['shipping_time', 'shipping_date', 'item_id'])
+            ->having('quantity', '>', '0')
+            ->orderBy('shipping_date')
+            ->orderBy('shipping_time');
     }
 
     public function getSchemasAttribute(): Collection

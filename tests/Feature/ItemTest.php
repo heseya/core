@@ -968,25 +968,27 @@ class ItemTest extends TestCase
     public function testUpdateUnlimitedShippingDate($user): void
     {
         $this->$user->givePermissionTo('items.edit');
+        $date = Carbon::create(2023, 3, 20);
 
         Deposit::factory()->create([
             'item_id' => $this->item->getKey(),
             'quantity' => 2.0,
-            'shipping_date' => Carbon::now()->addDays(4)->toDateTimeString(),
+            'shipping_date' => $date->addDays(4)->toDateTimeString(),
         ]);
         Deposit::factory()->create([
             'item_id' => $this->item->getKey(),
             'quantity' => -2.0,
-            'shipping_date' => Carbon::now()->addDays(4)->toDateTimeString(),
+            'shipping_date' => $date->addDays(4)->toDateTimeString(),
         ]);
         Deposit::factory()->create([
             'item_id' => $this->item->getKey(),
             'quantity' => 2.0,
-            'shipping_date' => Carbon::now()->addDays(2)->toDateTimeString(),
+            'shipping_date' => $date->addDays(2)->toDateTimeString(),
         ]);
+
         $item = [
             'sku' => 'TES/T3',
-            'unlimited_stock_shipping_date' => Carbon::now()->addDays(3)->toIso8601String(),
+            'unlimited_stock_shipping_date' => $date->addDays(3)->toIso8601String(),
         ];
 
         $this->actingAs($this->$user)->patchJson(

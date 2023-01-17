@@ -115,7 +115,9 @@ class UserService implements UserServiceContract
                 throw new ClientException(Exceptions::CLIENT_REMOVE_ROLE_THAT_USER_DOESNT_HAVE);
             }
 
-            $owner = Role::query()->where('type', RoleType::OWNER)->firstOrFail();
+            $owner = Role::query()
+                ->where('type', RoleType::OWNER)
+                ->first();
 
             if ($newRoles->contains($owner) && !$authenticable->hasRole($owner)) {
                 throw new ClientException(Exceptions::CLIENT_ONLY_OWNER_GRANTS_OWNER_ROLE);

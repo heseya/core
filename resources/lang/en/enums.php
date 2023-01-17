@@ -12,6 +12,7 @@ return [
         EventType::PRODUCT_CREATED => 'Event triggered when new products are created',
         EventType::PRODUCT_UPDATED => 'Event triggered after product is updated',
         EventType::PRODUCT_DELETED => 'Event triggered after product is deleted',
+        EventType::PRODUCT_PRICE_UPDATED => 'Event triggered after product price is updated',
         EventType::ITEM_CREATED => 'Event triggered when new items are created',
         EventType::ITEM_UPDATED => 'Event triggered after item is updated',
         EventType::ITEM_UPDATED_QUANTITY => 'Event triggered after item quantity is updated',

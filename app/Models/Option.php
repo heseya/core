@@ -33,7 +33,9 @@ class Option extends Model
 
     public function items(): BelongsToMany
     {
-        return $this->belongsToMany(Item::class, 'option_items');
+        return $this
+            ->belongsToMany(Item::class, 'option_items')
+            ->withPivot('required_quantity');
     }
 
     public function schema(): BelongsTo

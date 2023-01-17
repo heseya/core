@@ -4,13 +4,14 @@ namespace App\Services;
 
 use App\Enums\SchemaType;
 use App\Events\ProductUpdated;
+use App\Exceptions\ServerException;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DepositServiceContract;
-use Illuminate\Support\Arr;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -25,360 +26,386 @@ class AvailabilityService implements AvailabilityServiceContract
      * Function used to calculate "available" field for Options, Schemas and Products related to Item step by step
      * used after changing Item's quantity, usually after including Item in Order or creating Deposit
      * containing this item.
-     *
-     * @param Item $item
-     *
-     * @return void
      */
-    public function calculateAvailabilityOnOrderAndRestock(Item $item): void
+    public function calculateItemAvailability(Item $item): void
     {
+        // Options
         $options = $item->options;
-        $options->each(fn ($option) => $this->calculateOptionAvailability($option));
+        $options->each(fn (Option $option) => $this->calculateOptionAvailability($option));
 
+        // Schemas
         $schemas = Schema::query()
             ->where('type', SchemaType::SELECT)
             ->whereIn('id', $options->pluck('schema_id'))
             ->get();
+        $schemas->each(fn (Schema $schema) => $this->calculateSchemaAvailability($schema));
 
-        $schemas->each(fn ($schema) => $this->calculateSchemaAvailability($schema));
+        // Products
         $schemas
             ->pluck('products')
             ->flatten()
+            ->merge($item->products)
             ->unique('id')
-            ->each(fn ($product) => $this->calculateProductAvailability($product));
-
-        $item->products->each(fn ($product) => $this->calculateProductAvailability($product));
+            ->each(fn (Product $product) => $this->calculateProductAvailability($product));
     }
 
     public function calculateOptionAvailability(Option $option): void
     {
-        if ($option->items->count() <= 0) {
-            $option->update([
-                'available' => true,
-                'shipping_time' => null,
-                'shipping_date' => null,
-            ]);
-
-            return;
-        }
-
-        if ($option->available && $option->items->some(
-            fn ($item) => $item->quantity <= 0 &&
-                $item->unlimited_stock_shipping_time === null &&
-                ($item->unlimited_stock_shipping_date === null ||
-                    $item->unlimited_stock_shipping_date < Carbon::now())
-        )) {
-            $option->update([
-                'available' => false,
-                'shipping_time' => null,
-                'shipping_date' => null,
-            ]);
-        } elseif (!$option->available && $option->items->every(
-            fn ($item) => $item->quantity > 0 ||
-                $item->unlimited_stock_shipping_time !== null ||
-                ($item->unlimited_stock_shipping_date !== null &&
-                    $item->unlimited_stock_shipping_date >= Carbon::now())
-        )) {
-            $option->update([
-                'available' => true,
-            ] + $this->depositService->getMaxShippingTimeDateForItems($option->items));
-        }
+        $option->update($this->getCalculateOptionAvailability($option));
     }
 
     public function calculateSchemaAvailability(Schema $schema): void
     {
-        if (!$schema->type->is(SchemaType::SELECT)) {
-            $schema->available = true;
-            $schema->shipping_time = null;
-            $schema->shipping_date = null;
-
-            $schema->save();
-        } elseif (
-            $schema->available &&
-            $schema->options->every(fn ($option) => !$option->available)
-        ) {
-            $schema->available = false;
-            $schema->shipping_time = null;
-            $schema->shipping_date = null;
-
-            $schema->save();
-        } elseif (
-            !$schema->available &&
-            $schema->options->some(fn ($option) => $option->available)
-        ) {
-            $schema->available = true;
-            $schema->fill(
-                $this->depositService->getMinShippingTimeDateForOptions(
-                    $schema->options,
-                ),
-            );
-
-            $schema->save();
-        }
+        $schema->update($this->getCalculateSchemaAvailability($schema));
     }
 
     public function calculateProductAvailability(Product $product): void
     {
-        [$items, $requiredItems] = $this->productRequiredItems($product);
-
-        [$shippingTimeDeposits, $shippingDateDeposits] = $this->itemsGroupedDeposits($items);
-
-        $product->productAvailabilities()->delete();
-
-        $quantity = $this->calculateProductDeposits(
-            $items,
-            $shippingTimeDeposits,
-            $product,
-            'shipping_time',
-            $requiredItems,
-        );
-        $quantity += $this->calculateProductDeposits(
-            $items,
-            $shippingDateDeposits,
-            $product,
-            'shipping_date',
-            $requiredItems,
-        );
-
-        $product->update([
-            'quantity' => $quantity,
-            'available' => $this->isProductAvailable($product),
-        ] + $this->depositService->getProductShippingTimeDate($product));
+        $product->update($this->getCalculateProductAvailability($product));
 
         if ($product->wasChanged()) {
             ProductUpdated::dispatch($product);
         }
     }
 
-    public function isProductAvailable(Product $product): bool
+    /**
+     * @return array{available: bool, shipping_time: (int|null), shipping_date: (Carbon|null)}
+     */
+    public function getCalculateOptionAvailability(Option $option): array
     {
-        $flagPermutations = false;
-        /** @var Collection<int,mixed> $requiredSelectSchemas */
-        $requiredSelectSchemas = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
-        if (!$requiredSelectSchemas->isEmpty() &&
-            $requiredSelectSchemas->some(fn (Schema $schema) => $schema->options->count() > 0)
-        ) {
-            $flagPermutations = true;
-            $items = [];
-            foreach ($product->items as $productItem) {
-                $items[$productItem->getKey()] = $productItem->pivot->required_quantity;
-            }
-            $hasAvailablePermutations = $this->checkPermutations($requiredSelectSchemas, $items);
+        // If option don't have any related items is always avaiable
+        $shipping_time = null;
+        $shipping_date = null;
 
-            if ($hasAvailablePermutations) {
-                return true;
-            }
-        }
-        if (!$flagPermutations && $product->items->every(
-            fn (Item $item) => $item->pivot->required_quantity <= $item->quantity ||
-                !is_null($item->unlimited_stock_shipping_time) ||
-                (!is_null($item->unlimited_stock_shipping_date) &&
-                    $item->unlimited_stock_shipping_date >= Carbon::now())
-        )) {
-            return true;
-        }
+        foreach ($option->items as $item) {
+            // If item required quantity is satisfied by limited stocks
+            if ($item->quantity >= $item->pivot->required_quantity) {
+                // If item doesn't have shipping time or date
+                if ($item->shipping_time === null && $item->shipping_date === null) {
+                    continue;
+                }
 
-        return false;
-    }
+                if ($item->shipping_time > $shipping_time) {
+                    $shipping_time = $item->shipping_time;
+                }
 
-    public function checkPermutations(Collection $schemas, array $items): bool
-    {
-        $max = $schemas->count();
-        $options = new Collection();
-
-        return $this->getSchemaOptions($schemas->first(), $schemas, $options, $max, $items);
-    }
-
-    public function getSchemaOptions(
-        Schema $schema,
-        Collection $schemas,
-        Collection $options,
-        int $max,
-        array $items,
-        int $index = 0
-    ): bool {
-        foreach ($schema->options as $option) {
-            $options->put($schema->getKey(), $option);
-            if ($index < $max - 1) {
-                $newIndex = $index + 1;
-
-                return $this->getSchemaOptions($schemas->get($newIndex), $schemas, $options, $max, $items, $newIndex);
-            }
-            if ($index === $max - 1) {
-                if ($this->isOptionsItemsAvailable($options, $items)) {
-                    return true;
+                if ($item->shipping_date === null) {
+                    continue;
                 }
             }
-        }
 
-        return false;
-    }
-
-    /**
-     * @param Collection $options
-     * @param array<string, int> $items <unique id of item, quantity>
-     *
-     * @return bool
-     */
-    public function isOptionsItemsAvailable(Collection $options, array $items): bool
-    {
-        $itemsOptions = $options->pluck('items')->flatten()->groupBy('id');
-
-        return $itemsOptions->every(
-            function (Collection $item) use ($itemsOptions, $items) {
-                $requiredAmount = ($items[$item->first()->getKey()] ?? 0) +
-                    $itemsOptions->get($item->first()->getKey())?->count();
-                return $item->first()->quantity >= $requiredAmount;
-            }
-        );
-    }
-
-    private function calculateProductDeposits(
-        Collection $items,
-        Collection $timeDeposits,
-        Product $product,
-        string $type,
-        array $requiredQuantities,
-    ): mixed {
-        $quantity = 0;
-
-        $overstockedItems = [];
-        foreach ($items as $item) {
-            $overstockedItems[$item->getKey()] = 0.0;
-        }
-
-        /**
-         * @var string $period
-         * @var Collection $timeDeposit
-         */
-        foreach ($timeDeposits as $period => $timeDeposit) {
-            $onlyOverstocked = [];
-            if ($timeDeposit->count() < $items->count()) {
-                $itemsWithDeposit = $timeDeposit->pluck('item_id')->toArray();
-
-                $onlyOverstocked = Arr::where($overstockedItems, function ($value, $key) use ($itemsWithDeposit): bool {
-                    return !in_array($key, $itemsWithDeposit);
-                });
-            }
-
-            $quantities = $this->itemsMinQuantity(
-                $timeDeposit,
-                $overstockedItems,
-                $requiredQuantities,
-                $onlyOverstocked,
-            );
-
-            $minQuantity = $quantities->sort()->first();
-
-            if ($minQuantity === 0.0) {
-                foreach ($timeDeposit as $deposit) {
-                    $overstockedItems[$deposit->item_id] += $deposit->quantity;
+            if ($item->unlimited_stock_shipping_time !== null) {
+                if ($item->unlimited_stock_shipping_time > $shipping_time) {
+                    $shipping_time = $item->unlimited_stock_shipping_time;
                 }
                 continue;
             }
 
-            $overstockedItems = $this->addProductAvailability(
-                $minQuantity,
-                $product,
-                $type,
-                $period,
-                $timeDeposit,
-                $overstockedItems,
-                $requiredQuantities,
-            );
-            $quantity += $minQuantity;
+            if ($item->quantity >= $item->pivot->required_quantity) {
+                $shipping_date = $this->compareShippingDate(
+                    $shipping_date,
+                    $item->shipping_date,
+                );
+                continue;
+            }
+
+            if ($item->unlimited_stock_shipping_date !== null) {
+                $shipping_date = $this->compareShippingDate(
+                    $shipping_date,
+                    $item->unlimited_stock_shipping_date,
+                );
+                continue;
+            }
+
+            return [
+                'available' => false,
+                'shipping_time' => null,
+                'shipping_date' => null,
+            ];
         }
 
-        return $quantity;
+        return [
+            'available' => true,
+            'shipping_time' => $shipping_time,
+            'shipping_date' => $shipping_date,
+        ];
     }
 
-    private function addProductAvailability(
-        mixed $minQuantity,
-        Product $product,
-        string $type,
-        string $period,
-        Collection $timeDeposit,
-        array $overstockedItems,
-        array $requiredQuantities,
-    ): array {
-        foreach ($timeDeposit as  $deposit) {
-            $overstockedItems[$deposit->item_id] +=
-                $deposit->quantity - ($minQuantity * $requiredQuantities[$deposit->item_id]);
-        }
-
-        $product->productAvailabilities()->create([
-            'quantity' => $minQuantity,
-            $type => $period,
-        ]);
-
-        return $overstockedItems;
-    }
-
-    private function productRequiredItems(Product $product): array
+    /**
+     * @return array{available: bool, shipping_time: (int|null), shipping_date: (Carbon|null)}
+     */
+    public function getCalculateSchemaAvailability(Schema $schema): array
     {
-        $items = Collection::make($product->items()->with('groupedDeposits')->get());
-
-        $requiredItems = [];
-
-        foreach ($items as $item) {
-            $requiredItems[$item->getKey()] = $item->pivot->required_quantity;
+        if ($schema->type->isNot(SchemaType::SELECT)) {
+            return [
+                'available' => true,
+                'shipping_time' => null,
+                'shipping_date' => null,
+            ];
         }
 
-        $requiredSchemas = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
+        // If option don't have any related options is always unavailable
+        $available = false;
+        $shipping_time = null;
+        $shipping_date = null;
 
-        if (!$requiredSchemas->isEmpty()) {
-            /** @var Schema $requiredSchema */
-            foreach ($requiredSchemas as $requiredSchema) {
-                $itemsOptions = $requiredSchema->options->pluck('items')->flatten()->groupBy('id');
-                foreach ($itemsOptions as $id => $item) {
-                    if (!array_key_exists($id, $requiredItems)) {
-                        $items->push($item->first());
-                    }
-                    $requiredItems[$id] = ($requiredItems[$id] ?? 0) + $item->count();
+        foreach ($schema->options as $option) {
+            $availability = $this->getCalculateOptionAvailability($option);
+            if ($option->disabled || !$availability['available']) {
+                continue;
+            }
+
+            $available = true;
+            if ($shipping_time === null || $shipping_time > $availability['shipping_time']) {
+                $shipping_time = $availability['shipping_time'];
+            }
+            $shipping_date = $this->compareShippingDate(
+                $shipping_date,
+                $availability['shipping_date'],
+                true,
+            );
+        }
+
+        return [
+            'available' => $available,
+            'shipping_time' => $shipping_time,
+            'shipping_date' => $shipping_date,
+        ];
+    }
+
+    public function getCalculateProductAvailability(Product $product): array
+    {
+        $quantityStep = $product->quantity_step ?? 1;
+        $requiredSchemas = $this->getRequiredSchemasWithItems($product);
+        $requiredSchemasCount = $requiredSchemas->count();
+
+        // simple return when no required schemas and items
+        if ($requiredSchemasCount === 0 && $product->items->isEmpty()) {
+            return $this->returnProductAvailability(true);
+        }
+
+        /** @var Collection $requiredItems */
+        $requiredItems = $product->items;
+        $items = $this->getAllRequiredItems($product, $requiredSchemas);
+
+        // check only permutation when product don't have required schemas
+        if ($requiredSchemasCount === 0) {
+            return $this->checkProductPermutation($quantityStep, $items, $requiredItems);
+        }
+
+        $permutations = $requiredSchemas->first()->options;
+        $requiredSchemas->shift();
+
+        $permutations = $permutations->crossJoin(...$requiredSchemas->pluck('options'));
+
+        if ($permutations->count() <= 0) {
+            return $this->returnProductAvailability(true);
+        }
+
+        $available = false;
+        $quantity = 0.0;
+        $shipping_time = null;
+        $shipping_date = null;
+
+        foreach ($permutations as $permutation) {
+            $permutationResult = $this->checkProductPermutation(
+                $quantityStep,
+                $items,
+                $requiredItems,
+                $permutation instanceof Option ? [$permutation] : $permutation,
+            );
+
+            $quantity = max($quantity, $permutationResult['quantity']);
+
+            if ($permutationResult['available'] === true) {
+                $available = true;
+            }
+
+            $shipping_time = $shipping_time === null ?
+                $permutationResult['shipping_time'] : min($permutationResult['shipping_time'], $shipping_time);
+            $shipping_date = $this->compareShippingDate(
+                $shipping_date,
+                $permutationResult['shipping_date'],
+                true,
+            );
+        }
+
+        // return if all permutations all unavailable
+        if ($available === false) {
+            return $this->returnProductAvailability(false, 0.0);
+        }
+
+        return $this->returnProductAvailability(
+            true,
+            $quantity,
+            $shipping_time,
+            $shipping_date,
+        );
+    }
+
+    /**
+     * Check single product permutation
+     */
+    public function checkProductPermutation(
+        float $quantityStep,
+        Collection $items,
+        Collection $requiredItems,
+        ?array $selectedOptions = null,
+    ): array {
+        if ($selectedOptions !== null) {
+            foreach ($selectedOptions as $option) {
+                foreach ($option->items as $item) {
+                    $requiredItems->push($item);
                 }
             }
         }
 
-        return [$items, $requiredItems];
-    }
+        if ($requiredItems->count() <= 0) {
+            return $this->returnProductAvailability(true);
+        }
 
-    private function itemsGroupedDeposits(Collection $items): array
-    {
-        $groupedDeposits = $items->pluck('groupedDeposits')->flatten(1);
+        $quantity = 0.0;
+        $shipping_time = null;
+        $shipping_date = null;
+        $usedItems = [];
 
-        $shippingTimeDeposits = $groupedDeposits->filter(
-            fn ($groupedDeposit): bool => $groupedDeposit->shipping_time !== null
-        )->sortBy('shipping_time')->groupBy('shipping_time');
+        /** @var Item $requiredItem */
+        foreach ($requiredItems as $requiredItem) {
+            $item = $items->firstWhere('id', $requiredItem->getKey());
 
-        $shippingDateDeposits = $groupedDeposits->filter(
-            fn ($groupDeposit): bool => $groupDeposit->shipping_date !== null
-        )->sortBy('shipping_date')->groupBy('shipping_date');
+            if (!($item instanceof Item)) {
+                throw new ServerException('Not found item with id ' . $requiredItem->getKey());
+            }
 
-        return [$shippingTimeDeposits, $shippingDateDeposits];
-    }
+            // check if item is used again in same permutation
+            $requiredQuantity = array_key_exists($item->getKey(), $usedItems) ?
+                $usedItems[$item->getKey()] + $requiredItem->pivot->required_quantity :
+                $requiredItem->pivot->required_quantity;
 
-    private function itemsMinQuantity(
-        Collection $timeDeposit,
-        array $overstockedItems,
-        array $requiredQuantities,
-        array $onlyOverstocked = [],
-    ): Collection {
-        $quantities = Collection::make();
+            if ($requiredQuantity > $item->quantity_real) {
+                if (
+                    $item->unlimited_stock_shipping_time === null &&
+                    $item->unlimited_stock_shipping_date === null
+                ) {
+                    return $this->returnProductAvailability(false, 0.0);
+                }
 
-        foreach ($timeDeposit as  $deposit) {
-            $quantities
-                ->push(
-                    floor(
-                        ($deposit->quantity + $overstockedItems[$deposit->item_id])
-                        / $requiredQuantities[$deposit->item_id]
-                    )
+                // set null only if quantity is 0
+                $quantity = $quantity === 0.0 ? null : $quantity;
+                $shipping_time = max($item->unlimited_stock_shipping_time, $shipping_time);
+                $shipping_date = $this->compareShippingDate(
+                    $item->unlimited_stock_shipping_date,
+                    $shipping_date,
                 );
+
+                continue;
+            }
+
+            // save used item in permutation
+            $usedItems[$item->getKey()] = $requiredItem->pivot->required_quantity;
+
+            // round product quantity to product qty step
+            $itemQuantity = floor($item->quantity_real / $requiredQuantity / $quantityStep) * $quantityStep;
+
+            // override default 0 when got any result
+            if ($quantity <= 0.0 || $itemQuantity < $quantity) {
+                $quantity = $itemQuantity;
+            }
+
+            foreach ($item->groupedDeposits as $deposit) {
+                if ($requiredQuantity > 0.0 && $deposit->quantity >= $requiredQuantity) {
+                    $shipping_time = max($deposit->shipping_time, $shipping_time);
+                    $shipping_date = $this->compareShippingDate($deposit->shipping_date, $shipping_date);
+                }
+
+                $requiredQuantity -= $deposit->quantity;
+            }
+
+            $shipping_time ??= $item->unlimited_stock_shipping_time;
+            $shipping_date ??= $item->unlimited_stock_shipping_date;
         }
 
-        foreach ($onlyOverstocked as $key => $value) {
-            $quantities->push(floor($value / $requiredQuantities[$key]));
+        return $this->returnProductAvailability(
+            true,
+            $quantity,
+            $shipping_time,
+            $shipping_date,
+        );
+    }
+
+    /**
+     * Helper method for always generating same return array
+     */
+    private function returnProductAvailability(
+        bool $available = false,
+        ?float $quantity = null,
+        ?int $shipping_time = null,
+        ?string $shipping_date = null,
+    ): array {
+        return [
+            'available' => $available,
+            'quantity' => $quantity,
+            'shipping_time' => $shipping_time,
+            'shipping_date' => $shipping_date,
+        ];
+    }
+
+    /**
+     * Get only required schemas of type SELECT and with related items
+     */
+    private function getRequiredSchemasWithItems(Product $product): Collection
+    {
+        return $product
+            ->requiredSchemas()
+            ->where('type', SchemaType::SELECT)
+            ->whereHas('options', fn (Builder $query) => $query->whereHas('items'))
+            ->with('options.items')
+            ->get();
+    }
+
+    /**
+     * Get all items required by products required items and required schemas
+     */
+    private function getAllRequiredItems(Product $product, Collection $requiredSchemas): Collection
+    {
+        $items = $product->items()->with('groupedDeposits')->get();
+
+        foreach ($requiredSchemas as $schema) {
+            foreach ($schema->options as $option) {
+                foreach ($option->items()->with('groupedDeposits')->get() as $item) {
+                    if ($items->where('id', $item->getKey())->count() <= 0) {
+                        $items->push($item);
+                    }
+                }
+            }
         }
 
-        return $quantities;
+        return $items;
+    }
+
+    /**
+     * Compares whether $shippingDate1 is before $shippingDate2
+     */
+    private function compareShippingDate(
+        \Carbon\Carbon|string|null $shippingDate1,
+        \Carbon\Carbon|string|null $shippingDate2,
+        bool $isAfter = false,
+    ): \Carbon\Carbon|null {
+
+        // TODO: find why this is string and remove this section
+        if (is_string($shippingDate1)) {
+            $shippingDate1 = Carbon::createFromTimeString($shippingDate1);
+        }
+        if (is_string($shippingDate2)) {
+            $shippingDate2 = Carbon::createFromTimeString($shippingDate2);
+        }
+
+        if ($shippingDate1 === null || ($shippingDate1 instanceof Carbon &&
+                ((!$isAfter && $shippingDate1->isBefore($shippingDate2)) ||
+                    ($isAfter && $shippingDate1->isAfter($shippingDate2))))) {
+            return $shippingDate2;
+        }
+
+        return $shippingDate1;
     }
 }
