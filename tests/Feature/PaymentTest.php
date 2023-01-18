@@ -100,7 +100,7 @@ class PaymentTest extends TestCase
         $code = $this->order->code;
         $response = $this
             ->actingAs($this->$user)
-            ->json('POST', "/orders/${code}/pay/payu", [
+            ->json('POST', "/orders/{$code}/pay/payu", [
                 'continue_url' => 'continue_url',
             ]);
 

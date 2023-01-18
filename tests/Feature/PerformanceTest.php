@@ -352,7 +352,7 @@ class PerformanceTest extends TestCase
         $productItem = Item::factory()->create();
 
         $product = Product::factory()->create();
-        $product->items()->attach([$productItem->getKey()  => [
+        $product->items()->attach([$productItem->getKey() => [
             'required_quantity' => 1,
         ],
         ]);
