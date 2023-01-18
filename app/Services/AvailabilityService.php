@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\Schema;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DepositServiceContract;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -305,6 +306,10 @@ class AvailabilityService implements AvailabilityServiceContract
             $usedItems[$item->getKey()] = $requiredItem->pivot->required_quantity;
 
             // round product quantity to product qty step
+            if ($requiredQuantity === 0) {
+                throw new Exception('Item with id ' . $item->getKey() . 'doesn\'t have required quantity');
+            }
+
             $itemQuantity = floor($item->quantity_real / $requiredQuantity / $quantityStep) * $quantityStep;
 
             // override default 0 when got any result

@@ -352,7 +352,10 @@ class PerformanceTest extends TestCase
         $productItem = Item::factory()->create();
 
         $product = Product::factory()->create();
-        $product->items()->sync([$productItem->getKey()]);
+        $product->items()->attach([$productItem->getKey()  => [
+            'required_quantity' => 1,
+        ],
+        ]);
         $product->attributes()->attach($attribute->getKey());
         $product->metadata()->create([
             'name' => 'Metadata',
@@ -370,7 +373,10 @@ class PerformanceTest extends TestCase
         $product->sets()->sync($set->getKey());
 
         $product2 = Product::factory()->create();
-        $product2->items()->sync([$productItem->getKey()]);
+        $product2->items()->attach([$productItem->getKey() => [
+            'required_quantity' => 1,
+        ],
+        ]);
         $product2->metadata()->create([
             'name' => 'Metadata',
             'value' => 'metadata test',
@@ -387,7 +393,10 @@ class PerformanceTest extends TestCase
         $product2->sets()->sync($set->getKey());
 
         $product3 = Product::factory()->create();
-        $product3->items()->sync([$productItem->getKey()]);
+        $product3->items()->attach([$productItem->getKey() => [
+            'required_quantity' => 1,
+        ],
+        ]);
         $product3->metadata()->create([
             'name' => 'Metadata',
             'value' => 'metadata test',
@@ -418,7 +427,10 @@ class PerformanceTest extends TestCase
             'price' => 0,
         ]);
         $item = Item::factory()->create();
-        $option->items()->sync([$item->getKey()]);
+        $option->items()->attach([$item->getKey() => [
+            'required_quantity' => 1,
+        ],
+        ]);
 
         $lowRange = PriceRange::create(['start' => 0]);
         $lowRange->prices()->create([
@@ -642,7 +654,10 @@ class PerformanceTest extends TestCase
         $productItem = Item::factory()->create();
 
         $product = Product::factory()->create(['public' => true]);
-        $product->items()->sync([$productItem->getKey()]);
+        $product->items()->attach([$productItem->getKey() => [
+            'required_quantity' => 1,
+        ],
+        ]);
         $product->attributes()->attach($attribute->getKey());
         $product->metadata()->create([
             'name' => 'Metadata',
@@ -660,7 +675,10 @@ class PerformanceTest extends TestCase
         $product->sets()->sync($set->getKey());
 
         $product2 = Product::factory()->create(['public' => true]);
-        $product2->items()->sync([$productItem->getKey()]);
+        $product2->items()->attach([$productItem->getKey() => [
+            'required_quantity' => 1,
+        ],
+        ]);
         $product2->metadata()->create([
             'name' => 'Metadata',
             'value' => 'metadata test',
@@ -677,7 +695,10 @@ class PerformanceTest extends TestCase
         $product2->sets()->sync($set->getKey());
 
         $product3 = Product::factory()->create(['public' => true]);
-        $product3->items()->sync([$productItem->getKey()]);
+        $product3->items()->attach([$productItem->getKey() => [
+            'required_quantity' => 1,
+        ],
+        ]);
         $product3->metadata()->create([
             'name' => 'Metadata',
             'value' => 'metadata test',
@@ -708,7 +729,10 @@ class PerformanceTest extends TestCase
             'price' => 0,
         ]);
         $item = Item::factory()->create();
-        $option->items()->sync([$item->getKey(), $productItem->getKey()]);
+        $option->items()->attach([
+            $item->getKey() => ['required_quantity' => 1],
+            $productItem->getKey() => ['required_quantity' => 1],
+        ]);
 
         $schema2 = Schema::factory()->create([
             'type' => 'select',
@@ -721,13 +745,19 @@ class PerformanceTest extends TestCase
             'name' => 'XL',
             'price' => 0,
         ]);
-        $option2->items()->sync([$productItem->getKey()]);
+        $option2->items()->attach([$productItem->getKey() => [
+            'required_quantity' => 1,
+        ],
+        ]);
 
         $option3 = $schema2->options()->create([
             'name' => 'XL',
             'price' => 0,
         ]);
-        $option3->items()->sync([$productItem->getKey()]);
+        $option3->items()->attach([$productItem->getKey() => [
+            'required_quantity' => 1,
+        ],
+        ]);
 
         $this
             ->actingAs($this->user)
