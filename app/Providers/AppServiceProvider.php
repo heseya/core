@@ -38,6 +38,7 @@ use App\Services\Contracts\OrderServiceContract;
 use App\Services\Contracts\PackageTemplateServiceContract;
 use App\Services\Contracts\PageServiceContract;
 use App\Services\Contracts\PaymentMethodServiceContract;
+use App\Services\Contracts\PaymentServiceContract;
 use App\Services\Contracts\PermissionServiceContract;
 use App\Services\Contracts\ProductSearchServiceContract;
 use App\Services\Contracts\ProductServiceContract;
@@ -77,6 +78,7 @@ use App\Services\OrderService;
 use App\Services\PackageTemplateService;
 use App\Services\PageService;
 use App\Services\PaymentMethodService;
+use App\Services\PaymentService;
 use App\Services\PermissionService;
 use App\Services\ProductSearchService;
 use App\Services\ProductService;
@@ -153,6 +155,7 @@ class AppServiceProvider extends ServiceProvider
         WishlistServiceContract::class => WishlistService::class,
         FavouriteServiceContract::class => FavouriteService::class,
         PaymentMethodServiceContract::class => PaymentMethodService::class,
+        PaymentServiceContract::class => PaymentService::class,
     ];
 
     /**

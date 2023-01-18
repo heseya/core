@@ -12,6 +12,7 @@ return [
         EventType::PRODUCT_CREATED => 'Zdarzenie wyzwalane po utworzeniu nowych produktów',
         EventType::PRODUCT_UPDATED => 'Zdarzenie wyzwalane po aktualizacji produktu',
         EventType::PRODUCT_DELETED => 'Zdarzenie wyzwalane po usunięciu produktu',
+        EventType::PRODUCT_PRICE_UPDATED => 'Zdarzenie wyzwalane po aktualizacji ceny produktu',
         EventType::ITEM_CREATED => 'Zdarzenie wyzwalane po utworzeniu nowych przedmiotów magazynowych',
         EventType::ITEM_UPDATED => 'Zdarzenie wyzwalane po aktualizacji przedmiotów magazynowych',
         EventType::ITEM_UPDATED_QUANTITY => 'Zdarzenie wyzwalane po aktualizacji ilości przedmiotów magazynowych',

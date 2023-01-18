@@ -1,0 +1,12 @@
+PaymentMethod:
+  properties:
+    name:
+      type: string
+      example: 'Heseya Pay'
+    public:
+      type: boolean
+    icon:
+      type: string
+    url:
+      type: string
+  type: object

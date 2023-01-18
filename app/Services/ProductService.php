@@ -7,6 +7,7 @@ use App\Dtos\ProductUpdateDto;
 use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
+use App\Events\ProductPriceUpdated;
 use App\Events\ProductUpdated;
 use App\Models\Option;
 use App\Models\Product;
@@ -36,58 +37,23 @@ class ProductService implements ProductServiceContract
     ) {
     }
 
-    private function setup(Product $product, ProductCreateDto|ProductUpdateDto $dto): Product
-    {
-        if (!($dto->getSchemas() instanceof Missing)) {
-            $this->schemaService->sync($product, $dto->getSchemas());
-        }
-
-        if (!($dto->getSets() instanceof Missing)) {
-            $product->sets()->sync($dto->getSets());
-        }
-
-        if (!($dto->getItems() instanceof Missing)) {
-            $this->assignItems($product, $dto->getItems());
-        }
-
-        if (!($dto->getMedia() instanceof Missing)) {
-            $this->mediaService->sync($product, $dto->getMedia());
-        }
-
-        if (!($dto->getTags() instanceof Missing)) {
-            $product->tags()->sync($dto->getTags());
-        }
-
-        if (!($dto->getMetadata() instanceof Missing)) {
-            $this->metadataService->sync($product, $dto->getMetadata());
-        }
-
-        if (!($dto->getAttributes() instanceof Missing)) {
-            $this->attributeService->sync($product, $dto->getAttributes());
-        }
-
-        if (!($dto->getSeo() instanceof Missing)) {
-            $this->seoMetadataService->createOrUpdateFor($product, $dto->getSeo());
-        }
-
-        [$priceMin, $priceMax] = $this->getMinMaxPrices($product);
-        $product->price_min_initial = $priceMin;
-        $product->price_max_initial = $priceMax;
-        $product->available = $this->availabilityService->isProductAvailable($product);
-        $this->discountService->applyDiscountsOnProduct($product, false);
-
-        return $product;
-    }
-
     public function create(ProductCreateDto $dto): Product
     {
         DB::beginTransaction();
 
-        $product = Product::create($dto->toArray());
+        /** @var Product $product */
+        $product = Product::query()->create($dto->toArray());
         $product = $this->setup($product, $dto);
         $product->save();
 
         DB::commit();
+        ProductPriceUpdated::dispatch(
+            $product->getKey(),
+            null,
+            null,
+            $product->price_min, // @phpstan-ignore-line
+            $product->price_max, // @phpstan-ignore-line
+        );
         ProductCreated::dispatch($product);
         // @phpstan-ignore-next-line
         Product::where($product->getKeyName(), $product->getKey())->searchable();
@@ -97,6 +63,9 @@ class ProductService implements ProductServiceContract
 
     public function update(Product $product, ProductUpdateDto $dto): Product
     {
+        $oldMinPrice = $product->price_min;
+        $oldMaxPrice = $product->price_max;
+
         DB::beginTransaction();
 
         $product->fill($dto->toArray());
@@ -104,6 +73,17 @@ class ProductService implements ProductServiceContract
         $product->save();
 
         DB::commit();
+
+        if ($oldMinPrice !== $product->price_min || $oldMaxPrice !== $product->price_max) {
+            ProductPriceUpdated::dispatch(
+                $product->getKey(),
+                $oldMinPrice,
+                $oldMaxPrice,
+                $product->price_min, // @phpstan-ignore-line
+                $product->price_max, // @phpstan-ignore-line
+            );
+        }
+
         ProductUpdated::dispatch($product);
         // @phpstan-ignore-next-line
         Product::query()->where($product->getKeyName(), $product->getKey())->searchable();
@@ -152,6 +132,53 @@ class ProductService implements ProductServiceContract
             'price_max_initial' => $productMinMaxPrices[1],
         ]);
         $this->discountService->applyDiscountsOnProduct($product);
+    }
+
+    private function setup(Product $product, ProductCreateDto|ProductUpdateDto $dto): Product
+    {
+        if (!($dto->getSchemas() instanceof Missing)) {
+            $this->schemaService->sync($product, $dto->getSchemas());
+        }
+
+        if (!($dto->getSets() instanceof Missing)) {
+            $product->sets()->sync($dto->getSets());
+        }
+
+        if (!($dto->getItems() instanceof Missing)) {
+            $this->assignItems($product, $dto->getItems());
+        }
+
+        if (!($dto->getMedia() instanceof Missing)) {
+            $this->mediaService->sync($product, $dto->getMedia());
+        }
+
+        if (!($dto->getTags() instanceof Missing)) {
+            $product->tags()->sync($dto->getTags());
+        }
+
+        if (!($dto->getMetadata() instanceof Missing)) {
+            $this->metadataService->sync($product, $dto->getMetadata());
+        }
+
+        if (!($dto->getAttributes() instanceof Missing)) {
+            $this->attributeService->sync($product, $dto->getAttributes());
+        }
+
+        if (!($dto->getSeo() instanceof Missing)) {
+            $this->seoMetadataService->createOrUpdateFor($product, $dto->getSeo());
+        }
+
+        [$priceMin, $priceMax] = $this->getMinMaxPrices($product);
+        $product->price_min_initial = $priceMin;
+        $product->price_max_initial = $priceMax;
+        $availability = $this->availabilityService->getCalculateProductAvailability($product);
+        $product->quantity = $availability['quantity'];
+        $product->available = $availability['available'];
+        $product->shipping_time = $availability['shipping_time'];
+        $product->shipping_date = $availability['shipping_date'];
+        $this->discountService->applyDiscountsOnProduct($product, false);
+
+        return $product;
     }
 
     private function assignItems(Product $product, ?array $items): void

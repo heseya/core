@@ -204,6 +204,10 @@ paths:
     $ref: './paths/PaymentMethods.yml#/PaymentMethods'
   '/payment-methods/id:{id}':
     $ref: './paths/PaymentMethods.yml#/PaymentMethodsParams'
+  '/payments':
+    $ref: './paths/Payments.yml#/Payments'
+  '/payments/id:{id}':
+    $ref: './paths/Payments.yml#/PaymentParams'
   /permissions:
     get:
       tags:

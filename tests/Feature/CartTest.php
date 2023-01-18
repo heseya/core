@@ -942,6 +942,126 @@ class CartTest extends TestCase
     }
 
     /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessWithCouponCountAndProductNotInSetOnBlockList($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        [$product, $couponWithLimit, $coupon2] = $this->prepareCouponWithProductInSetAndCountConditions(false, false);
+
+        $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+            'coupons' => [
+                $couponWithLimit->code,
+                $coupon2->code,
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonCount(2, 'data.coupons');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessWithCouponCountAndProductInSetOnBlockList($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        [$product, $couponWithLimit, $coupon2] = $this->prepareCouponWithProductInSetAndCountConditions(true, false);
+
+        $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+            'coupons' => [
+                $couponWithLimit->code,
+                $coupon2->code,
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data.coupons')
+            ->assertJsonMissing([
+                'id' => $couponWithLimit->getKey(),
+                'name' => $couponWithLimit->name,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessWithCouponCountAndProductNotInSetOnAllowList($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        [$product, $couponWithLimit, $coupon2] = $this->prepareCouponWithProductInSetAndCountConditions(false, true);
+
+        $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+            'coupons' => [
+                $couponWithLimit->code,
+                $coupon2->code,
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data.coupons')
+            ->assertJsonMissing([
+                'id' => $couponWithLimit->getKey(),
+                'name' => $couponWithLimit->name,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessWithCouponCountAndProductInSetOnAllowList($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        [$product, $couponWithLimit, $coupon2] = $this->prepareCouponWithProductInSetAndCountConditions(true, true);
+
+        $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+            'coupons' => [
+                $couponWithLimit->code,
+                $coupon2->code,
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonCount(2, 'data.coupons');
+    }
+
+    /**
      * @dataProvider couponOrSaleProvider
      */
     public function testCartProcessRoundedValues($user, $coupon): void
@@ -2156,52 +2276,69 @@ class CartTest extends TestCase
             ]);
     }
 
-    private function prepareDataForCouponTest($coupon): array
+    private function prepareCouponWithProductInSetAndCountConditions(bool $productInSet, bool $isAllowList): array
     {
-        $code = $coupon ? [] : ['code' => null];
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 49,
+        ]);
 
-        $discountApplied = Discount::factory()->create([
-            'description' => 'Testowy kupon obowiązujący',
-            'name' => 'Testowy kupon obowiązujący',
-            'value' => 10,
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        if ($productInSet) {
+            $product->sets()->sync([$set->getKey()]);
+        }
+
+        $couponWithLimit = Discount::factory()->create([
+            'name' => 'Coupon with limit',
             'type' => DiscountType::PERCENTAGE,
             'target_type' => DiscountTargetType::ORDER_VALUE,
+            'value' => 10,
             'target_is_allow_list' => true,
-        ] + $code);
-
-        $discount = Discount::factory()->create([
-            'description' => 'Testowy kupon',
-            'name' => 'Testowy kupon',
-            'value' => 100,
-            'type' => DiscountType::AMOUNT,
-            'target_type' => DiscountTargetType::ORDER_VALUE,
-            'target_is_allow_list' => true,
-        ] + $code);
+            'priority' => 0,
+        ]);
 
         $conditionGroup = ConditionGroup::create();
 
         $conditionGroup->conditions()->create([
-            'type' => ConditionType::DATE_BETWEEN,
+            'type' => ConditionType::PRODUCT_IN_SET,
             'value' => [
-                'start_at' => Carbon::tomorrow(),
-                'is_in_range' => true,
+                'product_sets' => [
+                    $set->getKey(),
+                ],
+                'is_allow_list' => $isAllowList,
             ],
         ]);
 
-        $discount->conditionGroups()->attach($conditionGroup);
-
-        $coupons = $coupon ? [
-            'coupons' => [
-                $discount->code,
-                $discountApplied->code,
-                'blablabla',
+        $conditionGroup2 = ConditionGroup::create();
+        $conditionGroup2->conditions()->create([
+            'type' => ConditionType::COUPONS_COUNT,
+            'value' => [
+                'min_value' => 0,
+                'max_value' => 1,
             ],
-        ] : [];
+        ]);
 
-        return [
-            'coupons' => $coupons,
-            'discount' => $discount,
-            'discountApplied' => $discountApplied,
-        ];
+        $conditionGroup2->conditions()->create([
+            'type' => ConditionType::MAX_USES,
+            'value' => [
+                'max_uses' => 1,
+            ],
+        ]);
+
+        $couponWithLimit->conditionGroups()->attach([$conditionGroup->getKey(), $conditionGroup2->getKey()]);
+
+        $coupon2 = Discount::factory()->create([
+            'name' => 'Coupon without limit',
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'value' => 20,
+            'target_is_allow_list' => true,
+            'priority' => 0,
+        ]);
+
+        return [$product, $couponWithLimit, $coupon2];
     }
 }

@@ -29,7 +29,6 @@ use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use JeroenG\Explorer\Application\Explored;
@@ -147,31 +146,24 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
     ];
 
     protected string $defaultSortBy = 'products.order';
-
     protected string $defaultSortDirection = 'desc';
-
-    private ProductSearchServiceContract $searchService;
-
-    public function __construct(array $attributes = [])
-    {
-        parent::__construct($attributes);
-
-        $this->searchService = app(ProductSearchServiceContract::class);
-    }
 
     public function mappableAs(): array
     {
-        return $this->searchService->mappableAs();
+        $searchService = app(ProductSearchServiceContract::class);
+        return $searchService->mappableAs();
     }
 
     public function toSearchableArray(): array
     {
-        return $this->searchService->mapSearchableArray($this);
+        $searchService = app(ProductSearchServiceContract::class);
+        return $searchService->mapSearchableArray($this);
     }
 
     public function getSearchableFields(): array
     {
-        return $this->searchService->searchableFields();
+        $searchService = app(ProductSearchServiceContract::class);
+        return $searchService->searchableFields();
     }
 
     public function indexSettings(): array
@@ -308,10 +300,5 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         $sales = $sales->diff($productSetSales->where('target_is_allow_list', false));
 
         return $sales->unique('id');
-    }
-
-    public function productAvailabilities(): HasMany
-    {
-        return $this->hasMany(ProductAvailability::class);
     }
 }

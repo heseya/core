@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\MetadataType;
+use App\Enums\PaymentStatus;
 use App\Enums\ShippingType;
 use App\Enums\ValidationError;
 use App\Events\ItemUpdatedQuantity;
@@ -136,6 +137,7 @@ class OrderTest extends TestCase
             'summary_paid',
             'currency',
             'metadata',
+            'billing_address',
         ];
 
         $this->expected_full_view_structure = $this->expected_full_structure + [
@@ -432,7 +434,7 @@ class OrderTest extends TestCase
         $order1->payments()->create([
             'method' => 'payu',
             'amount' => $order1->summary,
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
         ]);
 
         $orderId = $booleanValue ? $order1->getKey() : $this->order->getKey();
@@ -834,7 +836,7 @@ class OrderTest extends TestCase
 
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $summaryPaid,
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
         ]));
 
         $this
@@ -858,7 +860,7 @@ class OrderTest extends TestCase
 
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $this->order->summary * 2,
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
         ]));
 
         $this
@@ -1345,7 +1347,7 @@ class OrderTest extends TestCase
 
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $summaryPaid,
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
         ]));
 
         $response = $this->actingAs($this->$user)

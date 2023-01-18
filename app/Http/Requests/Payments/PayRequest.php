@@ -4,7 +4,7 @@ namespace App\Http\Requests\Payments;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class PaymentStoreRequest extends FormRequest
+class PayRequest extends FormRequest
 {
     public function rules(): array
     {

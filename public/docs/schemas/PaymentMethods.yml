@@ -11,4 +11,8 @@ PaymentMethod:
       example: heseya
     public:
       type: boolean
+    icon:
+      type: string
+    url:
+      type: string
   type: object

@@ -10,6 +10,7 @@ class DepositObserver
 {
     public function created(Deposit $deposit): void
     {
+        /** @var DepositServiceContract $depositService */
         $depositService = App::make(DepositServiceContract::class);
 
         $deposit->item?->increment('quantity', $deposit->quantity);

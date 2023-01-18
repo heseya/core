@@ -13,18 +13,26 @@ use Tests\TestCase;
 
 class ShippingTimeDateTest extends TestCase
 {
+    private AvailabilityServiceContract $availabilityService;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->availabilityService = App::make(AvailabilityServiceContract::class);
+    }
+
     /**
      * @dataProvider authProvider
      */
     public function testProductWithShippingTimeAndDateAndCountQuantityNeed($user): void
     {
-        $availabilityService = App::make(AvailabilityServiceContract::class);
-
         $itemData = ['unlimited_stock_shipping_date' => Carbon::now()->addDays(10)->toDateTimeString()];
 
         $item = Item::factory()->create($itemData);
         $item2 = Item::factory()->create();
 
+        /** @var Product $product */
         $product = Product::factory()->create();
         $product->items()->attach($item->getKey(), ['required_quantity' => 1]);
 
@@ -65,14 +73,12 @@ class ShippingTimeDateTest extends TestCase
             'quantity' => 2.0,
             'shipping_date' => Carbon::now()->addDays(6)->toDateTimeString(),
         ]);
-        $availabilityService->calculateProductAvailability($product);
+        $this->availabilityService->calculateProductAvailability($product);
         $product->refresh();
-
-        $this->assertEquals($deposit2->shipping_date, $product->shipping_date);
 
         $item->update(['unlimited_stock_shipping_time' => 10]);
         $product->refresh();
-        $availabilityService->calculateProductAvailability($product);
+        $this->availabilityService->calculateProductAvailability($product);
         $product->refresh();
 
         $this->assertEquals(10, $product->shipping_time);
@@ -82,7 +88,7 @@ class ShippingTimeDateTest extends TestCase
             'quantity' => 3.0,
             'shipping_time' => 6,
         ]);
-        $availabilityService->calculateProductAvailability($product);
+        $this->availabilityService->calculateProductAvailability($product);
         $product->refresh();
 
         $this->assertEquals(6, $product->shipping_time);
@@ -92,7 +98,7 @@ class ShippingTimeDateTest extends TestCase
             'quantity' => 3.0,
             'shipping_time' => 4,
         ]);
-        $availabilityService->calculateProductAvailability($product);
+        $this->availabilityService->calculateProductAvailability($product);
         $product->refresh();
 
         $this->assertEquals(4, $product->shipping_time);
@@ -102,19 +108,19 @@ class ShippingTimeDateTest extends TestCase
             'quantity' => 3.0,
             'shipping_time' => 8,
         ]);
-        $availabilityService->calculateProductAvailability($product);
+        $this->availabilityService->calculateProductAvailability($product);
         $product->refresh();
 
         $this->assertEquals(4, $product->shipping_time);
 
-        $product->items()->attach($item2->getKey(), ['required_quantity' => 5]);
+        $product->items()->attach($item2->getKey(), ['required_quantity' => 5.0]);
 
-        $depositItem1 = Deposit::factory()->create([
+        Deposit::factory()->create([
             'item_id' => $item2->getKey(),
             'quantity' => 4.0,
             'shipping_date' => Carbon::now()->addDays(4)->toDateTimeString(),
         ]);
-        $availabilityService->calculateProductAvailability($product);
+        $this->availabilityService->calculateProductAvailability($product);
         $product->refresh();
 
         $this->assertNull($product->shipping_date);
@@ -124,15 +130,13 @@ class ShippingTimeDateTest extends TestCase
             'quantity' => 4.0,
             'shipping_time' => 2,
         ]);
-        $product->refresh();
-        $availabilityService->calculateProductAvailability($product);
-        $product->refresh();
 
-        $this->assertEquals($depositItem1->shipping_date, $product->shipping_date);
+        $this->availabilityService->calculateItemAvailability($item2);
+        $product->refresh();
 
         $depositItem2->update(['quantity' => 10]);
         $product->refresh();
-        $availabilityService->calculateProductAvailability($product);
+        $this->availabilityService->calculateProductAvailability($product);
         $product->refresh();
 
         $this->assertEquals(4, $product->shipping_time);
@@ -158,6 +162,53 @@ class ShippingTimeDateTest extends TestCase
         $this->assertEquals(1, $product->shipping_time);
     }
 
+    public function testShippingDateAfterShippingTime(): void
+    {
+        /** @var Product $product */
+        $product = Product::factory()->create();
+        $item = Item::factory()->create();
+
+        $product->items()->attach($item->getKey(), ['required_quantity' => 5]);
+
+        $depositItem1 = Deposit::factory()->create([
+            'item_id' => $item->getKey(),
+            'quantity' => 4.0,
+            'shipping_date' => Carbon::now()->addDays(4)->toDateTimeString(),
+        ]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'available' => false,
+            'shipping_time' => null,
+            'shipping_date' => null,
+        ]);
+
+        $depositItem2 = Deposit::factory()->create([
+            'item_id' => $item->getKey(),
+            'quantity' => 4.0,
+            'shipping_time' => 2,
+        ]);
+
+        $this->availabilityService->calculateItemAvailability($item);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'available' => true,
+            'shipping_time' => null,
+            'shipping_date' => $depositItem1->shipping_date,
+        ]);
+
+        $depositItem2->update(['quantity' => 10]);
+        $this->availabilityService->calculateItemAvailability($item);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'available' => true,
+            'shipping_time' => $depositItem2->shipping_time,
+            'shipping_date' => null,
+        ]);
+    }
+
     public function testStopUnlimitedStockShippingDate(): void
     {
         $shippingTimeDateService = App::make(ShippingTimeDateServiceContract::class);
@@ -166,6 +217,7 @@ class ShippingTimeDateTest extends TestCase
 
         $item = Item::factory()->create($itemData);
 
+        /** @var Product $product */
         $product = Product::factory()->create();
         $product->items()->attach($item->getKey(), ['required_quantity' => 1]);
 

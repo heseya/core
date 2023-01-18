@@ -79,6 +79,8 @@ final class Exceptions extends Enum
 
     public const CLIENT_APPS_NO_ACCESS = 'Applications cannot access this endpoint';
     public const CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT = 'No access';
+    public const CLIENT_USERS_NO_ACCESS = 'Users cannot access this endpoint';
+    public const CLIENT_NO_ACCESS = 'No access';
 
     public const CLIENT_REMOVE_DEFAULT_ADDRESS = 'You cannot delete default address';
     public const CLIENT_STATUS_USED = 'Can\'t update or remove status that is currently used in order';
@@ -97,6 +99,7 @@ final class Exceptions extends Enum
     public const SERVER_ERROR = 'Server responded with an error';
     public const SERVER_ORDER_STATUSES_NOT_CONFIGURED = 'Order statuses are not configured';
     public const SERVER_TRANSACTION_ERROR = 'Unexpected error occurred during the database transaction.';
+    public const SERVER_PAYMENT_MICROSERVICE_ERROR = 'Microservice response is not OK.';
 
     public const ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE = 'Not every item is available';
     public const ORDER_SHIPPING_METHOD_TYPE_MISMATCH = 'Selected shipping methods don\'t match selected product types';
@@ -119,13 +122,16 @@ final class Exceptions extends Enum
             self::CLIENT_DISCOUNT_TYPE_NOT_SUPPORTED,
             self::CLIENT_DELETE_WHEN_RELATION_EXISTS,
             self::CLIENT_MODEL_NOT_AUDITABLE,
-            self::CLIENT_APPS_NO_ACCESS => 400,
+            self::CLIENT_APPS_NO_ACCESS,
+            self::CLIENT_USERS_NO_ACCESS => 400,
             self::CLIENT_TFA_REQUIRED,
             self::CLIENT_WEBHOOK_APP_ACTION,
             self::CLIENT_WEBHOOK_USER_ACTION => 403,
             self::SERVER_CDN_ERROR,
             self::SERVER_ERROR,
             self::SERVER_ORDER_STATUSES_NOT_CONFIGURED => 500,
+            self::SERVER_CDN_ERROR,
+            self::SERVER_PAYMENT_MICROSERVICE_ERROR => 500,
             default => 422
         };
     }

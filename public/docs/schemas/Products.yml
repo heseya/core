@@ -137,10 +137,6 @@ ProductView:
           type: array
           items:
             $ref: './Sales.yml#/Sale'
-        availability:
-          type: array
-          items:
-            $ref: './ProductAvailabilities.yml#/ProductAvailability'
 
 ProductIndex:
   type: object

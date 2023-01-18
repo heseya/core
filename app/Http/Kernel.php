@@ -9,6 +9,7 @@ use App\Http\Middleware\SecureHeaders;
 use App\Http\Middleware\TrimStrings;
 use App\Http\Middleware\TrustProxies;
 use App\Http\Middleware\UndotParams;
+use App\Http\Middleware\UserAccessRestrict;
 use Heseya\Pagination\Http\Middleware\Pagination;
 use Illuminate\Auth\Middleware\Authorize;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
@@ -69,6 +70,7 @@ class Kernel extends HttpKernel
         'cache.headers' => SetCacheHeaders::class,
         'permission' => PermissionMiddleware::class,
         'app.restrict' => AppAccessRestrict::class,
+        'user.restrict' => UserAccessRestrict::class,
     ];
 
     /**
