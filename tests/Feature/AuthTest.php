@@ -1276,7 +1276,7 @@ class AuthTest extends TestCase
             new TokenType(TokenType::IDENTITY),
         );
 
-        $this->actingAs($user)->getJson("/auth/check/${token}")
+        $this->actingAs($user)->getJson("/auth/check/{$token}")
             ->assertForbidden();
     }
 
@@ -1294,7 +1294,7 @@ class AuthTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->json('GET', "/auth/check/${token}")
+            ->json('GET', "/auth/check/{$token}")
             ->assertStatus(422);
 
         $this->actingAs($this->$user)
@@ -1338,7 +1338,7 @@ class AuthTest extends TestCase
             new TokenType(TokenType::IDENTITY),
         );
 
-        $this->actingAs($this->$user)->getJson("/auth/check/${token}")
+        $this->actingAs($this->$user)->getJson("/auth/check/{$token}")
             ->assertOk()
             ->assertJson(['data' => [
                 'id' => $otherUser->getKey(),
@@ -1378,7 +1378,7 @@ class AuthTest extends TestCase
             new TokenType(TokenType::IDENTITY),
         );
 
-        $this->actingAs($this->$user)->getJson("/auth/check/${token}")
+        $this->actingAs($this->$user)->getJson("/auth/check/{$token}")
             ->assertOk()
             ->assertJson(['data' => [
                 'id' => $otherUser->getKey(),
@@ -1416,7 +1416,7 @@ class AuthTest extends TestCase
             new TokenType(TokenType::IDENTITY),
         );
 
-        $this->actingAs($app)->getJson("/auth/check/${token}")
+        $this->actingAs($app)->getJson("/auth/check/{$token}")
             ->assertOk()
             ->assertJson(['data' => [
                 'id' => $user->getKey(),

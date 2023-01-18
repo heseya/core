@@ -117,13 +117,13 @@ class App extends Model implements
         return $this->morphMany(WishlistProduct::class, 'user');
     }
 
-    protected function hasPermissionViaRole(Permission $permission): bool
-    {
-        return false;
-    }
-
     public function favouriteProductSets(): MorphMany
     {
         return $this->morphMany(FavouriteProductSet::class, 'user');
+    }
+
+    protected function hasPermissionViaRole(Permission $permission): bool
+    {
+        return false;
     }
 }

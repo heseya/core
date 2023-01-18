@@ -10,10 +10,10 @@ class AddressRedactor implements AttributeRedactor
 {
     public static function redact(mixed $value): string
     {
-        $cache = Cache::get("address.${value}");
+        $cache = Cache::get("address.{$value}");
 
         if ($cache !== null) {
-            Cache::forget("address.${value}");
+            Cache::forget("address.{$value}");
             return $cache;
         }
 

@@ -227,7 +227,4 @@ class OrderDigitalTest extends TestCase
             'shipping_method_id' => $this->physicalShippingMethod->getKey(),
         ]);
     }
-
-
-
 }

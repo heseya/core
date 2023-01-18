@@ -68,17 +68,17 @@ final class EventType extends Enum implements LocalizedEnum
         foreach ($events as $event) {
             $hidden_permissions = array_key_exists($event->value, $required_hidden_permissions)
                 ? $required_hidden_permissions[$event->value] : [];
-            array_push($result, self::getData($event, $required_permissions[$event->value], $hidden_permissions));
+            $result[] = self::getData($event, $required_permissions[$event->value], $hidden_permissions);
         }
 
         return $result;
     }
 
-    private static function getData(Enum $enum, mixed $permissions, mixed $hidden_permissions): array
+    private static function getData(EventType $enum, mixed $permissions, mixed $hidden_permissions): array
     {
         return [
             'key' => $enum->value,
-            'name' => self::getFriendlyKeyName($enum->key),
+            'name' => self::getFriendlyName($enum->key ?? ''),
             'description' => $enum->description,
             'required_permissions' => $permissions,
             'required_hidden_permissions' => $hidden_permissions,

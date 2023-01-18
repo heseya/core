@@ -458,15 +458,15 @@ class DiscountService implements DiscountServiceContract
             ->where(
                 fn (Builder $query) => $query
                     ->whereHas('conditionGroups', function ($query): void {
-                    $query
-                        ->whereHas('conditions', function ($query): void {
-                            $query
-                                ->where('type', ConditionType::DATE_BETWEEN)
-                                ->orWhere('type', ConditionType::TIME_BETWEEN)
-                                ->orWhere('type', ConditionType::WEEKDAY_IN);
-                        });
+                        $query
+                            ->whereHas('conditions', function ($query): void {
+                                $query
+                                    ->where('type', ConditionType::DATE_BETWEEN)
+                                    ->orWhere('type', ConditionType::TIME_BETWEEN)
+                                    ->orWhere('type', ConditionType::WEEKDAY_IN);
+                            });
                     })
-                ->orWhereDoesntHave('conditionGroups')
+                    ->orWhereDoesntHave('conditionGroups')
             )
             ->with(['conditionGroups', 'conditionGroups.conditions'])
             ->get();
@@ -869,7 +869,6 @@ class DiscountService implements DiscountServiceContract
                 ]);
 
                 $product->discounts->each(function (Discount $discount) use ($newProduct): void {
-                    // @phpstan-ignore-next-line
                     $this->attachDiscount($newProduct, $discount, $discount->pivot->applied_discount);
                 });
 

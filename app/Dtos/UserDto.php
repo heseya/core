@@ -67,5 +67,4 @@ class UserDto extends Dto implements InstantiateFromRequest
     {
         return $this->phone_number;
     }
-
 }

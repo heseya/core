@@ -31,7 +31,7 @@ class OrderResource extends Resource
                 ShippingMethodResource::make($this->resource->digitalShippingMethod) : null,
             'shipping_type' => $this->resource->shippingType,
             'invoice_requested' => $this->resource->invoice_requested,
-            'shipping_place' =>  $this->resource->shippingAddress
+            'shipping_place' => $this->resource->shippingAddress
                 ? AddressResource::make($this->resource->shippingAddress)
                 : $this->resource->shipping_place,
             'documents' => OrderDocumentResource::collection($this->resource->documents->pluck('pivot')),

@@ -66,7 +66,7 @@ class PaymentTest extends TestCase
             ]);
 
         $code = $this->order->code;
-        $response = $this->postJson("/orders/${code}/pay/payu", [
+        $response = $this->postJson("/orders/{$code}/pay/payu", [
             'continue_url' => 'continue_url',
         ]);
 
@@ -94,7 +94,7 @@ class PaymentTest extends TestCase
 
         $code = $this->order->code;
         $response = $this->actingAs($this->$user)
-            ->postJson("/orders/${code}/pay/payu", [
+            ->postJson("/orders/{$code}/pay/payu", [
                 'continue_url' => 'continue_url',
             ]);
 
@@ -122,7 +122,7 @@ class PaymentTest extends TestCase
         $code = $this->order->code;
         $this
             ->actingAs($this->$user)
-            ->postJson("/orders/${code}/pay/przelewy24", [
+            ->postJson("/orders/{$code}/pay/przelewy24", [
                 'continue_url' => 'continue_url',
             ])
             ->assertUnprocessable()
@@ -153,7 +153,7 @@ class PaymentTest extends TestCase
         $code = $this->order->code;
         $this
             ->actingAs($this->$user)
-            ->postJson("/orders/${code}/pay/przelewy24", [
+            ->postJson("/orders/{$code}/pay/przelewy24", [
                 'continue_url' => 'continue_url',
             ])
             ->assertUnprocessable()
@@ -195,7 +195,7 @@ class PaymentTest extends TestCase
         $this->order->digitalShippingMethod()->associate($digitalShippingMethod);
 
         $response = $this->actingAs($this->$user)
-            ->postJson("/orders/${code}/pay/payu", [
+            ->postJson("/orders/{$code}/pay/payu", [
                 'continue_url' => 'continue_url',
             ]);
 
@@ -230,7 +230,7 @@ class PaymentTest extends TestCase
         $signature = md5(json_encode($body) . Config::get('payu.second_key'));
 
         $response = $this->postJson('/payments/payu', $body, [
-            'OpenPayu-Signature' => "signature=${signature};algorithm=MD5",
+            'OpenPayu-Signature' => "signature={$signature};algorithm=MD5",
         ]);
 
         $response->assertForbidden();
@@ -261,7 +261,7 @@ class PaymentTest extends TestCase
 
         $response = $this->actingAs($this->$user)
             ->postJson('/payments/payu', $body, [
-                'OpenPayu-Signature' => "signature=${signature};algorithm=MD5",
+                'OpenPayu-Signature' => "signature={$signature};algorithm=MD5",
             ]);
 
         $response->assertOk();
@@ -280,7 +280,7 @@ class PaymentTest extends TestCase
     {
         $code = $this->order->code;
         $response = $this->actingAs($this->$user)
-            ->postJson("/orders/${code}/pay/offline");
+            ->postJson("/orders/{$code}/pay/offline");
 
         $response->assertForbidden();
     }
@@ -296,7 +296,7 @@ class PaymentTest extends TestCase
 
         $code = $this->order->code;
         $response = $this->actingAs($this->$user)
-            ->postJson("/orders/${code}/pay/offline");
+            ->postJson("/orders/{$code}/pay/offline");
 
         $payment = Payment::find($response->getData()->data->id);
 
@@ -338,7 +338,7 @@ class PaymentTest extends TestCase
 
         $code = $this->order->code;
         $response = $this->actingAs($this->$user)
-            ->postJson("/orders/${code}/pay/offline");
+            ->postJson("/orders/{$code}/pay/offline");
 
         $response
             ->assertCreated()
@@ -364,7 +364,7 @@ class PaymentTest extends TestCase
 
         $code = $this->order->code;
         $response = $this->actingAs($this->$user)
-            ->postJson("/orders/${code}/pay/offline");
+            ->postJson("/orders/{$code}/pay/offline");
 
         $payment = Payment::find($response->getData()->data->id);
 

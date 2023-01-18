@@ -200,7 +200,7 @@ class ProductSearchElasticTest extends TestCase
         $this
             ->actingAs($this->$user)
             ->json('GET', '/products', [
-                'ids' => "${uuid1},${uuid2}",
+                'ids' => "{$uuid1},{$uuid2}",
             ])
             ->assertOk();
 
@@ -746,7 +746,7 @@ class ProductSearchElasticTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->json('GET', "/products?metadata.erp_id=${erpId}&metadata.sku=${sku}")
+            ->json('GET', "/products?metadata.erp_id={$erpId}&metadata.sku={$sku}")
             ->assertOk();
 
         $this->assertElasticQuery([
@@ -797,7 +797,7 @@ class ProductSearchElasticTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->json('GET', "/products?metadata[erp_id]=${erpId}&metadata[sku]=${sku}")
+            ->json('GET', "/products?metadata[erp_id]={$erpId}&metadata[sku]={$sku}")
             ->assertOk();
 
         $this->assertElasticQuery([
@@ -907,7 +907,7 @@ class ProductSearchElasticTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->json('GET', "/products?metadata_private.sku=${sku}")
+            ->json('GET', "/products?metadata_private.sku={$sku}")
             ->assertOk();
 
         $this->assertElasticQuery([
@@ -955,7 +955,7 @@ class ProductSearchElasticTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->json('GET', "/products?metadata_private.sku=${sku}")
+            ->json('GET', "/products?metadata_private.sku={$sku}")
             ->assertUnprocessable();
     }
 

@@ -23,6 +23,8 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
+ * @property SchemaType $type;
+ *
  * @mixin IdeHelperSchema
  */
 class Schema extends Model implements SortableContract

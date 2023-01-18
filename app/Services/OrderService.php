@@ -412,6 +412,20 @@ class OrderService implements OrderServiceContract
             ->paginate(Config::get('pagination.per_page'));
     }
 
+    public function sendUrls(Order $order): void
+    {
+        $products = $order->products()->has('urls')->get();
+        if (!$products->isEmpty()) {
+            $order->notify(new SendUrls($order, $products));
+
+            $products->toQuery()->update([
+                'is_delivered' => true,
+            ]);
+
+            SendOrderUrls::dispatch($order);
+        }
+    }
+
     private function getDeliveryMethods(
         OrderDto|CartDto|OrderUpdateDto $dto,
         Collection $products,
@@ -421,11 +435,11 @@ class OrderService implements OrderServiceContract
             // Validate whether delivery methods are the proper type
             $shippingMethod = $dto->getShippingMethodId() instanceof Missing ? null :
                 ShippingMethod::whereNot('shipping_type', ShippingType::DIGITAL)
-                ->findOrFail($dto->getShippingMethodId());
+                    ->findOrFail($dto->getShippingMethodId());
 
             $digitalShippingMethod = $dto->getDigitalShippingMethodId() instanceof Missing ? null :
                 ShippingMethod::where('shipping_type', ShippingType::DIGITAL)
-                ->findOrFail($dto->getDigitalShippingMethodId());
+                    ->findOrFail($dto->getDigitalShippingMethodId());
         } catch (Throwable $e) {
             throw new OrderException(Exceptions::CLIENT_SHIPPING_METHOD_INVALID_TYPE);
         }
@@ -516,20 +530,6 @@ class OrderService implements OrderServiceContract
         }
 
         return !$itemsToRemove || $this->depositService->removeItemsFromWarehouse($itemsToRemove, $orderProduct);
-    }
-
-    public function sendUrls(Order $order): void
-    {
-        $products = $order->products()->has('urls')->get();
-        if (!$products->isEmpty()) {
-            $order->notify(new SendUrls($order, $products));
-
-            $products->toQuery()->update([
-                'is_delivered' => true,
-            ]);
-
-            SendOrderUrls::dispatch($order);
-        }
     }
 
     private function resolveShippingAddress(
