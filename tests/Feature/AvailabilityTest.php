@@ -583,7 +583,8 @@ class AvailabilityTest extends TestCase
         $this->actingAs($this->$user)->postJson('/orders', [
             'email' => $email,
             'shipping_method_id' => $shippingMethod->getKey(),
-            'delivery_address' => $address->toArray(),
+            'shipping_place' => $address->toArray(),
+            'billing_address' => $address->toArray(),
             'items' => [
                 [
                     'product_id' => $product->getKey(),
@@ -611,6 +612,7 @@ class AvailabilityTest extends TestCase
             'slug' => 'test',
             'price' => 10,
             'public' => false,
+            'shipping_digital' => false,
             'sets' => [],
             'schemas' => array_keys($schemas),
         ])->assertCreated();
