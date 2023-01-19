@@ -198,8 +198,10 @@ class PaymentTest extends TestCase
         ]);
         $digitalShippingMethod->paymentMethods()->attach($paymentMethod->getKey());
 
-        $this->order->shippingMethod()->dissociate();
-        $this->order->digitalShippingMethod()->associate($digitalShippingMethod);
+        $this->order->update([
+            'shipping_method_id' => null,
+            'digital_shipping_method_id' => $digitalShippingMethod->getKey(),
+        ]);
 
         $this
             ->actingAs($this->$user)
