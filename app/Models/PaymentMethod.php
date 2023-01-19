@@ -23,7 +23,6 @@ class PaymentMethod extends Model
      */
     protected $fillable = [
         'name',
-        'alias',
         'public',
         'icon',
         'url',
@@ -42,7 +41,6 @@ class PaymentMethod extends Model
         'order_code' => WhereHasOrderWithCode::class,
         'shipping_method_id' => WhereHasShippingMethod::class,
         'public',
-        'alias',
     ];
 
     public function shippingMethods(): BelongsToMany

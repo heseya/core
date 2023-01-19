@@ -25,6 +25,10 @@ return new class extends Migration
             $table->dropColumn('paid');
             $table->string('status')->nullable(false)->change();
         });
+
+        Schema::table('payment_methods', function (Blueprint $table): void {
+            $table->string('alias')->nullable()->change();
+        });
     }
 
     /**
