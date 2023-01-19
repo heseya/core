@@ -11,6 +11,7 @@ class OrderModelTest extends TestCase
 {
     public function testOverpaid(): void
     {
+        /** @var Order $order */
         $order = Order::factory()->create();
 
         $order->payments()->save(Payment::factory()->make([
