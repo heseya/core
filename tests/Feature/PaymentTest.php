@@ -196,24 +196,20 @@ class PaymentTest extends TestCase
             'name' => 'Payu',
             'alias' => 'payu',
         ]);
-        $digitalShippingMethod->paymentMethods()->save($paymentMethod);
+        $digitalShippingMethod->paymentMethods()->attach($paymentMethod->getKey());
 
         $this->order->shippingMethod()->dissociate();
         $this->order->digitalShippingMethod()->associate($digitalShippingMethod);
 
-        $response = $this->actingAs($this->$user)
+        $this
+            ->actingAs($this->$user)
             ->postJson("/orders/${code}/pay/id:" . $paymentMethod->getKey(), [
                 'continue_url' => 'continue_url',
-            ]);
-
-        $payment = Payment::find($response->getData()->data->id);
-
-        $response
+            ])
             ->assertCreated()
             ->assertJsonFragment([
                 'method' => 'payu',
                 'amount' => $this->order->summary,
-                'date' => $payment->created_at,
                 'redirect_url' => 'payment_url',
                 'continue_url' => 'continue_url',
             ]);

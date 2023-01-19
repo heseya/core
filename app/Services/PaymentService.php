@@ -31,6 +31,7 @@ class PaymentService implements PaymentServiceContract
 
         if (!PaymentMethod::searchByCriteria([
             'id' => $paymentMethod->getKey(),
+            'public' => true,
             'order_code' => $order->code,
         ])->exists()) {
             throw new ClientException(Exceptions::PAYMENT_METHOD_NOT_AVAILABLE_FOR_SHIPPING);
