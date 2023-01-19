@@ -29,11 +29,14 @@ class PaymentService implements PaymentServiceContract
             throw new ClientException(Exceptions::CLIENT_ORDER_PAID);
         }
 
-        $paymentMethod = PaymentMethod::query()->where('id', $method)->first();
+        /** @var PaymentMethod $paymentMethod */
+        $paymentMethod = PaymentMethod::query()
+            ->where('id', $method)
+            ->firstOr(fn () => throw new ClientException(Exceptions::CLIENT_UNKNOWN_PAYMENT_METHOD));
 
-        return $paymentMethod instanceof PaymentMethod
+        return $paymentMethod->alias === null
             ? $this->requestPaymentFromMicroservice($paymentMethod, $order, $request)
-            : $this->createPaymentLegacy($method, $order, $request);
+            : $this->createPaymentLegacy($paymentMethod->alias, $order, $request);
     }
 
     private function requestPaymentFromMicroservice(PaymentMethod $method, Order $order, Request $request): Payment
