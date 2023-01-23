@@ -581,6 +581,7 @@ class PaymentTest extends TestCase
 
         $paymentMethod = PaymentMethod::factory()->create([
             'alias' => null,
+            'public' => true,
         ]);
         $this->shippingMethod->paymentMethods()->attach($paymentMethod->getKey());
 
