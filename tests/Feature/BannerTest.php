@@ -76,6 +76,27 @@ class BannerTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexByIds($user): void
+    {
+        $this->$user->givePermissionTo('banners.show');
+
+        Banner::factory()->count(4)->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/banners', [
+                'ids' => [
+                    $this->banner->getKey(),
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment($this->banner->only(['slug', 'name', 'active']));
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexQuery($user): void
     {
         $this->$user->givePermissionTo('banners.show');

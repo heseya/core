@@ -111,6 +111,28 @@ class ShippingMethodTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexByIds($user): void
+    {
+        $this->$user->givePermissionTo('shipping_methods.show');
+
+        ShippingMethod::factory()->count(10)->create();
+
+        $this->actingAs($this->$user)->json('GET', '/shipping-methods', [
+            'ids' => [
+                $this->shipping_method->getKey(),
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJson(['data' => [
+                0 => $this->expected,
+            ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexHidden($user): void
     {
         $this->$user->givePermissionTo(['shipping_methods.show', 'shipping_methods.show_hidden']);

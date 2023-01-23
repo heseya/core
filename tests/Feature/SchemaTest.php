@@ -105,6 +105,26 @@ class SchemaTest extends TestCase
     }
 
     /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchByIds($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $schema1 = Schema::factory()->create([
+            'hidden' => false,
+        ]);
+
+        Schema::factory()->create([
+            'hidden' => false,
+        ]);
+
+        $this->actingAs($this->$user)->json('GET', '/schemas', ['ids' => [$schema1->getKey()]])
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
+    }
+
+    /**
      * @dataProvider booleanProvider
      */
     public function testIndexSearchByRequired($user, $boolean, $booleanValue): void

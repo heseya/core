@@ -44,6 +44,29 @@ class TagTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexByIds($user): void
+    {
+        $this->$user->givePermissionTo('tags.show');
+        $tag = Tag::factory()->count(10)->create()->random();
+
+        $product = Product::factory()->create();
+        $product->tags()->sync([$tag->getKey()]);
+
+        $response = $this->actingAs($this->$user)->json('GET', '/tags', [
+            'ids' => [
+                $tag->getKey(),
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJson(['data' => [['id' => $tag->getKey()]]]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexProductsAdd($user): void
     {
         $this->$user->givePermissionTo('products.add');

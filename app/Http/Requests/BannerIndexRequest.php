@@ -12,6 +12,8 @@ class BannerIndexRequest extends FormRequest
             'slug' => ['nullable', 'string', 'max:255', 'alpha_dash'],
             'metadata' => ['nullable', 'array'],
             'metadata_private' => ['nullable', 'array'],
+            'ids' => ['array'],
+            'ids.*' => ['uuid'],
         ];
     }
 }

@@ -26,6 +26,8 @@ class AttributeIndexRequest extends FormRequest
             'global' => [new Boolean()],
             'metadata' => ['nullable', 'array'],
             'metadata_private' => ['nullable', 'array'],
+            'ids' => ['array'],
+            'ids.*' => ['uuid'],
         ];
     }
 }

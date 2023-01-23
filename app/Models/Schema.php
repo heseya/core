@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\SchemaSearch;
+use App\Criteria\WhereInIds;
 use App\Enums\SchemaType;
 use App\Models\Contracts\SortableContract;
 use App\Rules\OptionAvailable;
@@ -62,6 +63,7 @@ class Schema extends Model implements SortableContract
         'required',
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
+        'ids' => WhereInIds::class,
     ];
 
     protected array $sortable = [

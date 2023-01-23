@@ -6,6 +6,7 @@ use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\ParentIdSearch;
 use App\Criteria\ProductSetSearch;
+use App\Criteria\WhereInIds;
 use App\Enums\DiscountTargetType;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasDiscounts;
@@ -56,6 +57,7 @@ class ProductSet extends Model
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'parent_id' => ParentIdSearch::class,
+        'ids' => WhereInIds::class,
     ];
 
     public function getSlugOverrideAttribute(): bool

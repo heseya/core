@@ -11,6 +11,8 @@ class StatusIndexRequest extends FormRequest
         return [
             'metadata' => ['nullable', 'array'],
             'metadata_private' => ['nullable', 'array'],
+            'ids' => ['array'],
+            'ids.*' => ['uuid'],
         ];
     }
 }

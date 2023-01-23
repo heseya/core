@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Criteria\AttributeOptionSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\WhereInIds;
 use App\Traits\HasMetadata;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
@@ -41,6 +42,7 @@ class AttributeOption extends Model
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'name' => Like::class,
+        'ids' => WhereInIds::class,
     ];
 
     public function attribute(): BelongsTo

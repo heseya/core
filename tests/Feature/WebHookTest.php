@@ -99,6 +99,31 @@ class WebHookTest extends TestCase
             ->assertJsonFragment(['id' => $webHook->getKey()]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchByIds($user): void
+    {
+        $this->$user->givePermissionTo('webhooks.show');
+
+        WebHook::factory()->create([
+            'name' => 'test webhook',
+            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->$user::class,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/webhooks', [
+                'ids' => [
+                    $this->webHook->getKey(),
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $this->webHook->getKey()]);
+    }
+
     public function testCreateUnauthorized(): void
     {
         $response = $this->json('POST', '/webhooks');

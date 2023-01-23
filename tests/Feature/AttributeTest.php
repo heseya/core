@@ -88,6 +88,37 @@ class AttributeTest extends TestCase
     }
 
     /**
+     * @dataProvider authProvider
+     */
+    public function testIndexByIds($user): void
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        $this->newAttribute['global'] = !$this->attribute->global;
+        unset($this->newAttribute['options']);
+        Attribute::create($this->newAttribute);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/attributes', [
+                'ids' => [
+                    $this->attribute->getKey(),
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'name' => $this->attribute->name,
+                'slug' => $this->attribute->slug,
+                'description' => $this->attribute->description,
+                'type' => $this->attribute->type,
+                'global' => $this->attribute->global,
+                'sortable' => $this->attribute->sortable,
+                'metadata' => [],
+            ]);
+    }
+
+    /**
      * @dataProvider booleanProvider
      */
     public function testIndexGlobalFlagBooleanValues($user, $boolean, $booleanValue): void

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Criteria\DepositSearch;
 use App\Criteria\DepositSkuSearch;
+use App\Criteria\WhereInIds;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -36,6 +37,7 @@ class Deposit extends Model
     protected array $criteria = [
         'sku' => DepositSkuSearch::class,
         'search' => DepositSearch::class,
+        'ids' => WhereInIds::class,
     ];
 
     public function item(): BelongsTo

@@ -11,6 +11,7 @@ use App\Criteria\OrderSearch;
 use App\Criteria\WhereCreatedAfter;
 use App\Criteria\WhereCreatedBefore;
 use App\Criteria\WhereHasStatusHidden;
+use App\Criteria\WhereInIds;
 use App\Enums\PaymentStatus;
 use App\Models\Contracts\SortableContract;
 use App\Traits\HasMetadata;
@@ -99,6 +100,7 @@ class Order extends Model implements AuditableContract, SortableContract
         'to' => WhereCreatedBefore::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
+        'ids' => WhereInIds::class,
     ];
 
     protected array $sortable = [

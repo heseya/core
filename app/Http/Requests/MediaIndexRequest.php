@@ -21,6 +21,8 @@ class MediaIndexRequest extends FormRequest
         return [
             'type' => ['nullable', new EnumValue(MediaType::class, false), 'max:255'],
             'has_relationships' => [new Boolean()],
+            'ids' => ['array'],
+            'ids.*' => ['uuid'],
         ];
     }
 }
