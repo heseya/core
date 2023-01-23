@@ -57,6 +57,23 @@ class StatusTest extends TestCase
             ->assertJsonFragment([$this->expected]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexByIds($user): void
+    {
+        $this->$user->givePermissionTo('statuses.show');
+
+        $this->actingAs($this->$user)->json('GET', '/statuses', [
+            'ids' => [
+                $this->status_model->getKey(),
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([$this->expected]);
+    }
+
     public function testCreateUnauthorized(): void
     {
         $response = $this->postJson('/statuses');

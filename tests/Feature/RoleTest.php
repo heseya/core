@@ -108,6 +108,42 @@ class RoleTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexSearchByIds($user): void
+    {
+        $this->$user->givePermissionTo('roles.show');
+
+        $role1 = Role::create([
+            'name' => 'alpha.1',
+            'description' => 'Alpha 1',
+        ]);
+
+        Role::create([
+            'name' => 'beta.1',
+            'description' => 'Beta 1',
+        ]);
+
+        $role2 = Role::create([
+            'name' => 'custom.alpha',
+            'description' => 'Custom alpha',
+        ]);
+
+        Role::create([
+            'name' => 'gamma.1',
+            'description' => 'Gamma 1',
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/roles', ['ids' => [$role1->getKey()]])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $role1->getKey()])
+            ->assertJsonMissing(['id' => $role2->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexSearchByDescription($user): void
     {
         $this->$user->givePermissionTo('roles.show');

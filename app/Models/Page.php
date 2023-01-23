@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\WhereInIds;
 use App\Models\Contracts\SortableContract;
 use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
@@ -42,5 +43,6 @@ class Page extends Model implements AuditableContract, SortableContract
     protected array $criteria = [
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
+        'ids' => WhereInIds::class,
     ];
 }

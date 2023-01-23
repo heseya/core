@@ -18,6 +18,8 @@ class PermissionIndexRequest extends FormRequest
     {
         return [
             'assignable' => [new Boolean()],
+            'ids' => ['array'],
+            'ids.*' => ['uuid'],
         ];
     }
 }

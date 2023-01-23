@@ -28,6 +28,8 @@ class ProductSetIndexRequest extends FormRequest
             'root' => [new Boolean()],
             'metadata' => ['nullable', 'array'],
             'metadata_private' => ['nullable', 'array'],
+            'ids' => ['array'],
+            'ids.*' => ['uuid'],
         ];
     }
 }

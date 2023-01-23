@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Criteria\WhereHasOrderWithCode;
 use App\Criteria\WhereHasShippingMethod;
+use App\Criteria\WhereInIds;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -42,6 +43,8 @@ class PaymentMethod extends Model
         'public',
         'order_code' => WhereHasOrderWithCode::class,
         'shipping_method_id' => WhereHasShippingMethod::class,
+        'alias',
+        'ids' => WhereInIds::class,
     ];
 
     public function shippingMethods(): BelongsToMany

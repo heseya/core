@@ -16,6 +16,7 @@ class SaleIndexDto extends Dto implements InstantiateFromRequest
     protected array|Missing $metadata_private;
     protected string|Missing $for_role;
     protected bool $coupon;
+    protected array|Missing $ids;
 
     public static function instantiateFromRequest(FormRequest|SaleIndexRequest $request): self
     {
@@ -26,6 +27,7 @@ class SaleIndexDto extends Dto implements InstantiateFromRequest
             metadata_private: self::array('metadata_private', $request),
             for_role: $request->input('for_role', new Missing()),
             coupon: false,
+            ids: $request->input('ids', new Missing()),
         );
     }
 
@@ -65,5 +67,10 @@ class SaleIndexDto extends Dto implements InstantiateFromRequest
     public function getMetadataPrivate(): Missing|array
     {
         return $this->metadata_private;
+    }
+
+    public function getIds(): Missing|array
+    {
+        return $this->ids;
     }
 }

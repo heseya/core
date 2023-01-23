@@ -200,7 +200,10 @@ class ProductSearchElasticTest extends TestCase
         $this
             ->actingAs($this->$user)
             ->json('GET', '/products', [
-                'ids' => "${uuid1},${uuid2}",
+                'ids' => [
+                    $uuid1,
+                    $uuid2,
+                ],
             ])
             ->assertOk();
 

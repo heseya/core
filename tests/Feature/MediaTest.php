@@ -73,6 +73,31 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexByIds($user): void
+    {
+        $this->$user->givePermissionTo('media.show');
+
+        Media::query()->delete();
+
+        $media = Media::factory()->create([
+            'type' => MediaType::OTHER,
+        ]);
+
+        Media::factory()->create([
+            'type' => MediaType::VIDEO,
+        ]);
+
+        $response = $this->actingAs($this->$user)->json('GET', '/media', ['ids' => [$media->getKey()]]);
+
+        $response->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'relations_count' => 0,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexFilteredByType($user): void
     {
         $this->$user->givePermissionTo('media.show');

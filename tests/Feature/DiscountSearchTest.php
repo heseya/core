@@ -62,6 +62,34 @@ class DiscountSearchTest extends TestCase
     /**
      * @dataProvider couponOrSaleProvider
      */
+    public function testIndexSearchByIds($kind): void
+    {
+        $this->user->givePermissionTo("{$kind}.show");
+
+        $code = $kind === 'coupons' ? [] : ['code' => null];
+        $discount1 = Discount::factory()->create($code + ['name' => 'Discount 1', 'value' => 30]);
+        $discount2 = Discount::factory()->create($code + ['name' => 'Discount 2', 'value' => 15]);
+
+        $this
+            ->actingAs($this->user)
+            ->json(
+                'GET',
+                $kind,
+                [
+                    'ids' => [
+                        $discount2->getKey(),
+                    ],
+                ]
+            )
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $discount2->getKey()])
+            ->assertJsonMissing(['id' => $discount1->getKey()]);
+    }
+
+    /**
+     * @dataProvider couponOrSaleProvider
+     */
     public function testIndexSearchByRole($kind): void
     {
         $this->user->givePermissionTo("{$kind}.show");

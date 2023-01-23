@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Criteria\PermissionSearch;
+use App\Criteria\WhereInIds;
 use App\Traits\HasUuid;
 use Heseya\Searchable\Traits\HasCriteria;
 use Spatie\Permission\Models\Permission as SpatiePermission;
@@ -25,5 +26,6 @@ class Permission extends SpatiePermission
 
     protected array $criteria = [
         'assignable' => PermissionSearch::class,
+        'ids' => WhereInIds::class,
     ];
 }

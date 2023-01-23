@@ -90,7 +90,10 @@ class ProductSearchDatabaseTest extends TestCase
         $this
             ->actingAs($this->$user)
             ->json('GET', '/products', [
-                'ids' => "{$firstProduct->getKey()},{$secondProduct->getKey()}",
+                'ids' => [
+                    $firstProduct->getKey(),
+                    $secondProduct->getKey(),
+                ],
             ])
             ->assertOk()
             ->assertJsonCount(2, 'data');

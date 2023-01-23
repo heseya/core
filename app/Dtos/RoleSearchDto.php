@@ -15,6 +15,7 @@ class RoleSearchDto implements DtoContract, InstantiateFromRequest
         private ?bool $assignable,
         private ?array $metadata,
         private ?array $metadata_private,
+        private ?array $ids,
     ) {
     }
 
@@ -46,6 +47,10 @@ class RoleSearchDto implements DtoContract, InstantiateFromRequest
             $data['metadata_private'] = $this->getMetadataPrivate();
         }
 
+        if ($this->getIds() !== null) {
+            $data['ids'] = $this->getIds();
+        }
+
         return $data;
     }
 
@@ -58,6 +63,7 @@ class RoleSearchDto implements DtoContract, InstantiateFromRequest
             $request->has('assignable') ? $request->boolean('assignable') : null,
             $request->input('metadata', null),
             $request->input('metadata_private', null),
+            $request->input('ids', null),
         );
     }
 
@@ -89,5 +95,10 @@ class RoleSearchDto implements DtoContract, InstantiateFromRequest
     public function getMetadataPrivate(): ?array
     {
         return $this->metadata_private;
+    }
+
+    public function getIds(): ?array
+    {
+        return $this->ids;
     }
 }

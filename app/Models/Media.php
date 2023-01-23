@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Criteria\MediaWhereHasRelations;
+use App\Criteria\WhereInIds;
 use App\Enums\MediaType;
 use App\Traits\HasMetadata;
 use Heseya\Searchable\Traits\HasCriteria;
@@ -39,6 +40,7 @@ class Media extends Model
     protected array $criteria = [
         'type',
         'has_relationships' => MediaWhereHasRelations::class,
+        'ids' => WhereInIds::class,
     ];
 
     public function products(): BelongsToMany

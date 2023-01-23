@@ -14,7 +14,7 @@ class ProductSearchDto extends Dto implements InstantiateFromRequest
     private ?string $search;
     private ?string $sort;
 
-    private string|Missing $ids;
+    private array|Missing $ids;
     private string|Missing $slug;
     private string|Missing $name;
 
