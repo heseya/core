@@ -9,7 +9,7 @@ class PayRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'continue_url' => ['required', 'string'],
+            'continue_url' => ['required', 'string', 'max:1000'],
         ];
     }
 }

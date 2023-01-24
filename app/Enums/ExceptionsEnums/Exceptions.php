@@ -99,7 +99,7 @@ final class Exceptions extends Enum
     public const SERVER_ERROR = 'Server responded with an error';
     public const SERVER_ORDER_STATUSES_NOT_CONFIGURED = 'Order statuses are not configured';
     public const SERVER_TRANSACTION_ERROR = 'Unexpected error occurred during the database transaction.';
-    public const SERVER_PAYMENT_MICROSERVICE_ERROR = 'Microservice response is not OK.';
+    public const SERVER_PAYMENT_MICROSERVICE_ERROR = 'Payment service error.';
 
     public const ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE = 'Not every item is available';
     public const ORDER_SHIPPING_METHOD_TYPE_MISMATCH = 'Selected shipping methods don\'t match selected product types';

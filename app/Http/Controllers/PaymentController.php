@@ -31,7 +31,11 @@ class PaymentController extends Controller
     public function pay(Order $order, PaymentMethod $paymentMethod, PayRequest $request): JsonResource
     {
         return PaymentResource::make(
-            $this->paymentService->getPayment($order, $paymentMethod, $request),
+            $this->paymentService->getPayment(
+                $order,
+                $paymentMethod,
+                $request->input('continue_url'),
+            ),
         );
     }
 
