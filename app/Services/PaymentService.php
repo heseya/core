@@ -74,7 +74,7 @@ class PaymentService implements PaymentServiceContract
 
         $validator = Validator::make($response->json(), [
             'status' => ['required', new EnumValue(PaymentStatus::class)],
-            'amount' => ['required', 'number'],
+            'amount' => ['required', 'numeric'],
             'redirect_url' => ['nullable', 'string', 'max:1000'],
             'continue_url' => ['nullable', 'string', 'max:1000'],
         ]);
