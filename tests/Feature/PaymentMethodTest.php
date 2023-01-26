@@ -174,7 +174,6 @@ class PaymentMethodTest extends TestCase
                     'id' => $paymentMethod->getKey(),
                     'name' => $paymentMethod->name,
                     'icon' => $paymentMethod->icon,
-                    'alias' => $paymentMethod->alias,
                     'public' => $paymentMethod->public,
                     'url' => $paymentMethod->url,
                 ],
@@ -201,7 +200,6 @@ class PaymentMethodTest extends TestCase
     {
         $payment_method = [
             'name' => 'Test',
-            'alias' => 'test',
             'public' => true,
         ];
 
@@ -215,7 +213,6 @@ class PaymentMethodTest extends TestCase
 
         $payment_method = [
             'name' => 'Test',
-            'alias' => 'test',
             'public' => true,
             'url' => 'http://test.com',
             'icon' => 'test icon',
@@ -235,7 +232,6 @@ class PaymentMethodTest extends TestCase
 
         $payment_method = [
             'name' => 'Test',
-            'alias' => 'test',
             'public' => true,
             'url' => 'http://test.com',
             'icon' => 'test icon',
@@ -253,7 +249,6 @@ class PaymentMethodTest extends TestCase
     {
         $payment_method = [
             'name' => 'Test 2',
-            'alias' => 'test2',
             'public' => false,
         ];
 
@@ -270,7 +265,6 @@ class PaymentMethodTest extends TestCase
 
         $payment_method = [
             'name' => 'Test 2',
-            'alias' => 'test2',
             'public' => false,
         ];
 
@@ -297,7 +291,6 @@ class PaymentMethodTest extends TestCase
             ->assertJson(['data' => [
                 'id' => $this->payment_method->id,
                 'name' => $this->payment_method->name,
-                'alias' => $this->payment_method->alias,
                 'public' => $this->payment_method->public,
                 'icon' => $this->payment_method->icon,
                 'url' => $this->payment_method->url,
@@ -311,7 +304,6 @@ class PaymentMethodTest extends TestCase
 
         $payment_method = [
             'name' => 'Test 2',
-            'alias' => 'test2',
             'public' => false,
         ];
 

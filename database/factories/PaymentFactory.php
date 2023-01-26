@@ -22,7 +22,6 @@ class PaymentFactory extends Factory
         return [
             'external_id' => $this->faker->uuid,
             'method' => $this->faker->randomElement(['przelewy24', 'bluemedia', 'paynow']),
-            'paid' => $this->faker->boolean,
             'amount' => rand(10, 1000),
             'redirect_url' => 'https://heseya.com/pay',
             'continue_url' => 'https://store.heseya.com/done',

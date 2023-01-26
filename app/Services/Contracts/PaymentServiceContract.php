@@ -4,9 +4,9 @@ namespace App\Services\Contracts;
 
 use App\Models\Order;
 use App\Models\Payment;
-use Illuminate\Http\Request;
+use App\Models\PaymentMethod;
 
 interface PaymentServiceContract
 {
-    public function getPayment(Order $order, string $method, Request $request): Payment;
+    public function getPayment(Order $order, PaymentMethod $paymentMethod, string $continueUrl): Payment;
 }

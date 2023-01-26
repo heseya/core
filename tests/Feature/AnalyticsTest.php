@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Support\Carbon;
@@ -18,6 +19,7 @@ class AnalyticsTest extends TestCase
         $from = Carbon::today()->subHour();
         $to = Carbon::tomorrow();
 
+        /** @var Order $orderBefore */
         $orderBefore = Order::factory()->create([
             'created_at' => Carbon::today()->subHours(2),
             'summary' => 150.0,
@@ -25,7 +27,7 @@ class AnalyticsTest extends TestCase
         ]);
 
         $orderBefore->payments()->save(Payment::factory()->make([
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
             'amount' => $orderBefore->summary,
             'created_at' => $orderBefore->created_at,
         ]));
@@ -36,7 +38,7 @@ class AnalyticsTest extends TestCase
         ]);
 
         $order->payments()->save(Payment::factory()->make([
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
             'amount' => $order->summary,
             'created_at' => $order->created_at,
         ]));
@@ -48,7 +50,7 @@ class AnalyticsTest extends TestCase
         ]);
 
         $orderAfter->payments()->save(Payment::factory()->make([
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
             'amount' => $orderAfter->summary,
             'created_at' => $orderAfter->created_at,
         ]));
@@ -81,7 +83,7 @@ class AnalyticsTest extends TestCase
         ]);
 
         $orderBefore->payments()->save(Payment::factory()->make([
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
             'amount' => $orderBefore->summary,
             'created_at' => $orderBefore->created_at,
         ]));
@@ -92,13 +94,13 @@ class AnalyticsTest extends TestCase
         ]);
 
         $order->payments()->save(Payment::factory()->make([
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
             'amount' => $order->summary / 2,
             'created_at' => $order->created_at,
         ]));
 
         $order->payments()->save(Payment::factory()->make([
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
             'amount' => $order->summary / 2,
             'created_at' => $order->created_at,
         ]));
@@ -110,7 +112,7 @@ class AnalyticsTest extends TestCase
         ]);
 
         $orderAfter->payments()->save(Payment::factory()->make([
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
             'amount' => $orderAfter->summary,
             'created_at' => $orderAfter->created_at,
         ]));

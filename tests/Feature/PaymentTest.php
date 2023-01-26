@@ -22,26 +22,29 @@ class PaymentTest extends TestCase
     private Order $order;
     private App $appUser;
 
+    private ShippingMethod $shippingMethod;
+    private PaymentMethod $paymentMethod;
+
     public function setUp(): void
     {
         parent::setUp();
 
         Product::factory()->create();
 
-        $shipping_method = ShippingMethod::factory()->create();
-        $paymentMethod = PaymentMethod::factory()->create([
+        $this->shippingMethod = ShippingMethod::factory()->create();
+        $this->paymentMethod = PaymentMethod::factory()->create([
             'public' => true,
             'name' => 'Payu',
             'alias' => 'payu',
         ]);
-        $shipping_method->paymentMethods()->save($paymentMethod);
+        $this->shippingMethod->paymentMethods()->save($this->paymentMethod);
         $status = Status::factory()->create();
         $product = Product::factory()->create();
 
         $this->appUser = App::factory()->create();
 
         $this->order = Order::factory()->create([
-            'shipping_method_id' => $shipping_method->getKey(),
+            'shipping_method_id' => $this->shippingMethod->getKey(),
             'status_id' => $status->getKey(),
         ]);
 
@@ -71,7 +74,7 @@ class PaymentTest extends TestCase
             ]);
 
         $code = $this->order->code;
-        $response = $this->postJson("/orders/${code}/pay/payu", [
+        $response = $this->postJson("/orders/${code}/pay/id:" . $this->paymentMethod->getKey(), [
             'continue_url' => 'continue_url',
         ]);
 
@@ -100,7 +103,7 @@ class PaymentTest extends TestCase
         $code = $this->order->code;
         $response = $this
             ->actingAs($this->$user)
-            ->json('POST', "/orders/${code}/pay/payu", [
+            ->json('POST', "/orders/${code}/pay/id:" . $this->paymentMethod->getKey(), [
                 'continue_url' => 'continue_url',
             ]);
 
@@ -128,13 +131,10 @@ class PaymentTest extends TestCase
         $code = $this->order->code;
         $this
             ->actingAs($this->$user)
-            ->postJson("/orders/${code}/pay/przelewy24", [
+            ->postJson("/orders/${code}/pay/id:026eda8b-8acf-40e4-8764-d44aa8b8db7a", [
                 'continue_url' => 'continue_url',
             ])
-            ->assertUnprocessable()
-            ->assertJsonFragment([
-                'message' => Exceptions::PAYMENT_METHOD_NOT_AVAILABLE_FOR_SHIPPING,
-            ]);
+            ->assertNotFound();
     }
 
     /**
@@ -146,20 +146,21 @@ class PaymentTest extends TestCase
 
         $paymentMethod = PaymentMethod::factory()->create([
             'public' => true,
-            'name' => 'Przelewy24',
-            'alias' => 'przelewy',
+            'name' => 'PayPal',
+            'alias' => 'paypal',
         ]);
+
+        /** @var ShippingMethod $digitalShippingMethod */
         $digitalShippingMethod = ShippingMethod::factory()->create(['public' => true]);
-        $digitalShippingMethod->paymentMethods()->save($paymentMethod);
+        $digitalShippingMethod->paymentMethods()->attach($paymentMethod->getKey());
 
         $this->order->update([
             'digital_shipping_method_id' => $digitalShippingMethod->getKey(),
         ]);
 
-        $code = $this->order->code;
         $this
             ->actingAs($this->$user)
-            ->postJson("/orders/${code}/pay/przelewy24", [
+            ->postJson('/orders/' . $this->order->code . '/pay/id:' . $paymentMethod->getKey(), [
                 'continue_url' => 'continue_url',
             ])
             ->assertUnprocessable()
@@ -195,24 +196,22 @@ class PaymentTest extends TestCase
             'name' => 'Payu',
             'alias' => 'payu',
         ]);
-        $digitalShippingMethod->paymentMethods()->save($paymentMethod);
+        $digitalShippingMethod->paymentMethods()->attach($paymentMethod->getKey());
 
-        $this->order->shippingMethod()->dissociate();
-        $this->order->digitalShippingMethod()->associate($digitalShippingMethod);
+        $this->order->update([
+            'shipping_method_id' => null,
+            'digital_shipping_method_id' => $digitalShippingMethod->getKey(),
+        ]);
 
-        $response = $this->actingAs($this->$user)
-            ->postJson("/orders/${code}/pay/payu", [
+        $this
+            ->actingAs($this->$user)
+            ->postJson("/orders/${code}/pay/id:" . $paymentMethod->getKey(), [
                 'continue_url' => 'continue_url',
-            ]);
-
-        $payment = Payment::find($response->getData()->data->id);
-
-        $response
+            ])
             ->assertCreated()
             ->assertJsonFragment([
                 'method' => 'payu',
                 'amount' => $this->order->summary,
-                'date' => $payment->created_at,
                 'redirect_url' => 'payment_url',
                 'continue_url' => 'continue_url',
             ]);
@@ -544,7 +543,8 @@ class PaymentTest extends TestCase
             'status' => PaymentStatus::PENDING,
         ]);
 
-        $response->assertStatus(422)
+        $response
+            ->assertStatus(422)
             ->assertJsonFragment(['key' => Exceptions::coerce(Exceptions::CLIENT_NO_ACCESS)->key]);
     }
 
@@ -567,7 +567,7 @@ class PaymentTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testCreatePaymentWithPaymentMethod(): void
+    public function testCreatePaymentWithMicroservice(): void
     {
         $this->user->givePermissionTo('payments.add');
         Http::fake(['*' => Http::response([
@@ -579,25 +579,26 @@ class PaymentTest extends TestCase
         ]),
         ]);
 
-        $paymentMethod = PaymentMethod::factory()->create();
+        $paymentMethod = PaymentMethod::factory()->create([
+            'alias' => null,
+            'public' => true,
+        ]);
+        $this->shippingMethod->paymentMethods()->attach($paymentMethod->getKey());
 
         $response = $this->actingAs($this->user)->json(
             'POST',
-            'orders/' . $this->order->code . '/pay/' . $paymentMethod->getKey(),
-            [
-                'continue_url' => 'continue_url',
-            ]
+            'orders/' . $this->order->code . '/pay/id:' . $paymentMethod->getKey(),
+            ['continue_url' => 'continue_url'],
         );
 
-        $response
-            ->assertJson(['data' => [
-                'method_id' => $paymentMethod->getKey(),
-                'status' => PaymentStatus::SUCCESSFUL,
-                'amount' => 100,
-                'redirect_url' => 'redirect_url',
-                'continue_url' => 'continue_url',
-            ],
-            ])->assertCreated();
+        $response->assertJson(['data' => [
+            'method_id' => $paymentMethod->getKey(),
+            'status' => PaymentStatus::SUCCESSFUL,
+            'amount' => 100,
+            'redirect_url' => 'redirect_url',
+            'continue_url' => 'continue_url',
+        ],
+        ])->assertCreated();
 
         $this->assertDatabaseHas('payments', [
             'id' => $response->getData()->data->id,

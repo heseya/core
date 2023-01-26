@@ -133,7 +133,7 @@ class Order extends Model implements AuditableContract, SortableContract
     {
         return $this
             ->hasMany(Payment::class)
-            ->orderBy('paid', 'DESC')
+            ->orderBy('status', 'ASC')
             ->orderBy('updated_at', 'DESC');
     }
 
@@ -197,7 +197,7 @@ class Order extends Model implements AuditableContract, SortableContract
     public function saveItems($items): void
     {
         foreach ($items as $item) {
-            $item = OrderProduct::create($item);
+            $item = OrderProduct::query()->create($item);
             $this->products()->save($item);
         }
     }

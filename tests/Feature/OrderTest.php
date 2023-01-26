@@ -1399,7 +1399,7 @@ class OrderTest extends TestCase
 
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $this->order->summary / 2,
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
         ]));
 
         $response = $this->actingAs($this->$user)

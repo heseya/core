@@ -24,7 +24,6 @@ class PaymentMethod extends Model
      */
     protected $fillable = [
         'name',
-        'alias',
         'public',
         'icon',
         'url',
@@ -40,9 +39,10 @@ class PaymentMethod extends Model
     ];
 
     protected array $criteria = [
+        'id',
+        'public',
         'order_code' => WhereHasOrderWithCode::class,
         'shipping_method_id' => WhereHasShippingMethod::class,
-        'public',
         'alias',
         'ids' => WhereInIds::class,
     ];
