@@ -18,7 +18,7 @@ return new class extends Migration
             ->update(['status' => PaymentStatus::PENDING]);
 
         Payment::query()
-            ->where('paid', false)
+            ->where('paid', true)
             ->update(['status' => PaymentStatus::SUCCESSFUL]);
 
         Schema::table('payments', function (Blueprint $table) {
