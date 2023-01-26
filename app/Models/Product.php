@@ -283,8 +283,8 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
                 return false;
             }
             foreach ($sale->productSets as $set) {
-                if ($set->products->contains(function ($value): bool {
-                    return $value->getKey() === $this->getKey();
+                if ($set->allProductsIds()->contains(function ($value): bool {
+                    return $value === $this->getKey();
                 })) {
                     return false;
                 }

@@ -330,7 +330,10 @@ class DiscountService implements DiscountServiceContract
         }
 
         foreach ($discounts as $discount) {
-            if ($this->checkConditionGroups($discount, $cart, $cartResource->cart_total)) {
+            if (
+                $this->checkDiscountTarget($discount, $cart)
+                && $this->checkConditionGroups($discount, $cart, $cartResource->cart_total)
+            ) {
                 $cartResource = $this->applyDiscountOnCart($discount, $cart, $cartResource);
                 $newSummary = $cartResource->cart_total + $cartResource->shipping_price;
                 $appliedDiscount = round($summary - $newSummary, 2, PHP_ROUND_HALF_UP);
@@ -354,6 +357,48 @@ class DiscountService implements DiscountServiceContract
 
         $cartResource->summary = $cartResource->cart_total + $cartResource->shipping_price;
         return $cartResource;
+    }
+
+    private function checkDiscountTarget(Discount $discount, CartDto $cart): bool
+    {
+        if ($discount->target_type->is(DiscountTargetType::PRODUCTS)) {
+            if ($discount->target_is_allow_list) {
+                /** @var CartItemDto $item */
+                foreach ($cart->getItems() as $item) {
+                    if ($discount->allProductsIds()->contains(function ($value) use ($item): bool {
+                        return $value === $item->getProductId();
+                    })) {
+                        return true;
+                    }
+                }
+            } else {
+                /** @var CartItemDto $item */
+                foreach ($cart->getItems() as $item) {
+                    if ($discount->allProductsIds()->doesntContain(function ($value) use ($item): bool {
+                        return $value === $item->getProductId();
+                    })) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        if ($discount->target_type->is(DiscountTargetType::SHIPPING_PRICE)) {
+            if ($discount->target_is_allow_list) {
+                return $discount->shippingMethods->contains(function ($value) use ($cart): bool {
+                    return $value->getKey() === $cart->getShippingMethodId();
+                });
+            } else {
+                return $discount->shippingMethods->doesntContain(function ($value) use ($cart): bool {
+                    return $value->getKey() === $cart->getShippingMethodId();
+                });
+            }
+        }
+
+        return in_array(
+            $discount->target_type->value,
+            [DiscountTargetType::ORDER_VALUE, DiscountTargetType::CHEAPEST_PRODUCT]
+        );
     }
 
     public function applyDiscountOnProduct(
@@ -1009,7 +1054,15 @@ class DiscountService implements DiscountServiceContract
         $salesQuery = Discount::query()
             ->active()
             ->where('code', null)
-            ->with(['orders', 'products', 'productSets', 'conditionGroups', 'conditionGroups.conditions']);
+            ->with([
+                'orders',
+                'products',
+                'productSets',
+                'productSets.children',
+                'productSets.products',
+                'conditionGroups',
+                'conditionGroups.conditions',
+            ]);
         if (count($targetTypes)) {
             $salesQuery = $salesQuery->whereIn('target_type', $targetTypes);
         }
@@ -1023,7 +1076,15 @@ class DiscountService implements DiscountServiceContract
         // Get all active coupons
         $couponsQuery = Discount::whereIn('code', $couponIds)
             ->active()
-            ->with(['orders', 'products', 'productSets', 'conditionGroups', 'conditionGroups.conditions']);
+            ->with([
+                'orders',
+                'products',
+                'productSets',
+                'productSets.children',
+                'productSets.products',
+                'conditionGroups',
+                'conditionGroups.conditions',
+            ]);
         if (count($targetTypes)) {
             $couponsQuery = $couponsQuery->whereIn('target_type', $targetTypes);
         }
