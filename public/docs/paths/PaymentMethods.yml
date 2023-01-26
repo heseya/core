@@ -61,7 +61,7 @@ PaymentMethodsParams:
       - name: id
         in: query
         schema:
-          type: integer
+          type: string
     responses:
       200:
         description: Success
@@ -81,7 +81,7 @@ PaymentMethodsParams:
         in: path
         required: true
         schema:
-          type: integer
+          type: string
     responses:
       204:
         description: Success
@@ -96,7 +96,7 @@ PaymentMethodsParams:
         in: path
         required: true
         schema:
-          type: integer
+          type: string
     requestBody:
       content:
         application/json:
