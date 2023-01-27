@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\SchemaType;
 use App\Models\Deposit;
 use App\Models\Item;
 use App\Models\Media;
@@ -90,12 +91,18 @@ class ProductSeeder extends Seeder
 
     private function schemas(Product $product): void
     {
-        $schema = Schema::factory()->make();
-        $product->schemas()->save($schema);
+        /** @var Schema $schema */
+        $schema = Schema::factory()->create([
+            'type' => rand(0, 6), // all types except multiply_schemas
+        ]);
+        $product->schemas()->attach($schema->getKey());
 
-        $item = Item::factory()->create();
-        $item->deposits()->saveMany(Deposit::factory()->count(rand(0, 2))->make());
-        $schema->options()->saveMany(Option::factory()->count(rand(0, 4))->make());
+        if ($schema->type->is(SchemaType::SELECT)) {
+            /** @var Item $item */
+            $item = Item::factory()->create();
+            $item->deposits()->saveMany(Deposit::factory()->count(rand(0, 2))->make());
+            $schema->options()->saveMany(Option::factory()->count(rand(0, 4))->make());
+        }
     }
 
     private function media(Product $product): void
