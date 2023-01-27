@@ -630,7 +630,51 @@ class ProviderTest extends TestCase
             ->json('POST', '/auth/providers/merge-account', [
                 'merge_token' => $mergeToken,
             ])
-            ->assertStatus(JsonResponse::HTTP_NOT_FOUND);
+            ->assertStatus(JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
+
+        $this->assertDatabaseHas('user_providers', [
+            'provider' => $key,
+            'user_id' => $existingUser->getKey(),
+            'merge_token' => $mergeToken,
+        ]);
+    }
+
+    /**
+     * @dataProvider socialMediaProvider
+     */
+    public function testMergeAccountInvalidMergeToken($key): void
+    {
+        $this->mockSocialiteUser($key);
+
+        $authProvider = AuthProviderModel::factory()->create([
+            'key' => $key,
+            'active' => true,
+            'client_id' => 'test_id',
+            'client_secret' => 'test_secret',
+        ]);
+
+        $existingUser = User::factory()->create([
+            'name' => 'test user',
+            'email' => 'test.user@gmail.com',
+            'password' => Hash::make('password'),
+        ]);
+
+        $mergeToken = Str::random(128);
+        $existingUser->providers()->create([
+            'provider' => $authProvider->key,
+            'provider_user_id' => 123456789,
+            'user_id' => $existingUser->getKey(),
+            'merge_token' => $mergeToken,
+            'merge_token_expires_at' => Carbon::now()->addDay(),
+        ]);
+
+        $invalidMergeToken = Str::random(128);
+        $this
+            ->actingAs($existingUser)
+            ->json('POST', '/auth/providers/merge-account', [
+                'merge_token' => $invalidMergeToken,
+            ])
+            ->assertStatus(JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
 
         $this->assertDatabaseHas('user_providers', [
             'provider' => $key,
