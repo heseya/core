@@ -64,9 +64,6 @@ class ProductController extends Controller
             ProductUpdateDto::instantiateFromRequest($request),
         );
 
-        // fix for duplicated items in relation after recalculating availability
-        $product->unsetRelation('items');
-
         return ProductResource::make($product);
     }
 
