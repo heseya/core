@@ -51,7 +51,6 @@ class UserService implements UserServiceContract
                 ->get();
         }
 
-        // @phpstan-ignore-next-line
         $permissions = $roleModels->flatMap(
             fn ($role) => $role->type->value !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
         )->unique();
@@ -95,10 +94,8 @@ class UserService implements UserServiceContract
                 ->get();
 
             $newRoles = $roleModels->diff($user->roles);
-            /** @var \Illuminate\Database\Eloquent\Collection $removedRoles */
             $removedRoles = $user->roles->diff($roleModels);
 
-            // @phpstan-ignore-next-line
             $permissions = $newRoles->flatMap(
                 fn ($role) => $role->type->value !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
             )->unique();
