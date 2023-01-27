@@ -176,12 +176,18 @@ class ProviderService implements ProviderServiceContract
 
     public function mergeAccount(AuthProviderMergeAccountDto $dto): void
     {
-        $userProvider = UserProvider::query()
-            ->whereHas('user', function (Builder $query) {
-                return $query->where('email', Auth::user()?->email);
-            })
-            ->where('merge_token', $dto->getMergeToken())
-            ->firstOrFail();
+        try {
+            $userProvider = UserProvider::query()
+                ->with('user')
+                ->where('merge_token', $dto->getMergeToken())
+                ->firstOrFail();
+        } catch (Throwable $e) {
+            throw new ClientException(Exceptions::CLIENT_PROVIDER_MERGE_TOKEN_INVALID);
+        }
+
+        if (Auth::user()?->email !== $userProvider->user->email) {
+            throw new ClientException(Exceptions::CLIENT_PROVIDER_MERGE_TOKEN_MISMATCH);
+        }
 
         if (Carbon::now()->isAfter($userProvider->merge_token_expires_at)) {
             throw new ClientException(Exceptions::CLIENT_PROVIDER_MERGE_TOKEN_EXPIRED);
