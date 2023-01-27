@@ -46,13 +46,11 @@ class ItemService implements ItemServiceContract
     {
         foreach ($items as $id => $count) {
             /** @var ?Item $item */
-            $item = Item::find($id);
-
-            if ($item === null) {
+            $item = Item::query()->findOr($id, function () use ($id): void {
                 throw new ClientException(Exceptions::CLIENT_ITEM_NOT_FOUND, errorArray: [
                     'id' => $id,
                 ]);
-            }
+            });
 
             if ($item->quantity < $count) {
                 //TODO dodanie danych do błędu

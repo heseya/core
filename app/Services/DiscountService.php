@@ -890,6 +890,7 @@ class DiscountService implements DiscountServiceContract
 
     private function applyDiscountOnOrderCheapestProduct(Order $order, Discount $discount): Order
     {
+        /** @var OrderProduct $product */
         $product = $order->products->sortBy([
             ['price', 'asc'],
             ['quantity', 'asc'],
@@ -913,10 +914,16 @@ class DiscountService implements DiscountServiceContract
                     'vat_rate' => $product->vat_rate,
                 ]);
 
-                $product->discounts->each(function (Discount $discount) use ($newProduct): void {
-                    // @phpstan-ignore-next-line
-                    $this->attachDiscount($newProduct, $discount, $discount->pivot->applied_discount);
-                });
+            foreach ($product->schemas as $schema) {
+                $newProduct->schemas()->create(
+                    $schema->only('name', 'value', 'price_initial', 'price'),
+                );
+            }
+
+            $product->discounts->each(function (Discount $discount) use ($newProduct): void {
+                // @phpstan-ignore-next-line
+                $this->attachDiscount($newProduct, $discount, $discount->pivot->applied_discount);
+            });
 
                 $product = $newProduct;
             }

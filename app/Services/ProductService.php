@@ -88,6 +88,9 @@ class ProductService implements ProductServiceContract
         // @phpstan-ignore-next-line
         Product::query()->where($product->getKeyName(), $product->getKey())->searchable();
 
+        // fix for duplicated items in relation after recalculating availability
+        $product->unsetRelation('items');
+
         return $product;
     }
 
