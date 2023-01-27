@@ -386,6 +386,13 @@ class DiscountOrderTest extends TestCase
     {
         $this->$user->givePermissionTo('orders.add');
 
+        $schema = $this->product->schemas()->create([
+            'name' => 'test',
+            'type' => SchemaType::STRING,
+            'required' => true,
+            'price' => 0,
+        ]);
+
         $sale = Discount::factory()->create([
             'type' => DiscountType::PERCENTAGE,
             'target_type' => DiscountTargetType::PRODUCTS,
@@ -411,6 +418,9 @@ class DiscountOrderTest extends TestCase
                 [
                     'product_id' => $this->product->getKey(),
                     'quantity' => 2,
+                    'schemas' => [
+                        $schema->getKey() => 'TEST-VALUE',
+                    ],
                 ],
             ],
         ]);
@@ -427,6 +437,7 @@ class DiscountOrderTest extends TestCase
         $product = $products->sortBy('price')->last();
 
         $this->assertDatabaseCount('order_products', 2); // one for each product
+        $this->assertDatabaseCount('order_schemas', 2);
 
         $this->assertDatabaseHas('order_products', [
             'order_id' => $order->getKey(),
@@ -438,6 +449,25 @@ class DiscountOrderTest extends TestCase
             'order_id' => $order->getKey(),
             'product_id' => $this->product->getKey(),
             'price' => 90,
+        ]);
+
+        $this->assertDatabaseHas('order_schemas', [
+            'name' => 'test',
+            'value' => 'TEST-VALUE',
+            'order_product_id' => OrderProduct::query()
+                ->where('order_id', $order->getKey())
+                ->where('product_id', $this->product->getKey())
+                ->where('price', 85.5)
+                ->pluck('id'),
+        ]);
+        $this->assertDatabaseHas('order_schemas', [
+            'name' => 'test',
+            'value' => 'TEST-VALUE',
+            'order_product_id' => OrderProduct::query()
+                ->where('order_id', $order->getKey())
+                ->where('product_id', $this->product->getKey())
+                ->where('price', 90)
+                ->pluck('id'),
         ]);
 
         $this->assertDatabaseCount('order_discounts', 3);
