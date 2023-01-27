@@ -117,7 +117,7 @@ final class Exceptions extends Enum
     public const CLIENT_PROVIDER_MERGE_TOKEN_EXPIRED = 'Provider merge token has expired';
     public const CLIENT_PROVIDER_MERGE_TOKEN_INVALID = 'Provider merge token is invalid';
     public const CLIENT_PROVIDER_MERGE_TOKEN_MISMATCH =
-        'Provider merge token is for an account with different email address.';
+        'Provider merge token is for an account with different email address';
 
     public static function getCode(string $value): int
     {
