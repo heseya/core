@@ -45,7 +45,7 @@ class ItemService implements ItemServiceContract
     public function validateItems(array $items): void
     {
         foreach ($items as $id => $count) {
-            /** @var ?Item $item */
+            /** @var Item $item */
             $item = Item::query()->findOr($id, function () use ($id): void {
                 throw new ClientException(Exceptions::CLIENT_ITEM_NOT_FOUND, errorArray: [
                     'id' => $id,
