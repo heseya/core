@@ -48,6 +48,9 @@ Media:
                 description: 'File. Accepted extensions: jpeg, png, gif, bmp, svg, mp4, webm, ogg, avi, mov, wmv'
                 type: string
                 format: binary
+              slug:
+                type: string
+                example: 'awesome-photo'
               alt:
                 type: string
                 example: 'alt'

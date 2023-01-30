@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Elastic;
 
 use App\Dtos\ProductSearchDto;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
 use App\Exceptions\ServerException;
 use App\Models\Attribute;
@@ -383,6 +384,6 @@ class ProductRepository implements ProductRepositoryContract
             );
         }
 
-        throw new ServerException('Not found mapping for this query');
+        throw new ServerException(Exceptions::SERVER_MAPPING_NOT_FOUND);
     }
 }
