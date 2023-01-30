@@ -3,12 +3,16 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class AnalyticsPaymentsResource extends Resource
 {
     public function base(Request $request): array
     {
-        return collect($this->resource)->map(fn ($item) => [
+        /** @var Collection<int, mixed> $resource */
+        $resource = $this->resource;
+
+        return Collection::make($resource)->map(fn ($item) => [
             'amount' => $item['amount'],
             'count' => $item['count'],
         ])->toArray();

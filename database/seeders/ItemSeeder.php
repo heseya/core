@@ -13,7 +13,7 @@ class ItemSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         Item::factory()
             ->has(Deposit::factory()->count(rand(0, 2)))

@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Attribute;
+use App\Models\AttributeOption;
 use App\Models\ProductSet;
 use App\Models\SeoMetadata;
 use Tests\TestCase;
@@ -97,10 +99,27 @@ class ProductSetShowTest extends TestCase
                     'title' => $this->set->seo->title,
                     'description' => $this->set->seo->description,
                 ],
-            ]])
+            ],
+            ])
             ->assertJsonStructure([
                 'data' => $this->expected_structure,
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWrongId($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.show_details');
+
+        $this->actingAs($this->$user)
+            ->getJson('/product-sets/id:its-not-uuid')
+            ->assertNotFound();
+
+        $this->actingAs($this->$user)
+            ->getJson('/product-sets/id:' . $this->set->getKey() . $this->set->getKey())
+            ->assertNotFound();
     }
 
     /**
@@ -141,21 +160,22 @@ class ProductSetShowTest extends TestCase
                     'title' => $this->privateSet->seo->title,
                     'description' => $this->privateSet->seo->description,
                 ],
-            ]])
+            ],
+            ])
             ->assertJsonStructure([
                 'data' => $this->expected_structure,
             ]);
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider trueBooleanProvider
      */
-    public function testShowTree($user): void
+    public function testShowTree($user, $boolean): void
     {
         $this->$user->givePermissionTo('product_sets.show_details');
 
         $response = $this->actingAs($this->$user)
-            ->getJson('/product-sets/id:' . $this->set->getKey() . '?tree');
+            ->json('GET', '/product-sets/id:' . $this->set->getKey(), ['tree' => $boolean]);
         $response
             ->assertOk()
             ->assertJson(['data' => [
@@ -184,21 +204,22 @@ class ProductSetShowTest extends TestCase
                         'children' => null,
                     ],
                 ],
-            ]])
+            ],
+            ])
             ->assertJsonStructure([
                 'data' => $this->expected_structure,
             ]);
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider trueBooleanProvider
      */
-    public function testShowTreeHidden($user): void
+    public function testShowTreeHidden($user, $boolean): void
     {
         $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
 
         $response = $this->actingAs($this->$user)
-            ->getJson('/product-sets/id:' . $this->set->getKey() . '?tree');
+            ->json('GET', '/product-sets/id:' . $this->set->getKey(), ['tree' => $boolean]);
         $response
             ->assertOk()
             ->assertJson(['data' => [
@@ -239,7 +260,8 @@ class ProductSetShowTest extends TestCase
                         ],
                     ],
                 ],
-            ]])
+            ],
+            ])
             ->assertJsonStructure([
                 'data' => $this->expected_structure,
             ]);
@@ -282,10 +304,29 @@ class ProductSetShowTest extends TestCase
                     'title' => $this->set->seo->title,
                     'description' => $this->set->seo->description,
                 ],
-            ]])
+            ],
+            ])
             ->assertJsonStructure([
                 'data' => $this->expected_structure,
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWrongSlug($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.show_details');
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/product-sets/its_wrong_slug')
+            ->assertNotFound();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/product-sets/' . $this->set->slug . '_' . $this->set->slug)
+            ->assertNotFound();
     }
 
     /**
@@ -324,21 +365,22 @@ class ProductSetShowTest extends TestCase
                     'title' => $this->privateSet->seo->title,
                     'description' => $this->privateSet->seo->description,
                 ],
-            ]])
+            ],
+            ])
             ->assertJsonStructure([
                 'data' => $this->expected_structure,
             ]);
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider trueBooleanProvider
      */
-    public function testShowSlugTree($user): void
+    public function testShowSlugTree($user, $boolean): void
     {
         $this->$user->givePermissionTo('product_sets.show_details');
 
         $response = $this->actingAs($this->$user)
-            ->getJson('/product-sets/' . $this->set->slug . '?tree');
+            ->json('GET', '/product-sets/' . $this->set->slug, ['tree' => $boolean]);
         $response
             ->assertOk()
             ->assertJson(['data' => [
@@ -367,21 +409,22 @@ class ProductSetShowTest extends TestCase
                         'children' => null,
                     ],
                 ],
-            ]])
+            ],
+            ])
             ->assertJsonStructure([
                 'data' => $this->expected_structure,
             ]);
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider trueBooleanProvider
      */
-    public function testShowSlugTreeHidden($user): void
+    public function testShowSlugTreeHidden($user, $boolean): void
     {
         $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
 
         $response = $this->actingAs($this->$user)
-            ->getJson('/product-sets/' . $this->set->slug . '?tree');
+            ->json('GET', '/product-sets/' . $this->set->slug, ['tree' => $boolean]);
         $response
             ->assertOk()
             ->assertJson(['data' => [
@@ -422,9 +465,137 @@ class ProductSetShowTest extends TestCase
                         ],
                     ],
                 ],
-            ]])
+            ],
+            ])
             ->assertJsonStructure([
                 'data' => $this->expected_structure,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductSetHasAttributes($user): void
+    {
+        $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
+
+        $firstAttr = Attribute::factory()->create([
+            'name' => 'test',
+            'description' => 'test',
+            'type' => 'number',
+            'global' => false,
+        ]);
+        $secondAttr = Attribute::factory()->create([
+            'name' => 'test2',
+            'description' => 'test2',
+            'type' => 'number',
+            'global' => false,
+        ]);
+
+        $this->set->attributes()->attach([
+            $firstAttr->getKey(),
+            $secondAttr->getKey(),
+        ]);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/product-sets/id:' . $this->set->getKey());
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $this->set->getKey(),
+                'name' => $this->set->name,
+                'slug' => $this->set->slug,
+                'slug_override' => false,
+                'public' => $this->set->public,
+                'visible' => $this->set->public && $this->set->public_parent,
+                'hide_on_index' => $this->set->hide_on_index,
+                'parent' => $this->set->parent,
+                'children_ids' => [
+                    $this->childSet->getKey(),
+                ],
+                'seo' => [
+                    'title' => $this->set->seo->title,
+                    'description' => $this->set->seo->description,
+                ],
+            ],
+            ])
+            ->assertJsonStructure([
+                'data' => array_merge($this->expected_structure, ['attributes']),
+            ])
+            ->assertJsonCount(2, 'data.attributes');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductSetHasAttributesWithOptions($user): void
+    {
+        $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
+
+        $attribute = Attribute::factory()->create([
+            'name' => 'test',
+            'description' => 'test',
+            'type' => 'number',
+            'global' => false,
+        ]);
+
+        $attributeOption = AttributeOption::factory()->create([
+            'index' => 1,
+            'value_number' => 100,
+            'attribute_id' => $attribute->getKey(),
+        ]);
+
+        $this->set->attributes()->attach([
+            $attribute->getKey(),
+        ]);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/product-sets/id:' . $this->set->getKey());
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $this->set->getKey(),
+                'name' => $this->set->name,
+                'slug' => $this->set->slug,
+                'slug_override' => false,
+                'public' => $this->set->public,
+                'visible' => $this->set->public && $this->set->public_parent,
+                'hide_on_index' => $this->set->hide_on_index,
+                'parent' => $this->set->parent,
+                'children_ids' => [
+                    $this->childSet->getKey(),
+                ],
+                'seo' => [
+                    'title' => $this->set->seo->title,
+                    'description' => $this->set->seo->description,
+                ],
+                'attributes' => [
+                    [
+                        'id' => $attribute->getKey(),
+                        'name' => $attribute->name,
+                        'slug' => $attribute->slug,
+                        'description' => $attribute->description,
+                        'min' => 100,
+                        'max' => 100,
+                        'type' => $attribute->type->value,
+                        'global' => $attribute->global,
+                        'sortable' => $attribute->sortable,
+                    ],
+                ],
+            ],
+            ])->assertJsonMissing([
+                'options' => [
+                    [
+                        'id' => $attributeOption->getKey(),
+                        'name' => $attributeOption->name,
+                        'index' => $attributeOption->index,
+                        'value_number' => $attributeOption->value_number,
+                        'value_date' => $attributeOption->value_date,
+                        'attribute_id' => $attribute->getKey(),
+                    ],
+                ],
             ]);
     }
 }

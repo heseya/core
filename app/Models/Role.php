@@ -2,23 +2,31 @@
 
 namespace App\Models;
 
+use App\Criteria\MetadataPrivateSearch;
+use App\Criteria\MetadataSearch;
+use App\Criteria\RoleAssignableSearch;
+use App\Criteria\RoleSearch;
 use App\Enums\RoleType;
-use App\SearchTypes\RoleAssignableSearch;
-use App\SearchTypes\RoleSearch;
+use App\Traits\HasDiscountConditions;
+use App\Traits\HasMetadata;
 use App\Traits\HasUuid;
-use Heseya\Searchable\Searches\Like;
-use Heseya\Searchable\Traits\Searchable;
+use Heseya\Searchable\Criteria\Like;
+use Heseya\Searchable\Traits\HasCriteria;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use Spatie\Permission\Models\Role as SpatieRole;
 
 /**
+ * @property RoleType $type
+ * @property string $name
+ *
  * @mixin IdeHelperRole
  */
 class Role extends SpatieRole implements AuditableContract
 {
-    use Searchable, HasUuid, HasFactory, Auditable;
+    use HasCriteria, HasUuid, HasFactory, Auditable, HasMetadata, HasDiscountConditions;
 
     protected $fillable = [
         'name',
@@ -30,10 +38,19 @@ class Role extends SpatieRole implements AuditableContract
         'type' => RoleType::class,
     ];
 
-    protected array $searchable = [
+    protected array $criteria = [
         'name' => Like::class,
         'description' => Like::class,
         'search' => RoleSearch::class,
         'assignable' => RoleAssignableSearch::class,
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope('order', function (Builder $builder): void {
+            $builder->orderByRaw('type = ' . RoleType::OWNER . ' DESC, type ASC');
+        });
+    }
 }

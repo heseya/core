@@ -24,6 +24,22 @@ Roles:
         description: 'Is the role assignable by current user'
         schema:
           type: boolean
+      - name: metadata
+        in: query
+        description: search by metadata
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: metadata_private
+        in: query
+        description: search by metadata private
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
     responses:
       200:
         description: Success
@@ -37,7 +53,8 @@ Roles:
                     $ref: './../schemas/Roles.yml#/Role'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
+
   post:
     tags:
       - Roles
@@ -55,7 +72,7 @@ Roles:
                   $ref: './../schemas/Roles.yml#/RoleView'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 RolesParams:
   get:
@@ -79,7 +96,7 @@ RolesParams:
                   $ref: './../schemas/Roles.yml#/RoleView'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   delete:
     tags:
       - Roles
@@ -94,7 +111,7 @@ RolesParams:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   patch:
     tags:
       - Roles
@@ -118,4 +135,4 @@ RolesParams:
                   $ref: './../schemas/Roles.yml#/RoleView'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]

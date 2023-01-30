@@ -1,4 +1,5 @@
 ShippingMethod:
+  type: object
   properties:
     id:
       type: string
@@ -6,9 +7,13 @@ ShippingMethod:
     name:
       type: string
       example: 'Next Day Courier'
+    price:
+      description: 'on index shows shipping price for provided "cart_value" (for 0 by default)'
+      type: number
+      example: 2
     public:
       type: boolean
-    black_list:
+    block_list:
       type: boolean
     payment_methods:
       type: array
@@ -28,4 +33,7 @@ ShippingMethod:
     shipping_time_max:
       type: number
       example: 2
-  type: object
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'

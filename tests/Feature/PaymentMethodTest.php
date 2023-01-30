@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\PaymentMethod;
 use App\Models\ShippingMethod;
-use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class PaymentMethodTest extends TestCase
@@ -68,7 +67,7 @@ class PaymentMethodTest extends TestCase
         $response = $this->actingAs($this->$user)->getJson('/payment-methods');
         $response
             ->assertOk()
-            ->assertJsonCount(3 , 'data') // Should show only public payment methods.
+            ->assertJsonCount(3, 'data') // Should show only public payment methods.
             ->assertJsonFragment(['id' => $this->payment_method->getKey()])
             ->assertJsonFragment(['id' => $this->payment_method_related->getKey()])
             ->assertJsonFragment(['id' => $this->payment_method_hidden->getKey()]);

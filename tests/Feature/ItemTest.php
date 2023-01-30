@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ErrorCode;
 use App\Events\ItemCreated;
 use App\Events\ItemDeleted;
 use App\Events\ItemUpdated;
@@ -9,8 +10,8 @@ use App\Listeners\WebHookEventListener;
 use App\Models\Deposit;
 use App\Models\Item;
 use App\Models\WebHook;
-use Carbon\Carbon;
 use Illuminate\Events\CallQueuedListener;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Spatie\WebhookServer\CallWebhookJob;
@@ -42,6 +43,7 @@ class ItemTest extends TestCase
             'name' => $this->item->name,
             'sku' => $this->item->sku,
             'quantity' => $this->item->quantity,
+            'metadata' => [],
         ];
     }
 
@@ -65,9 +67,10 @@ class ItemTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ]]);
+            ],
+            ]);
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(11);
     }
 
     /**
@@ -85,7 +88,7 @@ class ItemTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(11);
     }
 
     /**
@@ -109,6 +112,7 @@ class ItemTest extends TestCase
             ->actingAs($this->$user)
             ->json('GET', '/items', ['sold_out' => 0])
             ->assertOk()
+            ->assertJsonMissing(['id' => $item_sold_out->getKey()])
             ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => [
@@ -117,15 +121,16 @@ class ItemTest extends TestCase
                     'sku' => $this->item->sku,
                     'quantity' => $this->item->quantity,
                 ],
-            ]]);
+            ],
+            ]);
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(11);
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider booleanProvider
      */
-    public function testIndexFilterBySoldOut($user): void
+    public function testIndexFilterBySoldOut($user, $boolean, $booleanValue): void
     {
         $this->$user->givePermissionTo('items.show');
 
@@ -137,21 +142,18 @@ class ItemTest extends TestCase
 
         $item_sold_out = Item::factory()->create();
 
+        $itemId = $booleanValue ? $item_sold_out->getKey() : $this->item->getKey();
+
         $this
             ->actingAs($this->$user)
-            ->json('GET', '/items', ['sold_out' => 1])
+            ->json('GET', '/items', ['sold_out' => $boolean])
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJson(['data' => [
-                0 => [
-                    'id' => $item_sold_out->getKey(),
-                    'name' => $item_sold_out->name,
-                    'sku' => $item_sold_out->sku,
-                    'quantity' => $item_sold_out->quantity,
-                ],
-            ]]);
+            ->assertJsonFragment([
+                'id' => $itemId,
+            ]);
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(11);
     }
 
     /**
@@ -193,6 +195,46 @@ class ItemTest extends TestCase
     {
         $this->$user->givePermissionTo('items.show');
 
+        $created_at = Carbon::yesterday()->addHours(12);
+
+        $item2 = Item::factory()->create([
+            'created_at' => $created_at,
+        ]);
+        Deposit::factory([
+            'quantity' => 5,
+            'created_at' => $created_at,
+        ])->create([
+            'item_id' => $item2->getKey(),
+        ]);
+
+        Deposit::factory([
+            'quantity' => 5,
+        ])->create([
+            'item_id' => $item2->getKey(),
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/items', ['day' => $created_at->format('Y-m-d')])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $item2->getKey(),
+                'name' => $item2->name,
+                'sku' => $item2->sku,
+                'quantity' => 5,
+            ]);
+
+        $this->assertQueryCountLessThan(11);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexFilterByDayWithHour($user): void
+    {
+        $this->$user->givePermissionTo('items.show');
+
         $item2 = Item::factory()->create([
             'created_at' => Carbon::yesterday(),
         ]);
@@ -221,7 +263,7 @@ class ItemTest extends TestCase
                 'quantity' => 5,
             ]);
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(11);
     }
 
     public function testViewUnauthorized(): void
@@ -244,6 +286,24 @@ class ItemTest extends TestCase
             ->assertJson(['data' => $this->expected]);
 
         $this->assertQueryCountLessThan(10);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewWrongId($user): void
+    {
+        $this->$user->givePermissionTo('items.show_details');
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/items/id:its-not-id')
+            ->assertNotFound();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/items/id:' . $this->item->getKey() . $this->item->getKey())
+            ->assertNotFound();
     }
 
     public function testCreateUnauthorized(): void
@@ -283,13 +343,94 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateWithoutPermission($user): void
+    {
+        Event::fake(ItemCreated::class);
+
+        $item = [
+            'name' => 'Test',
+            'sku' => 'TES/T1',
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/items', $item);
+
+        $response
+            ->assertJsonFragment([
+                'code' => 403,
+                'key' => ErrorCode::getKey(ErrorCode::FORBIDDEN),
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadata($user): void
+    {
+        $this->$user->givePermissionTo('items.add');
+
+        Event::fake(ItemCreated::class);
+
+        $item = [
+            'name' => 'Test',
+            'sku' => 'TES/T1',
+        ];
+
+        $metadata = [
+            'metadata' => [
+                'attributeMeta' => 'attributeValue',
+            ],
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/items', $item + $metadata);
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => $item + $metadata]);
+
+        $this->assertDatabaseHas('items', $item);
+
+        Event::assertDispatched(ItemCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadataPrivate($user): void
+    {
+        $this->$user->givePermissionTo(['items.add', 'items.show_metadata_private']);
+
+        Event::fake(ItemCreated::class);
+
+        $item = [
+            'name' => 'Test',
+            'sku' => 'TES/T1',
+        ];
+
+        $metadata = [
+            'metadata_private' => [
+                'attributeMetaPriv' => 'attributeValuePriv',
+            ],
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/items', $item + $metadata);
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => $item + $metadata]);
+
+        $this->assertDatabaseHas('items', $item);
+
+        Event::assertDispatched(ItemCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateWithWebHook($user): void
     {
         $this->$user->givePermissionTo('items.add');
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'ItemCreated'
+                'ItemCreated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -360,11 +501,82 @@ class ItemTest extends TestCase
             '/items/id:' . $this->item->getKey(),
             $item,
         );
+
         $response
             ->assertOk()
             ->assertJson(['data' => $item]);
 
         $this->assertDatabaseHas('items', $item + ['id' => $this->item->getKey()]);
+
+        Event::assertDispatched(ItemUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithPartialData($user): void
+    {
+        $this->$user->givePermissionTo('items.edit');
+
+        Event::fake(ItemUpdated::class);
+
+        $item = [
+            'name' => 'Test 2',
+        ];
+
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/items/id:' . $this->item->getKey(),
+            $item,
+        );
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'name' => 'Test 2',
+                'sku' => $this->item->sku,
+            ],
+            ]);
+
+        $this->assertDatabaseHas('items', [
+            'id' => $this->item->getKey(),
+            'sku' => $this->item->sku,
+            'name' => 'Test 2',
+        ]);
+
+        Event::assertDispatched(ItemUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithPartialDataSku($user): void
+    {
+        $this->$user->givePermissionTo('items.edit');
+
+        Event::fake(ItemUpdated::class);
+
+        $item = [
+            'sku' => 'TES/T3',
+        ];
+
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/items/id:' . $this->item->getKey(),
+            $item,
+        );
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'name' => $this->item->name,
+                'sku' => $item['sku'],
+            ],
+            ]);
+
+        $this->assertDatabaseHas('items', [
+            'id' => $this->item->getKey(),
+            'sku' => $item['sku'],
+            'name' => $this->item->name,
+        ]);
 
         Event::assertDispatched(ItemUpdated::class);
     }
@@ -378,7 +590,7 @@ class ItemTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'ItemUpdated'
+                'ItemUpdated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -428,7 +640,8 @@ class ItemTest extends TestCase
     {
         Event::fake(ItemDeleted::class);
 
-        $response = $this->deleteJson('/items/id:' . $this->item->getKey())
+        $this
+            ->json('DELETE', '/items/id:' . $this->item->getKey())
             ->assertForbidden();
 
         $this->assertDatabaseHas('items', [
@@ -468,7 +681,7 @@ class ItemTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'ItemDeleted'
+                'ItemDeleted',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -502,5 +715,357 @@ class ItemTest extends TestCase
                 && $payload['data_type'] === 'Item'
                 && $payload['event'] === 'ItemDeleted';
         });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateValidationInvalidBothShippingTimeAndDate($user): void
+    {
+        $this->$user->givePermissionTo('items.add');
+
+        Event::fake(ItemCreated::class);
+
+        $item = [
+            'name' => 'Test',
+            'sku' => 'TES/T1',
+            'unlimited_stock_shipping_time' => 10,
+            'unlimited_stock_shipping_date' => '1999-02-01 10:10:10',
+        ];
+
+        $this->actingAs($this->$user)->postJson('/items', $item)->assertStatus(422);
+
+        Event::assertNotDispatched(ItemCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateValidationInvalidBothUnlimitedShippingTimeAndDate($user): void
+    {
+        $this->$user->givePermissionTo('items.edit');
+
+        Event::fake(ItemUpdated::class);
+
+        $item = [
+            'sku' => 'TES/T3',
+            'unlimited_stock_shipping_time' => 10,
+            'unlimited_stock_shipping_date' => '1999-02-01 10:10:10',
+        ];
+
+        $this->actingAs($this->$user)->patchJson(
+            '/items/id:' . $this->item->getKey(),
+            $item,
+        )->assertStatus(422);
+
+        Event::assertNotDispatched(ItemUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateValidationUnlimitedShippingDateLesserThenShippingDate($user): void
+    {
+        $this->$user->givePermissionTo('items.edit');
+
+        Event::fake(ItemUpdated::class);
+
+        Deposit::factory()->create([
+            'item_id' => $this->item->getKey(),
+            'quantity' => 2.0,
+            'shipping_date' => Carbon::now()->addDays(4)->toDateTimeString(),
+        ]);
+
+        $item = [
+            'sku' => 'TES/T3',
+            'unlimited_stock_shipping_date' => Carbon::now()->addDays(1)->toDateTimeString(),
+        ];
+
+        $this->actingAs($this->$user)->patchJson(
+            '/items/id:' . $this->item->getKey(),
+            $item,
+        )->assertStatus(422);
+
+        Event::assertNotDispatched(ItemUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateValidationUnlimitedShippingTimeLesserThenShippingTime($user): void
+    {
+        $this->$user->givePermissionTo('items.edit');
+
+        Event::fake(ItemUpdated::class);
+        $time = 4;
+        Deposit::factory()->create([
+            'item_id' => $this->item->getKey(),
+            'quantity' => 2.0,
+            'shipping_time' => $time,
+        ]);
+
+        $item = [
+            'sku' => 'TES/T3',
+            'unlimited_stock_shipping_time' => $time - 3,
+        ];
+
+        $this->actingAs($this->$user)->patchJson(
+            '/items/id:' . $this->item->getKey(),
+            $item,
+        )->assertStatus(422);
+
+        Event::assertNotDispatched(ItemUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateUnlimitedShippingTime($user): void
+    {
+        $this->$user->givePermissionTo('items.edit');
+
+        $time = 4;
+        Deposit::factory()->create([
+            'item_id' => $this->item->getKey(),
+            'quantity' => 2.0,
+            'shipping_time' => $time,
+        ]);
+        Deposit::factory()->create([
+            'item_id' => $this->item->getKey(),
+            'quantity' => -2.0,
+            'shipping_time' => $time,
+        ]);
+        Deposit::factory()->create([
+            'item_id' => $this->item->getKey(),
+            'quantity' => 2.0,
+            'shipping_time' => $time - 2,
+        ]);
+
+        $item = [
+            'sku' => 'TES/T3',
+            'unlimited_stock_shipping_time' => $time - 1,
+        ];
+
+        $this->actingAs($this->$user)->patchJson(
+            '/items/id:' . $this->item->getKey(),
+            $item,
+        )->assertOk()
+            ->assertJson(['data' => $item]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateUnlimitedShippingTimeNull($user): void
+    {
+        $this->$user->givePermissionTo('items.edit');
+
+        $item = [
+            'sku' => 'TES/T3',
+            'unlimited_stock_shipping_time' => null,
+        ];
+
+        $this->actingAs($this->$user)->patchJson(
+            '/items/id:' . $this->item->getKey(),
+            $item,
+        )->assertOk()
+            ->assertJson(['data' => $item]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateUnlimitedShippingDate($user): void
+    {
+        $this->$user->givePermissionTo('items.edit');
+        $date = Carbon::create(2023, 3, 20);
+
+        Deposit::factory()->create([
+            'item_id' => $this->item->getKey(),
+            'quantity' => 2.0,
+            'shipping_date' => $date->addDays(4)->toDateTimeString(),
+        ]);
+        Deposit::factory()->create([
+            'item_id' => $this->item->getKey(),
+            'quantity' => -2.0,
+            'shipping_date' => $date->addDays(4)->toDateTimeString(),
+        ]);
+        Deposit::factory()->create([
+            'item_id' => $this->item->getKey(),
+            'quantity' => 2.0,
+            'shipping_date' => $date->addDays(2)->toDateTimeString(),
+        ]);
+
+        $item = [
+            'sku' => 'TES/T3',
+            'unlimited_stock_shipping_date' => $date->addDays(3)->toIso8601String(),
+        ];
+
+        $this->actingAs($this->$user)->patchJson(
+            '/items/id:' . $this->item->getKey(),
+            $item,
+        )->assertOk()
+            ->assertJson(['data' => $item]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateUnlimitedShippingDateNull($user): void
+    {
+        $this->$user->givePermissionTo('items.edit');
+
+        $item = [
+            'sku' => 'TES/T3',
+            'unlimited_stock_shipping_date' => null,
+        ];
+
+        $this->actingAs($this->$user)->patchJson(
+            '/items/id:' . $this->item->getKey(),
+            $item,
+        )->assertOk()
+            ->assertJson(['data' => $item]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateUnlimitedShippingTime($user): void
+    {
+        $this->$user->givePermissionTo('items.add');
+
+        $item = [
+            'name' => 'Test',
+            'sku' => 'TES/T1',
+            'unlimited_stock_shipping_time' => 5,
+            'unlimited_stock_shipping_date' => null,
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/items', $item);
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => $item]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateUnlimitedShippingDate($user): void
+    {
+        $this->$user->givePermissionTo('items.add');
+
+        $item = [
+            'name' => 'Test',
+            'sku' => 'TES/T1',
+            'unlimited_stock_shipping_time' => null,
+            'unlimited_stock_shipping_date' => Carbon::now()->addDays(5)->toIso8601String(),
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/items', $item);
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => $item]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWhitAvailability($user): void
+    {
+        $this->$user->givePermissionTo('items.show_details');
+
+        $item = Item::factory()->create();
+
+        $time = 4;
+        Deposit::factory()->create([
+            'item_id' => $item->getKey(),
+            'quantity' => 2.0,
+            'shipping_time' => $time,
+        ]);
+        Deposit::factory()->create([
+            'item_id' => $item->getKey(),
+            'quantity' => 2.0,
+            'shipping_time' => $time,
+        ]);
+        Deposit::factory()->create([
+            'item_id' => $item->getKey(),
+            'quantity' => 2.0,
+            'shipping_time' => $time + 5,
+        ]);
+        $date = Carbon::now()->addDays(5)->toIso8601String();
+        Deposit::factory()->create([
+            'item_id' => $item->getKey(),
+            'quantity' => 2.0,
+            'shipping_date' => $date,
+        ]);
+        Deposit::factory()->create([
+            'item_id' => $item->getKey(),
+            'quantity' => 2.0,
+        ]);
+        Deposit::factory()->create([
+            'item_id' => $item->getKey(),
+            'quantity' => 2.0,
+            'shipping_time' => $time + 1,
+        ]);
+        Deposit::factory()->create([
+            'item_id' => $item->getKey(),
+            'quantity' => -2.0,
+            'shipping_time' => $time + 1,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/items/id:' . $item->getKey())
+            ->assertOk()
+            ->assertJsonFragment([
+                'availability' => [
+                    ['quantity' => 2, 'shipping_time' => null, 'shipping_date' => null],
+                    ['quantity' => 2, 'shipping_time' => null, 'shipping_date' => $date],
+                    ['quantity' => 4, 'shipping_time' => 4, 'shipping_date' => null],
+                    ['quantity' => 2, 'shipping_time' => 9, 'shipping_date' => null],
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexWhitAvailability($user): void
+    {
+        $this->$user->givePermissionTo('items.show');
+        $this->$user->givePermissionTo('items.show_details');
+        $this->$user->givePermissionTo('deposits.add');
+
+        $item = Item::factory()->create();
+
+        $deposit = [
+            'quantity' => 10,
+            'shipping_time' => 10,
+        ];
+
+        $this->actingAs($this->$user)->postJson(
+            "/items/id:{$item->getKey()}/deposits",
+            $deposit,
+        )->assertCreated();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/items/id:' . $item->getKey())
+            ->assertOk()
+            ->assertJsonFragment([
+                'availability' => [
+                    ['quantity' => 10, 'shipping_time' => 10, 'shipping_date' => null],
+                ],
+            ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/items')
+            ->assertOk()
+            ->assertJsonFragment([
+                'availability' => [
+                    ['quantity' => 10, 'shipping_time' => 10, 'shipping_date' => null],
+                ],
+            ]);
     }
 }

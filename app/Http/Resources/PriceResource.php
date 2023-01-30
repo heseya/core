@@ -9,9 +9,9 @@ class PriceResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'value' => $this->value,
-            'region_id' => $this->region_id,
+            'id' => $this->resource->getKey(),
+            'value' => $this->resource->value,
+            'region_id' => $this->resource->region_id,
         ];
     }
 }

@@ -3,16 +3,15 @@
 namespace Tests\Feature;
 
 use App\Events\ProductSetDeleted;
-use App\Http\Resources\ProductSetResource;
 use App\Listeners\WebHookEventListener;
 use App\Models\Product;
 use App\Models\ProductSet;
+use App\Models\SeoMetadata;
 use App\Models\WebHook;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Spatie\WebhookServer\CallWebhookJob;
-use App\Models\SeoMetadata;
 use Tests\TestCase;
 
 class ProductSetOtherTest extends TestCase
@@ -62,7 +61,7 @@ class ProductSetOtherTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'ProductSetDeleted'
+                'ProductSetDeleted',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -396,7 +395,7 @@ class ProductSetOtherTest extends TestCase
         $product2 = Product::factory()->create([
             'public' => false,
         ]);
-        $productNotInSet = Product::factory()->create([
+        Product::factory()->create([
             'public' => true,
         ]);
 
@@ -416,8 +415,44 @@ class ProductSetOtherTest extends TestCase
                     'id' => $product1->getKey(),
                     'name' => $product1->name,
                     'slug' => $product1->slug,
-                ]
-            ]]);
+                ],
+            ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowProductsWrongId($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.show_details');
+
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $product2 = Product::factory()->create([
+            'public' => false,
+        ]);
+        Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $set->products()->sync([
+            $product1->getKey(),
+            $product2->getKey(),
+        ]);
+
+        $this->actingAs($this->$user)
+            ->getJson('/product-sets/id:its-not-uuid/products')
+            ->assertNotFound();
+
+        $this->actingAs($this->$user)
+            ->getJson('/product-sets/id:' . $set->getKey() . $set->getKey() . '/products')
+            ->assertNotFound();
     }
 
     /**
@@ -460,5 +495,320 @@ class ProductSetOtherTest extends TestCase
                 'name' => $product2->name,
                 'slug' => $product2->slug,
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductReorderInSetHigherOrder($user): void
+    {
+        $this->$user->givePermissionTo(['product_sets.edit']);
+
+        $set = $this->prepareOrderData();
+
+        /** @var Product $product */
+        $product = $set->products->firstWhere('name', 'five');
+
+        $this->actingAs($this->$user)->json(
+            'POST',
+            '/product-sets/id:' . $set->getKey() . '/products/reorder',
+            [
+                'products' => [
+                    [
+                        'id' => $product->getKey(),
+                        'order' => 0,
+                    ],
+                ],
+            ]
+        );
+
+        $this
+            ->assertDatabaseHas('product_set_product', [
+                'product_id' => $product->getKey(),
+                'order' => 0,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 1,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 2,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 3,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 4,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductReorderInSetLowerOrder($user): void
+    {
+        $this->$user->givePermissionTo(['product_sets.edit']);
+
+        $set = $this->prepareOrderData();
+
+        /** @var Product $product */
+        $product = $set->products->firstWhere('name', 'one');
+
+        $this->actingAs($this->$user)->json(
+            'POST',
+            '/product-sets/id:' . $set->getKey() . '/products/reorder',
+            [
+                'products' => [
+                    [
+                        'id' => $product->getKey(),
+                        'order' => 4,
+                    ],
+                ],
+            ]
+        );
+
+        $this
+            ->assertDatabaseHas('product_set_product', [
+                'product_id' => $product->getKey(),
+                'order' => 4,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 0,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 1,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 2,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 3,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductReorderInSetSameOrder($user): void
+    {
+        $this->$user->givePermissionTo(['product_sets.edit']);
+
+        $set = $this->prepareOrderData();
+
+        /** @var Product $product */
+        $product = $set->products->firstWhere('name', 'three');
+
+        $this->actingAs($this->$user)->json(
+            'POST',
+            '/product-sets/id:' . $set->getKey() . '/products/reorder',
+            [
+                'products' => [
+                    [
+                        'id' => $product->getKey(),
+                        'order' => 2,
+                    ],
+                ],
+            ]
+        );
+
+        $this
+            ->assertDatabaseHas('product_set_product', [
+                'product_id' => $product->getKey(),
+                'order' => 2,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 0,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 1,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 3,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 4,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductReorderInSetOrderOutOfSize($user): void
+    {
+        $this->$user->givePermissionTo(['product_sets.edit']);
+
+        $set = $this->prepareOrderData();
+
+        /** @var Product $product */
+        $product = $set->products->where('name', 'three')->first();
+
+        $this->actingAs($this->$user)->json(
+            'POST',
+            '/product-sets/id:' . $set->getKey() . '/products/reorder',
+            [
+                'products' => [
+                    [
+                        'id' => $product->getKey(),
+                        'order' => 9999,
+                    ],
+                ],
+            ]
+        );
+
+        $this
+            ->assertDatabaseHas('product_set_product', [
+                'product_id' => $product->getKey(),
+                'order' => 4,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 0,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 1,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 2,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 3,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductReorderWhenWasNull($user): void
+    {
+        $this->$user->givePermissionTo(['product_sets.edit']);
+
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+            'name' => 'one',
+        ]);
+        $product2 = Product::factory()->create([
+            'public' => false,
+            'name' => 'two',
+        ]);
+
+        $set->products()->attach($product1->getKey(), ['order' => null]);
+        $set->products()->attach($product2->getKey(), ['order' => null]);
+        $this->actingAs($this->$user)->json(
+            'POST',
+            '/product-sets/id:' . $set->getKey() . '/products/reorder',
+            [
+                'products' => [
+                    [
+                        'id' => $product1->getKey(),
+                        'order' => 0,
+                    ],
+                ],
+            ]
+        );
+
+        $this
+            ->assertDatabaseHas('product_set_product', [
+                'product_id' => $product1->getKey(),
+                'order' => 0,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductReorderHandleNulls($user): void
+    {
+        $this->$user->givePermissionTo(['product_sets.edit']);
+
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+            'name' => 'one',
+        ]);
+        $product2 = Product::factory()->create([
+            'public' => true,
+            'name' => 'two',
+        ]);
+        $product3 = Product::factory()->create([
+            'public' => true,
+            'name' => 'three',
+        ]);
+        $product4 = Product::factory()->create([
+            'public' => true,
+            'name' => 'four',
+        ]);
+
+        $set->products()->attach($product1->getKey(), ['order' => 0]);
+        $set->products()->attach($product2->getKey(), ['order' => 1]);
+        $set->products()->attach($product3->getKey(), ['order' => null]);
+        $set->products()->attach($product4->getKey(), ['order' => null]);
+        $this->actingAs($this->$user)->json(
+            'POST',
+            '/product-sets/id:' . $set->getKey() . '/products/reorder',
+            [
+                'products' => [
+                    [
+                        'id' => $product1->getKey(),
+                        'order' => 0,
+                    ],
+                ],
+            ]
+        );
+
+        $this
+            ->assertDatabaseHas('product_set_product', [
+                'product_id' => $product1->getKey(),
+                'order' => 0,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 1,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 2,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 3,
+            ]);
+    }
+
+    private function prepareOrderData(): ProductSet
+    {
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+            'name' => 'one',
+        ]);
+        $product2 = Product::factory()->create([
+            'public' => false,
+            'name' => 'two',
+        ]);
+        $product3 = Product::factory()->create([
+            'public' => false,
+            'name' => 'three',
+        ]);
+        $product4 = Product::factory()->create([
+            'public' => false,
+            'name' => 'four',
+        ]);
+        $product5 = Product::factory()->create([
+            'public' => false,
+            'name' => 'five',
+        ]);
+
+        $set->products()->attach($product1->getKey(), ['order' => 0]);
+        $set->products()->attach($product2->getKey(), ['order' => 1]);
+        $set->products()->attach($product3->getKey(), ['order' => 2]);
+        $set->products()->attach($product4->getKey(), ['order' => 3]);
+        $set->products()->attach($product5->getKey(), ['order' => 4]);
+
+        return $set;
     }
 }

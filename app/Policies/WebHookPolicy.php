@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Exceptions\WebHookCreatorException;
-use App\Exceptions\WebHookEventException;
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Exceptions\ClientException;
 use App\Models\App;
 use App\Models\User;
 use App\Models\WebHook;
@@ -60,15 +60,19 @@ class WebHookPolicy
             // Zalogowana aplikacja i aplikacja stworzyła danego Webhooka
             return ($user instanceof App) && $user->getKey() === $webHook->creator_id
                 ? Response::allow()
-                : throw new WebHookCreatorException('Only application can ' . $method . ' this WebHook.');
+                : throw new ClientException(Exceptions::CLIENT_WEBHOOK_APP_ACTION, errorArray: [
+                    'method' => $method,
+                ]);
         }
         // Webhook stworzony przez użytkownika
         return $user instanceof User
             ? Response::allow()
-            : throw new WebHookCreatorException('Only user can ' . $method . ' this WebHook.');
+            : throw new ClientException(Exceptions::CLIENT_WEBHOOK_USER_ACTION, errorArray: [
+                'method' => $method,
+            ]);
     }
 
-    private function getRequiredPermissions(array $events, bool $with_issuer, bool $with_hidden): array|false
+    private function getRequiredPermissions(array $events, bool $with_issuer, bool $with_hidden): array
     {
         $result = [];
         $event_permissions = Config::get('events.permissions');
@@ -94,7 +98,7 @@ class WebHookPolicy
     {
         $permissions = $this->getRequiredPermissions($events, $with_issuer, $with_hidden);
         if (!$user->can($permissions)) {
-            throw new WebHookEventException('No required permissions to events.');
+            throw new ClientException(Exceptions::CLIENT_NO_REQUIRED_PERMISSIONS_TO_EVENTS);
         }
         return Response::allow();
     }

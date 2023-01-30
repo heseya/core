@@ -1,0 +1,26 @@
+Filters:
+  get:
+    tags:
+      - Filters
+    summary: 'gets sets filters'
+    parameters:
+      - name: 'sets[]'
+        in: query
+        description: 'Array of sets ids to search attributes'
+        schema:
+          type: string
+        example: 'sets[]=026bc5f6-8373-4aeb-972e-e78d72a67121&sets[]=026bc5f6-8373-4aeb-972e-e78d72a67121'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '../schemas/Attributes.yml#/Attribute'
+    security:
+      - BearerAuth: [ ]

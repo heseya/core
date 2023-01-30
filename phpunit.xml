@@ -24,9 +24,6 @@
     <testsuite name="Feature">
       <directory suffix="Test.php">./tests/Feature</directory>
     </testsuite>
-    <testsuite name="Pagination Unit">
-      <directory suffix="Test.php">./heseya/pagination/tests/Unit</directory>
-    </testsuite>
   </testsuites>
   <php>
     <server name="APP_ENV" value="testing"/>
@@ -34,5 +31,6 @@
     <server name="MAIL_DRIVER" value="array"/>
     <server name="QUEUE_CONNECTION" value="sync"/>
     <server name="SESSION_DRIVER" value="array"/>
+    <ini name="memory_limit" value="8192M" />
   </php>
 </phpunit>

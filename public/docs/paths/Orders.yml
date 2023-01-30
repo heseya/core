@@ -34,12 +34,30 @@ Orders:
         in: query
         description: 'Date datetime from'
         schema:
-          type: datetime
+          type: string
+          format: date-time
       - name: to
         in: query
         description: 'Date datetime to'
         schema:
-          type: datetime
+          type: string
+          format: date-time
+      - name: metadata
+        in: query
+        description: search by metadata
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: metadata_private
+        in: query
+        description: search by metadata private
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
     responses:
       200:
         description: Success
@@ -50,10 +68,10 @@ Orders:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Orders.yml#/Order'
+                    $ref: './../schemas/Orders.yml#/OrderList'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   post:
     tags:
       - Orders
@@ -68,7 +86,7 @@ Orders:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Orders.yml#/Order'
+                  $ref: './../schemas/Orders.yml#/OrderSummary'
               type: object
 
 OrdersParams:
@@ -77,12 +95,12 @@ OrdersParams:
       - Orders
     summary: 'order view'
     parameters:
-      - name: code
+      - name: id
         in: path
         required: true
         schema:
           type: string
-          example: D3PT88
+          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
     responses:
       200:
         description: Success
@@ -94,7 +112,7 @@ OrdersParams:
                   $ref: './../schemas/Orders.yml#/OrderView'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   patch:
     tags:
       - Orders
@@ -116,10 +134,10 @@ OrdersParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Orders.yml#/Order'
+                  $ref: './../schemas/Orders.yml#/OrderView'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 OrdersCode:
   get:
@@ -144,43 +162,8 @@ OrdersCode:
                   $ref: './../schemas/Orders.yml#/OrderSummary'
               type: object
 
-OrdersVerify:
-  post:
-    tags:
-      - Orders
-    summary: 'verify cart'
-    requestBody:
-      request: OrderCreate
-      content:
-        application/json:
-          schema:
-            properties:
-              items:
-                type: array
-                items:
-                  properties:
-                    product_id:
-                      type: string
-                      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-                    quantity:
-                      type: number
-                    schemas:
-                      properties:
-                        119c0a63-1ea1-4769-8d5f-169f68de5598:
-                          type: string
-                          example: 123459fb-39a4-4dd0-8240-14793aa1f73b
-                        02b97693-857c-4fb9-9999-47400ac5fbef:
-                          type: string
-                          example: 'HE + YA'
-                      type: object
-                  type: object
-            type: object
-    responses:
-      204:
-        description: Success
-
 OrdersStatus:
-  post:
+  patch:
     tags:
       - Orders
     summary: 'change order status'
@@ -192,7 +175,6 @@ OrdersStatus:
           type: string
           example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
     requestBody:
-      request: OrderCreate
       content:
         application/json:
           schema:
@@ -201,19 +183,10 @@ OrdersStatus:
                 type: integer
             type: object
     responses:
-      200:
+      204:
         description: Success
-        content:
-          application/json:
-            schema:
-              properties:
-                data:
-                  type: array
-                  items:
-                    $ref: './../schemas/Orders.yml#/Order'
-              type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 OrdersMy:
   get:
@@ -246,12 +219,14 @@ OrdersMy:
         in: query
         description: 'Date datetime from'
         schema:
-          type: datetime
+          type: string
+          format: date-time
       - name: to
         in: query
         description: 'Date datetime to'
         schema:
-          type: datetime
+          type: string
+          format: date-time
     responses:
       200:
         description: Success
@@ -265,20 +240,20 @@ OrdersMy:
                     $ref: './../schemas/Orders.yml#/Order'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
-OrdersMyId:
+OrdersMySingle:
   get:
     tags:
       - Orders
     summary: 'user order view'
     parameters:
-      - name: id
+      - name: code
         in: path
         required: true
         schema:
           type: string
-          example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
+          example: 5B32FD
     responses:
       200:
         description: Success
@@ -290,7 +265,7 @@ OrdersMyId:
                   $ref: './../schemas/Orders.yml#/OrderView'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 OrdersCodePay:
   post:
@@ -309,7 +284,6 @@ OrdersCodePay:
         schema:
           type: string
     requestBody:
-      request: OrderCreate
       content:
         application/json:
           schema:
@@ -349,4 +323,139 @@ OrdersCodePayOffline:
               properties:
                 data:
                   $ref: './../schemas/Payments.yml#/Payment'
+              type: object
+
+OrderAddDocument:
+  post:
+    tags:
+      - Orders
+    summary: 'add document'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                example: test
+              file:
+                type: string
+                format: binary
+              type:
+                type: string
+                example: invoice
+    responses:
+      200:
+        description: Ok
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Documents.yml#/Document'
+              type: object
+
+OrderDeleteDocument:
+  delete:
+    tags:
+      - Orders
+    summary: 'delete document'
+    parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: d1365285-ad58-48da-88e2-99e9f4c0800d
+      - name: doc_id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: d1365285-ad58-48da-88e2-99e9f4c0800d
+    responses:
+      204:
+        description: No content
+    security:
+      - BearerAuth: [ ]
+
+OrderDownloadDocument:
+  get:
+    tags:
+      - Orders
+    summary: 'downloads document'
+    parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
+      - name: doc_id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
+    responses:
+      200:
+        description: A PDF file
+        content:
+          application/pdf:
+            schema:
+              example: test
+              type: string
+              format: binary
+    security:
+      - BearerAuth: [ ]
+
+OrdersDocumentsSend:
+  post:
+    tags:
+      - Orders
+    summary: 'send documents'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              uuid:
+                type: array
+                items:
+                  type: string
+                  example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+    responses:
+      204:
+        description: No content
+
+CartProcess:
+  post:
+    tags:
+      - Orders
+    summary: 'validate cart items and coupons'
+    requestBody:
+      $ref: './../requests/Cart.yml#/CartProcess'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Cart.yml#/Cart'
               type: object

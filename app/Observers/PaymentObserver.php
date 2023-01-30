@@ -2,25 +2,32 @@
 
 namespace App\Observers;
 
+use App\Events\OrderUpdatedPaid;
 use App\Models\Payment;
 
 class PaymentObserver
 {
-    public function created(Payment $payment)
+    public function created(Payment $payment): void
     {
-        if ($payment->paid) {
-            $payment->order->update([
-                'paid' => $payment->order->isPaid(),
-            ]);
-        }
+        $this->process($payment);
     }
 
-    public function updated(Payment $payment)
+    public function updated(Payment $payment): void
     {
-        if ($payment->paid) {
+        $this->process($payment);
+    }
+
+    private function process(Payment $payment): void
+    {
+        $isPaid = $payment->order->isPaid();
+
+        // update only if paid status changed
+        if ($payment->order->paid !== $isPaid) {
             $payment->order->update([
-                'paid' => $payment->order->isPaid(),
+                'paid' => $isPaid,
             ]);
+
+            OrderUpdatedPaid::dispatch($payment->order);
         }
     }
 }

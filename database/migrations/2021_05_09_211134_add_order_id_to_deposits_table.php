@@ -6,34 +6,24 @@ use Illuminate\Support\Facades\Schema;
 
 class AddOrderIdToDepositsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::table('deposits', function (Blueprint $table) {
+        Schema::table('deposits', function (Blueprint $table): void {
             $table->uuid('order_product_id')->after('item_id')->nullable();
         });
 
-        Schema::table('statuses', function (Blueprint $table) {
+        Schema::table('statuses', function (Blueprint $table): void {
             $table->boolean('cancel')->after('color')->default(false);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::table('deposits', function (Blueprint $table) {
+        Schema::table('deposits', function (Blueprint $table): void {
             $table->dropColumn('order_product_id');
         });
 
-        Schema::table('statuses', function (Blueprint $table) {
+        Schema::table('statuses', function (Blueprint $table): void {
             $table->dropColumn('cancel');
         });
     }

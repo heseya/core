@@ -22,6 +22,7 @@ class ShippingMethodPriceRanges implements Rule
             }
 
             $minimumValue = (float) $item['start'];
+
             if ($minimumValue === 0.0) {
                 return true;
             }

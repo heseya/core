@@ -14,6 +14,7 @@ final class EventType extends Enum implements LocalizedEnum
     public const PRODUCT_CREATED = 'ProductCreated';
     public const PRODUCT_UPDATED = 'ProductUpdated';
     public const PRODUCT_DELETED = 'ProductDeleted';
+    public const PRODUCT_PRICE_UPDATED = 'ProductPriceUpdated';
     public const ITEM_CREATED = 'ItemCreated';
     public const ITEM_UPDATED = 'ItemUpdated';
     public const ITEM_UPDATED_QUANTITY = 'ItemUpdatedQuantity';
@@ -27,9 +28,33 @@ final class EventType extends Enum implements LocalizedEnum
     public const USER_CREATED = 'UserCreated';
     public const USER_UPDATED = 'UserUpdated';
     public const USER_DELETED = 'UserDeleted';
-    public const DISCOUNT_CREATED = 'DiscountCreated';
-    public const DISCOUNT_UPDATED = 'DiscountUpdated';
-    public const DISCOUNT_DELETED = 'DiscountDeleted';
+    public const SALE_CREATED = 'SaleCreated';
+    public const SALE_UPDATED = 'SaleUpdated';
+    public const SALE_DELETED = 'SaleDeleted';
+    public const COUPON_CREATED = 'CouponCreated';
+    public const COUPON_UPDATED = 'CouponUpdated';
+    public const COUPON_DELETED = 'CouponDeleted';
+    public const TFA_INIT = 'TfaInit';
+    public const TFA_SECURITY_CODE = 'TfaSecurityCode';
+    public const TFA_RECOVERY_CODES_CHANGED = 'TfaRecoveryCodesChanged';
+    public const PASSWORD_RESET = 'PasswordReset';
+    public const SUCCESSFUL_LOGIN_ATTEMPT = 'SuccessfulLoginAttempt';
+    public const NEW_LOCALIZATION_LOGIN_ATTEMPT = 'NewLocalizationLoginAttempt';
+    public const FAILED_LOGIN_ATTEMPT = 'FailedLoginAttempt';
+    public const ADD_ORDER_DOCUMENT = 'AddOrderDocument';
+    public const REMOVE_ORDER_DOCUMENT = 'RemoveOrderDocument';
+    public const ORDER_UPDATED_PAID = 'OrderUpdatedPaid';
+    public const ORDER_UPDATED_SHIPPING_NUMBER = 'OrderUpdatedShippingNumber';
+
+    public static array $securedEvents = [
+        self::TFA_INIT,
+        self::TFA_SECURITY_CODE,
+        self::TFA_RECOVERY_CODES_CHANGED,
+        self::PASSWORD_RESET,
+        self::SUCCESSFUL_LOGIN_ATTEMPT,
+        self::NEW_LOCALIZATION_LOGIN_ATTEMPT,
+        self::FAILED_LOGIN_ATTEMPT,
+    ];
 
     public static function getEventList(): array
     {
@@ -42,13 +67,13 @@ final class EventType extends Enum implements LocalizedEnum
         foreach ($events as $event) {
             $hidden_permissions = array_key_exists($event->value, $required_hidden_permissions)
                 ? $required_hidden_permissions[$event->value] : [];
-            array_push($result, self::getData($event, $required_permissions[$event->value], $hidden_permissions));
+            $result[] = self::getData($event, $required_permissions[$event->value], $hidden_permissions);
         }
 
         return $result;
     }
 
-    private static function getData(Enum $enum, $permissions, $hidden_permissions): array
+    private static function getData(Enum $enum, mixed $permissions, mixed $hidden_permissions): array
     {
         return [
             'key' => $enum->value,
@@ -56,6 +81,7 @@ final class EventType extends Enum implements LocalizedEnum
             'description' => $enum->description,
             'required_permissions' => $permissions,
             'required_hidden_permissions' => $hidden_permissions,
+            'encrypted' => in_array($enum->value, self::$securedEvents),
         ];
     }
 }

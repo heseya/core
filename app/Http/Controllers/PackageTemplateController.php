@@ -2,55 +2,54 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\PackageTemplateDto;
+use App\Http\Requests\PackageTemplateCreateRequest;
+use App\Http\Requests\PackageTemplateIndexRequest;
+use App\Http\Requests\PackageTemplateUpdateRequest;
 use App\Http\Resources\PackageTemplateResource;
 use App\Models\PackageTemplate;
+use App\Services\Contracts\PackageTemplateServiceContract;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Response;
 
 class PackageTemplateController extends Controller
 {
-    public function index(): JsonResource
+    public function __construct(private PackageTemplateServiceContract $packageTemplateService)
     {
-        $packages = PackageTemplate::all();
-
-        return PackageTemplateResource::collection($packages);
     }
 
-    public function store(Request $request): JsonResource
+    public function index(PackageTemplateIndexRequest $request): JsonResource
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'weight' => 'required|numeric',
-            'width' => 'required|integer',
-            'height' => 'required|integer',
-            'depth' => 'required|integer',
-        ]);
+        $packages = PackageTemplate::searchByCriteria($request->validated())
+            ->with(['metadata', 'metadataPrivate']);
 
-        $package = PackageTemplate::create($validated);
-
-        return PackageTemplateResource::make($package);
+        return PackageTemplateResource::collection($packages->get());
     }
 
-    public function update(PackageTemplate $package, Request $request): JsonResource
+    public function store(PackageTemplateCreateRequest $request): JsonResource
     {
-        $validated = $request->validate([
-            'name' => 'string|max:255',
-            'weight' => 'numeric',
-            'width' => 'integer',
-            'height' => 'integer',
-            'depth' => 'integer',
-        ]);
+        return PackageTemplateResource::make(
+            $this->packageTemplateService->store(
+                PackageTemplateDto::instantiateFromRequest($request)
+            )
+        );
+    }
 
-        $package->update($validated);
-
-        return PackageTemplateResource::make($package);
+    public function update(PackageTemplate $package, PackageTemplateUpdateRequest $request): JsonResource
+    {
+        return PackageTemplateResource::make(
+            $this->packageTemplateService->update(
+                $package,
+                PackageTemplateDto::instantiateFromRequest($request)
+            )
+        );
     }
 
     public function destroy(PackageTemplate $package): JsonResponse
     {
-        $package->delete();
+        $this->packageTemplateService->destroy($package);
 
-        return response()->json(null, 204);
+        return Response::json(null, 204);
     }
 }

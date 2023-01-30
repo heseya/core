@@ -1,4 +1,5 @@
 Product:
+  type: object
   properties:
     id:
       type: string
@@ -13,15 +14,23 @@ Product:
       example: 'White socks'
     price:
       description: 'Base price of the product excluding schemas'
-      type: numeric
+      type: number
       example: 10.99
     price_min:
-      description: 'Minimum available product price acounting for schemas'
-      type: numeric
-      example: 12.99
+      description: 'Min price after applied all sales'
+      type: number
+      example: 11.99
     price_max:
-      description: 'Maximum available product price acounting for schemas'
-      type: numeric
+      description: 'Max price after applied all sales'
+      type: number
+      example: 19.99
+    price_min_initial:
+      description: 'Minimum available product price accounting for schemas'
+      type: number
+      example: 12.99
+    price_max_initial:
+      description: 'Maximum available product price accounting for schemas'
+      type: number
       example: 20.99
     public:
       description: 'Whether product is not set to be hidden.'
@@ -37,8 +46,27 @@ Product:
       example: true
     quantity_step:
       description: 'In what increments can you increase the product quantity'
-      type: numeric
+      type: number
       example: 0.05
+    quantity:
+      description: 'Product quantity summary'
+      type: number
+      example: 20
+    google_product_category:
+      description: 'Google product category identification number'
+      type: number
+      example: 2271
+    vat_rate:
+      description: 'Value represent tax value'
+      type: number
+      example: 23
+    shipping_time:
+      type: integer
+      example: 5
+    shipping_date:
+      type: string
+      format: date-time
+      example: '2021-09-13T11:11'
     cover:
       $ref: './Media.yml#/Media'
     tags:
@@ -46,32 +74,40 @@ Product:
       type: array
       items:
         $ref: './Tags.yml#/Tag'
-#    type: object
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    has_schemas:
+      description: 'Does product has any attached schema'
+      type: boolean
+      example: true
 
 ProductView:
   type: object
   allOf:
-    - $ref: '#Product'
+    - $ref: '#/Product'
     - properties:
+        order:
+          type: integer
+          example: 8
         user_id:
           type: string
           example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        original_id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
         description_html:
-          description: 'HTML formated text to be displayed as a product description'
+          description: 'HTML formatted text to be displayed as a product description'
           type: string
           example: '<h1>Lorem ipsum dolor sit amet</h1>'
-        meta_description:
-          description: 'Tag stripped and trimmed version of HTML description to use as meta data'
+        description_short:
+          description: 'Plain text short product description'
           type: string
-          example: 'Lorem ipsum dolor sit amet'
+        items:
+          $ref: './Items.yml#/ItemWithRequiredQuantity'
         gallery:
           description: 'Ids of assigned subsets'
           type: array
           items:
-            $ref: './Media.yml#Media'
+            $ref: './Media.yml#/Media'
         schemas:
           description: 'Ids of assigned subsets'
           type: array
@@ -82,5 +118,26 @@ ProductView:
           type: array
           items:
             $ref: './ProductSets.yml#/ProductSet'
+        attributes:
+          description: 'Array of assigned attributes'
+          type: array
+          items:
+            $ref: './Attributes.yml#/AttributeProduct'
         seo:
           $ref: './Seo.yml#/SeoView'
+        sales:
+          description: 'List of all applied sales'
+          type: array
+          items:
+            $ref: './Sales.yml#/Sale'
+
+ProductIndex:
+  type: object
+  allOf:
+    - $ref: '#/Product'
+    - properties:
+        attributes:
+          description: 'Array of assigned attributes'
+          type: array
+          items:
+            $ref: './Attributes.yml#/AttributeProductList'

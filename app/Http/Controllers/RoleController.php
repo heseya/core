@@ -13,6 +13,7 @@ use App\Models\Role;
 use App\Services\Contracts\RoleServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Response;
 
 class RoleController extends Controller
 {
@@ -48,7 +49,7 @@ class RoleController extends Controller
 
     public function update(Role $role, RoleUpdateRequest $request): JsonResource
     {
-        $dto = RoleUpdateDto::fromRoleUpdateRequest($request);
+        $dto = RoleUpdateDto::instantiateFromRequest($request);
 
         return RoleResource::make(
             $this->roleService->update($role, $dto),
@@ -59,6 +60,6 @@ class RoleController extends Controller
     {
         $this->roleService->delete($role);
 
-        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

@@ -20,14 +20,14 @@ class AuthResource extends Resource
 
     public function base(Request $request): array
     {
-        $authenticable = $this->tokenService->getUser($this->token);
+        $authenticable = $this->tokenService->getUser($this->resource->token);
 
         return [
-            'user' => $authenticable instanceof User ? UserResource::make($authenticable)
-                : AppResource::make($authenticable),
-            'token' => $this->token,
-            'identity_token' => $this->identity_token,
-            'refresh_token' => $this->refresh_token,
+            'token' => $this->resource->token,
+            'identity_token' => $this->resource->identity_token,
+            'refresh_token' => $this->resource->refresh_token,
+            'user' => $authenticable instanceof User ? UserWithSavedAddressesResource::make($authenticable)
+                : AppWithSavedAddressesResource::make($authenticable),
         ];
     }
 }

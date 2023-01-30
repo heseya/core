@@ -8,5 +8,5 @@ interface OneTimeSecurityCodeContract
 {
     public function generateOneTimeSecurityCode(User $user, int $expires_time): string;
 
-    public function generateRecoveryCodes(int $codes): array;
+    public function generateRecoveryCodes(int $codes = 3): array;
 }

@@ -4,11 +4,11 @@ namespace App\Services\Contracts;
 
 use App\Dtos\ShippingMethodDto;
 use App\Models\ShippingMethod;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface ShippingMethodServiceContract
 {
-    public function index(?string $country, float $cartValue): Collection;
+    public function index(?array $search, ?string $country, float $cartValue): LengthAwarePaginator;
 
     public function store(ShippingMethodDto $shippingMethodDto): ShippingMethod;
 

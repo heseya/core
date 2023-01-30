@@ -1,0 +1,100 @@
+Consents:
+  get:
+    tags:
+      - Consents
+    summary: 'list consents'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Consents.yml#/Consent'
+              type: object
+    security:
+      - BearerAuth: [ ]
+  post:
+    tags:
+      - Consents
+    summary: 'add new consent'
+    requestBody:
+      $ref: './../requests/Consents.yml#/Consent'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Consents.yml#/Consent'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+ConsentsParam:
+  get:
+    tags:
+      - Consents
+    summary: 'get consent'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Consents.yml#/Consent'
+              type: object
+    security:
+      - BearerAuth: [ ]
+  delete:
+    tags:
+      - Consents
+    summary: 'delete consent'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      204:
+        description: No content
+    security:
+      - BearerAuth: [ ]
+  patch:
+    tags:
+      - Consents
+    summary: 'update consent'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      $ref: './../requests/Consents.yml#/Consent'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Consents.yml#/Consent'
+              type: object
+    security:
+      - BearerAuth: [ ]

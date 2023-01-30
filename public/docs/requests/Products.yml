@@ -7,10 +7,16 @@ Product:
       type: string
     price:
       type: number
-    description_html:
-      type: string
     public:
       type: boolean
+    description_html:
+      type: string
+    description_short:
+      type: string
+    quantity_step:
+      type: number
+    vat_rate:
+      type: number
     media:
       type: array
       items:
@@ -21,6 +27,24 @@ Product:
       items:
         type: string
         example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+    attributes:
+      type: object
+      properties:
+        0006c3a0-21af-4485-b7fe-9c42233cf03a:
+          type: string
+          description: 'attribute_id as key and option_id as value'
+          example: 0006c654-21bn-44rt-b7fe-9c4uyji8f03a
+    items:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+            example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+          required_quantity:
+            type: number
+            example: 2
     schemas:
       type: array
       items:
@@ -31,8 +55,10 @@ Product:
       items:
         type: string
         example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+    google_product_category:
+      type: integer
     seo:
-      $ref: './../schemas/Seo.yml#SeoStore'
+      $ref: './../schemas/Seo.yml#/SeoStore'
 
 ProductStore:
   content:
@@ -44,21 +70,18 @@ ProductStore:
           - price
           - public
         allOf:
-          - $ref: '#Product'
-        properties:
-          description_short:
-            type: string
+          - $ref: '#/Product'
         type: object
+        properties:
+          metadata:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+          metadata_private:
+            $ref: './../schemas/Metadata.yml#/Metadata'
 
 ProductUpdate:
   content:
     application/json:
       schema:
-        required:
-          - name
-          - slug
-          - price
-          - public
         allOf:
-          - $ref: '#Product'
+          - $ref: '#/Product'
         type: object

@@ -8,11 +8,11 @@ use App\Exceptions\PackageException;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\PackageTemplate;
-use App\Models\Status;
 use App\Services\Contracts\SettingsServiceContract;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
@@ -24,48 +24,6 @@ class FurgonetkaController extends Controller
     public function __construct(
         private SettingsServiceContract $settingsService
     ) {
-    }
-
-    /**
-     * Odbieranie statusów przesyłek z Furgonetka.pl w formacie JSON
-     *
-     * https://furgonetka.pl/files/dokumentacja_webhook.pdf
-     */
-    public function webhook(Request $request): JsonResponse
-    {
-        $control = md5(
-            $request->package_id .
-            $request->package_no .
-            $request->partner_order_id .
-            $request->tracking['state'] .
-            $request->tracking['description'] .
-            $request->tracking['datetime'] .
-            $request->tracking['branch'] .
-            config('furgonetka.webhook_salt')
-        );
-
-        if ($control !== $request->control) {
-            return response()->json([
-                'status' => 'ERROR',
-                'message' => 'control value not match',
-            ], 400);
-        }
-
-        $order = Order::where('delivery_tracking', $request->package_no) // numer śledzenia
-            ->orWhere('code', $request->partner_order_id) // kod zamówienia
-            ->first();
-
-        if ($order) {
-            $status = new Status();
-            $order->update([
-                'delivery_status' => $status->furgonetka_status[$request->tracking['state']],
-            ]);
-        }
-
-        // Brak błędów bo furgonetka musi dostać status ok jak hash się zgadza
-        return Response::json([
-            'status' => 'OK',
-        ]);
     }
 
     public function createPackage(Request $request): JsonResponse
@@ -93,7 +51,7 @@ class FurgonetkaController extends Controller
         }
 
         try {
-            $client = new SoapClient(config('furgonetka.api_url'), [
+            $client = new SoapClient(Config::get('furgonetka.api_url'), [
                 'trace' => true,
                 'cache_wsdl' => false,
             ]);
@@ -242,22 +200,22 @@ class FurgonetkaController extends Controller
             'shipping_number' => $package->parcels->item->package_no,
         ]);
 
-        return response()->json([
+        return Response::json([
             'shipping_number' => $package->parcels->item->package_no,
         ], 201);
     }
 
-    private function getApiKey($refresh = false): string
+    private function getApiKey(bool $refresh = false): string
     {
         if (Storage::missing('furgonetka.key') || $refresh) {
             $response = Http::withBasicAuth(
-                config('furgonetka.client_id'),
-                config('furgonetka.client_secret'),
-            )->asForm()->post(config('furgonetka.auth_url') . '/oauth/token', [
+                Config::get('furgonetka.client_id'),
+                Config::get('furgonetka.client_secret'),
+            )->asForm()->post(Config::get('furgonetka.auth_url') . '/oauth/token', [
                 'grant_type' => 'password',
                 'scope' => 'api',
-                'username' => config('furgonetka.login'),
-                'password' => config('furgonetka.password'),
+                'username' => Config::get('furgonetka.login'),
+                'password' => Config::get('furgonetka.password'),
             ]);
 
             Storage::put('furgonetka.key', $response->json()['access_token'], 'private');

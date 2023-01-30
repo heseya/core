@@ -4,16 +4,22 @@ namespace App\Payments;
 
 use App\Models\Payment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Redirect;
 use Omnipay\Omnipay;
+use Omnipay\PayPal\RestGateway;
 
 class PayPal implements PaymentMethod
 {
     public static function generateUrl(Payment $payment): array
     {
+        /**
+         * @var RestGateway $gateway
+         */
         $gateway = Omnipay::create('PayPal_Rest');
-        $gateway->setClientId(config('paypal.client_id'));
-        $gateway->setSecret(config('paypal.client_secret'));
-        $gateway->setTestMode(config('paypal.sandbox'));
+        $gateway->setClientId(Config::get('paypal.client_id'));
+        $gateway->setSecret(Config::get('paypal.client_secret'));
+        $gateway->setTestMode(Config::get('paypal.sandbox'));
 
         $response = $gateway->purchase([
             'amount' => $payment->amount,
@@ -26,8 +32,8 @@ class PayPal implements PaymentMethod
                 ],
             ],
             'currency' => $payment->order->currency,
-            'returnUrl' => config('app.url') . '/payments/paypal',
-            'cancelUrl' => config('app.url') . '/payments/paypal',
+            'returnUrl' => Config::get('app.url') . '/payments/paypal',
+            'cancelUrl' => Config::get('app.url') . '/payments/paypal',
         ])->send();
 
         return [
@@ -38,10 +44,13 @@ class PayPal implements PaymentMethod
 
     public static function translateNotification(Request $request): mixed
     {
+        /**
+         * @var RestGateway $gateway
+         */
         $gateway = Omnipay::create('PayPal_Rest');
-        $gateway->setClientId(config('paypal.client_id'));
-        $gateway->setSecret(config('paypal.client_secret'));
-        $gateway->setTestMode(config('paypal.sandbox'));
+        $gateway->setClientId(Config::get('paypal.client_id'));
+        $gateway->setSecret(Config::get('paypal.client_secret'));
+        $gateway->setTestMode(Config::get('paypal.sandbox'));
 
         $transaction = $gateway->completePurchase([
             'payer_id' => $request->input('PayerID'),
@@ -59,6 +68,6 @@ class PayPal implements PaymentMethod
             'paid' => true,
         ]);
 
-        return redirect(config('app.store_url') . '/status/' . $payment->order->code);
+        return Redirect::to(Config::get('app.store_url') . '/status/' . $payment->order->code);
     }
 }

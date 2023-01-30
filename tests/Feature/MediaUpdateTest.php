@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\MediaType;
 use App\Models\Media;
 use Illuminate\Http\Client\Request;
@@ -68,6 +69,24 @@ class MediaUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateSeededMedia($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+
+        $media = Media::factory()->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/media/id:{$media->getKey()}", [
+                'alt' => 'Test alt description',
+                'slug' => 'Test slug',
+            ])
+            ->assertJsonFragment(['key' => Exceptions::getKey(Exceptions::SERVER_CDN_ERROR)]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateSlug($user): void
     {
         $this->$user->givePermissionTo('pages.add');
@@ -89,10 +108,52 @@ class MediaUpdateTest extends TestCase
         ]);
 
         Http::assertSent(function (Request $request) {
-            return
-                $request->url() === 'http://cdn.example.com/dev/photo.jpg' &&
+            return $request->url() === 'http://cdn.example.com/dev/photo.jpg' &&
                 $request['slug'] === 'test-slug';
         });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateAltWithNullSlug($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/media/id:{$this->media->getKey()}", [
+                'alt' => 'Test alt description',
+                'slug' => null,
+            ])
+            ->assertOk()
+            ->assertJsonFragment(['alt' => 'Test alt description']);
+
+        $this->assertDatabaseHas('media', [
+            'id' => $this->media->getKey(),
+            'alt' => 'Test alt description',
+            'slug' => null,
+        ]);
+
+        Http::assertNothingSent();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateMediaSlugToNull($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+        $this->media->update(['slug' => 'test']);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/media/id:{$this->media->getKey()}", [
+                'slug' => null,
+            ])
+            ->assertUnprocessable();
+
+        Http::assertNothingSent();
     }
 
     /**
@@ -135,6 +196,31 @@ class MediaUpdateTest extends TestCase
                 'slug' => 'test-slug',
             ])
             ->assertOk();
+
+        Http::assertNothingSent();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateAltNull($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/media/id:{$this->media->getKey()}", [
+                'alt' => null,
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'alt' => null,
+            ]);
+
+        $this->assertDatabaseHas('media', [
+            'id' => $this->media->getKey(),
+            'alt' => null,
+        ]);
 
         Http::assertNothingSent();
     }

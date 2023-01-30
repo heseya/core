@@ -21,6 +21,16 @@ User:
       type: array
       items:
         $ref: './Roles.yml#/Role'
+    consents:
+      description: 'User''s consents'
+      type: array
+      items:
+        $ref: './Consents.yml#/ConsentUser'
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+
 
 UserView:
   type: object
@@ -33,3 +43,33 @@ UserView:
           items:
             type: string
             example: roles.show_details
+        preferences:
+          $ref: './Auth.yml#/Preferences'
+
+UserWithSavedAddresses:
+  type: object
+  allOf:
+    - $ref: '#/User'
+    - properties:
+        shipping_addresses:
+          type: array
+          items:
+            $ref: './SavedAddresses.yml#/SavedAddress'
+        billing_addresses:
+          type: array
+          items:
+            $ref: './SavedAddresses.yml#/SavedAddress'
+
+UserViewWithSavedAddresses:
+  type: object
+  allOf:
+    - $ref: '#/UserView'
+    - properties:
+        shipping_addresses:
+          type: array
+          items:
+            $ref: './SavedAddresses.yml#/SavedAddress'
+        billing_addresses:
+          type: array
+          items:
+            $ref: './SavedAddresses.yml#/SavedAddress'

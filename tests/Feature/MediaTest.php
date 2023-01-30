@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Enums\MediaType;
 use App\Models\Media;
 use App\Models\Product;
-use Illuminate\Http\Testing\File;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -43,18 +42,57 @@ class MediaTest extends TestCase
         $file = UploadedFile::fake()->image('image.jpeg');
         $response = $this->actingAs($this->$user)->postJson('/media', [
             'file' => $file,
+            'alt' => 'test',
+            'metadata.test' => 'value',
         ]);
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['type' => Str::lower(MediaType::getKey(1))])
+            ->assertJsonFragment([
+                'type' => Str::lower(MediaType::getKey(1)),
+                'alt' => 'test',
+                'metadata' => [
+                    'test' => 'value',
+                ],
+            ])
             ->assertJsonStructure(['data' => [
                 'id',
                 'type',
                 'url',
                 'slug',
                 'alt',
-            ]]);
+                'metadata',
+            ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUploadPdf($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+
+        Http::fake(['*' => Http::response([0 => ['path' => 'doc.pdf']])]);
+
+        $file = UploadedFile::fake()->createWithContent('doc.pdf', 'test pdf content');
+
+        $response = $this->actingAs($this->$user)->postJson('/media', [
+            'file' => $file,
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment(['type' => Str::lower(MediaType::getKey(0))])
+            ->assertJsonStructure(['data' => [
+                'id',
+                'type',
+                'url',
+                'slug',
+                'alt',
+                'metadata',
+            ],
+            ]);
     }
 
     /**
@@ -122,6 +160,7 @@ class MediaTest extends TestCase
     {
         $this->$user->givePermissionTo('pages.add');
 
+        Http::fake(['*' => Http::response(status: 204)]);
         $response = $this->actingAs($this->$user)->deleteJson('/media/id:' . $this->media->getKey());
         $response->assertNoContent();
         $this->assertDatabaseMissing('media', ['id' => $this->media->getKey()]);
@@ -134,6 +173,7 @@ class MediaTest extends TestCase
     {
         $this->$user->givePermissionTo('pages.edit');
 
+        Http::fake(['*' => Http::response(status: 204)]);
         $response = $this->actingAs($this->$user)->deleteJson('/media/id:' . $this->media->getKey());
         $response->assertNoContent();
         $this->assertDatabaseMissing('media', ['id' => $this->media->getKey()]);
@@ -146,6 +186,7 @@ class MediaTest extends TestCase
     {
         $this->$user->givePermissionTo('products.add');
 
+        Http::fake(['*' => Http::response(status: 204)]);
         $response = $this->actingAs($this->$user)->deleteJson('/media/id:' . $this->media->getKey());
         $response->assertNoContent();
         $this->assertDatabaseMissing('media', ['id' => $this->media->getKey()]);
@@ -181,6 +222,7 @@ class MediaTest extends TestCase
         ]);
         $product->media()->sync($media);
 
+        Http::fake(['*' => Http::response(status: 204)]);
         $this->actingAs($this->$user)->deleteJson('/media/id:' . $media->getKey())
             ->assertNoContent();
         $this->assertDatabaseMissing('media', ['id' => $media->getKey()]);
@@ -227,7 +269,8 @@ class MediaTest extends TestCase
                 'id',
                 'type',
                 'url',
-            ]]);
+            ],
+            ]);
     }
 
     public function invalidVideoProvider(): array
@@ -307,6 +350,25 @@ class MediaTest extends TestCase
         $this->actingAs($this->$user)->postJson('/media', [
             'file' => UploadedFile::fake()->image('video.mp4'),
         ])->assertCreated();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUploadWithError($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+        $file = UploadedFile::fake()->image('video.mp4');
+
+        Http::fake(['*' => Http::response(['message' => 'Bad key'], 500)]);
+
+        $response = $this->actingAs($this->$user)->postJson('/media', [
+            'file' => $file,
+        ]);
+
+        $response
+            ->assertJsonFragment(['message' => 'CDN responded with an error'])
+            ->assertStatus(500);
     }
 
 //    // Uncomment when Pages and media will be related

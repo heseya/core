@@ -2,23 +2,25 @@
 
 namespace App\Payments;
 
-use App\Exceptions\StoreException;
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Exceptions\ClientException;
 use App\Models\Payment;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Response;
 
 class PayU implements PaymentMethod
 {
     public static function generateUrl(Payment $payment): array
     {
-        $client_id = config('payu.client_id');
-        $client_secret = config('payu.client_secret');
+        $client_id = Config::get('payu.client_id');
+        $client_secret = Config::get('payu.client_secret');
 
-        $payuUrl = rtrim(config('payu.url'), '/');
-        $appUrl = rtrim(config('app.url'), '/');
+        $payuUrl = rtrim(Config::get('payu.url'), '/');
+        $appUrl = rtrim(Config::get('app.url'), '/');
 
         $response = Http::post(
             $payuUrl . '/pl/standard/user/oauth/authorize?grant_type=client_credentials&client_id=' .
@@ -32,8 +34,8 @@ class PayU implements PaymentMethod
         ])->post($payuUrl . '/api/v2_1/orders', [
             'notifyUrl' => $appUrl . '/payments/payu',
             'customerIp' => '127.0.0.1',
-            'merchantPosId' => config('payu.pos_id'),
-            'description' => 'Zakupy w sklepie internetowym.',
+            'merchantPosId' => Config::get('payu.pos_id'),
+            'description' => 'Zamowienie nr ' . $payment->order->code,
             'currencyCode' => $payment->order->currency,
             'totalAmount' => $amount,
             'extOrderId' => $payment->getKey(),
@@ -43,7 +45,7 @@ class PayU implements PaymentMethod
             ],
             'products' => [
                 [
-                    'name' => 'Zakupy w sklepie internetowym.',
+                    'name' => 'Zamowienie nr ' . $payment->order->code,
                     'unitPrice' => $amount,
                     'quantity' => '1',
                 ],
@@ -74,7 +76,7 @@ class PayU implements PaymentMethod
             Config::get('payu.second_key'),
             $signature['algorithm']
         )) {
-            throw new StoreException('Untrusted notification');
+            throw new ClientException(Exceptions::CLIENT_UNTRUSTED_NOTIFICATION);
         }
 
         $validated = $request->validate([
@@ -94,7 +96,7 @@ class PayU implements PaymentMethod
             ]);
         }
 
-        return response()->json(null);
+        return Response::json(null);
     }
 
     /**
@@ -126,16 +128,13 @@ class PayU implements PaymentMethod
 
     /**
      * Function returns signature validate
-     *
-     * @param string $message
-     * @param string $signature
-     * @param string $signatureKey
-     * @param string $algorithm
-     *
-     * @return bool
      */
-    public static function verifySignature($message, $signature, $signatureKey, $algorithm = 'MD5')
-    {
+    public static function verifySignature(
+        mixed $message,
+        mixed $signature,
+        mixed $signatureKey,
+        string $algorithm = 'MD5',
+    ): bool {
         if (isset($signature)) {
             if ($algorithm === 'MD5') {
                 $hash = md5($message . $signatureKey);

@@ -7,12 +7,12 @@ use Illuminate\Contracts\Validation\Rule;
 
 class EventExist implements Rule
 {
-    private $event;
+    private mixed $event;
 
     /**
      * Determine if the validation rule passes.
      */
-    public function passes($attribute, $value)
+    public function passes($attribute, $value): bool
     {
         foreach ($value as $v) {
             if (!EventType::hasValue($v)) {
@@ -20,14 +20,15 @@ class EventExist implements Rule
                 return false;
             }
         }
+
         return true;
     }
 
     /**
      * Get the validation error message.
      */
-    public function message()
+    public function message(): string
     {
-        return 'The event ' . $this->event . ' not found.';
+        return "The event {$this->event} not found.";
     }
 }

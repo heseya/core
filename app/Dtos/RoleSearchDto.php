@@ -4,7 +4,7 @@ namespace App\Dtos;
 
 use App\Dtos\Contracts\DtoContract;
 use App\Dtos\Contracts\InstantiateFromRequest;
-use Illuminate\Http\Request;
+use Illuminate\Foundation\Http\FormRequest;
 
 class RoleSearchDto implements DtoContract, InstantiateFromRequest
 {
@@ -13,6 +13,8 @@ class RoleSearchDto implements DtoContract, InstantiateFromRequest
         private ?string $name,
         private ?string $description,
         private ?bool $assignable,
+        private ?array $metadata,
+        private ?array $metadata_private,
     ) {
     }
 
@@ -36,16 +38,26 @@ class RoleSearchDto implements DtoContract, InstantiateFromRequest
             $data['assignable'] = $this->getAssignable();
         }
 
+        if ($this->getMetadata() !== null) {
+            $data['metadata'] = $this->getMetadata();
+        }
+
+        if ($this->getMetadataPrivate() !== null) {
+            $data['metadata_private'] = $this->getMetadataPrivate();
+        }
+
         return $data;
     }
 
-    public static function instantiateFromRequest(Request $request): self
+    public static function instantiateFromRequest(FormRequest $request): self
     {
         return new self(
             $request->input('search', null),
             $request->input('name', null),
             $request->input('description', null),
             $request->has('assignable') ? $request->boolean('assignable') : null,
+            $request->input('metadata', null),
+            $request->input('metadata_private', null),
         );
     }
 
@@ -67,5 +79,15 @@ class RoleSearchDto implements DtoContract, InstantiateFromRequest
     public function getAssignable(): ?bool
     {
         return $this->assignable;
+    }
+
+    public function getMetadata(): ?array
+    {
+        return $this->metadata;
+    }
+
+    public function getMetadataPrivate(): ?array
+    {
+        return $this->metadata_private;
     }
 }

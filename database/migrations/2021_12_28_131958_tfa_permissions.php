@@ -7,12 +7,7 @@ use Illuminate\Database\Migrations\Migration;
 
 class TfaPermissions extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Permission::create(['name' => 'users.2fa_remove', 'display_name' => 'Możliwość usuwania Two-Factor Authentication użytkownikom']);
 
@@ -23,12 +18,7 @@ class TfaPermissions extends Migration
         $owner->save();
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         $owner = Role::where('type', RoleType::OWNER)->first();
         $owner->revokePermissionTo([

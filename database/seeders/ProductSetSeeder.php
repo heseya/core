@@ -15,7 +15,7 @@ class ProductSetSeeder extends Seeder
      */
     public function run(): void
     {
-        ProductSet::factory()->count(20)->create()->each(function ($set) {
+        ProductSet::factory()->count(20)->create()->each(function ($set): void {
             $rand = rand(0, 4);
             $this->seo($set);
             if ($rand === 0) {
@@ -23,7 +23,7 @@ class ProductSetSeeder extends Seeder
                     'parent_id' => $set->getKey(),
                 ])->count(rand(1, 2))->create();
                 $sets->each(fn ($newSet) => $this->seo($newSet));
-            } else if ($rand === 1) {
+            } elseif ($rand === 1) {
                 $raw = ProductSet::factory()->raw();
 
                 $newSet = ProductSet::factory([
@@ -36,7 +36,7 @@ class ProductSetSeeder extends Seeder
         });
     }
 
-    private function seo(ProductSet $set)
+    private function seo(ProductSet $set): void
     {
         $seo = SeoMetadata::factory()->create();
         $set->seo()->save($seo);

@@ -4,17 +4,10 @@ use App\Enums\RoleType;
 use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 class SeedRolesAndPermissions extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         // Admin
         Permission::create(['name' => 'admin.login', 'display_name' => 'Możliwość logowania do panelu administracyjnego']);
@@ -215,12 +208,7 @@ class SeedRolesAndPermissions extends Migration
         $unauthenticated->save();
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Permission::delete();
         Role::delete();

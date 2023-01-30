@@ -6,24 +6,50 @@ use App\Events\WebHookEvent;
 use App\Models\WebHook;
 use App\Notifications\WebHookNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Notification;
 
 class WebHookEventListener implements ShouldQueue
 {
-    public function handle(WebHookEvent $event)
+    public function handle(WebHookEvent $event): void
     {
-        $event_data = $event->getData();
-        $issuer = $event->getIssuer();
+        $query = WebHook::query()->whereJsonContains('events', $event->getEvent());
 
         if ($event->isHidden()) {
-            $web_hooks = WebHook::whereJsonContains('events', $event_data['event'])
-                ->where('with_hidden', '=', true)
-                ->get();
-        } else {
-            $web_hooks = WebHook::whereJsonContains('events', $event_data['event'])
-                ->get();
+            $query->where('with_hidden', true);
         }
 
-        Notification::send($web_hooks, new WebHookNotification($event_data, $issuer));
+        $webHooks = $query->get();
+
+        if ($webHooks->count() <= 0) {
+            return;
+        }
+
+        if ($event->isEncrypted()) {
+            $payload = $event->getData();
+            $payload['data'] = $this->encryptData($payload['data']);
+        }
+
+        Notification::send($webHooks, new WebHookNotification(
+            $payload ?? $event->getData(),
+            $event->getIssuer(),
+        ));
+    }
+
+    private function encryptData(array|string $data): string
+    {
+        $data = json_encode($data);
+        $cipher = Config::get('webhook.cipher');
+
+        $ivLen = openssl_cipher_iv_length($cipher);
+        $iv = openssl_random_pseudo_bytes($ivLen);
+
+        return base64_encode($iv . openssl_encrypt(
+            $data,
+            $cipher,
+            Config::get('webhook.key'),
+            OPENSSL_RAW_DATA,
+            $iv,
+        ));
     }
 }

@@ -10,7 +10,7 @@ interface PageServiceContract
 {
     public function authorize(Page $page): void;
 
-    public function getPaginated(): LengthAwarePaginator;
+    public function getPaginated(?array $search): LengthAwarePaginator;
 
     public function create(PageDto $dto): Page;
 

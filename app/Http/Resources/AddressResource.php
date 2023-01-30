@@ -9,15 +9,15 @@ class AddressResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'name' => $this->name,
-            'address' => $this->address,
-            'vat' => $this->vat,
-            'zip' => $this->zip,
-            'city' => $this->city,
-            'country' => $this->country,
-            'country_name' => $this->countryModel ? $this->countryModel->name : null,
-            'phone' => $this->phone,
+            'id' => $this->resource->getKey(),
+            'name' => $this->resource->name,
+            'address' => $this->resource->address,
+            'vat' => $this->resource->vat,
+            'zip' => $this->resource->zip,
+            'city' => $this->resource->city,
+            'country' => $this->resource->country,
+            'country_name' => $this->resource->country_name,
+            'phone' => $this->resource->phone,
         ];
     }
 }

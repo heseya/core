@@ -8,17 +8,27 @@ return [
     ],
 
     'store_logo' => [
-        'value' => 'https://heseya.com/img/logo.svg',
+        'value' => null,
+        'public' => true,
+    ],
+
+    'mail_logo' => [
+        'value' => null,
         'public' => true,
     ],
 
     'mail_order_created' => [
-        'value' => 'Dear customer,<br/>Thank you for placing your order. You will receive a separate email when the status changes.',
+        'value' => 'Thank you for placing your order. You will receive a separate email when the status changes.',
         'public' => false,
     ],
 
     'mail_footer' => [
         'value' => 'Powered by <a href="https://heseya.com">Heseya</a>',
+        'public' => false,
+    ],
+
+    'mail_advice' => [
+        'value' => '',
         'public' => false,
     ],
 
@@ -79,6 +89,21 @@ return [
 
     'sender_company' => [
         'value' => '',
+        'public' => false,
+    ],
+
+    'minimal_product_price' => [
+        'value' => 0,
+        'public' => false,
+    ],
+
+    'minimal_order_price' => [
+        'value' => 0,
+        'public' => false,
+    ],
+
+    'minimal_shipping_price' => [
+        'value' => 0,
         'public' => false,
     ],
 ];

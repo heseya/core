@@ -3,11 +3,11 @@
 namespace App\Services\Contracts;
 
 use App\Models\WebHook;
-use Illuminate\Support\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface WebHookServiceContract
 {
-    public function searchAll(array $attributes, ?string $sort): Collection;
+    public function searchAll(array $attributes, ?string $sort): LengthAwarePaginator;
 
     public function create(array $attributes): WebHook;
 

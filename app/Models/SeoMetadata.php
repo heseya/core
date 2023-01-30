@@ -45,12 +45,12 @@ class SeoMetadata extends Model
         return $this->hasOne(Media::class, 'id', 'og_image');
     }
 
-    public function getKeywordsAttribute($value)
+    public function getKeywordsAttribute(string|null $value): mixed
     {
         return json_decode($value);
     }
 
-    public function setKeywordsAttribute($value)
+    public function setKeywordsAttribute(mixed $value): void
     {
         $this->attributes['keywords'] = json_encode($value);
     }

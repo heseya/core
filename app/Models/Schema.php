@@ -2,13 +2,18 @@
 
 namespace App\Models;
 
+use App\Criteria\MetadataPrivateSearch;
+use App\Criteria\MetadataSearch;
+use App\Criteria\SchemaSearch;
 use App\Enums\SchemaType;
+use App\Models\Contracts\SortableContract;
 use App\Rules\OptionAvailable;
-use App\SearchTypes\SchemaSearch;
+use App\Traits\HasMetadata;
+use App\Traits\Sortable;
 use BenSampo\Enum\Exceptions\InvalidEnumKeyException;
-use Heseya\Searchable\Searches\Like;
-use Heseya\Searchable\Traits\Searchable;
-use Heseya\Sortable\Sortable;
+use Heseya\Searchable\Criteria\Like;
+use Heseya\Searchable\Traits\HasCriteria;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -21,9 +26,9 @@ use Illuminate\Validation\ValidationException;
 /**
  * @mixin IdeHelperSchema
  */
-class Schema extends Model
+class Schema extends Model implements SortableContract
 {
-    use HasFactory, Searchable, Sortable;
+    use HasFactory, HasCriteria, Sortable, HasMetadata;
 
     protected $fillable = [
         'type',
@@ -38,6 +43,9 @@ class Schema extends Model
         'default',
         'pattern',
         'validation',
+        'available',
+        'shipping_time',
+        'shipping_date',
     ];
 
     protected $casts = [
@@ -48,11 +56,13 @@ class Schema extends Model
         'type' => SchemaType::class,
     ];
 
-    protected $searchable = [
+    protected array $criteria = [
         'search' => SchemaSearch::class,
         'name' => Like::class,
         'hidden',
         'required',
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 
     protected array $sortable = [
@@ -62,31 +72,10 @@ class Schema extends Model
         'updated_at',
     ];
 
-    public function getAvailableAttribute(): bool
-    {
-        if (!$this->type->is(SchemaType::SELECT)) {
-            return true;
-        }
-
-        // schema should be available if any of the options are available
-        foreach ($this->options as $option) {
-            if ($option->available) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     /**
      * Check if user input is valid
-     *
-     * @param mixed $input
-     * @param float $quantity
-     *
-     * @throws ValidationException
      */
-    public function validate($value, float $quantity = 0): void
+    public function validate(mixed $value): void
     {
         $validation = new Collection();
 
@@ -106,7 +95,7 @@ class Schema extends Model
 
         if ($this->type->is(SchemaType::SELECT)) {
             $validation->push('uuid');
-            $validation->push(new OptionAvailable($this, $quantity));
+            $validation->push(new OptionAvailable($this));
         }
 
         if (
@@ -140,7 +129,7 @@ class Schema extends Model
         }
     }
 
-    public function getItems($value, float $quantity = 0): array
+    public function getItems(int|string|null $value, float $quantity = 0): array
     {
         $items = [];
 
@@ -157,13 +146,22 @@ class Schema extends Model
         return $items;
     }
 
+    public function options(): HasMany
+    {
+        return $this->hasMany(Option::class)
+            ->with(['items', 'metadata', 'metadataPrivate'])
+            ->orderBy('order')
+            ->orderBy('created_at')
+            ->orderBy('name', 'DESC');
+    }
+
     /**
      * @throws InvalidEnumKeyException
      */
-    public function setTypeAttribute($value): void
+    public function setTypeAttribute(mixed $value): void
     {
         if (!is_integer($value)) {
-            $value = SchemaType::fromKey($value);
+            $value = SchemaType::fromKey(Str::upper($value));
         }
 
         $this->attributes['type'] = $value;
@@ -174,9 +172,16 @@ class Schema extends Model
         return $this->belongsToMany(Product::class, 'product_schemas');
     }
 
-    public function getPrice($value, $schemas): float
+    /**
+     * @template TMakeKey of array-key
+     * @template TMakeValue
+     *
+     * @param mixed $value
+     * @param Arrayable<TMakeKey, TMakeValue>|iterable<TMakeKey, TMakeValue>|null $schemas
+     */
+    public function getPrice(mixed $value, $schemas): float
     {
-        $schemaKeys = collect($schemas)->keys();
+        $schemaKeys = Collection::make($schemas)->keys();
 
         if ($this->usedBySchemas()->whereIn($this->getKeyName(), $schemaKeys)->exists()) {
             return 0.0;
@@ -195,14 +200,6 @@ class Schema extends Model
         );
     }
 
-    public function options(): HasMany
-    {
-        return $this->hasMany(Option::class)
-            ->orderBy('order')
-            ->orderBy('created_at')
-            ->orderBy('name', 'DESC');
-    }
-
     public function usedSchemas(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -213,7 +210,14 @@ class Schema extends Model
         );
     }
 
-    private function getUsedPrice($value, $schemas): float
+    /**
+     * @template TMakeKey of array-key
+     * @template TMakeValue
+     *
+     * @param mixed $value
+     * @param Arrayable<TMakeKey, TMakeValue>|iterable<TMakeKey, TMakeValue>|null $schemas
+     */
+    private function getUsedPrice(mixed $value, $schemas): float
     {
         $price = $this->price;
 

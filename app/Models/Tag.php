@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use App\SearchTypes\TagSearch;
-use Heseya\Searchable\Searches\Like;
-use Heseya\Searchable\Traits\Searchable;
+use App\Criteria\TagSearch;
+use Heseya\Searchable\Criteria\Like;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
@@ -13,14 +13,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class Tag extends Model
 {
-    use HasFactory, Searchable;
+    use HasFactory, HasCriteria;
 
     protected $fillable = [
         'name',
         'color',
     ];
 
-    protected array $searchable = [
+    protected array $criteria = [
         'name' => Like::class,
         'color' => Like::class,
         'search' => TagSearch::class,

@@ -4,7 +4,7 @@ namespace App\Enums;
 
 use BenSampo\Enum\Enum;
 
-class TokenType extends Enum
+final class TokenType extends Enum
 {
     public const ACCESS = 'access';
     public const IDENTITY = 'identity';

@@ -1,4 +1,5 @@
 App:
+  type: object
   properties:
     id:
       type: string
@@ -35,7 +36,10 @@ App:
       description: 'Name of an author or team'
       type: string
       example: 'Adam Nowak'
-  type: object
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
 
 AppView:
   type: object

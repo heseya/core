@@ -10,7 +10,15 @@ Media:
             properties:
               file:
                 description: 'File. Accepted extensions: jpeg, png, gif, bmp, svg, mp4, webm, ogg, avi, mov, wmv'
-                type: binary
+                type: string
+                format: binary
+              alt:
+                type: string
+                example: 'alt'
+              metadata.*:
+                type: string
+                example: 'value'
+                description: 'asterisk has to be replaced with metadata key'
             type: object
     responses:
       201:
@@ -22,10 +30,10 @@ Media:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Media.yml#Media'
+                    $ref: './../schemas/Media.yml#/Media'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 MediaParams:
   patch:
@@ -39,7 +47,7 @@ MediaParams:
         schema:
           type: string
     requestBody:
-      $ref: './../requests/Media.yml#MediaUpdate'
+      $ref: './../requests/Media.yml#/MediaUpdate'
     responses:
       200:
         description: OK
@@ -48,10 +56,10 @@ MediaParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Media.yml#Media'
+                  $ref: './../schemas/Media.yml#/Media'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   delete:
     tags:
       - Media
@@ -66,4 +74,4 @@ MediaParams:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]

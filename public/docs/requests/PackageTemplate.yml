@@ -1,0 +1,15 @@
+PackageTemplateStore:
+  content:
+    application/json:
+      schema:
+        type: object
+        allOf:
+          - $ref: '../schemas/PackageTemplate.yml#/PackageTemplateMetadata'
+
+PackageTemplateUpdate:
+  content:
+    application/json:
+      schema:
+        type: object
+        allOf:
+          - $ref: '../schemas/PackageTemplate.yml#/PackageTemplate'

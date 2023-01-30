@@ -2,47 +2,46 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\CartDto;
+use App\Dtos\OrderDto;
 use App\Dtos\OrderIndexDto;
-use App\Dtos\OrderUpdateDto;
-use App\Enums\SchemaType;
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Events\AddOrderDocument;
 use App\Events\ItemUpdatedQuantity;
-use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
-use App\Exceptions\OrderException;
+use App\Events\RemoveOrderDocument;
+use App\Events\SendOrderDocument;
+use App\Exceptions\ClientException;
+use App\Http\Requests\CartRequest;
 use App\Http\Requests\OrderCreateRequest;
+use App\Http\Requests\OrderDocumentRequest;
 use App\Http\Requests\OrderIndexRequest;
-use App\Http\Requests\OrderItemsRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
+use App\Http\Requests\SendDocumentRequest;
+use App\Http\Resources\CartResource;
+use App\Http\Resources\OrderDocumentResource;
 use App\Http\Resources\OrderPublicResource;
 use App\Http\Resources\OrderResource;
-use App\Models\Address;
-use App\Models\Discount;
 use App\Models\Order;
-use App\Models\OrderProduct;
-use App\Models\Product;
-use App\Models\Schema;
-use App\Models\ShippingMethod;
+use App\Models\OrderDocument;
 use App\Models\Status;
-use App\Models\User;
-use App\Services\Contracts\DiscountServiceContract;
-use App\Services\Contracts\ItemServiceContract;
-use App\Services\Contracts\NameServiceContract;
+use App\Services\Contracts\DepositServiceContract;
+use App\Services\Contracts\DocumentServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
-use Throwable;
+use Illuminate\Support\Facades\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class OrderController extends Controller
 {
     public function __construct(
-        private NameServiceContract $nameService,
         private OrderServiceContract $orderService,
-        private DiscountServiceContract $discountService,
-        private ItemServiceContract $itemService,
+        private DocumentServiceContract $documentService,
+        private DepositServiceContract $depositService
     ) {
     }
 
@@ -51,9 +50,19 @@ class OrderController extends Controller
         $search_data = !$request->has('status_id')
             ? $request->validated() + ['status.hidden' => 0] : $request->validated();
 
-        $query = Order::search($search_data)
+        $query = Order::searchByCriteria($search_data)
             ->sort($request->input('sort'))
-            ->with(['products', 'discounts', 'payments']);
+            ->with([
+                'products',
+                'discounts',
+                'payments',
+                'status',
+                'shippingMethod',
+                'shippingMethod.paymentMethods',
+                'deliveryAddress',
+                'metadata',
+                'documents',
+            ]);
 
         return OrderResource::collection(
             $query->paginate(Config::get('pagination.per_page')),
@@ -62,6 +71,20 @@ class OrderController extends Controller
 
     public function show(Order $order): JsonResource
     {
+        $order->loadMissing([
+            'discounts',
+            'discounts.metadata',
+            'products.discounts',
+            'products.discounts.metadata',
+            'products',
+            'products.schemas',
+            'products.deposits',
+            'products.product',
+            'products.product.media',
+            'products.product.tags',
+            'products.product.metadata',
+        ]);
+
         return OrderResource::make($order);
     }
 
@@ -72,170 +95,30 @@ class OrderController extends Controller
 
     public function store(OrderCreateRequest $request): JsonResource
     {
-        # Schema values and warehouse items validation
-        $items = [];
-
-        foreach ($request->input('items', []) as $item) {
-            $product = Product::findOrFail($item['product_id']);
-            $schemas = $item['schemas'] ?? [];
-
-            /** @var Schema $schema */
-            foreach ($product->schemas as $schema) {
-                $value = $schemas[$schema->getKey()] ?? null;
-
-                $schema->validate($value, $item['quantity']);
-
-                if ($value === null) {
-                    continue;
-                }
-
-                $schemaItems = $schema->getItems($value, $item['quantity']);
-                $items = $this->itemService->addItemArrays($items, $schemaItems);
-            }
-        }
-
-        $this->itemService->validateItems($items);
-
-        # Discount validation
-        foreach ($request->input('discounts', []) as $discount) {
-            Discount::where('code', $discount)->firstOrFail();
-        }
-
-        # Creating order
-        $validated = $request->validated();
-
-        $shippingMethod = ShippingMethod::findOrFail($request->input('shipping_method_id'));
-        $deliveryAddress = Address::firstOrCreate($validated['delivery_address']);
-
-        if ($request->filled('invoice_address.name')) {
-            $invoiceAddress = Address::firstOrCreate($validated['invoice_address']);
-        }
-
-        $order = Order::create([
-            'code' => $this->nameService->generate(),
-            'email' => $request->input('email'),
-            'comment' => $request->input('comment'),
-            'currency' => 'PLN',
-            'shipping_method_id' => $shippingMethod->getKey(),
-            'shipping_price' => 0.0,
-            'status_id' => Status::select('id')->orderBy('order')->first()->getKey(),
-            'delivery_address_id' => $deliveryAddress->getKey(),
-            'invoice_address_id' => isset($invoiceAddress) ? $invoiceAddress->getKey() : null,
-            'user_id' => Auth::user() instanceof User ? Auth::user()->getKey() : null,
-        ]);
-
-        # Add products to order
-        $summary = 0;
-
-        try {
-            foreach ($request->input('items', []) as $item) {
-                $product = Product::findOrFail($item['product_id']);
-                $schemas = $item['schemas'] ?? [];
-
-                $orderProduct = new OrderProduct([
-                    'product_id' => $product->getKey(),
-                    'quantity' => $item['quantity'],
-                    'price' => $product->price,
-                ]);
-
-                $order->products()->save($orderProduct);
-                $summary += $product->price * $item['quantity'];
-
-                # Add schemas to products
-                foreach ($product->schemas as $schema) {
-                    $value = $schemas[$schema->getKey()] ?? null;
-
-                    if ($value === null) {
-                        continue;
-                    }
-
-                    $price = $schema->getPrice($value, $schemas);
-
-                    if ($schema->type->is(SchemaType::SELECT)) {
-                        $option = $schema->options()->findOrFail($value);
-                        $value = $option->name;
-
-                        # Remove items from warehouse
-                        foreach ($option->items as $optionItem) {
-                            $orderProduct->deposits()->create([
-                                'item_id' => $optionItem->getKey(),
-                                'quantity' => -1 * $item['quantity'],
-                            ]);
-                            ItemUpdatedQuantity::dispatch($optionItem);
-                        }
-                    }
-
-                    $orderProduct->schemas()->create([
-                        'name' => $schema->name,
-                        'value' => $value,
-                        'price' => $price,
-                    ]);
-
-                    $summary += $price * $item['quantity'];
-                }
-            }
-        } catch (Throwable $exception) {
-            $order->delete();
-
-            throw $exception;
-        }
-
-        # Apply discounts to order
-        $discounts = [];
-        $cartValue = $summary;
-        foreach ($request->input('discounts', []) as $discount) {
-            $discount = Discount::where('code', $discount)->first();
-
-            $discounts[$discount->getKey()] = [
-                'type' => $discount->type,
-                'discount' => $discount->discount,
-            ];
-
-            $summary -= $this->discountService->calc($cartValue, $discount);
-        }
-        $order->discounts()->sync($discounts);
-
-        # Calculate shipping price for complete order
-        $summary = max($summary, 0);
-        $shippingPrice = $shippingMethod->getPrice($summary);
-
-        $order->update([
-            'shipping_price' => $shippingPrice,
-            'summary' => round($summary + $shippingPrice, 2),
-        ]);
-
-        OrderCreated::dispatch($order);
-
-        return OrderPublicResource::make($order);
-    }
-
-    public function verify(OrderItemsRequest $request): JsonResponse
-    {
-        foreach ($request->input('items', []) as $item) {
-            $product = Product::findOrFail($item['product_id']);
-            $schemas = $item['schemas'] ?? [];
-
-            foreach ($product->schemas as $schema) {
-                $schema->validate(
-                    $schemas[$schema->getKey()] ?? null,
-                    $item['quantity'],
-                );
-            }
-        }
-
-        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
+        return OrderPublicResource::make(
+            $this->orderService->store(OrderDto::instantiateFromRequest($request)),
+        );
     }
 
     public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResponse
     {
         if ($order->status && $order->status->cancel) {
-            throw new OrderException(__('admin.error.order_change_status_canceled'));
+            throw new ClientException(Exceptions::CLIENT_CHANGE_CANCELED_ORDER_STATUS);
         }
 
-        $status = Status::findOrFail($request->input('status_id'));
-        $order->update([
-            'status_id' => $status->getKey(),
-        ]);
+        $status = Status::query()->find($request->input('status_id'));
+        if (!($status instanceof Status)) {
+            throw new ClientException(Exceptions::CLIENT_UNKNOWN_STATUS);
+        }
+
+        $changed = false;
+
+        if ($order->status_id !== $status->getKey()) {
+            $order->update([
+                'status_id' => $status->getKey(),
+            ]);
+            $changed = true;
+        }
 
         if ($status->cancel) {
             $deposits = $order->deposits()->with('item')->get();
@@ -243,18 +126,21 @@ class OrderController extends Controller
             foreach ($deposits as $deposit) {
                 $item = $deposit->item;
                 $item->decrement('quantity', $deposit->quantity);
+                $deposit->item->update($this->depositService->getShippingTimeDateForQuantity($item));
                 ItemUpdatedQuantity::dispatch($item);
             }
         }
 
-        OrderUpdatedStatus::dispatch($order);
+        if ($changed) {
+            OrderUpdatedStatus::dispatch($order);
+        }
 
-        return OrderResource::make($order)->response();
+        return Response::json([], 204);
     }
 
     public function update(OrderUpdateRequest $request, Order $order): JsonResponse
     {
-        $orderUpdateDto = OrderUpdateDto::instantiateFromRequest($request);
+        $orderUpdateDto = OrderDto::instantiateFromRequest($request);
 
         return $this->orderService->update($orderUpdateDto, $order);
     }
@@ -273,5 +159,46 @@ class OrderController extends Controller
         Gate::inspect('showUserOrder', [Order::class, $order]);
 
         return OrderResource::make($order);
+    }
+
+    public function storeDocument(OrderDocumentRequest $request, Order $order): JsonResource
+    {
+        $document = $this->documentService
+            ->storeDocument(
+                $order,
+                $request->input('name'),
+                $request->input('type'),
+                $request->file('file'),
+            );
+        AddOrderDocument::dispatch($order, $document);
+
+        return OrderDocumentResource::make($document);
+    }
+
+    public function deleteDocument(Order $order, OrderDocument $document): JsonResponse
+    {
+        $document = $this->documentService->removeDocument($order, $document->media_id);
+        RemoveOrderDocument::dispatch($order, $document);
+
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    public function downloadDocument(Order $order, OrderDocument $document): StreamedResponse
+    {
+        return $this->documentService->downloadDocument($document);
+    }
+
+    public function sendDocuments(SendDocumentRequest $request, Order $order): JsonResponse
+    {
+        $documents = OrderDocument::findMany($request->input('uuid'));
+        //MAIL MICROSERVICE
+        SendOrderDocument::dispatch($order, $documents);
+
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    public function cartProcess(CartRequest $request): JsonResource
+    {
+        return CartResource::make($this->orderService->cartProcess(CartDto::instantiateFromRequest($request)));
     }
 }

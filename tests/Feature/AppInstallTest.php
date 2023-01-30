@@ -6,6 +6,7 @@ use App\Enums\RoleType;
 use App\Models\App;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Models\User;
 use App\Services\Contracts\UrlServiceContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
@@ -87,7 +88,8 @@ class AppInstallTest extends TestCase
                 'internal_permissions' => [[
                     'name' => 'product_layout',
                     'description' => 'Setup layouts of products page',
-                ]],
+                ],
+                ],
             ]),
             $this->url . '/install' => Http::response([], 404),
         ]);
@@ -170,9 +172,12 @@ class AppInstallTest extends TestCase
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
-    public function testInstall(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testInstall($user): void
     {
-        $this->user->givePermissionTo([
+        $this->$user->givePermissionTo([
             'apps.install',
             'products.show',
         ]);
@@ -221,7 +226,7 @@ class AppInstallTest extends TestCase
             ]),
         ]);
 
-        $response = $this->actingAs($this->user)->postJson('/apps', [
+        $response = $this->actingAs($this->$user)->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [
                 'products.show',
@@ -241,6 +246,7 @@ class AppInstallTest extends TestCase
                 'version' => '1.0.0',
                 'description' => 'Cool description',
                 'icon' => 'https://picsum.photos/200',
+                'metadata' => [],
             ]);
 
         $this->assertDatabaseHas('apps', [
@@ -287,30 +293,197 @@ class AppInstallTest extends TestCase
         $app = App::where('name', $name)->firstOrFail();
 
         $this->assertTrue($app->hasAllPermissions([
-            'auth.login',
             'auth.check_identity',
             'products.show',
         ]));
 
-        $this->assertDatabaseHas('roles', [
-            'id' => $app->role_id,
-            'name' => $name . ' owner',
-        ]);
+        if ($this->$user instanceof User) {
+            $this->assertDatabaseHas('roles', [
+                'id' => $app->role_id,
+                'name' => $name . ' owner',
+            ]);
 
-        $this->assertTrue($this->user->hasRole($app->role));
-        $this->assertTrue($app->role->hasAllPermissions([
-            'app.' . Str::slug($name) . '.with_description',
-            'app.' . Str::slug($name) . '.null_description',
-            'app.' . Str::slug($name) . '.no_description',
-        ]));
+            $this->assertTrue($this->$user->hasRole($app->role));
+            $this->assertTrue($app->role->hasAllPermissions([
+                'app.' . Str::slug($name) . '.with_description',
+                'app.' . Str::slug($name) . '.null_description',
+                'app.' . Str::slug($name) . '.no_description',
+            ]));
+        }
 
         $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
         $this->assertTrue($owner->hasAllPermissions(Permission::all()));
     }
 
-    public function testInstallWithOptionalPermissions(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testInstallWithMetadata($user): void
     {
-        $this->user->givePermissionTo([
+        $this->$user->givePermissionTo([
+            'apps.install',
+            'products.show',
+        ]);
+
+        $uninstallToken = Str::random(128);
+
+        Http::fake([
+            $this->url => Http::response([
+                'name' => 'App name',
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
+                'description' => 'Cool description',
+                'microfrontend_url' => 'https://front.example.com',
+                'icon' => 'https://picsum.photos/200',
+                'licence_required' => false,
+                'required_permissions' => [
+                    'products.show',
+                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'with_description_and_display_name',
+                        'display_name' => 'Permission name',
+                        'description' => 'Permission description',
+                    ],
+                    [
+                        'name' => 'with_description_and_no_display_name',
+                        'display_name' => null,
+                        'description' => 'Permission description',
+                    ],
+                    [
+                        'name' => 'with_description',
+                        'description' => 'Permission description',
+                    ],
+                    [
+                        'name' => 'null_description',
+                        'description' => null,
+                    ],
+                    [
+                        'name' => 'no_description',
+                    ],
+                ],
+            ]),
+            $this->url . '/install' => Http::response([
+                'uninstall_token' => $uninstallToken,
+            ]),
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/apps', [
+                'url' => $this->url,
+                'allowed_permissions' => [
+                    'products.show',
+                ],
+                'public_app_permissions' => [],
+                'metadata' => [
+                    'attributeMeta' => 'attributeValue',
+                ],
+            ])->assertCreated()
+            ->assertJsonFragment([
+                'url' => $this->url,
+                'microfrontend_url' => 'https://front.example.com',
+                'name' => 'App name',
+                'slug' => Str::slug('App name'),
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'description' => 'Cool description',
+                'icon' => 'https://picsum.photos/200',
+                'metadata' => [
+                    'attributeMeta' => 'attributeValue',
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testInstallWithMetadataPrivate($user): void
+    {
+        $this->$user->givePermissionTo([
+            'apps.install',
+            'apps.show_metadata_private',
+            'products.show',
+        ]);
+
+        $uninstallToken = Str::random(128);
+
+        Http::fake([
+            $this->url => Http::response([
+                'name' => 'App name',
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
+                'description' => 'Cool description',
+                'microfrontend_url' => 'https://front.example.com',
+                'icon' => 'https://picsum.photos/200',
+                'licence_required' => false,
+                'required_permissions' => [
+                    'products.show',
+                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'with_description_and_display_name',
+                        'display_name' => 'Permission name',
+                        'description' => 'Permission description',
+                    ],
+                    [
+                        'name' => 'with_description_and_no_display_name',
+                        'display_name' => null,
+                        'description' => 'Permission description',
+                    ],
+                    [
+                        'name' => 'with_description',
+                        'description' => 'Permission description',
+                    ],
+                    [
+                        'name' => 'null_description',
+                        'description' => null,
+                    ],
+                    [
+                        'name' => 'no_description',
+                    ],
+                ],
+            ]),
+            $this->url . '/install' => Http::response([
+                'uninstall_token' => $uninstallToken,
+            ]),
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/apps', [
+                'url' => $this->url,
+                'allowed_permissions' => [
+                    'products.show',
+                ],
+                'public_app_permissions' => [],
+                'metadata_private' => [
+                    'attributeMetaPriv' => 'attributeValue',
+                ],
+            ])->assertCreated()
+            ->assertJsonFragment([
+                'url' => $this->url,
+                'microfrontend_url' => 'https://front.example.com',
+                'name' => 'App name',
+                'slug' => Str::slug('App name'),
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'description' => 'Cool description',
+                'icon' => 'https://picsum.photos/200',
+                'metadata_private' => [
+                    'attributeMetaPriv' => 'attributeValue',
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testInstallWithOptionalPermissions($user): void
+    {
+        $this->$user->givePermissionTo([
             'apps.install',
             'products.show',
             'products.add',
@@ -337,14 +510,15 @@ class AppInstallTest extends TestCase
                 'internal_permissions' => [[
                     'name' => 'product_layout',
                     'description' => 'Setup layouts of products page',
-                ]],
+                ],
+                ],
             ]),
             $this->url . '/install' => Http::response([
                 'uninstall_token' => $uninstallToken,
             ]),
         ]);
 
-        $response = $this->actingAs($this->user)->postJson('/apps', [
+        $response = $this->actingAs($this->$user)->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [
                 'products.show',
@@ -363,6 +537,7 @@ class AppInstallTest extends TestCase
                 'version' => '1.0.0',
                 'description' => 'Cool description',
                 'icon' => 'https://picsum.photos/200',
+                'metadata' => [],
             ]);
 
         $this->assertDatabaseHas('apps', [
@@ -379,16 +554,18 @@ class AppInstallTest extends TestCase
         $app = App::where('name', 'App name')->firstOrFail();
 
         $this->assertTrue($app->hasAllPermissions([
-            'auth.login',
             'auth.check_identity',
             'products.show',
             'products.add',
         ]));
     }
 
-    public function testInstallWithPublicPermissions(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testInstallWithPublicPermissions($user): void
     {
-        $this->user->givePermissionTo('apps.install');
+        $this->$user->givePermissionTo('apps.install');
 
         $uninstallToken = Str::random(128);
 
@@ -423,7 +600,7 @@ class AppInstallTest extends TestCase
             ]),
         ]);
 
-        $response = $this->actingAs($this->user)->postJson('/apps', [
+        $response = $this->actingAs($this->$user)->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [],
             'public_app_permissions' => [
@@ -597,7 +774,8 @@ class AppInstallTest extends TestCase
                 'internal_permissions' => [[
                     'name' => 'product_layout',
                     'description' => 'Setup layouts of products page',
-                ]],
+                ],
+                ],
             ]),
         ]);
 
@@ -639,7 +817,8 @@ class AppInstallTest extends TestCase
                 'internal_permissions' => [[
                     'name' => 'product_layout',
                     'description' => 'Setup layouts of products page',
-                ]],
+                ],
+                ],
             ]),
         ]);
 
@@ -684,7 +863,8 @@ class AppInstallTest extends TestCase
                 'internal_permissions' => [[
                     'name' => 'product_layout',
                     'description' => 'Setup layouts of products page',
-                ]],
+                ],
+                ],
             ]),
         ]);
 
@@ -715,7 +895,7 @@ class AppInstallTest extends TestCase
         ]);
 
         Http::fake([
-            $this->url => new ConnectionException("Test", 7),
+            $this->url => new ConnectionException('Test', 7),
         ]);
 
         $response = $this->actingAs($this->$user)->postJson('/apps', [
@@ -762,9 +942,10 @@ class AppInstallTest extends TestCase
                 'internal_permissions' => [[
                     'name' => 'product_layout',
                     'description' => 'Setup layouts of products page',
-                ]],
+                ],
+                ],
             ]),
-            $this->url . '/install' => new ConnectionException("Test", 7),
+            $this->url . '/install' => new ConnectionException('Test', 7),
         ]);
 
         $response = $this->actingAs($this->$user)->postJson('/apps', [
@@ -820,5 +1001,187 @@ class AppInstallTest extends TestCase
         ]);
 
         $response->assertUnprocessable();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+
+    public function testReinstall($user): void
+    {
+        $this->$user->givePermissionTo([
+            'apps.install',
+            'products.show',
+            'apps.remove',
+        ]);
+
+        $uninstallToken = Str::random(128);
+
+        $app = App::factory()->create([
+            'name' => 'testApp',
+            'slug' => 'test',
+            'url' => $this->url,
+        ]);
+
+        Permission::create([
+            'name' => "app.{$app->slug}.test",
+            'display_name' => 'test',
+            'description' => 'test',
+        ]);
+
+        Http::fake([
+            $this->url . '/uninstall' => new ConnectionException('Test', 7),
+        ]);
+        $this->actingAs($this->$user)->json('delete', '/apps/id:' . $app->getKey(), ['force' => true]);
+
+        Http::fake([
+            $this->url => Http::response([
+                'name' => 'test',
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
+                'description' => 'Cool description',
+                'microfrontend_url' => 'https://front.example.com',
+                'icon' => 'https://picsum.photos/200',
+                'licence_required' => false,
+                'required_permissions' => [
+                    'products.show',
+                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'test',
+                        'display_name' => 'test',
+                        'description' => 'test',
+                    ],
+                ],
+            ]),
+            $this->url . '/install' => Http::response([
+                'uninstall_token' => $uninstallToken,
+            ]),
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/apps', [
+            'url' => $this->url,
+            'allowed_permissions' => [
+                'products.show',
+            ],
+            'public_app_permissions' => [],
+        ]);
+
+        $name = 'test';
+
+        $response->assertCreated()
+            ->assertJsonFragment([
+                'url' => $this->url,
+                'microfrontend_url' => 'https://front.example.com',
+                'name' => $name,
+                'slug' => Str::slug($name),
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'description' => 'Cool description',
+                'icon' => 'https://picsum.photos/200',
+            ]);
+
+        $this->assertDatabaseHas('apps', [
+            'name' => $name,
+            'author' => 'Mr. Author',
+            'version' => '1.0.0',
+            'api_version' => '^1.4.0',
+            'description' => 'Cool description',
+            'microfrontend_url' => 'https://front.example.com',
+            'icon' => 'https://picsum.photos/200',
+            'uninstall_token' => $uninstallToken,
+        ]);
+
+        $this->assertDatabaseHas('permissions', [
+            'name' => 'app.' . Str::slug($name) . '.test',
+            'display_name' => 'test',
+            'description' => 'test',
+        ]);
+
+        $app = App::where('name', $name)->firstOrFail();
+
+        $this->assertTrue($app->hasAllPermissions([
+            'auth.check_identity',
+            'products.show',
+        ]));
+
+        if ($this->$user instanceof User) {
+            $this->assertDatabaseHas('roles', [
+                'id' => $app->role_id,
+                'name' => $name . ' owner',
+            ]);
+
+            $this->assertTrue($this->$user->hasRole($app->role));
+            $this->assertTrue($app->role->hasAllPermissions([
+                'app.' . Str::slug($name) . '.test',
+            ]));
+        }
+
+        $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
+        $this->assertTrue($owner->hasAllPermissions(Permission::all()));
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testInstallAppWithExistingUrl($user): void
+    {
+        $this->$user->givePermissionTo([
+            'apps.install',
+        ]);
+
+        App::factory()->create([
+            'url' => $this->url,
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/apps', [
+            'url' => $this->url,
+            'allowed_permissions' => [
+                'products.show',
+            ],
+            'public_app_permissions' => [],
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonFragment(['message' => 'App with url: ' . $this->url . ' is already installed']);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testInstallTooLongUninstallToken($user): void
+    {
+        $this->$user->givePermissionTo([
+            'apps.install',
+            'products.show',
+        ]);
+
+        Http::fake([
+            $this->url => Http::response([
+                'name' => 'App name',
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
+                'description' => 'Cool description',
+                'microfrontend_url' => 'https://front.example.com',
+                'icon' => 'https://picsum.photos/200',
+                'licence_required' => false,
+                'required_permissions' => [],
+                'internal_permissions' => [],
+            ]),
+            $this->url . '/install' => Http::response([
+                'uninstall_token' => Str::random(256),
+            ]),
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/apps', [
+            'url' => $this->url,
+            'allowed_permissions' => [],
+            'public_app_permissions' => [],
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonFragment(['message' => 'App has invalid installation response']);
     }
 }

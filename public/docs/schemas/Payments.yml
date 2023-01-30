@@ -3,9 +3,6 @@ Payment:
     id:
       type: string
       example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-    external_id:
-      type: string
-      example: D2spSDJ21LSA
     method:
       type: string
       example: heseya
@@ -20,4 +17,8 @@ Payment:
     continue_url:
       type: string
       example: 'https://store.heseya.com/done/43SYK1'
+    date:
+      type: string
+      format: date-time
+      example: '2022-05-04T12:14:45.000000Z'
   type: object

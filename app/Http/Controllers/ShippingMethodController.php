@@ -24,6 +24,7 @@ class ShippingMethodController extends Controller
     public function index(ShippingMethodIndexRequest $request): JsonResource
     {
         $shippingMethods = $this->shippingMethodService->index(
+            $request->only('metadata', 'metadata_private'),
             $request->input('country'),
             $request->input('cart_value', 0),
         );

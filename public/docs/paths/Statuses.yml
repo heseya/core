@@ -2,6 +2,23 @@ Statuses:
   get:
     tags:
       - Statuses
+    parameters:
+      - name: metadata
+        in: query
+        description: search by metadata
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: metadata_private
+        in: query
+        description: search by metadata private
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
     summary: 'list statuses'
     responses:
       200:
@@ -13,10 +30,11 @@ Statuses:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Statuses.yml#/Status'
+                    $ref: './../schemas/Statuses.yml#/StatusMetadata'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
+
   post:
     tags:
       - Statuses
@@ -25,7 +43,7 @@ Statuses:
       content:
         application/json:
           schema:
-            $ref: './../schemas/Statuses.yml#/Status'
+            $ref: './../schemas/Statuses.yml#/StatusMetadata'
     responses:
       201:
         description: Created
@@ -34,10 +52,10 @@ Statuses:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Statuses.yml#/Status'
+                  $ref: './../schemas/Statuses.yml#/StatusMetadata'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 StatusesParams:
   delete:
@@ -54,7 +72,8 @@ StatusesParams:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
+
   patch:
     tags:
       - Statuses
@@ -78,10 +97,10 @@ StatusesParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Statuses.yml#/Status'
+                  $ref: './../schemas/Statuses.yml#/StatusMetadata'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 StatusesReorder:
   post:
@@ -94,4 +113,4 @@ StatusesReorder:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]

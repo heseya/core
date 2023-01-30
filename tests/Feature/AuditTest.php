@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Models\Product;
 use App\Models\Tag;
+use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 
 class AuditTest extends TestCase
@@ -12,7 +14,7 @@ class AuditTest extends TestCase
     {
         parent::setUp();
 
-        config()->set('audit.console', true);
+        Config::set('audit.console', true);
     }
 
     public function testViewUnauthorized(): void
@@ -22,19 +24,6 @@ class AuditTest extends TestCase
         $this
             ->json('GET', '/audits/products/id:' . $product->getKey())
             ->assertForbidden();
-    }
-
-    private function createProduct(): Product
-    {
-        $product = Product::factory()->create([
-            'name' => 'Old name',
-        ]);
-
-        $product->update([
-            'name' => 'New name',
-        ]);
-
-        return $product;
     }
 
     /**
@@ -57,6 +46,26 @@ class AuditTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testViewWrongId($user): void
+    {
+        $this->$user->givePermissionTo('audits.show');
+
+        $product = $this->createProduct();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/audits/products/id:its-not-id')
+            ->assertNotFound();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/audits/products/id:' . $product->getKey() . $product->getKey())
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testViewNotAuditable($user): void
     {
         $this->$user->givePermissionTo('audits.show');
@@ -68,7 +77,21 @@ class AuditTest extends TestCase
             ->actingAs($this->$user)
             ->json('GET', '/audits/tags/id:' . $tag->getKey())
             ->assertStatus(400)
-            ->assertJsonFragment(['message' => 'Model not auditable']);
+            ->assertJsonFragment([
+                'key' => Exceptions::coerce(Exceptions::CLIENT_MODEL_NOT_AUDITABLE)->key,
+            ]);
     }
 
+    private function createProduct(): Product
+    {
+        $product = Product::factory()->create([
+            'name' => 'Old name',
+        ]);
+
+        $product->update([
+            'name' => 'New name',
+        ]);
+
+        return $product;
+    }
 }

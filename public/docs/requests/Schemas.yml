@@ -1,0 +1,91 @@
+SchemaStore:
+  content:
+    application/json:
+      schema:
+        type: object
+        allOf:
+          - $ref: '../schemas/Schemas.yml#/SchemaMetadata'
+        properties:
+          options:
+            type: array
+            items:
+              allOf:
+                - $ref: '../schemas/Schemas.yml#/OptionMetadata'
+
+SchemaUpdate:
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          type:
+            type: string
+            enum:
+              - string
+              - numeric
+              - boolean
+              - date
+              - select
+              - file
+              - multiply
+              - multiply_schema
+          name:
+            type: string
+            example: Size
+          description:
+            type: string
+          price:
+            type: number
+            example: 9.99
+          hidden:
+            type: boolean
+            example: false
+          required:
+            type: boolean
+            example: false
+          min:
+            type: string
+          max:
+            type: string
+          step:
+            type: string
+          default:
+            type: string
+          pattern:
+            type: string
+          validation:
+            type: string
+          shipping_time:
+            type: integer
+            example: 5
+          shipping_date:
+            type: string
+            format: date-time
+            example: '2021-09-13T11:11'
+          options:
+            type: array
+            items:
+              properties:
+                name:
+                  type: string
+                  example: XL
+                price:
+                  description: 'Additional price the customer will have to pay after selecting this option (can be negative)'
+                  type: number
+                  example: 3.99
+                disabled:
+                  description: 'Shows if the option has been disabled manually'
+                  type: boolean
+                  example: false
+                items:
+                  type: array
+                  items:
+                    properties:
+                      id:
+                        type: string
+                        example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+          used_schemas:
+            type: array
+            items:
+              type: string
+              example: 026bc5f6-8373-4aeb-972e-e78d72a67121

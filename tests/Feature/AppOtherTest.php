@@ -67,7 +67,24 @@ class AppOtherTest extends TestCase
                 'icon' => $app->icon,
                 'author' => $app->author,
                 'permissions' => [],
-            ]]);
+                'metadata' => [],
+            ],
+            ]);
+    }
+
+    public function testShowWrongId(): void
+    {
+        $this->user->givePermissionTo('apps.show_details');
+
+        $app = App::factory()->create();
+
+        $this->actingAs($this->user)
+            ->getJson('/apps/id:its-not-uuid')
+            ->assertNotFound();
+
+        $this->actingAs($this->user)
+            ->getJson('/apps/id:' . $app->getKey() . $app->getKey())
+            ->assertNotFound();
     }
 
     public function testUninstallUnauthorized(): void
@@ -107,11 +124,11 @@ class AppOtherTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->deleteJson('/apps/id:' . $app->getKey() . '?force');
+            ->json('DELETE', '/apps/id:' . $app->getKey(), ['force' => true]);
 
         $response->assertNoContent();
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase
-        $this->assertDeleted($app);
+        $this->assertModelMissing($app);
     }
 
     public function testUninstallConnectionRefused(): void
@@ -121,7 +138,7 @@ class AppOtherTest extends TestCase
         $app = App::factory()->create(['url' => $this->url]);
 
         Http::fake([
-            $this->url . '/uninstall' => new ConnectionException("Test", 7),
+            $this->url . '/uninstall' => new ConnectionException('Test', 7),
         ]);
 
         $response = $this->actingAs($this->user)
@@ -138,7 +155,7 @@ class AppOtherTest extends TestCase
         $app = App::factory()->create(['url' => $this->url]);
 
         Http::fake([
-            $this->url . '/uninstall' => new ConnectionException("Test", 7),
+            $this->url . '/uninstall' => new ConnectionException('Test', 7),
         ]);
 
         $response = $this->actingAs($this->user)
@@ -146,7 +163,7 @@ class AppOtherTest extends TestCase
 
         $response->assertNoContent();
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase
-        $this->assertDeleted($app);
+        $this->assertModelMissing($app);
     }
 
     public function testUninstall(): void
@@ -164,7 +181,42 @@ class AppOtherTest extends TestCase
 
         $response->assertNoContent();
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase
-        $this->assertDeleted($app);
+        $this->assertModelMissing($app);
+    }
+
+    public function shortBooleanProvider(): array
+    {
+        return [
+            'as true' => [true],
+            'as false' => [false],
+            'as 1' => [1],
+            'as 0' => [0],
+            'as on' => ['on'],
+            'as off' => ['off'],
+            'as yes' => ['yes'],
+            'as no' => ['no'],
+        ];
+    }
+
+    /**
+     * @dataProvider shortBooleanProvider
+     */
+    public function testUninstallForce($boolean): void
+    {
+        $this->user->givePermissionTo('apps.remove');
+
+        $app = App::factory()->create(['url' => $this->url]);
+
+        Http::fake([
+            $this->url . '/uninstall' => Http::response(status: 204),
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->json('DELETE', '/apps/id:' . $app->getKey(), ['force' => $boolean]);
+
+        $response->assertNoContent();
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
+        $this->assertModelMissing($app);
     }
 
     public function testUninstallRole(): void
@@ -193,9 +245,9 @@ class AppOtherTest extends TestCase
         $response->assertNoContent();
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase
 
-        $this->assertDeleted($app);
-        $this->assertDeleted($role);
-        $this->assertDeleted($permission);
+        $this->assertModelMissing($app);
+        $this->assertModelMissing($role);
+        $this->assertModelMissing($permission);
 
         $this->user->refresh();
         $this->assertFalse($this->user->hasRole($role));
@@ -229,7 +281,7 @@ class AppOtherTest extends TestCase
 
         $response->assertNoContent();
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase
-        $this->assertDeleted($app);
+        $this->assertModelMissing($app);
         $this->assertSoftDeleted($webhook);
     }
 
@@ -245,7 +297,7 @@ class AppOtherTest extends TestCase
         $this->artisan('apps:remove')->assertExitCode(0);
 
         $this->assertDatabaseCount('apps', 0); // +1 from TestCase
-        $this->assertDeleted($app);
-        $this->assertDeleted($this->application);
+        $this->assertModelMissing($app);
+        $this->assertModelMissing($this->application);
     }
 }

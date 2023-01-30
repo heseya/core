@@ -2,13 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Events\OrderUpdatedPaid;
 use App\Models\Order;
-use App\Events\OrderUpdatedStatus;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -31,10 +32,12 @@ class PaymentTest extends TestCase
             'status_id' => $status->getKey(),
         ]);
 
-        $item = $this->order->products()->create([
+        $this->order->products()->create([
             'product_id' => $product->getKey(),
             'quantity' => 1,
             'price' => 125.50,
+            'price_initial' => 125.50,
+            'name' => $product->name,
         ]);
 
         $this->order->refresh();
@@ -45,17 +48,17 @@ class PaymentTest extends TestCase
         Http::fakeSequence()
             ->push([
                 'access_token' => 'random_access_token',
-            ], 200)
+            ])
             ->push([
                 'status' => [
                     'statusCode' => 'SUCCESS',
                 ],
                 'redirectUri' => 'payment_url',
                 'orderId' => 'payu_id',
-            ], 200);
+            ]);
 
         $code = $this->order->code;
-        $response = $this->postJson("/orders/$code/pay/payu", [
+        $response = $this->postJson("/orders/${code}/pay/payu", [
             'continue_url' => 'continue_url',
         ]);
 
@@ -83,9 +86,11 @@ class PaymentTest extends TestCase
 
         $code = $this->order->code;
         $response = $this->actingAs($this->$user)
-            ->postJson("/orders/$code/pay/payu", [
+            ->postJson("/orders/${code}/pay/payu", [
                 'continue_url' => 'continue_url',
             ]);
+
+        $payment = Payment::find($response->getData()->data->id);
 
         $response
             ->assertCreated()
@@ -93,6 +98,7 @@ class PaymentTest extends TestCase
                 'method' => 'payu',
                 'paid' => false,
                 'amount' => $this->order->summary,
+                'date' => $payment->created_at,
                 'redirect_url' => 'payment_url',
                 'continue_url' => 'continue_url',
             ]);
@@ -115,7 +121,7 @@ class PaymentTest extends TestCase
         $signature = md5(json_encode($body) . Config::get('payu.second_key'));
 
         $response = $this->postJson('/payments/payu', $body, [
-            'OpenPayu-Signature' => "signature=$signature;algorithm=MD5"
+            'OpenPayu-Signature' => "signature=${signature};algorithm=MD5",
         ]);
 
         $response->assertForbidden();
@@ -126,6 +132,8 @@ class PaymentTest extends TestCase
      */
     public function testPayuNotification($user): void
     {
+        Event::fake(OrderUpdatedPaid::class);
+
         $this->$user->givePermissionTo('payments.edit');
 
         $payment = Payment::factory()->make([
@@ -144,7 +152,7 @@ class PaymentTest extends TestCase
 
         $response = $this->actingAs($this->$user)
             ->postJson('/payments/payu', $body, [
-                'OpenPayu-Signature' => "signature=$signature;algorithm=MD5"
+                'OpenPayu-Signature' => "signature=${signature};algorithm=MD5",
             ]);
 
         $response->assertOk();
@@ -152,6 +160,8 @@ class PaymentTest extends TestCase
             'id' => $payment->getKey(),
             'paid' => true,
         ]);
+
+        Event::assertDispatched(OrderUpdatedPaid::class);
     }
 
     /**
@@ -161,7 +171,7 @@ class PaymentTest extends TestCase
     {
         $code = $this->order->code;
         $response = $this->actingAs($this->$user)
-            ->postJson("/orders/$code/pay/offline");
+            ->postJson("/orders/${code}/pay/offline");
 
         $response->assertForbidden();
     }
@@ -171,11 +181,15 @@ class PaymentTest extends TestCase
      */
     public function testOfflinePayment($user): void
     {
+        Event::fake(OrderUpdatedPaid::class);
+
         $this->$user->givePermissionTo('payments.offline');
 
         $code = $this->order->code;
         $response = $this->actingAs($this->$user)
-            ->postJson("/orders/$code/pay/offline");
+            ->postJson("/orders/${code}/pay/offline");
+
+        $payment = Payment::find($response->getData()->data->id);
 
         $response
             ->assertCreated()
@@ -183,6 +197,7 @@ class PaymentTest extends TestCase
                 'method' => 'offline',
                 'paid' => true,
                 'amount' => $this->order->summary,
+                'date' => $payment->created_at,
                 'redirect_url' => null,
                 'continue_url' => null,
             ]);
@@ -201,6 +216,26 @@ class PaymentTest extends TestCase
 
         $this->order->refresh();
         $this->assertTrue($this->order->paid);
+
+        Event::assertDispatched(OrderUpdatedPaid::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testPaymentHasDate($user): void
+    {
+        $this->$user->givePermissionTo('payments.offline');
+
+        $code = $this->order->code;
+        $response = $this->actingAs($this->$user)
+            ->postJson("/orders/${code}/pay/offline");
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment([
+                'date' => Payment::find($response->getData()->data->id)->created_at,
+            ]);
     }
 
     /**
@@ -220,7 +255,9 @@ class PaymentTest extends TestCase
 
         $code = $this->order->code;
         $response = $this->actingAs($this->$user)
-            ->postJson("/orders/$code/pay/offline");
+            ->postJson("/orders/${code}/pay/offline");
+
+        $payment = Payment::find($response->getData()->data->id);
 
         $response
             ->assertCreated()
@@ -228,6 +265,7 @@ class PaymentTest extends TestCase
                 'method' => 'offline',
                 'paid' => true,
                 'amount' => $amount,
+                'date' => $payment->created_at,
                 'redirect_url' => null,
                 'continue_url' => null,
             ]);

@@ -14,7 +14,7 @@ Users:
         description: 'Name search'
         schema:
           type: string
-      - name: name
+      - name: email
         in: query
         description: 'Email search'
         schema:
@@ -25,12 +25,43 @@ Users:
         schema:
           type: string
         example: 'name:desc'
-      - name: pagination_limit
+      - name: full
+        in: query
+        description: 'Returns details resource'
+        schema:
+          type: boolean
+      - name: limit
         in: query
         description: 'Number of elements per page'
         schema:
           type: number
         example: 12
+      - name: metadata
+        in: query
+        description: search by metadata
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: metadata_private
+        in: query
+        description: search by metadata private
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: consent_name
+        in: query
+        description: 'Accepted Consent name search'
+        schema:
+          type: string
+      - name: consent_id
+        in: query
+        description: 'Accepted Consent id search'
+        schema:
+          type: string
     responses:
       200:
         description: Success
@@ -44,7 +75,7 @@ Users:
                     $ref: './../schemas/Users.yml#/User'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   post:
     tags:
       - Users
@@ -59,10 +90,10 @@ Users:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Users.yml#/User'
+                  $ref: './../schemas/Users.yml#/UserView'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 UsersParams:
   get:
@@ -84,10 +115,10 @@ UsersParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Users.yml#/User'
+                  $ref: './../schemas/Users.yml#/UserView'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   delete:
     tags:
       - Users
@@ -103,7 +134,7 @@ UsersParams:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   patch:
     tags:
       - Users
@@ -125,10 +156,10 @@ UsersParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Users.yml#/User'
+                  $ref: './../schemas/Users.yml#/UserView'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 UserTFARemove:
   post:
@@ -142,6 +173,6 @@ UserTFARemove:
         schema:
           type: string
           example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
-  responses:
-    204:
-      description: Success
+    responses:
+      204:
+        description: Success

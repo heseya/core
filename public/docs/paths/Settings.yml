@@ -22,7 +22,7 @@ Settings:
                     $ref: './../schemas/Settings.yml#/Setting'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   post:
     tags:
       - Settings
@@ -40,7 +40,7 @@ Settings:
                   $ref: './../schemas/Settings.yml#/Setting'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 SettingsParams:
   get:
@@ -64,7 +64,7 @@ SettingsParams:
                   $ref: './../schemas/Settings.yml#/Setting'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   delete:
     tags:
       - Settings
@@ -79,7 +79,7 @@ SettingsParams:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   patch:
     tags:
       - Settings
@@ -103,4 +103,4 @@ SettingsParams:
                   $ref: './../schemas/Settings.yml#/Setting'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]

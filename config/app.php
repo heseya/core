@@ -19,9 +19,10 @@ return [
     |--------------------------------------------------------------------------
     | Application Version
     |--------------------------------------------------------------------------
+    |
      */
 
-    'ver' => '2.1.2',
+    'ver' => '3.0.0',
 
     /*
     |--------------------------------------------------------------------------
@@ -173,7 +174,6 @@ return [
         /*
          * PackageTemplate Service Providers...
          */
-        Jenssegers\Agent\AgentServiceProvider::class,
         Spatie\Permission\PermissionServiceProvider::class,
         OwenIt\Auditing\AuditingServiceProvider::class,
 
@@ -181,6 +181,7 @@ return [
          * Application Service Providers...
          */
         App\Providers\AppServiceProvider::class,
+        App\Providers\RepositoryServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,

@@ -2,6 +2,7 @@ OrderCreate:
   content:
     application/json:
       schema:
+        type: object
         properties:
           email:
             type: string
@@ -35,10 +36,20 @@ OrderCreate:
             $ref: './../schemas/Addresses.yml#/Address'
           invoice_address:
             $ref: './../schemas/Addresses.yml#/Address'
-          discounts:
+          coupons:
             type: array
-            items: [ ]
-        type: object
+            items:
+              type: string
+              example: 8JVA0XRT
+          sale_ids:
+            type: array
+            items:
+              type: string
+              example: '16277176-d819-417b-90af-8d8534995786'
+          metadata:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+          metadata_private:
+            $ref: './../schemas/Metadata.yml#/Metadata'
 
 OrderUpdate:
   content:
@@ -51,6 +62,9 @@ OrderUpdate:
           comment:
             type: string
             example: 'asap plz'
+          shipping_number:
+            type: string
+            example: '630552359128340015809770'
           delivery_address:
             $ref: './../schemas/Addresses.yml#/Address'
           invoice_address:

@@ -2,50 +2,58 @@
 
 namespace App\Dtos;
 
+use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\ShippingMethodStoreRequest;
 use App\Http\Requests\ShippingMethodUpdateRequest;
+use App\Traits\MapMetadata;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
+use Illuminate\Foundation\Http\FormRequest;
 
-class ShippingMethodDto extends Dto
+class ShippingMethodDto extends Dto implements InstantiateFromRequest
 {
-    protected string $name;
-    protected bool $public;
-    protected bool $black_list;
+    use MapMetadata;
+
+    protected string|Missing $name;
+    protected bool|Missing $public;
+    protected bool|Missing $block_list;
     protected ?array $payment_methods;
     protected ?array $countries;
     protected ?array $price_ranges;
     protected int|Missing $shipping_time_min;
     protected int|Missing $shipping_time_max;
 
+    protected array|Missing $metadata;
+
     public static function instantiateFromRequest(
-        ShippingMethodStoreRequest|ShippingMethodUpdateRequest $request,
+        FormRequest|ShippingMethodStoreRequest|ShippingMethodUpdateRequest $request,
     ): self {
         return new self(
-            name: $request->input('name'),
-            public: $request->boolean('public'),
-            black_list: $request->boolean('black_list'),
+            name: $request->input('name', new Missing()),
+            public: $request->input('public', new Missing()),
+            block_list: $request->input('block_list', new Missing()),
             payment_methods: $request->input('payment_methods'),
             countries: $request->input('countries'),
             price_ranges: $request->input('price_ranges'),
             shipping_time_min: $request->input('shipping_time_min', new Missing()),
             shipping_time_max: $request->input('shipping_time_max', new Missing()),
+            metadata: self::mapMetadata($request),
         );
     }
 
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
 
-    public function isPublic(): bool
+    public function isPublic(): ?bool
     {
         return $this->public;
     }
 
-    public function isBlackList(): bool
+    public function isBlockList(): ?bool
     {
-        return $this->black_list;
+        return $this->block_list;
     }
 
     public function getPaymentMethods(): ?array

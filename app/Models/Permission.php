@@ -2,17 +2,19 @@
 
 namespace App\Models;
 
-use App\SearchTypes\PermissionSearch;
+use App\Criteria\PermissionSearch;
 use App\Traits\HasUuid;
-use Heseya\Searchable\Traits\Searchable;
+use Heseya\Searchable\Traits\HasCriteria;
 use Spatie\Permission\Models\Permission as SpatiePermission;
 
 /**
+ * @property string $name
+ *
  * @mixin IdeHelperPermission
  */
 class Permission extends SpatiePermission
 {
-    use Searchable, HasUuid;
+    use HasCriteria, HasUuid;
 
     protected $fillable = [
         'name',
@@ -21,7 +23,7 @@ class Permission extends SpatiePermission
         'guard_name',
     ];
 
-    protected array $searchable = [
+    protected array $criteria = [
         'assignable' => PermissionSearch::class,
     ];
 }

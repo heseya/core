@@ -2,14 +2,16 @@
 
 namespace App\Dtos;
 
+use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\TFAConfirmRequest;
 use Heseya\Dto\Dto;
+use Illuminate\Foundation\Http\FormRequest;
 
-class TFAConfirmDto extends Dto
+class TFAConfirmDto extends Dto implements InstantiateFromRequest
 {
     private string $code;
 
-    public static function fromFormRequest(TFAConfirmRequest $request): self
+    public static function instantiateFromRequest(FormRequest|TFAConfirmRequest $request): self
     {
         return new self(
             code: $request->input('code'),

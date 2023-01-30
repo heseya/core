@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\PackageTemplate;
-use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class PackageTemplateTest extends TestCase
@@ -28,6 +27,7 @@ class PackageTemplateTest extends TestCase
             'width' => $this->package->width,
             'height' => $this->package->height,
             'depth' => $this->package->depth,
+            'metadata' => [],
         ];
     }
 
@@ -49,7 +49,8 @@ class PackageTemplateTest extends TestCase
             ->assertOk()
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ]]);
+            ],
+            ]);
     }
 
     public function testCreateUnauthorized(): void
@@ -79,6 +80,56 @@ class PackageTemplateTest extends TestCase
             ->assertJson(['data' => $package]);
 
         $this->assertDatabaseHas('package_templates', $package);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadata($user): void
+    {
+        $this->$user->givePermissionTo('packages.add');
+
+        $package = [
+            'name' => 'Small package',
+            'weight' => 1.2,
+            'width' => 10,
+            'height' => 6,
+            'depth' => 2,
+            'metadata' => [
+                'attributeMeta' => 'attributeValue',
+            ],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/package-templates', $package)
+            ->assertCreated()
+            ->assertJson(['data' => $package]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadataPrivate($user): void
+    {
+        $this->$user->givePermissionTo(['packages.add', 'packages.show_metadata_private']);
+
+        $package = [
+            'name' => 'Small package',
+            'weight' => 1.2,
+            'width' => 10,
+            'height' => 6,
+            'depth' => 2,
+            'metadata_private' => [
+                'attributeMetaPriv' => 'attributeValue',
+            ],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/package-templates', $package)
+            ->assertCreated()
+            ->assertJson(['data' => $package]);
     }
 
     public function testUpdateUnauthorized(): void
@@ -133,6 +184,6 @@ class PackageTemplateTest extends TestCase
         $response = $this->actingAs($this->$user)
             ->deleteJson('/package-templates/id:' . $this->package->getKey());
         $response->assertNoContent();
-        $this->assertDeleted($this->package);
+        $this->assertModelMissing($this->package);
     }
 }

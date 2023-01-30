@@ -11,8 +11,9 @@ class Resource extends JsonResource
 {
     public static function collection($resource)
     {
-        return tap(new ResourceCollection($resource, static::class), function ($collection) {
+        return tap(new ResourceCollection($resource, static::class), function ($collection): void {
             if (property_exists(static::class, 'preserveKeys')) {
+                // @phpstan-ignore-next-line
                 $collection->preserveKeys = (new static([]))->preserveKeys === true;
             }
         });

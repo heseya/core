@@ -15,11 +15,11 @@ class ProductPublic implements Rule
      */
     public function passes($attribute, $value): bool
     {
-        /** @var Product $product */
+        /** @var ?Product $product */
         $product = Product::find($value);
 
         if ($product === null) {
-            return false;
+            return true;
         }
 
         return $product->public;

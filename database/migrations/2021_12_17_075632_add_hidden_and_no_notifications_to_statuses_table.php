@@ -6,27 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 class AddHiddenAndNoNotificationsToStatusesTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::table('statuses', function (Blueprint $table) {
+        Schema::table('statuses', function (Blueprint $table): void {
             $table->boolean('hidden')->default(false);
             $table->boolean('no_notifications')->default(false);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::table('statuses', function (Blueprint $table) {
+        Schema::table('statuses', function (Blueprint $table): void {
             $table->dropColumn('hidden');
             $table->dropColumn('no_notifications');
         });

@@ -20,17 +20,13 @@ class ProductSetFactory extends Factory
      */
     public function definition(): array
     {
-        $name = $this->faker->unique()->word;
-
-        $last = ProductSet::reversed()->first();
-        $order = $last ? $last->order + 1 : 0;
+        $name = $this->faker->words(rand(1, 4), true);
 
         return [
             'name' => $name,
-            'slug' => Str::of($name)->slug(),
+            'slug' => Str::of($name)->slug() . '-' . rand(1, 99999),
             'public' => $this->faker->boolean,
             'public_parent' => true,
-            'order' => $order,
             'hide_on_index' => $this->faker->boolean,
             'description_html' => '<p>' . $this->faker->sentence(10) . '</p>',
         ];

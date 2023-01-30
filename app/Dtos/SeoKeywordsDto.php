@@ -2,17 +2,19 @@
 
 namespace App\Dtos;
 
+use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\SeoKeywordsRequest;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
+use Illuminate\Foundation\Http\FormRequest;
 
-class SeoKeywordsDto extends Dto
+class SeoKeywordsDto extends Dto implements InstantiateFromRequest
 {
     private array $keywords;
     private string|Missing $excluded_id;
     private string|Missing $excluded_model;
 
-    public static function fromFormRequest(SeoKeywordsRequest $request): self
+    public static function instantiateFromRequest(FormRequest|SeoKeywordsRequest $request): self
     {
         return new self(
             keywords: $request->input('keywords'),

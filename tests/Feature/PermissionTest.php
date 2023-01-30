@@ -7,11 +7,6 @@ use Tests\TestCase;
 
 class PermissionTest extends TestCase
 {
-    public function setUp(): void
-    {
-        parent::setUp();
-    }
-
     public function testIndexUnauthorized(): void
     {
         $response = $this->getJson('/roles');
@@ -55,27 +50,30 @@ class PermissionTest extends TestCase
                 'display_name' => $permission1->display_name,
                 'description' => $permission1->description,
                 'assignable' => false,
-            ]])
+            ],
+            ])
             ->assertJsonFragment([[
                 $permission2->getKeyName() => $permission2->getKey(),
                 'name' => $permission2->name,
                 'display_name' => null,
                 'description' => $permission2->description,
                 'assignable' => false,
-            ]])
+            ],
+            ])
             ->assertJsonFragment([[
                 $permission3->getKeyName() => $permission3->getKey(),
                 'name' => $permission3->name,
                 'display_name' => null,
                 'description' => $permission3->description,
                 'assignable' => true,
-            ]]);
+            ],
+            ]);
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider trueBooleanProvider
      */
-    public function testIndexAssignable($user): void
+    public function testIndexAssignable($user, $boolean, $booleanValue): void
     {
         $this->$user->givePermissionTo('roles.show_details');
 
@@ -90,7 +88,7 @@ class PermissionTest extends TestCase
         ]);
 
         $this->$user->givePermissionTo($permission1);
-        $response = $this->actingAs($this->$user)->getJson('/permissions?assignable=1');
+        $response = $this->actingAs($this->$user)->json('GET', '/permissions', ['assignable' => $boolean]);
 
         $response->assertOk()
             ->assertJsonCount(2, 'data')
@@ -100,23 +98,25 @@ class PermissionTest extends TestCase
                 'display_name' => null,
                 'description' => $permission1->description,
                 'assignable' => true,
-            ]])
+            ],
+            ])
             ->assertJsonMissing([[
                 $permission2->getKeyName() => $permission2->getKey(),
                 'name' => $permission2->name,
                 'display_name' => null,
                 'description' => $permission2->description,
                 'assignable' => false,
-            ]])
+            ],
+            ])
             ->assertJsonMissing([
                 'assignable' => false,
             ]);
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider falseBooleanProvider
      */
-    public function testIndexUnassignable($user): void
+    public function testIndexUnassignable($user, $boolean, $booleanValue): void
     {
         $this->$user->givePermissionTo('roles.show_details');
 
@@ -133,7 +133,7 @@ class PermissionTest extends TestCase
         ]);
 
         $this->$user->givePermissionTo($permission2);
-        $response = $this->actingAs($this->$user)->getJson('/permissions?assignable=0');
+        $response = $this->actingAs($this->$user)->json('GET', '/permissions', ['assignable' => $boolean]);
 
         $response->assertOk()
             ->assertJsonCount($permissionCount, 'data')
@@ -143,14 +143,16 @@ class PermissionTest extends TestCase
                 'display_name' => null,
                 'description' => $permission1->description,
                 'assignable' => false,
-            ]])
+            ],
+            ])
             ->assertJsonMissing([[
                 $permission2->getKeyName() => $permission2->getKey(),
                 'name' => $permission2->name,
                 'display_name' => null,
                 'description' => $permission2->description,
                 'assignable' => true,
-            ]])
+            ],
+            ])
             ->assertJsonMissing([
                 'assignable' => true,
             ]);

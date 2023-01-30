@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -13,8 +14,10 @@ class StoreException extends Exception
         int $code = 0,
         ?Throwable $previous = null,
         protected bool $simpleLogs = false,
+        private array $errorArray = [],
     ) {
         parent::__construct($message, $code, $previous);
+        $this->code = Exceptions::getCode($message);
     }
 
     public function isSimpleLogs(): bool
@@ -22,7 +25,7 @@ class StoreException extends Exception
         return $this->simpleLogs;
     }
 
-    public function logException()
+    public function logException(): void
     {
         Log::error(
             $this::class
@@ -31,5 +34,15 @@ class StoreException extends Exception
             . ' at ' . $this->getFile()
             . ':(' . $this->getLine() . ')'
         );
+    }
+
+    public function errors(): array
+    {
+        return $this->errorArray;
+    }
+
+    public function getKey(): string
+    {
+        return Exceptions::fromValue($this->getMessage())->key;
     }
 }
