@@ -42,6 +42,9 @@ class ProductIndexRequest extends FormRequest
             'sort' => ['nullable', 'string', 'max:255'],
             'available' => ['nullable'],
             'has_cover' => ['nullable', new Boolean()],
+            'has_items' => ['nullable', new Boolean()],
+            'has_schemas' => ['nullable', new Boolean()],
+            'shipping_digital' => ['nullable', new Boolean()],
 
             'sets' => ['nullable', 'array'],
             'sets.*' => ['string', $setsExist],
