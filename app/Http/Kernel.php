@@ -27,7 +27,7 @@ class Kernel extends HttpKernel
      *
      * These middleware are run during every request to your application.
      *
-     * @var array<class-string>
+     * @var array<int, string>
      */
     protected $middleware = [
         HandleCors::class,
@@ -48,7 +48,7 @@ class Kernel extends HttpKernel
      * This is the only middleware that should be here,
      * because for some reason it doesn't want to work as it is in the main array.
      *
-     * @var array<string, array<class-string>>
+     * @var array<string, array<int, string>>
      */
     protected $middlewareGroups = [
         'api' => [
