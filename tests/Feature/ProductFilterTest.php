@@ -65,7 +65,7 @@ class ProductFilterTest extends TestCase
     {
         $this->$user->givePermissionTo(['products.show', 'products.show_hidden']);
 
-        $productAnalog = Product::factory()->create(['shipping_digital' => false]);
+        $productPhysical = Product::factory()->create(['shipping_digital' => false]);
         $productDigital = Product::factory()->create(['shipping_digital' => true]);
 
         $this
@@ -74,6 +74,6 @@ class ProductFilterTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $productDigital->getKey()])
-            ->assertJsonMissing(['id' => $productAnalog->getKey()]);
+            ->assertJsonMissing(['id' => $productPhysical->getKey()]);
     }
 }
