@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d49ecbdd8ee77ca994915e9adc4a6b34",
+    "content-hash": "e3785ad594577c9515b57122d73c6b62",
     "packages": [
         {
             "name": "bensampo/laravel-enum",
@@ -150,16 +150,16 @@
         },
         {
             "name": "bvlinsky/explorer",
-            "version": "3.4.0",
+            "version": "3.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/bvlinsky/Explorer.git",
-                "reference": "64f0ddc9815a65792a091ac06dbfe37a06f3a2c9"
+                "reference": "78b66298f5bdf6d4599acd697879b6be3b3da84a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bvlinsky/Explorer/zipball/64f0ddc9815a65792a091ac06dbfe37a06f3a2c9",
-                "reference": "64f0ddc9815a65792a091ac06dbfe37a06f3a2c9",
+                "url": "https://api.github.com/repos/bvlinsky/Explorer/zipball/78b66298f5bdf6d4599acd697879b6be3b3da84a",
+                "reference": "78b66298f5bdf6d4599acd697879b6be3b3da84a",
                 "shasum": ""
             },
             "require": {
@@ -210,9 +210,9 @@
                 "search"
             ],
             "support": {
-                "source": "https://github.com/bvlinsky/Explorer/tree/3.4.0"
+                "source": "https://github.com/bvlinsky/Explorer/tree/3.4.1"
             },
-            "time": "2023-02-02T11:30:07+00:00"
+            "time": "2023-02-02T14:42:23+00:00"
         },
         {
             "name": "clue/stream-filter",
