@@ -27,6 +27,7 @@ trait ElasticTest
                 'query' => $query,
                 'from' => 0,
                 'size' => $limit ?? Config::get('pagination.per_page'),
+                'track_total_hits' => true,
             ] + $sort,
             ElasticEngine::debug()->array(),
             'Failed to assert that elastic query matched the expected',
