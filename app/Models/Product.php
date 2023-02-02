@@ -10,7 +10,9 @@ use App\Criteria\ProductAttributeSearch;
 use App\Criteria\ProductNotAttributeSearch;
 use App\Criteria\ProductSearch;
 use App\Criteria\WhereHasId;
+use App\Criteria\WhereHasItems;
 use App\Criteria\WhereHasPhoto;
+use App\Criteria\WhereHasSchemas;
 use App\Criteria\WhereHasSlug;
 use App\Criteria\WhereInIds;
 use App\Criteria\WhereNotId;
@@ -143,6 +145,9 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'attribute' => ProductAttributeSearch::class,
         'attribute_not' => ProductNotAttributeSearch::class,
         'has_cover' => WhereHasPhoto::class,
+        'has_items' => WhereHasItems::class,
+        'has_schemas' => WhereHasSchemas::class,
+        'shipping_digital' => Equals::class,
     ];
 
     protected string $defaultSortBy = 'products.order';

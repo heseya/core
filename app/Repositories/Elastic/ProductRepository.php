@@ -50,7 +50,10 @@ class ProductRepository implements ProductRepositoryContract
         'price_max' => 'filterPriceMax',
         'attribute' => 'filterAttributes',
         'attribute_not' => 'filterNotAttributes',
-        'has_cover' => 'filterCover',
+        'has_cover' => 'filterHas',
+        'has_items' => 'filterHas',
+        'has_schemas' => 'filterHas',
+        'shipping_digital' => 'filter',
     ];
 
     public function __construct(
@@ -366,9 +369,10 @@ class ProductRepository implements ProductRepositoryContract
         return $query;
     }
 
-    private function filterCover(Builder $query, string $key, bool $value): Builder
+    private function filterHas(Builder $query, string $key, bool $value): Builder
     {
-        $term = Exists::field('cover');
+        $term = Exists::field(Str::after($key, 'has_'));
+
         return $query->filter($value ? $term : Invert::query($term));
     }
 

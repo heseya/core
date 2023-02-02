@@ -21,6 +21,9 @@ class ProductSearchDto extends Dto implements InstantiateFromRequest
     private bool|Missing $public;
     private bool|Missing $available;
     private bool|Missing $has_cover;
+    private bool|Missing $has_items;
+    private bool|Missing $has_schemas;
+    private bool|Missing $shipping_digital;
 
     private array|Missing $sets;
     private array|Missing $sets_not;
@@ -41,6 +44,7 @@ class ProductSearchDto extends Dto implements InstantiateFromRequest
             ? Str::replace('price:asc', 'price_min:asc', $sort) : $sort;
         $sort = Str::contains($sort, 'price:desc')
             ? Str::replace('price:desc', 'price_max:desc', $sort) : $sort;
+
         return new self(
             search: $request->input('search'),
             sort: $sort,
@@ -50,6 +54,9 @@ class ProductSearchDto extends Dto implements InstantiateFromRequest
             public: self::boolean('public', $request),
             available: self::boolean('available', $request),
             has_cover: self::boolean('has_cover', $request),
+            has_items: self::boolean('has_items', $request),
+            has_schemas: self::boolean('has_schemas', $request),
+            shipping_digital: self::boolean('shipping_digital', $request),
             sets: self::array('sets', $request),
             sets_not: self::array('sets_not', $request),
             tags: self::array('tags', $request),
