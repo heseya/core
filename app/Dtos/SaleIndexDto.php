@@ -60,4 +60,17 @@ class SaleIndexDto extends Dto implements InstantiateFromRequest
     {
         return $this->ids;
     }
+
+    private static function array(string $key, FormRequest|SaleIndexRequest $request): array|Missing
+    {
+        if (!$request->has($key) || $request->input($key) === null) {
+            return new Missing();
+        }
+
+        if (!is_array($request->input($key))) {
+            return [$request->input($key)];
+        }
+
+        return $request->input($key);
+    }
 }

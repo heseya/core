@@ -100,7 +100,7 @@ class DepositsTest extends TestCase
         $this
             ->actingAs($this->$user)
             ->json('GET', '/deposits', [
-                'ids' =>[
+                'ids' => [
                     $deposit->getKey(),
                 ],
             ])

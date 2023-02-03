@@ -359,48 +359,6 @@ class DiscountService implements DiscountServiceContract
         return $cartResource;
     }
 
-    private function checkDiscountTarget(Discount $discount, CartDto $cart): bool
-    {
-        if ($discount->target_type->is(DiscountTargetType::PRODUCTS)) {
-            if ($discount->target_is_allow_list) {
-                /** @var CartItemDto $item */
-                foreach ($cart->getItems() as $item) {
-                    if ($discount->allProductsIds()->contains(function ($value) use ($item): bool {
-                        return $value === $item->getProductId();
-                    })) {
-                        return true;
-                    }
-                }
-            } else {
-                /** @var CartItemDto $item */
-                foreach ($cart->getItems() as $item) {
-                    if ($discount->allProductsIds()->doesntContain(function ($value) use ($item): bool {
-                        return $value === $item->getProductId();
-                    })) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        if ($discount->target_type->is(DiscountTargetType::SHIPPING_PRICE)) {
-            if ($discount->target_is_allow_list) {
-                return $discount->shippingMethods->contains(function ($value) use ($cart): bool {
-                    return $value->getKey() === $cart->getShippingMethodId();
-                });
-            } else {
-                return $discount->shippingMethods->doesntContain(function ($value) use ($cart): bool {
-                    return $value->getKey() === $cart->getShippingMethodId();
-                });
-            }
-        }
-
-        return in_array(
-            $discount->target_type->value,
-            [DiscountTargetType::ORDER_VALUE, DiscountTargetType::CHEAPEST_PRODUCT]
-        );
-    }
-
     public function applyDiscountOnProduct(
         Product $product,
         OrderProductDto $orderProductDto,
@@ -665,6 +623,48 @@ class DiscountService implements DiscountServiceContract
         }
     }
 
+    private function checkDiscountTarget(Discount $discount, CartDto $cart): bool
+    {
+        if ($discount->target_type->is(DiscountTargetType::PRODUCTS)) {
+            if ($discount->target_is_allow_list) {
+                /** @var CartItemDto $item */
+                foreach ($cart->getItems() as $item) {
+                    if ($discount->allProductsIds()->contains(function ($value) use ($item): bool {
+                        return $value === $item->getProductId();
+                    })) {
+                        return true;
+                    }
+                }
+            } else {
+                /** @var CartItemDto $item */
+                foreach ($cart->getItems() as $item) {
+                    if ($discount->allProductsIds()->doesntContain(function ($value) use ($item): bool {
+                        return $value === $item->getProductId();
+                    })) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        if ($discount->target_type->is(DiscountTargetType::SHIPPING_PRICE)) {
+            if ($discount->target_is_allow_list) {
+                return $discount->shippingMethods->contains(function ($value) use ($cart): bool {
+                    return $value->getKey() === $cart->getShippingMethodId();
+                });
+            } else {
+                return $discount->shippingMethods->doesntContain(function ($value) use ($cart): bool {
+                    return $value->getKey() === $cart->getShippingMethodId();
+                });
+            }
+        }
+
+        return in_array(
+            $discount->target_type->value,
+            [DiscountTargetType::ORDER_VALUE, DiscountTargetType::CHEAPEST_PRODUCT]
+        );
+    }
+
     /**
      * @param array<DiscountTargetType> $targetTypes
      *
@@ -914,16 +914,15 @@ class DiscountService implements DiscountServiceContract
                     'vat_rate' => $product->vat_rate,
                 ]);
 
-            foreach ($product->schemas as $schema) {
-                $newProduct->schemas()->create(
-                    $schema->only('name', 'value', 'price_initial', 'price'),
-                );
-            }
+                foreach ($product->schemas as $schema) {
+                    $newProduct->schemas()->create(
+                        $schema->only('name', 'value', 'price_initial', 'price'),
+                    );
+                }
 
-            $product->discounts->each(function (Discount $discount) use ($newProduct): void {
-                // @phpstan-ignore-next-line
-                $this->attachDiscount($newProduct, $discount, $discount->pivot->applied_discount);
-            });
+                $product->discounts->each(function (Discount $discount) use ($newProduct): void {
+                    $this->attachDiscount($newProduct, $discount, $discount->pivot->applied_discount);
+                });
 
                 $product = $newProduct;
             }

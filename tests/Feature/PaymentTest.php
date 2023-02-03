@@ -74,7 +74,7 @@ class PaymentTest extends TestCase
             ]);
 
         $code = $this->order->code;
-        $response = $this->postJson("/orders/${code}/pay/id:" . $this->paymentMethod->getKey(), [
+        $response = $this->postJson("/orders/{$code}/pay/id:" . $this->paymentMethod->getKey(), [
             'continue_url' => 'continue_url',
         ]);
 
@@ -103,7 +103,7 @@ class PaymentTest extends TestCase
         $code = $this->order->code;
         $response = $this
             ->actingAs($this->$user)
-            ->json('POST', "/orders/${code}/pay/id:" . $this->paymentMethod->getKey(), [
+            ->json('POST', "/orders/{$code}/pay/id:" . $this->paymentMethod->getKey(), [
                 'continue_url' => 'continue_url',
             ]);
 
@@ -131,7 +131,7 @@ class PaymentTest extends TestCase
         $code = $this->order->code;
         $this
             ->actingAs($this->$user)
-            ->postJson("/orders/${code}/pay/id:026eda8b-8acf-40e4-8764-d44aa8b8db7a", [
+            ->postJson("/orders/{$code}/pay/id:026eda8b-8acf-40e4-8764-d44aa8b8db7a", [
                 'continue_url' => 'continue_url',
             ])
             ->assertNotFound();
@@ -205,7 +205,7 @@ class PaymentTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->postJson("/orders/${code}/pay/id:" . $paymentMethod->getKey(), [
+            ->postJson("/orders/{$code}/pay/id:" . $paymentMethod->getKey(), [
                 'continue_url' => 'continue_url',
             ])
             ->assertCreated()

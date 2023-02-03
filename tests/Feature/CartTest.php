@@ -2354,6 +2354,55 @@ class CartTest extends TestCase
             ]);
     }
 
+    private function prepareDataForCouponTest($coupon): array
+    {
+        $code = $coupon ? [] : ['code' => null];
+
+        $discountApplied = Discount::factory()->create([
+            'description' => 'Testowy kupon obowiązujący',
+            'name' => 'Testowy kupon obowiązujący',
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => true,
+        ] + $code);
+
+        $discount = Discount::factory()->create([
+            'description' => 'Testowy kupon',
+            'name' => 'Testowy kupon',
+            'value' => 100,
+            'type' => DiscountType::AMOUNT,
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => true,
+        ] + $code);
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'type' => ConditionType::DATE_BETWEEN,
+            'value' => [
+                'start_at' => Carbon::tomorrow(),
+                'is_in_range' => true,
+            ],
+        ]);
+
+        $discount->conditionGroups()->attach($conditionGroup);
+
+        $coupons = $coupon ? [
+            'coupons' => [
+                $discount->code,
+                $discountApplied->code,
+                'blablabla',
+            ],
+        ] : [];
+
+        return [
+            'coupons' => $coupons,
+            'discount' => $discount,
+            'discountApplied' => $discountApplied,
+        ];
+    }
+
     private function prepareCouponWithProductInSetAndCountConditions(bool $productInSet, bool $isAllowList): array
     {
         $product = Product::factory()->create([
