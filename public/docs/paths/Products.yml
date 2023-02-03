@@ -74,7 +74,22 @@ Products:
           type: number
       - name: has_cover
         in: query
-        description: 'Product has set cover'
+        description: 'Product has cover'
+        schema:
+          type: boolean
+      - name: has_items
+        in: query
+        description: 'Product has  items'
+        schema:
+          type: boolean
+      - name: has_schemas
+        in: query
+        description: 'Product has schemas'
+        schema:
+          type: boolean
+      - name: shipping_digital
+        in: query
+        description: 'Product has digital shipping'
         schema:
           type: boolean
       - name: attribute

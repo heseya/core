@@ -18,7 +18,7 @@ return new class extends Migration
             ->whereNull('invoice_address_id')
             ->each(function ($order) {
                 $order->invoice_address_id = $order->delivery_address_id;
-                $order->update();
+                $order->save();
             });
 
         Schema::table('orders', function (Blueprint $table) {
@@ -41,7 +41,7 @@ return new class extends Migration
             ->whereColumn('invoice_address_id', 'delivery_address_id')
             ->each(function ($order) {
                 $order->invoice_address_id = null;
-                $order->update();
+                $order->save();
             });
     }
 };

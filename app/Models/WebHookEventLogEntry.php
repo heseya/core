@@ -20,6 +20,7 @@ class WebHookEventLogEntry extends Model
 
     protected $fillable = [
         'id',
+        'event',
         'web_hook_id',
         'triggered_at',
         'url',
