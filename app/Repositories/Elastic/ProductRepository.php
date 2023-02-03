@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Elastic;
 
 use App\Dtos\ProductSearchDto;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
 use App\Exceptions\ServerException;
 use App\Models\Attribute;
@@ -49,7 +50,10 @@ class ProductRepository implements ProductRepositoryContract
         'price_max' => 'filterPriceMax',
         'attribute' => 'filterAttributes',
         'attribute_not' => 'filterNotAttributes',
-        'has_cover' => 'filterCover',
+        'has_cover' => 'filterHas',
+        'has_items' => 'filterHas',
+        'has_schemas' => 'filterHas',
+        'shipping_digital' => 'filter',
     ];
 
     public function __construct(
@@ -259,11 +263,9 @@ class ProductRepository implements ProductRepositoryContract
         );
     }
 
-    private function filterIds(Builder $query, string $key, string $ids): Builder
+    private function filterIds(Builder $query, string $key, array $ids): Builder
     {
-        $ids = Str::of($ids)->explode(',');
-
-        $query->filter(new Terms('id', $ids->toArray()));
+        $query->filter(new Terms('id', $ids));
 
         return $query;
     }
@@ -367,9 +369,10 @@ class ProductRepository implements ProductRepositoryContract
         return $query;
     }
 
-    private function filterCover(Builder $query, string $key, bool $value): Builder
+    private function filterHas(Builder $query, string $key, bool $value): Builder
     {
-        $term = Exists::field('cover');
+        $term = Exists::field(Str::after($key, 'has_'));
+
         return $query->filter($value ? $term : Invert::query($term));
     }
 
@@ -385,6 +388,6 @@ class ProductRepository implements ProductRepositoryContract
             );
         }
 
-        throw new ServerException('Not found mapping for this query');
+        throw new ServerException(Exceptions::SERVER_MAPPING_NOT_FOUND);
     }
 }

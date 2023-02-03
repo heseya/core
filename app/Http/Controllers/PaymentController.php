@@ -12,6 +12,7 @@ use App\Http\Requests\PaymentUpdateRequest;
 use App\Http\Resources\PaymentResource;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\PaymentMethod;
 use App\Payments\PayPal;
 use App\Payments\PayU;
 use App\Payments\Przelewy24;
@@ -27,10 +28,14 @@ class PaymentController extends Controller
     ) {
     }
 
-    public function pay(Order $order, string $method, PayRequest $request): JsonResource
+    public function pay(Order $order, PaymentMethod $paymentMethod, PayRequest $request): JsonResource
     {
         return PaymentResource::make(
-            $this->paymentService->getPayment($order, $method, $request),
+            $this->paymentService->getPayment(
+                $order,
+                $paymentMethod,
+                $request->input('continue_url'),
+            ),
         );
     }
 

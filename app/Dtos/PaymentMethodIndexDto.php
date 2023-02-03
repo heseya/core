@@ -12,12 +12,14 @@ class PaymentMethodIndexDto extends Dto implements InstantiateFromRequest
 {
     private string|Missing $shipping_method_id;
     private string|Missing $order_code;
+    private array|Missing $ids;
 
     public static function instantiateFromRequest(FormRequest|PaymentMethodIndexRequest $request): self
     {
         return new self(
             shipping_method_id: $request->input('shipping_method_id', new Missing()),
             order_code: $request->input('order_code', new Missing()),
+            ids: $request->input('ids', new Missing()),
         );
     }
 
@@ -29,5 +31,10 @@ class PaymentMethodIndexDto extends Dto implements InstantiateFromRequest
     public function getOrderCode(): Missing|string
     {
         return $this->order_code;
+    }
+
+    public function getIds(): Missing|array
+    {
+        return $this->ids;
     }
 }

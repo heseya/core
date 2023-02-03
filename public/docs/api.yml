@@ -181,9 +181,11 @@ paths:
     $ref: './paths/Pages.yml#/PagesParam'
   /pages/reorder:
     $ref: './paths/Pages.yml#/PagesReorder'
-  '/orders/{code}/pay/{payment_method}':
+  /orders/{code}/pay/id:{payment_method}:
     $ref: './paths/Orders.yml#/OrdersCodePay'
-  '/payments/{payment_method}':
+  /orders/{code}/pay/offline:
+    $ref: './paths/Orders.yml#/OrdersCodePayOffline'
+  /payments/{payment_method}:
     post:
       tags:
         - Payments
@@ -198,15 +200,13 @@ paths:
       responses:
         200:
           description: Success
-  '/orders/{code}/pay/offline':
-    $ref: './paths/Orders.yml#/OrdersCodePayOffline'
   /payment-methods:
     $ref: './paths/PaymentMethods.yml#/PaymentMethods'
-  '/payment-methods/id:{id}':
+  /payment-methods/id:{id}:
     $ref: './paths/PaymentMethods.yml#/PaymentMethodsParams'
-  '/payments':
+  /payments:
     $ref: './paths/Payments.yml#/Payments'
-  '/payments/id:{id}':
+  /payments/id:{id}:
     $ref: './paths/Payments.yml#/PaymentParams'
   /permissions:
     get:

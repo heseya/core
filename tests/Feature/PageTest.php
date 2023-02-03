@@ -97,6 +97,32 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexByIds($user): void
+    {
+        $this->$user->givePermissionTo('pages.show');
+
+        Page::factory()->count(10)->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/pages', [
+                'ids' => [
+                    $this->page->getKey(),
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJson(['data' => [
+                0 => $this->expected,
+            ],
+            ]);
+
+        $this->assertQueryCountLessThan(11);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexPerformance($user): void
     {
         $this->$user->givePermissionTo('pages.show');

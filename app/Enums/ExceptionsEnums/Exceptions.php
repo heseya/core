@@ -99,7 +99,8 @@ final class Exceptions extends Enum
     public const SERVER_ERROR = 'Server responded with an error';
     public const SERVER_ORDER_STATUSES_NOT_CONFIGURED = 'Order statuses are not configured';
     public const SERVER_TRANSACTION_ERROR = 'Unexpected error occurred during the database transaction.';
-    public const SERVER_PAYMENT_MICROSERVICE_ERROR = 'Microservice response is not OK.';
+    public const SERVER_PAYMENT_MICROSERVICE_ERROR = 'Payment service error.';
+    public const SERVER_MAPPING_NOT_FOUND = 'Not found mapping for this query';
 
     public const ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE = 'Not every item is available';
     public const ORDER_SHIPPING_METHOD_TYPE_MISMATCH = 'Selected shipping methods don\'t match selected product types';
@@ -115,6 +116,9 @@ final class Exceptions extends Enum
     public const CLIENT_ALREADY_HAS_ACCOUNT = 'User with given email already exist.';
 
     public const CLIENT_PROVIDER_MERGE_TOKEN_EXPIRED = 'Provider merge token has expired';
+    public const CLIENT_PROVIDER_MERGE_TOKEN_INVALID = 'Provider merge token is invalid';
+    public const CLIENT_PROVIDER_MERGE_TOKEN_MISMATCH =
+        'Provider merge token is for an account with different email address';
 
     public static function getCode(string $value): int
     {
@@ -129,8 +133,7 @@ final class Exceptions extends Enum
             self::CLIENT_WEBHOOK_USER_ACTION => 403,
             self::SERVER_CDN_ERROR,
             self::SERVER_ERROR,
-            self::SERVER_ORDER_STATUSES_NOT_CONFIGURED => 500,
-            self::SERVER_CDN_ERROR,
+            self::SERVER_ORDER_STATUSES_NOT_CONFIGURED,
             self::SERVER_PAYMENT_MICROSERVICE_ERROR => 500,
             default => 422
         };

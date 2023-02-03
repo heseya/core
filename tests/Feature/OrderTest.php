@@ -183,6 +183,36 @@ class OrderTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexByIds($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        Order::factory()->count(10)->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/orders', [
+                'ids' => [
+                    $this->order->getKey(),
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonStructure(['data' => [
+                0 => $this->expected_full_structure,
+            ],
+            ])
+            ->assertJson(['data' => [
+                0 => $this->expected,
+            ],
+            ]);
+
+        $this->assertQueryCountLessThan(21);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexPerformance($user): void
     {
         $this->$user->givePermissionTo('orders.show');
@@ -1369,7 +1399,7 @@ class OrderTest extends TestCase
 
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $this->order->summary / 2,
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
         ]));
 
         $response = $this->actingAs($this->$user)

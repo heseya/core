@@ -19,6 +19,12 @@ PackageTemplates:
         required: false
         schema:
           $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: 'ids[]'
+        in: query
+        description: 'Ids array search'
+        schema:
+          type: string
+        example: 'ids[]=5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
     summary: 'list packages'
     operationId: 521fda12b023dd7945d369e3c30599c5
     responses:

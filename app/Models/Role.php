@@ -6,6 +6,7 @@ use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\RoleAssignableSearch;
 use App\Criteria\RoleSearch;
+use App\Criteria\WhereInIds;
 use App\Enums\RoleType;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasMetadata;
@@ -48,6 +49,7 @@ class Role extends SpatieRole implements AuditableContract
         'assignable' => RoleAssignableSearch::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
+        'ids' => WhereInIds::class,
     ];
 
     public function users(): BelongsToMany

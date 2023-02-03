@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\WhereInIds;
 use App\Enums\SavedAddressType;
 use App\Services\Contracts\UrlServiceContract;
 use App\Traits\HasMetadata;
@@ -58,6 +59,7 @@ class App extends Model implements
     protected array $criteria = [
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
+        'ids' => WhereInIds::class,
     ];
 
     public function setUrlAttribute(string $url): void

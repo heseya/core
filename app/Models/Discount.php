@@ -7,6 +7,7 @@ use App\Criteria\ForRoleDiscountSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\WhereHasCode;
+use App\Criteria\WhereInIds;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Traits\HasMetadata;
@@ -59,6 +60,7 @@ class Discount extends Model implements AuditableContract
         'metadata_private' => MetadataPrivateSearch::class,
         'coupon' => WhereHasCode::class,
         'for_role' => ForRoleDiscountSearch::class,
+        'ids' => WhereInIds::class,
     ];
 
     public function getUsesAttribute(): int

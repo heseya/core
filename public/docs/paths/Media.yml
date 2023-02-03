@@ -17,6 +17,12 @@ Media:
         schema:
           type: boolean
           example: false
+      - name: 'ids[]'
+        in: query
+        description: 'Ids array search'
+        schema:
+          type: string
+        example: 'ids[]=5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
     responses:
       200:
         description: OK
@@ -42,6 +48,9 @@ Media:
                 description: 'File. Accepted extensions: jpeg, png, gif, bmp, svg, mp4, webm, ogg, avi, mov, wmv'
                 type: string
                 format: binary
+              slug:
+                type: string
+                example: 'awesome-photo'
               alt:
                 type: string
                 example: 'alt'

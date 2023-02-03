@@ -34,13 +34,17 @@ class ProductIndexRequest extends FormRequest
         return [
             'search' => ['nullable', 'string', 'max:255'],
 
-            'ids' => ['string'],
+            'ids' => ['array'],
+            'ids.*' => ['uuid'],
             'name' => ['nullable', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255'],
             'public' => [new Boolean()],
             'sort' => ['nullable', 'string', 'max:255'],
             'available' => ['nullable'],
             'has_cover' => ['nullable', new Boolean()],
+            'has_items' => ['nullable', new Boolean()],
+            'has_schemas' => ['nullable', new Boolean()],
+            'shipping_digital' => ['nullable', new Boolean()],
 
             'sets' => ['nullable', 'array'],
             'sets.*' => ['string', $setsExist],

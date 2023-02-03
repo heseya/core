@@ -11,7 +11,7 @@
         "ext-openssl": "*",
         "ext-soap": "*",
         "bensampo/laravel-enum": "^v6.2.1",
-        "bvlinsky/explorer": "^3.1",
+        "bvlinsky/explorer": "^3.4.1",
         "elasticsearch/elasticsearch": "^7.16",
         "guzzlehttp/guzzle": "^7.4",
         "guzzlehttp/psr7": "^2.2",

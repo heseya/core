@@ -1740,12 +1740,90 @@ class CartTest extends TestCase
                     'value' => 460,
                 ] + $discountCode1
             )
-            ->assertJsonFragment(
+            ->assertJsonMissing(
                 [
                     'id' => $discount->getKey(),
                     'name' => $discount->name,
                     'value' => 0,
                 ] + $discountCode2
+            );
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessSaleWithTargetProduct($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $productWithSale = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $sale = Discount::factory()->create([
+            'code' => null,
+            'description' => 'Promocja',
+            'name' => 'Promocja na produkt',
+            'value' => 100,
+            'type' => DiscountType::AMOUNT,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+        ]);
+
+        $sale->products()->attach($productWithSale->getKey());
+
+        $saleShippingMethod = Discount::factory()->create([
+            'code' => null,
+            'description' => 'Promocja dostawa',
+            'name' => 'Promocja na dostawę',
+            'value' => 100,
+            'type' => DiscountType::AMOUNT,
+            'target_type' => DiscountTargetType::SHIPPING_PRICE,
+            'target_is_allow_list' => true,
+        ]);
+
+        $saleShippingMethod->shippingMethods()->attach($saleShippingMethod->getKey());
+
+        $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [],
+                ],
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 9200,
+                'cart_total' => 9200,
+                'shipping_price_initial' => 0,
+                'shipping_price' => 0,
+                'summary' => 9200,
+                'coupons' => [],
+                'sales' => [],
+            ])
+            ->assertJsonCount(0, 'data.sales')
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => 4600,
+                'price_discounted' => 4600,
+            ])
+            ->assertJsonMissing(
+                [
+                    'id' => $sale->getKey(),
+                    'name' => $sale->name,
+                    'value' => 0,
+                ]
+            )
+            ->assertJsonMissing(
+                [
+                    'id' => $saleShippingMethod->getKey(),
+                    'name' => $saleShippingMethod->name,
+                    'value' => 0,
+                ]
             );
     }
 

@@ -12,7 +12,6 @@ class PaymentMethodDto extends Dto
     private string|Missing $name;
     private string|Missing $icon;
     private string|Missing $url;
-    private string|Missing $alias;
     private bool|Missing $public;
 
     public static function instantiateFromRequest(PaymentMethodStoreRequest|PaymentMethodUpdateRequest $request): self
@@ -22,7 +21,6 @@ class PaymentMethodDto extends Dto
             icon: $request->input('icon', new Missing()),
             url: $request->input('url', new Missing()),
             public: $request->input('public', new Missing()),
-            alias: $request->input('alias', new Missing()),
         );
     }
 
@@ -44,10 +42,5 @@ class PaymentMethodDto extends Dto
     public function getPublic(): bool|Missing
     {
         return $this->public;
-    }
-
-    public function getAlias(): string|Missing
-    {
-        return $this->alias;
     }
 }

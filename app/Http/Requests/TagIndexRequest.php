@@ -10,6 +10,8 @@ class TagIndexRequest extends FormRequest
     {
         return [
             'search' => ['nullable', 'string'],
+            'ids' => ['array'],
+            'ids.*' => ['uuid'],
         ];
     }
 }

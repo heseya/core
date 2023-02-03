@@ -18,6 +18,8 @@ parameters:
           path: ./app/Dtos/*
         - message: '#Property [a-zA-Z0-9\\_]+::\$[a-zA-Z0-9\\_]+ is unused\.#'
           path: ./app/Dtos/*
+        - message: '#::flatMap\(\)#'
+          path: ./app/Services/UserService
 
     excludePaths:
         - ./app/Payments/*
