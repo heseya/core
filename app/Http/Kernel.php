@@ -4,6 +4,7 @@ namespace App\Http;
 
 use App\Http\Middleware\AppAccessRestrict;
 use App\Http\Middleware\Authenticate;
+use App\Http\Middleware\ForceSQL;
 use App\Http\Middleware\Language;
 use App\Http\Middleware\SecureHeaders;
 use App\Http\Middleware\TrimStrings;
@@ -41,6 +42,7 @@ class Kernel extends HttpKernel
         Pagination::class,
         Authenticate::class,
         UndotParams::class,
+        ForceSQL::class,
     ];
 
     /**
@@ -85,6 +87,7 @@ class Kernel extends HttpKernel
         UndotParams::class,
         SecureHeaders::class,
         SubstituteBindings::class,
+        ForceSQL::class,
         Authenticate::class,
         AppAccessRestrict::class,
         Authorize::class,
