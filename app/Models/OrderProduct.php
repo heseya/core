@@ -16,7 +16,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class OrderProduct extends Model
 {
-    use HasFactory, HasOrderDiscount, HasCriteria, Sortable;
+    use HasFactory;
+    use HasOrderDiscount;
+    use HasCriteria;
+    use Sortable;
 
     protected $fillable = [
         'quantity',

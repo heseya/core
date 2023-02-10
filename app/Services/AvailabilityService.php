@@ -396,7 +396,6 @@ class AvailabilityService implements AvailabilityServiceContract
         \Carbon\Carbon|string|null $shippingDate2,
         bool $isAfter = false,
     ): \Carbon\Carbon|null {
-
         // TODO: find why this is string and remove this section
         if (is_string($shippingDate1)) {
             $shippingDate1 = Carbon::createFromTimeString($shippingDate1);

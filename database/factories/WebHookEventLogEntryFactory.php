@@ -6,7 +6,6 @@ use App\Enums\EventType;
 use App\Models\WebHook;
 use App\Models\WebHookEventLogEntry;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
 class WebHookEventLogEntryFactory extends Factory
 {

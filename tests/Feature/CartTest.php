@@ -27,7 +27,8 @@ use Tests\TestCase;
 
 class CartTest extends TestCase
 {
-    use RefreshDatabase, WithFaker;
+    use RefreshDatabase;
+    use WithFaker;
 
     private ShippingMethod $shippingMethod;
     private ShippingMethod $digitalShippingMethod;

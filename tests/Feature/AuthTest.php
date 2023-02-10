@@ -840,7 +840,7 @@ class AuthTest extends TestCase
         $password = 'Passwd###111';
 
         $user = User::factory()->create([
-            'name' => $this->faker->firstName() . ' '  . $this->faker->lastName(),
+            'name' => $this->faker->firstName() . ' ' . $this->faker->lastName(),
             'email' => $email,
             'password' => Hash::make($password),
         ]);
@@ -863,7 +863,7 @@ class AuthTest extends TestCase
         $password = 'Passwd###111';
 
         $user = User::factory()->create([
-            'name' => $this->faker->firstName() . ' '  . $this->faker->lastName(),
+            'name' => $this->faker->firstName() . ' ' . $this->faker->lastName(),
             'email' => $email,
             'password' => Hash::make($password),
         ]);
@@ -970,7 +970,7 @@ class AuthTest extends TestCase
         $password = 'Passwd###111';
 
         User::factory()->create([
-            'name' => $this->faker->firstName() . ' '  . $this->faker->lastName(),
+            'name' => $this->faker->firstName() . ' ' . $this->faker->lastName(),
             'email' => $email,
             'password' => Hash::make($password),
         ]);
@@ -997,7 +997,7 @@ class AuthTest extends TestCase
         $newPassword = 'NewPasswd###111';
 
         $user = User::factory()->create([
-            'name' => $this->faker->firstName() . ' '  . $this->faker->lastName(),
+            'name' => $this->faker->firstName() . ' ' . $this->faker->lastName(),
             'email' => $email,
         ]);
 
@@ -1020,7 +1020,7 @@ class AuthTest extends TestCase
         $newPassword = 'NewPasswd###111';
 
         $user = User::factory()->create([
-            'name' => $this->faker->firstName() . ' '  . $this->faker->lastName(),
+            'name' => $this->faker->firstName() . ' ' . $this->faker->lastName(),
             'email' => $email,
         ]);
 
@@ -1056,7 +1056,7 @@ class AuthTest extends TestCase
         $newPassword = 'NewPasswd###111';
 
         $user = User::factory()->create([
-            'name' => $this->faker->firstName() . ' '  . $this->faker->lastName(),
+            'name' => $this->faker->firstName() . ' ' . $this->faker->lastName(),
             'email' => $email,
         ]);
 

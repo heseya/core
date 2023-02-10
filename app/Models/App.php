@@ -32,13 +32,13 @@ class App extends Model implements
     AuthenticatableContract,
     JWTSubject
 {
-    use HasFactory,
-        HasCriteria,
-        Authorizable,
-        Authenticatable,
-        HasPermissions,
-        HasWebHooks,
-        HasMetadata;
+    use HasFactory;
+    use HasCriteria;
+    use Authorizable;
+    use Authenticatable;
+    use HasPermissions;
+    use HasWebHooks;
+    use HasMetadata;
 
     protected string $guard_name = 'api';
     protected $fillable = [

@@ -17,7 +17,10 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Status extends Model implements AuditableContract
 {
-    use HasFactory, HasCriteria, Auditable, HasMetadata;
+    use HasFactory;
+    use HasCriteria;
+    use Auditable;
+    use HasMetadata;
 
     protected $fillable = [
         'name',

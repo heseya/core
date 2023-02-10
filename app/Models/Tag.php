@@ -14,7 +14,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class Tag extends Model
 {
-    use HasFactory, HasCriteria;
+    use HasFactory;
+    use HasCriteria;
 
     protected $fillable = [
         'name',

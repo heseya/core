@@ -25,12 +25,14 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @property SchemaType $type;
- *
  * @mixin IdeHelperSchema
  */
 class Schema extends Model implements SortableContract
 {
-    use HasFactory, HasCriteria, Sortable, HasMetadata;
+    use HasFactory;
+    use HasCriteria;
+    use Sortable;
+    use HasMetadata;
 
     protected $fillable = [
         'type',

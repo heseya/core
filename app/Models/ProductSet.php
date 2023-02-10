@@ -26,12 +26,17 @@ use Illuminate\Support\Str;
 
 /**
  * @property mixed $pivot
- *
  * @mixin IdeHelperProductSet
  */
 class ProductSet extends Model
 {
-    use HasCriteria, HasFactory, SoftDeletes, HasSeoMetadata, HasMetadata, HasDiscountConditions, HasDiscounts;
+    use HasCriteria;
+    use HasFactory;
+    use SoftDeletes;
+    use HasSeoMetadata;
+    use HasMetadata;
+    use HasDiscountConditions;
+    use HasDiscounts;
 
     protected $fillable = [
         'name',

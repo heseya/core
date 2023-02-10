@@ -12,7 +12,9 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class ProductSetStoreRequest extends FormRequest implements SeoRequestContract, MetadataRequestContract
 {
-    use SeoRules, BooleanRules, MetadataRules;
+    use SeoRules;
+    use BooleanRules;
+    use MetadataRules;
 
     protected array $booleanFields = [
         'slug_override',

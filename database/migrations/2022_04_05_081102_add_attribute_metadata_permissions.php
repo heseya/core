@@ -5,7 +5,7 @@ use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Database\Migrations\Migration;
 
-return new class() extends Migration {
+return new class extends Migration {
     public function up(): void
     {
         Permission::create(['name' => 'attributes.show_metadata_private', 'display_name' => 'Możliwość wyświetlania prywatnych metadanych atrybutów oraz opcji atrybutów']);

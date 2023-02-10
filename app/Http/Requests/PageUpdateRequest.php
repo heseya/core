@@ -12,7 +12,8 @@ use Illuminate\Validation\Rule;
 
 class PageUpdateRequest extends FormRequest implements SeoRequestContract
 {
-    use SeoRules, BooleanRules;
+    use SeoRules;
+    use BooleanRules;
 
     protected array $booleanFields = [
         'public',

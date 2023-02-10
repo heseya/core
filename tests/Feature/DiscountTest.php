@@ -436,7 +436,7 @@ class DiscountTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->json('GET', "/{$discountKind}/id:" .  $discount->getKey())
+            ->json('GET', "/{$discountKind}/id:" . $discount->getKey())
             ->assertNotFound();
     }
 
@@ -1842,7 +1842,7 @@ class DiscountTest extends TestCase
         Event::fake();
 
         $this
-            ->patchJson("/{$discountKind}/id:" .  $discount->getKey())
+            ->patchJson("/{$discountKind}/id:" . $discount->getKey())
             ->assertForbidden();
 
         $event = $discountKind === 'coupons' ? CouponUpdated::class : SaleUpdated::class;
@@ -1863,7 +1863,7 @@ class DiscountTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->patchJson("/{$discountKind}/id:" .  $discount->getKey(), [
+            ->patchJson("/{$discountKind}/id:" . $discount->getKey(), [
                 'code' => 'S43SA2',
             ])
             ->assertNotFound();
@@ -1884,7 +1884,7 @@ class DiscountTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->patchJson("/{$discountKind}/id:" .  $discount->getKey(), [
+            ->patchJson("/{$discountKind}/id:" . $discount->getKey(), [
                 'name' => '',
             ])
             ->assertUnprocessable();

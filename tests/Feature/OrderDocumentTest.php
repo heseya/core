@@ -155,7 +155,7 @@ class OrderDocumentTest extends TestCase
 
         $response
             ->assertJsonFragment([
-                'message' => 'Document with id '. $wrongDocId . ' doesn\'t belong to this order.',
+                'message' => 'Document with id ' . $wrongDocId . ' doesn\'t belong to this order.',
             ])
             ->assertStatus(JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
 

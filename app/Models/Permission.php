@@ -10,12 +10,12 @@ use Spatie\Permission\Models\Permission as SpatiePermission;
 
 /**
  * @property string $name
- *
  * @mixin IdeHelperPermission
  */
 class Permission extends SpatiePermission
 {
-    use HasCriteria, HasUuid;
+    use HasCriteria;
+    use HasUuid;
 
     protected $fillable = [
         'name',

@@ -1,0 +1,17 @@
+{
+  "preset": "psr12",
+  "rules": {
+    "concat_space": {
+      "spacing": "one"
+    },
+    "not_operator_with_space": false,
+    "simplified_null_return": true,
+    "no_useless_concat_operator": {
+      "juggle_simple_strings": true
+    },
+    "new_with_braces": {
+      "anonymous_class": false,
+      "named_class": true
+    }
+  }
+}

@@ -27,7 +27,8 @@ use Tests\TestCase;
 
 class AvailabilityTest extends TestCase
 {
-    use RefreshDatabase, WithFaker;
+    use RefreshDatabase;
+    use WithFaker;
 
     private Item $item;
     private Option $option;

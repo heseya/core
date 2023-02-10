@@ -152,7 +152,7 @@ class PerformanceTest extends TestCase
         ]);
         $this
             ->actingAs($this->user)
-            ->getJson('/attributes/id:'. $attribute->getKey())
+            ->getJson('/attributes/id:' . $attribute->getKey())
             ->assertOk();
 
         $this->assertQueryCountLessThan(9);

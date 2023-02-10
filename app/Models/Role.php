@@ -25,12 +25,16 @@ use Spatie\Permission\PermissionRegistrar;
 /**
  * @property RoleType $type
  * @property string $name
- *
  * @mixin IdeHelperRole
  */
 class Role extends SpatieRole implements AuditableContract
 {
-    use HasCriteria, HasUuid, HasFactory, Auditable, HasMetadata, HasDiscountConditions;
+    use HasCriteria;
+    use HasUuid;
+    use HasFactory;
+    use Auditable;
+    use HasMetadata;
+    use HasDiscountConditions;
 
     protected $fillable = [
         'name',

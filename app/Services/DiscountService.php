@@ -1314,10 +1314,10 @@ class DiscountService implements DiscountServiceContract
         $endAt = $conditionDto->getEndAt();
 
         $startAt = !$startAt instanceof Missing && !Str::contains($startAt, ':')
-            ? Str::before($startAt, 'T'). 'T00:00:00' : $startAt;
+            ? Str::before($startAt, 'T') . 'T00:00:00' : $startAt;
 
         $endAt = !$endAt instanceof Missing && !Str::contains($endAt, ':')
-            ? Str::before($endAt, 'T'). 'T23:59:59' : $endAt;
+            ? Str::before($endAt, 'T') . 'T23:59:59' : $endAt;
 
         if (!$startAt instanceof Missing && !$endAt instanceof Missing) {
             return $actualDate

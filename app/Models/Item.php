@@ -24,12 +24,16 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @property mixed $pivot
- *
  * @mixin IdeHelperItem
  */
 class Item extends Model implements AuditableContract, SortableContract
 {
-    use SoftDeletes, HasFactory, HasCriteria, Sortable, Auditable, HasMetadata;
+    use SoftDeletes;
+    use HasFactory;
+    use HasCriteria;
+    use Sortable;
+    use Auditable;
+    use HasMetadata;
 
     protected $fillable = [
         'name',
