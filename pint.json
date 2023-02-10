@@ -1,11 +1,12 @@
 {
   "preset": "psr12",
   "rules": {
+    "not_operator_with_space": false,
+    "simplified_null_return": true,
+    "array_push": true,
     "concat_space": {
       "spacing": "one"
     },
-    "not_operator_with_space": false,
-    "simplified_null_return": true,
     "no_useless_concat_operator": {
       "juggle_simple_strings": true
     },

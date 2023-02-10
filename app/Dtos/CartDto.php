@@ -74,7 +74,7 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
         $result = [];
         /** @var CartItemDto $item */
         foreach ($this->items as $item) {
-            array_push($result, $item->getProductId());
+            $result[] = $item->getProductId();
         }
         return $result;
     }
