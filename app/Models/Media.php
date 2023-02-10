@@ -15,9 +15,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class Media extends Model
 {
-    use HasFactory,
-        HasCriteria,
-        HasMetadata;
+    use HasFactory;
+    use HasCriteria;
+    use HasMetadata;
 
     /**
      * The table associated with the model.

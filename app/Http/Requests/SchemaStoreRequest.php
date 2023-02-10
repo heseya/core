@@ -11,7 +11,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class SchemaStoreRequest extends FormRequest
 {
-    use BooleanRules, MetadataRules;
+    use BooleanRules;
+    use MetadataRules;
 
     protected array $booleanFields = [
         'options.*.disabled',

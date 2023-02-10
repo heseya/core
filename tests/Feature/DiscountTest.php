@@ -179,7 +179,7 @@ class DiscountTest extends TestCase
      */
     public function testIndexUnauthorized($discountKind): void
     {
-        $response = $this->getJson("/${discountKind}");
+        $response = $this->getJson("/{$discountKind}");
         $response->assertForbidden();
     }
 
@@ -188,11 +188,11 @@ class DiscountTest extends TestCase
      */
     public function testIndex($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.show");
+        $this->$user->givePermissionTo("{$discountKind}.show");
 
         $this
             ->actingAs($this->$user)
-            ->getJson("/${discountKind}")
+            ->getJson("/{$discountKind}")
             ->assertOk()
             ->assertJsonCount(10, 'data');
 
@@ -204,14 +204,14 @@ class DiscountTest extends TestCase
      */
     public function testIndexPerformance($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.show");
+        $this->$user->givePermissionTo("{$discountKind}.show");
 
         $codes = $discountKind === 'coupons' ? [] : ['code' => null];
         Discount::factory($codes)->count(490)->create();
 
         $this
             ->actingAs($this->$user)
-            ->getJson("/${discountKind}?limit=500")
+            ->getJson("/{$discountKind}?limit=500")
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
@@ -379,7 +379,7 @@ class DiscountTest extends TestCase
 
         $discount = Discount::factory($code)->create();
 
-        $response = $this->getJson("/${discountKind}/id:" . $discount->getKey());
+        $response = $this->getJson("/{$discountKind}/id:" . $discount->getKey());
         $response->assertForbidden();
     }
 
@@ -388,14 +388,14 @@ class DiscountTest extends TestCase
      */
     public function testShowById($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.show_details");
+        $this->$user->givePermissionTo("{$discountKind}.show_details");
 
         $code = $discountKind === 'coupons' ? [] : ['code' => null];
         $discount = Discount::factory($code)->create();
 
         $this
             ->actingAs($this->$user)
-            ->getJson("/${discountKind}/id:" . $discount->getKey())
+            ->getJson("/{$discountKind}/id:" . $discount->getKey())
             ->assertOk()
             ->assertJsonFragment([
                 'id' => $discount->getKey(),
@@ -408,7 +408,7 @@ class DiscountTest extends TestCase
      */
     public function testShowByIdInactive($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.show_details");
+        $this->$user->givePermissionTo("{$discountKind}.show_details");
 
         $code = $discountKind === 'coupons' ? [] : ['code' => null];
         $discount = Discount::factory($code)->create([
@@ -417,7 +417,7 @@ class DiscountTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->getJson("/${discountKind}/id:" . $discount->getKey())
+            ->getJson("/{$discountKind}/id:" . $discount->getKey())
             ->assertOk()
             ->assertJsonFragment([
                 'id' => $discount->getKey(),
@@ -429,14 +429,14 @@ class DiscountTest extends TestCase
      */
     public function testShowInvalidDiscount($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.show_details");
+        $this->$user->givePermissionTo("{$discountKind}.show_details");
 
         $code = $discountKind === 'sales' ? [] : ['code' => null];
         $discount = Discount::factory($code)->create();
 
         $this
             ->actingAs($this->$user)
-            ->json('GET', "/${discountKind}/id:" .  $discount->getKey())
+            ->json('GET', "/{$discountKind}/id:" . $discount->getKey())
             ->assertNotFound();
     }
 
@@ -466,7 +466,7 @@ class DiscountTest extends TestCase
     {
         Event::fake();
 
-        $response = $this->postJson("/${discountKind}");
+        $response = $this->postJson("/{$discountKind}");
         $response->assertForbidden();
 
         $event = $discountKind === 'coupons' ? CouponCreated::class : SaleCreated::class;
@@ -478,7 +478,7 @@ class DiscountTest extends TestCase
      */
     public function testCreateSimple($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.add");
+        $this->$user->givePermissionTo("{$discountKind}.add");
 
         $event = $discountKind === 'coupons' ? CouponCreated::class : SaleCreated::class;
 
@@ -513,7 +513,7 @@ class DiscountTest extends TestCase
 
         $response = $this
             ->actingAs($this->$user)
-            ->json('POST', "/${discountKind}", $discount + $conditions);
+            ->json('POST', "/{$discountKind}", $discount + $conditions);
 
         $response
             ->assertCreated()
@@ -591,7 +591,7 @@ class DiscountTest extends TestCase
      */
     public function testCreateWithMetadata($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.add");
+        $this->$user->givePermissionTo("{$discountKind}.add");
 
         $event = $discountKind === 'coupons' ? CouponCreated::class : SaleCreated::class;
 
@@ -616,7 +616,7 @@ class DiscountTest extends TestCase
 
         $response = $this
             ->actingAs($this->$user)
-            ->json('POST', "/${discountKind}", $discount);
+            ->json('POST', "/{$discountKind}", $discount);
 
         $response
             ->assertCreated()
@@ -628,7 +628,7 @@ class DiscountTest extends TestCase
      */
     public function testCreateWithMetadataPrivate($user, $discountKind): void
     {
-        $this->$user->givePermissionTo(["${discountKind}.add", "${discountKind}.show_metadata_private"]);
+        $this->$user->givePermissionTo(["{$discountKind}.add", "{$discountKind}.show_metadata_private"]);
 
         $event = $discountKind === 'coupons' ? CouponCreated::class : SaleCreated::class;
 
@@ -653,7 +653,7 @@ class DiscountTest extends TestCase
 
         $response = $this
             ->actingAs($this->$user)
-            ->json('POST', "/${discountKind}", $discount);
+            ->json('POST', "/{$discountKind}", $discount);
 
         $response
             ->assertCreated()
@@ -665,7 +665,7 @@ class DiscountTest extends TestCase
      */
     public function testCreateWithShippingMethod($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.add");
+        $this->$user->givePermissionTo("{$discountKind}.add");
 
         $event = $discountKind === 'coupons' ? CouponCreated::class : SaleCreated::class;
 
@@ -695,7 +695,7 @@ class DiscountTest extends TestCase
 
         $response = $this
             ->actingAs($this->$user)
-            ->json('POST', "/${discountKind}", $discount + $shippingMethods);
+            ->json('POST', "/{$discountKind}", $discount + $shippingMethods);
 
         $response
             ->assertCreated()
@@ -721,7 +721,7 @@ class DiscountTest extends TestCase
      */
     public function testCreateWithProduct($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.add");
+        $this->$user->givePermissionTo("{$discountKind}.add");
 
         if ($discountKind === 'coupons') {
             $event = CouponCreated::class;
@@ -769,7 +769,7 @@ class DiscountTest extends TestCase
 
         $response = $this
             ->actingAs($this->$user)
-            ->json('POST', "/${discountKind}", $discount + $data);
+            ->json('POST', "/{$discountKind}", $discount + $data);
 
         $response
             ->assertCreated()
@@ -807,7 +807,7 @@ class DiscountTest extends TestCase
      */
     public function testCreateWithProductInactive($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.add");
+        $this->$user->givePermissionTo("{$discountKind}.add");
 
         $minPriceDiscounted = 900;
         $maxPriceDiscounted = 1200;
@@ -849,7 +849,7 @@ class DiscountTest extends TestCase
 
         $response = $this
             ->actingAs($this->$user)
-            ->json('POST', "/${discountKind}", $discount + $data);
+            ->json('POST', "/{$discountKind}", $discount + $data);
 
         $response
             ->assertCreated()
@@ -1038,7 +1038,7 @@ class DiscountTest extends TestCase
      */
     public function testCreateNoDescription($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.add");
+        $this->$user->givePermissionTo("{$discountKind}.add");
 
         Queue::fake();
 
@@ -1055,7 +1055,7 @@ class DiscountTest extends TestCase
             $discount['code'] = 'S43SA2';
         }
 
-        $response = $this->actingAs($this->$user)->json('POST', "/${discountKind}", $discount + ['description' => '']);
+        $response = $this->actingAs($this->$user)->json('POST', "/{$discountKind}", $discount + ['description' => '']);
 
         $response
             ->assertCreated()
@@ -1071,7 +1071,7 @@ class DiscountTest extends TestCase
      */
     public function testCreateMaxValuePercentage($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.add");
+        $this->$user->givePermissionTo("{$discountKind}.add");
 
         Queue::fake();
 
@@ -1088,7 +1088,7 @@ class DiscountTest extends TestCase
             $discount['code'] = 'S43SA2';
         }
 
-        $response = $this->actingAs($this->$user)->json('POST', "/${discountKind}", $discount);
+        $response = $this->actingAs($this->$user)->json('POST', "/{$discountKind}", $discount);
 
         $response
             ->assertStatus(422);
@@ -1099,7 +1099,7 @@ class DiscountTest extends TestCase
      */
     public function testCreateMaxValueAmount($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.add");
+        $this->$user->givePermissionTo("{$discountKind}.add");
 
         Queue::fake();
 
@@ -1116,7 +1116,7 @@ class DiscountTest extends TestCase
             $discount['code'] = 'S43SA2';
         }
 
-        $response = $this->actingAs($this->$user)->json('POST', "/${discountKind}", $discount);
+        $response = $this->actingAs($this->$user)->json('POST', "/{$discountKind}", $discount);
 
         $response
             ->assertCreated()
@@ -1132,7 +1132,7 @@ class DiscountTest extends TestCase
      */
     public function testCreateMinValuePercentage($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.add");
+        $this->$user->givePermissionTo("{$discountKind}.add");
 
         Queue::fake();
 
@@ -1149,7 +1149,7 @@ class DiscountTest extends TestCase
             $discount['code'] = 'S43SA2';
         }
 
-        $response = $this->actingAs($this->$user)->json('POST', "/${discountKind}", $discount);
+        $response = $this->actingAs($this->$user)->json('POST', "/{$discountKind}", $discount);
 
         $response
             ->assertStatus(422);
@@ -1160,7 +1160,7 @@ class DiscountTest extends TestCase
      */
     public function testCreateMinValueAmount($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.add");
+        $this->$user->givePermissionTo("{$discountKind}.add");
 
         Queue::fake();
 
@@ -1177,7 +1177,7 @@ class DiscountTest extends TestCase
             $discount['code'] = 'S43SA2';
         }
 
-        $response = $this->actingAs($this->$user)->json('POST', "/${discountKind}", $discount);
+        $response = $this->actingAs($this->$user)->json('POST', "/{$discountKind}", $discount);
 
         $response
             ->assertStatus(422);
@@ -1188,7 +1188,7 @@ class DiscountTest extends TestCase
      */
     public function testCreateFull($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.add");
+        $this->$user->givePermissionTo("{$discountKind}.add");
 
         $discount = [
             'name' => 'Kupon',
@@ -1212,7 +1212,7 @@ class DiscountTest extends TestCase
             ],
         ];
 
-        $response = $this->actingAs($this->$user)->json('POST', "/${discountKind}", $discount + $conditions);
+        $response = $this->actingAs($this->$user)->json('POST', "/{$discountKind}", $discount + $conditions);
 
         $response
             ->assertCreated()
@@ -1419,7 +1419,7 @@ class DiscountTest extends TestCase
      */
     public function testCreateWeekdayInCondition($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.add");
+        $this->$user->givePermissionTo("{$discountKind}.add");
 
         $discount = [
             'name' => 'Kupon',
@@ -1448,7 +1448,7 @@ class DiscountTest extends TestCase
             ],
         ];
 
-        $response = $this->actingAs($this->$user)->json('POST', "/${discountKind}", $discount + $conditions);
+        $response = $this->actingAs($this->$user)->json('POST', "/{$discountKind}", $discount + $conditions);
 
         $response
             ->assertCreated()
@@ -1484,7 +1484,7 @@ class DiscountTest extends TestCase
      */
     public function testCreateDateBetweenCondition($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.add");
+        $this->$user->givePermissionTo("{$discountKind}.add");
 
         $discount = [
             'name' => 'Kupon',
@@ -1515,7 +1515,7 @@ class DiscountTest extends TestCase
             ],
         ];
 
-        $response = $this->actingAs($this->$user)->json('POST', "/${discountKind}", $discount + $conditions);
+        $response = $this->actingAs($this->$user)->json('POST', "/{$discountKind}", $discount + $conditions);
 
         $response
             ->assertCreated()
@@ -1739,7 +1739,7 @@ class DiscountTest extends TestCase
      */
     public function testCreateInvalidConditionType($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.add");
+        $this->$user->givePermissionTo("{$discountKind}.add");
 
         $discount = [
             'name' => 'Kupon',
@@ -1765,7 +1765,7 @@ class DiscountTest extends TestCase
             $discount['code'] = 'S43SA2';
         }
 
-        $response = $this->actingAs($this->$user)->json('POST', "/${discountKind}", $discount);
+        $response = $this->actingAs($this->$user)->json('POST', "/{$discountKind}", $discount);
 
         $response
             ->assertStatus(422);
@@ -1776,7 +1776,7 @@ class DiscountTest extends TestCase
      */
     public function testCreateWithWebHookEvent($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.add");
+        $this->$user->givePermissionTo("{$discountKind}.add");
 
         if ($discountKind === 'coupons') {
             $event = CouponCreated::class;
@@ -1800,7 +1800,7 @@ class DiscountTest extends TestCase
 
         Event::fake($event);
 
-        $response = $this->actingAs($this->$user)->json('POST', "/${discountKind}", [
+        $response = $this->actingAs($this->$user)->json('POST', "/{$discountKind}", [
             'name' => 'Kupon',
             'description' => 'Testowy kupon',
             'value' => 10,
@@ -1842,7 +1842,7 @@ class DiscountTest extends TestCase
         Event::fake();
 
         $this
-            ->patchJson("/${discountKind}/id:" .  $discount->getKey())
+            ->patchJson("/{$discountKind}/id:" . $discount->getKey())
             ->assertForbidden();
 
         $event = $discountKind === 'coupons' ? CouponUpdated::class : SaleUpdated::class;
@@ -1854,7 +1854,7 @@ class DiscountTest extends TestCase
      */
     public function testUpdateInvalidDiscount($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.edit");
+        $this->$user->givePermissionTo("{$discountKind}.edit");
 
         $code = $discountKind === 'sales' ? [] : ['code' => null];
         $discount = Discount::factory($code)->create();
@@ -1863,7 +1863,7 @@ class DiscountTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->patchJson("/${discountKind}/id:" .  $discount->getKey(), [
+            ->patchJson("/{$discountKind}/id:" . $discount->getKey(), [
                 'code' => 'S43SA2',
             ])
             ->assertNotFound();
@@ -1877,14 +1877,14 @@ class DiscountTest extends TestCase
      */
     public function testUpdateEmptyName($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.edit");
+        $this->$user->givePermissionTo("{$discountKind}.edit");
 
         $code = $discountKind === 'sales' ? ['code' => null] : [];
         $discount = Discount::factory($code)->create();
 
         $this
             ->actingAs($this->$user)
-            ->patchJson("/${discountKind}/id:" .  $discount->getKey(), [
+            ->patchJson("/{$discountKind}/id:" . $discount->getKey(), [
                 'name' => '',
             ])
             ->assertUnprocessable();
@@ -1895,7 +1895,7 @@ class DiscountTest extends TestCase
      */
     public function testUpdateFull($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.edit");
+        $this->$user->givePermissionTo("{$discountKind}.edit");
         $code = $discountKind === 'coupons' ? [] : ['code' => null];
         $discount = Discount::factory(['target_type' => DiscountTargetType::ORDER_VALUE] + $code)->create();
 
@@ -1934,7 +1934,7 @@ class DiscountTest extends TestCase
         Queue::fake();
 
         $response = $this->actingAs($this->$user)
-            ->json('PATCH', "/${discountKind}/id:" . $discount->getKey(), $discountNew + $conditions);
+            ->json('PATCH', "/{$discountKind}/id:" . $discount->getKey(), $discountNew + $conditions);
 
         $response
             ->assertOk()
@@ -2153,7 +2153,7 @@ class DiscountTest extends TestCase
      */
     public function testUpdateWithPartialData($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.edit");
+        $this->$user->givePermissionTo("{$discountKind}.edit");
         $code = $discountKind === 'coupons' ? [] : ['code' => null];
 
         $discount = Discount::factory()->create($code);
@@ -2161,7 +2161,7 @@ class DiscountTest extends TestCase
         Queue::fake();
 
         $response = $this->actingAs($this->$user)
-            ->json('PATCH', "/${discountKind}/id:" . $discount->getKey(), [
+            ->json('PATCH', "/{$discountKind}/id:" . $discount->getKey(), [
                 'value' => 50,
             ]);
 
@@ -2192,7 +2192,7 @@ class DiscountTest extends TestCase
      */
     public function testUpdateWithWebHookQueue($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.edit");
+        $this->$user->givePermissionTo("{$discountKind}.edit");
 
         if ($discountKind === 'coupons') {
             $webHookEvent = 'CouponUpdated';
@@ -2216,7 +2216,7 @@ class DiscountTest extends TestCase
         Queue::fake();
 
         $this->actingAs($this->$user)
-            ->json('PATCH', "/${discountKind}/id:" . $discount->getKey(), [
+            ->json('PATCH', "/{$discountKind}/id:" . $discount->getKey(), [
                 'description' => 'Weekend Sale',
                 'discount' => 20,
                 'type' => DiscountType::AMOUNT,
@@ -2248,7 +2248,7 @@ class DiscountTest extends TestCase
      */
     public function testUpdateWithWebHookDispatched($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.edit");
+        $this->$user->givePermissionTo("{$discountKind}.edit");
 
         if ($discountKind === 'coupons') {
             $webHookEvent = 'CouponUpdated';
@@ -2272,7 +2272,7 @@ class DiscountTest extends TestCase
         Bus::fake();
 
         $this->actingAs($this->$user)
-            ->json('PATCH', "/${discountKind}/id:" . $discount->getKey(), [
+            ->json('PATCH', "/{$discountKind}/id:" . $discount->getKey(), [
                 'description' => 'Weekend Sale',
                 'discount' => 20,
                 'type' => DiscountType::AMOUNT,
@@ -2536,7 +2536,7 @@ class DiscountTest extends TestCase
         Event::fake();
 
         $this
-            ->deleteJson("/${discountKind}/id:" . $discount->getKey())
+            ->deleteJson("/{$discountKind}/id:" . $discount->getKey())
             ->assertForbidden();
 
         $event = $discountKind === 'coupons' ? CouponDeleted::class : SaleDeleted::class;
@@ -2548,7 +2548,7 @@ class DiscountTest extends TestCase
      */
     public function testDeleteInvalidDiscount($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.remove");
+        $this->$user->givePermissionTo("{$discountKind}.remove");
 
         $code = $discountKind === 'sales' ? [] : ['code' => null];
         $discount = Discount::factory($code)->create();
@@ -2557,7 +2557,7 @@ class DiscountTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->deleteJson("/${discountKind}/id:" . $discount->getKey())
+            ->deleteJson("/{$discountKind}/id:" . $discount->getKey())
             ->assertNotFound();
 
         $event = $discountKind === 'coupons' ? CouponDeleted::class : SaleDeleted::class;
@@ -2569,13 +2569,13 @@ class DiscountTest extends TestCase
      */
     public function testDelete($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.remove");
+        $this->$user->givePermissionTo("{$discountKind}.remove");
         $code = $discountKind === 'coupons' ? [] : ['code' => null];
         $discount = Discount::factory($code)->create();
 
         Queue::fake();
 
-        $response = $this->actingAs($this->$user)->deleteJson("/${discountKind}/id:" . $discount->getKey());
+        $response = $this->actingAs($this->$user)->deleteJson("/{$discountKind}/id:" . $discount->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($discount);
 
@@ -2596,7 +2596,7 @@ class DiscountTest extends TestCase
      */
     public function testDeleteWithWebHookQueue($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.remove");
+        $this->$user->givePermissionTo("{$discountKind}.remove");
 
         if ($discountKind === 'coupons') {
             $webHookEvent = 'CouponDeleted';
@@ -2620,7 +2620,7 @@ class DiscountTest extends TestCase
 
         Queue::fake();
 
-        $response = $this->actingAs($this->$user)->deleteJson("/${discountKind}/id:" . $discount->getKey());
+        $response = $this->actingAs($this->$user)->deleteJson("/{$discountKind}/id:" . $discount->getKey());
 
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
             return $job->class === WebHookEventListener::class;
@@ -2649,7 +2649,7 @@ class DiscountTest extends TestCase
      */
     public function testDeleteWithWebHookDispatched($user, $discountKind): void
     {
-        $this->$user->givePermissionTo("${discountKind}.remove");
+        $this->$user->givePermissionTo("{$discountKind}.remove");
 
         if ($discountKind === 'coupons') {
             $webHookEvent = 'CouponDeleted';
@@ -2673,7 +2673,7 @@ class DiscountTest extends TestCase
 
         Bus::fake();
 
-        $response = $this->actingAs($this->$user)->deleteJson("/${discountKind}/id:" . $discount->getKey());
+        $response = $this->actingAs($this->$user)->deleteJson("/{$discountKind}/id:" . $discount->getKey());
 
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
             return $job->class === WebHookEventListener::class;

@@ -19,7 +19,7 @@ class UserLoginAttemptService implements UserLoginAttemptServiceContract
         if ($user) {
             $ip = Request::ip();
             $userAgent = Request::userAgent();
-            $fingerprint = sha1("${ip} ${userAgent}");
+            $fingerprint = sha1("{$ip} {$userAgent}");
 
             $attempt = $user->loginAttempts()->create([
                 'ip' => Request::ip(),

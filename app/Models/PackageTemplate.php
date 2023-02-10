@@ -14,7 +14,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  */
 class PackageTemplate extends Model
 {
-    use HasFactory, HasCriteria, HasMetadata;
+    use HasFactory;
+    use HasCriteria;
+    use HasMetadata;
 
     protected $fillable = [
         'name',

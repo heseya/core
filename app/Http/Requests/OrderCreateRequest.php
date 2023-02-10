@@ -12,11 +12,11 @@ class OrderCreateRequest extends OrderItemsRequest
 {
     use BooleanRules;
 
+    use MetadataRules;
+
     protected array $booleanFields = [
         'invoice_requested',
     ];
-
-    use MetadataRules;
 
     public function rules(): array
     {
@@ -42,7 +42,7 @@ class OrderCreateRequest extends OrderItemsRequest
                     'string',
                     'max:64',
                     Rule::exists('discounts', 'code')->where(function ($query) {
-                       return $query->where('active', true);
+                        return $query->where('active', true);
                     }),
                 ],
 

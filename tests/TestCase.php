@@ -20,7 +20,10 @@ use Tests\Traits\JsonQueryCounter;
 
 abstract class TestCase extends BaseTestCase
 {
-    use CreatesApplication, RefreshDatabase, JsonQueryCounter, ElasticTest;
+    use CreatesApplication;
+    use RefreshDatabase;
+    use JsonQueryCounter;
+    use ElasticTest;
 
     public User $user;
     public Application $application;
@@ -51,6 +54,13 @@ abstract class TestCase extends BaseTestCase
         $this->application = Application::factory()->create();
     }
 
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        app()->forgetInstances();
+    }
+
     public function authProvider(): array
     {
         return [
@@ -68,7 +78,7 @@ abstract class TestCase extends BaseTestCase
         );
 
         $this->withHeaders(
-            $this->defaultHeaders + ['Authorization' => "Bearer ${token}"],
+            $this->defaultHeaders + ['Authorization' => "Bearer {$token}"],
         );
 
         return $this;
@@ -97,12 +107,5 @@ abstract class TestCase extends BaseTestCase
             'as user no' => ['user', 'no', false],
             'as application false' => ['application', false, false],
         ];
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        app()->forgetInstances();
     }
 }

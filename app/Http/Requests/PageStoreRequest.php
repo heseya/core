@@ -11,7 +11,9 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class PageStoreRequest extends FormRequest implements SeoRequestContract
 {
-    use SeoRules, BooleanRules, MetadataRules;
+    use SeoRules;
+    use BooleanRules;
+    use MetadataRules;
 
     protected array $booleanFields = [
         'public',

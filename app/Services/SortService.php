@@ -54,7 +54,7 @@ class SortService implements SortServiceContract
             ],
             [
                 'required' => 'You must specify sort field.',
-                '1.in' => "Only asc|desc sorting directions are allowed on field ${field[0]}.",
+                '1.in' => "Only asc|desc sorting directions are allowed on field {$field[0]}.",
             ],
         )->validate();
     }

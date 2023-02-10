@@ -12,7 +12,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class ShippingMethodStoreRequest extends FormRequest
 {
-    use BooleanRules, MetadataRules;
+    use BooleanRules;
+    use MetadataRules;
 
     protected array $booleanFields = [
         'public',

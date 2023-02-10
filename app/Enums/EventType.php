@@ -75,11 +75,11 @@ final class EventType extends Enum implements LocalizedEnum
         return $result;
     }
 
-    private static function getData(Enum $enum, mixed $permissions, mixed $hidden_permissions): array
+    private static function getData(EventType $enum, mixed $permissions, mixed $hidden_permissions): array
     {
         return [
             'key' => $enum->value,
-            'name' => self::getFriendlyKeyName($enum->key),
+            'name' => self::getFriendlyName($enum->key ?? ''),
             'description' => $enum->description,
             'required_permissions' => $permissions,
             'required_hidden_permissions' => $hidden_permissions,

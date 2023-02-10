@@ -290,7 +290,7 @@ class AttributeTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->getJson('/attributes/id:'. $this->attribute->getKey())
+            ->getJson('/attributes/id:' . $this->attribute->getKey())
             ->assertOk()
             ->assertJsonFragment([
                 'name' => $this->attribute->name,
@@ -316,7 +316,7 @@ class AttributeTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->getJson('/attributes/id:'. $this->attribute->getKey() . $this->attribute->getKey())
+            ->getJson('/attributes/id:' . $this->attribute->getKey() . $this->attribute->getKey())
             ->assertNotFound();
     }
 
@@ -354,7 +354,7 @@ class AttributeTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->getJson('/attributes/id:'. $attribute->getKey())
+            ->getJson('/attributes/id:' . $attribute->getKey())
             ->assertOk()
             ->assertJsonFragment([
                 'name' => $attribute->name,
@@ -415,7 +415,7 @@ class AttributeTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->getJson('/attributes/id:'. $attribute->getKey())
+            ->getJson('/attributes/id:' . $attribute->getKey())
             ->assertOk()
             ->assertJsonFragment([
                 'name' => $attribute->name,
@@ -1126,7 +1126,7 @@ class AttributeTest extends TestCase
             ->actingAs($this->$user)
             ->json(
                 'PATCH',
-                '/attributes/id:' . $this->attribute->getKey() . '/options/id:'. $this->option->getKey(),
+                '/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey(),
                 $optionUpdate
             )
             ->assertOk()
@@ -1151,7 +1151,7 @@ class AttributeTest extends TestCase
             ->actingAs($this->$user)
             ->json(
                 'PATCH',
-                '/attributes/id:' . $this->attribute->getKey() . '/options/id:'. $this->option->getKey(),
+                '/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey(),
                 $optionUpdate
             )
             ->assertOk()
@@ -1184,7 +1184,7 @@ class AttributeTest extends TestCase
             ->actingAs($this->$user)
             ->json(
                 'PATCH',
-                '/attributes/id:' . $attribute->getKey() . '/options/id:'. $option->getKey(),
+                '/attributes/id:' . $attribute->getKey() . '/options/id:' . $option->getKey(),
                 $optionUpdate
             )
             ->assertUnprocessable();
@@ -1211,7 +1211,7 @@ class AttributeTest extends TestCase
             ->actingAs($this->$user)
             ->json(
                 'PATCH',
-                '/attributes/id:' . $this->attribute->getKey() . '/options/id:'. $this->option->getKey(),
+                '/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey(),
                 $optionUpdate
             )
             ->assertNotFound();
@@ -1238,7 +1238,7 @@ class AttributeTest extends TestCase
             ->actingAs($this->$user)
             ->json(
                 'PATCH',
-                '/attributes/id:' . $attribute->getKey() . '/options/id:'. $this->option->getKey(),
+                '/attributes/id:' . $attribute->getKey() . '/options/id:' . $this->option->getKey(),
                 $optionUpdate
             )
             ->assertNotFound();
@@ -1260,7 +1260,7 @@ class AttributeTest extends TestCase
         $this
             ->actingAs($this->$user)
             ->patchJson(
-                '/attributes/id:' . $this->attribute->getKey() . '/options/id:'. $this->option->getKey(),
+                '/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey(),
                 $optionUpdate
             )
             ->assertForbidden();
@@ -1275,7 +1275,7 @@ class AttributeTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->deleteJson('/attributes/id:' . $this->attribute->getKey() . '/options/id:'. $this->option->getKey())
+            ->deleteJson('/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey())
             ->assertNoContent();
 
         $this->assertSoftDeleted($this->option);
@@ -1292,7 +1292,7 @@ class AttributeTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->deleteJson('/attributes/id:' . $this->attribute->getKey() . '/options/id:'. $this->option->getKey())
+            ->deleteJson('/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey())
             ->assertNotFound();
     }
 
@@ -1307,7 +1307,7 @@ class AttributeTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->deleteJson('/attributes/id:' . $attribute->getKey() . '/options/id:'. $this->option->getKey())
+            ->deleteJson('/attributes/id:' . $attribute->getKey() . '/options/id:' . $this->option->getKey())
             ->assertNotFound();
     }
 
@@ -1318,7 +1318,7 @@ class AttributeTest extends TestCase
     {
         $this
             ->actingAs($this->$user)
-            ->deleteJson('/attributes/id:' . $this->attribute->getKey() . '/options/id:'. $this->option->getKey())
+            ->deleteJson('/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey())
             ->assertForbidden();
     }
 
@@ -1421,7 +1421,7 @@ class AttributeTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->getJson('/attributes/id:'. $attribute->getKey())
+            ->getJson('/attributes/id:' . $attribute->getKey())
             ->assertOk()
             ->assertJsonFragment([
                 'min' => 110,
@@ -1456,7 +1456,7 @@ class AttributeTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->getJson('/attributes/id:'. $attribute->getKey())
+            ->getJson('/attributes/id:' . $attribute->getKey())
             ->assertOk()
             ->assertJsonFragment([
                 'min' => 100,
@@ -1492,7 +1492,7 @@ class AttributeTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->getJson('/attributes/id:'. $attribute->getKey())
+            ->getJson('/attributes/id:' . $attribute->getKey())
             ->assertOk()
             ->assertJsonFragment([
                 'min' => '2012-08-10',
@@ -1527,7 +1527,7 @@ class AttributeTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->getJson('/attributes/id:'. $attribute->getKey())
+            ->getJson('/attributes/id:' . $attribute->getKey())
             ->assertOk()
             ->assertJsonFragment([
                 'min' => '2010-03-15',
@@ -1567,7 +1567,7 @@ class AttributeTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->getJson('/attributes/id:' . $attribute->getKey() .'/options?metadata_private[qwe]=asd')
+            ->getJson('/attributes/id:' . $attribute->getKey() . '/options?metadata_private[qwe]=asd')
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['qwe' => 'asd']);
@@ -1646,7 +1646,7 @@ class AttributeTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->json('GET', '/attributes/id:' . $attribute->getKey() .'/options', ['name' => 'Searched name'])
+            ->json('GET', '/attributes/id:' . $attribute->getKey() . '/options', ['name' => 'Searched name'])
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['name' => 'Searched name'])

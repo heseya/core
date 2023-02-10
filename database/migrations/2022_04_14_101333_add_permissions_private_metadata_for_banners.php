@@ -5,7 +5,7 @@ use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Database\Migrations\Migration;
 
-return new class() extends Migration {
+return new class extends Migration {
     public function up(): void
     {
         Permission::create([

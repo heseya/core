@@ -9,7 +9,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class SeoRequest extends FormRequest implements SeoRequestContract
 {
-    use SeoRules, BooleanRules;
+    use SeoRules;
+    use BooleanRules;
 
     protected array $booleanFields = [
         'no_index',

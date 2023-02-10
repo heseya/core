@@ -13,9 +13,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class FavouriteProductSet extends Model
 {
-    use HasFactory,
-        HasCriteria,
-        SoftDeletes;
+    use HasFactory;
+    use HasCriteria;
+    use SoftDeletes;
 
     protected $fillable = [
         'id',

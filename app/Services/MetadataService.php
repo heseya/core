@@ -90,7 +90,8 @@ class MetadataService implements MetadataServiceContract
         return $segments[2] === 'options';
     }
 
-    private function processMetadata(Model|Role $model, MetadataDto|MetadataPersonalDto $dto, string $relation): void {
+    private function processMetadata(Model|Role $model, MetadataDto|MetadataPersonalDto $dto, string $relation): void
+    {
         $query = $model->$relation();
 
         if ($dto->getValue() === null) {

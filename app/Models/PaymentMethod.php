@@ -15,7 +15,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class PaymentMethod extends Model
 {
-    use HasFactory, HasCriteria;
+    use HasFactory;
+    use HasCriteria;
 
     /**
      * The attributes that are mass assignable.

@@ -12,7 +12,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class SavedAddress extends Model
 {
-    use HasFactory, HasUuid;
+    use HasFactory;
+    use HasUuid;
 
     protected $fillable = [
         'default',

@@ -12,7 +12,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class Option extends Model
 {
-    use HasFactory, HasMetadata;
+    use HasFactory;
+    use HasMetadata;
 
     protected $fillable = [
         'name',

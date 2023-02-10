@@ -26,7 +26,9 @@ use Tests\Traits\CreateShippingMethod;
 
 class OrderUpdateTest extends TestCase
 {
-    use RefreshDatabase, WithFaker, CreateShippingMethod;
+    use RefreshDatabase;
+    use WithFaker;
+    use CreateShippingMethod;
 
     public const EMAIL = 'test@example.com';
     private Order $order;

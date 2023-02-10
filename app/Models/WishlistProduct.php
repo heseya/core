@@ -13,9 +13,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class WishlistProduct extends Model
 {
-    use HasFactory,
-        HasCriteria,
-        SoftDeletes;
+    use HasFactory;
+    use HasCriteria;
+    use SoftDeletes;
 
     protected $fillable = [
         'user_id',

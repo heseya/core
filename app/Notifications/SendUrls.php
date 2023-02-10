@@ -26,7 +26,7 @@ class SendUrls extends Notification
     public function toMail(mixed $notifiable): MailMessage
     {
         return (new MailMessage())
-            ->subject('Produkty cyfrowe zamówienia '. $this->order->code)
+            ->subject('Produkty cyfrowe zamówienia ' . $this->order->code)
             ->view('mail.send-urls', [
                 'order' => $this->order,
                 'products' => $this->products,

@@ -26,12 +26,17 @@ use Illuminate\Support\Str;
 
 /**
  * @property mixed $pivot
- *
  * @mixin IdeHelperProductSet
  */
 class ProductSet extends Model
 {
-    use HasCriteria, HasFactory, SoftDeletes, HasSeoMetadata, HasMetadata, HasDiscountConditions, HasDiscounts;
+    use HasCriteria;
+    use HasFactory;
+    use SoftDeletes;
+    use HasSeoMetadata;
+    use HasMetadata;
+    use HasDiscountConditions;
+    use HasDiscounts;
 
     protected $fillable = [
         'name',
@@ -169,14 +174,6 @@ class ProductSet extends Model
         return $sales->unique('id');
     }
 
-    protected static function booted(): void
-    {
-        static::addGlobalScope(
-            'ordered',
-            fn (Builder $builder) => $builder->orderBy('product_sets.order'),
-        );
-    }
-
     public function allChildrenIds(string $relation): Collection
     {
         $result = $this->$relation->pluck('id');
@@ -186,5 +183,13 @@ class ProductSet extends Model
         }
 
         return $result->unique();
+    }
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope(
+            'ordered',
+            fn (Builder $builder) => $builder->orderBy('product_sets.order'),
+        );
     }
 }

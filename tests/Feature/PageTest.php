@@ -551,7 +551,7 @@ class PageTest extends TestCase
 
         $this->page->refresh();
 
-        $this->assertEquals('test_'.$this->page->deleted_at, $this->page->slug);
+        $this->assertEquals('test_' . $this->page->deleted_at, $this->page->slug);
 
         Event::assertDispatched(PageDeleted::class);
 

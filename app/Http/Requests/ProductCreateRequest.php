@@ -15,7 +15,9 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class ProductCreateRequest extends FormRequest implements SeoRequestContract, MetadataRequestContract
 {
-    use SeoRules, MetadataRules, BooleanRules;
+    use SeoRules;
+    use MetadataRules;
+    use BooleanRules;
 
     protected array $booleanFields = [
         'public',

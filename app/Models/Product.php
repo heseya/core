@@ -43,21 +43,20 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @property mixed $pivot
- *
  * @mixin IdeHelperProduct
  */
 class Product extends Model implements AuditableContract, Explored, SortableContract, SearchableFields
 {
-    use HasFactory,
-        SoftDeletes,
-        Searchable,
-        Sortable,
-        Auditable,
-        HasSeoMetadata,
-        HasMetadata,
-        HasCriteria,
-        HasDiscountConditions,
-        HasDiscounts;
+    use HasFactory;
+    use SoftDeletes;
+    use Searchable;
+    use Sortable;
+    use Auditable;
+    use HasSeoMetadata;
+    use HasMetadata;
+    use HasCriteria;
+    use HasDiscountConditions;
+    use HasDiscounts;
 
     protected $fillable = [
         'name',

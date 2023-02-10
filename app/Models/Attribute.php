@@ -15,14 +15,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property mixed $pivot
- *
+ * @property AttributeType $type
  * @mixin IdeHelperAttribute
  */
 class Attribute extends Model
 {
-    use HasFactory,
-        HasCriteria,
-        HasMetadata;
+    use HasFactory;
+    use HasCriteria;
+    use HasMetadata;
 
     protected $fillable = [
         'name',

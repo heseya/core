@@ -13,7 +13,7 @@ trait PermissionUtility
 {
     protected function allowsAbilityByModel(string $ability, Model $model): bool
     {
-        return Gate::allows("{$this->getPermissionPrefix($model)}.${ability}");
+        return Gate::allows("{$this->getPermissionPrefix($model)}.{$ability}");
     }
 
     protected function deniesAbilityByModel(string $ability, Model $model): bool
