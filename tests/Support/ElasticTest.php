@@ -21,7 +21,7 @@ trait ElasticTest
 
     public function assertElasticQuery(array $query, ?int $limit = null, ?array $sort = null): void
     {
-        $sort = $sort ?? [];
+        $sort ??= [];
         $this->assertEquals(
             [
                 'query' => $query,

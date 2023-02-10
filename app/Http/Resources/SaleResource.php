@@ -11,7 +11,7 @@ class SaleResource extends Resource
 
     public function base(Request $request): array
     {
-        if (isset($this->resource->pivot) && isset($this->resource->pivot->type)) {
+        if (isset($this->resource->pivot, $this->resource->pivot->type)) {
             // @phpstan-ignore-next-line
             $this->resource->type = $this->resource->pivot->type;
             // @phpstan-ignore-next-line
