@@ -5,19 +5,13 @@ use Spatie\WebhookServer\Signer\DefaultSigner;
 
 return [
 
-    /*
-     *  The default queue that should be used to send webhook requests.
-     */
+    // The default queue that should be used to send webhook requests.
     'queue' => 'default',
 
-    /*
-     *  The default queue connection that should be used to send webhook requests.
-     */
+    // The default queue connection that should be used to send webhook requests.
     'connection' => env('QUEUE_CONNECTION', null),
 
-    /*
-     * The default http verb to use.
-     */
+    // The default http verb to use.
     'http_verb' => 'post',
 
     /*
@@ -27,14 +21,10 @@ return [
      */
     'signer' => DefaultSigner::class,
 
-    /*
-     * This is the name of the header where the signature will be added.
-     */
+    // This is the name of the header where the signature will be added.
     'signature_header_name' => 'Signature',
 
-    /*
-     * These are the headers that will be added to all webhook requests.
-     */
+    // These are the headers that will be added to all webhook requests.
     'headers' => [
         'Content-Type' => 'application/json',
     ],
@@ -45,14 +35,10 @@ return [
      */
     'timeout_in_seconds' => 10,
 
-    /*
-     * The amount of times the webhook should be called before we give up.
-     */
+    // The amount of times the webhook should be called before we give up.
     'tries' => 3,
 
-    /*
-     * This class determines how many seconds there should be between attempts.
-     */
+    // This class determines how many seconds there should be between attempts.
     'backoff_strategy' => ExponentialBackoffStrategy::class,
 
     /*

@@ -16,6 +16,13 @@
     "no_useless_else": true,
     "no_unused_imports": true,
     "object_operator_without_whitespace": true,
+    "no_useless_return": true,
+    "single_line_comment_style": {
+      "comment_types": ["asterisk"]
+    },
+    "align_multiline_comment": {
+      "comment_type": "phpdocs_only"
+    },
     "types_spaces": {
       "space": "none"
     },
