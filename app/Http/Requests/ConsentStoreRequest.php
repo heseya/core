@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\Boolean;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ConsentStoreRequest extends FormRequest
@@ -11,7 +12,7 @@ class ConsentStoreRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:100'],
             'description_html' => ['required', 'string'],
-            'required' => ['required', 'boolean'],
+            'required' => ['required', new Boolean()],
         ];
     }
 }

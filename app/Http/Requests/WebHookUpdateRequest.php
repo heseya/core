@@ -4,18 +4,10 @@ namespace App\Http\Requests;
 
 use App\Rules\Boolean;
 use App\Rules\EventExist;
-use App\Traits\BooleanRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class WebHookUpdateRequest extends FormRequest
 {
-    use BooleanRules;
-
-    protected array $booleanFields = [
-        'with_issuer',
-        'with_hidden',
-    ];
-
     public function rules(): array
     {
         return [

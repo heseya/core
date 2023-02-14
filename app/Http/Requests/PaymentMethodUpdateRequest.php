@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\Boolean;
 use Illuminate\Foundation\Http\FormRequest;
 
 class PaymentMethodUpdateRequest extends FormRequest
@@ -11,7 +12,7 @@ class PaymentMethodUpdateRequest extends FormRequest
         return [
             'name' => ['string', 'max:255'],
             'icon' => ['string', 'max:255'],
-            'public' => ['boolean'],
+            'public' => [new Boolean()],
             'url' => ['string', 'url'],
         ];
     }

@@ -5,19 +5,12 @@ namespace App\Http\Requests;
 use App\Rules\Boolean;
 use App\Rules\ConsentExists;
 use App\Rules\RequiredConsents;
-use App\Traits\BooleanRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 class RegisterRequest extends FormRequest
 {
-    use BooleanRules;
-
-    protected array $booleanFields = [
-        'consents.*',
-    ];
-
     public function rules(): array
     {
         return [

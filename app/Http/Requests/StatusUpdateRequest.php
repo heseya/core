@@ -3,19 +3,10 @@
 namespace App\Http\Requests;
 
 use App\Rules\Boolean;
-use App\Traits\BooleanRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StatusUpdateRequest extends FormRequest
 {
-    use BooleanRules;
-
-    protected array $booleanFields = [
-        'cancel',
-        'hidden',
-        'no_notifications',
-    ];
-
     public function rules(): array
     {
         return [

@@ -5,21 +5,13 @@ namespace App\Http\Requests;
 use App\Http\Requests\Contracts\MetadataRequestContract;
 use App\Http\Requests\Contracts\SeoRequestContract;
 use App\Rules\Boolean;
-use App\Traits\BooleanRules;
 use App\Traits\MetadataRules;
 use App\Traits\SeoRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProductSetStoreRequest extends FormRequest implements SeoRequestContract, MetadataRequestContract
 {
-    use SeoRules, BooleanRules, MetadataRules;
-
-    protected array $booleanFields = [
-        'slug_override',
-        'public',
-        'seo.no_index',
-        'tree',
-    ];
+    use SeoRules, MetadataRules;
 
     public function rules(): array
     {

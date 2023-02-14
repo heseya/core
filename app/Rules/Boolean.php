@@ -6,13 +6,13 @@ use Illuminate\Contracts\Validation\Rule;
 
 class Boolean implements Rule
 {
-    public function passes($attribute, $value)
+    public function passes($attribute, $value): bool
     {
-        return is_bool($value);
+        return in_array($value, [true, false, 'true', 'false', 0, 1, '0', '1'], true);
     }
 
-    public function message()
+    public function message(): string
     {
-        return 'The :attribute must be one of the following: true, false, on, off, yes, no, 1, 0.';
+        return 'The :attribute must be boolean.';
     }
 }

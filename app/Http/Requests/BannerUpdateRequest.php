@@ -4,18 +4,11 @@ namespace App\Http\Requests;
 
 use App\Models\Banner;
 use App\Rules\Boolean;
-use App\Traits\BooleanRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class BannerUpdateRequest extends FormRequest
 {
-    use BooleanRules;
-
-    protected array $booleanFields = [
-        'active',
-    ];
-
     public function rules(): array
     {
         /** @var Banner $banner */

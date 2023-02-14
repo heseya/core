@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Rules\Boolean;
-use App\Traits\BooleanRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
@@ -11,12 +10,6 @@ use Illuminate\Validation\Rule;
 
 class SettingUpdateRequest extends FormRequest
 {
-    use BooleanRules;
-
-    protected array $booleanFields = [
-        'public',
-    ];
-
     public function rules(): array
     {
         /** @var Collection<int, mixed> $settings */

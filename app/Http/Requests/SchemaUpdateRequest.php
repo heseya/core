@@ -5,19 +5,10 @@ namespace App\Http\Requests;
 use App\Enums\SchemaType;
 use App\Rules\Boolean;
 use App\Rules\EnumKey;
-use App\Traits\BooleanRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SchemaUpdateRequest extends FormRequest
 {
-    use BooleanRules;
-
-    protected array $booleanFields = [
-        'options.*.disabled',
-        'hidden',
-        'required',
-    ];
-
     public function rules(): array
     {
         return [

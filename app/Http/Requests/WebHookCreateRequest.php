@@ -6,18 +6,11 @@ use App\Enums\EventType;
 use App\Rules\Boolean;
 use App\Rules\EventExist;
 use App\Rules\HttpsRule;
-use App\Traits\BooleanRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
 class WebHookCreateRequest extends FormRequest
 {
-    use BooleanRules;
-
-    protected array $booleanFields = [
-        'with_issuer',
-        'with_hidden',
-    ];
 
     public function rules(): array
     {

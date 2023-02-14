@@ -3,17 +3,12 @@
 namespace App\Http\Requests;
 
 use App\Rules\Boolean;
-use App\Traits\BooleanRules;
 use App\Traits\MetadataRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class BannerStoreRequest extends FormRequest
 {
-    use BooleanRules, MetadataRules;
-
-    protected array $booleanFields = [
-        'active',
-    ];
+    use MetadataRules;
 
     public function rules(): array
     {

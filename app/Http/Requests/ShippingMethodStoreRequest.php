@@ -5,19 +5,13 @@ namespace App\Http\Requests;
 use App\Enums\ShippingType;
 use App\Rules\Boolean;
 use App\Rules\ShippingMethodPriceRanges;
-use App\Traits\BooleanRules;
 use App\Traits\MetadataRules;
 use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ShippingMethodStoreRequest extends FormRequest
 {
-    use BooleanRules, MetadataRules;
-
-    protected array $booleanFields = [
-        'public',
-        'block_list',
-    ];
+    use MetadataRules;
 
     public function rules(): array
     {

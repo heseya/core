@@ -6,24 +6,12 @@ use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Rules\Boolean;
-use App\Traits\BooleanRules;
 use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SaleCreateRequest extends FormRequest
 {
-    use BooleanRules;
-
-    protected array $booleanFields = [
-        'target_is_allow_list',
-        'active',
-        'condition_groups.*.conditions.*.weekday.*',
-        'condition_groups.*.conditions.*.is_allow_list',
-        'condition_groups.*.conditions.*.is_in_range',
-        'condition_groups.*.conditions.*.include_taxes',
-    ];
-
     /**
      * Get the validation rules that apply to the request.
      */

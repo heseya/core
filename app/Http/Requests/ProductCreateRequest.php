@@ -8,20 +8,13 @@ use App\Rules\AttributeOptionExist;
 use App\Rules\Boolean;
 use App\Rules\ProductAttributeOptions;
 use App\Rules\UniqueIdInRequest;
-use App\Traits\BooleanRules;
 use App\Traits\MetadataRules;
 use App\Traits\SeoRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProductCreateRequest extends FormRequest implements SeoRequestContract, MetadataRequestContract
 {
-    use SeoRules, MetadataRules, BooleanRules;
-
-    protected array $booleanFields = [
-        'public',
-        'seo.no_index',
-        'shipping_digital',
-    ];
+    use SeoRules, MetadataRules;
 
     public function rules(): array
     {

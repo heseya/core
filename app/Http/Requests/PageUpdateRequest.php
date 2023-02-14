@@ -5,19 +5,13 @@ namespace App\Http\Requests;
 use App\Http\Requests\Contracts\SeoRequestContract;
 use App\Models\Page;
 use App\Rules\Boolean;
-use App\Traits\BooleanRules;
 use App\Traits\SeoRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class PageUpdateRequest extends FormRequest implements SeoRequestContract
 {
-    use SeoRules, BooleanRules;
-
-    protected array $booleanFields = [
-        'public',
-        'seo.no_index',
-    ];
+    use SeoRules;
 
     public function rules(): array
     {

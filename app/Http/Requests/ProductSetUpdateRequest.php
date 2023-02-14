@@ -4,20 +4,12 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\Contracts\SeoRequestContract;
 use App\Rules\Boolean;
-use App\Traits\BooleanRules;
 use App\Traits\SeoRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProductSetUpdateRequest extends FormRequest implements SeoRequestContract
 {
-    use SeoRules, BooleanRules;
-
-    protected array $booleanFields = [
-        'slug_override',
-        'public',
-        'seo.no_index',
-        'tree',
-    ];
+    use SeoRules;
 
     public function rules(): array
     {

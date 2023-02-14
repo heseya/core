@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\SavedAddressType;
+use App\Rules\Boolean;
 use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -15,7 +16,7 @@ class SavedAddressUpdateRequest extends FormRequest
     {
         return [
             'name' => ['nullable', 'string', 'max:255'],
-            'default' => ['nullable', 'boolean'],
+            'default' => ['nullable', new Boolean()],
             'type' => [new EnumValue(SavedAddressType::class)],
             'address.name' => ['string', 'max:255'],
             'address.phone' => ['string', 'max:20'],

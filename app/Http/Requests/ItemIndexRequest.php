@@ -3,19 +3,12 @@
 namespace App\Http\Requests;
 
 use App\Rules\Boolean;
-use App\Traits\BooleanRules;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class ItemIndexRequest extends FormRequest
 {
-    use BooleanRules;
-
-    protected array $booleanFields = [
-        'sold_out',
-    ];
-
     public function rules(): array
     {
         return [
@@ -35,8 +28,10 @@ class ItemIndexRequest extends FormRequest
 
     public function withValidator(Validator $validator): void
     {
-        $validator->sometimes('sort', Rule::notIn(['quantity:asc', 'quantity:desc']), function ($input) {
-            return $input->day !== null;
-        });
+        $validator->sometimes(
+            'sort',
+            Rule::notIn(['quantity:asc', 'quantity:desc']),
+            fn ($input) => $input->day !== null,
+        );
     }
 }
