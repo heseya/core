@@ -100,9 +100,7 @@ return [
 
     'display_role_in_exception' => false,
 
-    /*
-     * By default wildcard permission lookups are disabled.
-     */
+    // By default wildcard permission lookups are disabled.
 
     'enable_wildcard_permission' => false,
 
@@ -115,9 +113,7 @@ return [
 
         'expiration_time' => \DateInterval::createFromDateString('24 hours'),
 
-        /*
-         * The cache key used to store all permissions.
-         */
+        // The cache key used to store all permissions.
 
         'key' => 'spatie.permission.cache',
 
