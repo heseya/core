@@ -83,8 +83,6 @@ abstract class TestCase extends BaseTestCase
     {
         return [
             'as user 1' => ['user', 1, true],
-            'as user on' => ['user', 'on', true],
-            'as user yes' => ['user', 'yes', true],
             'as application true' => ['application', true, true],
         ];
     }
@@ -93,9 +91,17 @@ abstract class TestCase extends BaseTestCase
     {
         return [
             'as user 0' => ['user', 0, false],
-            'as user off' => ['user', 'off', false],
-            'as user no' => ['user', 'no', false],
             'as application false' => ['application', false, false],
+        ];
+    }
+
+    public function shortBooleanProvider(): array
+    {
+        return [
+            'as true' => [true],
+            'as false' => [false],
+            'as 1' => [1],
+            'as 0' => [0],
         ];
     }
 

@@ -165,7 +165,7 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexFilteredByRelationsWithNoRelations($user): void
+    public function testIndexFilteredByNoRelations($user): void
     {
         $this->$user->givePermissionTo('media.show');
 
@@ -182,9 +182,10 @@ class MediaTest extends TestCase
             'type' => MediaType::VIDEO,
         ]);
 
-        $response = $this->actingAs($this->$user)->json('GET', '/media?has_relationships=false');
-
-        $response->assertJsonCount(1, 'data')
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/media?has_relationships=false')
+            ->assertJsonCount(1, 'data')
             ->assertJsonFragment([
                 'relations_count' => 0,
             ]);

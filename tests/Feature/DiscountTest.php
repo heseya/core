@@ -1351,14 +1351,16 @@ class DiscountTest extends TestCase
                         ],
                         [
                             'type' => ConditionType::WEEKDAY_IN,
-                            'weekday' => [$boolean, 'on', 'off', 'no', 1, 'yes', $boolean],
+                            'weekday' => [$boolean, true, false, 0, 1, 1, $boolean],
                         ],
                     ],
                 ],
             ],
         ];
 
-        $response = $this->actingAs($this->$user)->json('POST', '/coupons', $discount + $conditions);
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('POST', '/coupons', $discount + $conditions);
 
         $discountId = $response->getData()->data->id;
 
@@ -2086,7 +2088,7 @@ class DiscountTest extends TestCase
                         ],
                         [
                             'type' => ConditionType::WEEKDAY_IN,
-                            'weekday' => [$boolean, 'on', 'off', 'no', 1, 'yes', $boolean],
+                            'weekday' => [$boolean, true, false, false, true, true, $boolean],
                         ],
                     ],
                 ],

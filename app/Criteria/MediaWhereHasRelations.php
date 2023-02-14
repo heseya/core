@@ -9,7 +9,7 @@ class MediaWhereHasRelations extends Criterion
 {
     public function query(Builder $query): Builder
     {
-        if ($this->value) {
+        if (filter_var($this->value, FILTER_VALIDATE_BOOLEAN)) {
             $query->whereHas('products')
                 ->orWhereHas('documents')
                 ->orWhereHas('bannerMedia');

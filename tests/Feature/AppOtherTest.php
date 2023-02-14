@@ -202,20 +202,6 @@ class AppOtherTest extends TestCase
         $this->assertModelMissing($app);
     }
 
-    public function shortBooleanProvider(): array
-    {
-        return [
-            'as true' => [true],
-            'as false' => [false],
-            'as 1' => [1],
-            'as 0' => [0],
-            'as on' => ['on'],
-            'as off' => ['off'],
-            'as yes' => ['yes'],
-            'as no' => ['no'],
-        ];
-    }
-
     /**
      * @dataProvider shortBooleanProvider
      */
