@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\Boolean;
 use App\Rules\ShippingPlaceValidation;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -26,7 +25,7 @@ class OrderUpdateRequest extends FormRequest
             'billing_address.country' => ['string', 'size:2'],
             'billing_address.vat' => ['nullable', 'string', 'max:15'],
 
-            'invoice_requested' => [new Boolean()],
+            'invoice_requested' => ['boolean'],
             'shipping_place' => ['nullable', new ShippingPlaceValidation()],
         ];
     }

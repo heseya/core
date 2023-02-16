@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\Boolean;
 use App\Rules\ShippingPlaceValidation;
 use App\Traits\MetadataRules;
 use Illuminate\Validation\Rule;
@@ -47,7 +46,7 @@ class OrderCreateRequest extends OrderItemsRequest
                     }),
                 ],
 
-                'invoice_requested' => [new Boolean()],
+                'invoice_requested' => ['boolean'],
                 'shipping_place' => ['nullable', new ShippingPlaceValidation()],
             ]
         );

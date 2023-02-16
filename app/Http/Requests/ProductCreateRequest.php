@@ -5,7 +5,6 @@ namespace App\Http\Requests;
 use App\Http\Requests\Contracts\MetadataRequestContract;
 use App\Http\Requests\Contracts\SeoRequestContract;
 use App\Rules\AttributeOptionExist;
-use App\Rules\Boolean;
 use App\Rules\ProductAttributeOptions;
 use App\Rules\UniqueIdInRequest;
 use App\Traits\MetadataRules;
@@ -25,8 +24,8 @@ class ProductCreateRequest extends FormRequest implements SeoRequestContract, Me
                 'name' => ['required', 'string', 'max:255'],
                 'slug' => ['required', 'string', 'max:255', 'unique:products', 'alpha_dash'],
                 'price' => ['required', 'numeric', 'min:0'],
-                'public' => ['required', new Boolean()],
-                'shipping_digital' => ['required', new Boolean()],
+                'public' => ['required', 'boolean'],
+                'shipping_digital' => ['required', 'boolean'],
 
                 'description_html' => ['nullable', 'string'],
                 'description_short' => ['nullable', 'string', 'between:30,5000'],

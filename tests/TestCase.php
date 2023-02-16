@@ -76,32 +76,11 @@ abstract class TestCase extends BaseTestCase
 
     public function booleanProvider(): array
     {
-        return array_merge($this->trueBooleanProvider(), $this->falseBooleanProvider());
-    }
-
-    public function trueBooleanProvider(): array
-    {
         return [
-            'as user 1' => ['user', 1, true],
+            'as user true' => ['user', true, true],
             'as application true' => ['application', true, true],
-        ];
-    }
-
-    public function falseBooleanProvider(): array
-    {
-        return [
-            'as user 0' => ['user', 0, false],
+            'as user false' => ['user', false, false],
             'as application false' => ['application', false, false],
-        ];
-    }
-
-    public function shortBooleanProvider(): array
-    {
-        return [
-            'as true' => [true],
-            'as false' => [false],
-            'as 1' => [1],
-            'as 0' => [0],
         ];
     }
 

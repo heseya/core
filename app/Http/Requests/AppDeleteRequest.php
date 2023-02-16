@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\Boolean;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AppDeleteRequest extends FormRequest
@@ -13,7 +12,7 @@ class AppDeleteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'force' => [new Boolean()],
+            'force' => ['boolean'],
         ];
     }
 }

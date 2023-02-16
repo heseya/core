@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Enums\ShippingType;
-use App\Rules\Boolean;
 use App\Rules\ShippingMethodPriceRanges;
 use App\Traits\MetadataRules;
 use BenSampo\Enum\Rules\EnumValue;
@@ -19,8 +18,8 @@ class ShippingMethodStoreRequest extends FormRequest
             $this->metadataRules(),
             [
                 'name' => ['required', 'string', 'max:255'],
-                'public' => [new Boolean()],
-                'block_list' => [new Boolean()],
+                'public' => ['boolean'],
+                'block_list' => ['boolean'],
                 'payment_methods' => 'array',
                 'payment_methods.*' => ['uuid', 'exists:payment_methods,id'],
                 'countries' => 'array',

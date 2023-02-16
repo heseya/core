@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Rules\AuthProviderActive;
-use App\Rules\Boolean;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AuthProviderUpdateRequest extends FormRequest
@@ -14,7 +13,7 @@ class AuthProviderUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'active' => [new Boolean(), new AuthProviderActive()],
+            'active' => ['boolean', new AuthProviderActive()],
             'client_id' => ['string'],
             'client_secret' => ['string'],
         ];

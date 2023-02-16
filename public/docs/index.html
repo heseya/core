@@ -1,51 +1,24 @@
-<!-- HTML for static distribution bundle build -->
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
+<html>
+<head>
     <title>Heseya Store API Docs</title>
-    <link href="./swagger/swagger-ui.css" rel="stylesheet" type="text/css" />
+    <!-- needed for adaptive design -->
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
+
+    <!--
+    Redoc doesn't change outer page styles
+    -->
     <style>
-      html
-      {
-        box-sizing: border-box;
-        overflow: -moz-scrollbars-vertical;
-        overflow-y: scroll;
-      }
-
-      *,
-      *:before,
-      *:after
-      {
-        box-sizing: inherit;
-      }
-
-      body
-      {
-        margin:0;
-        background: #fafafa;
-      }
+        body {
+            margin: 0;
+            padding: 0;
+        }
     </style>
-  </head>
-
-  <body>
-    <div id="swagger-ui"></div>
-
-    <script charset="UTF-8" src="./swagger/swagger-ui-bundle.js"> </script>
-    <script charset="UTF-8" src="./swagger/swagger-ui-standalone-preset.js"> </script>
-    <script>
-    window.onload = function() {
-      window.ui = SwaggerUIBundle({
-          url: './api.yml',
-          dom_id: '#swagger-ui',
-          deepLinking: true,
-          presets: [
-              SwaggerUIBundle.presets.apis,
-              SwaggerUIStandalonePreset,
-          ],
-          layout: 'StandaloneLayout',
-      });
-    };
-  </script>
-  </body>
+</head>
+<body>
+<redoc spec-url='./api.yml'></redoc>
+<script src="redoc/redoc.standalone.js"> </script>
+</body>
 </html>

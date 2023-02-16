@@ -177,9 +177,9 @@ class RoleTest extends TestCase
     }
 
     /**
-     * @dataProvider trueBooleanProvider
+     * @dataProvider authProvider
      */
-    public function testIndexSearchByAssignable($user, $boolean, $booleanValue): void
+    public function testIndexSearchByAssignable($user): void
     {
         $this->$user->givePermissionTo('roles.show');
 
@@ -226,18 +226,19 @@ class RoleTest extends TestCase
 
         $roleAuthenticated->givePermissionTo('roles.show');
 
-        $response = $this->actingAs($this->$user)->json('GET', '/roles', ['assignable' => $boolean]);
-
-        $response->assertOk()
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/roles', ['assignable' => true])
+            ->assertOk()
             ->assertJsonCount(2, 'data')
             ->assertJsonFragment(['id' => $roleNoPermissions->getKey()])
             ->assertJsonFragment(['id' => $roleHasPermissions->getKey()]);
     }
 
     /**
-     * @dataProvider falseBooleanProvider
+     * @dataProvider authProvider
      */
-    public function testIndexSearchByUnassignable($user, $boolean, $booleanValue): void
+    public function testIndexSearchByUnassignable($user): void
     {
         $this->$user->givePermissionTo('roles.show');
 
@@ -284,7 +285,7 @@ class RoleTest extends TestCase
 
         $roleAuthenticated->givePermissionTo('roles.show');
 
-        $response = $this->actingAs($this->$user)->json('GET', '/roles', ['assignable' => $boolean]);
+        $response = $this->actingAs($this->$user)->json('GET', '/roles', ['assignable' => false]);
 
         $response->assertOk()
             ->assertJsonCount(4, 'data')

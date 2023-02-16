@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\Boolean;
 use Illuminate\Foundation\Http\FormRequest;
 
 class IndexSchemaRequest extends FormRequest
@@ -11,8 +10,8 @@ class IndexSchemaRequest extends FormRequest
     {
         return [
             'name' => ['nullable', 'string', 'max:255'],
-            'hidden' => [new Boolean()],
-            'required' => [new Boolean()],
+            'hidden' => ['boolean'],
+            'required' => ['boolean'],
 
             'search' => ['nullable', 'string', 'max:255'],
             'sort' => ['nullable', 'string', 'max:255'],

@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\Boolean;
 use App\Rules\ConsentExists;
 use App\Rules\RequiredConsents;
 use Illuminate\Foundation\Http\FormRequest;
@@ -22,7 +21,7 @@ class RegisterRequest extends FormRequest
                 Rule::unique('users')->whereNull('deleted_at'),
             ],
             'password' => ['required', 'string', Password::defaults()],
-            'consents.*' => [new ConsentExists(), new Boolean()],
+            'consents.*' => [new ConsentExists(), 'boolean'],
             'consents' => ['array', new RequiredConsents()],
             'birthday_date' => ['date', 'before_or_equal:now'],
             'phone' => ['phone:AUTO'],

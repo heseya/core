@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\Boolean;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
@@ -26,7 +25,7 @@ class SettingUpdateRequest extends FormRequest
                 ),
             ],
             'value' => ['string', 'max:1000'],
-            'public' => ['nullable', new Boolean()],
+            'public' => ['nullable', 'boolean'],
         ];
     }
 }

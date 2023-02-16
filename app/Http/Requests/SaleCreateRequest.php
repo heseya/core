@@ -5,7 +5,6 @@ namespace App\Http\Requests;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
-use App\Rules\Boolean;
 use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
@@ -24,8 +23,8 @@ class SaleCreateRequest extends FormRequest
             'type' => ['required', new EnumValue(DiscountType::class, false)],
             'priority' => ['required', 'integer'],
             'target_type' => ['required', new EnumValue(DiscountTargetType::class, false)],
-            'target_is_allow_list' => ['required', new Boolean()],
-            'active' => [new Boolean()],
+            'target_is_allow_list' => ['required', 'boolean'],
+            'active' => ['boolean'],
 
             'condition_groups' => ['array'],
             'condition_groups.*.conditions' => ['required', 'array'],
@@ -39,7 +38,7 @@ class SaleCreateRequest extends FormRequest
             'condition_groups.*.conditions.*.users.*' => ['required', 'uuid', 'exists:users,id'],
             'condition_groups.*.conditions.*.products.*' => ['required', 'uuid', 'exists:products,id'],
             'condition_groups.*.conditions.*.product_sets.*' => ['required', 'uuid', 'exists:product_sets,id'],
-            'condition_groups.*.conditions.*.weekday.*' => ['required', new Boolean()],
+            'condition_groups.*.conditions.*.weekday.*' => ['required', 'boolean'],
 
             'target_products' => ['array'],
             'target_products.*' => ['uuid', 'exists:products,id'],
@@ -72,7 +71,7 @@ class SaleCreateRequest extends FormRequest
 
         $validator->sometimes(
             'condition_groups.*.conditions.*.is_allow_list',
-            ['required', new Boolean()],
+            ['required', 'boolean'],
             function ($input, $item) {
                 return ConditionType::hasValue($item->type) && ConditionType::fromValue($item->type)
                     ->in([
@@ -86,7 +85,7 @@ class SaleCreateRequest extends FormRequest
 
         $validator->sometimes(
             'condition_groups.*.conditions.*.is_in_range',
-            ['required', new Boolean()],
+            ['required', 'boolean'],
             function ($input, $item) {
                 return ConditionType::hasValue($item->type) && ConditionType::fromValue($item->type)
                     ->in([
@@ -99,7 +98,7 @@ class SaleCreateRequest extends FormRequest
 
         $validator->sometimes(
             'condition_groups.*.conditions.*.include_taxes',
-            ['required', new Boolean()],
+            ['required', 'boolean'],
             function ($input, $item) {
                 return ConditionType::hasValue($item->type) && ConditionType::fromValue($item->type)
                     ->in([

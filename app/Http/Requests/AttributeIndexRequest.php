@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\Boolean;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AttributeIndexRequest extends FormRequest
@@ -14,7 +13,7 @@ class AttributeIndexRequest extends FormRequest
     {
         return [
             'search' => ['nullable', 'string', 'max:255'],
-            'global' => [new Boolean()],
+            'global' => ['boolean'],
             'metadata' => ['nullable', 'array'],
             'metadata_private' => ['nullable', 'array'],
             'ids' => ['array'],

@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\Boolean;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StatusUpdateRequest extends FormRequest
@@ -12,10 +11,10 @@ class StatusUpdateRequest extends FormRequest
         return [
             'name' => ['string', 'max:60'],
             'color' => ['string', 'size:6'],
-            'cancel' => [new Boolean()],
+            'cancel' => ['boolean'],
             'description' => ['string', 'max:255', 'nullable'],
-            'hidden' => [new Boolean()],
-            'no_notifications' => [new Boolean()],
+            'hidden' => ['boolean'],
+            'no_notifications' => ['boolean'],
         ];
     }
 }

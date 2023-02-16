@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\Boolean;
 use App\Rules\ShippingMethodPriceRanges;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -12,8 +11,8 @@ class ShippingMethodUpdateRequest extends FormRequest
     {
         return [
             'name' => ['string', 'max:255'],
-            'public' => [new Boolean()],
-            'block_list' => [new Boolean()],
+            'public' => ['boolean'],
+            'block_list' => ['boolean'],
             'payment_methods' => 'array',
             'payment_methods.*' => ['uuid', 'exists:payment_methods,id'],
             'countries' => 'array',

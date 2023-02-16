@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\Boolean;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RoleIndexRequest extends FormRequest
@@ -13,7 +12,7 @@ class RoleIndexRequest extends FormRequest
             'search' => ['string'],
             'name' => ['string'],
             'description' => ['string'],
-            'assignable' => [new Boolean()],
+            'assignable' => ['boolean'],
             'metadata' => ['nullable', 'array'],
             'metadata_private' => ['nullable', 'array'],
             'ids' => ['array'],
