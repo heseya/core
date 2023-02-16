@@ -563,9 +563,9 @@ class ProductSetIndexTest extends TestCase
     {
         $this->$user->givePermissionTo(['product_sets.show', 'product_sets.show_hidden']);
 
-        $response = $this->actingAs($this->$user)->json('GET', '/product-sets?tree', ['tree' => true]);
-
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/product-sets', ['tree' => true])
             ->assertOk()
             ->assertJsonCount(4, 'data') // Should show only public sets.
             ->assertJson([

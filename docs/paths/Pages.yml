@@ -26,7 +26,6 @@ Pages:
           type: string
         example: 'ids[]=5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
     summary: 'list page'
-    operationId: 82fdf932ecaac31515345d77358bcbe7
     responses:
       200:
         description: Success
@@ -43,7 +42,6 @@ Pages:
     tags:
       - Pages
     summary: 'add new page'
-    operationId: e8d6c6d7cc98ba67b75a91855dbb0e1b
     requestBody:
       $ref: '../requests/Pages.yml#/PageStore'
     responses:
@@ -64,7 +62,6 @@ PagesParam:
     tags:
       - Pages
     summary: alias
-    operationId: ba0bd4e0f9d4ce9c18da285fd3c93bcc
     parameters:
       - name: id
         in: path
@@ -88,7 +85,6 @@ PagesParam:
     tags:
       - Pages
     summary: 'delete page'
-    operationId: 5284a2b1e29dda6d65eb3a091e592c8b
     parameters:
       - name: id
         in: path
@@ -105,7 +101,6 @@ PagesParam:
     tags:
       - Pages
     summary: 'update page'
-    operationId: 692a2573c6f6f2da427600913c1e29f7
     parameters:
       - name: id
         in: path
@@ -154,7 +149,6 @@ PagesReorder:
     tags:
       - Pages
     summary: 'change pages order'
-    operationId: 85d901e3118685015dc71cc1543d25a9
     requestBody:
       $ref: '../requests/Pages.yml#/PageReorder'
     responses:

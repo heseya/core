@@ -3,7 +3,6 @@ Tags:
     tags:
       - Tags
     summary: 'list tags'
-    operationId: a0c19d7d82ce89abc7303b7a8a387778
     parameters:
       - name: search
         in: query
@@ -44,7 +43,6 @@ Tags:
     tags:
       - Tags
     summary: 'add new tag'
-    operationId: e1447504105c65e449965cb5db17c0ad
     requestBody:
       content:
         application/json:
@@ -68,7 +66,6 @@ TagsParams:
     tags:
       - Tags
     summary: 'delete tag'
-    operationId: c53bd49de67f61c4899a7dd6261eccc2
     parameters:
       - name: id
         in: path
@@ -85,7 +82,6 @@ TagsParams:
     tags:
       - Tags
     summary: 'update tag'
-    operationId: 39aca1d5ee43dd11c54ff3cd25a4541a
     parameters:
       - name: id
         in: path

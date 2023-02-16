@@ -122,7 +122,6 @@ ItemsParams:
     tags:
       - Items
     summary: 'view item'
-    operationId: 2cd8385badc622da6b55243dd17ac0fe
     parameters:
       - name: id
         in: path
@@ -145,7 +144,6 @@ ItemsParams:
     tags:
       - Items
     summary: 'delete item'
-    operationId: ec933ea4411015e739bbab2e07d01dca
     parameters:
       - name: id
         in: path
@@ -162,7 +160,6 @@ ItemsParams:
     tags:
       - Items
     summary: 'update item'
-    operationId: b1ef0bdc3dee72a4cd944ee205c2fc99
     parameters:
       - name: id
         in: path

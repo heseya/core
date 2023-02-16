@@ -137,20 +137,7 @@ paths:
   /orders/{code}/pay/offline:
     $ref: './paths/Orders.yml#/OrdersCodePayOffline'
   /payments/{payment_method}:
-    post:
-      tags:
-        - Payments
-      summary: 'Update payment status by payment provider'
-      operationId: 87db72643167a8d9469558df40c05231
-      parameters:
-        - name: payment_method
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Success
+    $ref: './paths/Payments.yml#/PaymentsMethod'
   /payment-methods:
     $ref: './paths/PaymentMethods.yml#/PaymentMethods'
   /payment-methods/id:{id}:
@@ -160,31 +147,7 @@ paths:
   /payments/id:{id}:
     $ref: './paths/Payments.yml#/PaymentParams'
   /permissions:
-    get:
-      tags:
-        - Roles
-      summary: 'list of permissions'
-      operationId: 7e9aeafb806872b889961c1686a8331a
-      parameters:
-        - name: assignable
-          in: query
-          description: 'Is the permission assignable by current user'
-          schema:
-            type: boolean
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Permission'
-                type: object
-      security:
-        - BearerAuth: [ ]
+    $ref: './paths/Permissions.yml#/Permissions'
   /products:
     $ref: './paths/Products.yml#/Products'
   '/products/{slug}':

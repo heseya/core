@@ -3,7 +3,6 @@ Audit:
     tags:
       - Audits
     summary: 'list changes for object'
-    operationId: e30e643af2cbd18d3525f753fed7082e
     parameters:
       - name: object
         in: path

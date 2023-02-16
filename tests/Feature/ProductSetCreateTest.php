@@ -574,7 +574,7 @@ class ProductSetCreateTest extends TestCase
             'public_parent' => false,
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/product-sets?tree', [
+        $response = $this->actingAs($this->$user)->postJson('/product-sets?tree=1', [
             'name' => 'New',
             'slug_override' => false,
             'slug_suffix' => 'new',

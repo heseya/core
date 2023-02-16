@@ -297,7 +297,7 @@ class ProductSetUpdateTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->$user)->patchJson(
-            '/product-sets/id:' . $parent->getKey() . '?tree',
+            '/product-sets/id:' . $parent->getKey() . '?tree=1',
             [
                 'name' => 'New',
                 'public' => true,

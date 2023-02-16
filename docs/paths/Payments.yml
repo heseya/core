@@ -87,3 +87,18 @@ PaymentParams:
               type: object
     security:
       - BearerAuth: [ ]
+
+PaymentsMethod:
+  post:
+    tags:
+      - Payments
+    summary: 'Update payment status by payment provider'
+    parameters:
+      - name: payment_method
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Success

@@ -3,7 +3,6 @@ Schemas:
     tags:
       - Schemas
     summary: 'all schemas list'
-    operationId: 170c0b7f342ea07d3a8a3049dd252ca4
     parameters:
       - name: name
         in: query
@@ -69,7 +68,6 @@ Schemas:
     tags:
       - Schemas
     summary: 'create schema'
-    operationId: d103be543bfb100b60eaa7b27eb5e150
     requestBody:
       $ref: '../requests/Schemas.yml#/SchemaStore'
     responses:
@@ -89,7 +87,6 @@ SchemasParam:
   get:
     tags:
       - Schemas
-    operationId: 73d12dd89ba8210a22b5240704e63ee8
     parameters:
       - name: id
         in: path
@@ -113,7 +110,6 @@ SchemasParam:
   delete:
     tags:
       - Schemas
-    operationId: 459ce0314ef100d188cd1d1d04025e99
     parameters:
       - name: id
         in: path
@@ -138,7 +134,6 @@ SchemasParam:
         schema:
           type: string
           example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
-    operationId: 809f90ba94d09b70423a5d7ceeedb2ff
     requestBody:
       $ref: '../requests/Schemas.yml#/SchemaUpdate'
     responses:
