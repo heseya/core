@@ -8,7 +8,6 @@ Sale:
       type: string
       example: 'Black Weekend 2021'
     type:
-      description: 'amount | percentage'
       type: string
       enum: [ 'amount', 'percentage' ]
     value:
@@ -18,7 +17,6 @@ Sale:
       type: number
       example: 1
     target_type:
-      description: 'order-value | products | shipping-price | cheapest-product'
       type: string
       enum: [ 'order-value', 'products', 'shipping-price', 'cheapest-product' ]
     target_is_allow_list:

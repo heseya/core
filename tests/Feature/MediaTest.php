@@ -103,7 +103,6 @@ class MediaTest extends TestCase
         $this->$user->givePermissionTo('media.show');
 
         Media::query()->delete();
-
         Media::factory()->create([
             'type' => MediaType::OTHER,
         ]);
@@ -111,14 +110,11 @@ class MediaTest extends TestCase
             'type' => MediaType::VIDEO,
         ]);
 
-        $response = $this->actingAs($this->$user)->json('GET', '/media', [
-            'type' => MediaType::OTHER,
-        ]);
-
-        $response->assertJsonCount(1, 'data')
-            ->assertJsonFragment([
-                'relations_count' => 0,
-            ]);
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/media', ['type' => MediaType::OTHER])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['relations_count' => 0]);
     }
 
     /**
@@ -152,14 +148,11 @@ class MediaTest extends TestCase
         ]);
         $bannerMedia->media()->attach($media->getKey(), ['min_screen_width' => 100]);
 
-        $response = $this->actingAs($this->$user)->json('GET', '/media', [
-            'has_relationships' => true,
-        ]);
-
-        $response->assertJsonCount(1, 'data')
-            ->assertJsonFragment([
-                'relations_count' => 3,
-            ]);
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/media', ['has_relationships' => true])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['relations_count' => 3]);
     }
 
     /**
@@ -184,7 +177,7 @@ class MediaTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->json('GET', '/media?has_relationships=false')
+            ->json('GET', '/media', ['has_relationships' => false])
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment([
                 'relations_count' => 0,

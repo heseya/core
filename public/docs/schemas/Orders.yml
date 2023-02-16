@@ -115,11 +115,9 @@ OrderDiscount:
       example: 'BLACK22'
     type:
       type: string
-      description: 'amount | percentage'
       enum: ['amount', 'percentage']
     target_type:
       type: string
-      description: 'order-value | products | product-sets | shipping-price'
       enum: [ 'order-value', 'products', 'product-sets', 'shipping-price' ]
     value:
       type: number
