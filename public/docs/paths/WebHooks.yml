@@ -51,7 +51,7 @@ Webhooks:
                   $ref: './../schemas/WebHooks.yml#/WebHook'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 WebhooksParams:
   get:
@@ -91,7 +91,7 @@ WebhooksParams:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   patch:
     tags:
       - WebHooks
@@ -116,7 +116,7 @@ WebhooksParams:
                   $ref: './../schemas/WebHooks.yml#/WebHook'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 WebhooksEvents:
   get:

@@ -233,7 +233,7 @@ OrdersShippingLists:
                     $ref: './../schemas/Orders.yml#/Order'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 OrdersMy:
   get:
