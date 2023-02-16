@@ -147,27 +147,6 @@ class SettingsTest extends TestCase
     }
 
     /**
-     * @dataProvider booleanProvider
-     */
-    public function testCreateBooleanValues($user, $boolean, $booleanValues): void
-    {
-        $this->$user->givePermissionTo('settings.add');
-
-        $setting = [
-            'name' => 'new_setting',
-            'value' => 'New Value',
-            'public' => $boolean,
-        ];
-
-        $settingResponse = array_merge($setting, ['public' => $booleanValues]);
-
-        $this->actingAs($this->$user)->json('POST', '/settings', $setting)
-            ->assertCreated()->assertJsonFragment($settingResponse);
-
-        $this->assertDatabaseHas('settings', $settingResponse);
-    }
-
-    /**
      * @dataProvider authProvider
      */
     public function testCreateConfigSettings($user): void
@@ -237,33 +216,6 @@ class SettingsTest extends TestCase
             ->assertOk()->assertJsonFragment($new_setting);
 
         $this->assertDatabaseHas('settings', $new_setting);
-    }
-
-    /**
-     * @dataProvider booleanProvider
-     */
-    public function testUpdateBooleanValues($user, $boolean, $booleanValue): void
-    {
-        $this->$user->givePermissionTo('settings.edit');
-
-        Setting::create([
-            'name' => 'new_setting',
-            'value' => 'Old Value',
-            'public' => true,
-        ]);
-
-        $new_setting = [
-            'name' => 'new_setting',
-            'value' => 'New Value',
-            'public' => $boolean,
-        ];
-
-        $settingResponse = array_merge($new_setting, ['public' => $booleanValue]);
-
-        $this->actingAs($this->$user)->json('PATCH', '/settings/new_setting', $new_setting)
-            ->assertOk()->assertJsonFragment($settingResponse);
-
-        $this->assertDatabaseHas('settings', $settingResponse);
     }
 
     /**

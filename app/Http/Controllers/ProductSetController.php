@@ -37,7 +37,7 @@ class ProductSetController extends Controller
             $request->validated(),
             $request->has('root') && $request->input('root', true) !== false,
         );
-        if ($request->has('tree') && $request->input('tree', true) !== false) {
+        if ($request->has('tree') && $request->boolean('tree', true) !== false) {
             return ProductSetChildrenResource::collection($sets);
         }
 
@@ -48,7 +48,7 @@ class ProductSetController extends Controller
     {
         $this->productSetService->authorize($productSet);
 
-        if ($request->has('tree') && $request->input('tree', true) !== false) {
+        if ($request->has('tree') && $request->boolean('tree', true) !== false) {
             return ProductSetParentChildrenResource::make($productSet);
         }
 
@@ -60,7 +60,7 @@ class ProductSetController extends Controller
         $dto = ProductSetDto::instantiateFromRequest($request);
         $productSet = $this->productSetService->create($dto);
 
-        if ($request->has('tree') && $request->input('tree', true) !== false) {
+        if ($request->has('tree') && $request->boolean('tree', true) !== false) {
             return ProductSetParentChildrenResource::make($productSet);
         }
 
@@ -72,7 +72,7 @@ class ProductSetController extends Controller
         $dto = ProductSetUpdateDto::instantiateFromRequest($request);
         $productSet = $this->productSetService->update($productSet, $dto);
 
-        if ($request->has('tree') && $request->input('tree', true) !== false) {
+        if ($request->has('tree') && $request->boolean('tree', true) !== false) {
             return ProductSetParentChildrenResource::make($productSet);
         }
 

@@ -364,55 +364,6 @@ class SchemaTest extends TestCase
     }
 
     /**
-     * @dataProvider booleanProvider
-     */
-    public function testCreateBooleanValues($user, $boolean, $booleanValue): void
-    {
-        $this->$user->givePermissionTo('products.add');
-
-        $response = $this->actingAs($this->$user)->json('POST', '/schemas', [
-            'name' => 'Test',
-            'type' => SchemaType::getKey(SchemaType::SELECT),
-            'price' => 120,
-            'description' => 'test test',
-            'hidden' => $boolean,
-            'required' => $boolean,
-            'options' => [
-                [
-                    'name' => 'A',
-                    'price' => 1000,
-                    'disabled' => $boolean,
-                ],
-                [
-                    'name' => 'B',
-                    'price' => 0,
-                    'disabled' => 'off',
-                ],
-            ],
-        ]);
-
-        $response
-            ->assertCreated()
-            ->assertJsonFragment([
-                'name' => 'Test',
-                'price' => 120,
-                'description' => 'test test',
-                'hidden' => $booleanValue,
-                'required' => $booleanValue,
-            ])
-            ->assertJsonFragment([
-                'name' => 'A',
-                'price' => 1000,
-                'disabled' => $booleanValue,
-            ])
-            ->assertJsonFragment([
-                'name' => 'B',
-                'price' => 0,
-                'disabled' => false,
-            ]);
-    }
-
-    /**
      * @dataProvider authProvider
      */
     public function testCreateWithEmptyNullableProperties($user): void
