@@ -5,18 +5,18 @@ ConditionGroup:
       type: array
       items:
         oneOf:
-          - $ref: '#OrderValue'
-          - $ref: '#UserInRole'
-          - $ref: '#UserIn'
-          - $ref: '#ProductInSet'
-          - $ref: '#ProductIn'
-          - $ref: '#DateBetween'
-          - $ref: '#TimeBetween'
-          - $ref: '#MaxUses'
-          - $ref: '#MaxUsesPerUser'
-          - $ref: '#WeekdayIn'
-          - $ref: '#CartLength'
-          - $ref: '#CouponsCount'
+          - $ref: '#/OrderValue'
+          - $ref: '#/UserInRole'
+          - $ref: '#/UserIn'
+          - $ref: '#/ProductInSet'
+          - $ref: '#/ProductIn'
+          - $ref: '#/DateBetween'
+          - $ref: '#/TimeBetween'
+          - $ref: '#/MaxUses'
+          - $ref: '#/MaxUsesPerUser'
+          - $ref: '#/WeekdayIn'
+          - $ref: '#/CartLength'
+          - $ref: '#/CouponsCount'
 
 ConditionGroupShow:
   type: object
@@ -28,18 +28,18 @@ ConditionGroupShow:
       type: array
       items:
         oneOf:
-          - $ref: '#OrderValueShow'
-          - $ref: '#UserInRoleShow'
-          - $ref: '#UserInShow'
-          - $ref: '#ProductInSetShow'
-          - $ref: '#ProductInShow'
-          - $ref: '#DateBetweenShow'
-          - $ref: '#TimeBetweenShow'
-          - $ref: '#MaxUsesShow'
-          - $ref: '#MaxUsesPerUserShow'
-          - $ref: '#WeekdayInShow'
-          - $ref: '#CartLengthShow'
-          - $ref: '#CouponsCountShow'
+          - $ref: '#/OrderValueShow'
+          - $ref: '#/UserInRoleShow'
+          - $ref: '#/UserInShow'
+          - $ref: '#/ProductInSetShow'
+          - $ref: '#/ProductInShow'
+          - $ref: '#/DateBetweenShow'
+          - $ref: '#/TimeBetweenShow'
+          - $ref: '#/MaxUsesShow'
+          - $ref: '#/MaxUsesPerUserShow'
+          - $ref: '#/WeekdayInShow'
+          - $ref: '#/CartLengthShow'
+          - $ref: '#/CouponsCountShow'
 
 OrderValue:
   type: object
@@ -61,7 +61,7 @@ OrderValue:
 OrderValueShow:
   type: object
   allOf:
-    - $ref: '#OrderValue'
+    - $ref: '#/OrderValue'
     - properties:
         id:
           type: string
@@ -192,10 +192,10 @@ TimeBetween:
       type: string
       example: 'time-between'
     start_at:
-      type: time
+      type: string
       example: '12:46:00'
     end_at:
-      type: time
+      type: string
       example: '15:00:00'
     is_in_range:
       type: boolean

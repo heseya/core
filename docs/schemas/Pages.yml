@@ -26,7 +26,7 @@ PageView:
     - $ref: '#/Page'
     - properties:
         content_html:
-          description: 'HTML formated text to be displayed as a main content under the page header'
+          description: 'HTML formatted text to be displayed as a main content under the page header'
           type: string
           example: '<h1>Lorem ipsum dolor sit amet</h1>'
         seo:

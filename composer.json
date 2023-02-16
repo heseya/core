@@ -116,7 +116,8 @@
             "phpcpd ./app ./database"
         ],
         "docs": [
-            "swagger-cli validate ./public/docs/api.yml"
+            "swagger-cli validate ./docs/api.yml",
+            "cd ./public && redoc-cli build ./../docs/api.yml && mv redoc-static.html ./docs/index.html"
         ],
         "ide-helper": [
             "@php artisan ide-helper:generate -M",
