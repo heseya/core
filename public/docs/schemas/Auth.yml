@@ -44,13 +44,9 @@ Preferences:
   properties:
     successful_login_attempt_alert:
       type: boolean
-      example: false
     failed_login_attempt_alert:
       type: boolean
-      example: true
     new_localization_login_alert:
       type: boolean
-      example: true
     recovery_code_changed_alert:
       type: boolean
-      example: true

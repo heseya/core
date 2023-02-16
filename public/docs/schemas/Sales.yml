@@ -21,10 +21,8 @@ Sale:
       enum: [ 'order-value', 'products', 'shipping-price', 'cheapest-product' ]
     target_is_allow_list:
       type: boolean
-      example: true
     active:
       type: boolean
-      example: true
 
 SaleShow:
   type: object

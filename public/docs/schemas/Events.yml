@@ -27,5 +27,4 @@ Event:
     encrypted:
       description: 'Whether the event is encrypted'
       type: boolean
-      example: false
   type: object

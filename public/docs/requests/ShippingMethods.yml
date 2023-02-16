@@ -6,10 +6,8 @@ ShippingMethod:
       example: dpd
     public:
       type: boolean
-      example: 'true'
     block_list:
       type: boolean
-      example: 'false'
     payment_methods:
       type: array
       items:

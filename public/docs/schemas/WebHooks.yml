@@ -18,11 +18,9 @@ WebHook:
     with_issuer:
       description: 'Whether issuer is visible in WebHookEvent.'
       type: boolean
-      example: true
     with_hidden:
       description: 'Whether hidden data are visible in WebHookEvent.'
       type: boolean
-      example: true
     events:
       description: 'List of WebHook events'
       type: array

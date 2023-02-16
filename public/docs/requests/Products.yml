@@ -20,7 +20,6 @@ Product:
     shipping_digital:
       description: 'Whether product is digital and not delivered by physical means'
       type: boolean
-      example: true
     purchase_limit_per_user:
       type: number
     media:

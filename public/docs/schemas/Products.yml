@@ -35,15 +35,12 @@ Product:
     public:
       description: 'Whether product is not set to be hidden.'
       type: boolean
-      example: true
     visible:
       description: 'Whether product is visible due to public setting and set visibility'
       type: boolean
-      example: true
     available:
       description: 'Whether all parts for minimum product config are available'
       type: boolean
-      example: true
     quantity_step:
       description: 'In what increments can you increase the product quantity'
       type: number
@@ -70,7 +67,6 @@ Product:
     shipping_digital:
       description: 'Whether product is digital and not delivered by physical means'
       type: boolean
-      example: true
     purchase_limit_per_user:
       type: number
       example: 5
@@ -88,7 +84,6 @@ Product:
     has_schemas:
       description: 'Does product has any attached schema'
       type: boolean
-      example: true
 
 ProductView:
   type: object
@@ -178,15 +173,12 @@ ProductShort:
     public:
       description: 'Whether product is not set to be hidden.'
       type: boolean
-      example: true
     visible:
       description: 'Whether product is visible due to public setting and set visibility'
       type: boolean
-      example: true
     available:
       description: 'Whether all parts for minimum product config are available'
       type: boolean
-      example: true
     quantity:
       description: 'Product quantity summary'
       type: number

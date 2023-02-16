@@ -22,7 +22,7 @@ class UndotParamsTest extends TestCase
 
     public function testUndotParamsMiddlewareNested(): void
     {
-        $request = Request::create('/orders?metadata.Producent.Zagraniczny=false', 'GET');
+        $request = Request::create('/orders?metadata.Producent.Zagraniczny=0', 'GET');
 
         $middleware = new UndotParams();
 
@@ -31,7 +31,7 @@ class UndotParamsTest extends TestCase
             $this->assertEquals(
                 [
                     'Producent' => [
-                        'Zagraniczny' => 'false',
+                        'Zagraniczny' => '0',
                     ],
                 ],
                 $req->metadata

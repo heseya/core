@@ -16,7 +16,6 @@ Media:
         allowEmptyValue: true
         schema:
           type: boolean
-          example: false
       - name: 'ids[]'
         in: query
         description: 'Ids array search'

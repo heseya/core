@@ -11,7 +11,6 @@ Consent:
       example: '<h1>Lorem ipsum dolor sit amet</h1>'
     required:
       type: boolean
-      example: true
     created_at:
       type: string
       format: date-time
@@ -32,8 +31,6 @@ ConsentUser:
       example: '<h1>Lorem ipsum dolor sit amet</h1>'
     required:
       type: boolean
-      example: true
     value:
       type: boolean
-      example: true
   type: object

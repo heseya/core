@@ -9,12 +9,11 @@ Metadata:
       example: 132432153
     synced:
       type: boolean
-      example: true
 
 MetadataQuery:
   type: object
   properties:
-    kolor:
+    color:
       type: string
-    czerwony:
+    red:
       type: string

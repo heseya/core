@@ -9,7 +9,6 @@ Provider:
     active:
       description: 'Is provider active'
       type: boolean
-      example: true
     client_id:
       description: 'Client provider id'
       type: string
@@ -28,5 +27,4 @@ ProviderResource:
     active:
       description: 'Is provider active'
       type: boolean
-      example: true
   type: object

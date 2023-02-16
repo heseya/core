@@ -14,5 +14,4 @@ Permission:
     assignable:
       description: 'Whether the role assignable by current user.'
       type: boolean
-      example: true
   type: object

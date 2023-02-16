@@ -15,11 +15,9 @@ Role:
     assignable:
       description: 'Whether the role assignable by current user.'
       type: boolean
-      example: true
     deletable:
       description: 'Whether the role can be deleted with appropriate permissions.'
       type: boolean
-      example: true
     users_count:
       description: 'Number of users in role.'
       type: number

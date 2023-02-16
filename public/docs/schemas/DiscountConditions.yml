@@ -55,10 +55,8 @@ OrderValue:
       example: 999.99
     include_taxes:
       type: boolean
-      example: false
     is_in_range:
       type: boolean
-      example: true
 
 OrderValueShow:
   type: object
@@ -82,7 +80,6 @@ UserInRole:
         example: 026bc5f6-8373-4aeb-972e-e78d72a67121
     is_allow_list:
       type: boolean
-      example: true
 
 UserInRoleShow:
   type: object
@@ -106,7 +103,6 @@ UserIn:
         example: 026bc5f6-8373-4aeb-972e-e78d72a67121
     is_allow_list:
       type: boolean
-      example: true
 
 UserInShow:
   type: object
@@ -130,7 +126,6 @@ ProductInSet:
         example: 026bc5f6-8373-4aeb-972e-e78d72a67121
     is_allow_list:
       type: boolean
-      example: true
 
 ProductInSetShow:
   type: object
@@ -154,7 +149,6 @@ ProductIn:
         example: 026bc5f6-8373-4aeb-972e-e78d72a67121
     is_allow_list:
       type: boolean
-      example: true
 
 ProductInShow:
   type: object
@@ -181,7 +175,6 @@ DateBetween:
       example: '2022-03-10T12:49'
     is_in_range:
       type: boolean
-      example: true
 
 DateBetweenShow:
   type: object
@@ -206,7 +199,6 @@ TimeBetween:
       example: '15:00:00'
     is_in_range:
       type: boolean
-      example: true
 
 TimeBetweenShow:
   type: object

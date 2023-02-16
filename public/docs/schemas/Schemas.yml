@@ -29,10 +29,8 @@ Schema:
       example: 9.99
     hidden:
       type: boolean
-      example: false
     required:
       type: boolean
-      example: false
     min:
       type: string
     max:
@@ -79,11 +77,9 @@ Option:
     disabled:
       description: 'Shows if the option has been disabled manually'
       type: boolean
-      example: false
     available:
       description: 'Shows whether the option is available for purchase (in stock and not disabled)'
       type: boolean
-      example: true
     shipping_time:
       type: integer
       example: 5
@@ -142,10 +138,8 @@ SchemaRequest:
       example: 9.99
     hidden:
       type: boolean
-      example: false
     required:
       type: boolean
-      example: false
     min:
       type: string
     max:
@@ -179,7 +173,6 @@ SchemaRequest:
           disabled:
             description: 'Shows if the option has been disabled manually'
             type: boolean
-            example: false
           items:
             type: array
             items:
@@ -220,9 +213,7 @@ SchemaShort:
       example: 9.99
     hidden:
       type: boolean
-      example: false
     required:
       type: boolean
-      example: false
     default:
       type: string

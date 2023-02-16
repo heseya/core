@@ -31,11 +31,9 @@ Attribute:
     global:
       description: 'Possibility to use attribute in search'
       type: boolean
-      example: 'true'
     sortable:
       description: 'Parameter for storefront'
       type: boolean
-      example: 'true'
 
 AttributeMetadata:
   allOf:
@@ -116,11 +114,9 @@ AttributeProduct:
         global:
           description: 'Possibility to use attribute in search'
           type: boolean
-          example: 'true'
         sortable:
           description: 'Parameter for storefront'
           type: boolean
-          example: 'true'
         metadata:
           $ref: './../schemas/Metadata.yml#/Metadata'
         metadata_private:

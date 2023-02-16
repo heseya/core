@@ -18,15 +18,12 @@ ProductSet:
     slug_override:
       description: 'Slug override'
       type: boolean
-      example: false
     public:
       description: 'Whether set is visible to unauthorized users'
       type: boolean
-      example: true
     visible:
       description: 'Is product visible'
       type: boolean
-      example: true
     parent_id:
       description: 'Id of set, this set belongs to'
       type: string
@@ -65,11 +62,9 @@ ProductSetParent:
     public:
       description: 'Whether set should be visible to unauthorized users'
       type: boolean
-      example: true
     public_parent:
       description: 'When any parent node is set to private, this setting overrides set visibility'
       type: boolean
-      example: true
     description_html:
       description: 'HTML formated text to be displayed as a product set description'
       type: string
@@ -112,15 +107,12 @@ ProductSetChildren:
     slug_override:
       description: 'Slug override'
       type: boolean
-      example: false
     public:
       description: 'Whether set is visible to unauthorized users'
       type: boolean
-      example: true
     visible:
       description: 'Is product visible'
       type: boolean
-      example: true
     parent_id:
       description: 'Id of set, this set belongs to'
       type: string
@@ -128,9 +120,7 @@ ProductSetChildren:
     children:
       type: array
       items:
-#        Odwołanie do siebie nie działa poprawnie, chociaż przed rozbiciem na pliki działało
-#        $ref: '#ProductSetChildren'
-        $ref: '#ProductSetChildrenEmpty'
+        $ref: '#ProductSetChildren'
     attributes:
       type: array
       items:
@@ -161,11 +151,9 @@ ProductSetParentChildren:
     public:
       description: 'Whether set is visible to unauthorized users'
       type: boolean
-      example: true
     public_parent:
       description: 'When any parent node is set to private, this setting overrides set visibility'
       type: boolean
-      example: true
     parent:
       $ref: '#/ProductSet'
     children:
@@ -191,7 +179,6 @@ ProductSetChildrenEmpty:
     public:
       description: 'Whether set is visible to unauthorized users'
       type: boolean
-      example: true
     parent_id:
       description: 'Id of set, this set belongs to'
       type: string

@@ -91,10 +91,8 @@ OrderProduct:
         $ref: '#/OrderDiscount'
     shipping_digital:
       type: boolean
-      example: true
     is_delivered:
       type: boolean
-      example: true
     urls:
       type: array
       items:
@@ -253,7 +251,6 @@ OrderProductPublic:
         $ref: '#/OrderSchema'
     shipping_digital:
       type: boolean
-      example: true
     product:
       $ref: './Products.yml#/ProductView'
     urls:

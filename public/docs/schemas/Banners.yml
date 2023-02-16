@@ -12,7 +12,6 @@ Banner:
       example: 'Spring banner'
     active:
       type: boolean
-      example: true
     banner_media:
       type: array
       items:

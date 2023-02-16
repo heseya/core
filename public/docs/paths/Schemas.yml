@@ -14,12 +14,10 @@ Schemas:
         in: query
         schema:
           type: boolean
-          example: true
       - name: required
         in: query
         schema:
           type: boolean
-          example: true
       - name: search
         in: query
         schema:

@@ -15,7 +15,6 @@ Page:
     public:
       description: 'Whether page is visible to unauthorized users'
       type: boolean
-      example: true
     metadata:
       $ref: './../schemas/Metadata.yml#/Metadata'
     metadata_private:

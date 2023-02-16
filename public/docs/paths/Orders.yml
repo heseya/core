@@ -541,7 +541,6 @@ MyOrderProducts:
         required: false
         schema:
           type: boolean
-          example: true
     summary: 'User ordered products list'
     responses:
       200:
