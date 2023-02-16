@@ -1,0 +1,18 @@
+Permission:
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    name:
+      description: 'Name of the permission'
+      type: string
+      example: products.add
+    description:
+      description: 'Description of the permission'
+      type: string
+      example: 'Permission to add products'
+    assignable:
+      description: 'Whether the role assignable by current user.'
+      type: boolean
+      example: true
+  type: object

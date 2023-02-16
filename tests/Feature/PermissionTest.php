@@ -88,33 +88,30 @@ class PermissionTest extends TestCase
         ]);
 
         $this->$user->givePermissionTo($permission1);
-        $request = $this
+        $this
             ->actingAs($this->$user)
-            ->json('GET', '/permissions', ['assignable' => true]);
-
-        dd($request);
-
-//            ->assertOk()
-//            ->assertJsonCount(2, 'data')
-//            ->assertJsonFragment([[
-//                $permission1->getKeyName() => $permission1->getKey(),
-//                'name' => $permission1->name,
-//                'display_name' => null,
-//                'description' => $permission1->description,
-//                'assignable' => true,
-//            ],
-//            ])
-//            ->assertJsonMissing([[
-//                $permission2->getKeyName() => $permission2->getKey(),
-//                'name' => $permission2->name,
-//                'display_name' => null,
-//                'description' => $permission2->description,
-//                'assignable' => false,
-//            ],
-//            ])
-//            ->assertJsonMissing([
-//                'assignable' => false,
-//            ]);
+            ->json('GET', '/permissions', ['assignable' => true])
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([[
+                $permission1->getKeyName() => $permission1->getKey(),
+                'name' => $permission1->name,
+                'display_name' => null,
+                'description' => $permission1->description,
+                'assignable' => true,
+            ],
+            ])
+            ->assertJsonMissing([[
+                $permission2->getKeyName() => $permission2->getKey(),
+                'name' => $permission2->name,
+                'display_name' => null,
+                'description' => $permission2->description,
+                'assignable' => false,
+            ],
+            ])
+            ->assertJsonMissing([
+                'assignable' => false,
+            ]);
     }
 
     /**

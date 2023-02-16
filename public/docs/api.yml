@@ -1,60 +1,11 @@
 openapi: 3.0.0
 info:
   title: 'Heseya Store API'
-  description: "IMPORTANT!!! Auth locks replaced with permissions:\n     *   <https://escl24.atlassian.net/wiki/spaces/HES/pages/6476169217/Autoryzacja>.\n     *   You need specific permissions to access each endpoint."
-  version: 3.0.0
+  description: "IMPORTANT! You need specific permissions to access each endpoint: <https://escl24.atlassian.net/wiki/spaces/HES/pages/6476169217/Autoryzacja>"
+  version: 4.0.0
 paths:
   /analytics/payments:
-    get:
-      tags:
-        - Analytics
-      summary: 'Summary of all payments over a period of time'
-      description: "\n     *       Returns total amount and count of payments. By default period is last year.\n     *       Results are grouped in specified time frames.\n     *   "
-      operationId: d66c4ebadd485eeef6d72f508f1f6533
-      parameters:
-        - name: from
-          in: query
-          description: 'date datetime or timestamp by default in UTC+0; required if ''to'' is set'
-          schema:
-            type: string
-          example: '2021-03-23'
-        - name: to
-          in: query
-          description: 'date datetime or timestamp by default in UTC+0'
-          schema:
-            type: string
-          example: '2021-04-23 15:37'
-        - name: group
-          in: query
-          description: total/yearly/monthly/daily/hourly
-          schema:
-            type: string
-          example: total
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    properties:
-                      $timeframe:
-                        description: 'formatted time frame in UTC+0 eg.: for monthly - "YYYY-MM", for hourly - "YYYY-MM-DD HH", for total "total"'
-                        properties:
-                          amount:
-                            description: 'total money amount'
-                            type: number
-                            example: 1234.57
-                          count:
-                            description: 'total payment count'
-                            type: integer
-                            example: 13
-                        type: object
-                    type: object
-                type: object
-      security:
-        - BearerAuth: [ ]
+    $ref: './paths/Analytics.yml#/Analytics'
   /apps:
     $ref: './paths/Apps.yml#/Apps'
   '/apps/id:{id}':
@@ -419,23 +370,7 @@ components:
     OrderSummary:
       $ref: './schemas/Orders.yml#/OrderSummary'
     Permission:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        name:
-          description: 'Name of the permission'
-          type: string
-          example: products.add
-        description:
-          description: 'Description of the permission'
-          type: string
-          example: 'Permission to add products'
-        assignable:
-          description: 'Whether the role assignable by current user.'
-          type: boolean
-          example: true
-      type: object
+      $ref: './schemas/Permission.yml#/Permission'
     Product:
       $ref: './schemas/Products.yml#/Product'
     ProductView:
@@ -532,23 +467,7 @@ components:
     AppStore:
       $ref: './requests/Apps.yml#/AppStore'
     IndexSchema:
-      content:
-        application/json:
-          schema:
-            properties:
-              name:
-                type: string
-              hidden:
-                type: boolean
-                example: 'false'
-              required:
-                type: boolean
-                example: 'true'
-              search:
-                type: string
-              sort:
-                type: string
-            type: object
+      $ref: './requests/IndexSchema.yml#/IndexSchema'
     OrderCreate:
       $ref: './requests/Orders.yml#/OrderCreate'
     OrderUpdate:
@@ -581,7 +500,7 @@ components:
       $ref: './requests/WebHooks.yml#/WebHookCreate'
   securitySchemes:
     BearerAuth:
-      description: 'Use /login and paste token in value field below'
+      description: 'Use /login to generate bearer token'
       type: http
       scheme: bearer
 security:
