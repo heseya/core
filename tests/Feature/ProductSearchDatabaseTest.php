@@ -100,9 +100,9 @@ class ProductSearchDatabaseTest extends TestCase
     }
 
     /**
-     * @dataProvider trueBooleanProvider
+     * @dataProvider authProvider
      */
-    public function testSearchByPublic($user, $boolean): void
+    public function testSearchByPublic($user): void
     {
         $this->$user->givePermissionTo('products.show');
 
@@ -112,7 +112,7 @@ class ProductSearchDatabaseTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->json('GET', '/products', ['public' => $boolean])
+            ->json('GET', '/products', ['public' => true])
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $product->getKey()]);

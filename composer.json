@@ -41,6 +41,7 @@
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^2.12",
+        "captainhook/captainhook": "^5.14",
         "fakerphp/faker": "^v1.19",
         "friendsofphp/php-cs-fixer": "3.9.5",
         "heseya/demo": "^1.0",
@@ -79,7 +80,8 @@
     },
     "config": {
         "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "php-http/discovery": true
         },
         "optimize-autoloader": true,
         "preferred-install": "dist",
@@ -95,7 +97,8 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "vendor/bin/captainhook install -f -s"
         ],
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
@@ -113,7 +116,8 @@
             "phpcpd ./app ./database"
         ],
         "docs": [
-            "swagger-cli validate ./public/docs/api.yml"
+            "swagger-cli validate ./docs/api.yml",
+            "cd ./public && redoc-cli build ./../docs/api.yml && mv redoc-static.html ./docs/index.html"
         ],
         "ide-helper": [
             "@php artisan ide-helper:generate -M",

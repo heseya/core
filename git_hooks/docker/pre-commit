@@ -1,3 +1,0 @@
-#!/bin/bash
-
-docker exec store-api_app_1 composer pre-commit

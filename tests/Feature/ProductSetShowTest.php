@@ -165,14 +165,14 @@ class ProductSetShowTest extends TestCase
     }
 
     /**
-     * @dataProvider trueBooleanProvider
+     * @dataProvider authProvider
      */
-    public function testShowTree($user, $boolean): void
+    public function testShowTree($user): void
     {
         $this->$user->givePermissionTo('product_sets.show_details');
 
         $response = $this->actingAs($this->$user)
-            ->json('GET', '/product-sets/id:' . $this->set->getKey(), ['tree' => $boolean]);
+            ->json('GET', '/product-sets/id:' . $this->set->getKey(), ['tree' => true]);
         $response
             ->assertOk()
             ->assertJson(['data' => [
@@ -207,14 +207,14 @@ class ProductSetShowTest extends TestCase
     }
 
     /**
-     * @dataProvider trueBooleanProvider
+     * @dataProvider authProvider
      */
-    public function testShowTreeHidden($user, $boolean): void
+    public function testShowTreeHidden($user): void
     {
         $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
 
         $response = $this->actingAs($this->$user)
-            ->json('GET', '/product-sets/id:' . $this->set->getKey(), ['tree' => $boolean]);
+            ->json('GET', '/product-sets/id:' . $this->set->getKey(), ['tree' => true]);
         $response
             ->assertOk()
             ->assertJson(['data' => [
@@ -363,14 +363,14 @@ class ProductSetShowTest extends TestCase
     }
 
     /**
-     * @dataProvider trueBooleanProvider
+     * @dataProvider authProvider
      */
-    public function testShowSlugTree($user, $boolean): void
+    public function testShowSlugTree($user): void
     {
         $this->$user->givePermissionTo('product_sets.show_details');
 
         $response = $this->actingAs($this->$user)
-            ->json('GET', '/product-sets/' . $this->set->slug, ['tree' => $boolean]);
+            ->json('GET', '/product-sets/' . $this->set->slug, ['tree' => true]);
         $response
             ->assertOk()
             ->assertJson(['data' => [
@@ -405,14 +405,14 @@ class ProductSetShowTest extends TestCase
     }
 
     /**
-     * @dataProvider trueBooleanProvider
+     * @dataProvider authProvider
      */
-    public function testShowSlugTreeHidden($user, $boolean): void
+    public function testShowSlugTreeHidden($user): void
     {
         $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
 
         $response = $this->actingAs($this->$user)
-            ->json('GET', '/product-sets/' . $this->set->slug, ['tree' => $boolean]);
+            ->json('GET', '/product-sets/' . $this->set->slug, ['tree' => true]);
         $response
             ->assertOk()
             ->assertJson(['data' => [

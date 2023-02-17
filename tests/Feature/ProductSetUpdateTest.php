@@ -297,7 +297,7 @@ class ProductSetUpdateTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->$user)->patchJson(
-            '/product-sets/id:' . $parent->getKey() . '?tree',
+            '/product-sets/id:' . $parent->getKey() . '?tree=1',
             [
                 'name' => 'New',
                 'public' => true,
@@ -404,78 +404,6 @@ class ProductSetUpdateTest extends TestCase
         $this->assertDatabaseHas('seo_metadata', [
             'title' => 'seo title',
             'description' => 'seo description',
-        ]);
-    }
-
-    /**
-     * @dataProvider booleanProvider
-     */
-    public function testUpdateBooleanValues($user, $boolean, $booleanValue): void
-    {
-        $this->$user->givePermissionTo('product_sets.edit');
-
-        $newSet = ProductSet::factory()->create([
-            'public' => false,
-            'order' => 40,
-        ]);
-
-        $set = [
-            'name' => 'Test Edit',
-            'public' => $boolean,
-        ];
-
-        $seo = SeoMetadata::factory()->create();
-        $newSet->seo()->save($seo);
-
-        $parentId = [
-            'parent_id' => null,
-        ];
-
-        $response = $this->actingAs($this->$user)->patchJson(
-            '/product-sets/id:' . $newSet->getKey(),
-            $set + $parentId + [
-                'children_ids' => [],
-                'slug_suffix' => 'test-edit',
-                'slug_override' => $boolean,
-                'seo' => [
-                    'title' => 'seo title',
-                    'description' => 'seo description',
-                    'no_index' => $boolean,
-                ],
-            ],
-        );
-
-        $setResponse = array_merge($set, ['public' => $booleanValue]);
-
-        $response
-            ->assertOk()
-            ->assertJson(
-                [
-                    'data' => $setResponse + [
-                        'parent' => null,
-                        'children_ids' => [],
-                        'slug' => 'test-edit',
-                        'slug_suffix' => 'test-edit',
-                        'slug_override' => false,
-                        'seo' => [
-                            'title' => 'seo title',
-                            'description' => 'seo description',
-                            'no_index' => $booleanValue,
-                        ],
-                    ],
-                ]
-            );
-
-        $this->assertDatabaseHas(
-            'product_sets',
-            $setResponse + $parentId + [
-                'slug' => 'test-edit',
-            ]
-        );
-        $this->assertDatabaseHas('seo_metadata', [
-            'title' => 'seo title',
-            'description' => 'seo description',
-            'no_index' => $booleanValue,
         ]);
     }
 

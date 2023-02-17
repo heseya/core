@@ -4,22 +4,13 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\Contracts\MetadataRequestContract;
 use App\Http\Requests\Contracts\SeoRequestContract;
-use App\Rules\Boolean;
-use App\Traits\BooleanRules;
 use App\Traits\MetadataRules;
 use App\Traits\SeoRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProductSetStoreRequest extends FormRequest implements SeoRequestContract, MetadataRequestContract
 {
-    use SeoRules, BooleanRules, MetadataRules;
-
-    protected array $booleanFields = [
-        'slug_override',
-        'public',
-        'seo.no_index',
-        'tree',
-    ];
+    use SeoRules, MetadataRules;
 
     public function rules(): array
     {
@@ -34,8 +25,8 @@ class ProductSetStoreRequest extends FormRequest implements SeoRequestContract, 
                     'max:255',
                     'alpha_dash',
                 ],
-                'slug_override' => ['required', new Boolean()],
-                'public' => [new Boolean()],
+                'slug_override' => ['required', 'boolean'],
+                'public' => ['boolean'],
                 'parent_id' => ['uuid', 'nullable', 'exists:product_sets,id'],
                 'children_ids' => ['array'],
                 'children_ids.*' => ['uuid', 'exists:product_sets,id'],
@@ -43,7 +34,7 @@ class ProductSetStoreRequest extends FormRequest implements SeoRequestContract, 
                 'cover_id' => ['uuid', 'uuid', 'exists:media,id'],
                 'attributes' => ['array'],
                 'attributes.*' => ['uuid', 'exists:attributes,id'],
-                'tree' => [new Boolean()],
+                'tree' => ['boolean'],
             ],
         );
     }

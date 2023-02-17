@@ -1,0 +1,103 @@
+PackageTemplates:
+  get:
+    tags:
+      - Packages
+    parameters:
+      - name: metadata
+        in: query
+        description: search by metadata
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: metadata_private
+        in: query
+        description: search by metadata private
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: 'ids[]'
+        in: query
+        description: 'Ids array search'
+        schema:
+          type: string
+        example: 'ids[]=5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+    summary: 'list packages'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '../schemas/PackageTemplate.yml#/PackageTemplateMetadata'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+  post:
+    tags:
+      - Packages
+    summary: 'add new package'
+    requestBody:
+      $ref: '../requests/PackageTemplate.yml#/PackageTemplateStore'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: '../schemas/PackageTemplate.yml#/PackageTemplateMetadata'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+PackageTemplatesParam:
+  delete:
+    tags:
+      - Packages
+    summary: 'delete package'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]
+
+  patch:
+    tags:
+      - Packages
+    summary: 'update package'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      $ref: '../requests/PackageTemplate.yml#/PackageTemplateUpdate'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: '../schemas/PackageTemplate.yml#/PackageTemplateMetadata'
+              type: object
+    security:
+      - BearerAuth: [ ]

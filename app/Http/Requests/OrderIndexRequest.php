@@ -2,18 +2,10 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\Boolean;
-use App\Traits\BooleanRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class OrderIndexRequest extends FormRequest
 {
-    use BooleanRules;
-
-    protected array $booleanFields = [
-        'paid',
-    ];
-
     public function rules(): array
     {
         return [
@@ -23,7 +15,7 @@ class OrderIndexRequest extends FormRequest
             'status_id' => ['nullable', 'uuid'],
             'shipping_method_id' => ['nullable', 'uuid'],
             'digital_shipping_method_id' => ['nullable', 'uuid'],
-            'paid' => ['sometimes', new Boolean()],
+            'paid' => ['sometimes', 'boolean'],
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
             'metadata' => ['nullable', 'array'],

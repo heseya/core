@@ -3,20 +3,13 @@
 namespace App\Http\Requests;
 
 use App\Enums\AttributeType;
-use App\Rules\Boolean;
-use App\Traits\BooleanRules;
 use App\Traits\MetadataRules;
 use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AttributeStoreRequest extends FormRequest
 {
-    use BooleanRules, MetadataRules;
-
-    protected array $booleanFields = [
-        'global',
-        'sortable',
-    ];
+    use MetadataRules;
 
     /**
      * Get the validation rules that apply to the request.
@@ -40,8 +33,8 @@ class AttributeStoreRequest extends FormRequest
                 'slug' => ['required', 'string', 'max:255', 'unique:attributes'],
                 'description' => ['nullable', 'string', 'max:255'],
                 'type' => ['required', new EnumValue(AttributeType::class, false)],
-                'global' => ['required', new Boolean()],
-                'sortable' => ['required', new Boolean()],
+                'global' => ['required', 'boolean'],
+                'sortable' => ['required', 'boolean'],
             ]
         );
     }

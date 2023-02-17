@@ -75,9 +75,11 @@ class AvailabilityTest extends TestCase
 
         $item->options()->save($option);
 
-        $this->actingAs($this->$user)->postJson('/items/id:' . $item->getKey() . '/deposits', [
-            'quantity' => 6,
-        ]);
+        $this
+            ->actingAs($this->$user)
+            ->json('POST', '/items/id:' . $item->getKey() . '/deposits', [
+                'quantity' => 6,
+            ]);
 
         $this
             ->assertDatabaseHas('products', [

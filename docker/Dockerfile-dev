@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
 RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl && docker-php-ext-configure gd --with-jpeg
 RUN docker-php-ext-install imap pdo_mysql soap gd
 RUN npm i -g swagger-cli
+RUN npm i -g redoc-cli
 
 RUN wget https://github.com/maglnet/ComposerRequireChecker/releases/latest/download/composer-require-checker.phar \
     -O /usr/bin/composer-require-checker

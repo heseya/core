@@ -3,21 +3,12 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Contracts\SeoRequestContract;
-use App\Rules\Boolean;
-use App\Traits\BooleanRules;
 use App\Traits\SeoRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProductSetUpdateRequest extends FormRequest implements SeoRequestContract
 {
-    use SeoRules, BooleanRules;
-
-    protected array $booleanFields = [
-        'slug_override',
-        'public',
-        'seo.no_index',
-        'tree',
-    ];
+    use SeoRules;
 
     public function rules(): array
     {
@@ -30,8 +21,8 @@ class ProductSetUpdateRequest extends FormRequest implements SeoRequestContract
                     'max:255',
                     'alpha_dash',
                 ],
-                'slug_override' => [new Boolean()],
-                'public' => [new Boolean()],
+                'slug_override' => ['boolean'],
+                'public' => ['boolean'],
                 'parent_id' => ['present', 'nullable', 'uuid', 'exists:product_sets,id'],
                 'children_ids' => ['present', 'array'],
                 'children_ids.*' => ['uuid', 'exists:product_sets,id'],
@@ -39,7 +30,7 @@ class ProductSetUpdateRequest extends FormRequest implements SeoRequestContract
                 'cover_id' => ['uuid', 'uuid', 'exists:media,id'],
                 'attributes' => ['array'],
                 'attributes.*' => ['uuid', 'exists:attributes,id'],
-                'tree' => [new Boolean()],
+                'tree' => ['boolean'],
             ],
         );
     }

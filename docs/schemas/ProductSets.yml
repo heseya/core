@@ -1,0 +1,202 @@
+ProductSet:
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    name:
+      description: 'Name displayed to the user'
+      type: string
+      example: AGD
+    slug:
+      description: 'Name used in the URL path'
+      type: string
+      example: agd
+    slug_suffix:
+      description: 'Slug suffix'
+      type: string
+      example: test
+    slug_override:
+      description: 'Slug override'
+      type: boolean
+    public:
+      description: 'Whether set is visible to unauthorized users'
+      type: boolean
+    visible:
+      description: 'Is product visible'
+      type: boolean
+    parent_id:
+      description: 'Id of set, this set belongs to'
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    children_ids:
+      description: 'Ids of assigned subsets'
+      type: array
+      items:
+        type: string
+        example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    cover:
+      $ref: './../schemas/Media.yml#/Media'
+    attributes:
+      type: array
+      items:
+        $ref: './Attributes.yml#/AttributeMetadata'
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+  type: object
+
+ProductSetParent:
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    name:
+      description: 'Name displayed to the user'
+      type: string
+      example: AGD
+    slug:
+      description: 'Name used in the URL path'
+      type: string
+      example: agd
+    public:
+      description: 'Whether set should be visible to unauthorized users'
+      type: boolean
+    public_parent:
+      description: 'When any parent node is set to private, this setting overrides set visibility'
+      type: boolean
+    description_html:
+      description: 'HTML formated text to be displayed as a product set description'
+      type: string
+      example: '<h1>Lorem ipsum dolor sit amet</h1>'
+    cover:
+      $ref: './../schemas/Media.yml#/Media'
+    parent:
+      $ref: '#/ProductSet'
+    children_ids:
+      description: 'Ids of assigned subsets'
+      type: array
+      items:
+        type: string
+        example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    seo:
+      $ref: './Seo.yml#/SeoView'
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+  type: object
+
+ProductSetChildren:
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    name:
+      description: 'Name displayed to the user'
+      type: string
+      example: AGD
+    slug:
+      description: 'Name used in the URL path'
+      type: string
+      example: agd
+    slug_suffix:
+      description: 'Slug suffix'
+      type: string
+      example: test
+    slug_override:
+      description: 'Slug override'
+      type: boolean
+    public:
+      description: 'Whether set is visible to unauthorized users'
+      type: boolean
+    visible:
+      description: 'Is product visible'
+      type: boolean
+    parent_id:
+      description: 'Id of set, this set belongs to'
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    children:
+      type: array
+      items:
+        $ref: '#ProductSetChildren'
+    attributes:
+      type: array
+      items:
+        $ref: './Attributes.yml#/Attribute'
+    metadata:
+      type: array
+      items:
+        $ref: './Metadata.yml#/Metadata'
+    metadata_private:
+      type: array
+      items:
+        $ref: './Metadata.yml#/Metadata'
+  type: object
+
+ProductSetParentChildren:
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    name:
+      description: 'Name displayed to the user'
+      type: string
+      example: AGD
+    slug:
+      description: 'Name used in the URL path'
+      type: string
+      example: agd
+    public:
+      description: 'Whether set is visible to unauthorized users'
+      type: boolean
+    public_parent:
+      description: 'When any parent node is set to private, this setting overrides set visibility'
+      type: boolean
+    parent:
+      $ref: '#/ProductSet'
+    children:
+      description: 'Ids of assigned subsets'
+      type: array
+      items:
+        $ref: '#/ProductSetChildren'
+  type: object
+
+ProductSetChildrenEmpty:
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    name:
+      description: 'Name displayed to the user'
+      type: string
+      example: AGD
+    slug:
+      description: 'Name used in the URL path'
+      type: string
+      example: agd
+    public:
+      description: 'Whether set is visible to unauthorized users'
+      type: boolean
+    parent_id:
+      description: 'Id of set, this set belongs to'
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    children:
+      type: array
+      items: []
+  type: object
+
+FavouriteProductSet:
+  type: object
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    product_set:
+      $ref: '#/ProductSet'
+    created_at:
+      type: string
+      format: date-time
+      example: '2021-09-13T11:11'

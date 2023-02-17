@@ -1,0 +1,19 @@
+Metadata:
+  type: object
+  properties:
+    invoice:
+      type: string
+      example: 'FV/2022/03/10/005'
+    erp_id:
+      type: number
+      example: 132432153
+    synced:
+      type: boolean
+
+MetadataQuery:
+  type: object
+  properties:
+    color:
+      type: string
+    red:
+      type: string

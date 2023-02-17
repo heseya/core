@@ -41,7 +41,7 @@ class UserController extends Controller
         /** @var ResourceCollection $userCollection */
         $userCollection = UserResource::collection($paginator);
 
-        return $userCollection->full($request->has('full'));
+        return $userCollection->full($request->boolean('full'));
     }
 
     public function show(User $user): JsonResource

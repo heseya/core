@@ -1,0 +1,50 @@
+Analytics:
+  get:
+    tags:
+      - Analytics
+    summary: 'Summary of all payments over a period of time'
+    description: "Returns total amount and count of payments. By default period is last year. Results are grouped in specified time frames."
+    parameters:
+      - name: from
+        in: query
+        description: 'date datetime or timestamp by default in UTC+0; required if ''to'' is set'
+        schema:
+          type: string
+        example: '2021-03-23'
+      - name: to
+        in: query
+        description: 'date datetime or timestamp by default in UTC+0'
+        schema:
+          type: string
+        example: '2021-04-23 15:37'
+      - name: group
+        in: query
+        description: total/yearly/monthly/daily/hourly
+        schema:
+          type: string
+        example: total
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  properties:
+                    $timeframe:
+                      description: 'formatted time frame in UTC+0 eg.: for monthly - "YYYY-MM", for hourly - "YYYY-MM-DD HH", for total "total"'
+                      properties:
+                        amount:
+                          description: 'total money amount'
+                          type: number
+                          example: 1234.57
+                        count:
+                          description: 'total payment count'
+                          type: integer
+                          example: 13
+                      type: object
+                  type: object
+              type: object
+    security:
+      - BearerAuth: [ ]
