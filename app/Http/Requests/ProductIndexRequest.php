@@ -3,23 +3,13 @@
 namespace App\Http\Requests;
 
 use App\Rules\AttributeSearch;
-use App\Rules\Boolean;
 use App\Rules\CanShowPrivateMetadata;
-use App\Traits\BooleanRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 class ProductIndexRequest extends FormRequest
 {
-    use BooleanRules;
-
-    protected array $booleanFields = [
-        'public',
-        'full',
-        'has_cover',
-    ];
-
     public function rules(): array
     {
         $setsExist = Rule::exists('product_sets', 'slug');
@@ -38,13 +28,13 @@ class ProductIndexRequest extends FormRequest
             'ids.*' => ['uuid'],
             'name' => ['nullable', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255'],
-            'public' => [new Boolean()],
+            'public' => ['boolean'],
             'sort' => ['nullable', 'string', 'max:255'],
             'available' => ['nullable'],
-            'has_cover' => ['nullable', new Boolean()],
-            'has_items' => ['nullable', new Boolean()],
-            'has_schemas' => ['nullable', new Boolean()],
-            'shipping_digital' => ['nullable', new Boolean()],
+            'has_cover' => ['boolean'],
+            'has_items' => ['boolean'],
+            'has_schemas' => ['boolean'],
+            'shipping_digital' => ['boolean'],
 
             'sets' => ['nullable', 'array'],
             'sets.*' => ['string', $setsExist],
@@ -70,7 +60,7 @@ class ProductIndexRequest extends FormRequest
             'attribute_not' => ['nullable', 'array'],
             'attribute_not.*' => [new AttributeSearch()],
 
-            'full' => [new Boolean()],
+            'full' => ['boolean'],
         ];
     }
 }

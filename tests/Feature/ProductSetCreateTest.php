@@ -574,7 +574,7 @@ class ProductSetCreateTest extends TestCase
             'public_parent' => false,
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/product-sets?tree', [
+        $response = $this->actingAs($this->$user)->postJson('/product-sets?tree=1', [
             'name' => 'New',
             'slug_override' => false,
             'slug_suffix' => 'new',
@@ -675,73 +675,6 @@ class ProductSetCreateTest extends TestCase
             'parent_id' => null,
             'slug' => 'test',
         ]);
-    }
-
-    /**
-     * @dataProvider booleanProvider
-     */
-    public function testCreateBooleanValues($user, $boolean, $booleanValue): void
-    {
-        $this->$user->givePermissionTo('product_sets.add');
-
-        Event::fake([ProductSetCreated::class]);
-
-        $media = Media::factory()->create([
-            'type' => MediaType::PHOTO,
-            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
-        ]);
-
-        $set = [
-            'name' => 'Test',
-            'public' => $boolean,
-        ];
-
-        $response = $this->actingAs($this->$user)->postJson(
-            '/product-sets',
-            $set + [
-                'slug_suffix' => 'test',
-                'slug_override' => $boolean,
-                'cover_id' => $media->getKey(),
-                'seo' => [
-                    'title' => 'seo title',
-                    'description' => 'seo description',
-                    'no_index' => $boolean,
-                ],
-            ]
-        );
-
-        $setResponse = array_merge($set, ['public' => $booleanValue]);
-
-        $response
-            ->assertCreated()
-            ->assertJson([
-                'data' => $setResponse + [
-                    'slug_suffix' => 'test',
-                    'slug_override' => false,
-                    'parent' => null,
-                    'slug' => 'test',
-                    'cover' => [
-                        'id' => $media->getKey(),
-                        'type' => Str::lower($media->type->key),
-                        'url' => $media->url,
-                    ],
-                    'seo' => [
-                        'title' => 'seo title',
-                        'description' => 'seo description',
-                        'no_index' => $booleanValue,
-                    ],
-                ],
-            ]);
-
-        $this->assertDatabaseHas(
-            'product_sets',
-            $setResponse + [
-                'parent_id' => null,
-                'slug' => 'test',
-            ]
-        );
-
-        Event::assertDispatched(ProductSetCreated::class);
     }
 
     /**

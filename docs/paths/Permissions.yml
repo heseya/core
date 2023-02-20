@@ -1,0 +1,25 @@
+Permissions:
+  get:
+    tags:
+      - Roles
+    summary: 'list of permissions'
+    parameters:
+      - name: assignable
+        in: query
+        description: 'Is the permission assignable by current user'
+        schema:
+          type: boolean
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../api.yml#/components/schemas/Permission'
+              type: object
+    security:
+      - BearerAuth: [ ]

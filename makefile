@@ -12,11 +12,8 @@ build:
 	- docker-compose up -d
 	- docker exec store-api_app_1 php artisan key:generate || docker exec store-api-app-1 php artisan key:generate
 
-hooks:
-	- cp ./git_hooks/docker/* ./.git/hooks/
-
-hooks-remove:
-	- rm ./.git/hooks/*
-
 validate-swagger:
 	- swagger-cli validate ./public/docs/api.yml
+
+pre-commit:
+	- docker exec store-api-app-1 composer pre-commit

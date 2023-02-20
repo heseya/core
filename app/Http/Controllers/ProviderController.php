@@ -68,8 +68,8 @@ class ProviderController extends Controller
         $driver = AuthProviderKey::getDriver($authProviderKey);
 
         return AuthProviderRedirectResource::make([
-            'redirect_url' => Socialite::driver($driver)
-                ->stateless()
+            // @phpstan-ignore-next-line
+            'redirect_url' => Socialite::driver($driver)->stateless()
                 ->redirect()
                 ->getTargetUrl(),
         ]);

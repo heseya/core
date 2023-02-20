@@ -1228,9 +1228,9 @@ class AuthTest extends TestCase
             'phone' => '+48123456789',
             'preferences' => [
                 'successful_login_attempt_alert' => true,
-                'failed_login_attempt_alert' => 'off',
-                'new_localization_login_alert' => 'no',
-                'recovery_code_changed_alert' => 0,
+                'failed_login_attempt_alert' => false,
+                'new_localization_login_alert' => false,
+                'recovery_code_changed_alert' => false,
             ],
         ])
             ->assertOk()

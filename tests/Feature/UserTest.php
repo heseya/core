@@ -145,7 +145,7 @@ class UserTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->getJson('/users?full')
+            ->json('GET', '/users', ['full' => true])
             ->assertOk()
             ->assertJsonCount(2, 'data')
             ->assertJson(['data' => [

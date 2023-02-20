@@ -202,24 +202,8 @@ class AppOtherTest extends TestCase
         $this->assertModelMissing($app);
     }
 
-    public function shortBooleanProvider(): array
-    {
-        return [
-            'as true' => [true],
-            'as false' => [false],
-            'as 1' => [1],
-            'as 0' => [0],
-            'as on' => ['on'],
-            'as off' => ['off'],
-            'as yes' => ['yes'],
-            'as no' => ['no'],
-        ];
-    }
-
-    /**
-     * @dataProvider shortBooleanProvider
-     */
-    public function testUninstallForce($boolean): void
+    // TODO: this checks absolutely nothing
+    public function testUninstallForce(): void
     {
         $this->user->givePermissionTo('apps.remove');
 
@@ -229,10 +213,11 @@ class AppOtherTest extends TestCase
             $this->url . '/uninstall' => Http::response(status: 204),
         ]);
 
-        $response = $this->actingAs($this->user)
-            ->json('DELETE', '/apps/id:' . $app->getKey(), ['force' => $boolean]);
+        $this
+            ->actingAs($this->user)
+            ->json('DELETE', '/apps/id:' . $app->getKey(), ['force' => true])
+            ->assertNoContent();
 
-        $response->assertNoContent();
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase
         $this->assertModelMissing($app);
     }

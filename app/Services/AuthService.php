@@ -90,7 +90,7 @@ class AuthService implements AuthServiceContract
             'typ' => TokenType::ACCESS,
             'jti' => $uuid,
         ]);
-        // @phpstan-ignore-next-line
+
         Auth::login($user);
         // @phpstan-ignore-next-line
         $token = Auth::fromUser($user);

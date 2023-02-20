@@ -1455,7 +1455,8 @@ class DiscountService implements DiscountServiceContract
                 $this->applyAllDiscountsOnProduct($product, $salesWithBlockList, false);
             }
 
-            $products->searchable();
+            // @phpstan-ignore-next-line
+            Product::query()->whereIn('id', $products->pluck('id'))->searchable();
         });
     }
 }

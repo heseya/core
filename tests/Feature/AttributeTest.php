@@ -119,25 +119,6 @@ class AttributeTest extends TestCase
     }
 
     /**
-     * @dataProvider booleanProvider
-     */
-    public function testIndexGlobalFlagBooleanValues($user, $boolean, $booleanValue): void
-    {
-        $this->$user->givePermissionTo('attributes.show');
-
-        $this->newAttribute['global'] = $booleanValue;
-        unset($this->newAttribute['options']);
-        Attribute::create($this->newAttribute);
-
-        $this
-            ->actingAs($this->$user)
-            ->json('GET', '/attributes', ['global' => $boolean])
-            ->assertOk()
-            ->assertJsonMissing(['global' => !$booleanValue])
-            ->assertJsonFragment($this->newAttribute);
-    }
-
-    /**
      * @dataProvider authProvider
      */
     public function testIndexMetadata($user): void
@@ -497,28 +478,6 @@ class AttributeTest extends TestCase
                 'value' => 'attributeValueOnePriv',
                 'model_id' => $createdAttribute->getKey(),
                 'public' => false,
-            ]);
-    }
-
-    /**
-     * @dataProvider booleanProvider
-     */
-    public function testCreateBooleanValues($user, $boolean, $booleanValue): void
-    {
-        $this->$user->givePermissionTo('attributes.add');
-
-        $this
-            ->actingAs($this->$user)
-            ->postJson('/attributes', array_merge($this->newAttribute, ['global' => $boolean, 'sortable' => $boolean]))
-            ->assertCreated()
-            ->assertJsonStructure($this->expectedStructure)
-            ->assertJsonFragment([
-                'name' => $this->newAttribute['name'],
-                'slug' => $this->newAttribute['slug'],
-                'description' => $this->newAttribute['description'],
-                'type' => $this->newAttribute['type'],
-                'global' => $booleanValue,
-                'sortable' => $booleanValue,
             ]);
     }
 

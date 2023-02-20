@@ -1,0 +1,123 @@
+Attribute:
+  type: object
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    name:
+      description: 'Name of attribute'
+      type: string
+      example: 'Screen size'
+    slug:
+      description: 'Slug of name attribute'
+      type: string
+      example: 'screen-size'
+    description:
+      description: 'Description of attribute'
+      type: string
+      example: 'Presented number is size of screen monitor'
+    min:
+      description: 'Lowest value from options'
+      type: integer
+      example: '22'
+    max:
+      description: 'Highest value from options'
+      type: integer
+      example: '27'
+    type:
+      description: 'Type of attribute'
+      type: integer
+      example: 1
+    global:
+      description: 'Possibility to use attribute in search'
+      type: boolean
+    sortable:
+      description: 'Parameter for storefront'
+      type: boolean
+
+AttributeMetadata:
+  allOf:
+    - $ref: '#/Attribute'
+    - properties:
+        metadata:
+          $ref: './../schemas/Metadata.yml#/Metadata'
+        metadata_private:
+          $ref: './../schemas/Metadata.yml#/Metadata'
+
+AttributeOption:
+  type: object
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    name:
+      description: 'Name of attribute option'
+      type: string
+      example: 'Screen size'
+    index:
+      description: 'Index of attribute option'
+      type: integer
+      example: 1
+    value_number:
+      description: 'Number value attribute option'
+      type: number
+      example: '27'
+    value_date:
+      description: 'Date value attribute option'
+      type: string
+      format: date
+      example: '2022-02-22'
+    attribute_id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+
+AttributeOptionMetadata:
+  allOf:
+    - $ref: '#/AttributeOption'
+    - properties:
+        metadata:
+          $ref: './../schemas/Metadata.yml#/Metadata'
+        metadata_private:
+          $ref: './../schemas/Metadata.yml#/Metadata'
+
+AttributeProductList:
+  type: object
+  properties:
+    name:
+      description: 'Name of attribute'
+      type: string
+      example: 'Screen size'
+    selected_options:
+      description: 'Array options of attribute'
+      $ref: '#/AttributeOptionMetadata'
+
+AttributeProduct:
+  type: object
+  allOf:
+    - $ref: '#/AttributeProductList'
+    - properties:
+        id:
+          type: string
+          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+        slug:
+          description: 'Slug of name attribute'
+          type: string
+          example: 'screen-size'
+        description:
+          description: 'Description of attribute'
+          type: string
+          example: 'Presented number is size of screen monitor'
+        type:
+          description: 'Type of attribute'
+          type: integer
+          example: 1
+        global:
+          description: 'Possibility to use attribute in search'
+          type: boolean
+        sortable:
+          description: 'Parameter for storefront'
+          type: boolean
+        metadata:
+          $ref: './../schemas/Metadata.yml#/Metadata'
+        metadata_private:
+          $ref: './../schemas/Metadata.yml#/Metadata'

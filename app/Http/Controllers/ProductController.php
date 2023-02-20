@@ -36,7 +36,7 @@ class ProductController extends Controller
         /** @var ResourceCollection $products */
         $products = ProductResource::collection($products);
 
-        return $products->full($request->has('full'));
+        return $products->full($request->boolean('full'));
     }
 
     public function show(Product $product): JsonResource

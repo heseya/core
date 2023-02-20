@@ -1,0 +1,68 @@
+PageReorder:
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          pages:
+            type: array
+            items:
+              type: string
+
+PageStore:
+  content:
+    application/json:
+      schema:
+        required:
+          - name
+          - slug
+          - content_html
+        type: object
+        properties:
+          name:
+            description: 'Name displayed as a page header'
+            type: string
+            example: 'Terms & Conditions'
+          slug:
+            description: 'Name used in the URL path'
+            type: string
+            example: terms-and-conditions
+          public:
+            description: 'Whether page is visible to unauthorized users'
+            type: boolean
+            example: true
+          content_html:
+            description: 'HTML formated text to be displayed as a main content under the page header'
+            type: string
+            example: '<h1>Lorem ipsum dolor sit amet</h1>'
+          seo:
+            $ref: '../schemas/Seo.yml#/SeoStore'
+          metadata:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+          metadata_private:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+
+PageUpdate:
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          name:
+            description: 'Name displayed as a page header'
+            type: string
+            example: 'Terms & Conditions'
+          slug:
+            description: 'Name used in the URL path'
+            type: string
+            example: terms-and-conditions
+          public:
+            description: 'Whether page is visible to unauthorized users'
+            type: boolean
+            example: true
+          content_html:
+            description: 'HTML formatted text to be displayed as a main content under the page header'
+            type: string
+            example: '<h1>Lorem ipsum dolor sit amet</h1>'
+          seo:
+            $ref: '../schemas/Seo.yml#/SeoStore'

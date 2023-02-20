@@ -81,7 +81,8 @@ class ProviderTest extends TestCase
             'active' => true,
         ]);
 
-        $this->getJson('auth/providers?active=true')
+        $this
+            ->json('GET', 'auth/providers', ['active' => true])
             ->assertJsonCount(1, 'data')
             ->assertJson([
                 'data' => [
@@ -100,7 +101,8 @@ class ProviderTest extends TestCase
             'active' => true,
         ]);
 
-        $this->getJson('auth/providers?active=false')
+        $this
+            ->json('GET', '/auth/providers', ['active' => false])
             ->assertJson([
                 'data' => [
                     0 => [

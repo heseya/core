@@ -85,7 +85,7 @@ class OrderProductTest extends TestCase
     {
         $this
             ->actingAs($this->user)
-            ->json('GET', '/orders/my-products?shipping_digital')
+            ->json('GET', '/orders/my-products', ['shipping_digital' => true])
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment([
