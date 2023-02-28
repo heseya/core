@@ -32,7 +32,7 @@ class ProductResource extends Resource
             'shipping_date' => $this->resource->shipping_date,
             'cover' => MediaResource::make($this->resource->media->first()),
             'tags' => TagResource::collection($this->resource->tags),
-            'has_schemas' => $this->resource->has_schemas,
+            'has_schemas' => (bool) $this->resource->has_schemas,
             'quantity' => $this->resource->quantity,
             'shipping_digital' => $this->resource->shipping_digital,
             'purchase_limit_per_user' => $this->resource->purchase_limit_per_user,
