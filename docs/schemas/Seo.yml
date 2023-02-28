@@ -56,7 +56,7 @@ SeoKeywordsResponse:
           id:
             description: 'Model with duplicated keywords ID'
             type: string
-            example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+            format: uuid
           model_type:
             description: 'Model with duplicated keywords type'
             type: string

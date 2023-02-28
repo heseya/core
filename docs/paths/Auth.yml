@@ -17,8 +17,9 @@ Login:
                 example: admin@example.com
               password:
                 type: string
-                example: secret
+                format: password
               code:
+                description: '2FA auth code'
                 type: string
                 example: XyDZR-M9GWZ
     responses:
@@ -161,10 +162,10 @@ Password:
             properties:
               password:
                 type: string
-                example: secret
+                format: password
               password_new:
                 type: string
-                example: xsw@!QAZ34
+                format: password
             type: object
     responses:
       204:
@@ -271,7 +272,7 @@ CheckParams:
         required: true
         schema:
           type: string
-          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+          format: uuid
     responses:
       200:
         description: Success
@@ -295,8 +296,7 @@ TFASetup:
             properties:
               type:
                 type: string
-                description: app | email
-                example: app
+                enum: [app, email]
             type: object
     responses:
       200:
@@ -355,7 +355,7 @@ TFARecoveryCreate:
             properties:
               password:
                 type: string
-                example: secret
+                format: password
             type: object
     responses:
       200:
@@ -386,7 +386,7 @@ TFARemove:
             properties:
               password:
                 type: string
-                example: secret
+                format: password
             type: object
     responses:
       204:
@@ -466,7 +466,7 @@ ShippingAddressesParams:
         required: true
         schema:
           type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+          format: uuid
     requestBody:
       $ref: './../requests/SavedAddresses.yml#/SavedAddress'
     responses:
@@ -493,7 +493,7 @@ ShippingAddressesParams:
         required: true
         schema:
           type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+          format: uuid
     responses:
       200:
         description: Success
@@ -542,7 +542,7 @@ BillingAddressesParams:
         required: true
         schema:
           type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+          format: uuid
     requestBody:
       $ref: './../requests/SavedAddresses.yml#/SavedAddress'
     responses:
@@ -569,7 +569,7 @@ BillingAddressesParams:
         required: true
         schema:
           type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+          format: uuid
     responses:
       200:
         description: Success

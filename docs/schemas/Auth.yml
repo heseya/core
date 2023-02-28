@@ -2,7 +2,7 @@ ProfileView:
   properties:
     id:
       type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+      format: uuid
     name:
       description: 'Users name'
       type: string
@@ -37,7 +37,7 @@ TFASetupApp:
       example: 3DCURGX7GN7KDOUJDI
     qr_code_url:
       type: string
-      example: 'https://api.qrserver.com/v1/create-qr-code/?data=otpauth%3A%2F%2Ftotp%2FStore%3Fsecret%3DCURGX7GN7KDOUJDI&size=200x200&ecc=M'
+      example: 'https://qr-code.example/sampleurl'
 
 Preferences:
   type: object

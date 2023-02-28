@@ -57,7 +57,7 @@ SalesShortResource:
   properties:
     id:
       type: string
-      example: 1c8705ce-5fae-4468-b88a-8784cb5414a0,
+      format: uuid,
     name:
       type: string
       example: 'Black Week'

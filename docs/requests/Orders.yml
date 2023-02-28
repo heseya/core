@@ -16,17 +16,17 @@ OrderCreate:
             example: 'asap plz'
           shipping_method_id:
             type: string
-            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+            format: uuid
           digital_shipping_method_id:
             type: string
-            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+            format: uuid
           items:
             type: array
             items:
               properties:
                 product_id:
                   type: string
-                  example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+                  format: uuid
                 quantity:
                   type: number
                 schemas:
@@ -76,10 +76,10 @@ OrderUpdate:
             example: '630552359128340015809770'
           shipping_method_id:
             type: string
-            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+            format: uuid
           digital_shipping_method_id:
             type: string
-            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+            format: uuid
           shipping_place:
             $ref: './../schemas/Addresses.yml#/Address'
           billing_address:

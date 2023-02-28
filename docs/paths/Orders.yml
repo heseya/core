@@ -65,10 +65,12 @@ Orders:
           $ref: '../schemas/Metadata.yml#/MetadataQuery'
       - name: 'ids[]'
         in: query
-        description: 'Ids array search'
+        example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
         schema:
-          type: string
-        example: 'ids[]=5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+          type: array
+          items:
+            type: string
+            format: uuid
     responses:
       200:
         description: Success
@@ -111,7 +113,7 @@ OrdersParams:
         required: true
         schema:
           type: string
-          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+          format: uuid
     responses:
       200:
         description: Success
@@ -134,7 +136,7 @@ OrdersParams:
         required: true
         schema:
           type: string
-          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+          format: uuid
     requestBody:
       $ref: './../requests/Orders.yml#/OrderUpdate'
     responses:
@@ -184,7 +186,7 @@ OrdersStatus:
         required: true
         schema:
           type: string
-          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+          format: uuid
     requestBody:
       content:
         application/json:
@@ -210,7 +212,7 @@ OrdersShippingLists:
         required: true
         schema:
           type: string
-          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+          format: uuid
     requestBody:
       content:
         application/json:
@@ -218,7 +220,7 @@ OrdersShippingLists:
             properties:
               package_template_id:
                 type: string
-                example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+                format: uuid
             type: object
     responses:
       200:
@@ -444,13 +446,13 @@ OrderDownloadDocument:
         required: true
         schema:
           type: string
-          example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
+          format: uuid
       - name: doc_id
         in: path
         required: true
         schema:
           type: string
-          example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
+          format: uuid
     responses:
       200:
         description: A PDF file
@@ -484,7 +486,7 @@ OrdersDocumentsSend:
                 type: array
                 items:
                   type: string
-                  example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+                  format: uuid
     responses:
       204:
         description: No content
@@ -515,13 +517,13 @@ OrderProductUrls:
         required: true
         schema:
           type: string
-          example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
+          format: uuid
       - name: order_product_id
         in: path
         required: true
         schema:
           type: string
-          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+          format: uuid
     tags:
       - Orders
     summary: 'Add links to order products'
@@ -567,7 +569,7 @@ OrdersSendUrls:
         required: true
         schema:
           type: string
-          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+          format: uuid
     summary:  'Send email with order products urls'
     responses:
       200:
