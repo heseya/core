@@ -23,7 +23,7 @@ ShippingMethod:
       items:
         properties:
           start:
-            description: 'Start of the range range goes from start to start of next range or infinity'
+            description: 'Start of the range. The range goes to the start of the next range or infinity'
             type: number
             minimum: 0
             example: 0
