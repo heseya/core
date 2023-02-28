@@ -52,6 +52,30 @@ class ItemProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testProductItemsCannotSetRequiredQuantityBelovedZero($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/products', [
+                'name' => 'test',
+                'slug' => 'test',
+                'price' => 50,
+                'public' => true,
+                'shipping_digital' => false,
+                'items' => [
+                    [
+                        'id' => $this->items->first()->getKey(),
+                        'required_quantity' => 0,
+                    ],
+                ],
+            ])
+            ->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateProductWithItems($user): void
     {
         $this->$user->givePermissionTo('products.edit');
