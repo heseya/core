@@ -26,19 +26,19 @@ Product:
       type: array
       items:
         type: string
-        example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+        format: uuid
     tags:
       type: array
       items:
         type: string
-        example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+        format: uuid
     attributes:
       type: object
       properties:
         0006c3a0-21af-4485-b7fe-9c42233cf03a:
           type: string
+          format: uuid
           description: 'attribute_id as key and option_id as value'
-          example: 0006c654-21bn-44rt-b7fe-9c4uyji8f03a
     items:
       type: array
       items:
@@ -46,7 +46,7 @@ Product:
         properties:
           id:
             type: string
-            example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+            format: uuid
           required_quantity:
             type: number
             example: 2
@@ -54,12 +54,12 @@ Product:
       type: array
       items:
         type: string
-        example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+        format: uuid
     sets:
       type: array
       items:
         type: string
-        example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+        format: uuid
     google_product_category:
       type: integer
     seo:

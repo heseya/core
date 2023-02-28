@@ -3,7 +3,7 @@ Order:
   properties:
     id:
       type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+      format: uuid
     code:
       type: string
       example: 'FMBZRK'
@@ -169,7 +169,7 @@ OrderSummary:
   properties:
     id:
       type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+      format: uuid
     code:
       description: 'Product''s secondary identifier'
       type: string
@@ -213,7 +213,7 @@ OrderProductUrl:
   properties:
     id:
       type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+      format: uuid
     name:
       type: string
       example: first_link
@@ -226,10 +226,10 @@ OrderProductPublic:
   properties:
     id:
       type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+      format: uuid
     order_id:
       type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+      format: uuid
     name:
       type: string
       example: Produkt

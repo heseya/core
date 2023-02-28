@@ -25,7 +25,7 @@ UserCreate:
             type: array
             items:
               type: string
-              example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+              format: uuid
           metadata:
             $ref: './../schemas/Metadata.yml#/Metadata'
           metadata_private:
@@ -55,4 +55,4 @@ UserUpdate:
             type: array
             items:
               type: string
-              example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+              format: uuid

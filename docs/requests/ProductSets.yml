@@ -30,17 +30,17 @@ ProductSetStore:
           cover_id:
             description: 'Id of media cover'
             type: string
-            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+            format: uuid
           parent_id:
             description: 'Id of set, this set belongs to'
             type: string
-            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+            format: uuid
           children_ids:
             description: 'Ids of assigned subsets'
             type: array
             items:
               type: string
-              example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+              format: uuid
           seo:
             $ref: './../schemas/Seo.yml#/SeoStore'
           attributes:
@@ -48,7 +48,7 @@ ProductSetStore:
             type: array
             items:
               type: string
-              example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+              format: uuid
           metadata:
             $ref: './../schemas/Metadata.yml#/Metadata'
           metadata_private:
@@ -83,17 +83,17 @@ ProductSetUpdate:
           cover_id:
             description: 'Id of media cover'
             type: string
-            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+            format: uuid
           parent_id:
             description: 'Id of set, this set belongs to'
             type: string
-            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+            format: uuid
           children_ids:
             description: 'Ids of assigned subsets'
             type: array
             items:
               type: string
-              example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+              format: uuid
           seo:
             $ref: './../schemas/Seo.yml#/SeoStore'
           attributes:
@@ -101,7 +101,7 @@ ProductSetUpdate:
             type: array
             items:
               type: string
-              example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+              format: uuid
         type: object
 
 ProductSetAttach:
@@ -117,7 +117,7 @@ ProductSetAttach:
             type: array
             items:
               type: string
-              example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+              format: uuid
         type: object
 
 ProductSetReorder:
@@ -132,7 +132,7 @@ ProductSetReorder:
             type: array
             items:
               type: string
-              example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+              format: uuid
         type: object
 
 ProductSetProductReorder:
@@ -150,7 +150,7 @@ ProductSetProductReorder:
               properties:
                 id:
                   type: string
-                  example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+                  format: uuid
                 order:
                   type: integer
                   example: 5
@@ -165,5 +165,5 @@ FavouriteProductSet:
         properties:
           product_set_id:
             type: string
-            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+            format: uuid
         type: object

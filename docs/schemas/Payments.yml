@@ -2,13 +2,13 @@ Payment:
   properties:
     id:
       type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+      format: uuid
     external_id:
       type: string
       example: D2spSDJ21LSA
     method_id:
       type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+      format: uuid
     amount:
       type: number
       example: 80.92

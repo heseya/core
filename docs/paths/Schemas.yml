@@ -45,10 +45,12 @@ Schemas:
           $ref: '../schemas/Metadata.yml#/MetadataQuery'
       - name: 'ids[]'
         in: query
-        description: 'Ids array search'
+        example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
         schema:
-          type: string
-        example: 'ids[]=5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+          type: array
+          items:
+            type: string
+            format: uuid
     responses:
       200:
         description: Success
@@ -93,7 +95,7 @@ SchemasParam:
         required: true
         schema:
           type: string
-          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+          format: uuid
     responses:
       200:
         description: Success
@@ -116,7 +118,7 @@ SchemasParam:
         required: true
         schema:
           type: string
-          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+          format: uuid
     responses:
       204:
         description: Success
@@ -133,7 +135,7 @@ SchemasParam:
         required: true
         schema:
           type: string
-          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+          format: uuid
     requestBody:
       $ref: '../requests/Schemas.yml#/SchemaUpdate'
     responses:

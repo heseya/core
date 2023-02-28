@@ -3,7 +3,7 @@ WebHookLog:
   properties:
     id:
       type: string
-      example: "be1186e6-4bb4-4e36-a304-d8425b4de7fc"
+      format: uuid
     web_hook:
       $ref: './../api.yml#/components/schemas/WebHook'
     triggered_at:
