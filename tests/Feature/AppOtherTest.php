@@ -125,7 +125,7 @@ class AppOtherTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->deleteJson('/apps/id:' . $app->getKey());
+            ->deleteJson('/apps/id:' . $app->getKey(), ['force' => false]);
 
         $response->assertStatus(422);
         $this->assertDatabaseCount('apps', 2);  // +1 from TestCase
@@ -160,7 +160,7 @@ class AppOtherTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->deleteJson('/apps/id:' . $app->getKey() . '?force=0');
+            ->deleteJson('/apps/id:' . $app->getKey(), ['force' => false]);
 
         $response->assertStatus(422);
         $this->assertDatabaseCount('apps', 2); // +1 from TestCase
@@ -177,7 +177,7 @@ class AppOtherTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->deleteJson('/apps/id:' . $app->getKey() . '?force=1');
+            ->deleteJson('/apps/id:' . $app->getKey(), ['force' => true]);
 
         $response->assertNoContent();
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase
@@ -202,7 +202,7 @@ class AppOtherTest extends TestCase
         $this->assertModelMissing($app);
     }
 
-    // TODO: this checks absolutely nothing
+    // Checks if force flag won't break proper uninstallation flow
     public function testUninstallForce(): void
     {
         $this->user->givePermissionTo('apps.remove');
@@ -213,11 +213,10 @@ class AppOtherTest extends TestCase
             $this->url . '/uninstall' => Http::response(status: 204),
         ]);
 
-        $this
-            ->actingAs($this->user)
-            ->json('DELETE', '/apps/id:' . $app->getKey(), ['force' => true])
-            ->assertNoContent();
+        $response = $this->actingAs($this->user)
+            ->deleteJson('/apps/id:' . $app->getKey(), ['force' => true]);
 
+        $response->assertNoContent();
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase
         $this->assertModelMissing($app);
     }
