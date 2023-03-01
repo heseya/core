@@ -52,7 +52,7 @@ class ItemProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductItemsCannotSetRequiredQuantityBelovedZero($user): void
+    public function testProductItemsCannotSetRequiredQuantityBelowZero($user): void
     {
         $this->$user->givePermissionTo('products.add');
         $this
