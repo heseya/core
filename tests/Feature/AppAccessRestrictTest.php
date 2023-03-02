@@ -7,7 +7,7 @@ use Tests\TestCase;
 
 class AppAccessRestrictTest extends TestCase
 {
-    public function provider(): array
+    public static function provider(): array
     {
         return [
             'login' => ['POST', '/login'],
