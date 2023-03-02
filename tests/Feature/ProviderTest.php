@@ -19,7 +19,7 @@ use Tests\TestCase;
 
 class ProviderTest extends TestCase
 {
-    public function socialMediaProvider(): array
+    public static function socialMediaProvider(): array
     {
         return [
             'google' => ['google'],

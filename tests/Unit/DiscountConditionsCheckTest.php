@@ -796,7 +796,7 @@ class DiscountConditionsCheckTest extends TestCase
         $this->assertFalse($this->discountService->checkCondition($discountCondition, $cart));
     }
 
-    public function dateBetweenPassProvider(): array
+    public static function dateBetweenPassProvider(): array
     {
         return [
             'in range' => [
@@ -867,7 +867,7 @@ class DiscountConditionsCheckTest extends TestCase
         $this->assertTrue($this->discountService->checkCondition($discountCondition));
     }
 
-    public function dateBetweenFailProvider(): array
+    public static function dateBetweenFailProvider(): array
     {
         return [
             'in range' => [
@@ -938,7 +938,7 @@ class DiscountConditionsCheckTest extends TestCase
         $this->assertFalse($this->discountService->checkCondition($discountCondition));
     }
 
-    public function timeBetweenPassProvider(): array
+    public static function timeBetweenPassProvider(): array
     {
         Carbon::setTestNow('2022-03-04T12:00:00');
 
@@ -1175,7 +1175,7 @@ class DiscountConditionsCheckTest extends TestCase
         $this->assertTrue($this->discountService->checkCondition($discountCondition, $cart));
     }
 
-    public function cartLengthProviderFail(): array
+    public static function cartLengthProviderFail(): array
     {
         return [
             'min-max min value' => [
@@ -1247,7 +1247,7 @@ class DiscountConditionsCheckTest extends TestCase
         $this->assertFalse($this->discountService->checkCondition($discountCondition, $cart));
     }
 
-    public function couponsCountProvider(): array
+    public static function couponsCountProvider(): array
     {
         return [
             'pass min-max min value' => [
@@ -1344,7 +1344,7 @@ class DiscountConditionsCheckTest extends TestCase
         $this->assertTrue($this->discountService->checkCondition($discountCondition, $cart) === $result);
     }
 
-    public function couponsCountWithSalesProvider(): array
+    public static function couponsCountWithSalesProvider(): array
     {
         return [
             'pass' => [true],

@@ -190,7 +190,7 @@ class CartTest extends TestCase
             ]);
     }
 
-    public function couponOrSaleProvider(): array
+    public static function couponOrSaleProvider(): array
     {
         return [
             'as user coupon' => ['user', true],

@@ -764,7 +764,7 @@ class ProductTest extends TestCase
         $response->assertOk();
     }
 
-    public function noIndexProvider(): array
+    public static function noIndexProvider(): array
     {
         return [
             'as user no index' => ['user', true],

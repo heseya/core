@@ -540,7 +540,7 @@ class AvailabilityTest extends TestCase
         Event::assertDispatched(ProductUpdated::class);
     }
 
-    public function multipleSchemasProvider(): array
+    public static function multipleSchemasProvider(): array
     {
         return [
             'as user three schemas' => ['user', 3],

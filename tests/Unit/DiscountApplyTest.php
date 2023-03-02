@@ -240,7 +240,7 @@ class DiscountApplyTest extends TestCase
         $this->assertTrue($cartItemResponse->price_discounted === 0.0);
     }
 
-    public function discountProductDataProvider(): array
+    public static function discountProductDataProvider(): array
     {
         return [
             'as amount coupon' => [
@@ -539,7 +539,7 @@ class DiscountApplyTest extends TestCase
         ]);
     }
 
-    public function discountDataProvider(): array
+    public static function discountDataProvider(): array
     {
         return [
             'as amount coupon' => [
