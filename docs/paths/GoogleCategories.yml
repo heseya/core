@@ -5,8 +5,8 @@ GoogleCategories:
     summary: 'google category list'
     parameters:
       - name: 'lang'
-        in: query
-        required: false
+        in: path
+        required: true
         schema:
           type: string
           example: 'pl-PL'

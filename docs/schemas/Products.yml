@@ -3,7 +3,7 @@ Product:
   properties:
     id:
       type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+      format: uuid
     slug:
       description: 'Name used in the URL path'
       type: string
@@ -95,7 +95,7 @@ ProductView:
           example: 8
         user_id:
           type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+          format: uuid
         description_html:
           description: 'HTML formatted text to be displayed as a product description'
           type: string
@@ -149,7 +149,7 @@ ProductShort:
   properties:
     id:
       type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+      format: uuid
     slug:
       description: 'Name used in the URL path'
       type: string

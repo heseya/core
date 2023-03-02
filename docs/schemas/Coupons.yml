@@ -14,7 +14,7 @@ CouponShow:
     - properties:
         id:
           type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+          format: uuid
         condition_groups:
           type: array
           items:
@@ -37,17 +37,17 @@ CouponUpdate:
           type: array
           items:
             type: string
-            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+            format: uuid
         target_sets:
           type: array
           items:
             type: string
-            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+            format: uuid
         target_shipping_methods:
           type: array
           items:
             type: string
-            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+            format: uuid
 
 CouponStore:
   type: object

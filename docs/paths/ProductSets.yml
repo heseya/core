@@ -65,10 +65,12 @@ ProductSets:
           $ref: '../schemas/Metadata.yml#/MetadataQuery'
       - name: 'ids[]'
         in: query
-        description: 'Ids array search'
+        example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
         schema:
-          type: string
-        example: 'ids[]=5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+          type: array
+          items:
+            type: string
+            format: uuid
     responses:
       200:
         description: Success
@@ -178,7 +180,7 @@ ProductSetsParams:
         required: true
         schema:
           type: string
-          example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+          format: uuid
     responses:
       204:
         description: Success
@@ -193,7 +195,7 @@ ProductSetsParams:
         required: true
         schema:
           type: string
-          example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+          format: uuid
       - name: tree
         in: query
         description: 'Return set with recursively nested children instead of id''s'
@@ -238,7 +240,7 @@ ProductSetsReorderParams:
         required: true
         schema:
           type: string
-          example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+          format: uuid
     requestBody:
       $ref: './../requests/ProductSets.yml#/ProductSetReorder'
     responses:
@@ -261,7 +263,7 @@ ProductSetsProducts:
         required: true
         schema:
           type: string
-          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+          format: uuid
     responses:
       200:
         description: Success
@@ -286,7 +288,7 @@ ProductSetsProducts:
         required: true
         schema:
           type: string
-          example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+          format: uuid
     requestBody:
       $ref: './../requests/ProductSets.yml#/ProductSetAttach'
     responses:
@@ -309,11 +311,13 @@ ProductSetsProductsReorder:
       - 'Product Sets'
     parameters:
       - name: id
-        in: query
+        in: path
+        required: true
         description: 'Product set id'
         allowEmptyValue: false
         schema:
           type: string
+          format: uuid
     requestBody:
       $ref: './../requests/ProductSets.yml#/ProductSetProductReorder'
     responses:
@@ -379,7 +383,7 @@ ProductSetsFavouritesParams:
         required: true
         schema:
           type: string
-          example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+          format: uuid
     responses:
       200:
         description: Success
@@ -403,7 +407,7 @@ ProductSetsFavouritesParams:
         required: true
         schema:
           type: string
-          example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+          format: uuid
     responses:
       204:
         description: Success

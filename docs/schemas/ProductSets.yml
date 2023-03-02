@@ -2,7 +2,7 @@ ProductSet:
   properties:
     id:
       type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+      format: uuid
     name:
       description: 'Name displayed to the user'
       type: string
@@ -27,13 +27,13 @@ ProductSet:
     parent_id:
       description: 'Id of set, this set belongs to'
       type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+      format: uuid
     children_ids:
       description: 'Ids of assigned subsets'
       type: array
       items:
         type: string
-        example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+        format: uuid
     cover:
       $ref: './../schemas/Media.yml#/Media'
     attributes:
@@ -50,7 +50,7 @@ ProductSetParent:
   properties:
     id:
       type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+      format: uuid
     name:
       description: 'Name displayed to the user'
       type: string
@@ -78,7 +78,7 @@ ProductSetParent:
       type: array
       items:
         type: string
-        example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+        format: uuid
     seo:
       $ref: './Seo.yml#/SeoView'
     metadata:
@@ -91,7 +91,7 @@ ProductSetChildren:
   properties:
     id:
       type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+      format: uuid
     name:
       description: 'Name displayed to the user'
       type: string
@@ -116,7 +116,7 @@ ProductSetChildren:
     parent_id:
       description: 'Id of set, this set belongs to'
       type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+      format: uuid
     children:
       type: array
       items:
@@ -139,7 +139,7 @@ ProductSetParentChildren:
   properties:
     id:
       type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+      format: uuid
     name:
       description: 'Name displayed to the user'
       type: string
@@ -167,7 +167,7 @@ ProductSetChildrenEmpty:
   properties:
     id:
       type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+      format: uuid
     name:
       description: 'Name displayed to the user'
       type: string
@@ -182,7 +182,7 @@ ProductSetChildrenEmpty:
     parent_id:
       description: 'Id of set, this set belongs to'
       type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+      format: uuid
     children:
       type: array
       items: []
@@ -193,7 +193,7 @@ FavouriteProductSet:
   properties:
     id:
       type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+      format: uuid
     product_set:
       $ref: '#/ProductSet'
     created_at:

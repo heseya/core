@@ -4,7 +4,7 @@ Schema:
   properties:
     id:
       type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+      format: uuid
     type:
       description: "multiply_schema(min, max, step) type uses one schema and multiplies it's price by own numeric value"
       type: string
@@ -66,7 +66,7 @@ Option:
   properties:
     id:
       type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+      format: uuid
     name:
       type: string
       example: XL
@@ -179,19 +179,19 @@ SchemaRequest:
               properties:
                 id:
                   type: string
-                  example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+                  format: uuid
     used_schemas:
       type: array
       items:
         type: string
-        example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+        format: uuid
 
 SchemaShort:
   type: object
   properties:
     id:
       type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+      format: uuid
     type:
       description: "multiply_schema(min, max, step) type uses one schema and multiplies it's price by own numeric value"
       type: string

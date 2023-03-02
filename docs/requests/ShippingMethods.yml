@@ -12,7 +12,7 @@ ShippingMethod:
       type: array
       items:
         type: string
-        example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+        format: uuid
     countries:
       type: array
       items:
@@ -23,8 +23,9 @@ ShippingMethod:
       items:
         properties:
           start:
-            description: "start of the range (min = 0);\n *             range goes from start to start of next range or infinity"
+            description: 'Start of the range. The range goes to the start of the next range or infinity'
             type: number
+            minimum: 0
             example: 0
           value:
             description: 'price in this range'
@@ -42,13 +43,13 @@ ShippingMethod:
       items:
         properties:
           name:
-            description: "name of the adress"
+            description: 'Name of the shipping point'
             type: string
-            example: "test address"
+            example: 'Test point'
         type: object
     integration_key:
       type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+      format: uuid
 
 
 ShippingMethodReorder:
@@ -60,7 +61,7 @@ ShippingMethodReorder:
             type: array
             items:
               type: string
-              example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+              format: uuid
         type: object
 
 ShippingMethodStore:
