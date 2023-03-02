@@ -29,7 +29,7 @@ class ActiveSalesTest extends TestCase
         $this->discountService = App::make(DiscountServiceContract::class);
     }
 
-    public function conditionTypeProvider(): array
+    public static function conditionTypeProvider(): array
     {
         return [
             ConditionType::DATE_BETWEEN => [

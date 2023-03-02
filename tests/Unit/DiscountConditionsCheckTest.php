@@ -1103,7 +1103,7 @@ class DiscountConditionsCheckTest extends TestCase
         $this->assertFalse($this->discountService->checkCondition($discountCondition));
     }
 
-    public function cartLengthProviderPass(): array
+    public static function cartLengthProviderPass(): array
     {
         return [
             'min-max min value' => [
