@@ -25,7 +25,7 @@ class UserDto extends Dto implements InstantiateFromRequest
     public static function instantiateFromRequest(FormRequest $request): self
     {
         $phone = $request->has('phone') && $request->input('phone')
-            ? PhoneNumber::make($request->input('phone')) : $request->input('phone', new Missing());
+            ? new PhoneNumber($request->input('phone')) : $request->input('phone', new Missing());
 
         return new self(
             name: $request->input('name', new Missing()),

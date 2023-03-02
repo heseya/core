@@ -24,10 +24,7 @@ class UserProvider extends Model
 
     protected $casts = [
         'provider' => AuthProviderKey::class,
-    ];
-
-    protected $dates = [
-        'merge_token_expires_at',
+        'merge_token_expires_at' => 'date',
     ];
 
     public function user(): BelongsTo

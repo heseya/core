@@ -119,7 +119,7 @@ class User extends Model implements
     public function getPhoneAttribute(): ?string
     {
         return $this->phone_number !== null && $this->phone_country !== null
-            ? PhoneNumber::make($this->phone_number, $this->phone_country) : null;
+            ? new PhoneNumber($this->phone_number, $this->phone_country) : null;
     }
 
     public function getJWTIdentifier(): string

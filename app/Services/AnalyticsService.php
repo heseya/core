@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Enums\PaymentStatus;
 use App\Models\Payment;
 use App\Services\Contracts\AnalyticsServiceContract;
-use Illuminate\Database\Query\Expression;
+use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 

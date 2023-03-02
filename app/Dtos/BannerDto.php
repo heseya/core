@@ -29,9 +29,7 @@ class BannerDto extends Dto implements InstantiateFromRequest
             name: $request->input('name', new Missing()),
             active: $request->input('active', new Missing()),
             banner_media: Collection::make($bannerMedias)
-                ->map(function ($group) {
-                    return BannerMediaDto::fromDataArray($group);
-                }),
+                ->map(fn ($group) => BannerMediaDto::fromDataArray($group)),
             metadata: self::mapMetadata($request),
         );
     }
