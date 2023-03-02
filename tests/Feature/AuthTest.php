@@ -1445,7 +1445,7 @@ class AuthTest extends TestCase
         ])->assertForbidden();
     }
 
-    public function tfaMethodProvider(): array
+    public static function tfaMethodProvider(): array
     {
         return [
             'as app 2fa' => [TFAType::APP, 'secret'],

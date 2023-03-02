@@ -27,11 +27,8 @@ class Deposit extends Model
         'from_unlimited',
     ];
 
-    protected $dates = [
-        'shipping_date',
-    ];
-
     protected $casts = [
+        'shipping_date' => 'date',
         'from_unlimited' => 'bool',
     ];
 

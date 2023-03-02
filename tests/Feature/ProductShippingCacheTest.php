@@ -9,16 +9,6 @@ use Tests\TestCase;
 
 class ProductShippingCacheTest extends TestCase
 {
-    // private Product $product;
-    // private Collection $items;
-
-    // public function setUp(): void
-    // {
-    //     parent::setUp();
-    //     Product::query()->delete();
-    //     Item::query()->delete();
-    // }
-
     /**
      * @dataProvider authProvider
      */
@@ -50,7 +40,7 @@ class ProductShippingCacheTest extends TestCase
     {
         $this->$user->givePermissionTo('products.add');
 
-        $date = Carbon::now()->addDays(7)->toIso8601String();
+        $date = Carbon::now()->startOfDay()->addDays(7)->toIso8601String();
         $item = Item::factory()->create([
             'unlimited_stock_shipping_date' => $date,
         ]);
@@ -101,7 +91,7 @@ class ProductShippingCacheTest extends TestCase
     {
         $this->$user->givePermissionTo('products.add');
 
-        $date = Carbon::now()->addDays(7)->toIso8601String();
+        $date = Carbon::now()->startOfDay()->addDays(7)->toIso8601String();
         $item = Item::factory()->create();
         Deposit::factory()->create([
             'item_id' => $item->getKey(),
@@ -125,8 +115,7 @@ class ProductShippingCacheTest extends TestCase
      * TODO: Test async updates to product cache
      * E.g. Assigned item got shipping times edited
      */
-
-    private function productDataWithItem(Item $item)
+    private function productDataWithItem(Item $item): array
     {
         return [
             'name' => 'Test',

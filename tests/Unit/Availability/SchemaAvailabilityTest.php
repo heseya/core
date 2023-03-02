@@ -14,7 +14,7 @@ class SchemaAvailabilityTest extends TestCase
     /**
      * All schema types without SELECT
      */
-    public function schemaTypesProvider(): array
+    public static function schemaTypesProvider(): array
     {
         return Collection::make(SchemaType::getValues())
             ->where(fn ($type) => $type !== SchemaType::SELECT)

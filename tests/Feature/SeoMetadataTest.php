@@ -230,7 +230,7 @@ class SeoMetadataTest extends TestCase
         ]);
     }
 
-    public function noDuplicationsProvider(): array
+    public static function noDuplicationsProvider(): array
     {
         $different = ['Different1', 'Different2', 'Different3'];
         $less = ['PHP', 'Laravel'];
@@ -272,7 +272,7 @@ class SeoMetadataTest extends TestCase
         ]);
     }
 
-    public function duplicationsProvider(): array
+    public static function duplicationsProvider(): array
     {
         $same_order = ['PHP', 'Laravel', 'Java'];
         $different_order = ['Java', 'PHP', 'Laravel'];

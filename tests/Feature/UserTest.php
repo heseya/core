@@ -942,7 +942,7 @@ class UserTest extends TestCase
         Event::assertDispatched(UserCreated::class);
     }
 
-    public function unassignableProvider(): array
+    public static function unassignableProvider(): array
     {
         return [
             'as user Authenticated' => ['user', RoleType::AUTHENTICATED],

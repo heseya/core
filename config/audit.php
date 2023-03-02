@@ -29,6 +29,7 @@ return [
         'guards' => [
             'api',
         ],
+        'resolver' => \OwenIt\Auditing\Resolvers\UserResolver::class,
     ],
 
     /*
@@ -39,8 +40,7 @@ return [
     | Define the User, IP Address, User Agent and URL resolver implementations.
     |
     */
-    'resolver' => [
-        'user' => \OwenIt\Auditing\Resolvers\UserResolver::class,
+    'resolvers' => [
         'ip_address' => \OwenIt\Auditing\Resolvers\IpAddressResolver::class,
         'user_agent' => \OwenIt\Auditing\Resolvers\UserAgentResolver::class,
         'url' => \OwenIt\Auditing\Resolvers\UrlResolver::class,
@@ -133,4 +133,6 @@ return [
     */
 
     'console' => false,
+
+    'empty_values' => false,
 ];

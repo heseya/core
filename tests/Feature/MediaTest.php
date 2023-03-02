@@ -354,7 +354,7 @@ class MediaTest extends TestCase
         ])->assertForbidden();
     }
 
-    public function deleteProvider(): array
+    public static function deleteProvider(): array
     {
         return [
             'as user pages add permission' => ['user', 'pages.add'],
@@ -449,7 +449,7 @@ class MediaTest extends TestCase
         $this->assertDatabaseMissing('media', ['id' => $media->getKey()]);
     }
 
-    public function videoProvider(): array
+    public static function videoProvider(): array
     {
         return [
             'as user mp4' => ['user', '.mp4', 'video/mp4'],
@@ -494,7 +494,7 @@ class MediaTest extends TestCase
             ]);
     }
 
-    public function invalidVideoProvider(): array
+    public static function invalidVideoProvider(): array
     {
         return [
             'as user avi' => ['user', '.avi', 'video/x-msvideo'],

@@ -156,7 +156,7 @@ class DiscountTest extends TestCase
         ];
     }
 
-    public function couponOrSaleProvider(): array
+    public static function couponOrSaleProvider(): array
     {
         return [
             'coupons' => ['coupons'],
@@ -164,7 +164,7 @@ class DiscountTest extends TestCase
         ];
     }
 
-    public function authWithDiscountProvider(): array
+    public static function authWithDiscountProvider(): array
     {
         return [
             'as user coupons' => ['user', 'coupons'],
@@ -1407,7 +1407,7 @@ class DiscountTest extends TestCase
         ]);
     }
 
-    public function timeConditionProvider(): array
+    public static function timeConditionProvider(): array
     {
         return [
             'as user date between' => [

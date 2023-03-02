@@ -68,13 +68,10 @@ class Item extends Model implements AuditableContract, SortableContract
         'shipping_date',
     ];
 
-    protected $dates = [
-        'shipping_date',
-        'unlimited_stock_shipping_date',
-    ];
-
     protected $casts = [
         'quantity' => 'float',
+        'shipping_date' => 'date',
+        'unlimited_stock_shipping_date' => 'date',
     ];
 
     public function getQuantity(string|null $day): float

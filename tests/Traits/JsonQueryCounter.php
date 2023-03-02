@@ -22,12 +22,12 @@ trait JsonQueryCounter
         DB::enableQueryLog();
     }
 
-    public function json($method, $uri, array $data = [], array $headers = [])
+    public function json($method, $uri, array $data = [], array $headers = [], $options = 0)
     {
         static::getQueryCount();
         static::trackQueries();
 
-        return parent::json($method, $uri, $data, $headers);
+        return parent::json($method, $uri, $data, $headers, $options);
     }
 
     public function assertNoQueriesExecuted(?Closure $closure = null): void

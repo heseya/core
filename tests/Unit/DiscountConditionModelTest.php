@@ -1,6 +1,6 @@
 <?php
 
-namespace Unit;
+namespace Tests\Unit;
 
 use App\Enums\ConditionType;
 use App\Models\ConditionGroup;
@@ -17,7 +17,7 @@ class DiscountConditionModelTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function conditionsProvider(): array
+    public static function conditionsProvider(): array
     {
         return [
             ConditionType::ORDER_VALUE => [

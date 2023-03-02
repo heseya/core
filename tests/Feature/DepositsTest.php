@@ -358,7 +358,7 @@ class DepositsTest extends TestCase
         $deposit = [
             'quantity' => 1200000.50,
             'shipping_time' => 10,
-            'shipping_date' => '1999-02-01 10:10:10',
+            'shipping_date' => '1999-02-01',
         ];
 
         $response = $this->actingAs($this->$user)->postJson(
@@ -379,7 +379,7 @@ class DepositsTest extends TestCase
         $this->$user->givePermissionTo('deposits.add');
 
         Event::fake(ItemUpdatedQuantity::class);
-        $date = Carbon::tomorrow();
+        $date = Carbon::tomorrow()->startOfDay();
         $this->item->unlimited_stock_shipping_date = $date->toDateTimeString();
         $this->item->save();
 
@@ -406,7 +406,7 @@ class DepositsTest extends TestCase
         $this->$user->givePermissionTo('deposits.add');
 
         Event::fake(ItemUpdatedQuantity::class);
-        $date = Carbon::now();
+        $date = Carbon::now()->startOfDay();
         $this->item->unlimited_stock_shipping_date = $date->addDays(-4)->toDateTimeString();
         $this->item->save();
 
@@ -489,7 +489,7 @@ class DepositsTest extends TestCase
 
         $deposit = [
             'quantity' => 1200000.50,
-            'shipping_date' => '1999-02-01 10:10:10',
+            'shipping_date' => '1999-02-01',
         ];
 
         $response = $this->actingAs($this->$user)->postJson(
@@ -518,7 +518,7 @@ class DepositsTest extends TestCase
         $deposit1 = Deposit::factory()->create([
             'item_id' => $item->getKey(),
             'quantity' => 2.0,
-            'shipping_date' => Carbon::now()->addDays(4)->toIso8601String(),
+            'shipping_date' => Carbon::now()->startOfDay()->addDays(4)->toIso8601String(),
         ]);
         $item->refresh();
 
@@ -528,7 +528,7 @@ class DepositsTest extends TestCase
         $deposit2 = Deposit::factory()->create([
             'item_id' => $item->getKey(),
             'quantity' => 2.0,
-            'shipping_date' => Carbon::now()->addDays(2)->toIso8601String(),
+            'shipping_date' => Carbon::now()->startOfDay()->addDays(2)->toIso8601String(),
         ]);
         $item->refresh();
 
@@ -538,7 +538,7 @@ class DepositsTest extends TestCase
         $deposit3 = Deposit::factory()->create([
             'item_id' => $item->getKey(),
             'quantity' => 2.0,
-            'shipping_date' => Carbon::now()->addDays(6)->toIso8601String(),
+            'shipping_date' => Carbon::now()->startOfDay()->addDays(6)->toIso8601String(),
         ]);
         $item->refresh();
 

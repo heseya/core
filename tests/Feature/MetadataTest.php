@@ -23,7 +23,7 @@ use Tests\TestCase;
 
 class MetadataTest extends TestCase
 {
-    public function dataProvider(): array
+    public static function dataProvider(): array
     {
         return [
             'products as user' => [

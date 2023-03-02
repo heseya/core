@@ -95,11 +95,8 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'order',
     ];
 
-    protected $dates = [
-        'shipping_date',
-    ];
-
     protected $casts = [
+        'shipping_date' => 'date',
         'price' => 'float',
         'public' => 'bool',
         'available' => 'bool',

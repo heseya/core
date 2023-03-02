@@ -61,14 +61,6 @@ abstract class TestCase extends BaseTestCase
         app()->forgetInstances();
     }
 
-    public function authProvider(): array
-    {
-        return [
-            'as user' => ['user'],
-            'as app' => ['application'],
-        ];
-    }
-
     public function actingAs(Authenticatable $authenticatable, $guard = null): self
     {
         $token = $this->tokenService->createToken(
@@ -84,7 +76,15 @@ abstract class TestCase extends BaseTestCase
         return $this;
     }
 
-    public function booleanProvider(): array
+    public static function authProvider(): array
+    {
+        return [
+            'as user' => ['user'],
+            'as app' => ['application'],
+        ];
+    }
+
+    public static function booleanProvider(): array
     {
         return [
             'as user true' => ['user', true, true],

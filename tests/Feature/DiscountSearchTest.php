@@ -11,7 +11,7 @@ use Tests\TestCase;
 
 class DiscountSearchTest extends TestCase
 {
-    public function couponOrSaleProvider(): array
+    public static function couponOrSaleProvider(): array
     {
         return [
             'coupons' => ['coupons'],

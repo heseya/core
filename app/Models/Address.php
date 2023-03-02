@@ -50,7 +50,7 @@ class Address extends Model
     public function getPhoneSimpleAttribute(): ?string
     {
         if ($this->phone && $this->country) {
-            $phone = PhoneNumber::make(
+            $phone = new PhoneNumber(
                 $this->phone,
                 $this->country,
             );

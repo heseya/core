@@ -106,7 +106,7 @@ class AppInstallTest extends TestCase
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
-    public function invalidResponseProvider(): array
+    public static function invalidResponseProvider(): array
     {
         return [
             'null as user' => ['user', null],
