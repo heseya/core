@@ -788,6 +788,8 @@ class DiscountService implements DiscountServiceContract
 
     private function checkConditionForProduct(DiscountCondition $condition): bool
     {
+        // TODO: TU JEST PROBLEM
+
         return match ($condition->type->value) {
             ConditionType::ORDER_VALUE => false,
             ConditionType::PRODUCT_IN_SET => false,
@@ -1432,8 +1434,8 @@ class DiscountService implements DiscountServiceContract
 
     private function getSalesWithBlockList(): Collection
     {
-        return Discount::where('code', null)
-            ->active()
+        return Discount::active()
+            ->where('code', null)
             ->where('target_type', DiscountTargetType::PRODUCTS)
             ->where('target_is_allow_list', false)->with(['products', 'productSets', 'productSets.products'])->get();
     }

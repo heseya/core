@@ -17,6 +17,16 @@ use Tests\TestCase;
  */
 class OrderQATest extends TestCase
 {
+    const ADDRESS = [
+        'name' => 'test test',
+        'address' => 'Gdańska 89/1',
+        'vat' => '9571099580',
+        'zip' => '80-200',
+        'city' => 'Bydgoszcz',
+        'country' => 'PL',
+        'phone' => '+48543234123',
+    ];
+
     /**
      * HES-1962
      */
@@ -38,7 +48,7 @@ class OrderQATest extends TestCase
             'target_type' => DiscountTargetType::ORDER_VALUE,
         ]);
 
-        $saleTotalValue = Discount::factory()->create([
+        Discount::factory()->create([
             'active' => true,
             'code' => null,
             'value' => 10,
@@ -67,14 +77,16 @@ class OrderQATest extends TestCase
         ]);
 
         /** @var Discount $saleTargetProduct */
-        $saleTargetProduct = Discount::factory()->create([
+        $saleTargetProduct = $product->discounts()->create([
+            'name' => 'Sale Target Product',
+            'priority' => 0,
             'active' => true,
             'code' => null,
             'value' => 5,
             'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
         ]);
-        $saleTargetProduct->products()->attach($product->getKey());
         /** @var ConditionGroup $conditionGroup */
         $conditionGroup = $saleTargetProduct->conditionGroups()->create();
         $conditionGroup->conditions()->create([
@@ -100,39 +112,72 @@ class OrderQATest extends TestCase
                 'coupons' => [
                     $coupon->code,
                 ],
-                'shipping_place' => [
-                    'name' => 'test test',
-                    'address' => 'Gdańska 89/1',
-                    'vat' => '9571099580',
-                    'zip' => '80-200',
-                    'city' => 'Bydgoszcz',
-                    'country' => 'PL',
-                    'phone' => '+48543234123',
-                ],
-                'billing_address' => [
-                    'name' => 'Jan  kod+promka+naProdukt3',
-                    'address' => 'Gdańska 89/1',
-                    'vat' => '9571099580',
-                    'zip' => '80-200',
-                    'city' => 'Bydgoszcz',
-                    'country' => 'PL',
-                    'phone' => '+48543234123',
-                ],
+                'shipping_place' => self::ADDRESS,
+                'billing_address' => self::ADDRESS,
             ])
             ->assertCreated();
-
-//        $this->assertDatabaseHas('orders', [
-//            'shipping_price_initial' => 0,
-//            'shipping_price' => 0,
-//            'cart_total_initial' => 100,
-//            'summary' => 76.95, // wrong number (without discount with target product)
-//        ]);
 
         /** @var Order $order */
         $order = Order::query()->first();
 
-        $this->assertCount(4, $order->discounts);
+        $this->assertCount(3, $order->discounts); // 3 discounts on order
+        $this->assertEquals(100, $order->cart_total_initial);
+//        $this->assertEquals(95, $order->summary);
+        $this->assertEquals(100, $order->products[0]->price_initial);
+        $this->assertEquals(95, $order->products[0]->price);
+        $this->assertCount(1, $order->products);
+        $this->assertCount(1, $order->products[0]->discounts); // 1 discount on product
+    }
 
-//        dd($order->discounts);
+    /**
+     * HES-1962
+     */
+    public function testTargetProductSale(): void
+    {
+        $this->user->givePermissionTo('orders.add');
+
+        /** @var Product $product */
+        $product = Product::factory()->create([
+            'price' => 100,
+            'public' => true,
+        ]);
+
+        /** @var Discount $saleTargetProduct */
+        $saleTargetProduct = $product->discounts()->create([
+            'name' => 'Sale Target Product',
+            'priority' => 0,
+            'active' => true,
+            'code' => null,
+            'value' => 5,
+            'type' => DiscountType::AMOUNT,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+        ]);
+
+        $this
+            ->actingAs($this->user)
+            ->json('POST', '/orders', [
+                'email' => 'test@example.com',
+                'shipping_method_id' => ShippingMethod::factory()->create()->getKey(),
+                'items' => [[
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                ],
+                ],
+                'shipping_place' => self::ADDRESS,
+                'billing_address' => self::ADDRESS,
+            ])
+            ->assertCreated();
+
+        /** @var Order $order */
+        $order = Order::query()->first();
+
+        $this->assertEquals(100, $order->cart_total_initial);
+        $this->assertEquals(95, $order->summary);
+        $this->assertCount(1, $order->products);
+        $this->assertEquals(100, $order->products[0]->price_initial);
+        $this->assertEquals(95, $order->products[0]->price);
+        $this->assertCount(1, $order->products[0]->discounts);
+        $this->assertEquals($saleTargetProduct->getKey(), $order->products[0]->discounts[0]->getKey());
     }
 }

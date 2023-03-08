@@ -185,7 +185,6 @@ class AvailabilityService implements AvailabilityServiceContract
             return $this->returnProductAvailability(true);
         }
 
-        /** @var Collection $requiredItems */
         $requiredItems = $product->items;
         $items = $this->getAllRequiredItems($product, $requiredSchemas);
 
