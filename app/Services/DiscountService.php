@@ -763,29 +763,44 @@ class DiscountService implements DiscountServiceContract
         return max($price, $minimalProductPrice);
     }
 
+    /**
+     * Check if product have any valid condition group.
+     */
+    private function checkConditionGroupsForProduct(Discount $discount): bool
+    {
+        // return true if there is no condition groups
+        if ($discount->conditionGroups->count() <= 0) {
+            return true;
+        }
+
+        foreach ($discount->conditionGroups as $conditionGroup) {
+            // return true if any condition group is valid
+            if ($this->checkConditionGroupForProduct($conditionGroup)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if given condition group is valid.
+     */
     private function checkConditionGroupForProduct(ConditionGroup $group): bool
     {
         foreach ($group->conditions as $condition) {
+            // return false if any condition is not valid
             if (!$this->checkConditionForProduct($condition)) {
                 return false;
             }
         }
+
         return true;
     }
 
-    private function checkConditionGroupsForProduct(Discount $discount): bool
-    {
-        if ($discount->conditionGroups->count() > 0) {
-            foreach ($discount->conditionGroups as $conditionGroup) {
-                if ($this->checkConditionGroupForProduct($conditionGroup)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        return true;
-    }
-
+    /**
+     * Check if given condition is valid.
+     */
     private function checkConditionForProduct(DiscountCondition $condition): bool
     {
         // TODO: TU JEST PROBLEM
@@ -916,16 +931,17 @@ class DiscountService implements DiscountServiceContract
                     'vat_rate' => $product->vat_rate,
                 ]);
 
-            foreach ($product->schemas as $schema) {
-                $newProduct->schemas()->create(
-                    $schema->only('name', 'value', 'price_initial', 'price'),
-                );
-            }
+                foreach ($product->schemas as $schema) {
+                    $newProduct->schemas()->create(
+                        $schema->only('name', 'value', 'price_initial', 'price'),
+                    );
+                }
 
-            $product->discounts->each(function (Discount $discount) use ($newProduct): void {
-                // @phpstan-ignore-next-line
-                $this->attachDiscount($newProduct, $discount, $discount->pivot->applied_discount);
-            });
+                $product->discounts->each(fn (Discount $discount) => $this->attachDiscount(
+                    $newProduct,
+                    $discount,
+                    $discount->pivot->applied_discount,
+                ));
 
                 $product = $newProduct;
             }
@@ -1060,8 +1076,7 @@ class DiscountService implements DiscountServiceContract
     private function getActiveSalesAndCoupons(array|Missing $couponIds, array $targetTypes = []): Collection
     {
         // Get all active discounts
-        $salesQuery = Discount::query()
-            ->active()
+        $salesQuery = Discount::active()
             ->where('code', null)
             ->with([
                 'orders',
@@ -1083,8 +1098,8 @@ class DiscountService implements DiscountServiceContract
         }
 
         // Get all active coupons
-        $couponsQuery = Discount::whereIn('code', $couponIds)
-            ->active()
+        $couponsQuery = Discount::active()
+            ->whereIn('code', $couponIds)
             ->with([
                 'orders',
                 'products',

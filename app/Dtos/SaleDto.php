@@ -5,12 +5,10 @@ namespace App\Dtos;
 use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\SaleCreateRequest;
 use App\Http\Requests\StatusUpdateRequest;
-use App\Services\Contracts\DiscountStoreServiceContract;
 use App\Traits\MapMetadata;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\App;
 
 class SaleDto extends Dto implements InstantiateFromRequest
 {
@@ -33,9 +31,6 @@ class SaleDto extends Dto implements InstantiateFromRequest
 
     public static function instantiateFromRequest(FormRequest|SaleCreateRequest|StatusUpdateRequest $request): self
     {
-        $conditionGroups = App::make(DiscountStoreServiceContract::class)
-            ->mapConditionGroups($request->input('condition_groups', new Missing()));
-
         return new self(
             name: $request->input('name', new Missing()),
             description: $request->input('description', new Missing()),
@@ -44,7 +39,7 @@ class SaleDto extends Dto implements InstantiateFromRequest
             priority: $request->input('priority', new Missing()),
             target_type: $request->input('target_type', new Missing()),
             target_is_allow_list: $request->input('target_is_allow_list', new Missing()),
-            condition_groups: $conditionGroups,
+            condition_groups: self::mapConditionGroups($request->input('condition_groups', new Missing())),
             target_products: $request->input('target_products', new Missing()),
             target_sets: $request->input('target_sets', new Missing()),
             target_shipping_methods: $request->input('target_shipping_methods', new Missing()),
@@ -111,5 +106,20 @@ class SaleDto extends Dto implements InstantiateFromRequest
     public function getActive(): Missing|bool
     {
         return $this->active;
+    }
+
+    protected static function mapConditionGroups(array|Missing $conditionGroups): array|Missing
+    {
+        if ($conditionGroups instanceof Missing) {
+            return $conditionGroups;
+        }
+
+        $conditionGroupDtos = [];
+
+        foreach ($conditionGroups as $conditionGroup) {
+            $conditionGroupDtos[] = ConditionGroupDto::fromArray($conditionGroup['conditions']);
+        }
+
+        return $conditionGroupDtos;
     }
 }
