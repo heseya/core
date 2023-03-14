@@ -20,8 +20,8 @@ class AuthProviderResource extends Resource
 
             return array_merge([
                 'id' => $this->resource->getKey(),
-                'active' => $this->resource->active,
                 'key' => $this->resource->key,
+                'active' => $this->resource->active,
             ], $client);
         }
         return [];
