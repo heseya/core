@@ -34,12 +34,12 @@ class ProviderTest extends TestCase
 
     public function testProvidersList(): void
     {
-        AuthProviderModel::factory()->create([
-            'key' => 'facebook',
-            'active' => true,
-        ]);
+        AuthProviderModel::query()
+            ->where('key', 'facebook')
+            ->update(['active' => true]);
 
-        $this->getJson('auth/providers')
+        $this
+            ->json('GET', '/auth/providers')
             ->assertJson([
                 'data' => [
                     0 => [
@@ -76,61 +76,26 @@ class ProviderTest extends TestCase
 
     public function testProvidersListActive(): void
     {
-        AuthProviderModel::factory()->create([
-            'key' => 'facebook',
-            'active' => true,
-        ]);
+        AuthProviderModel::query()
+            ->where('key', 'facebook')
+            ->update(['active' => true]);
 
         $this
-            ->json('GET', 'auth/providers', ['active' => true])
+            ->json('GET', '/auth/providers', ['active' => true])
             ->assertJsonCount(1, 'data')
-            ->assertJson([
-                'data' => [
-                    0 => [
-                        'key' => 'facebook',
-                        'active' => true,
-                    ],
-                ],
-            ]);
+            ->assertJsonFragment(['key' => 'facebook']);
     }
 
     public function testProvidersListInactive(): void
     {
-        AuthProviderModel::factory()->create([
-            'key' => 'facebook',
-            'active' => true,
-        ]);
+        AuthProviderModel::query()
+            ->whereNot('key', 'facebook')
+            ->update(['active' => true]);
 
         $this
             ->json('GET', '/auth/providers', ['active' => false])
-            ->assertJson([
-                'data' => [
-                    0 => [
-                        'key' => 'google',
-                        'active' => false,
-                    ],
-                    1 => [
-                        'key' => 'apple',
-                        'active' => false,
-                    ],
-                    2 => [
-                        'key' => 'github',
-                        'active' => false,
-                    ],
-                    3 => [
-                        'key' => 'gitlab',
-                        'active' => false,
-                    ],
-                    4 => [
-                        'key' => 'bitbucket',
-                        'active' => false,
-                    ],
-                    5 => [
-                        'key' => 'linkedin',
-                        'active' => false,
-                    ],
-                ],
-            ]);
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['key' => 'facebook']);
     }
 
     /**
@@ -139,58 +104,39 @@ class ProviderTest extends TestCase
     public function testGetProvider($user): void
     {
         $this->$user->givePermissionTo('auth.providers.manage');
-
-        $provider = AuthProviderModel::factory()->create([
-            'key' => 'facebook',
-        ]);
-
         $this
             ->actingAs($this->$user)
-            ->getJson('auth/providers/facebook')
-            ->assertJson([
-                'data' => [
-                    'id' => $provider->getKey(),
-                    'key' => $provider->key,
-                    'active' => $provider->active,
-                    'client_id' => $provider->client_id,
-                    'client_secret' => $provider->client_secret,
-                ],
+            ->json('GET', '/auth/providers/facebook')
+            ->assertJsonFragment([
+                'key' => 'facebook',
+                'active' => false,
+                'client_id' => null,
+                'client_secret' => null,
             ]);
     }
 
     public function testGetProviderWithoutPermission(): void
     {
-        $provider = AuthProviderModel::factory()->create([
-            'key' => 'facebook',
-        ]);
-
         $this
-            ->getJson('auth/providers/facebook')
-            ->assertJson([
-                'data' => [
-                    'id' => $provider->getKey(),
-                    'key' => $provider->key,
-                    'active' => $provider->active,
-                ],
+            ->json('GET', '/auth/providers/facebook')
+            ->assertJsonFragment([
+                'key' => 'facebook',
+                'active' => false,
             ])
             ->assertJsonMissing([
-                'client_id' => $provider->client_id,
-                'client_secret' => $provider->client_secret,
+                'client_id' => null,
+                'client_secret' => null,
             ]);
     }
 
     public function testUpdateUnauthorized(): void
     {
-        AuthProviderModel::factory()->create([
-            'key' => 'facebook',
-            'active' => false,
-        ]);
-
-        $this->json('patch', 'auth/providers/facebook', [
-            'active' => true,
-            'client_id' => 'test_id',
-            'client_secret' => 'test_secret',
-        ])
+        $this
+            ->json('PATCH', '/auth/providers/facebook', [
+                'active' => true,
+                'client_id' => 'test_id',
+                'client_secret' => 'test_secret',
+            ])
             ->assertForbidden();
     }
 
@@ -201,18 +147,16 @@ class ProviderTest extends TestCase
     {
         $this->$user->givePermissionTo('auth.providers.manage');
 
-        AuthProviderModel::factory()->create([
-            'key' => 'facebook',
-            'active' => false,
-        ]);
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('PATCH', '/auth/providers/facebook', [
+                'active' => true,
+                'client_id' => 'test_id',
+                'client_secret' => 'test_secret',
+            ]);
 
-        $response = $this->actingAs($this->$user)->json('patch', 'auth/providers/facebook', [
-            'active' => true,
-            'client_id' => 'test_id',
-            'client_secret' => 'test_secret',
-        ]);
-
-        $response->assertOk()
+        $response
+            ->assertOk()
             ->assertJsonFragment([
                 'active' => true,
                 'client_id' => 'test_id',
@@ -234,16 +178,11 @@ class ProviderTest extends TestCase
     {
         $this->$user->givePermissionTo('auth.providers.manage');
 
-        AuthProviderModel::factory()->create([
-            'key' => 'facebook',
-            'active' => false,
-            'client_id' => null,
-            'client_secret' => null,
-        ]);
-
-        $this->actingAs($this->$user)->json('patch', 'auth/providers/facebook', [
-            'active' => true,
-        ])
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', '/auth/providers/facebook', [
+                'active' => true,
+            ])
             ->assertJsonFragment(['key' => ValidationError::AUTHPROVIDERACTIVE]);
     }
 
@@ -252,18 +191,19 @@ class ProviderTest extends TestCase
      */
     public function testRedirect($key): void
     {
-        $provider = AuthProviderModel::factory()->create([
-            'key' => $key,
-            'active' => true,
-            'client_secret' => '***REMOVED***',
-            'client_id' => '***REMOVED***',
-        ]);
+        AuthProviderModel::query()
+            ->where('key', $key)
+            ->update([
+                'active' => true,
+                'client_secret' => '***REMOVED***',
+                'client_id' => '***REMOVED***',
+            ]);
 
-        $response = $this->json('post', "auth/providers/{$provider->key}/redirect", [
-            'return_url' => 'http://localhost',
-        ]);
-
-        $response->assertOk();
+        $this
+            ->json('POST', "/auth/providers/{$key}/redirect", [
+                'return_url' => 'http://localhost',
+            ])
+            ->assertOk();
     }
 
     /**
@@ -271,12 +211,7 @@ class ProviderTest extends TestCase
      */
     public function testRedirectInactive($key): void
     {
-        $provider = AuthProviderModel::factory()->create([
-            'key' => $key,
-            'active' => false,
-        ]);
-
-        $response = $this->json('post', "auth/providers/{$provider->key}/redirect", [
+        $response = $this->json('post', "auth/providers/{$key}/redirect", [
             'return_url' => 'http://localhost',
         ]);
 
@@ -290,14 +225,7 @@ class ProviderTest extends TestCase
      */
     public function testRedirectNoConfig($key): void
     {
-        $provider = AuthProviderModel::factory()->create([
-            'key' => $key,
-            'client_id' => null,
-            'client_secret' => null,
-            'active' => false,
-        ]);
-
-        $response = $this->json('post', "auth/providers/{$provider->key}/redirect", [
+        $response = $this->json('post', "auth/providers/{$key}/redirect", [
             'return_url' => 'http://localhost',
         ]);
 
@@ -316,7 +244,7 @@ class ProviderTest extends TestCase
             "auth/providers/{$key}/login",
             [
                 'return_url' => 'https://example.com?code=test',
-            ]
+            ],
         )->assertForbidden();
     }
 
@@ -328,12 +256,13 @@ class ProviderTest extends TestCase
         $this->user->givePermissionTo(['auth.register']);
         $this->mockSocialiteUser($key);
 
-        AuthProviderModel::factory()->create([
-            'key' => $key,
-            'active' => true,
-            'client_id' => 'test_id',
-            'client_secret' => 'test_secret',
-        ]);
+        AuthProviderModel::query()
+            ->where('key', $key)
+            ->update([
+                'active' => true,
+                'client_id' => 'test_id',
+                'client_secret' => 'test_secret',
+            ]);
 
         $response = $this->actingAs($this->user)->json(
             'POST',
@@ -372,12 +301,13 @@ class ProviderTest extends TestCase
         $this->user->givePermissionTo(['auth.register']);
         $this->mockSocialiteUser($key);
 
-        $authProvider = AuthProviderModel::factory()->create([
-            'key' => $key,
-            'active' => true,
-            'client_id' => 'test_id',
-            'client_secret' => 'test_secret',
-        ]);
+        AuthProviderModel::query()
+            ->where('key', $key)
+            ->update([
+                'active' => true,
+                'client_id' => 'test_id',
+                'client_secret' => 'test_secret',
+            ]);
 
         $existingUser = User::factory()->create([
             'name' => 'test user',
@@ -386,7 +316,7 @@ class ProviderTest extends TestCase
         ]);
 
         $existingUser->providers()->create([
-            'provider' => $authProvider->key,
+            'provider' => $key,
             'provider_user_id' => 123456789,
             'user_id' => $existingUser->getKey(),
         ]);
@@ -428,12 +358,13 @@ class ProviderTest extends TestCase
         $this->user->givePermissionTo(['auth.register']);
         $this->mockSocialiteUser($key);
 
-        AuthProviderModel::factory()->create([
-            'key' => $key,
-            'active' => true,
-            'client_id' => 'test_id',
-            'client_secret' => 'test_secret',
-        ]);
+        AuthProviderModel::query()
+            ->where('key', $key)
+            ->update([
+                'active' => true,
+                'client_id' => 'test_id',
+                'client_secret' => 'test_secret',
+            ]);
 
         $existingUser = User::factory()->create([
             'name' => 'test user',
@@ -469,12 +400,13 @@ class ProviderTest extends TestCase
 
         $this->mockSocialiteUser($key);
 
-        $authProvider = AuthProviderModel::factory()->create([
-            'key' => $key,
-            'active' => true,
-            'client_id' => 'test_id',
-            'client_secret' => 'test_secret',
-        ]);
+        AuthProviderModel::query()
+            ->where('key', $key)
+            ->update([
+                'active' => true,
+                'client_id' => 'test_id',
+                'client_secret' => 'test_secret',
+            ]);
 
         $existingUser = User::factory()->create([
             'name' => 'test user',
@@ -484,7 +416,7 @@ class ProviderTest extends TestCase
 
         $oldMergeToken = Str::random(128);
         $existingUser->providers()->create([
-            'provider' => $authProvider->key,
+            'provider' => $key,
             'provider_user_id' => 123456789,
             'user_id' => $existingUser->getKey(),
             'merge_token' => $oldMergeToken,
@@ -525,12 +457,13 @@ class ProviderTest extends TestCase
     {
         $this->mockSocialiteUser($key);
 
-        $authProvider = AuthProviderModel::factory()->create([
-            'key' => $key,
-            'active' => true,
-            'client_id' => 'test_id',
-            'client_secret' => 'test_secret',
-        ]);
+        AuthProviderModel::query()
+            ->where('key', $key)
+            ->update([
+                'active' => true,
+                'client_id' => 'test_id',
+                'client_secret' => 'test_secret',
+            ]);
 
         $existingUser = User::factory()->create([
             'name' => 'test user',
@@ -540,7 +473,7 @@ class ProviderTest extends TestCase
 
         $mergeToken = Str::random(128);
         $existingUser->providers()->create([
-            'provider' => $authProvider->key,
+            'provider' => $key,
             'provider_user_id' => 123456789,
             'user_id' => $existingUser->getKey(),
             'merge_token' => $mergeToken,
@@ -561,12 +494,13 @@ class ProviderTest extends TestCase
     {
         $this->mockSocialiteUser($key);
 
-        $authProvider = AuthProviderModel::factory()->create([
-            'key' => $key,
-            'active' => true,
-            'client_id' => 'test_id',
-            'client_secret' => 'test_secret',
-        ]);
+        AuthProviderModel::query()
+            ->where('key', $key)
+            ->update([
+                'active' => true,
+                'client_id' => 'test_id',
+                'client_secret' => 'test_secret',
+            ]);
 
         $existingUser = User::factory()->create([
             'name' => 'test user',
@@ -576,7 +510,7 @@ class ProviderTest extends TestCase
 
         $mergeToken = Str::random(128);
         $existingUser->providers()->create([
-            'provider' => $authProvider->key,
+            'provider' => $key,
             'provider_user_id' => 123456789,
             'user_id' => $existingUser->getKey(),
             'merge_token' => $mergeToken,
@@ -605,12 +539,13 @@ class ProviderTest extends TestCase
     {
         $this->mockSocialiteUser($key);
 
-        $authProvider = AuthProviderModel::factory()->create([
-            'key' => $key,
-            'active' => true,
-            'client_id' => 'test_id',
-            'client_secret' => 'test_secret',
-        ]);
+        AuthProviderModel::query()
+            ->where('key', $key)
+            ->update([
+                'active' => true,
+                'client_id' => 'test_id',
+                'client_secret' => 'test_secret',
+            ]);
 
         $existingUser = User::factory()->create([
             'name' => 'test user',
@@ -620,7 +555,7 @@ class ProviderTest extends TestCase
 
         $mergeToken = Str::random(128);
         $existingUser->providers()->create([
-            'provider' => $authProvider->key,
+            'provider' => $key,
             'provider_user_id' => 123456789,
             'user_id' => $existingUser->getKey(),
             'merge_token' => $mergeToken,
@@ -648,12 +583,13 @@ class ProviderTest extends TestCase
     {
         $this->mockSocialiteUser($key);
 
-        $authProvider = AuthProviderModel::factory()->create([
-            'key' => $key,
-            'active' => true,
-            'client_id' => 'test_id',
-            'client_secret' => 'test_secret',
-        ]);
+        AuthProviderModel::query()
+            ->where('key', $key)
+            ->update([
+                'active' => true,
+                'client_id' => 'test_id',
+                'client_secret' => 'test_secret',
+            ]);
 
         $existingUser = User::factory()->create([
             'name' => 'test user',
@@ -663,7 +599,7 @@ class ProviderTest extends TestCase
 
         $mergeToken = Str::random(128);
         $existingUser->providers()->create([
-            'provider' => $authProvider->key,
+            'provider' => $key,
             'provider_user_id' => 123456789,
             'user_id' => $existingUser->getKey(),
             'merge_token' => $mergeToken,
@@ -692,12 +628,13 @@ class ProviderTest extends TestCase
     {
         $this->mockSocialiteUser($key);
 
-        $authProvider = AuthProviderModel::factory()->create([
-            'key' => $key,
-            'active' => true,
-            'client_id' => 'test_id',
-            'client_secret' => 'test_secret',
-        ]);
+        AuthProviderModel::query()
+            ->where('key', $key)
+            ->update([
+                'active' => true,
+                'client_id' => 'test_id',
+                'client_secret' => 'test_secret',
+            ]);
 
         $existingUser = User::factory()->create([
             'name' => 'test user',
@@ -707,7 +644,7 @@ class ProviderTest extends TestCase
 
         $mergeToken = Str::random(128);
         $existingUser->providers()->create([
-            'provider' => $authProvider->key,
+            'provider' => $key,
             'provider_user_id' => 123456789,
             'user_id' => $existingUser->getKey(),
             'merge_token' => $mergeToken,
@@ -735,12 +672,13 @@ class ProviderTest extends TestCase
     {
         $this->mockSocialiteUser($key);
 
-        $authProvider = AuthProviderModel::factory()->create([
-            'key' => $key,
-            'active' => true,
-            'client_id' => 'test_id',
-            'client_secret' => 'test_secret',
-        ]);
+        AuthProviderModel::query()
+            ->where('key', $key)
+            ->update([
+                'active' => true,
+                'client_id' => 'test_id',
+                'client_secret' => 'test_secret',
+            ]);
 
         $existingUser = User::factory()->create([
             'name' => 'test user',
@@ -749,7 +687,7 @@ class ProviderTest extends TestCase
         ]);
 
         $existingUser->providers()->create([
-            'provider' => $authProvider->key,
+            'provider' => $key,
             'provider_user_id' => 123456789,
             'user_id' => $existingUser->getKey(),
         ]);
