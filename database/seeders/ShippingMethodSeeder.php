@@ -40,5 +40,10 @@ class ShippingMethodSeeder extends Seeder
         $priceRange->prices()->create([
             'value' => rand(500, 2000) / 100.0,
         ]);
+
+//        $shippingMethod->priceRanges()->create([
+//            'start' => 0,
+//            'value' => rand(500, 2000) / 100.0,
+//        ]);
     }
 }

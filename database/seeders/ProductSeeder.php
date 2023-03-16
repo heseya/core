@@ -7,6 +7,7 @@ use App\Models\Deposit;
 use App\Models\Item;
 use App\Models\Media;
 use App\Models\Option;
+use App\Models\Price;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Schema;
@@ -106,6 +107,9 @@ class ProductSeeder extends Seeder
             $item = Item::factory()->create();
             $item->deposits()->saveMany(Deposit::factory()->count(rand(0, 2))->make());
             $schema->options()->saveMany(Option::factory()->count(rand(0, 4))->make());
+//            $schema->options->each(
+//                fn (Option $option) => $option->price()->save(Price::factory()->make()),
+//            );
         }
     }
 

@@ -14,8 +14,28 @@ class OrderSchema extends Model
     protected $fillable = [
         'name',
         'value',
-        'price_initial',
-        'price',
+//        'price_initial',
+//        'price',
         'order_product_id',
     ];
+
+    public function price(): MorphOneWithIdentifier
+    {
+        return $this->morphOneWithIdentifier(
+            Price::class,
+            'model',
+            'price_type',
+            'price',
+        );
+    }
+
+    public function priceInitial(): MorphOneWithIdentifier
+    {
+        return $this->morphOneWithIdentifier(
+            Price::class,
+            'model',
+            'price_type',
+            'price_initial',
+        );
+    }
 }
