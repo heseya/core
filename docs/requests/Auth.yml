@@ -47,6 +47,12 @@ Register:
           phone:
             type: string
             example: '+48123456789'
+          roles:
+            type: array
+            description: 'Roles to be assigned upon registration'
+            items:
+              type: string
+              example: '026bc5f6-8373-4aeb-972e-e78d72a67121'
           consents:
             properties:
               119c0a63-1ea1-4769-8d5f-169f68de5598:

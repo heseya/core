@@ -36,10 +36,12 @@ class Role extends SpatieRole implements AuditableContract
         'name',
         'description',
         'guard_name',
+        'is_registration_role',
     ];
 
     protected $casts = [
         'type' => RoleType::class,
+        'is_registration_role' => 'bool',
     ];
 
     protected array $criteria = [

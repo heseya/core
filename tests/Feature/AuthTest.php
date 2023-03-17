@@ -2232,6 +2232,83 @@ class AuthTest extends TestCase
         );
     }
 
+    public function testRegisterWithUnassignableRoles(): void
+    {
+        /** @var Role $role */
+        $role = Role::query()
+            ->where('type', RoleType::UNAUTHENTICATED)
+            ->firstOrFail();
+
+        $role->givePermissionTo('auth.register');
+
+        $authenticated = Role::query()
+            ->where('type', RoleType::AUTHENTICATED)
+            ->firstOrFail();
+
+        $newRole = Role::factory()->create([
+            'is_registration_role' => false,
+        ]);
+
+        $email = $this->faker->email();
+        $this->json('POST', '/register', [
+            'name' => 'Registered user',
+            'email' => $email,
+            'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+            'roles' => [
+                $newRole->getKey(),
+            ],
+        ])
+            ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+
+        /** @var User $user */
+        $user = User::query()->where('email', $email)->first();
+
+        $this->assertFalse(
+            $user->hasAnyRole([$newRole, $authenticated]),
+        );
+    }
+
+    public function testRegisterWithRoles(): void
+    {
+        /** @var Role $role */
+        $role = Role::query()
+            ->where('type', RoleType::UNAUTHENTICATED)
+            ->firstOrFail();
+
+        $role->givePermissionTo('auth.register');
+
+        $authenticated = Role::query()
+            ->where('type', RoleType::AUTHENTICATED)
+            ->firstOrFail();
+
+        /** @var Role $newRole */
+        $newRole = Role::factory()->create([
+            'is_registration_role' => true,
+        ]);
+
+        $email = $this->faker->email();
+        $this->json('POST', '/register', [
+            'name' => 'Registered user',
+            'email' => $email,
+            'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+            'roles' => [
+                $newRole->getKey(),
+            ],
+        ])
+            ->assertStatus(Response::HTTP_CREATED)
+            ->assertJsonFragment([
+                $newRole->getKeyName() => $newRole->getKey(),
+                'name' => $newRole->name,
+            ]);
+
+        /** @var User $user */
+        $user = User::query()->where('email', $email)->first();
+
+        $this->assertTrue(
+            $user->hasAllRoles([$newRole, $authenticated]),
+        );
+    }
+
     public function testRegisterWithPhone(): void
     {
         Notification::fake();

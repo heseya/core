@@ -16,6 +16,7 @@ class RoleResource extends Resource
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
             'description' => $this->resource->description,
+            'is_registration_role' => $this->resource->is_registration_role,
             'assignable' => $this->resource->isAssignable(),
             'deletable' => $this->resource->type->is(RoleType::REGULAR),
             'users_count' => $this->resource->users_count,

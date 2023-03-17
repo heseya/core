@@ -12,6 +12,7 @@ class RoleUpdateDto extends Dto implements InstantiateFromRequest
 {
     private string|Missing $name;
     private string|null|Missing $description;
+    private bool|Missing $is_registration_role;
     private array|Missing $permissions;
 
     public static function instantiateFromRequest(FormRequest|RoleUpdateRequest $request): self
@@ -19,6 +20,7 @@ class RoleUpdateDto extends Dto implements InstantiateFromRequest
         return new self(
             name: $request->input('name', new Missing()),
             description: $request->input('description', new Missing()),
+            is_registration_role: $request->input('is_registration_role', new Missing()),
             permissions: $request->input('permissions', new Missing()),
         );
     }
@@ -31,6 +33,11 @@ class RoleUpdateDto extends Dto implements InstantiateFromRequest
     public function getDescription(): Missing|string|null
     {
         return $this->description;
+    }
+
+    public function getIsRegistrationRole(): bool|Missing
+    {
+        return $this->is_registration_role;
     }
 
     public function getPermissions(): Missing|array

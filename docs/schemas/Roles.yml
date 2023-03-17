@@ -12,8 +12,11 @@ Role:
       description: 'Description of the role'
       type: string
       example: 'Role with permission to everything'
+    is_registration_role:
+      description: 'Whether the role can be assigned to user upon registration.'
+      type: boolean
     assignable:
-      description: 'Whether the role assignable by current user.'
+      description: 'Whether the role is assignable by the current user.'
       type: boolean
     deletable:
       description: 'Whether the role can be deleted with appropriate permissions.'
@@ -39,6 +42,6 @@ RoleView:
             type: string
             example: roles.show_details
         locked_permissions:
-          description: 'Whether the permissions can be edited with appropreiate permissions.'
+          description: 'Whether the permissions can be edited with appropriate permissions.'
           type: boolean
           example: true
