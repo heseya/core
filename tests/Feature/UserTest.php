@@ -865,8 +865,11 @@ class UserTest extends TestCase
 
         Event::fake([UserCreated::class]);
 
+        /** @var Role $role1 */
         $role1 = Role::create(['name' => 'Role 1']);
+        /** @var Role $role2 */
         $role2 = Role::create(['name' => 'Role 2']);
+        /** @var Role $role3 */
         $role3 = Role::create(['name' => 'Role 3']);
 
         $permission1 = Permission::create(['name' => 'permission.1']);
@@ -900,6 +903,7 @@ class UserTest extends TestCase
                 'id' => $role1->getKey(),
                 'name' => $role1->name,
                 'description' => $role1->description,
+                'is_registration_role' => false,
                 'assignable' => true,
                 'deletable' => true,
                 'users_count' => null,
@@ -909,6 +913,7 @@ class UserTest extends TestCase
                 'id' => $role2->getKey(),
                 'name' => $role2->name,
                 'description' => $role2->description,
+                'is_registration_role' => false,
                 'assignable' => true,
                 'deletable' => true,
                 'users_count' => null,
@@ -918,6 +923,7 @@ class UserTest extends TestCase
                 'id' => $role3->getKey(),
                 'name' => $role3->name,
                 'description' => $role3->description,
+                'is_registration_role' => false,
                 'assignable' => true,
                 'deletable' => true,
                 'users_count' => null,
@@ -925,7 +931,9 @@ class UserTest extends TestCase
             ],
             ])->assertJsonPath('data.permissions', $permissions);
 
-        $user = User::findOrFail($response->getData()->data->id);
+        /** @var User $user */
+        $user = User::query()
+            ->findOrFail($response->getData()->data->id);
 
         $this->assertTrue(
             $user->hasAllRoles([$role1, $role2, $role3, $this->authenticated]),
@@ -1203,9 +1211,14 @@ class UserTest extends TestCase
 
         Event::fake([UserUpdated::class]);
 
+        /** @var User $otherUser */
         $otherUser = User::factory()->create();
+
+        /** @var Role $role1 */
         $role1 = Role::create(['name' => 'Role 1']);
+        /** @var Role $role2 */
         $role2 = Role::create(['name' => 'Role 2']);
+        /** @var Role $role3 */
         $role3 = Role::create(['name' => 'Role 3']);
 
         $permission1 = Permission::create(['name' => 'permission.1']);
@@ -1239,6 +1252,7 @@ class UserTest extends TestCase
                 'id' => $role1->getKey(),
                 'name' => $role1->name,
                 'description' => $role1->description,
+                'is_registration_role' => false,
                 'assignable' => true,
                 'deletable' => true,
                 'users_count' => null,
@@ -1248,6 +1262,7 @@ class UserTest extends TestCase
                 'id' => $role2->getKey(),
                 'name' => $role2->name,
                 'description' => $role2->description,
+                'is_registration_role' => false,
                 'assignable' => true,
                 'deletable' => true,
                 'users_count' => null,
@@ -1257,6 +1272,7 @@ class UserTest extends TestCase
                 'id' => $role3->getKey(),
                 'name' => $role3->name,
                 'description' => $role3->description,
+                'is_registration_role' => false,
                 'assignable' => true,
                 'deletable' => true,
                 'users_count' => null,
