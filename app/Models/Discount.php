@@ -23,6 +23,8 @@ use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
+ * @property mixed $pivot
+ *
  * @mixin IdeHelperDiscount
  */
 class Discount extends Model implements AuditableContract

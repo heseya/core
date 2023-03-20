@@ -226,6 +226,7 @@ class DiscountService implements DiscountServiceContract
                 return false;
             }
         }
+
         return true;
     }
 
@@ -234,17 +235,20 @@ class DiscountService implements DiscountServiceContract
         CartOrderDto $dto,
         float $cartValue,
     ): bool {
-        if ($discount->active) {
-            if (count($discount->conditionGroups) > 0) {
-                foreach ($discount->conditionGroups as $conditionGroup) {
-                    if ($this->checkConditionGroup($conditionGroup, $dto, $cartValue)) {
-                        return true;
-                    }
-                }
-                return false;
-            }
+        if (!$discount->active) {
+            return false;
+        }
+
+        if ($discount->conditionGroups->isEmpty()) {
             return true;
         }
+
+        foreach ($discount->conditionGroups as $conditionGroup) {
+            if ($this->checkConditionGroup($conditionGroup, $dto, $cartValue)) {
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -799,12 +803,10 @@ class DiscountService implements DiscountServiceContract
     }
 
     /**
-     * Check if given condition is valid.
+     * Check if given condition is valid for product feed.
      */
     private function checkConditionForProduct(DiscountCondition $condition): bool
     {
-        // TODO: TU JEST PROBLEM
-
         return match ($condition->type->value) {
             ConditionType::ORDER_VALUE => false,
             ConditionType::PRODUCT_IN_SET => false,
@@ -1473,6 +1475,7 @@ class DiscountService implements DiscountServiceContract
                 $this->applyAllDiscountsOnProduct($product, $salesWithBlockList, false);
             }
 
+            // @phpstan-ignore-next-line
             $products->searchable();
         });
     }

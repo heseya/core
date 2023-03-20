@@ -23,7 +23,6 @@ use App\Services\Contracts\BannerServiceContract;
 use App\Services\Contracts\ConsentServiceContract;
 use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
-use App\Services\Contracts\DiscountStoreServiceContract;
 use App\Services\Contracts\DocumentServiceContract;
 use App\Services\Contracts\EventServiceContract;
 use App\Services\Contracts\FavouriteServiceContract;
@@ -63,7 +62,6 @@ use App\Services\Contracts\WebHookServiceContract;
 use App\Services\Contracts\WishlistServiceContract;
 use App\Services\DepositService;
 use App\Services\DiscountService;
-use App\Services\DiscountStoreService;
 use App\Services\DocumentService;
 use App\Services\EventService;
 use App\Services\FavouriteService;
@@ -148,7 +146,6 @@ class AppServiceProvider extends ServiceProvider
         StatusServiceContract::class => StatusService::class,
         PackageTemplateServiceContract::class => PackageTemplateService::class,
         DepositServiceContract::class => DepositService::class,
-        DiscountStoreServiceContract::class => DiscountStoreService::class,
         ShippingTimeDateServiceContract::class => ShippingTimeDateService::class,
         ProviderServiceContract::class => ProviderService::class,
         GoogleCategoryServiceContract::class => GoogleCategoryService::class,

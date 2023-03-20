@@ -17,7 +17,7 @@ use Tests\TestCase;
  */
 class OrderQATest extends TestCase
 {
-    const ADDRESS = [
+    private const ADDRESS = [
         'name' => 'test test',
         'address' => 'Gdańska 89/1',
         'vat' => '9571099580',
@@ -120,13 +120,13 @@ class OrderQATest extends TestCase
         /** @var Order $order */
         $order = Order::query()->first();
 
-        $this->assertCount(3, $order->discounts); // 3 discounts on order
-        $this->assertEquals(100, $order->cart_total_initial);
-//        $this->assertEquals(95, $order->summary);
         $this->assertEquals(100, $order->products[0]->price_initial);
         $this->assertEquals(95, $order->products[0]->price);
         $this->assertCount(1, $order->products);
         $this->assertCount(1, $order->products[0]->discounts); // 1 discount on product
+        $this->assertCount(3, $order->discounts); // 3 discounts on order
+        $this->assertEquals(100, $order->cart_total_initial);
+        $this->assertEquals(72.9, $order->summary);
     }
 
     /**
