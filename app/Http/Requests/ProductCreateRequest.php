@@ -46,7 +46,7 @@ class ProductCreateRequest extends FormRequest implements SeoRequestContract, Me
                 'attributes.*.*' => ['uuid', new AttributeOptionExist()],
 
                 'items' => ['nullable', 'array', new UniqueIdInRequest()],
-                'items.*.id' => ['uuid'],
+                'items.*.id' => ['uuid', 'exists:items,id'],
                 'items.*.required_quantity' => ['numeric', 'gte:0.0001'],
 
                 'schemas' => ['nullable', 'array'],

@@ -31,6 +31,7 @@ class ProviderController extends Controller
     public function getProvidersList(AuthProviderIndexRequest $request): JsonResource
     {
         $active = $request->has('active') ? $request->boolean('active') : null;
+
         return $this->providerService->getProvidersList($active);
     }
 
