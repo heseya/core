@@ -265,21 +265,12 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
 
     public function allProductSales(Collection $salesWithBlockList): Collection
     {
-        $sales = $this->discounts->filter(function ($discount): bool {
-            if (
-                $discount->code === null
+        $sales = $this->discounts->filter(
+            fn ($discount): bool => $discount->code === null
                 && $discount->active
                 && $discount->target_type->is(DiscountTargetType::PRODUCTS)
                 && $discount->target_is_allow_list
-            ) {
-                if ($discount->products->contains(function ($value): bool {
-                    return $value->getKey() === $this->getKey();
-                })) {
-                    return true;
-                }
-            }
-            return false;
-        });
+        );
 
         $salesBlockList = $salesWithBlockList->filter(function ($sale): bool {
             if ($sale->products->contains(function ($value): bool {
