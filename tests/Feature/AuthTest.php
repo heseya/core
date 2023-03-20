@@ -2270,6 +2270,8 @@ class AuthTest extends TestCase
 
     public function testRegisterWithRoles(): void
     {
+        Notification::fake();
+
         /** @var Role $role */
         $role = Role::query()
             ->where('type', RoleType::UNAUTHENTICATED)
@@ -2306,6 +2308,11 @@ class AuthTest extends TestCase
 
         $this->assertTrue(
             $user->hasAllRoles([$newRole, $authenticated]),
+        );
+
+        Notification::assertSentTo(
+            [$user],
+            UserRegistered::class,
         );
     }
 
