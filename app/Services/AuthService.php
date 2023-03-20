@@ -300,21 +300,34 @@ class AuthService implements AuthServiceContract
         $this->removeUserTFAData($user);
     }
 
+    /**
+     * @throws ClientException
+     */
     public function register(RegisterDto $dto): User
     {
         $fields = $dto->toArray();
         $fields['password'] = Hash::make($dto->getPassword());
-        $user = User::create($fields);
+        /** @var User $user */
+        $user = User::query()->create($fields);
 
         $authenticated = Role::where('type', RoleType::AUTHENTICATED)->first();
 
-        if ($authenticated) {
-            $user->syncRoles($authenticated);
+        $roleIds = !$dto->getRoles() instanceof Missing ? $dto->getRoles() : [];
+        $roleModels = Role::query()
+            ->whereIn('id', $roleIds)
+            ->get();
+
+        $nonRegistrationRoles = $roleModels->filter(fn (Role $role) => !$role->is_registration_role);
+
+        if ($nonRegistrationRoles->isNotEmpty()) {
+            throw new ClientException(Exceptions::CLIENT_REGISTER_WITH_NON_REGISTRATION_ROLE);
         }
+
+        $user->syncRoles([$authenticated, ...$roleModels]);
 
         $this->consentService->syncUserConsents($user, $dto->getConsents());
 
-        $preferences = UserPreference::create();
+        $preferences = UserPreference::query()->create();
         $preferences->refresh();
 
         $user->preferences()->associate($preferences);

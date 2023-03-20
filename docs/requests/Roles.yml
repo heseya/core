@@ -14,6 +14,10 @@ RoleStore:
             description: 'Description of the role'
             type: string
             example: 'Role with permission to everything'
+          is_registration_role:
+            description: 'Whether the role can be assigned to user upon registration.'
+            type: boolean
+            example: false
           permissions:
             description: 'Permission names'
             type: array
@@ -38,6 +42,10 @@ RoleUpdate:
             description: 'Description of the role'
             type: string
             example: 'Role with permission to everything'
+          is_registration_role:
+            description: 'Whether the role can be assigned to user upon registration.'
+            type: boolean
+            example: false
           permissions:
             description: 'Permission names'
             type: array
