@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Http\Resources\App\AppWithSavedAddressesResource;
 use App\Models\User;
 use App\Services\Contracts\TokenServiceContract;
 use Illuminate\Http\Request;

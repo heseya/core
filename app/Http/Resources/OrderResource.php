@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Http\Resources\App\AppResource;
 use App\Models\User;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;

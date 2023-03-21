@@ -6,7 +6,7 @@ use App\Dtos\AppInstallDto;
 use App\Http\Requests\AppDeleteRequest;
 use App\Http\Requests\AppIndexRequest;
 use App\Http\Requests\AppStoreRequest;
-use App\Http\Resources\AppResource;
+use App\Http\Resources\App\AppResource;
 use App\Models\App;
 use App\Services\Contracts\AppServiceContract;
 use Illuminate\Http\JsonResponse;

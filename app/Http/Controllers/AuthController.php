@@ -20,7 +20,7 @@ use App\Http\Requests\TFAConfirmRequest;
 use App\Http\Requests\TFAPasswordRequest;
 use App\Http\Requests\TFASetupRequest;
 use App\Http\Requests\TokenRefreshRequest;
-use App\Http\Resources\AppWithSavedAddressesResource;
+use App\Http\Resources\App\AppWithSavedAddressesResource;
 use App\Http\Resources\AuthResource;
 use App\Http\Resources\ProfileResource;
 use App\Http\Resources\SavedAddressResource;

@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\App;
 
+use App\Http\Resources\SavedAddressResource;
 use Illuminate\Http\Request;
 
 class AppWithSavedAddressesResource extends AppResource

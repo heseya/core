@@ -4,7 +4,7 @@ namespace App\Notifications;
 
 use App\Channels\WebHookChannel;
 use App\Enums\IssuerType;
-use App\Http\Resources\AppIssuerResource;
+use App\Http\Resources\App\AppIssuerResource;
 use App\Http\Resources\UserIssuerResource;
 use App\Models\Model;
 use Illuminate\Contracts\Auth\Authenticatable;

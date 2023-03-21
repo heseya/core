@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Http\Resources\App\AppResource;
 use Illuminate\Http\Request;
 
 class PaymentMethodDetailsResource extends Resource
