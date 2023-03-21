@@ -16,6 +16,7 @@ class RoleUpdateRequest extends FormRequest
         return [
             'name' => ['string', Rule::unique('roles')->ignore($role->getKey(), $role->getKeyName())],
             'description' => ['nullable', 'string'],
+            'is_registration_role' => ['boolean'],
             'permissions' => ['array'],
             'permissions.*' => ['string'],
         ];

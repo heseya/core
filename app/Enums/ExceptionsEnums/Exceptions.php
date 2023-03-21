@@ -45,6 +45,9 @@ final class Exceptions extends Enum
         'Can\'t give a role with permissions you don\'t have to the user';
     public const CLIENT_REMOVE_ROLE_THAT_USER_DOESNT_HAVE =
         'Can\'t remove a role with permissions you don\'t have from the user';
+
+    public const CLIENT_REGISTER_WITH_NON_REGISTRATION_ROLE =
+        'Can\'t register with a non registration role';
     public const CLIENT_ONLY_OWNER_GRANTS_OWNER_ROLE = 'Only owner can grant the owner role';
     public const CLIENT_ONLY_OWNER_REMOVES_OWNER_ROLE = 'Only owner can remove the owner role';
     public const CLIENT_ONE_OWNER_REMAINS = 'There must always be at least one Owner left';

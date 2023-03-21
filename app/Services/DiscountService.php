@@ -226,6 +226,7 @@ class DiscountService implements DiscountServiceContract
                 return false;
             }
         }
+
         return true;
     }
 
@@ -234,17 +235,20 @@ class DiscountService implements DiscountServiceContract
         CartOrderDto $dto,
         float $cartValue,
     ): bool {
-        if ($discount->active) {
-            if (count($discount->conditionGroups) > 0) {
-                foreach ($discount->conditionGroups as $conditionGroup) {
-                    if ($this->checkConditionGroup($conditionGroup, $dto, $cartValue)) {
-                        return true;
-                    }
-                }
-                return false;
-            }
+        if (!$discount->active) {
+            return false;
+        }
+
+        if ($discount->conditionGroups->isEmpty()) {
             return true;
         }
+
+        foreach ($discount->conditionGroups as $conditionGroup) {
+            if ($this->checkConditionGroup($conditionGroup, $dto, $cartValue)) {
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -763,29 +767,44 @@ class DiscountService implements DiscountServiceContract
         return max($price, $minimalProductPrice);
     }
 
+    /**
+     * Check if product have any valid condition group.
+     */
+    private function checkConditionGroupsForProduct(Discount $discount): bool
+    {
+        // return true if there is no condition groups
+        if ($discount->conditionGroups->count() <= 0) {
+            return true;
+        }
+
+        foreach ($discount->conditionGroups as $conditionGroup) {
+            // return true if any condition group is valid
+            if ($this->checkConditionGroupForProduct($conditionGroup)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if given condition group is valid.
+     */
     private function checkConditionGroupForProduct(ConditionGroup $group): bool
     {
         foreach ($group->conditions as $condition) {
+            // return false if any condition is not valid
             if (!$this->checkConditionForProduct($condition)) {
                 return false;
             }
         }
+
         return true;
     }
 
-    private function checkConditionGroupsForProduct(Discount $discount): bool
-    {
-        if ($discount->conditionGroups->count() > 0) {
-            foreach ($discount->conditionGroups as $conditionGroup) {
-                if ($this->checkConditionGroupForProduct($conditionGroup)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        return true;
-    }
-
+    /**
+     * Check if given condition is valid for product feed.
+     */
     private function checkConditionForProduct(DiscountCondition $condition): bool
     {
         return match ($condition->type->value) {
@@ -920,9 +939,11 @@ class DiscountService implements DiscountServiceContract
                     );
                 }
 
-                $product->discounts->each(function (Discount $discount) use ($newProduct): void {
-                    $this->attachDiscount($newProduct, $discount, $discount->pivot->applied_discount);
-                });
+                $product->discounts->each(fn (Discount $discount) => $this->attachDiscount(
+                    $newProduct,
+                    $discount,
+                    $discount->pivot->applied_discount,
+                ));
 
                 $product = $newProduct;
             }
@@ -1057,8 +1078,7 @@ class DiscountService implements DiscountServiceContract
     private function getActiveSalesAndCoupons(array|Missing $couponIds, array $targetTypes = []): Collection
     {
         // Get all active discounts
-        $salesQuery = Discount::query()
-            ->active()
+        $salesQuery = Discount::active()
             ->where('code', null)
             ->with([
                 'orders',
@@ -1080,8 +1100,8 @@ class DiscountService implements DiscountServiceContract
         }
 
         // Get all active coupons
-        $couponsQuery = Discount::whereIn('code', $couponIds)
-            ->active()
+        $couponsQuery = Discount::active()
+            ->whereIn('code', $couponIds)
             ->with([
                 'orders',
                 'products',
@@ -1431,8 +1451,8 @@ class DiscountService implements DiscountServiceContract
 
     private function getSalesWithBlockList(): Collection
     {
-        return Discount::where('code', null)
-            ->active()
+        return Discount::active()
+            ->where('code', null)
             ->where('target_type', DiscountTargetType::PRODUCTS)
             ->where('target_is_allow_list', false)->with(['products', 'productSets', 'productSets.products'])->get();
     }

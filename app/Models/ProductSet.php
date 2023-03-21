@@ -162,10 +162,11 @@ class ProductSet extends Model
 
     public function allProductsSales(): Collection
     {
-        $sales = $this->discounts
-            ->filter(fn ($discount): bool => $discount->code === null
+        $sales = $this->discounts->filter(
+            fn (Discount $discount): bool => $discount->code === null
                 && $discount->active
-                && $discount->target_type->is(DiscountTargetType::PRODUCTS));
+                && $discount->target_type->is(DiscountTargetType::PRODUCTS),
+        );
 
         if ($this->parent) {
             $sales = $sales->merge($this->parent->allProductsSales());

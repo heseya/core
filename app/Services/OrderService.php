@@ -26,10 +26,12 @@ use App\Http\Resources\OrderResource;
 use App\Models\Address;
 use App\Models\App;
 use App\Models\CartResource;
+use App\Models\Option;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\PackageTemplate;
 use App\Models\Product;
+use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\User;
@@ -125,22 +127,23 @@ class OrderService implements OrderServiceContract
             }
 
             if (!($dto->getBillingAddress() instanceof Missing)) {
-                $billingAddress = Address::firstOrCreate($dto->getBillingAddress()->toArray());
+                $billingAddress = Address::query()->firstOrCreate($dto->getBillingAddress()->toArray());
             }
 
             $getInvoiceRequested = $dto->getInvoiceRequested() instanceof Missing
                 ? false
                 : $dto->getInvoiceRequested();
 
-            $status = Status::select('id')->orderBy('order')->first();
-
-            if ($status === null) {
-                throw new ServerException(Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED);
-            }
+            /** @var Status $status */
+            $status = Status::query()->select('id')->orderBy('order')->firstOr(
+                callback: fn () =>
+                throw new ServerException(Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED),
+            );
 
             /** @var User|App $buyer */
             $buyer = Auth::user();
 
+            /** @var Order $order */
             $order = Order::query()->create(
                 [
                     'code' => $this->nameService->generate(),
@@ -186,11 +189,12 @@ class OrderService implements OrderServiceContract
                     $schemaProductPrice = 0;
                     // Add schemas to products
                     foreach ($item->getSchemas() as $schemaId => $value) {
+                        /** @var Schema $schema */
                         $schema = $product->schemas()->findOrFail($schemaId);
-
                         $price = $schema->getPrice($value, $item->getSchemas());
 
                         if ($schema->type->is(SchemaType::SELECT)) {
+                            /** @var Option $option */
                             $option = $schema->options()->findOrFail($value);
                             $tempSchemaOrderProduct[$schema->name . '_' . $item->getProductId()] = [$schemaId, $value];
                             $value = $option->name;
@@ -219,6 +223,7 @@ class OrderService implements OrderServiceContract
                 }
 
                 $order->cart_total_initial = $cartValueInitial;
+                $order->cart_total = $cartValueInitial;
 
                 // Apply discounts to order/products
                 $order = $this->discountService->calcOrderProductsAndTotalDiscounts($order, $dto);
@@ -252,7 +257,7 @@ class OrderService implements OrderServiceContract
             DB::rollBack();
 
             throw $exception;
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             DB::rollBack();
 
             throw new ServerException(Exceptions::SERVER_TRANSACTION_ERROR);
