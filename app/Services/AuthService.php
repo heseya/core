@@ -26,7 +26,6 @@ use App\Models\UserPreference;
 use App\Notifications\ResetPassword;
 use App\Notifications\TFAInitialization;
 use App\Notifications\TFASecurityCode;
-use App\Notifications\UserRegistered;
 use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\ConsentServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
@@ -336,8 +335,6 @@ class AuthService implements AuthServiceContract
         }
 
         $user->save();
-
-        $user->notify(new UserRegistered());
 
         UserCreated::dispatch($user);
 
