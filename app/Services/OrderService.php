@@ -135,9 +135,12 @@ class OrderService implements OrderServiceContract
                 : $dto->getInvoiceRequested();
 
             /** @var Status $status */
-            $status = Status::query()->select('id')->orderBy('order')->firstOr(callback: fn () =>
-                throw new ServerException(Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED),
-            );
+            $status = Status::query()
+                ->select('id')
+                ->orderBy('order')
+                ->firstOr(callback: fn () => throw new ServerException(
+                    Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED,
+                ));
 
             /** @var User|App $buyer */
             $buyer = Auth::user();
