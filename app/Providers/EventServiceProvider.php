@@ -45,6 +45,7 @@ use App\Listeners\ItemUpdatedQuantityListener;
 use App\Listeners\MakeSetProductsSearchable;
 use App\Listeners\OrderCreatedListener;
 use App\Listeners\OrderUpdatedStatusListener;
+use App\Listeners\UserCreatedListener;
 use App\Listeners\WebHookEventListener;
 use App\Listeners\WebHookFailedListener;
 use App\Models\AttributeOption;
@@ -90,6 +91,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         ProductSetUpdated::class => [
             MakeSetProductsSearchable::class,
+        ],
+        UserCreated::class => [
+            UserCreatedListener::class,
         ],
     ];
 
