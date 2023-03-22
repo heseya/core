@@ -13,7 +13,10 @@ class DepositObserver
         /** @var DepositServiceContract $depositService */
         $depositService = App::make(DepositServiceContract::class);
 
-        $deposit->item?->increment('quantity', $deposit->quantity);
+        if (!$deposit->from_unlimited) {
+            $deposit->item?->increment('quantity', $deposit->quantity);
+        }
+
         $deposit->item?->update($depositService->getShippingTimeDateForQuantity($deposit->item));
     }
 }
