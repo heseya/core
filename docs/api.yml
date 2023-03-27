@@ -148,6 +148,8 @@ paths:
     $ref: './paths/Payments.yml#/PaymentParams'
   /permissions:
     $ref: './paths/Permissions.yml#/Permissions'
+  /prices/products:
+    $ref: './paths/Prices.yml#/Products'
   /products:
     $ref: './paths/Products.yml#/Products'
   '/products/{slug}':

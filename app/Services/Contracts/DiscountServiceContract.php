@@ -9,6 +9,7 @@ use App\Dtos\CouponDto;
 use App\Dtos\CouponIndexDto;
 use App\Dtos\OrderDto;
 use App\Dtos\OrderProductDto;
+use App\Dtos\ProductPriceDto;
 use App\Dtos\SaleDto;
 use App\Dtos\SaleIndexDto;
 use App\Models\CartItemResponse;
@@ -63,6 +64,9 @@ interface DiscountServiceContract
     ): CartItemResponse;
 
     public function calcCartDiscounts(CartDto $cart, Collection $products): CartResource;
+
+    /** @return ProductPriceDto[] */
+    public function calcProductsListDiscounts(Collection $products): array;
 
     public function calcOrderShippingDiscounts(Order $order, OrderDto $orderDto): Order;
 
