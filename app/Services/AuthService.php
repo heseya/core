@@ -305,8 +305,6 @@ class AuthService implements AuthServiceContract
     {
         $fields = $dto->toArray();
         $fields['password'] = Hash::make($dto->getPassword());
-        /** @var User $user */
-        $user = User::query()->create($fields);
 
         $authenticated = Role::where('type', RoleType::AUTHENTICATED)->first();
 
@@ -321,6 +319,8 @@ class AuthService implements AuthServiceContract
             throw new ClientException(Exceptions::CLIENT_REGISTER_WITH_NON_REGISTRATION_ROLE);
         }
 
+        /** @var User $user */
+        $user = User::query()->create($fields);
         $user->syncRoles([$authenticated, ...$roleModels]);
 
         $this->consentService->syncUserConsents($user, $dto->getConsents());

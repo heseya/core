@@ -2250,6 +2250,7 @@ class AuthTest extends TestCase
         ]);
 
         $email = $this->faker->email();
+        $username = 'Registered user';
         $this->json('POST', '/register', [
             'name' => 'Registered user',
             'email' => $email,
@@ -2260,12 +2261,10 @@ class AuthTest extends TestCase
         ])
             ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
 
-        /** @var User $user */
-        $user = User::query()->where('email', $email)->first();
-
-        $this->assertFalse(
-            $user->hasAnyRole([$newRole, $authenticated]),
-        );
+        $this->assertDatabaseMissing('users', [
+            'name' => $username,
+            'email' => $email,
+        ]);
     }
 
     public function testRegisterWithRoles(): void
