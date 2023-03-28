@@ -19,6 +19,7 @@ use App\Dtos\OrderProductDto;
 use App\Dtos\OrderValueConditionDto;
 use App\Dtos\ProductInConditionDto;
 use App\Dtos\ProductInSetConditionDto;
+use App\Dtos\ProductPriceDto;
 use App\Dtos\SaleDto;
 use App\Dtos\SaleIndexDto;
 use App\Dtos\TimeBetweenConditionDto;
@@ -70,7 +71,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 
-class DiscountService implements DiscountServiceContract
+readonly class DiscountService implements DiscountServiceContract
 {
     public function __construct(
         private SettingsServiceContract $settingsService,
@@ -363,6 +364,25 @@ class DiscountService implements DiscountServiceContract
         return $cartResource;
     }
 
+    /** @return ProductPriceDto[] */
+    public function calcProductsListDiscounts(Collection $products): array
+    {
+        $salesWithBlockList = $this->getSalesWithBlockList();
+
+        return $products->map(function (Product $product) use ($salesWithBlockList) {
+            [$minPriceDiscounted, $maxPriceDiscounted] = $this->calcAllDiscountsOnProduct(
+                $product,
+                $salesWithBlockList,
+            );
+
+            return new ProductPriceDto(
+                $product->getKey(),
+                $minPriceDiscounted,
+                $maxPriceDiscounted,
+            );
+        })->toArray();
+    }
+
     public function applyDiscountOnProduct(
         Product $product,
         OrderProductDto $orderProductDto,
@@ -582,11 +602,10 @@ class DiscountService implements DiscountServiceContract
         Cache::put('sales.active', $activeSalesIds);
     }
 
-    public function applyAllDiscountsOnProduct(
+    private function calcAllDiscountsOnProduct(
         Product $product,
         Collection $salesWithBlockList,
-        bool $reindex = true,
-    ): void {
+    ): array {
         $sales = $this->sortDiscounts($product->allProductSales($salesWithBlockList));
 
         // prevent error when price_min or price_max is null
@@ -612,6 +631,24 @@ class DiscountService implements DiscountServiceContract
                 $productSales->push($sale);
             }
         }
+
+        return [
+            $minPriceDiscounted,
+            $maxPriceDiscounted,
+            $productSales,
+        ];
+    }
+
+    public function applyAllDiscountsOnProduct(
+        Product $product,
+        Collection $salesWithBlockList,
+        bool $reindex = true,
+    ): void {
+        [
+            $minPriceDiscounted,
+            $maxPriceDiscounted,
+            $productSales,
+        ] = $this->calcAllDiscountsOnProduct($product, $salesWithBlockList);
 
         // + 1 query for product
         $product->update([

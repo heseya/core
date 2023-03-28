@@ -1,0 +1,14 @@
+ProductPrice:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    price_min:
+      description: 'Min price after applied all sales'
+      type: number
+      example: 11.99
+    price_max:
+      description: 'Max price after applied all sales'
+      type: number
+      example: 19.99
