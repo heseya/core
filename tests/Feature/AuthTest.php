@@ -2241,7 +2241,7 @@ class AuthTest extends TestCase
 
         $role->givePermissionTo('auth.register');
 
-         Role::query()
+        Role::query()
             ->where('type', RoleType::AUTHENTICATED)
             ->firstOrFail();
 
