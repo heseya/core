@@ -14,7 +14,9 @@ interface ItemServiceContract
 
     public function checkOrderItems(array $items): Collection;
 
-    public function checkCartItems(array $items): Collection;
+    public function checkCartItems(array $items): array;
+
+    public function checkHasItemType(Collection $items, ?bool $physical, ?bool $digital): bool;
 
     public function store(ItemDto $dto): Item;
 

@@ -14,8 +14,9 @@ class RoleStoreRequest extends FormRequest
         return array_merge(
             $this->metadataRules(),
             [
-                'name' => ['required', 'string'],
+                'name' => ['required', 'string', 'unique:roles,name'],
                 'description' => ['nullable', 'string'],
+                'is_registration_role' => ['boolean'],
                 'permissions' => ['array'],
                 'permissions.*' => ['string'],
             ]

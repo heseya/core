@@ -28,6 +28,7 @@ class OrderDepositTest extends TestCase
     private Address $address;
 
     private array $request;
+    private array $addressExpected;
 
     public function setUp(): void
     {
@@ -55,11 +56,13 @@ class OrderDepositTest extends TestCase
         $this->item = Item::factory()->create();
         $this->option->items()->sync([$this->item->getKey()]);
         $this->address = Address::factory()->create();
+        $this->addressExpected = $this->address->only(['name', 'phone', 'address', 'zip', 'city', 'country', 'id']);
 
         $this->request = [
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -109,7 +112,7 @@ class OrderDepositTest extends TestCase
             'id' => $order->getKey(),
             'email' => 'test@example.com',
         ]);
-        $this->assertDatabaseHas('addresses', $this->address->toArray());
+        $this->assertDatabaseHas('addresses', $this->addressExpected);
         $this->assertDatabaseHas('order_products', [
             'order_id' => $order->getKey(),
             'product_id' => $this->product->getKey(),
@@ -293,7 +296,7 @@ class OrderDepositTest extends TestCase
             'id' => $order->getKey(),
             'email' => 'test@example.com',
         ]);
-        $this->assertDatabaseHas('addresses', $this->address->toArray());
+        $this->assertDatabaseHas('addresses', $this->addressExpected);
         $this->assertDatabaseHas('order_products', [
             'order_id' => $order->getKey(),
             'product_id' => $this->product->getKey(),
@@ -372,7 +375,8 @@ class OrderDepositTest extends TestCase
         $request = [
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $product->getKey(),
@@ -432,7 +436,8 @@ class OrderDepositTest extends TestCase
         $request = [
             'email' => 'test1@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $product->getKey(),
@@ -486,7 +491,8 @@ class OrderDepositTest extends TestCase
         $request = [
             'email' => 'test1@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $product->getKey(),
@@ -640,7 +646,8 @@ class OrderDepositTest extends TestCase
         $request = [
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $product->getKey(),

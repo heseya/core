@@ -35,7 +35,7 @@ class Address extends Model
         return $this->belongsTo(Country::class, 'country', 'code');
     }
 
-    public function getCountryNameAttribute(): string
+    public function getCountryNameAttribute(): string|null
     {
         $name = Cache::get('countryName.' . $this->country);
 
@@ -47,13 +47,16 @@ class Address extends Model
         return $name ?? $this->country;
     }
 
-    public function getPhoneSimpleAttribute(): string
+    public function getPhoneSimpleAttribute(): ?string
     {
-        $phone = PhoneNumber::make(
-            $this->phone,
-            $this->country,
-        );
+        if ($this->phone && $this->country) {
+            $phone = PhoneNumber::make(
+                $this->phone,
+                $this->country,
+            );
 
-        return $phone->formatForMobileDialingInCountry($this->country);
+            return $phone->formatForMobileDialingInCountry($this->country);
+        }
+        return null;
     }
 }

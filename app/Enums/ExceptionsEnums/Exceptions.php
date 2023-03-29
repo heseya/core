@@ -45,6 +45,9 @@ final class Exceptions extends Enum
         'Can\'t give a role with permissions you don\'t have to the user';
     public const CLIENT_REMOVE_ROLE_THAT_USER_DOESNT_HAVE =
         'Can\'t remove a role with permissions you don\'t have from the user';
+
+    public const CLIENT_REGISTER_WITH_NON_REGISTRATION_ROLE =
+        'Can\'t register with a non registration role';
     public const CLIENT_ONLY_OWNER_GRANTS_OWNER_ROLE = 'Only owner can grant the owner role';
     public const CLIENT_ONLY_OWNER_REMOVES_OWNER_ROLE = 'Only owner can remove the owner role';
     public const CLIENT_ONE_OWNER_REMAINS = 'There must always be at least one Owner left';
@@ -79,15 +82,46 @@ final class Exceptions extends Enum
 
     public const CLIENT_APPS_NO_ACCESS = 'Applications cannot access this endpoint';
     public const CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT = 'No access';
+    public const CLIENT_USERS_NO_ACCESS = 'Users cannot access this endpoint';
+    public const CLIENT_NO_ACCESS = 'No access';
 
     public const CLIENT_REMOVE_DEFAULT_ADDRESS = 'You cannot delete default address';
     public const CLIENT_STATUS_USED = 'Can\'t update or remove status that is currently used in order';
 
+    public const CLIENT_SHIPPING_METHOD_NOT_OWNER = 'This shipping method belongs to other application';
+
+    public const CLIENT_SHIPPING_METHOD_INVALID_TYPE = 'Shipping method or digital shipping method type is invalid';
+
+    public const CDN_NOT_ALLOWED_TO_CHANGE_ALT = 'You cannot change alt attribute of this image';
+
+    public const CLIENT_PROVIDER_IS_NOT_ACTIVE = 'Chosen auth provider is not active';
+    public const CLIENT_PROVIDER_HAS_NO_CONFIG = 'Chosen auth provider is not active';
+    public const CLIENT_PROVIDER_NOT_FOUND = 'Provider cannot be found';
+
     public const SERVER_CDN_ERROR = 'CDN responded with an error';
     public const SERVER_ERROR = 'Server responded with an error';
     public const SERVER_ORDER_STATUSES_NOT_CONFIGURED = 'Order statuses are not configured';
+    public const SERVER_TRANSACTION_ERROR = 'Unexpected error occurred during the database transaction.';
+    public const SERVER_PAYMENT_MICROSERVICE_ERROR = 'Payment service error.';
+    public const SERVER_MAPPING_NOT_FOUND = 'Not found mapping for this query';
 
     public const ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE = 'Not every item is available';
+    public const ORDER_SHIPPING_METHOD_TYPE_MISMATCH = 'Selected shipping methods don\'t match selected product types';
+
+    public const PRODUCT_IS_NOT_ON_WISHLIST = 'Product is not on wishlist';
+    public const PRODUCT_SET_IS_NOT_ON_FAVOURITES_LIST = 'Product set is not on favourites list';
+
+    public const PRODUCT_PURCHASE_LIMIT = 'The limit of purchased product units per user has been exceeded';
+
+    public const PAYMENT_METHOD_NOT_AVAILABLE_FOR_SHIPPING =
+        'Payment method not available for selected shipping method';
+
+    public const CLIENT_ALREADY_HAS_ACCOUNT = 'User with given email already exist.';
+
+    public const CLIENT_PROVIDER_MERGE_TOKEN_EXPIRED = 'Provider merge token has expired';
+    public const CLIENT_PROVIDER_MERGE_TOKEN_INVALID = 'Provider merge token is invalid';
+    public const CLIENT_PROVIDER_MERGE_TOKEN_MISMATCH =
+        'Provider merge token is for an account with different email address';
 
     public static function getCode(string $value): int
     {
@@ -95,13 +129,15 @@ final class Exceptions extends Enum
             self::CLIENT_DISCOUNT_TYPE_NOT_SUPPORTED,
             self::CLIENT_DELETE_WHEN_RELATION_EXISTS,
             self::CLIENT_MODEL_NOT_AUDITABLE,
-            self::CLIENT_APPS_NO_ACCESS => 400,
+            self::CLIENT_APPS_NO_ACCESS,
+            self::CLIENT_USERS_NO_ACCESS => 400,
             self::CLIENT_TFA_REQUIRED,
             self::CLIENT_WEBHOOK_APP_ACTION,
             self::CLIENT_WEBHOOK_USER_ACTION => 403,
             self::SERVER_CDN_ERROR,
             self::SERVER_ERROR,
-            self::SERVER_ORDER_STATUSES_NOT_CONFIGURED => 500,
+            self::SERVER_ORDER_STATUSES_NOT_CONFIGURED,
+            self::SERVER_PAYMENT_MICROSERVICE_ERROR => 500,
             default => 422
         };
     }

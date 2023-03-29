@@ -17,11 +17,9 @@ use Illuminate\Support\Facades\Response;
 
 class RoleController extends Controller
 {
-    private RoleServiceContract $roleService;
-
-    public function __construct(RoleServiceContract $roleService)
-    {
-        $this->roleService = $roleService;
+    public function __construct(
+        private RoleServiceContract $roleService,
+    ) {
     }
 
     public function index(RoleIndexRequest $request): JsonResource
@@ -29,12 +27,14 @@ class RoleController extends Controller
         $dto = RoleSearchDto::instantiateFromRequest($request);
 
         return RoleResource::collection(
-            $this->roleService->search($dto, 12),
+            $this->roleService->search($dto),
         );
     }
 
     public function show(Role $role): JsonResource
     {
+        $role->loadCount('users');
+
         return RoleResource::make($role);
     }
 

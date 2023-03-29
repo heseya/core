@@ -30,7 +30,11 @@ class ProductSeeder extends Seeder
             /** @var ProductServiceContract $productService */
             $productService = App::make(ProductServiceContract::class);
 
-            $products = Product::factory()->count(100)->create();
+            $products = Product::factory()->count(100)
+                ->state(fn ($sequence) => [
+                    'shipping_digital' => rand(0, 1),
+                ])
+                ->create();
 
             $sets = ProductSet::all();
 

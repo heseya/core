@@ -24,6 +24,7 @@ class OrderPublicResource extends Resource
             'summary' => $this->resource->summary,
             'currency' => $this->resource->currency,
             'shipping_method' => ShippingMethodResource::make($this->resource->shippingMethod),
+            'digital_shipping_method' => ShippingMethodResource::make($this->resource->digitalShippingMethod),
             'created_at' => $this->resource->created_at,
         ], $this->metadataResource('orders.show_metadata_private'));
     }

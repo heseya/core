@@ -1,0 +1,194 @@
+Users:
+  get:
+    tags:
+      - Users
+    summary: 'user list'
+    parameters:
+      - name: search
+        in: query
+        description: 'Full text search'
+        schema:
+          type: string
+      - name: name
+        in: query
+        description: 'Name search'
+        schema:
+          type: string
+      - name: email
+        in: query
+        description: 'Email search'
+        schema:
+          type: string
+        example: 'email@example.com'
+      - name: roles[]
+        in: query
+        description: 'Search for users in roles by role id'
+        schema:
+          type: string
+        example: '9e2206ff-1edf-49c4-ab6c-ab620f18b98d'
+      - name: consent_name
+        in: query
+        description: 'Accepted Consent name search'
+        schema:
+          type: string
+      - name: consent_id
+        in: query
+        description: 'Accepted Consent id search'
+        schema:
+          type: string
+        example: '9e2206ff-1edf-49c4-ab6c-ab620f18b98d'
+      - name: sort
+        in: query
+        description: 'Sorting string'
+        schema:
+          type: string
+        example: 'name:desc'
+      - name: full
+        in: query
+        description: 'Returns details resource'
+        schema:
+          type: boolean
+      - name: limit
+        in: query
+        description: 'Number of elements per page'
+        schema:
+          type: number
+        example: 12
+      - name: metadata
+        in: query
+        description: search by metadata
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: metadata_private
+        in: query
+        description: search by metadata private
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: 'ids[]'
+        in: query
+        example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Users.yml#/User'
+              type: object
+    security:
+      - BearerAuth: [ ]
+  post:
+    tags:
+      - Users
+    summary: 'add new user'
+    requestBody:
+      $ref: './../requests/Users.yml#/UserCreate'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Users.yml#/UserView'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+UsersParams:
+  get:
+    tags:
+      - Users
+    summary: 'user view'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Users.yml#/UserView'
+              type: object
+    security:
+      - BearerAuth: [ ]
+  delete:
+    tags:
+      - Users
+    summary: 'delete user'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]
+  patch:
+    tags:
+      - Users
+    summary: 'update user'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      $ref: './../requests/Users.yml#/UserUpdate'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Users.yml#/UserView'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+UserTFARemove:
+  post:
+    tags:
+      - Auth
+    summary: User 2FA Remove
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      204:
+        description: Success

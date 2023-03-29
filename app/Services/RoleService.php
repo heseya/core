@@ -14,24 +14,32 @@ use App\Services\Contracts\RoleServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 
 class RoleService implements RoleServiceContract
 {
-    public function __construct(private MetadataServiceContract $metadataService)
-    {
+    public function __construct(
+        private MetadataServiceContract $metadataService,
+    ) {
     }
 
-    public function search(RoleSearchDto $searchDto, int $limit): LengthAwarePaginator
+    public function search(RoleSearchDto $searchDto): LengthAwarePaginator
     {
-        return Role::searchByCriteria($searchDto->toArray())->paginate($limit);
+        return Role::searchByCriteria($searchDto->toArray())
+            ->withCount('users')
+            ->paginate(Config::get('pagination.per_page'));
     }
 
+    /**
+     * @throws ClientException
+     */
     public function create(RoleCreateDto $dto): Role
     {
-        if (!Auth::user()->hasAllPermissions($dto->getPermissions())) {
+        if (!Auth::user()?->hasAllPermissions($dto->getPermissions())) {
             throw new ClientException(Exceptions::CLIENT_CREATE_ROLE_WITHOUT_PERMISSION);
         }
 
+        /** @var Role $role */
         $role = Role::create($dto->toArray());
         $role->syncPermissions($dto->getPermissions());
 
@@ -40,13 +48,19 @@ class RoleService implements RoleServiceContract
         }
 
         $role->refresh();
+        $role->loadCount('users');
 
         return $role;
     }
 
+    /**
+     * @throws ClientException
+     */
     public function update(Role $role, RoleUpdateDto $dto): Role
     {
-        if (!Auth::user()->hasAllPermissions($role->getAllPermissions())) {
+        $user = Auth::user();
+
+        if (!$user?->hasAllPermissions($role->getAllPermissions())) {
             throw new ClientException(Exceptions::CLIENT_UPDATE_ROLE_WITHOUT_PERMISSION);
         }
 
@@ -58,7 +72,7 @@ class RoleService implements RoleServiceContract
                 throw new ClientException(Exceptions::CLIENT_UPDATE_OWNER_PERMISSION);
             }
 
-            if (!Auth::user()->hasAllPermissions($dto->getPermissions())) {
+            if (!$user->hasAllPermissions($dto->getPermissions())) {
                 throw new ClientException(Exceptions::CLIENT_UPDATE_ROLE_WITHOUT_PERMISSION);
             }
 
@@ -66,10 +80,14 @@ class RoleService implements RoleServiceContract
         }
 
         $role->update($dto->toArray());
+        $role->loadCount('users');
 
         return $role;
     }
 
+    /**
+     * @throws ClientException
+     */
     public function delete(Role $role): void
     {
         if (
@@ -80,7 +98,7 @@ class RoleService implements RoleServiceContract
             throw new ClientException(Exceptions::CLIENT_DELETE_BUILT_IN_ROLE);
         }
 
-        if (!Auth::user()->hasAllPermissions($role->getAllPermissions())) {
+        if (!Auth::user()?->hasAllPermissions($role->getAllPermissions())) {
             throw new ClientException(Exceptions::CLIENT_DELETE_ROLE_WITHOUT_PERMISSION);
         }
 

@@ -145,20 +145,37 @@ class ActiveSalesTest extends TestCase
         $sale6 = Discount::factory()->create([
             'code' => null,
             'target_type' => DiscountTargetType::PRODUCTS,
-            'name' => 'Inactive sale - no condition groups',
+            'name' => 'Active sale - no condition groups',
         ]);
+
+        $sale7 = Discount::factory()->create([
+            'code' => null,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'name' => 'Inactive sale - is in range but inactive',
+            'active' => false,
+        ]);
+
+        $conditionGroup7 = ConditionGroup::create();
+
+        $conditionGroup7->conditions()->create([
+            'type' => $conditionType,
+            'value' => ['is_in_range' => true] + $inRangeValues,
+        ]);
+
+        $sale7->conditionGroups()->attach($conditionGroup7);
 
         $activeSales = $this->discountService->activeSales();
 
-        $this->assertCount(2, $activeSales);
+        $this->assertCount(3, $activeSales);
 
         $this->assertTrue($activeSales->contains($sale1));
         $this->assertTrue($activeSales->contains($sale5));
+        $this->assertTrue($activeSales->contains($sale6));
 
         $this->assertFalse($activeSales->contains($sale2));
         $this->assertFalse($activeSales->contains($sale3));
         $this->assertFalse($activeSales->contains($sale4));
-        $this->assertFalse($activeSales->contains($sale6));
+        $this->assertFalse($activeSales->contains($sale7));
     }
 
     public function testCheckActiveSalesJob(): void

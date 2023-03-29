@@ -23,4 +23,12 @@ class ItemResource extends Resource
             'availability' => ItemDepositResource::collection($this->resource->groupedDeposits),
         ], $this->metadataResource('items.show_metadata_private'));
     }
+
+    public function view(Request $request): array
+    {
+        return [
+            'products' => ProductShortResource::collection($this->resource->products),
+            'schemas' => SchemaShortResource::collection($this->resource->schemas),
+        ];
+    }
 }

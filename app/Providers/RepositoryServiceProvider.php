@@ -21,7 +21,9 @@ class RepositoryServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        $contracts = match (Config::get('scout.driver')) {
+        $forceDatabase = request()->boolean('force_database_search');
+
+        $contracts = match ($forceDatabase ? 'database' : Config::get('scout.driver')) {
             'elastic' => self::ELASTIC,
             'database' => self::ELOQUENT,
             default => throw new Exception('Invalid scout driver "' . Config::get('scout.driver') . '"'),

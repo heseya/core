@@ -16,6 +16,7 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
     public string $slug;
     public float $price;
     public bool $public;
+    public bool $shipping_digital;
 
     public int|Missing $order;
     public float|Missing $quantity_step;
@@ -24,6 +25,7 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
 
     public ?string $description_html;
     public ?string $description_short;
+    public float|null|Missing $purchase_limit_per_user;
 
     public array|Missing $media;
     public array|Missing $tags;
@@ -41,12 +43,14 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
             slug: $request->input('slug'),
             price: $request->input('price'),
             public: $request->boolean('public'),
+            shipping_digital: $request->boolean('shipping_digital'),
             order: $request->input('order', new Missing()),
             quantity_step: $request->input('quantity_step', new Missing()),
             google_product_category: $request->input('google_product_category', new Missing()),
             vat_rate: $request->input('vat_rate', new Missing()),
             description_html: $request->input('description_html'),
             description_short: $request->input('description_short'),
+            purchase_limit_per_user: $request->input('purchase_limit_per_user', new Missing()),
             media: $request->input('media', new Missing()),
             tags: $request->input('tags', new Missing()),
             schemas: $request->input('schemas', new Missing()),
@@ -96,5 +100,10 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
     public function getAttributes(): Missing|array
     {
         return $this->attributes;
+    }
+
+    public function getPurchaseLimitPerUser(): float|Missing|null
+    {
+        return $this->purchase_limit_per_user;
     }
 }

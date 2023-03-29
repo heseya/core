@@ -1,0 +1,273 @@
+Attributes:
+  get:
+    tags:
+      - Attributes
+    parameters:
+      - name: search
+        in: query
+        description: 'Full text search'
+        schema:
+          type: string
+      - name: global
+        in: query
+        required: false
+        description: search by global flag
+        schema:
+          type: boolean
+      - name: metadata
+        in: query
+        description: search by metadata
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: metadata_private
+        in: query
+        description: search by metadata private
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: name
+        in: query
+        description: 'Name search'
+        schema:
+          type: string
+      - name: 'ids[]'
+        in: query
+        example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+    summary: 'list attributes'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Attributes.yml#/AttributeMetadata'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+  post:
+    tags:
+      - Attributes
+    summary: 'add new attribute'
+    requestBody:
+      $ref: './../requests/Attributes.yml#/Attribute'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Attributes.yml#/AttributeMetadata'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+AttributesParams:
+  get:
+    tags:
+      - Attributes
+    summary: 'get attribute'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Attributes.yml#/AttributeMetadata'
+              type: object
+    security:
+      - BearerAuth: [ ]
+  delete:
+    tags:
+      - Attributes
+    summary: 'delete attribute'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]
+
+  patch:
+    tags:
+      - Attributes
+    summary: 'update attribute'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: './../schemas/Attributes.yml#/Attribute'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Attributes.yml#/AttributeMetadata'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+AttributeOption:
+  get:
+    tags:
+      - Attributes
+    summary: 'get list of all options attribute'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: metadata
+        in: query
+        description: search by metadata
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          type: object
+          properties:
+            kolor:
+              type: string
+            czerwony:
+              type: string
+      - name: 'ids[]'
+        in: query
+        example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  data:
+                    $ref: './../schemas/Attributes.yml#/AttributeOption'
+    security:
+      - BearerAuth: [ ]
+
+  post:
+    tags:
+      - Attributes
+    summary: 'add new option to attribute'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      $ref: './../requests/Attributes.yml#/AttributeOption'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Attributes.yml#/AttributeOptionMetadata'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+AttributeOptionParams:
+  patch:
+    tags:
+      - Attributes
+    summary: 'update option'
+    parameters:
+      - name: attribute_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: option_id
+        in: path
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: './../schemas/Attributes.yml#/AttributeOption'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Attributes.yml#/AttributeOptionMetadata'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+  delete:
+    tags:
+      - Attributes
+    summary: 'delete option'
+    parameters:
+      - name: attribute_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: option_id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]

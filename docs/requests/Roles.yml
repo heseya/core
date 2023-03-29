@@ -1,0 +1,55 @@
+RoleStore:
+  content:
+    application/json:
+      schema:
+        required:
+          - name
+        type: object
+        properties:
+          name:
+            description: 'Name of the role'
+            type: string
+            example: Admin
+          description:
+            description: 'Description of the role'
+            type: string
+            example: 'Role with permission to everything'
+          is_registration_role:
+            description: 'Whether the role can be assigned to user upon registration.'
+            type: boolean
+            example: false
+          permissions:
+            description: 'Permission names'
+            type: array
+            items:
+              type: string
+              example: roles.add
+          metadata:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+          metadata_private:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+
+RoleUpdate:
+  content:
+    application/json:
+      schema:
+        properties:
+          name:
+            description: 'Name of the role'
+            type: string
+            example: Admin
+          description:
+            description: 'Description of the role'
+            type: string
+            example: 'Role with permission to everything'
+          is_registration_role:
+            description: 'Whether the role can be assigned to user upon registration.'
+            type: boolean
+            example: false
+          permissions:
+            description: 'Permission names'
+            type: array
+            items:
+              type: string
+              example: roles.add
+        type: object

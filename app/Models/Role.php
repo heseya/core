@@ -6,6 +6,7 @@ use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\RoleAssignableSearch;
 use App\Criteria\RoleSearch;
+use App\Criteria\WhereInIds;
 use App\Enums\RoleType;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasMetadata;
@@ -14,13 +15,17 @@ use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Auth;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use Spatie\Permission\Models\Role as SpatieRole;
+use Spatie\Permission\PermissionRegistrar;
 
 /**
  * @property RoleType $type
  * @property string $name
+ * @property bool $is_registration_role
  *
  * @mixin IdeHelperRole
  */
@@ -32,10 +37,12 @@ class Role extends SpatieRole implements AuditableContract
         'name',
         'description',
         'guard_name',
+        'is_registration_role',
     ];
 
     protected $casts = [
         'type' => RoleType::class,
+        'is_registration_role' => 'bool',
     ];
 
     protected array $criteria = [
@@ -45,6 +52,7 @@ class Role extends SpatieRole implements AuditableContract
         'assignable' => RoleAssignableSearch::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
+        'ids' => WhereInIds::class,
     ];
 
     protected static function booted(): void
@@ -52,5 +60,27 @@ class Role extends SpatieRole implements AuditableContract
         static::addGlobalScope('order', function (Builder $builder): void {
             $builder->orderByRaw('type = ' . RoleType::OWNER . ' DESC, type ASC');
         });
+    }
+
+    public function users(): BelongsToMany
+    {
+        return $this->morphedByMany(
+            User::class,
+            'model',
+            config('permission.table_names.model_has_roles'),
+            PermissionRegistrar::$pivotRole,
+            config('permission.column_names.model_morph_key'),
+        );
+    }
+
+    public function isAssignable(): bool
+    {
+        /** @var User|App|null $user */
+        $user = Auth::user();
+
+        return $user !== null
+            && $this->type->isNot(RoleType::UNAUTHENTICATED)
+            && $this->type->isNot(RoleType::AUTHENTICATED)
+            && $user->hasAllPermissions($this->getAllPermissions());
     }
 }

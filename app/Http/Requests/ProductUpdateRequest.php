@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Models\Product;
-use App\Rules\Boolean;
 use Illuminate\Validation\Rule;
 
 class ProductUpdateRequest extends ProductCreateRequest
@@ -20,7 +19,8 @@ class ProductUpdateRequest extends ProductCreateRequest
 //        $rules['metadata_private'] = ['prohibited'];
         $rules['name'] = ['string', 'max:255'];
         $rules['price'] = ['numeric', 'min:0'];
-        $rules['public'] = [new Boolean()];
+        $rules['public'] = ['boolean'];
+        $rules['shipping_digital'] = ['boolean'];
         $rules['slug'] = [
             'string',
             'max:255',

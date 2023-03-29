@@ -13,6 +13,7 @@ use App\Events\ItemUpdatedQuantity;
 use App\Events\NewLocalizationLoginAttempt;
 use App\Events\OrderCreated;
 use App\Events\OrderDocumentEvent;
+use App\Events\OrderRequestedShipping;
 use App\Events\OrderUpdated;
 use App\Events\OrderUpdatedPaid;
 use App\Events\OrderUpdatedShippingNumber;
@@ -32,6 +33,7 @@ use App\Events\SaleCreated;
 use App\Events\SaleDeleted;
 use App\Events\SaleUpdated;
 use App\Events\SendOrderDocument;
+use App\Events\SendOrderUrls;
 use App\Events\SuccessfulLoginAttempt;
 use App\Events\TfaInit;
 use App\Events\TfaRecoveryCodesChanged;
@@ -43,6 +45,7 @@ use App\Listeners\ItemUpdatedQuantityListener;
 use App\Listeners\MakeSetProductsSearchable;
 use App\Listeners\OrderCreatedListener;
 use App\Listeners\OrderUpdatedStatusListener;
+use App\Listeners\UserCreatedListener;
 use App\Listeners\WebHookEventListener;
 use App\Listeners\WebHookFailedListener;
 use App\Models\AttributeOption;
@@ -59,6 +62,8 @@ use App\Observers\PaymentObserver;
 use App\Observers\SchemaObserver;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
+use SocialiteProviders\Apple\AppleExtendSocialite;
+use SocialiteProviders\Manager\SocialiteWasCalled;
 use Spatie\WebhookServer\Events\FinalWebhookCallFailedEvent;
 
 class EventServiceProvider extends ServiceProvider
@@ -87,6 +92,9 @@ class EventServiceProvider extends ServiceProvider
         ProductSetUpdated::class => [
             MakeSetProductsSearchable::class,
         ],
+        UserCreated::class => [
+            UserCreatedListener::class,
+        ],
     ];
 
     /**
@@ -104,10 +112,12 @@ class EventServiceProvider extends ServiceProvider
         NewLocalizationLoginAttempt::class,
         OrderCreated::class,
         OrderDocumentEvent::class,
+        OrderRequestedShipping::class,
         OrderUpdated::class,
         OrderUpdatedPaid::class,
         OrderUpdatedShippingNumber::class,
         OrderUpdatedStatus::class,
+        SendOrderUrls::class,
         PageCreated::class,
         PageDeleted::class,
         PageUpdated::class,
@@ -137,6 +147,7 @@ class EventServiceProvider extends ServiceProvider
         parent::boot();
 
         Event::listen($this->webhookEvents, WebHookEventListener::class);
+        Event::listen(SocialiteWasCalled::class, AppleExtendSocialite::class);
 
         // Ugly observers 🤮
         AttributeOption::observe(AttributeOptionObserver::class);

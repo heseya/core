@@ -6,5 +6,5 @@ use Illuminate\Support\Collection;
 
 interface PermissionServiceContract
 {
-    public function getAll(bool $assignable): Collection;
+    public function getAll(?bool $assignable): Collection;
 }

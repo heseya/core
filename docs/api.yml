@@ -1,0 +1,470 @@
+openapi: 3.0.0
+info:
+  title: 'Heseya Store API'
+  description: "IMPORTANT! You need specific permissions to access each endpoint: <https://escl24.atlassian.net/wiki/spaces/HES/pages/6476169217/Autoryzacja>"
+  version: 4.0.0
+paths:
+  /analytics/payments:
+    $ref: './paths/Analytics.yml#/Analytics'
+  /apps:
+    $ref: './paths/Apps.yml#/Apps'
+  '/apps/id:{id}':
+    $ref: './paths/Apps.yml#/AppsParams'
+  '/audits/{object}/id:{id}':
+    $ref: './paths/Audits.yml#/Audit'
+  /login:
+    $ref: './paths/Auth.yml#/Login'
+  /register:
+    $ref: './paths/Auth.yml#/Register'
+  /auth/logout:
+    $ref: './paths/Auth.yml#/Logout'
+  /users/reset-password:
+    $ref: './paths/Auth.yml#/ResetPassword'
+  '/users/reset-password/{token}/{email}':
+    $ref: './paths/Auth.yml#/ResetPasswordParams'
+  /users/save-reset-password:
+    $ref: './paths/Auth.yml#/SaveResetPassword'
+  /users/password:
+    $ref: './paths/Auth.yml#/Password'
+  /auth/refresh:
+    $ref: './paths/Auth.yml#/Refresh'
+  /auth/profile:
+    $ref: './paths/Auth.yml#/Profile'
+  /auth/profile/shipping-addresses:
+    $ref: './paths/Auth.yml#/ShippingAddresses'
+  /auth/profile/shipping-addresses/id:{id}:
+    $ref: './paths/Auth.yml#/ShippingAddressesParams'
+  /auth/profile/billing-addresses:
+    $ref: './paths/Auth.yml#/BillingAddresses'
+  /auth/profile/billing-addresses/id:{id}:
+    $ref: './paths/Auth.yml#/BillingAddressesParams'
+  /auth/check:
+    $ref: './paths/Auth.yml#/Check'
+  '/auth/check/{identity_token}':
+    $ref: './paths/Auth.yml#/CheckParams'
+  /auth/2fa/setup:
+    $ref: './paths/Auth.yml#/TFASetup'
+  /auth/2fa/confirm:
+    $ref: './paths/Auth.yml#/TFAConfirm'
+  /auth/2fa/recovery/create:
+    $ref: './paths/Auth.yml#/TFARecoveryCreate'
+  /auth/2fa/remove:
+    $ref: './paths/Auth.yml#/TFARemove'
+  /auth/providers:
+    $ref: './paths/Provider.yml#/Index'
+  /auth/providers/merge-account:
+    $ref: './paths/Provider.yml#/MergeAccount'
+  /auth/providers/{AuthProviderKey}:
+    $ref: './paths/Provider.yml#/ProviderParams'
+  /auth/providers/{AuthProviderKey}/login:
+    $ref: './paths/Provider.yml#/ProviderLogin'
+  /auth/providers/{AuthProviderKey}/redirect:
+    $ref: './paths/Provider.yml#/ProviderRedirect'
+  /countries:
+    $ref: './paths/Countries.yml#/Countries'
+  /deposits:
+    $ref: './paths/Deposits.yml#/Deposits'
+  '/items/id:{id}/deposits':
+    $ref: './paths/Deposits.yml#/ItemDeposits'
+  /sales:
+    $ref: './paths/Sales.yml#/Sales'
+  '/sales/id:{id}':
+    $ref: './paths/Sales.yml#/SalesParams'
+  /coupons:
+    $ref: './paths/Coupons.yml#/Coupons'
+  '/coupons/id:{id}':
+    $ref: './paths/Coupons.yml#/CouponsParams'
+  '/coupons/{code}':
+    $ref: './paths/Coupons.yml#/CouponCode'
+  /webhooks/logs:
+    $ref: './paths/WebHooks.yml#/Logs'
+  /webhooks/events:
+    $ref: './paths/WebHooks.yml#/WebhooksEvents'
+  /filters:
+    $ref: './paths/Filters.yml#/Filters'
+  /items:
+    $ref: './paths/Items.yml#/Items'
+  '/items/id:{id}':
+    $ref: './paths/Items.yml#/ItemsParams'
+  /media:
+    $ref: './paths/Media.yml#/Media'
+  '/media/id:{id}':
+    $ref: './paths/Media.yml#/MediaParams'
+  /orders:
+    $ref: './paths/Orders.yml#/Orders'
+  '/orders/id:{id}':
+    $ref: './paths/Orders.yml#/OrdersParams'
+  '/orders/{code}':
+    $ref: './paths/Orders.yml#/OrdersCode'
+  '/orders/id:{id}/status':
+    $ref: './paths/Orders.yml#/OrdersStatus'
+  '/orders/id:{id}/shipping-lists':
+    $ref: './paths/Orders.yml#/OrdersShippingLists'
+  '/orders/id:{id}/send-urls':
+    $ref: './paths/Orders.yml#/OrdersSendUrls'
+  /orders/my:
+    $ref: './paths/Orders.yml#/OrdersMy'
+  '/orders/my/{code}':
+    $ref: './paths/Orders.yml#/OrdersMySingle'
+  '/orders/my-products':
+    $ref: './paths/Orders.yml#/MyOrderProducts'
+  '/orders/id:{id}/docs':
+    $ref: './paths/Orders.yml#/OrderAddDocument'
+  '/orders/id:{order_id}/docs/id:{doc_id}':
+    $ref: './paths/Orders.yml#/OrderDeleteDocument'
+  '/orders/id:{order_id}/docs/id:{doc_id}/download':
+    $ref: './paths/Orders.yml#/OrderDownloadDocument'
+  '/orders/id:{id}/docs/send':
+    $ref: './paths/Orders.yml#/OrdersDocumentsSend'
+  '/orders/id:{id}/products/id:{order_product_id}':
+    $ref: './paths/Orders.yml#/OrderProductUrls'
+  /cart/process:
+    $ref: './paths/Orders.yml#/CartProcess'
+  /package-templates:
+    $ref: './paths/PackageTemplates.yml#/PackageTemplates'
+  '/package-templates/id:{id}':
+    $ref: './paths/PackageTemplates.yml#/PackageTemplatesParam'
+  /pages:
+    $ref: './paths/Pages.yml#/Pages'
+  '/pages/{slug}':
+    $ref: './paths/Pages.yml#/PagesSlug'
+  '/pages/id:{id}':
+    $ref: './paths/Pages.yml#/PagesParam'
+  /pages/reorder:
+    $ref: './paths/Pages.yml#/PagesReorder'
+  /orders/{code}/pay/id:{payment_method}:
+    $ref: './paths/Orders.yml#/OrdersCodePay'
+  /orders/{code}/pay/offline:
+    $ref: './paths/Orders.yml#/OrdersCodePayOffline'
+  /payments/{payment_method}:
+    $ref: './paths/Payments.yml#/PaymentsMethod'
+  /payment-methods:
+    $ref: './paths/PaymentMethods.yml#/PaymentMethods'
+  /payment-methods/id:{id}:
+    $ref: './paths/PaymentMethods.yml#/PaymentMethodsParams'
+  /payments:
+    $ref: './paths/Payments.yml#/Payments'
+  /payments/id:{id}:
+    $ref: './paths/Payments.yml#/PaymentParams'
+  /permissions:
+    $ref: './paths/Permissions.yml#/Permissions'
+  /products:
+    $ref: './paths/Products.yml#/Products'
+  '/products/{slug}':
+    $ref: './paths/Products.yml#/ProductsSlug'
+  '/products/id:{id}':
+    $ref: './paths/Products.yml#/ProductsParams'
+  /product-sets:
+    $ref: './paths/ProductSets.yml#/ProductSets'
+  '/product-sets/{slug}':
+    $ref: './paths/ProductSets.yml#/ProductSetsSlug'
+  '/product-sets/id:{id}':
+    $ref: './paths/ProductSets.yml#/ProductSetsParams'
+  /product-sets/reorder:
+    $ref: './paths/ProductSets.yml#/ProductSetsReorder'
+  '/product-sets/reorder/id:{id}':
+    $ref: './paths/ProductSets.yml#/ProductSetsReorderParams'
+  '/product-sets/id:{id}/products':
+    $ref: './paths/ProductSets.yml#/ProductSetsProducts'
+  '/product-sets/id:{id}/products/reorder':
+    $ref: './paths/ProductSets.yml#/ProductSetsProductsReorder'
+  '/product-sets/favourites':
+    $ref: './paths/ProductSets.yml#/ProductSetsFavourites'
+  '/product-sets/favourites/id:{id}':
+    $ref: './paths/ProductSets.yml#/ProductSetsFavouritesParams'
+  /roles:
+    $ref: './paths/Roles.yml#/Roles'
+  '/roles/id:{id}':
+    $ref: './paths/Roles.yml#/RolesParams'
+  /schemas:
+    $ref: './paths/Schemas.yml#/Schemas'
+  '/schemas/id:{id}':
+    $ref: './paths/Schemas.yml#/SchemasParam'
+  /seo:
+    $ref: './paths/Seo.yml#/Seo'
+  /seo/check:
+    $ref: './paths/Seo.yml#/SeoCheck'
+  /settings:
+    $ref: './paths/Settings.yml#/Settings'
+  '/settings/{name}':
+    $ref: './paths/Settings.yml#/SettingsParams'
+  /shipping-methods:
+    $ref: './paths/ShippingMethods.yml#/ShippingMethods'
+  '/shipping-methods/id:{id}':
+    $ref: './paths/ShippingMethods.yml#/ShippingMethodsParams'
+  /shipping-methods/reorder:
+    $ref: './paths/ShippingMethods.yml#/ShippingMethodsReorder'
+  /statuses:
+    $ref: './paths/Statuses.yml#/Statuses'
+  '/statuses/id:{id}':
+    $ref: './paths/Statuses.yml#/StatusesParams'
+  /statuses/reorder:
+    $ref: './paths/Statuses.yml#/StatusesReorder'
+  /tags:
+    $ref: './paths/Tags.yml#/Tags'
+  '/tags/id:{id}':
+    $ref: './paths/Tags.yml#/TagsParams'
+  /users:
+    $ref: './paths/Users.yml#/Users'
+  '/users/id:{id}':
+    $ref: './paths/Users.yml#/UsersParams'
+  '/products/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/products/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/schemas/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/schemas/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/options/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/options/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/product-sets/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/product-sets/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/sales/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/sales/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/coupons/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/coupons/id:{id}/metadata-private':
+     $ref: './paths/Metadata.yml#/Metadata'
+  '/items/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/items/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/orders/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/orders/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/statuses/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/statuses/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/shipping-methods/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/shipping-methods/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/package-templates/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/package-templates/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/users/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/users/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/roles/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/roles/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/pages/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/pages/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/apps/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/apps/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/media/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/media/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/attributes/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/attributes/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/attributes/id:{id}/options/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/attributes/id:{id}/options/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/banners/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/banners/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/users/id:{id}/metadata-personal':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/users/id:{id}/2fa/remove':
+    $ref: './paths/Users.yml#/UserTFARemove'
+  '/auth/profile/metadata-personal':
+    $ref: './paths/Metadata.yml#/Metadata'
+  /webhooks:
+    $ref: './paths/WebHooks.yml#/Webhooks'
+  '/webhooks/id:{id}':
+    $ref: './paths/WebHooks.yml#/WebhooksParams'
+  '/attributes':
+    $ref: './paths/Attributes.yml#/Attributes'
+  '/attributes/id:{id}':
+    $ref: './paths/Attributes.yml#/AttributesParams'
+  '/attributes/id:{id}/options':
+    $ref: './paths/Attributes.yml#/AttributeOption'
+  '/attributes/id:{attribute_id}/options/id:{option_id}':
+    $ref: './paths/Attributes.yml#/AttributeOptionParams'
+  '/consents':
+    $ref: './paths/Consents.yml#/Consents'
+  '/consents/id:{id}':
+    $ref: './paths/Consents.yml#/ConsentsParam'
+  '/banners':
+    $ref: './paths/Banners.yml#/Banners'
+  '/banners/id:{id}':
+    $ref: './paths/Banners.yml#/BannersParam'
+  '/banners/{slug}':
+    $ref: './paths/Banners.yml#/BannersSlug'
+  '/google-categories/{lang}':
+    $ref: './paths/GoogleCategories.yml#/GoogleCategories'
+  '/wishlist':
+    $ref: './paths/Wishlist.yml#/WishlistProduct'
+  '/wishlist/id:{product_id}':
+    $ref: './paths/Wishlist.yml#/WishlistProductParams'
+components:
+  schemas:
+    Error:
+      $ref: './schemas/Error.yml#/Error'
+    OrderView:
+      $ref: './schemas/Orders.yml#/OrderView'
+    App:
+      $ref: './schemas/Apps.yml#/App'
+    AppView:
+      $ref: './schemas/Apps.yml#/AppView'
+    Event:
+      $ref: './schemas/Events.yml#/Event'
+    OrderSummary:
+      $ref: './schemas/Orders.yml#/OrderSummary'
+    Permission:
+      $ref: './schemas/Permission.yml#/Permission'
+    Product:
+      $ref: './schemas/Products.yml#/Product'
+    ProductView:
+      $ref: './schemas/Products.yml#/ProductView'
+    ProfileView:
+      $ref: './schemas/Auth.yml#/ProfileView'
+    Role:
+      $ref: './schemas/Roles.yml#/Role'
+    RoleView:
+      $ref: './schemas/Roles.yml#/RoleView'
+    TFASetupEmail:
+      $ref: './schemas/Auth.yml#/TFASetupEmail'
+    TFASetupApp:
+      $ref: './schemas/Auth.yml#/TFASetupApp'
+    User:
+      $ref: './schemas/Users.yml#/User'
+    UserView:
+      $ref: './schemas/Users.yml#/UserView'
+    WebHookEventLogEntry:
+      $ref: './schemas/WebHooks.yml#/WebHookEventLogEntry'
+    WebHook:
+      $ref: './schemas/WebHooks.yml#/WebHook'
+    Address:
+      $ref: './schemas/Addresses.yml#/Address'
+    Country:
+      $ref: './schemas/Countries.yml#/Country'
+    Deposit:
+      $ref: './schemas/Deposits.yml#/Deposit'
+    Sale:
+      $ref: './schemas/Sales.yml#/SaleShow'
+    Coupon:
+      $ref: './schemas/Coupons.yml#/CouponShow'
+    ConditionGroup:
+      $ref: './schemas/DiscountConditions.yml#/ConditionGroupShow'
+    Item:
+      $ref: './schemas/Items.yml#/Item'
+    Media:
+      $ref: './schemas/Media.yml#/Media'
+    Option:
+      $ref: './schemas/Schemas.yml#/Option'
+    Order:
+      $ref: './schemas/Orders.yml#/Order'
+    OrderDiscount:
+      $ref: './schemas/Orders.yml#/OrderDiscount'
+    OrderProduct:
+      $ref: './schemas/Orders.yml#/OrderProduct'
+    OrderSchema:
+      $ref: './schemas/Orders.yml#/OrderSchema'
+    Payment:
+      $ref: './schemas/Payments.yml#/Payment'
+    PaymentMethod:
+      $ref: './schemas/PaymentMethods.yml#/PaymentMethod'
+    Price:
+      $ref: './schemas/PriceRanges.yml#/Price'
+    PriceRange:
+      $ref: './schemas/PriceRanges.yml#/PriceRange'
+    Schema:
+      $ref: './schemas/Schemas.yml#/Schema'
+    Setting:
+      $ref: './schemas/Settings.yml#/Setting'
+    ShippingMethod:
+      $ref: './schemas/ShippingMethods.yml#/ShippingMethod'
+    Status:
+      $ref: './schemas/Statuses.yml#/Status'
+    PackageTemplateSwagger:
+      $ref: './schemas/PackageTemplate.yml#/PackageTemplate'
+    Tag:
+      $ref: './schemas/Tags.yml#/Tag'
+    ProductSet:
+      $ref: './schemas/ProductSets.yml#/ProductSet'
+    ProductSetChildren:
+      $ref: './schemas/ProductSets.yml#/ProductSetChildren'
+    ProductSetParent:
+      $ref: './schemas/ProductSets.yml#/ProductSetParent'
+    ProductSetParentChildren:
+      $ref: './schemas/ProductSets.yml#/ProductSetParentChildren'
+    SeoStore:
+      $ref: './schemas/Seo.yml#/SeoStore'
+    SeoView:
+      $ref: './schemas/Seo.yml#/SeoView'
+    SeoKeywordsResponse:
+      $ref: './schemas/Seo.yml#/SeoKeywordsResponse'
+    Attribute:
+      $ref: './schemas/Attributes.yml#/Attribute'
+    AttributeOption:
+      $ref: './schemas/Attributes.yml#/AttributeOption'
+    Consents:
+      $ref: './schemas/Consents.yml#/Consent'
+    Wishlist:
+      $ref: './schemas/Wishlist.yml#/WishlistProduct'
+    UserPreferences:
+      $ref: './schemas/Auth.yml#/Preferences'
+  requestBodies:
+    AppStore:
+      $ref: './requests/Apps.yml#/AppStore'
+    IndexSchema:
+      $ref: './requests/IndexSchema.yml#/IndexSchema'
+    OrderCreate:
+      $ref: './requests/Orders.yml#/OrderCreate'
+    OrderUpdate:
+      $ref: './requests/Orders.yml#/OrderUpdate'
+    PasswordReset:
+      $ref: './requests/Auth.yml#/PasswordReset'
+    PasswordResetSave:
+      $ref: './requests/Auth.yml#/PasswordResetSave'
+    ProductStore:
+      $ref: './requests/Products.yml#/ProductStore'
+    ProductUpdate:
+      $ref: './requests/Products.yml#/ProductUpdate'
+    RoleStore:
+      $ref: './requests/Roles.yml#/RoleStore'
+    RoleUpdate:
+      $ref: './requests/Roles.yml#/RoleUpdate'
+    ShippingMethodReorder:
+      $ref: './requests/ShippingMethods.yml#/ShippingMethodReorder'
+    ShippingMethodStore:
+      $ref: './requests/ShippingMethods.yml#/ShippingMethodStore'
+    ShippingMethodUpdate:
+      $ref: './requests/ShippingMethods.yml#/ShippingMethodUpdate'
+    StatusReorderRequest:
+      $ref: './requests/Statuses.yml#/StatusReorderRequest'
+    UserCreate:
+      $ref: './requests/Users.yml#/UserCreate'
+    UserUpdate:
+      $ref: './requests/Users.yml#/UserUpdate'
+    WebHookCreate:
+      $ref: './requests/WebHooks.yml#/WebHookCreate'
+  securitySchemes:
+    BearerAuth:
+      description: 'Use /login to generate bearer token'
+      type: http
+      scheme: bearer
+security:
+  - BearerAuth: [ ]

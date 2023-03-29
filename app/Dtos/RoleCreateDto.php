@@ -14,6 +14,7 @@ class RoleCreateDto extends Dto implements InstantiateFromRequest
 
     private string $name;
     private ?string $description;
+    private bool|Missing $is_registration_role;
     private array $permissions;
     private array|Missing $metadata;
 
@@ -22,6 +23,7 @@ class RoleCreateDto extends Dto implements InstantiateFromRequest
         return new self(
             name: $request->input('name'),
             description: $request->input('description'),
+            is_registration_role: $request->input('is_registration_role', new Missing()),
             permissions: $request->input('permissions', []),
             metadata: self::mapMetadata($request),
         );
@@ -35,6 +37,11 @@ class RoleCreateDto extends Dto implements InstantiateFromRequest
     public function getDescription(): ?string
     {
         return $this->description;
+    }
+
+    public function getIsRegistrationRole(): bool|Missing
+    {
+        return $this->is_registration_role;
     }
 
     public function getPermissions(): array

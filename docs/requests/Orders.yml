@@ -1,0 +1,89 @@
+OrderCreate:
+  content:
+    application/json:
+      schema:
+        type: object
+        required:
+          - email
+          - items
+          - billing_address
+        properties:
+          email:
+            type: string
+            example: admin@example.com
+          comment:
+            type: string
+            example: 'asap plz'
+          shipping_method_id:
+            type: string
+            format: uuid
+          digital_shipping_method_id:
+            type: string
+            format: uuid
+          items:
+            type: array
+            items:
+              properties:
+                product_id:
+                  type: string
+                  format: uuid
+                quantity:
+                  type: number
+                schemas:
+                  properties:
+                    119c0a63-1ea1-4769-8d5f-169f68de5598:
+                      type: string
+                      example: 123459fb-39a4-4dd0-8240-14793aa1f73b
+                    02b97693-857c-4fb9-9999-47400ac5fbef:
+                      type: string
+                      example: 'HE + YA'
+                  type: object
+              type: object
+          shipping_place:
+            $ref: './../schemas/Addresses.yml#/Address'
+          billing_address:
+            $ref: './../schemas/Addresses.yml#/Address'
+          coupons:
+            type: array
+            items:
+              type: string
+              example: 8JVA0XRT
+          invoice_requested:
+            type: boolean
+          sale_ids:
+            type: array
+            items:
+              type: string
+              example: '16277176-d819-417b-90af-8d8534995786'
+          metadata:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+          metadata_private:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+
+OrderUpdate:
+  content:
+    application/json:
+      schema:
+        properties:
+          email:
+            type: string
+            example: admin@example.com
+          comment:
+            type: string
+            example: 'asap plz'
+          shipping_number:
+            type: string
+            example: '630552359128340015809770'
+          shipping_method_id:
+            type: string
+            format: uuid
+          digital_shipping_method_id:
+            type: string
+            format: uuid
+          shipping_place:
+            $ref: './../schemas/Addresses.yml#/Address'
+          billing_address:
+            $ref: './../schemas/Addresses.yml#/Address'
+          invoice_requested:
+            type: boolean
+        type: object

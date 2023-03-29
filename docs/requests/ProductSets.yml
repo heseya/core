@@ -1,0 +1,169 @@
+ProductSetStore:
+  content:
+    application/json:
+      schema:
+        required:
+          - name
+          - slug_suffix
+          - slug_override
+        properties:
+          name:
+            description: 'Name displayed to the user'
+            type: string
+            example: AGD
+          slug_suffix:
+            description: 'Name used in the URL path usually proceeded by parent slug'
+            type: string
+            example: agd
+          slug_override:
+            description: 'Whether to use slug as suffix to parent or to override the entire slug'
+            type: boolean
+            example: true
+          public:
+            description: 'Whether set is visible to unauthorized users'
+            type: boolean
+            example: true
+          description_html:
+            description: 'HTML formated text to be displayed as a product set description'
+            type: string
+            example: '<h1>Lorem ipsum dolor sit amet</h1>'
+          cover_id:
+            description: 'Id of media cover'
+            type: string
+            format: uuid
+          parent_id:
+            description: 'Id of set, this set belongs to'
+            type: string
+            format: uuid
+          children_ids:
+            description: 'Ids of assigned subsets'
+            type: array
+            items:
+              type: string
+              format: uuid
+          seo:
+            $ref: './../schemas/Seo.yml#/SeoStore'
+          attributes:
+            description: 'Array of assigned attributes ids'
+            type: array
+            items:
+              type: string
+              format: uuid
+          metadata:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+          metadata_private:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+        type: object
+
+ProductSetUpdate:
+  content:
+    application/json:
+      schema:
+        properties:
+          name:
+            description: 'Name displayed to the user'
+            type: string
+            example: AGD
+          slug_suffix:
+            description: 'Name used in the URL path usually proceeded by parent slug'
+            type: string
+            example: agd
+          slug_override:
+            description: 'Whether to use slug as suffix to parent or to override the entire slug'
+            type: boolean
+            example: true
+          public:
+            description: 'Whether set is visible to unauthorized users'
+            type: boolean
+            example: true
+          description_html:
+            description: 'HTML formated text to be displayed as a product set description'
+            type: string
+            example: '<h1>Lorem ipsum dolor sit amet</h1>'
+          cover_id:
+            description: 'Id of media cover'
+            type: string
+            format: uuid
+          parent_id:
+            description: 'Id of set, this set belongs to'
+            type: string
+            format: uuid
+          children_ids:
+            description: 'Ids of assigned subsets'
+            type: array
+            items:
+              type: string
+              format: uuid
+          seo:
+            $ref: './../schemas/Seo.yml#/SeoStore'
+          attributes:
+            description: 'Array of assigned attributes ids'
+            type: array
+            items:
+              type: string
+              format: uuid
+        type: object
+
+ProductSetAttach:
+  content:
+    application/json:
+      schema:
+        required:
+          - name
+          - slug
+        properties:
+          products:
+            description: 'Ids of assigned products'
+            type: array
+            items:
+              type: string
+              format: uuid
+        type: object
+
+ProductSetReorder:
+  content:
+    application/json:
+      schema:
+        required:
+          - product_sets
+        properties:
+          product_sets:
+            description: 'Ids of reordered sets'
+            type: array
+            items:
+              type: string
+              format: uuid
+        type: object
+
+ProductSetProductReorder:
+  content:
+    application/json:
+      schema:
+        required:
+          - products
+        properties:
+          products:
+            description: 'Ids of reordered sets'
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                order:
+                  type: integer
+                  example: 5
+        type: object
+
+FavouriteProductSet:
+  content:
+    application/json:
+      schema:
+        required:
+          - product_set_id
+        properties:
+          product_set_id:
+            type: string
+            format: uuid
+        type: object

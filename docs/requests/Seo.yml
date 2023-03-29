@@ -1,0 +1,34 @@
+SeoStore:
+  content:
+    application/json:
+      schema:
+        allOf:
+          - $ref: './../schemas/Seo.yml#/SeoStore'
+        type: object
+
+SeoKeywordsCheck:
+  content:
+    application/json:
+      schema:
+        required:
+          - keywords
+        type: object
+        properties:
+          keywords:
+            description: 'List of SEO keywords'
+            type: array
+            items:
+              type: string
+              example: PHP
+          excluded:
+            description: 'Model excluded from keywords checking'
+            type: object
+            properties:
+              id:
+                description: 'Excluded model ID'
+                type: string
+                format: uuid
+              model:
+                description: 'Excluded model type'
+                type: string
+                example: 'Product'

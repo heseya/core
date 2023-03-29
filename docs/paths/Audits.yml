@@ -1,0 +1,30 @@
+Audit:
+  get:
+    tags:
+      - Audits
+    summary: 'list changes for object'
+    parameters:
+      - name: object
+        in: path
+        required: true
+        schema:
+          type: string
+          example: products
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '../schemas/Audit.yml#/Audit'
+              type: object

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\UserCreateDto;
 use App\Dtos\UserDto;
 use App\Http\Requests\UserCreateRequest;
 use App\Http\Requests\UserIndexRequest;
@@ -32,15 +33,15 @@ class UserController extends Controller
                 'metadata_private',
                 'consent_name',
                 'consent_id',
+                'roles',
             ),
             $request->input('sort', 'created_at:asc'),
-            $request->input('limit', 12)
         );
 
         /** @var ResourceCollection $userCollection */
         $userCollection = UserResource::collection($paginator);
 
-        return $userCollection->full($request->has('full'));
+        return $userCollection->full($request->boolean('full'));
     }
 
     public function show(User $user): JsonResource
@@ -51,7 +52,7 @@ class UserController extends Controller
     public function store(UserCreateRequest $request): JsonResource
     {
         $user = $this->userService->create(
-            UserDto::instantiateFromRequest($request)
+            UserCreateDto::instantiateFromRequest($request)
         );
 
         return UserResource::make($user);

@@ -98,7 +98,7 @@ class AttributeSearch implements Rule
 
         $this->message = "Invalid options for attribute `{$this->attributeName}`.";
 
-        return AttributeOption::where('attribute_id', $this->attribute->getKey())
+        return AttributeOption::where('attribute_id', $this->attribute?->getKey())
             ->whereIn('id', $value)
             ->exists();
     }

@@ -1,0 +1,17 @@
+Permission:
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      description: 'Name of the permission'
+      type: string
+      example: products.add
+    description:
+      description: 'Description of the permission'
+      type: string
+      example: 'Permission to add products'
+    assignable:
+      description: 'Whether the role assignable by current user.'
+      type: boolean
+  type: object

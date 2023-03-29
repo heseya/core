@@ -28,6 +28,7 @@ class SaleResource extends Resource
             'uses' => $this->resource->uses,
             'target_type' => $this->resource->target_type,
             'target_is_allow_list' => $this->resource->target_is_allow_list,
+            'active' => $this->resource->active,
         ], $this->metadataResource('sales.show_metadata_private'));
     }
 

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\App;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Models\ShippingMethod;
 use App\Models\WebHook;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
@@ -35,6 +36,23 @@ class AppOtherTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonCount(10, 'data');
+    }
+
+    public function testIndexSearchByIds(): void
+    {
+        $this->user->givePermissionTo('apps.show');
+
+        App::factory()->count(9)->create(); // +1 from TestCase
+
+        $response = $this->actingAs($this->user)->json('GET', '/apps', [
+            'ids' => [
+                $this->application->getKey(),
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
     }
 
     public function testShowUnauthorized(): void
@@ -107,7 +125,7 @@ class AppOtherTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->deleteJson('/apps/id:' . $app->getKey());
+            ->deleteJson('/apps/id:' . $app->getKey(), ['force' => false]);
 
         $response->assertStatus(422);
         $this->assertDatabaseCount('apps', 2);  // +1 from TestCase
@@ -142,7 +160,7 @@ class AppOtherTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->deleteJson('/apps/id:' . $app->getKey() . '?force=0');
+            ->deleteJson('/apps/id:' . $app->getKey(), ['force' => false]);
 
         $response->assertStatus(422);
         $this->assertDatabaseCount('apps', 2); // +1 from TestCase
@@ -159,7 +177,7 @@ class AppOtherTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->deleteJson('/apps/id:' . $app->getKey() . '?force=1');
+            ->deleteJson('/apps/id:' . $app->getKey(), ['force' => true]);
 
         $response->assertNoContent();
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase
@@ -184,24 +202,8 @@ class AppOtherTest extends TestCase
         $this->assertModelMissing($app);
     }
 
-    public function shortBooleanProvider(): array
-    {
-        return [
-            'as true' => [true],
-            'as false' => [false],
-            'as 1' => [1],
-            'as 0' => [0],
-            'as on' => ['on'],
-            'as off' => ['off'],
-            'as yes' => ['yes'],
-            'as no' => ['no'],
-        ];
-    }
-
-    /**
-     * @dataProvider shortBooleanProvider
-     */
-    public function testUninstallForce($boolean): void
+    // Checks if force flag won't break proper uninstallation flow
+    public function testUninstallForce(): void
     {
         $this->user->givePermissionTo('apps.remove');
 
@@ -212,7 +214,7 @@ class AppOtherTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->json('DELETE', '/apps/id:' . $app->getKey(), ['force' => $boolean]);
+            ->deleteJson('/apps/id:' . $app->getKey(), ['force' => true]);
 
         $response->assertNoContent();
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase
@@ -299,5 +301,35 @@ class AppOtherTest extends TestCase
         $this->assertDatabaseCount('apps', 0); // +1 from TestCase
         $this->assertModelMissing($app);
         $this->assertModelMissing($this->application);
+    }
+
+    public function testRemoveIntegrationsWithApp(): void
+    {
+        $this->user->givePermissionTo('apps.remove');
+
+        ShippingMethod::query()->delete();
+        App::query()->delete();
+
+        $app = App::factory()->create(['url' => $this->url]);
+        $shippingMethodOne = ShippingMethod::factory()->create(['app_id' => $app->getKey()]);
+        $shippingMethodTwo = ShippingMethod::factory()->create(['app_id' => $app->getKey()]);
+        $shippingMethodIdOne = $shippingMethodOne->getKey();
+        $shippingMethodIdTwo = $shippingMethodTwo->getKey();
+
+        $this->actingAs($this->user)
+            ->deleteJson('/apps/id:' . $app->getKey() . '?force');
+
+        $this->assertDatabaseMissing('shipping_methods', [
+            'id' => $shippingMethodIdOne,
+        ]);
+        $this->assertDatabaseMissing('shipping_methods', [
+            'id' => $shippingMethodIdTwo,
+        ]);
+
+        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('shipping_methods', 0);
+        $this->assertModelMissing($app);
+        $this->assertModelMissing($shippingMethodOne);
+        $this->assertModelMissing($shippingMethodTwo);
     }
 }

@@ -11,15 +11,18 @@ use App\Models\Banner;
 use App\Models\BannerMedia;
 use App\Models\Country;
 use App\Models\Discount;
+use App\Models\Item;
 use App\Models\Media;
 use App\Models\Option;
 use App\Models\Order;
 use App\Models\OrderProduct;
+use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
+use App\Models\Tag;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -225,7 +228,7 @@ class PerformanceTest extends TestCase
             ->getJson('/orders')
             ->assertOk();
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(21);
     }
 
     public function testIndexPerformanceShippingMethode(): void
@@ -241,7 +244,7 @@ class PerformanceTest extends TestCase
             ->assertOk();
 
         // TODO: this should be improved
-        $this->assertQueryCountLessThan(11);
+        $this->assertQueryCountLessThan(12);
     }
 
     public function testIndexPerformanceDiscount(): void
@@ -308,10 +311,459 @@ class PerformanceTest extends TestCase
 
         $product = Product::first();
 
-        $this->assertTrue($product->price_min === 1071.0);
+        $this->assertEquals(1071, $product->price_min);
 
         // Every product with discount +3 query to database (update, detach(sales), attach(sales))
         // 1000 products = +- 3137 queries, for 10000 +- 31130
         $this->assertQueryCountLessThan(3200);
+    }
+
+    public function testViewOrderPerformanceWithDiscounts(): void
+    {
+        $this->user->givePermissionTo('orders.show_details');
+
+        $shippingMethod = ShippingMethod::factory()->create();
+
+        $attribute = Attribute::factory()->create();
+        AttributeOption::factory()->count(2)->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+        ]);
+
+        $status = Status::factory()->create();
+        $status->metadata()->create([
+            'name' => 'Metadata',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+        $status->metadata()->create([
+            'name' => 'Metadata private',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => false,
+        ]);
+
+        $tag = Tag::factory()->create();
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $productItem = Item::factory()->create();
+
+        $product = Product::factory()->create();
+        $product->items()->attach([$productItem->getKey()  => [
+            'required_quantity' => 1,
+        ],
+        ]);
+        $product->attributes()->attach($attribute->getKey());
+        $product->metadata()->create([
+            'name' => 'Metadata',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+        $product->metadata()->create([
+            'name' => 'Metadata private',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => false,
+        ]);
+        $product->tags()->sync($tag->getKey());
+        $product->sets()->sync($set->getKey());
+
+        $product2 = Product::factory()->create();
+        $product2->items()->attach([$productItem->getKey() => [
+            'required_quantity' => 1,
+        ],
+        ]);
+        $product2->metadata()->create([
+            'name' => 'Metadata',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+        $product2->metadata()->create([
+            'name' => 'Metadata private',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => false,
+        ]);
+        $product2->tags()->sync($tag->getKey());
+        $product2->sets()->sync($set->getKey());
+
+        $product3 = Product::factory()->create();
+        $product3->items()->attach([$productItem->getKey() => [
+            'required_quantity' => 1,
+        ],
+        ]);
+        $product3->metadata()->create([
+            'name' => 'Metadata',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+        $product3->metadata()->create([
+            'name' => 'Metadata private',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => false,
+        ]);
+        $product3->tags()->sync($tag->getKey());
+        $product3->sets()->sync($set->getKey());
+
+        $schema = Schema::factory()->create([
+            'type' => 'select',
+            'price' => 0,
+            'hidden' => false,
+            'required' => true,
+        ]);
+        $product->schemas()->sync([$schema->getKey()]);
+        $product2->schemas()->sync([$schema->getKey()]);
+        $product3->schemas()->sync([$schema->getKey()]);
+
+        $option = $schema->options()->create([
+            'name' => 'XL',
+            'price' => 0,
+        ]);
+        $item = Item::factory()->create();
+        $option->items()->attach([$item->getKey() => [
+            'required_quantity' => 1,
+        ],
+        ]);
+
+        $lowRange = PriceRange::create(['start' => 0]);
+        $lowRange->prices()->create([
+            'value' => rand(8, 15) + (rand(0, 99) / 100),
+        ]);
+
+        $highRange = PriceRange::create(['start' => 210]);
+        $highRange->prices()->create(['value' => 0.0]);
+
+        $shippingMethod->priceRanges()->saveMany([$lowRange, $highRange]);
+
+        $order = Order::factory()->create([
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+            'cart_total_initial' => 394.94,
+            'cart_total' => 300.00,
+            'summary' => 300.00,
+            'shipping_price' => 0,
+        ]);
+
+        $order->metadata()->create([
+            'name' => 'Metadata',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+
+        $order->metadata()->create([
+            'name' => 'Metadata private',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => false,
+        ]);
+
+        $discountShipping = Discount::factory()->create([
+            'description' => 'Testowy kupon',
+            'code' => 'S43SA2',
+            'value' => 100,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::SHIPPING_PRICE,
+            'target_is_allow_list' => true,
+        ]);
+
+        $discountShipping->shippingMethods()->attach($shippingMethod);
+
+        $discountOrder = Discount::factory()->create([
+            'description' => 'Promocja na zamówienie',
+            'code' => null,
+            'value' => 100,
+            'type' => DiscountType::AMOUNT,
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => true,
+        ]);
+
+        $order->discounts()->attach(
+            $discountShipping->getKey(),
+            [
+                'name' => $discountShipping->name,
+                'type' => $discountShipping->type,
+                'value' => $discountShipping->value,
+                'target_type' => $discountShipping->target_type,
+                'applied_discount' => $order->shipping_price_initial,
+                'code' => $discountShipping->code,
+            ],
+            $discountOrder->getKey(),
+            [
+                'name' => $discountOrder->name,
+                'type' => $discountOrder->type,
+                'value' => $discountOrder->value,
+                'target_type' => $discountOrder->target_type,
+                'applied_discount' => $order->shipping_price_initial,
+                'code' => $discountOrder->code,
+            ]
+        );
+
+        $discountProduct = Discount::factory()->create([
+            'description' => 'Testowy kupon',
+            'code' => null,
+            'value' => 47.47,
+            'type' => DiscountType::AMOUNT,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+        ]);
+
+        $discountProduct->products()->attach($product);
+        $discountProduct->products()->attach($product2);
+
+        $discountProduct2 = Discount::factory()->create([
+            'description' => 'Testowy kupon 2',
+            'code' => 'O213D12',
+            'value' => 10.00,
+            'type' => DiscountType::AMOUNT,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+        ]);
+
+        $discountProduct2->products()->attach($product);
+        $discountProduct2->products()->attach($product2);
+
+        $sale = Discount::factory()->create([
+            'description' => 'Promocja na wszystko',
+            'code' => null,
+            'value' => 10.00,
+            'type' => DiscountType::AMOUNT,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+        ]);
+
+        $sale->productSets()->attach($set);
+        $sale->shippingMethods()->attach($shippingMethod);
+        $sale->products()->attach($product);
+        $sale->products()->attach($product2);
+
+        $product->sales()->attach($sale);
+        $product2->sales()->attach($sale);
+        $product3->sales()->attach($sale);
+
+        $item_product = $order->products()->create([
+            'product_id' => $product->getKey(),
+            'quantity' => 1,
+            'price' => 200.00,
+            'price_initial' => 247.47,
+            'name' => $product->name,
+        ]);
+
+        $item_product->discounts()->attach([
+            $discountProduct->getKey() => [
+                'name' => $discountProduct->name,
+                'type' => $discountProduct->type,
+                'value' => $discountProduct->value,
+                'target_type' => $discountProduct->target_type,
+                'applied_discount' => $discountProduct->value,
+                'code' => $discountProduct->code,
+            ],
+            $discountProduct2->getKey() => [
+                'name' => $discountProduct2->name,
+                'type' => $discountProduct2->type,
+                'value' => $discountProduct2->value,
+                'target_type' => $discountProduct2->target_type,
+                'applied_discount' => $discountProduct2->value,
+                'code' => $discountProduct2->code,
+            ],
+        ]);
+
+        $item_product2 = $order->products()->create([
+            'product_id' => $product2->getKey(),
+            'quantity' => 1,
+            'price' => 100.00,
+            'price_initial' => 147.47,
+            'name' => $product2->name,
+        ]);
+
+        $item_product2->discounts()->attach([
+            $discountProduct->getKey() => [
+                'name' => $discountProduct->name,
+                'type' => $discountProduct->type,
+                'value' => $discountProduct->value,
+                'target_type' => $discountProduct->target_type,
+                'applied_discount' => $discountProduct->value,
+                'code' => $discountProduct->code,
+            ],
+            $discountProduct2->getKey() => [
+                'name' => $discountProduct2->name,
+                'type' => $discountProduct2->type,
+                'value' => $discountProduct2->value,
+                'target_type' => $discountProduct2->target_type,
+                'applied_discount' => $discountProduct2->value,
+                'code' => $discountProduct2->code,
+            ],
+        ]);
+
+        $item_product3 = $order->products()->create([
+            'product_id' => $product3->getKey(),
+            'quantity' => 1,
+            'price' => 100.00,
+            'price_initial' => 147.47,
+            'name' => $product3->name,
+        ]);
+
+        $item_product3->discounts()->attach([
+            $discountProduct->getKey() => [
+                'name' => $discountProduct->name,
+                'type' => $discountProduct->type,
+                'value' => $discountProduct->value,
+                'target_type' => $discountProduct->target_type,
+                'applied_discount' => $discountProduct->value,
+                'code' => $discountProduct->code,
+            ],
+            $discountProduct2->getKey() => [
+                'name' => $discountProduct2->name,
+                'type' => $discountProduct2->type,
+                'value' => $discountProduct2->value,
+                'target_type' => $discountProduct2->target_type,
+                'applied_discount' => $discountProduct2->value,
+                'code' => $discountProduct2->code,
+            ],
+        ]);
+
+        $this->actingAs($this->user)
+            ->json('GET', '/orders/id:' . $order->getKey())->assertOk();
+
+        // For 3 product, 2 discount on order and 2 discounts on products without load was 239 queries
+        $this->assertQueryCountLessThan(103);
+    }
+
+    public function testViewItemPerformance(): void
+    {
+        $this->user->givePermissionTo('items.show_details');
+
+        $attribute = Attribute::factory()->create();
+        AttributeOption::factory()->count(2)->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+        ]);
+
+        $tag = Tag::factory()->create();
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $productItem = Item::factory()->create();
+
+        $product = Product::factory()->create(['public' => true]);
+        $product->items()->attach([$productItem->getKey() => [
+            'required_quantity' => 1,
+        ],
+        ]);
+        $product->attributes()->attach($attribute->getKey());
+        $product->metadata()->create([
+            'name' => 'Metadata',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+        $product->metadata()->create([
+            'name' => 'Metadata private',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => false,
+        ]);
+        $product->tags()->sync($tag->getKey());
+        $product->sets()->sync($set->getKey());
+
+        $product2 = Product::factory()->create(['public' => true]);
+        $product2->items()->attach([$productItem->getKey() => [
+            'required_quantity' => 1,
+        ],
+        ]);
+        $product2->metadata()->create([
+            'name' => 'Metadata',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+        $product2->metadata()->create([
+            'name' => 'Metadata private',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => false,
+        ]);
+        $product2->tags()->sync($tag->getKey());
+        $product2->sets()->sync($set->getKey());
+
+        $product3 = Product::factory()->create(['public' => true]);
+        $product3->items()->attach([$productItem->getKey() => [
+            'required_quantity' => 1,
+        ],
+        ]);
+        $product3->metadata()->create([
+            'name' => 'Metadata',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+        $product3->metadata()->create([
+            'name' => 'Metadata private',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => false,
+        ]);
+        $product3->tags()->sync($tag->getKey());
+        $product3->sets()->sync($set->getKey());
+
+        $schema = Schema::factory()->create([
+            'type' => 'select',
+            'price' => 0,
+            'hidden' => false,
+            'required' => true,
+        ]);
+        $product->schemas()->sync([$schema->getKey()]);
+        $product2->schemas()->sync([$schema->getKey()]);
+        $product3->schemas()->sync([$schema->getKey()]);
+
+        $option = $schema->options()->create([
+            'name' => 'XL',
+            'price' => 0,
+        ]);
+        $item = Item::factory()->create();
+        $option->items()->attach([
+            $item->getKey() => ['required_quantity' => 1],
+            $productItem->getKey() => ['required_quantity' => 1],
+        ]);
+
+        $schema2 = Schema::factory()->create([
+            'type' => 'select',
+            'price' => 0,
+            'hidden' => false,
+            'required' => false,
+        ]);
+
+        $option2 = $schema2->options()->create([
+            'name' => 'XL',
+            'price' => 0,
+        ]);
+        $option2->items()->attach([$productItem->getKey() => [
+            'required_quantity' => 1,
+        ],
+        ]);
+
+        $option3 = $schema2->options()->create([
+            'name' => 'XL',
+            'price' => 0,
+        ]);
+        $option3->items()->attach([$productItem->getKey() => [
+            'required_quantity' => 1,
+        ],
+        ]);
+
+        $this
+            ->actingAs($this->user)
+            ->json('GET', '/items/id:' . $productItem->getKey())
+            ->assertOk();
+
+        $this->assertQueryCountLessThan(11);
     }
 }

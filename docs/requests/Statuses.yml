@@ -1,0 +1,11 @@
+StatusReorderRequest:
+  content:
+    application/json:
+      schema:
+        properties:
+          statuses:
+            type: array
+            items:
+              type: string
+              format: uuid
+        type: object

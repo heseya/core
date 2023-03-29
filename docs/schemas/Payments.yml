@@ -1,0 +1,28 @@
+Payment:
+  properties:
+    id:
+      type: string
+      format: uuid
+    external_id:
+      type: string
+      example: D2spSDJ21LSA
+    method_id:
+      type: string
+      format: uuid
+    amount:
+      type: number
+      example: 80.92
+    redirect_url:
+      type: string
+      example: 'https://pay.heseya.com/DS62SA'
+    continue_url:
+      type: string
+      example: 'https://store.heseya.com/done/43SYK1'
+    status:
+      type: string
+      example: pending
+    date:
+      type: string
+      format: date-time
+      example: '2022-05-04T12:14:45.000000Z'
+  type: object

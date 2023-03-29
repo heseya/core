@@ -1,0 +1,160 @@
+Pages:
+  get:
+    tags:
+      - Pages
+    parameters:
+      - name: metadata
+        in: query
+        description: search by metadata
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: metadata_private
+        in: query
+        description: search by metadata private
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: 'ids[]'
+        in: query
+        example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+    summary: 'list page'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '../schemas/Pages.yml#/Page'
+              type: object
+  post:
+    tags:
+      - Pages
+    summary: 'add new page'
+    requestBody:
+      $ref: '../requests/Pages.yml#/PageStore'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: '../schemas/Pages.yml#/PageView'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+PagesParam:
+  get:
+    tags:
+      - Pages
+    summary: alias
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: '../schemas/Pages.yml#/PageView'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+  delete:
+    tags:
+      - Pages
+    summary: 'delete page'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]
+
+  patch:
+    tags:
+      - Pages
+    summary: 'update page'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      $ref: '../requests/Pages.yml#/PageUpdate'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: '../schemas/Pages.yml#/PageView'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+PagesSlug:
+  get:
+    tags:
+      - Pages
+    summary: 'single page view'
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '../schemas/Pages.yml#/PageView'
+
+PagesReorder:
+  post:
+    tags:
+      - Pages
+    summary: 'change pages order'
+    requestBody:
+      $ref: '../requests/Pages.yml#/PageReorder'
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]

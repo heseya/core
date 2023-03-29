@@ -9,8 +9,9 @@ class MediaSlug implements Rule
 {
     protected string $error;
 
-    public function __construct(private Media $media)
-    {
+    public function __construct(
+        private Media $media,
+    ) {
     }
 
     /**
@@ -26,6 +27,6 @@ class MediaSlug implements Rule
 
     public function message(): string
     {
-        return 'Media slug is already set';
+        return 'Media slug cannot be removed once is set.';
     }
 }

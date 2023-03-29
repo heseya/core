@@ -85,7 +85,6 @@ class ProductSetCreateTest extends TestCase
 
         $defaults = [
             'public' => true,
-            'hide_on_index' => false,
             'slug' => 'test',
         ];
 
@@ -124,7 +123,6 @@ class ProductSetCreateTest extends TestCase
 
         $defaults = [
             'public' => true,
-            'hide_on_index' => false,
             'slug' => 'test',
         ];
 
@@ -180,7 +178,6 @@ class ProductSetCreateTest extends TestCase
 
         $defaults = [
             'public' => true,
-            'hide_on_index' => false,
             'slug' => 'test',
         ];
 
@@ -239,7 +236,6 @@ class ProductSetCreateTest extends TestCase
         $set = [
             'name' => 'Test',
             'public' => false,
-            'hide_on_index' => true,
         ];
 
         $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + [
@@ -292,7 +288,6 @@ class ProductSetCreateTest extends TestCase
         $set = [
             'name' => 'Test',
             'public' => false,
-            'hide_on_index' => true,
         ];
 
         $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + [
@@ -432,7 +427,6 @@ class ProductSetCreateTest extends TestCase
                     'slug_override' => false,
                     'public' => $parent->public,
                     'visible' => $parent->public && $parent->public_parent,
-                    'hide_on_index' => $parent->hide_on_index,
                 ],
             ],
             ]);
@@ -568,7 +562,6 @@ class ProductSetCreateTest extends TestCase
             'parent_id' => 'null',
             'name' => 'Child',
             'slug' => 'child',
-            'hide_on_index' => false,
             'public' => true,
             'public_parent' => false,
         ]);
@@ -577,12 +570,11 @@ class ProductSetCreateTest extends TestCase
             'parent_id' => $child->getKey(),
             'name' => 'Grandchild',
             'slug' => 'child-grandchild',
-            'hide_on_index' => false,
             'public' => true,
             'public_parent' => false,
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/product-sets?tree', [
+        $response = $this->actingAs($this->$user)->postJson('/product-sets?tree=1', [
             'name' => 'New',
             'slug_override' => false,
             'slug_suffix' => 'new',
@@ -607,7 +599,6 @@ class ProductSetCreateTest extends TestCase
                         'slug_override' => false,
                         'public' => true,
                         'visible' => true,
-                        'hide_on_index' => false,
                         'parent_id' => $parentId,
                         'children' => [
                             [
@@ -618,7 +609,6 @@ class ProductSetCreateTest extends TestCase
                                 'slug_override' => false,
                                 'public' => true,
                                 'visible' => true,
-                                'hide_on_index' => false,
                                 'parent_id' => $child->getKey(),
                                 'children' => [],
                             ],
@@ -641,7 +631,6 @@ class ProductSetCreateTest extends TestCase
         $set = [
             'name' => 'Test',
             'public' => false,
-            'hide_on_index' => true,
         ];
 
         $media = Media::factory()->create([
@@ -689,74 +678,6 @@ class ProductSetCreateTest extends TestCase
     }
 
     /**
-     * @dataProvider booleanProvider
-     */
-    public function testCreateBooleanValues($user, $boolean, $booleanValue): void
-    {
-        $this->$user->givePermissionTo('product_sets.add');
-
-        Event::fake([ProductSetCreated::class]);
-
-        $media = Media::factory()->create([
-            'type' => MediaType::PHOTO,
-            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
-        ]);
-
-        $set = [
-            'name' => 'Test',
-            'public' => $boolean,
-            'hide_on_index' => $boolean,
-        ];
-
-        $response = $this->actingAs($this->$user)->postJson(
-            '/product-sets',
-            $set + [
-                'slug_suffix' => 'test',
-                'slug_override' => $boolean,
-                'cover_id' => $media->getKey(),
-                'seo' => [
-                    'title' => 'seo title',
-                    'description' => 'seo description',
-                    'no_index' => $boolean,
-                ],
-            ]
-        );
-
-        $setResponse = array_merge($set, ['public' => $booleanValue, 'hide_on_index' => $booleanValue]);
-
-        $response
-            ->assertCreated()
-            ->assertJson([
-                'data' => $setResponse + [
-                    'slug_suffix' => 'test',
-                    'slug_override' => false,
-                    'parent' => null,
-                    'slug' => 'test',
-                    'cover' => [
-                        'id' => $media->getKey(),
-                        'type' => Str::lower($media->type->key),
-                        'url' => $media->url,
-                    ],
-                    'seo' => [
-                        'title' => 'seo title',
-                        'description' => 'seo description',
-                        'no_index' => $booleanValue,
-                    ],
-                ],
-            ]);
-
-        $this->assertDatabaseHas(
-            'product_sets',
-            $setResponse + [
-                'parent_id' => null,
-                'slug' => 'test',
-            ]
-        );
-
-        Event::assertDispatched(ProductSetCreated::class);
-    }
-
-    /**
      * @dataProvider authProvider
      */
     public function testCreateWithAttributes($user): void
@@ -771,7 +692,6 @@ class ProductSetCreateTest extends TestCase
 
         $defaults = [
             'public' => true,
-            'hide_on_index' => false,
             'slug' => 'test',
         ];
 

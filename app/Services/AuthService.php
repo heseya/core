@@ -14,6 +14,7 @@ use App\Enums\TokenType;
 use App\Events\PasswordReset;
 use App\Events\TfaInit;
 use App\Events\TfaSecurityCode as TfaSecurityCodeEvent;
+use App\Events\UserCreated;
 use App\Exceptions\AuthException;
 use App\Exceptions\ClientException;
 use App\Exceptions\TFAException;
@@ -25,9 +26,9 @@ use App\Models\UserPreference;
 use App\Notifications\ResetPassword;
 use App\Notifications\TFAInitialization;
 use App\Notifications\TFASecurityCode;
-use App\Notifications\UserRegistered;
 use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\ConsentServiceContract;
+use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UserLoginAttemptServiceContract;
@@ -50,6 +51,7 @@ class AuthService implements AuthServiceContract
         protected OneTimeSecurityCodeContract $oneTimeSecurityCodeService,
         protected ConsentServiceContract $consentService,
         protected UserLoginAttemptServiceContract $userLoginAttemptService,
+        private MetadataServiceContract $metadataService,
     ) {
     }
 
@@ -73,24 +75,27 @@ class AuthService implements AuthServiceContract
 
         $this->verifyTFA($code);
 
-        $identityToken = $this->tokenService->createToken(
-            Auth::user(),
-            new TokenType(TokenType::IDENTITY),
-            $uuid,
-        );
-        $refreshToken = $this->tokenService->createToken(
-            Auth::user(),
-            new TokenType(TokenType::REFRESH),
-            $uuid,
-        );
+        $this->userLoginAttemptService->store(true);
+
+        return $this->createTokens($token, $uuid);
+    }
+
+    public function loginWithUser(Authenticatable $user, ?string $ip, ?string $userAgent): array
+    {
+        $uuid = Str::uuid()->toString();
+
+        Auth::claims([
+            'iss' => Config::get('app.url'),
+            'typ' => TokenType::ACCESS,
+            'jti' => $uuid,
+        ]);
+        Auth::login($user);
+        // @phpstan-ignore-next-line
+        $token = Auth::fromUser($user);
 
         $this->userLoginAttemptService->store(true);
 
-        return [
-            'token' => $token,
-            'identity_token' => $identityToken,
-            'refresh_token' => $refreshToken,
-        ];
+        return $this->createTokens($token, $uuid);
     }
 
     public function refresh(string $refreshToken, ?string $ip, ?string $userAgent): array
@@ -102,14 +107,14 @@ class AuthService implements AuthServiceContract
         $payload = $this->tokenService->payload($refreshToken);
 
         if (
-            $payload->get('typ') !== TokenType::REFRESH ||
+            $payload?->get('typ') !== TokenType::REFRESH ||
             Token::where('id', $payload->get('jti'))->where('invalidated', true)->exists()
         ) {
             throw new ClientException(Exceptions::CLIENT_INVALID_TOKEN);
         }
 
         $uuid = Str::uuid()->toString();
-        /** @var JWTSubject|Authenticatable|null $user */
+        /** @var JWTSubject|null $user */
         $user = $this->tokenService->getUser($refreshToken);
         $this->tokenService->invalidateToken($refreshToken);
 
@@ -230,7 +235,9 @@ class AuthService implements AuthServiceContract
     public function setupTFA(TFASetupDto $dto): array
     {
         $this->checkIsUserTFA();
-        $this->checkIsTFA(Auth::user());
+        /** @var User $user */
+        $user = Auth::user();
+        $this->checkIsTFA($user);
 
         return match ($dto->getType()) {
             TFAType::APP => $this->googleTFA(),
@@ -247,15 +254,17 @@ class AuthService implements AuthServiceContract
     public function confirmTFA(TFAConfirmDto $dto): array
     {
         $this->checkIsUserTFA();
-        $this->checkIsTFA(Auth::user());
+        /** @var User $user */
+        $user = Auth::user();
+        $this->checkIsTFA($user);
 
-        if (!Auth::user()->tfa_type) {
+        if (!$user->tfa_type) {
             throw new ClientException(Exceptions::CLIENT_DOESNT_HAVE_TFA_TYPE_SELECTED);
         }
 
         $this->checkIsValidTFA($dto->getCode());
 
-        Auth::user()->update([
+        $user->update([
             'is_tfa_active' => true,
         ]);
 
@@ -289,28 +298,45 @@ class AuthService implements AuthServiceContract
         $this->removeUserTFAData($user);
     }
 
+    /**
+     * @throws ClientException
+     */
     public function register(RegisterDto $dto): User
     {
-        $user = User::create([
-            'name' => $dto->getName(),
-            'email' => $dto->getEmail(),
-            'password' => Hash::make($dto->getPassword()),
-        ]);
+        $fields = $dto->toArray();
+        $fields['password'] = Hash::make($dto->getPassword());
 
         $authenticated = Role::where('type', RoleType::AUTHENTICATED)->first();
 
-        $user->syncRoles($authenticated);
+        $roleIds = !$dto->getRoles() instanceof Missing ? $dto->getRoles() : [];
+        $roleModels = Role::query()
+            ->whereIn('id', $roleIds)
+            ->get();
+
+        $nonRegistrationRoles = $roleModels->filter(fn (Role $role) => !$role->is_registration_role);
+
+        if ($nonRegistrationRoles->isNotEmpty()) {
+            throw new ClientException(Exceptions::CLIENT_REGISTER_WITH_NON_REGISTRATION_ROLE);
+        }
+
+        /** @var User $user */
+        $user = User::query()->create($fields);
+        $user->syncRoles([$authenticated, ...$roleModels]);
 
         $this->consentService->syncUserConsents($user, $dto->getConsents());
 
-        $preferences = UserPreference::create();
+        $preferences = UserPreference::query()->create();
         $preferences->refresh();
 
         $user->preferences()->associate($preferences);
 
+        if (!($dto->getMetadataPersonal() instanceof Missing)) {
+            $this->metadataService->sync($user, $dto->getMetadataPersonal());
+        }
+
         $user->save();
 
-        $user->notify(new UserRegistered());
+        UserCreated::dispatch($user);
 
         return $user;
     }
@@ -319,12 +345,7 @@ class AuthService implements AuthServiceContract
     {
         /** @var User $user */
         $user = Auth::user();
-
-        if (!($dto->getName() instanceof Missing)) {
-            $user->update([
-                'name' => $dto->getName(),
-            ]);
-        }
+        $user->update($dto->toArray());
 
         $user->preferences()->update($dto->getPreferences()->toArray());
 
@@ -335,12 +356,12 @@ class AuthService implements AuthServiceContract
 
     private function verifyTFA(?string $code): void
     {
-        if (!Auth::user()->is_tfa_active && $code !== null) {
+        if (!Auth::user()?->is_tfa_active && $code !== null) {
             $this->userLoginAttemptService->store();
             throw new ClientException(Exceptions::CLIENT_TFA_NOT_SET_UP, simpleLogs: true);
         }
 
-        if (Auth::user()->is_tfa_active) {
+        if (Auth::user()?->is_tfa_active) {
             match ($code) {
                 null => $this->noTFACode(),
                 default => $this->checkIsValidTFA($code),
@@ -350,7 +371,7 @@ class AuthService implements AuthServiceContract
 
     private function noTFACode(): void
     {
-        if (Auth::user()->tfa_type === TFAType::EMAIL) {
+        if (Auth::user()?->tfa_type === TFAType::EMAIL) {
             Auth::user()->securityCodes()->where('expires_at', '!=', null)->delete();
             $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(
                 Auth::user(),
@@ -364,19 +385,21 @@ class AuthService implements AuthServiceContract
             Exceptions::CLIENT_TFA_REQUIRED,
             403,
             simpleLogs: true,
-            errorArray: ['type' => Auth::user()->tfa_type]
+            errorArray: ['type' => Auth::user()?->tfa_type]
         );
     }
 
     private function checkIsValidTFA(string $code): void
     {
-        $valid = match (Auth::user()->tfa_type) {
+        /** @var User $user */
+        $user = Auth::user();
+        $valid = match ($user->tfa_type) {
             TFAType::APP => $this->googleTFAVerify($code),
             TFAType::EMAIL => $this->emailTFAVerify($code),
             default => $this->invalidTFAType(),
         };
 
-        if (Auth::user()->is_tfa_active && !$valid) {
+        if ($user->is_tfa_active && !$valid) {
             $valid = $this->verifyRecoveryCode($code);
         }
 
@@ -390,18 +413,22 @@ class AuthService implements AuthServiceContract
     {
         $google_authenticator = new PHPGangsta_GoogleAuthenticator();
 
-        return $google_authenticator->verifyCode(Auth::user()->tfa_secret, $code);
+        /** @var User $user */
+        $user = Auth::user();
+        return $user->tfa_secret !== null && $google_authenticator->verifyCode($user->tfa_secret, $code);
     }
 
     private function emailTFAVerify(string $code): bool
     {
-        $security_codes = Auth::user()->securityCodes()
+        $security_codes = Auth::user()?->securityCodes()
             ->where('expires_at', '>', Carbon::now())->get();
 
-        foreach ($security_codes as $security_code) {
-            if (Hash::check($code, $security_code->code)) {
-                $security_code->delete();
-                return true;
+        if ($security_codes !== null) {
+            foreach ($security_codes as $security_code) {
+                if (Hash::check($code, $security_code->code)) {
+                    $security_code->delete();
+                    return true;
+                }
             }
         }
 
@@ -416,13 +443,14 @@ class AuthService implements AuthServiceContract
 
     private function verifyRecoveryCode(string $code): bool
     {
-        $security_codes = Auth::user()->securityCodes()
+        $security_codes = Auth::user()?->securityCodes()
             ->whereNull('expires_at')->get();
 
+        $security_codes = $security_codes ?? [];
         foreach ($security_codes as $security_code) {
             if (Hash::check($code, $security_code->code)) {
                 $security_code->delete();
-                Auth::user()->securityCodes()->whereNotNull('expires_at')->delete();
+                Auth::user()?->securityCodes()->whereNotNull('expires_at')->delete();
                 return true;
             }
         }
@@ -430,7 +458,7 @@ class AuthService implements AuthServiceContract
         return false;
     }
 
-    private function getUserByEmail(string $email): User
+    private function getUserByEmail(?string $email): User
     {
         $user = User::whereEmail($email)->first();
         if (!$user) {
@@ -449,7 +477,9 @@ class AuthService implements AuthServiceContract
 
     private function checkCredentials(User $user, string $password): void
     {
-        if (!Hash::check($password, $user->password)) {
+        /** @var string $userPassword */
+        $userPassword = $user->password;
+        if (!Hash::check($password, $userPassword)) {
             throw new ClientException(Exceptions::CLIENT_INVALID_PASSWORD, simpleLogs: true);
         }
     }
@@ -470,16 +500,18 @@ class AuthService implements AuthServiceContract
 
     private function googleTFA(): array
     {
+        /** @var User $user */
+        $user = Auth::user();
         $google_authenticator = new PHPGangsta_GoogleAuthenticator();
 
         $secret = $google_authenticator->createSecret();
         $qr_code_url = $google_authenticator->getQRCodeGoogleUrl(
-            Auth::user()->email,
+            $user->email,
             $secret,
             Config::get('app.name')
         );
 
-        Auth::user()->update([
+        $user->update([
             'tfa_type' => TFAType::APP,
             'tfa_secret' => $secret,
         ]);
@@ -493,18 +525,20 @@ class AuthService implements AuthServiceContract
 
     private function emailTFA(): array
     {
-        Auth::user()->securityCodes()->delete();
+        /** @var User $user */
+        $user = Auth::user();
+        $user->securityCodes()->delete();
         $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(
-            Auth::user(),
+            $user,
             Config::get('tfa.code_expires_time')
         );
 
-        Auth::user()->update([
+        $user->update([
             'tfa_type' => TFAType::EMAIL,
         ]);
 
-        TfaInit::dispatch(Auth::user(), $code);
-        Auth::user()->notify(new TFAInitialization($code));
+        TfaInit::dispatch($user, $code);
+        $user->notify(new TFAInitialization($code));
 
         return [
             'type' => TFAType::EMAIL,
@@ -527,5 +561,27 @@ class AuthService implements AuthServiceContract
             'tfa_secret' => null,
             'is_tfa_active' => false,
         ]);
+    }
+
+    private function createTokens(string|bool $token, string $uuid): array
+    {
+        /** @var JWTSubject $user */
+        $user = Auth::user();
+        $identityToken = $this->tokenService->createToken(
+            $user,
+            new TokenType(TokenType::IDENTITY),
+            $uuid,
+        );
+        $refreshToken = $this->tokenService->createToken(
+            $user,
+            new TokenType(TokenType::REFRESH),
+            $uuid,
+        );
+
+        return [
+            'token' => $token,
+            'identity_token' => $identityToken,
+            'refresh_token' => $refreshToken,
+        ];
     }
 }

@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Dtos\ShippingMethodDto;
+use App\Dtos\ShippingMethodCreateDto;
+use App\Dtos\ShippingMethodUpdateDto;
 use App\Http\Requests\ShippingMethodIndexRequest;
 use App\Http\Requests\ShippingMethodReorderRequest;
 use App\Http\Requests\ShippingMethodStoreRequest;
@@ -24,7 +25,7 @@ class ShippingMethodController extends Controller
     public function index(ShippingMethodIndexRequest $request): JsonResource
     {
         $shippingMethods = $this->shippingMethodService->index(
-            $request->only('metadata', 'metadata_private'),
+            $request->only('metadata', 'metadata_private', 'ids'),
             $request->input('country'),
             $request->input('cart_value', 0),
         );
@@ -35,7 +36,7 @@ class ShippingMethodController extends Controller
     public function store(ShippingMethodStoreRequest $request): JsonResource
     {
         $shippingMethod = $this->shippingMethodService->store(
-            ShippingMethodDto::instantiateFromRequest($request),
+            ShippingMethodCreateDto::instantiateFromRequest($request),
         );
 
         return ShippingMethodResource::make($shippingMethod);
@@ -45,7 +46,7 @@ class ShippingMethodController extends Controller
     {
         $shippingMethod = $this->shippingMethodService->update(
             $shippingMethod,
-            ShippingMethodDto::instantiateFromRequest($request),
+            ShippingMethodUpdateDto::instantiateFromRequest($request),
         );
 
         return ShippingMethodResource::make($shippingMethod);

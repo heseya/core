@@ -1,0 +1,13 @@
+SavedAddress:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    default:
+      type: boolean
+    name:
+      type: string
+      example: Home
+    address:
+      $ref: './Addresses.yml#/Address'

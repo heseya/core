@@ -1,0 +1,177 @@
+Webhooks:
+  get:
+    tags:
+      - WebHooks
+    summary: 'list webhooks by filters'
+    parameters:
+      - name: name
+        in: query
+        description: 'Name search'
+        allowEmptyValue: true
+        schema:
+          type: string
+      - name: url
+        in: query
+        description: 'URL search'
+        allowEmptyValue: true
+        schema:
+          type: string
+      - name: 'ids[]'
+        in: query
+        example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/WebHooks.yml#/WebHook'
+              type: object
+  post:
+    tags:
+      - WebHooks
+    summary: 'add new webhook'
+    requestBody:
+      $ref: './../requests/WebHooks.yml#/WebHookCreate'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/WebHooks.yml#/WebHook'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+WebhooksParams:
+  get:
+    tags:
+      - WebHooks
+    summary: 'show webhook'
+    parameters:
+      - name: id
+        in: path
+        description: 'Name search'
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/WebHooks.yml#/WebHook'
+              type: object
+  delete:
+    tags:
+      - WebHooks
+    summary: 'delete webhook'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]
+  patch:
+    tags:
+      - WebHooks
+    summary: 'update webhook'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      $ref: './../requests/WebHookUpdate.yml#/WebHookUpdate'
+    responses:
+      200:
+        description: Updated
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/WebHooks.yml#/WebHook'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+WebhooksEvents:
+  get:
+    tags:
+      - WebHooks
+    summary: 'list available events'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Events.yml#/Event'
+              type: object
+Logs:
+  get:
+    tags:
+      - WebHooks
+    summary: 'list with logs of failed webhooks'
+    parameters:
+      - name: status
+        in: query
+        description: 'Status code search'
+        schema:
+          type: number
+      - name: event
+        in: query
+        description: 'Event search'
+        schema:
+          type: string
+      - name: web_hook_id
+        in: query
+        description: 'Webhook ID search'
+        schema:
+          type: string
+      - name: successful
+        in: query
+        description: 'Is successful'
+        schema:
+          type: boolean
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/WebHookLog.yml#/WebHookLog'
+              type: object

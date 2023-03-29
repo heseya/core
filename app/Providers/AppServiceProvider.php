@@ -23,9 +23,9 @@ use App\Services\Contracts\BannerServiceContract;
 use App\Services\Contracts\ConsentServiceContract;
 use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
-use App\Services\Contracts\DiscountStoreServiceContract;
 use App\Services\Contracts\DocumentServiceContract;
 use App\Services\Contracts\EventServiceContract;
+use App\Services\Contracts\FavouriteServiceContract;
 use App\Services\Contracts\GoogleCategoryServiceContract;
 use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\MediaServiceContract;
@@ -36,10 +36,13 @@ use App\Services\Contracts\OptionServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use App\Services\Contracts\PackageTemplateServiceContract;
 use App\Services\Contracts\PageServiceContract;
+use App\Services\Contracts\PaymentMethodServiceContract;
+use App\Services\Contracts\PaymentServiceContract;
 use App\Services\Contracts\PermissionServiceContract;
 use App\Services\Contracts\ProductSearchServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use App\Services\Contracts\ProductSetServiceContract;
+use App\Services\Contracts\ProviderServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
 use App\Services\Contracts\RoleServiceContract;
 use App\Services\Contracts\SavedAddressServiceContract;
@@ -56,11 +59,12 @@ use App\Services\Contracts\UrlServiceContract;
 use App\Services\Contracts\UserLoginAttemptServiceContract;
 use App\Services\Contracts\UserServiceContract;
 use App\Services\Contracts\WebHookServiceContract;
+use App\Services\Contracts\WishlistServiceContract;
 use App\Services\DepositService;
 use App\Services\DiscountService;
-use App\Services\DiscountStoreService;
 use App\Services\DocumentService;
 use App\Services\EventService;
+use App\Services\FavouriteService;
 use App\Services\GoogleCategoryService;
 use App\Services\ItemService;
 use App\Services\MediaService;
@@ -71,10 +75,13 @@ use App\Services\OptionService;
 use App\Services\OrderService;
 use App\Services\PackageTemplateService;
 use App\Services\PageService;
+use App\Services\PaymentMethodService;
+use App\Services\PaymentService;
 use App\Services\PermissionService;
 use App\Services\ProductSearchService;
 use App\Services\ProductService;
 use App\Services\ProductSetService;
+use App\Services\ProviderService;
 use App\Services\ReorderService;
 use App\Services\RoleService;
 use App\Services\SavedAddressService;
@@ -91,6 +98,7 @@ use App\Services\UrlService;
 use App\Services\UserLoginAttemptService;
 use App\Services\UserService;
 use App\Services\WebHookService;
+use App\Services\WishlistService;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Scout\Builder;
 
@@ -138,9 +146,13 @@ class AppServiceProvider extends ServiceProvider
         StatusServiceContract::class => StatusService::class,
         PackageTemplateServiceContract::class => PackageTemplateService::class,
         DepositServiceContract::class => DepositService::class,
-        DiscountStoreServiceContract::class => DiscountStoreService::class,
         ShippingTimeDateServiceContract::class => ShippingTimeDateService::class,
+        ProviderServiceContract::class => ProviderService::class,
         GoogleCategoryServiceContract::class => GoogleCategoryService::class,
+        WishlistServiceContract::class => WishlistService::class,
+        FavouriteServiceContract::class => FavouriteService::class,
+        PaymentMethodServiceContract::class => PaymentMethodService::class,
+        PaymentServiceContract::class => PaymentService::class,
     ];
 
     /**

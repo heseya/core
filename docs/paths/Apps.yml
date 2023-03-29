@@ -1,0 +1,101 @@
+Apps:
+  get:
+    tags:
+      - Apps
+    parameters:
+    - name: metadata
+      in: query
+      description: search by metadata
+      style: deepObject
+      explode: true
+      required: false
+      schema:
+        $ref: '../schemas/Metadata.yml#/MetadataQuery'
+    - name: metadata_private
+      in: query
+      description: search by metadata private
+      style: deepObject
+      explode: true
+      required: false
+      schema:
+        $ref: '../schemas/Metadata.yml#/MetadataQuery'
+    - name: 'ids[]'
+      in: query
+      example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+      schema:
+        type: array
+        items:
+          type: string
+          format: uuid
+    summary: 'All registered app list'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Apps.yml#/App'
+              type: object
+  post:
+    tags:
+      - Apps
+    summary: 'install a new app'
+    requestBody:
+      $ref: './../requests/Apps.yml#/AppStore'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Apps.yml#/AppView'
+              type: object
+
+AppsParams:
+  get:
+    tags:
+      - Apps
+    summary: 'show an app'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Apps.yml#/AppView'
+              type: object
+  delete:
+    tags:
+      - Apps
+    summary: 'delete app'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: force
+        in: query
+        description: 'Force removal of the app'
+        allowEmptyValue: true
+        schema:
+          type: boolean
+    responses:
+      204:
+        description: Success

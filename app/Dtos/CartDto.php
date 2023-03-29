@@ -9,11 +9,12 @@ use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Collection;
 
-final class CartDto extends CartOrderDto implements InstantiateFromRequest
+class CartDto extends CartOrderDto implements InstantiateFromRequest
 {
     private array $items;
     private array|Missing $coupons;
     private string|Missing $shipping_method_id;
+    private string|Missing $digital_shipping_method_id;
 
     /**
      * @throws DtoException
@@ -24,6 +25,7 @@ final class CartDto extends CartOrderDto implements InstantiateFromRequest
             items: self::prepareItems($request->input('items', [])),
             coupons: $request->input('coupons', new Missing()),
             shipping_method_id: $request->input('shipping_method_id', new Missing()),
+            digital_shipping_method_id: $request->input('digital_shipping_method_id', new Missing()),
         );
     }
 
@@ -44,6 +46,14 @@ final class CartDto extends CartOrderDto implements InstantiateFromRequest
         return $this->items;
     }
 
+    /**
+     * @param array<CartItemDto> $items
+     */
+    public function setItems(array $items): void
+    {
+        $this->items = $items;
+    }
+
     public function getCoupons(): Missing|array
     {
         return $this->coupons;
@@ -52,6 +62,11 @@ final class CartDto extends CartOrderDto implements InstantiateFromRequest
     public function getShippingMethodId(): Missing|string
     {
         return $this->shipping_method_id;
+    }
+
+    public function getDigitalShippingMethodId(): Missing|string
+    {
+        return $this->digital_shipping_method_id;
     }
 
     public function getProductIds(): array
@@ -64,7 +79,7 @@ final class CartDto extends CartOrderDto implements InstantiateFromRequest
         return $result;
     }
 
-    public function getCartLength(): int
+    public function getCartLength(): int|float
     {
         $length = 0;
         /** @var CartItemDto $item */

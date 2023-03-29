@@ -1,0 +1,110 @@
+Tags:
+  get:
+    tags:
+      - Tags
+    summary: 'list tags'
+    parameters:
+      - name: search
+        in: query
+        description: 'Full text search'
+        schema:
+          type: string
+      - name: name
+        in: query
+        description: 'Name search'
+        schema:
+          type: string
+      - name: color
+        in: query
+        description: 'Color search'
+        schema:
+          type: string
+      - name: 'ids[]'
+        in: query
+        example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Tags.yml#/Tag'
+              type: object
+    security:
+      - BearerAuth: [ ]
+  post:
+    tags:
+      - Tags
+    summary: 'add new tag'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: './../schemas/Tags.yml#/Tag'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Tags.yml#/Tag'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+TagsParams:
+  delete:
+    tags:
+      - Tags
+    summary: 'delete tag'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]
+  patch:
+    tags:
+      - Tags
+    summary: 'update tag'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: './../schemas/Tags.yml#/Tag'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Tags.yml#/Tag'
+              type: object
+    security:
+      - BearerAuth: [ ]

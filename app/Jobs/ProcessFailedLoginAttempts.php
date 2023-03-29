@@ -34,7 +34,7 @@ class ProcessFailedLoginAttempts implements ShouldQueue
             ->orderBy('created_at', 'desc')
             ->get();
 
-        if ($attempts->doesntContain(['logged' => true])) {
+        if ($attempts->doesntContain(['logged' => true]) && $attempts->first()) {
             FailedLoginAttempt::dispatch($attempts->first());
         }
     }

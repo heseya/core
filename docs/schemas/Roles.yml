@@ -1,0 +1,47 @@
+Role:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      description: 'Name of the role'
+      type: string
+      example: Admin
+    description:
+      description: 'Description of the role'
+      type: string
+      example: 'Role with permission to everything'
+    is_registration_role:
+      description: 'Whether the role can be assigned to user upon registration.'
+      type: boolean
+    assignable:
+      description: 'Whether the role is assignable by the current user.'
+      type: boolean
+    deletable:
+      description: 'Whether the role can be deleted with appropriate permissions.'
+      type: boolean
+    users_count:
+      description: 'Number of users in role.'
+      type: number
+      example: 10
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+
+RoleView:
+  type: object
+  allOf:
+    - $ref: '#/Role'
+    - properties:
+        permissions:
+          description: 'Permission names'
+          type: array
+          items:
+            type: string
+            example: roles.show_details
+        locked_permissions:
+          description: 'Whether the permissions can be edited with appropriate permissions.'
+          type: boolean
+          example: true

@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\Contracts\AnalyticsServiceContract;
@@ -28,27 +29,27 @@ class AnalyticsServiceTest extends TestCase
         $order = Order::factory()->create();
 
         $before = Payment::factory([
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
             'created_at' => $from->copy()->subDay(),
         ])->make();
 
         $onStart = Payment::factory([
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
             'created_at' => $from,
         ])->make();
 
         $during = Payment::factory([
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
             'created_at' => $from->copy()->addDays(15),
         ])->make();
 
         $onEnd = Payment::factory([
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
             'created_at' => $to->copy(),
         ])->make();
 
         $after = Payment::factory([
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
             'created_at' => $to->copy()->addDay(),
         ])->make();
 
@@ -144,22 +145,22 @@ class AnalyticsServiceTest extends TestCase
         $order = Order::factory()->create();
 
         $oneG0 = Payment::factory([
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
             'created_at' => $groupOne0,
         ])->make();
 
         $twoG0 = Payment::factory([
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
             'created_at' => $groupOne1,
         ])->make();
 
         $oneG1 = Payment::factory([
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
             'created_at' => $groupTwo0,
         ])->make();
 
         $twoG1 = Payment::factory([
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
             'created_at' => $groupTwo1,
         ])->make();
 

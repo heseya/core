@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Events\OrderEvent;
-use App\Events\WebHookEvent;
 use App\Models\Model;
 use App\Models\Order;
 use Illuminate\Console\Command;
@@ -29,6 +28,7 @@ class WebHookDispatch extends Command
      */
     public function handle(): int
     {
+        /** @var string $eventType */
         $eventType = $this->argument('event');
         $event = '\\App\\Events\\' . $eventType;
 
@@ -51,7 +51,10 @@ class WebHookDispatch extends Command
         return 0;
     }
 
-    private function dispatch(WebHookEvent|string $event, Model $model): void
+    /**
+     * @param class-string $event
+     */
+    private function dispatch(string $event, Model $model): void
     {
         $this->info('WebHook dispatching...');
         $event::dispatch($model);

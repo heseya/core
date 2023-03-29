@@ -2,9 +2,12 @@
 
 namespace App\Services;
 
-use App\Dtos\ShippingMethodDto;
+use App\Dtos\ShippingMethodCreateDto;
+use App\Dtos\ShippingMethodUpdateDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
+use App\Exceptions\StoreException;
+use App\Models\Address;
 use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Services\Contracts\MetadataServiceContract;
@@ -12,19 +15,21 @@ use App\Services\Contracts\ShippingMethodServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 
 class ShippingMethodService implements ShippingMethodServiceContract
 {
-    public function __construct(private MetadataServiceContract $metadataService)
-    {
+    public function __construct(
+        private MetadataServiceContract $metadataService,
+    ) {
     }
 
     public function index(?array $search, ?string $country, float $cartValue): LengthAwarePaginator
     {
         $query = ShippingMethod::query()
-            ->searchByCriteria($search)
+            ->searchByCriteria($search ?? [])
             ->with('metadata')
             ->orderBy('order');
 
@@ -69,14 +74,19 @@ class ShippingMethodService implements ShippingMethodServiceContract
         return $shippingMethods;
     }
 
-    public function store(ShippingMethodDto $shippingMethodDto): ShippingMethod
+    public function store(ShippingMethodCreateDto $shippingMethodDto): ShippingMethod
     {
         $attributes = array_merge(
             $shippingMethodDto->toArray(),
-            ['order' => ShippingMethod::count()],
+            ['order' => ShippingMethod::query()->count()],
         );
 
-        $shippingMethod = ShippingMethod::create($attributes);
+        /** @var ShippingMethod $shippingMethod */
+        $shippingMethod = ShippingMethod::query()->create($attributes);
+
+        if ($shippingMethodDto->getShippingPoints() !== null) {
+            $this->syncShippingPoints($shippingMethodDto, $shippingMethod);
+        }
 
         if ($shippingMethodDto->getPaymentMethods() !== null) {
             $shippingMethod->paymentMethods()->sync($shippingMethodDto->getPaymentMethods());
@@ -90,7 +100,8 @@ class ShippingMethodService implements ShippingMethodServiceContract
             $this->metadataService->sync($shippingMethod, $shippingMethodDto->getMetadata());
         }
 
-        foreach ($shippingMethodDto->getPriceRanges() as $range) {
+        $priceRanges = $shippingMethodDto->getPriceRanges() !== null ? $shippingMethodDto->getPriceRanges() : [];
+        foreach ($priceRanges as $range) {
             $priceRange = $shippingMethod->priceRanges()->firstOrCreate([
                 'start' => $range['start'],
             ]);
@@ -102,9 +113,15 @@ class ShippingMethodService implements ShippingMethodServiceContract
         return $shippingMethod;
     }
 
-    public function update(ShippingMethod $shippingMethod, ShippingMethodDto $shippingMethodDto): ShippingMethod
+    public function update(ShippingMethod $shippingMethod, ShippingMethodUpdateDto $shippingMethodDto): ShippingMethod
     {
-        $shippingMethod->update($shippingMethodDto->toArray());
+        $shippingMethod->update(
+            $shippingMethodDto->toArray(),
+        );
+
+        if ($shippingMethodDto->getShippingPoints() !== null) {
+            $this->syncShippingPoints($shippingMethodDto, $shippingMethod);
+        }
 
         if ($shippingMethodDto->getPaymentMethods() !== null) {
             $shippingMethod->paymentMethods()->sync($shippingMethodDto->getPaymentMethods());
@@ -142,7 +159,38 @@ class ShippingMethodService implements ShippingMethodServiceContract
         if ($shippingMethod->orders()->count() > 0) {
             throw new ClientException(Exceptions::CLIENT_DELETE_WHEN_RELATION_EXISTS);
         }
+        if (!$shippingMethod->deletable) {
+            throw new StoreException(Exceptions::CLIENT_SHIPPING_METHOD_NOT_OWNER);
+        }
 
         $shippingMethod->delete();
+    }
+
+    private function syncShippingPoints(
+        ShippingMethodCreateDto|ShippingMethodUpdateDto $shippingMethodDto,
+        ShippingMethod $shippingMethod,
+    ): void {
+        $shippingPoints = $shippingMethodDto->getShippingPoints();
+
+        if (!is_array($shippingPoints)) {
+            $shippingMethod->shippingPoints()->sync([]);
+        }
+
+        $addresses = new Collection();
+
+        // @phpstan-ignore-next-line
+        foreach ($shippingPoints as $shippingPoint) {
+            if (array_key_exists('id', $shippingPoint)) {
+                Address::query()->where('id', $shippingPoint['id'])->update($shippingPoint);
+                /** @var Address $address */
+                $address = Address::query()->findOrFail($shippingPoint['id']);
+            } else {
+                /** @var Address $address */
+                $address = Address::query()->create($shippingPoint);
+            }
+            $addresses->push($address->getKey());
+        }
+
+        $shippingMethod->shippingPoints()->sync($addresses);
     }
 }

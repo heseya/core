@@ -1,0 +1,52 @@
+ProfileView:
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      description: 'Users name'
+      type: string
+      example: terms-and-conditions
+    avatar:
+      description: 'Name displayed as a page header'
+      type: string
+      example: 'Terms & Conditions'
+    permissions:
+      description: 'Permission names'
+      type: array
+      items:
+        type: string
+        example: roles.show_details
+  type: object
+
+TFASetupEmail:
+  type: object
+  properties:
+    type:
+      type: string
+      example: email
+
+TFASetupApp:
+  type: object
+  properties:
+    type:
+      type: string
+      example: app
+    secret:
+      type: string
+      example: 3DCURGX7GN7KDOUJDI
+    qr_code_url:
+      type: string
+      example: 'https://qr-code.example/sampleurl'
+
+Preferences:
+  type: object
+  properties:
+    successful_login_attempt_alert:
+      type: boolean
+    failed_login_attempt_alert:
+      type: boolean
+    new_localization_login_alert:
+      type: boolean
+    recovery_code_changed_alert:
+      type: boolean

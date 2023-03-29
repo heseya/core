@@ -3,14 +3,17 @@
 namespace App\Models;
 
 use App\Criteria\DiscountSearch;
+use App\Criteria\ForRoleDiscountSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\WhereHasCode;
+use App\Criteria\WhereInIds;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Traits\HasMetadata;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
@@ -20,6 +23,8 @@ use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
+ * @property mixed $pivot
+ *
  * @mixin IdeHelperDiscount
  */
 class Discount extends Model implements AuditableContract
@@ -35,12 +40,14 @@ class Discount extends Model implements AuditableContract
         'target_type',
         'target_is_allow_list',
         'priority',
+        'active',
     ];
 
     protected $casts = [
         'type' => DiscountType::class,
         'target_type' => DiscountTargetType::class,
         'target_is_allow_list' => 'boolean',
+        'active' => 'boolean',
     ];
 
     protected array $criteria = [
@@ -50,6 +57,8 @@ class Discount extends Model implements AuditableContract
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'coupon' => WhereHasCode::class,
+        'for_role' => ForRoleDiscountSearch::class,
+        'ids' => WhereInIds::class,
     ];
 
     public function getUsesAttribute(): int
@@ -103,5 +112,10 @@ class Discount extends Model implements AuditableContract
         }
 
         return $products->unique();
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('active', true);
     }
 }

@@ -99,6 +99,31 @@ class WebHookTest extends TestCase
             ->assertJsonFragment(['id' => $webHook->getKey()]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchByIds($user): void
+    {
+        $this->$user->givePermissionTo('webhooks.show');
+
+        WebHook::factory()->create([
+            'name' => 'test webhook',
+            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->$user::class,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/webhooks', [
+                'ids' => [
+                    $this->webHook->getKey(),
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $this->webHook->getKey()]);
+    }
+
     public function testCreateUnauthorized(): void
     {
         $response = $this->json('POST', '/webhooks');
@@ -210,57 +235,6 @@ class WebHookTest extends TestCase
         ]);
 
         $response->assertStatus(422);
-    }
-
-    /**
-     * @dataProvider booleanProvider
-     */
-    public function testCreateBooleanValues($user, $boolean, $booleanValue): void
-    {
-        $this->$user->givePermissionTo(
-            'webhooks.add',
-            'products.show',
-            'products.show_details',
-            'products.show_hidden',
-            'users.show',
-            'apps.show',
-        );
-
-        $webHook = [
-            'name' => 'WebHook test',
-            'url' => 'https://www.www.www',
-            'secret' => 'secret',
-            'with_issuer' => $boolean,
-            'with_hidden' => $boolean,
-        ];
-
-        $response = $this->actingAs($this->$user)->json(
-            'POST',
-            '/webhooks',
-            $webHook + [
-                'events' => [
-                    'ProductCreated',
-                ],
-            ]
-        );
-
-        $webHookResponse = array_merge($webHook, [
-            'with_issuer' => $booleanValue,
-            'with_hidden' => $booleanValue,
-        ]);
-
-        $response
-            ->assertCreated()
-            ->assertJsonFragment($webHookResponse + [
-                'events' => [
-                    'ProductCreated',
-                ],
-            ]);
-
-        $this->assertDatabaseHas('web_hooks', $webHookResponse + [
-            'creator_id' => $this->$user->getKey(),
-            'model_type' => $this->$user::class,
-        ]);
     }
 
     /**

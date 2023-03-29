@@ -6,6 +6,7 @@ use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\ParentIdSearch;
 use App\Criteria\ProductSetSearch;
+use App\Criteria\WhereInIds;
 use App\Enums\DiscountTargetType;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasDiscounts;
@@ -38,7 +39,6 @@ class ProductSet extends Model
         'public',
         'public_parent',
         'order',
-        'hide_on_index',
         'parent_id',
         'description_html',
         'cover_id',
@@ -47,7 +47,6 @@ class ProductSet extends Model
     protected $casts = [
         'public' => 'boolean',
         'public_parent' => 'boolean',
-        'hide_on_index' => 'boolean',
     ];
 
     protected array $criteria = [
@@ -58,6 +57,7 @@ class ProductSet extends Model
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'parent_id' => ParentIdSearch::class,
+        'ids' => WhereInIds::class,
     ];
 
     public function getSlugOverrideAttribute(): bool
@@ -159,6 +159,7 @@ class ProductSet extends Model
     {
         $sales = $this->discounts
             ->filter(fn ($discount): bool => $discount->code === null
+                && $discount->active
                 && $discount->target_type->is(DiscountTargetType::PRODUCTS));
 
         if ($this->parent) {

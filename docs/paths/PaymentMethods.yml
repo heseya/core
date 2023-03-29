@@ -1,0 +1,119 @@
+PaymentMethods:
+  get:
+    tags:
+      - Payments
+    summary: 'list payment methods'
+    parameters:
+      - name: shipping_method_id
+        in: query
+        schema:
+          type: string
+      - name: order_code
+        in: query
+        schema:
+          type: string
+      - name: 'ids[]'
+        in: query
+        example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/PaymentMethods.yml#/PaymentMethod'
+              type: object
+  post:
+    tags:
+      - Payments
+    summary: 'add new payment method'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: './../requests/PaymentMethods.yml#/PaymentMethod'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/PaymentMethods.yml#/PaymentMethod'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+PaymentMethodsParams:
+  get:
+    tags:
+      - Payments
+    summary: 'get payment method'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/PaymentMethods.yml#/PaymentMethod'
+              type: object
+  delete:
+    tags:
+      - Payments
+    summary: 'delete payment method'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]
+  patch:
+    tags:
+      - Payments
+    summary: 'update payment method'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: './../requests/PaymentMethods.yml#/PaymentMethod'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/PaymentMethods.yml#/PaymentMethod'
+              type: object
+    security:
+      - BearerAuth: [ ]

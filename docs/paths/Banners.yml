@@ -1,0 +1,156 @@
+Banners:
+  get:
+    tags:
+      - Banners
+    summary: 'displaying banners'
+    parameters:
+      - name: 'slug'
+        in: query
+        required: false
+        schema:
+          type: string
+          example: 'spring-banner'
+      - name: metadata
+        in: query
+        description: search by metadata
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: metadata_private
+        in: query
+        description: search by metadata private
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: 'ids[]'
+        in: query
+        example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Banners.yml#/BannerMetadata'
+
+  post:
+    tags:
+      - Banners
+    summary: 'adding new banner'
+    security:
+      - BearerAuth: [ ]
+    requestBody:
+      $ref: './../requests/Banners.yml#/BannerStore'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: './../schemas/Banners.yml#/BannerMetadata'
+
+BannersParam:
+  get:
+    tags:
+      - Banners
+    summary: 'get specific banner'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    security:
+      - BearerAuth: [ ]
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: './../schemas/Banners.yml#/BannerMetadata'
+
+  patch:
+    tags:
+      - Banners
+    summary: 'update banner'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    security:
+      - BearerAuth: [ ]
+    requestBody:
+      $ref: './../requests/Banners.yml#/BannerUpdate'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: './../schemas/Banners.yml#/BannerMetadata'
+
+  delete:
+    tags:
+      - Banners
+    summary: 'update banner'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    security:
+      - BearerAuth: [ ]
+    responses:
+      204:
+        description: No content
+
+BannersSlug:
+  get:
+    tags:
+      - Banners
+    summary: 'get specific banner by slug'
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+    security:
+      - BearerAuth: [ ]
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: './../schemas/Banners.yml#/BannerMetadata'

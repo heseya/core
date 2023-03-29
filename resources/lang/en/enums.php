@@ -8,6 +8,7 @@ return [
         EventType::ORDER_CREATED => 'Event triggered when new orders are created',
         EventType::ORDER_UPDATED => 'Event triggered after order is updated',
         EventType::ORDER_UPDATED_STATUS => 'Event triggered after order status is updated',
+        EventType::ORDER_REQUESTED_SHIPPING => 'Event triggered at creating shipping list',
         EventType::PRODUCT_CREATED => 'Event triggered when new products are created',
         EventType::PRODUCT_UPDATED => 'Event triggered after product is updated',
         EventType::PRODUCT_DELETED => 'Event triggered after product is deleted',
@@ -42,5 +43,6 @@ return [
         EventType::NEW_LOCALIZATION_LOGIN_ATTEMPT => 'Event after successful login attempt from new localization',
         EventType::FAILED_LOGIN_ATTEMPT => 'Event triggered when a failed login attempt is made',
         EventType::ORDER_UPDATED_SHIPPING_NUMBER => 'Event triggered after shipping number is updated',
+        EventType::SEND_ORDER_URLS => 'Event triggered after sending order products urls',
     ],
 ];

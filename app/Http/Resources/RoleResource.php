@@ -5,7 +5,6 @@ namespace App\Http\Resources;
 use App\Enums\RoleType;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class RoleResource extends Resource
 {
@@ -17,13 +16,10 @@ class RoleResource extends Resource
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
             'description' => $this->resource->description,
-            'assignable' => Auth::user() !== null
-            && $this->resource->type->isNot(RoleType::UNAUTHENTICATED)
-            && $this->resource->type->isNot(RoleType::AUTHENTICATED)
-                ? Auth::user()->hasAllPermissions(
-                    $this->resource->getAllPermissions(),
-                ) : false,
+            'is_registration_role' => $this->resource->is_registration_role,
+            'assignable' => $this->resource->isAssignable(),
             'deletable' => $this->resource->type->is(RoleType::REGULAR),
+            'users_count' => $this->resource->users_count,
         ], $this->metadataResource('roles.show_metadata_private'));
     }
 

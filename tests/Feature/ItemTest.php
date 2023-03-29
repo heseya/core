@@ -9,6 +9,8 @@ use App\Events\ItemUpdated;
 use App\Listeners\WebHookEventListener;
 use App\Models\Deposit;
 use App\Models\Item;
+use App\Models\Product;
+use App\Models\Schema;
 use App\Models\WebHook;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Carbon;
@@ -71,6 +73,30 @@ class ItemTest extends TestCase
             ]);
 
         $this->assertQueryCountLessThan(11);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexByIds($user): void
+    {
+        $this->$user->givePermissionTo('items.show');
+
+        Item::factory()->count(10)->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/items', [
+                'ids' => [
+                    $this->item->getKey(),
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJson(['data' => [
+                0 => $this->expected,
+            ],
+            ]);
     }
 
     /**
@@ -283,7 +309,101 @@ class ItemTest extends TestCase
             ->actingAs($this->$user)
             ->getJson('/items/id:' . $this->item->getKey())
             ->assertOk()
-            ->assertJson(['data' => $this->expected]);
+            ->assertJson(['data' => $this->expected + ['products' => [], 'schemas' => []]]);
+
+        $this->assertQueryCountLessThan(10);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewWithProducts($user): void
+    {
+        $this->$user->givePermissionTo('items.show_details');
+
+        $product1 = Product::factory()->create(['public' => true]);
+        $product1->items()->attach([$this->item->getKey() => [
+            'required_quantity' => 1,
+        ],
+        ]);
+
+        $product2 = Product::factory()->create(['public' => true]);
+        $product2->items()->attach([$this->item->getKey() => [
+            'required_quantity' => 1,
+        ],
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/items/id:' . $this->item->getKey())
+            ->assertOk()
+            ->assertJson(['data' => $this->expected])
+            ->assertJsonCount(2, 'data.products')
+            ->assertJsonFragment([
+                'id' => $product1->getKey(),
+                'name' => $product1->name,
+            ])
+            ->assertJsonFragment([
+                'id' => $product2->getKey(),
+                'name' => $product2->name,
+            ]);
+
+        $this->assertQueryCountLessThan(10);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewWithSchemas($user): void
+    {
+        $this->$user->givePermissionTo('items.show_details');
+
+        $schema1 = Schema::factory()->create([
+            'type' => 'select',
+            'price' => 0,
+            'hidden' => false,
+            'required' => true,
+        ]);
+
+        $option1 = $schema1->options()->create([
+            'name' => 'XL',
+            'price' => 0,
+        ]);
+        $option1->items()->sync([$this->item->getKey()]);
+
+        $schema2 = Schema::factory()->create([
+            'type' => 'select',
+            'price' => 0,
+            'hidden' => false,
+            'required' => false,
+        ]);
+
+        $option2 = $schema2->options()->create([
+            'name' => 'XL',
+            'price' => 0,
+        ]);
+        $option2->items()->sync([$this->item->getKey()]);
+
+        $option3 = $schema2->options()->create([
+            'name' => 'XL',
+            'price' => 0,
+        ]);
+        $option3->items()->sync([$this->item->getKey()]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/items/id:' . $this->item->getKey())
+            ->assertOk()
+            ->assertJson(['data' => $this->expected])
+            ->assertJsonCount(2, 'data.schemas')
+            ->assertJsonFragment([
+                'id' => $schema1->getKey(),
+                'name' => $schema1->name,
+            ])
+            ->assertJsonFragment([
+                'id' => $schema2->getKey(),
+                'name' => $schema2->name,
+            ]);
 
         $this->assertQueryCountLessThan(10);
     }

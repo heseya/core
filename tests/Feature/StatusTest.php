@@ -57,6 +57,23 @@ class StatusTest extends TestCase
             ->assertJsonFragment([$this->expected]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexByIds($user): void
+    {
+        $this->$user->givePermissionTo('statuses.show');
+
+        $this->actingAs($this->$user)->json('GET', '/statuses', [
+            'ids' => [
+                $this->status_model->getKey(),
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([$this->expected]);
+    }
+
     public function testCreateUnauthorized(): void
     {
         $response = $this->postJson('/statuses');
@@ -134,40 +151,6 @@ class StatusTest extends TestCase
             ->postJson('/statuses', $status)
             ->assertCreated()
             ->assertJson(['data' => $status]);
-    }
-
-    /**
-     * @dataProvider booleanProvider
-     */
-    public function testCreateBooleanValues($user, $boolean, $booleanValue): void
-    {
-        $this->$user->givePermissionTo('statuses.add');
-
-        $status = [
-            'name' => 'Test Status',
-            'color' => 'ffffff',
-            'description' => 'To jest status testowy.',
-            'hidden' => $boolean,
-            'no_notifications' => $boolean,
-            'cancel' => $boolean,
-        ];
-
-        $statusResponse = array_merge(
-            $status,
-            [
-                'hidden' => $booleanValue,
-                'no_notifications' => $booleanValue,
-                'cancel' => $booleanValue,
-            ]
-        );
-
-        $response = $this->actingAs($this->$user)->json('POST', '/statuses', $status);
-
-        $response
-            ->assertCreated()
-            ->assertJson(['data' => $statusResponse]);
-
-        $this->assertDatabaseHas('statuses', $statusResponse);
     }
 
     /**
@@ -338,43 +321,6 @@ class StatusTest extends TestCase
             ->assertOk();
 
         $this->assertDatabaseHas('statuses', $data + ['id' => $this->status_model->getKey()]);
-    }
-
-    /**
-     * @dataProvider booleanProvider
-     */
-    public function testUpdateBooleanValues($user, $boolean, $booleanValue): void
-    {
-        $this->$user->givePermissionTo('statuses.edit');
-
-        $status = [
-            'name' => 'Test Status 2',
-            'color' => '444444',
-            'description' => 'Testowy opis testowego statusu 2.',
-            'hidden' => $boolean,
-            'no_notifications' => $boolean,
-            'cancel' => $boolean,
-        ];
-
-        $statusResponse = array_merge(
-            $status,
-            [
-                'hidden' => $booleanValue,
-                'no_notifications' => $booleanValue,
-                'cancel' => $booleanValue,
-            ]
-        );
-
-        $response = $this->actingAs($this->$user)->json(
-            'PATCH',
-            '/statuses/id:' . $this->status_model->getKey(),
-            $status,
-        );
-        $response
-            ->assertOk()
-            ->assertJson(['data' => $statusResponse]);
-
-        $this->assertDatabaseHas('statuses', $statusResponse + ['id' => $this->status_model->getKey()]);
     }
 
     public function testDeleteUnauthorized(): void

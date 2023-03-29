@@ -6,6 +6,7 @@ use App\Criteria\ItemSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\WhereCreatedBefore;
+use App\Criteria\WhereInIds;
 use App\Criteria\WhereSoldOut;
 use App\Models\Contracts\SortableContract;
 use App\Traits\HasMetadata;
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
@@ -47,6 +49,7 @@ class Item extends Model implements AuditableContract, SortableContract
         'day' => WhereCreatedBefore::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
+        'ids' => WhereInIds::class,
     ];
 
     protected array $sortable = [
@@ -113,5 +116,14 @@ class Item extends Model implements AuditableContract, SortableContract
             ->having('quantity', '>', '0')
             ->orderBy('shipping_date')
             ->orderBy('shipping_time');
+    }
+
+    public function getSchemasAttribute(): Collection
+    {
+        $schemas = Collection::make();
+
+        $this->options->each(fn (Option $option): Collection => $schemas->push($option->schema));
+
+        return $schemas->unique();
     }
 }

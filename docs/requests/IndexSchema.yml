@@ -1,0 +1,18 @@
+IndexSchema:
+  content:
+    application/json:
+      schema:
+        properties:
+          name:
+            type: string
+          hidden:
+            type: boolean
+            example: 'false'
+          required:
+            type: boolean
+            example: 'true'
+          search:
+            type: string
+          sort:
+            type: string
+        type: object

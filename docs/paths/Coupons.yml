@@ -1,0 +1,152 @@
+Coupons:
+  get:
+    tags:
+      - Discounts
+    summary: 'get all Coupons'
+    parameters:
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: description
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: code
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: for_role
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: 'ids[]'
+        in: query
+        example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Coupons.yml#/CouponShow'
+              type: object
+    security:
+      - BearerAuth: [ ]
+  post:
+    tags:
+      - Discounts
+    summary: 'add new Coupon'
+    requestBody:
+      $ref: './../requests/Coupons.yml#/CouponStore'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Coupons.yml#/CouponShow'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+CouponsParams:
+  get:
+    tags:
+      - Discounts
+    summary: 'show Coupon'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Coupons.yml#/CouponShow'
+              type: object
+  delete:
+    tags:
+      - Discounts
+    summary: 'delete Coupon'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]
+  patch:
+    tags:
+      - Discounts
+    summary: 'update Coupon'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      $ref: './../requests/Coupons.yml#/CouponUpdate'
+    responses:
+      200:
+        description: Updated
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Coupons.yml#/CouponShow'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+CouponCode:
+  get:
+    tags:
+      - Discounts
+    summary: 'show Coupon'
+    parameters:
+      - name: code
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Coupons.yml#/CouponShow'
+              type: object

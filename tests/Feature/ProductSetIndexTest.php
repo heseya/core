@@ -82,7 +82,6 @@ class ProductSetIndexTest extends TestCase
                     'slug_override' => false,
                     'public' => $this->set->public,
                     'visible' => $this->set->public && $this->set->public_parent,
-                    'hide_on_index' => $this->set->hide_on_index,
                     'parent_id' => $this->set->parent_id,
                     'children_ids' => [
                         $this->childSet->getKey(),
@@ -95,9 +94,40 @@ class ProductSetIndexTest extends TestCase
                     'slug_override' => true,
                     'public' => $this->childSet->public,
                     'visible' => $this->childSet->public && $this->childSet->public_parent,
-                    'hide_on_index' => $this->childSet->hide_on_index,
                     'parent_id' => $this->childSet->parent_id,
                     'children_ids' => [],
+                ],
+            ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexByIds($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.show');
+
+        $response = $this->actingAs($this->$user)->json('GET', '/product-sets', [
+            'ids' => [
+                $this->set->getKey(),
+            ],
+        ]);
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJson(['data' => [
+                0 => [
+                    'id' => $this->set->getKey(),
+                    'name' => $this->set->name,
+                    'slug' => $this->set->slug,
+                    'slug_override' => false,
+                    'public' => $this->set->public,
+                    'visible' => $this->set->public && $this->set->public_parent,
+                    'parent_id' => $this->set->parent_id,
+                    'children_ids' => [
+                        $this->childSet->getKey(),
+                    ],
                 ],
             ],
             ]);
@@ -122,7 +152,6 @@ class ProductSetIndexTest extends TestCase
                     'slug_override' => false,
                     'public' => $this->set->public,
                     'visible' => $this->set->public && $this->set->public_parent,
-                    'hide_on_index' => $this->set->hide_on_index,
                     'parent_id' => $this->set->parent_id,
                     'children_ids' => [
                         $this->childSet->getKey(),
@@ -223,7 +252,6 @@ class ProductSetIndexTest extends TestCase
                     'slug_override' => false,
                     'public' => $this->set->public,
                     'visible' => $this->set->public && $this->set->public_parent,
-                    'hide_on_index' => $this->set->hide_on_index,
                     'parent_id' => null,
                     'children_ids' => [
                         $this->childSet->getKey(),
@@ -236,7 +264,6 @@ class ProductSetIndexTest extends TestCase
                     'slug_override' => false,
                     'public' => $this->privateSet->public,
                     'visible' => $this->privateSet->public && $this->privateSet->public_parent,
-                    'hide_on_index' => $this->privateSet->hide_on_index,
                     'parent_id' => null,
                     'children_ids' => [],
                 ],
@@ -247,7 +274,6 @@ class ProductSetIndexTest extends TestCase
                     'slug_override' => true,
                     'public' => $this->childSet->public,
                     'visible' => $this->childSet->public && $this->childSet->public_parent,
-                    'hide_on_index' => $this->childSet->hide_on_index,
                     'parent_id' => $this->childSet->parent_id,
                     'children_ids' => [
                         $this->subChildSet->getKey(),
@@ -260,7 +286,6 @@ class ProductSetIndexTest extends TestCase
                     'slug_override' => true,
                     'public' => $this->subChildSet->public,
                     'visible' => $this->subChildSet->public && $this->subChildSet->public_parent,
-                    'hide_on_index' => $this->subChildSet->hide_on_index,
                     'parent_id' => $this->subChildSet->parent_id,
                     'children_ids' => [],
                 ],
@@ -269,13 +294,13 @@ class ProductSetIndexTest extends TestCase
     }
 
     /**
-     * @dataProvider trueBooleanProvider
+     * @dataProvider authProvider
      */
-    public function testIndexRoot($user, $boolean, $booleanValue): void
+    public function testIndexRoot($user): void
     {
         $this->$user->givePermissionTo('product_sets.show');
 
-        $response = $this->actingAs($this->$user)->json('GET', '/product-sets', ['root' => $boolean]);
+        $response = $this->actingAs($this->$user)->json('GET', '/product-sets', ['root' => true]);
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public sets.
@@ -287,7 +312,6 @@ class ProductSetIndexTest extends TestCase
                     'slug_override' => false,
                     'public' => $this->set->public,
                     'visible' => $this->set->public && $this->set->public_parent,
-                    'hide_on_index' => $this->set->hide_on_index,
                     'parent_id' => $this->set->parent_id,
                     'children_ids' => [
                         $this->childSet->getKey(),
@@ -298,13 +322,13 @@ class ProductSetIndexTest extends TestCase
     }
 
     /**
-     * @dataProvider trueBooleanProvider
+     * @dataProvider authProvider
      */
-    public function testIndexRootHidden($user, $boolean, $booleanValue): void
+    public function testIndexRootHidden($user): void
     {
         $this->$user->givePermissionTo(['product_sets.show', 'product_sets.show_hidden']);
 
-        $response = $this->actingAs($this->$user)->json('GET', '/product-sets', ['root' => $boolean]);
+        $response = $this->actingAs($this->$user)->json('GET', '/product-sets', ['root' => true]);
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data') // Should show only public sets.
@@ -316,7 +340,6 @@ class ProductSetIndexTest extends TestCase
                     'slug_override' => false,
                     'public' => $this->set->public,
                     'visible' => $this->set->public && $this->set->public_parent,
-                    'hide_on_index' => $this->set->hide_on_index,
                     'parent_id' => null,
                     'children_ids' => [
                         $this->childSet->getKey(),
@@ -329,7 +352,6 @@ class ProductSetIndexTest extends TestCase
                     'slug_override' => false,
                     'public' => $this->privateSet->public,
                     'visible' => $this->privateSet->public && $this->privateSet->public_parent,
-                    'hide_on_index' => $this->privateSet->hide_on_index,
                     'parent_id' => null,
                     'children_ids' => [],
                 ],
@@ -338,13 +360,13 @@ class ProductSetIndexTest extends TestCase
     }
 
     /**
-     * @dataProvider trueBooleanProvider
+     * @dataProvider authProvider
      */
-    public function testIndexTree($user, $boolean, $booleanValue): void
+    public function testIndexTree($user): void
     {
         $this->$user->givePermissionTo('product_sets.show');
 
-        $response = $this->actingAs($this->$user)->json('GET', '/product-sets', ['tree' => $boolean]);
+        $response = $this->actingAs($this->$user)->json('GET', '/product-sets', ['tree' => true]);
 
         $response
             ->assertOk()
@@ -357,7 +379,6 @@ class ProductSetIndexTest extends TestCase
                     'slug_override' => false,
                     'public' => $this->set->public,
                     'visible' => $this->set->public && $this->set->public_parent,
-                    'hide_on_index' => $this->set->hide_on_index,
                     'parent_id' => $this->set->parent_id,
                     'cover' => [],
                     'children' => [
@@ -368,7 +389,6 @@ class ProductSetIndexTest extends TestCase
                             'slug_override' => true,
                             'public' => $this->childSet->public,
                             'visible' => $this->childSet->public && $this->childSet->public_parent,
-                            'hide_on_index' => $this->childSet->hide_on_index,
                             'parent_id' => $this->childSet->parent_id,
                             'cover' => [],
                             'children' => [],
@@ -381,7 +401,6 @@ class ProductSetIndexTest extends TestCase
                     'slug' => $this->childSet->slug,
                     'public' => $this->childSet->public,
                     'visible' => $this->childSet->public && $this->childSet->public_parent,
-                    'hide_on_index' => $this->childSet->hide_on_index,
                     'parent_id' => $this->set->getKey(),
                 ],
             ],
@@ -419,7 +438,6 @@ class ProductSetIndexTest extends TestCase
                         'slug_override' => $set->slug_override,
                         'public' => $set->public,
                         'visible' => $set->public,
-                        'hide_on_index' => $set->hide_on_index,
                         'parent_id' => $set->parent_id,
                         'children_ids' => $set->children->pluck('id')->toArray(),
                     ],
@@ -460,7 +478,6 @@ class ProductSetIndexTest extends TestCase
                         'slug_override' => $set->slug_override,
                         'public' => $set->public,
                         'visible' => $set->public,
-                        'hide_on_index' => $set->hide_on_index,
                         'parent_id' => $set->parent_id,
                         'children' => [
                             [
@@ -540,15 +557,15 @@ class ProductSetIndexTest extends TestCase
     }
 
     /**
-     * @dataProvider trueBooleanProvider
+     * @dataProvider authProvider
      */
-    public function testIndexTreeHidden($user, $boolean, $booleanValue): void
+    public function testIndexTreeHidden($user): void
     {
         $this->$user->givePermissionTo(['product_sets.show', 'product_sets.show_hidden']);
 
-        $response = $this->actingAs($this->$user)->json('GET', '/product-sets?tree', ['tree' => $boolean]);
-
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/product-sets', ['tree' => true])
             ->assertOk()
             ->assertJsonCount(4, 'data') // Should show only public sets.
             ->assertJson([
@@ -560,7 +577,6 @@ class ProductSetIndexTest extends TestCase
                         'slug_override' => false,
                         'public' => $this->set->public,
                         'visible' => $this->set->public && $this->set->public_parent,
-                        'hide_on_index' => $this->set->hide_on_index,
                         'parent_id' => null,
                         'children' => [
                             [
@@ -570,7 +586,6 @@ class ProductSetIndexTest extends TestCase
                                 'slug_override' => true,
                                 'public' => $this->childSet->public,
                                 'visible' => $this->childSet->public && $this->childSet->public_parent,
-                                'hide_on_index' => $this->childSet->hide_on_index,
                                 'parent_id' => $this->childSet->parent_id,
                                 'children' => [
                                     [
@@ -580,7 +595,6 @@ class ProductSetIndexTest extends TestCase
                                         'slug_override' => true,
                                         'public' => $this->subChildSet->public,
                                         'visible' => $this->subChildSet->public && $this->subChildSet->public_parent,
-                                        'hide_on_index' => $this->subChildSet->hide_on_index,
                                         'parent_id' => $this->subChildSet->parent_id,
                                         'children' => [],
                                     ],
@@ -595,7 +609,6 @@ class ProductSetIndexTest extends TestCase
                         'slug_override' => false,
                         'public' => $this->privateSet->public,
                         'visible' => $this->privateSet->public && $this->privateSet->public_parent,
-                        'hide_on_index' => $this->privateSet->hide_on_index,
                         'parent_id' => null,
                         'children' => [],
                     ],
@@ -606,7 +619,6 @@ class ProductSetIndexTest extends TestCase
                         'slug_override' => true,
                         'public' => $this->childSet->public,
                         'visible' => $this->childSet->public && $this->childSet->public_parent,
-                        'hide_on_index' => $this->childSet->hide_on_index,
                         'parent_id' => $this->childSet->parent_id,
                         'children' => [
                             [
@@ -616,7 +628,6 @@ class ProductSetIndexTest extends TestCase
                                 'slug_override' => true,
                                 'public' => $this->subChildSet->public,
                                 'visible' => $this->subChildSet->public && $this->subChildSet->public_parent,
-                                'hide_on_index' => $this->subChildSet->hide_on_index,
                                 'parent_id' => $this->subChildSet->parent_id,
                                 'children' => [],
                             ],
@@ -629,7 +640,6 @@ class ProductSetIndexTest extends TestCase
                         'slug_override' => true,
                         'public' => $this->subChildSet->public,
                         'visible' => $this->subChildSet->public && $this->subChildSet->public_parent,
-                        'hide_on_index' => $this->subChildSet->hide_on_index,
                         'parent_id' => $this->subChildSet->parent_id,
                         'children' => [],
                     ],

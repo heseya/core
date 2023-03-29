@@ -1,0 +1,209 @@
+ProviderLogin:
+  post:
+    tags:
+      - Auth
+    summary: Login
+    parameters:
+      - name: AuthProviderKey
+        in: path
+        required: true
+        schema:
+          type: string
+          enum: [ 'facebook', 'google', 'apple', 'github', 'gitlab', 'bitbucket', 'linkedin' ]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              return_url:
+                type: string
+                example: https://example.com?code=1234
+                description: Must be same as the `return_url` used in the `/auth/providers/{provider}/redirect` endpoint
+                  and contains query params received from providers
+            type: object
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  properties:
+                    token:
+                      type: string
+                    identity_token:
+                      type: string
+                    refresh_token:
+                      type: string
+                    user:
+                      $ref: './../schemas/Users.yml#/User'
+                  type: object
+              type: object
+      422:
+        description: ''
+        content:
+          application/json:
+            schema:
+              properties:
+                error:
+                  type: object
+                  allOf:
+                    - $ref: './../schemas/Error.yml#/Error'
+                    - properties:
+                        key:
+                          type: string
+                          example: 'CLIENT_ALREADY_HAS_ACCOUNT'
+                        message:
+                          example: 'User with given email already exist.'
+                        code:
+                          example: 422
+                        errors:
+                          type: object
+                          properties:
+                            merge_token:
+                              type: string
+                              example: '38v92867932v48937y4'
+              type: object
+
+ProviderRedirect:
+  post:
+    tags:
+      - Auth
+    summary: Redirect to auth provider login
+    parameters:
+      - name: AuthProviderKey
+        in: path
+        required: true
+        schema:
+          type: string
+          enum: [ 'facebook', 'google', 'apple', 'github', 'gitlab', 'bitbucket', 'linkedin' ]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              return_url:
+                type: string
+                example: https://example.com
+            type: object
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  properties:
+                    redirect_url:
+                      type: string
+                  type: object
+              type: object
+
+Index:
+  get:
+    tags:
+      - Auth
+    summary: 'List of providers'
+    parameters:
+      - name: active
+        in: path
+        required: true
+        schema:
+          type: boolean
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Provider.yml#/ProviderResource'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+MergeAccount:
+  post:
+    tags:
+      - Auth
+    summary: 'Merge standard registered user with provider user'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              merge_token:
+                type: string
+                example: '38v92867932v48937y4'
+            type: object
+    responses:
+      204:
+        description: 'Success no content'
+    security:
+      - BearerAuth: [ ]
+
+ProviderParams:
+  get:
+    tags:
+      - Auth
+    summary: 'Gets provider'
+    parameters:
+      - name: AuthProviderKey
+        in: path
+        required: true
+        schema:
+          type: string
+          enum: [ 'facebook', 'google', 'apple', 'github', 'gitlab', 'bitbucket', 'linkedin' ]
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Provider.yml#/ProviderResource'
+              type: object
+    security:
+      - BearerAuth: [ ]
+  patch:
+    tags:
+      - Auth
+    summary: 'Updates provider'
+    parameters:
+      - name: AuthProviderKey
+        in: path
+        required: true
+        schema:
+          type: string
+          enum: [ 'facebook', 'google', 'apple', 'github', 'gitlab', 'bitbucket', 'linkedin' ]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              client_id:
+                type: string
+                example: '38v92867932v48937y4'
+              client_secret:
+                type: string
+                example: '209-387vn20hfj'
+              active:
+                type: boolean
+                example: true
+            type: object
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Provider.yml#/Provider'
+              type: object

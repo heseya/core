@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\SchemaType;
+use App\Enums\ShippingType;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Events\ProductUpdated;
@@ -74,9 +75,11 @@ class AvailabilityTest extends TestCase
 
         $item->options()->save($option);
 
-        $this->actingAs($this->$user)->postJson('/items/id:' . $item->getKey() . '/deposits', [
-            'quantity' => 6,
-        ]);
+        $this
+            ->actingAs($this->$user)
+            ->json('POST', '/items/id:' . $item->getKey() . '/deposits', [
+                'quantity' => 6,
+            ]);
 
         $this
             ->assertDatabaseHas('products', [
@@ -308,8 +311,11 @@ class AvailabilityTest extends TestCase
 
         $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'test@test.test',
-            'shipping_method_id' => ShippingMethod::factory()->create()->getKey(),
-            'delivery_address' => Address::factory()->create()->toArray(),
+            'shipping_method_id' => ShippingMethod::factory()->create([
+                'shipping_type' => ShippingType::ADDRESS,
+            ])->getKey(),
+            'shipping_place' => Address::factory()->create()->toArray(),
+            'billing_address' => Address::factory()->create()->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -375,8 +381,11 @@ class AvailabilityTest extends TestCase
 
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'test@test.test',
-            'shipping_method_id' => ShippingMethod::factory()->create()->getKey(),
-            'delivery_address' => Address::factory()->create()->toArray(),
+            'shipping_method_id' => ShippingMethod::factory()->create([
+                'shipping_type' => ShippingType::ADDRESS,
+            ])->getKey(),
+            'shipping_place' => Address::factory()->create()->toArray(),
+            'billing_address' => Address::factory()->create()->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -576,7 +585,8 @@ class AvailabilityTest extends TestCase
         $this->actingAs($this->$user)->postJson('/orders', [
             'email' => $email,
             'shipping_method_id' => $shippingMethod->getKey(),
-            'delivery_address' => $address->toArray(),
+            'shipping_place' => $address->toArray(),
+            'billing_address' => $address->toArray(),
             'items' => [
                 [
                     'product_id' => $product->getKey(),
@@ -604,6 +614,7 @@ class AvailabilityTest extends TestCase
             'slug' => 'test',
             'price' => 10,
             'public' => false,
+            'shipping_digital' => false,
             'sets' => [],
             'schemas' => array_keys($schemas),
         ])->assertCreated();

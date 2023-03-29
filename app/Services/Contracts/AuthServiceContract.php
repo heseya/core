@@ -8,10 +8,13 @@ use App\Dtos\TFAPasswordDto;
 use App\Dtos\TFASetupDto;
 use App\Dtos\UpdateProfileDto;
 use App\Models\User;
+use Illuminate\Contracts\Auth\Authenticatable;
 
 interface AuthServiceContract
 {
     public function login(string $email, string $password, ?string $ip, ?string $userAgent, ?string $code): array;
+
+    public function loginWithUser(Authenticatable $user, ?string $ip, ?string $userAgent): array;
 
     public function refresh(string $refreshToken, ?string $ip, ?string $userAgent): array;
 

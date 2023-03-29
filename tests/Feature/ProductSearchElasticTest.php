@@ -52,14 +52,6 @@ class ProductSearchElasticTest extends TestCase
                             ],
                         ],
                     ],
-                    [
-                        'term' => [
-                            'hide_on_index' => [
-                                'value' => false,
-                                'boost' => 1.0,
-                            ],
-                        ],
-                    ],
                 ],
             ],
         ], 100);
@@ -89,14 +81,6 @@ class ProductSearchElasticTest extends TestCase
                             'term' => [
                                 'public' => [
                                     'value' => true,
-                                    'boost' => 1.0,
-                                ],
-                            ],
-                        ],
-                        [
-                            'term' => [
-                                'hide_on_index' => [
-                                    'value' => false,
                                     'boost' => 1.0,
                                 ],
                             ],
@@ -139,14 +123,6 @@ class ProductSearchElasticTest extends TestCase
                             'term' => [
                                 'public' => [
                                     'value' => true,
-                                    'boost' => 1.0,
-                                ],
-                            ],
-                        ],
-                        [
-                            'term' => [
-                                'hide_on_index' => [
-                                    'value' => false,
                                     'boost' => 1.0,
                                 ],
                             ],
@@ -224,7 +200,10 @@ class ProductSearchElasticTest extends TestCase
         $this
             ->actingAs($this->$user)
             ->json('GET', '/products', [
-                'ids' => "${uuid1},${uuid2}",
+                'ids' => [
+                    $uuid1,
+                    $uuid2,
+                ],
             ])
             ->assertOk();
 
@@ -321,7 +300,6 @@ class ProductSearchElasticTest extends TestCase
     {
         $set = ProductSet::factory()->create([
             'public' => true,
-            'hide_on_index' => false,
         ]);
 
         $this->$user->givePermissionTo('products.show');
@@ -364,7 +342,6 @@ class ProductSearchElasticTest extends TestCase
     {
         $set = ProductSet::factory()->create([
             'public' => true,
-            'hide_on_index' => false,
         ]);
 
         $this->$user->givePermissionTo('products.show');
@@ -411,12 +388,10 @@ class ProductSearchElasticTest extends TestCase
     {
         $set = ProductSet::factory()->create([
             'public' => true,
-            'hide_on_index' => false,
         ]);
 
         $set2 = ProductSet::factory()->create([
             'public' => true,
-            'hide_on_index' => false,
         ]);
 
         $this->$user->givePermissionTo('products.show');
@@ -462,12 +437,10 @@ class ProductSearchElasticTest extends TestCase
     {
         $set = ProductSet::factory()->create([
             'public' => true,
-            'hide_on_index' => false,
         ]);
 
         $set2 = ProductSet::factory()->create([
             'public' => true,
-            'hide_on_index' => false,
         ]);
 
         $this->$user->givePermissionTo('products.show');
@@ -2266,14 +2239,6 @@ class ProductSearchElasticTest extends TestCase
                             'term' => [
                                 'public' => [
                                     'value' => true,
-                                    'boost' => 1.0,
-                                ],
-                            ],
-                        ],
-                        [
-                            'term' => [
-                                'hide_on_index' => [
-                                    'value' => false,
                                     'boost' => 1.0,
                                 ],
                             ],

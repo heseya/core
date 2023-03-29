@@ -1,0 +1,18 @@
+PaymentMethod:
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string
+      example: 'Heseya Pay'
+    alias:
+      type: string
+      example: heseya
+    public:
+      type: boolean
+    icon:
+      type: string
+    url:
+      type: string
+  type: object

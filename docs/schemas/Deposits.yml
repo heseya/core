@@ -1,0 +1,24 @@
+Deposit:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    quantity:
+      type: number
+      example: '12.5'
+    item_id:
+      type: string
+      format: uuid
+    order_product_id:
+      type: string
+      format: uuid
+    shipping_time:
+      type: integer
+      example: 5
+    shipping_date:
+      type: string
+      format: date-time
+      example: '2021-09-13T11:11'
+    from_unlimited:
+      type: boolean

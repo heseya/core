@@ -32,6 +32,7 @@ class ItemProductTest extends TestCase
             'slug' => 'test',
             'price' => 50,
             'public' => true,
+            'shipping_digital' => false,
             'items' => [
                 [
                     'id' => $this->items->first()->getKey(),
@@ -46,6 +47,30 @@ class ItemProductTest extends TestCase
         $response
             ->assertCreated()
             ->assertJsonCount(2, 'data.items');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductItemsCannotSetRequiredQuantityBelowZero($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/products', [
+                'name' => 'test',
+                'slug' => 'test',
+                'price' => 50,
+                'public' => true,
+                'shipping_digital' => false,
+                'items' => [
+                    [
+                        'id' => $this->items->first()->getKey(),
+                        'required_quantity' => 0,
+                    ],
+                ],
+            ])
+            ->assertStatus(422);
     }
 
     /**

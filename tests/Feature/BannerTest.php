@@ -76,6 +76,27 @@ class BannerTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexByIds($user): void
+    {
+        $this->$user->givePermissionTo('banners.show');
+
+        Banner::factory()->count(4)->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/banners', [
+                'ids' => [
+                    $this->banner->getKey(),
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment($this->banner->only(['slug', 'name', 'active']));
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexQuery($user): void
     {
         $this->$user->givePermissionTo('banners.show');
@@ -161,6 +182,53 @@ class BannerTest extends TestCase
 
         $this
             ->getJson("/banners/id:{$this->banner->getKey()}")
+            ->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowBySlug($user): void
+    {
+        $this->$user->givePermissionTo('banners.show');
+
+        Banner::factory()->count(4)->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson("/banners/{$this->banner->slug}")
+            ->assertOk()
+            ->assertJsonFragment($this->banner->only(['slug', 'name', 'active']))
+            ->assertJsonFragment($this->bannerMedia->only(['title', 'subtitle', 'url']))
+            ->assertJsonFragment(['min_screen_width' => 100])
+            ->assertJsonFragment(['min_screen_width' => 250])
+            ->assertJsonFragment(['min_screen_width' => 400]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowBySlugNotExistingObject($user): void
+    {
+        $this->$user->givePermissionTo('banners.show');
+
+        $this->banner->delete();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson("/banners/{$this->banner->slug}")
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowBySlugUnauthorized($user): void
+    {
+        $this->$user->givePermissionTo('banners.show');
+
+        $this
+            ->getJson("/banners/{$this->banner->slug}")
             ->assertForbidden();
     }
 

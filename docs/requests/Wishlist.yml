@@ -1,0 +1,8 @@
+WishlistProductStore:
+  content:
+    application/json:
+      schema:
+        properties:
+          product_id:
+            type: string
+            format: uuid

@@ -88,6 +88,29 @@ class DepositsTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexSearchByIds($user): void
+    {
+        $this->$user->givePermissionTo('deposits.show');
+
+        $item1 = Item::factory()->create();
+        Deposit::factory()->count(4)->create(['item_id' => $item1->getKey()]);
+
+        $deposit = Deposit::factory()->create(['item_id' => $item1->getKey()]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/deposits', [
+                'ids' =>[
+                    $deposit->getKey(),
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexSearch($user): void
     {
         $this->$user->givePermissionTo('deposits.show');

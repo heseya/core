@@ -1,0 +1,129 @@
+ShippingMethods:
+  get:
+    tags:
+      - Shipping
+    summary: 'list shipping methods by filters'
+    parameters:
+      - name: country
+        in: query
+        required: false
+        schema:
+          type: string
+          example: DE
+      - name: cart_value
+        description: 'cart total you want to display shipping price for'
+        in: query
+        required: false
+        schema:
+          type: number
+          example: 1200
+      - name: metadata
+        in: query
+        description: search by metadata
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: metadata_private
+        in: query
+        description: search by metadata private
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: 'ids[]'
+        in: query
+        example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/ShippingMethods.yml#/ShippingMethod'
+              type: object
+  post:
+    tags:
+      - Shipping
+    summary: 'add new shipping method'
+    requestBody:
+      $ref: './../requests/ShippingMethods.yml#/ShippingMethodStore'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/ShippingMethods.yml#/ShippingMethod'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+ShippingMethodsParams:
+  delete:
+    tags:
+      - Shipping
+    summary: 'delete shipping method'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: d1365285-ad58-48da-88e2-99e9f4c0800d
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]
+  patch:
+    tags:
+      - Shipping
+    summary: 'update shipping method'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: d1365285-ad58-48da-88e2-99e9f4c0800d
+    requestBody:
+      $ref: './../requests/ShippingMethods.yml#/ShippingMethodUpdate'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/ShippingMethods.yml#/ShippingMethod'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+ShippingMethodsReorder:
+  post:
+    tags:
+      - Shipping
+    summary: 'Reorder shipping method'
+    requestBody:
+      $ref: './../requests/ShippingMethods.yml#/ShippingMethodReorder'
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]

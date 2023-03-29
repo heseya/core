@@ -16,13 +16,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DocumentService implements DocumentServiceContract
 {
-    public function __construct(private MediaServiceContract $mediaService)
-    {
+    public function __construct(
+        private MediaServiceContract $mediaService,
+    ) {
     }
 
-    /**
-     * @throws \Heseya\Dto\DtoException
-     */
     public function storeDocument(Order $order, ?string $name, string $type, UploadedFile $file): OrderDocument
     {
         $mediaDto = MediaDto::instantiateFromFile($file);
@@ -30,35 +28,39 @@ class DocumentService implements DocumentServiceContract
         $media = $this->mediaService->store($mediaDto, true);
         $order->documents()->attach($media, ['type' => $type, 'name' => $name ?? null]);
 
-        return OrderDocument::where([
+        return OrderDocument::query()->where([
             ['type', $type],
             ['name', $name],
             ['media_id', $media->getKey()],
             ['order_id', $order->getKey()],
-        ])->first();
+        ])->firstOrFail();
     }
 
     public function downloadDocument(OrderDocument $document): StreamedResponse
     {
-        $mime = Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
-            ->get($document->media->url . '/info')->json('mime');
+        /** @var string $url */
+        $url = $document->media?->url;
 
-        return response()->streamDownload(function () use ($document): void {
+        $mime = Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
+            ->get($url . '/info')
+            ->json('mime');
+
+        return response()->streamDownload(function () use ($url): void {
             echo Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
-                ->get($document->media->url);
-        }, Str::of($document->media->url)->afterLast('/'), [
+                ->get($url);
+        }, Str::of($url)->afterLast('/'), [
             'Content-Type' => $mime,
         ]);
     }
 
     public function removeDocument(Order $order, string $mediaId): OrderDocument
     {
-        $document = OrderDocument::where([
+        $document = OrderDocument::query()->where([
             ['media_id', $mediaId],
             ['order_id', $order->getKey()],
-        ])->first();
+        ])->firstOrFail();
 
-        $this->mediaService->destroy(Media::find($document->media_id));
+        $this->mediaService->destroy(Media::where('id', $document->media_id)->firstOrFail());
 
         return $document;
     }

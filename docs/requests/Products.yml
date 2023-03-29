@@ -1,0 +1,93 @@
+Product:
+  type: object
+  properties:
+    name:
+      type: string
+    slug:
+      type: string
+    price:
+      type: number
+    public:
+      type: boolean
+    description_html:
+      type: string
+    description_short:
+      type: string
+    quantity_step:
+      type: number
+    vat_rate:
+      type: number
+    shipping_digital:
+      description: 'Whether product is digital and not delivered by physical means'
+      type: boolean
+    purchase_limit_per_user:
+      type: number
+    media:
+      type: array
+      items:
+        type: string
+        format: uuid
+    tags:
+      type: array
+      items:
+        type: string
+        format: uuid
+    attributes:
+      type: object
+      properties:
+        0006c3a0-21af-4485-b7fe-9c42233cf03a:
+          type: string
+          format: uuid
+          description: 'attribute_id as key and option_id as value'
+    items:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+          required_quantity:
+            type: number
+            example: 2
+    schemas:
+      type: array
+      items:
+        type: string
+        format: uuid
+    sets:
+      type: array
+      items:
+        type: string
+        format: uuid
+    google_product_category:
+      type: integer
+    seo:
+      $ref: './../schemas/Seo.yml#/SeoStore'
+
+ProductStore:
+  content:
+    application/json:
+      schema:
+        required:
+          - name
+          - slug
+          - price
+          - public
+          - shipping_digital
+        allOf:
+          - $ref: '#/Product'
+        type: object
+        properties:
+          metadata:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+          metadata_private:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+
+ProductUpdate:
+  content:
+    application/json:
+      schema:
+        allOf:
+          - $ref: '#/Product'
+        type: object

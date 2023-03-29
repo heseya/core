@@ -1,0 +1,12 @@
+Document:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    type:
+      type: string
+      example: invoice
+    name:
+      type: string
+      example: test

@@ -1,0 +1,24 @@
+Metadata:
+  patch:
+    tags:
+      - Metadata
+    summary: 'Create/update/delete metadata'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      $ref: './../requests/Metadata.yml#/Metadata'
+    responses:
+      200:
+        description: 'Returned list has whole metadata attached to requested object'
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Metadata.yml#/Metadata'
+              type: object

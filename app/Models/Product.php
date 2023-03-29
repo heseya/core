@@ -10,7 +10,9 @@ use App\Criteria\ProductAttributeSearch;
 use App\Criteria\ProductNotAttributeSearch;
 use App\Criteria\ProductSearch;
 use App\Criteria\WhereHasId;
+use App\Criteria\WhereHasItems;
 use App\Criteria\WhereHasPhoto;
+use App\Criteria\WhereHasSchemas;
 use App\Criteria\WhereHasSlug;
 use App\Criteria\WhereInIds;
 use App\Criteria\WhereNotId;
@@ -77,6 +79,8 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'shipping_date',
         'has_schemas',
         'quantity',
+        'shipping_digital',
+        'purchase_limit_per_user',
     ];
 
     protected array $auditInclude = [
@@ -104,6 +108,8 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'vat_rate' => 'float',
         'has_schemas' => 'bool',
         'quantity' => 'float',
+        'shipping_digital' => 'bool',
+        'purchase_limit_per_user' => 'float',
     ];
 
     protected array $sortable = [
@@ -139,6 +145,9 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'attribute' => ProductAttributeSearch::class,
         'attribute_not' => ProductNotAttributeSearch::class,
         'has_cover' => WhereHasPhoto::class,
+        'has_items' => WhereHasItems::class,
+        'has_schemas' => WhereHasSchemas::class,
+        'shipping_digital' => Equals::class,
     ];
 
     protected string $defaultSortBy = 'products.order';
@@ -256,20 +265,12 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
 
     public function allProductSales(Collection $salesWithBlockList): Collection
     {
-        $sales = $this->discounts->filter(function ($discount): bool {
-            if (
-                $discount->code === null
+        $sales = $this->discounts->filter(
+            fn ($discount): bool => $discount->code === null
+                && $discount->active
                 && $discount->target_type->is(DiscountTargetType::PRODUCTS)
                 && $discount->target_is_allow_list
-            ) {
-                if ($discount->products->contains(function ($value): bool {
-                    return $value->getKey() === $this->getKey();
-                })) {
-                    return true;
-                }
-            }
-            return false;
-        });
+        );
 
         $salesBlockList = $salesWithBlockList->filter(function ($sale): bool {
             if ($sale->products->contains(function ($value): bool {

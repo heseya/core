@@ -1,0 +1,29 @@
+Price:
+  properties:
+    id:
+      type: string
+      format: uuid
+    value:
+      type: number
+      example: 19.97
+    model_id:
+      type: string
+      format: uuid
+    model_type:
+      type: string
+      example: App\Models\Product
+  type: object
+
+PriceRange:
+  properties:
+    id:
+      type: string
+      format: uuid
+    start:
+      type: number
+      example: 0
+    prices:
+      type: array
+      items:
+        $ref: '#/Price'
+  type: object

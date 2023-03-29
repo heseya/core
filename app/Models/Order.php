@@ -11,6 +11,8 @@ use App\Criteria\OrderSearch;
 use App\Criteria\WhereCreatedAfter;
 use App\Criteria\WhereCreatedBefore;
 use App\Criteria\WhereHasStatusHidden;
+use App\Criteria\WhereInIds;
+use App\Enums\PaymentStatus;
 use App\Models\Contracts\SortableContract;
 use App\Traits\HasMetadata;
 use App\Traits\HasOrderDiscount;
@@ -25,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
@@ -43,11 +46,12 @@ class Order extends Model implements AuditableContract, SortableContract
         'comment',
         'status_id',
         'shipping_method_id',
+        'digital_shipping_method_id',
         'shipping_price_initial',
         'shipping_price',
         'shipping_number',
-        'delivery_address_id',
-        'invoice_address_id',
+        'billing_address_id',
+        'shipping_address_id',
         'created_at',
         'buyer_id',
         'buyer_type',
@@ -55,6 +59,9 @@ class Order extends Model implements AuditableContract, SortableContract
         'paid',
         'cart_total_initial',
         'cart_total',
+        'shipping_place',
+        'invoice_requested',
+        'shipping_type',
     ];
 
     protected array $auditInclude = [
@@ -64,23 +71,26 @@ class Order extends Model implements AuditableContract, SortableContract
         'comment',
         'status_id',
         'shipping_method_id',
+        'digital_shipping_method_id',
         'shipping_price',
         'shipping_number',
-        'delivery_address_id',
-        'invoice_address_id',
+        'billing_address_id',
+        'shipping_address_id',
     ];
 
     protected array $attributeModifiers = [
         'status_id' => StatusRedactor::class,
         'shipping_method_id' => ShippingMethodRedactor::class,
-        'delivery_address_id' => AddressRedactor::class,
-        'invoice_address_id' => AddressRedactor::class,
+        'digital_shipping_method_id' => ShippingMethodRedactor::class,
+        'billing_address_id' => AddressRedactor::class,
+        'shipping_address_id' => AddressRedactor::class,
     ];
 
     protected array $criteria = [
         'search' => OrderSearch::class,
         'status_id',
         'shipping_method_id',
+        'digital_shipping_method_id',
         'code' => Like::class,
         'email' => Like::class,
         'buyer_id',
@@ -90,6 +100,7 @@ class Order extends Model implements AuditableContract, SortableContract
         'to' => WhereCreatedBefore::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
+        'ids' => WhereInIds::class,
     ];
 
     protected array $sortable = [
@@ -105,6 +116,7 @@ class Order extends Model implements AuditableContract, SortableContract
 
     protected $casts = [
         'paid' => 'boolean',
+        'invoice_requested' => 'boolean',
     ];
 
     /**
@@ -113,7 +125,7 @@ class Order extends Model implements AuditableContract, SortableContract
     public function getPaidAmountAttribute(): float
     {
         return $this->payments
-            ->where('paid', true)
+            ->where('status', PaymentStatus::SUCCESSFUL)
             ->sum('amount');
     }
 
@@ -121,15 +133,27 @@ class Order extends Model implements AuditableContract, SortableContract
     {
         return $this
             ->hasMany(Payment::class)
-            ->orderBy('paid', 'DESC')
+            ->orderBy('status', 'ASC')
             ->orderBy('updated_at', 'DESC');
     }
 
     public function getPayableAttribute(): bool
     {
+        $paymentMethodCount = $this->shippingMethod?->paymentMethods->count()
+            ?? $this->digitalShippingMethod?->paymentMethods->count()
+            ?? 0;
+
         return !$this->paid &&
+            $this->status !== null &&
             !$this->status->cancel &&
-            $this->shippingMethod->paymentMethods->count() > 0;
+            $paymentMethodCount > 0;
+    }
+
+    public function getShippingTypeAttribute(): string|null
+    {
+        return $this->shippingMethod
+            ? $this->shippingMethod->shipping_type
+            : ($this->digitalShippingMethod ? $this->digitalShippingMethod->shipping_type : null);
     }
 
     public function isPaid(): bool
@@ -144,17 +168,22 @@ class Order extends Model implements AuditableContract, SortableContract
 
     public function shippingMethod(): BelongsTo
     {
-        return $this->belongsTo(ShippingMethod::class);
+        return $this->belongsTo(ShippingMethod::class, 'shipping_method_id');
     }
 
-    public function deliveryAddress(): HasOne
+    public function digitalShippingMethod(): BelongsTo
     {
-        return $this->hasOne(Address::class, 'id', 'delivery_address_id');
+        return $this->belongsTo(ShippingMethod::class, 'digital_shipping_method_id');
+    }
+
+    public function shippingAddress(): HasOne
+    {
+        return $this->hasOne(Address::class, 'id', 'shipping_address_id');
     }
 
     public function invoiceAddress(): HasOne
     {
-        return $this->hasOne(Address::class, 'id', 'invoice_address_id');
+        return $this->hasOne(Address::class, 'id', 'billing_address_id');
     }
 
     public function deposits(): HasManyThrough
@@ -168,7 +197,7 @@ class Order extends Model implements AuditableContract, SortableContract
     public function saveItems($items): void
     {
         foreach ($items as $item) {
-            $item = OrderProduct::create($item);
+            $item = OrderProduct::query()->create($item);
             $this->products()->save($item);
         }
     }
@@ -202,12 +231,14 @@ class Order extends Model implements AuditableContract, SortableContract
 
     public function preferredLocale(): string
     {
-        $country = Str::of($this->deliveryAddress?->country)->limit(2, '')->lower();
+        $country = Str::of($this->shippingAddress?->country ?? '')
+            ->limit(2, '')
+            ->lower()
+            ->toString();
 
-        if ($country->is('pl')) {
-            return 'pl';
-        }
-
-        return 'en';
+        return match ($country) {
+            'pl', 'en' => $country,
+            default => Config::get('app.locale'),
+        };
     }
 }

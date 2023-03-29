@@ -1,0 +1,152 @@
+Schemas:
+  get:
+    tags:
+      - Schemas
+    summary: 'all schemas list'
+    parameters:
+      - name: name
+        in: query
+        schema:
+          type: string
+          example: test
+      - name: hidden
+        in: query
+        schema:
+          type: boolean
+      - name: required
+        in: query
+        schema:
+          type: boolean
+      - name: search
+        in: query
+        schema:
+          type: string
+          example: test
+      - name: sort
+        in: query
+        schema:
+          type: string
+          example: test
+      - name: metadata
+        in: query
+        description: search by metadata
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: metadata_private
+        in: query
+        description: search by metadata private
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: 'ids[]'
+        in: query
+        example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '../schemas/Schemas.yml#/SchemaMetadata'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+  post:
+    tags:
+      - Schemas
+    summary: 'create schema'
+    requestBody:
+      $ref: '../requests/Schemas.yml#/SchemaStore'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: '../schemas/Schemas.yml#/SchemaMetadata'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+SchemasParam:
+  get:
+    tags:
+      - Schemas
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: '../schemas/Schemas.yml#/SchemaMetadata'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+  delete:
+    tags:
+      - Schemas
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]
+
+  patch:
+    tags:
+      - Schemas
+    summary: 'update schema'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      $ref: '../requests/Schemas.yml#/SchemaUpdate'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: '../schemas/Schemas.yml#/SchemaMetadata'
+              type: object
+    security:
+      - BearerAuth: [ ]

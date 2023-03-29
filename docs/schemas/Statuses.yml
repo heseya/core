@@ -1,0 +1,26 @@
+Status:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string
+      example: Cancel
+    color:
+      type: string
+      example: 8f022c
+    cancel:
+      type: boolean
+    description:
+      type: string
+      example: 'Your order has been cancelled!'
+
+StatusMetadata:
+  allOf:
+    - $ref: '#/Status'
+    - properties:
+        metadata:
+          $ref: './../schemas/Metadata.yml#/Metadata'
+        metadata_private:
+          $ref: './../schemas/Metadata.yml#/Metadata'

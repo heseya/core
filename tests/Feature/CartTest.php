@@ -1,20 +1,25 @@
 <?php
 
-namespace Feature;
+namespace Tests\Feature;
 
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Enums\RoleType;
+use App\Enums\ShippingType;
 use App\Models\ConditionGroup;
 use App\Models\Deposit;
 use App\Models\Discount;
 use App\Models\Item;
 use App\Models\Option;
+use App\Models\Order;
 use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\ProductSet;
+use App\Models\Role;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
+use App\Models\Status;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Carbon;
@@ -25,9 +30,11 @@ class CartTest extends TestCase
     use RefreshDatabase, WithFaker;
 
     private ShippingMethod $shippingMethod;
+    private ShippingMethod $digitalShippingMethod;
     private ProductSet $category;
     private ProductSet $brand;
     private Product $product;
+    private Product $digitalProduct;
     private string $email;
     private Product $productWithSchema;
     private Schema $schema;
@@ -40,7 +47,10 @@ class CartTest extends TestCase
 
         $this->email = $this->faker->freeEmail;
 
-        $this->shippingMethod = ShippingMethod::factory()->create(['public' => true]);
+        $this->shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
         $lowRange = PriceRange::create(['start' => 0]);
         $lowRange->prices()->create(['value' => 8.11]);
 
@@ -62,6 +72,7 @@ class CartTest extends TestCase
             'type' => 'select',
             'price' => 0,
             'hidden' => false,
+            'required' => false,
         ]);
         $this->productWithSchema->schemas()->sync([$this->schema->getKey()]);
         $this->option = $this->schema->options()->create([
@@ -70,6 +81,14 @@ class CartTest extends TestCase
         ]);
         $this->item = Item::factory()->create();
         $this->option->items()->sync([$this->item->getKey()]);
+
+        $this->digitalProduct = Product::factory()->create([
+            'public' => true,
+            'shipping_digital' => true,
+        ]);
+        $this->digitalShippingMethod = ShippingMethod::factory()->create([
+            'shipping_type' => ShippingType::DIGITAL,
+        ]);
     }
 
     public function testCartProcessUnauthorized(): void
@@ -87,6 +106,50 @@ class CartTest extends TestCase
         ]);
 
         $response->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessDigitalMethodForPhysicalProduct($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'digital_shipping_method_id' => $this->digitalShippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [],
+                ],
+            ],
+        ]);
+
+        $response->assertUnprocessable();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessPhysicalMethodForDigitalProduct($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->digitalProduct->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [],
+                ],
+            ],
+        ]);
+
+        $response->assertUnprocessable();
     }
 
     /**
@@ -466,7 +529,10 @@ class CartTest extends TestCase
     {
         $this->$user->givePermissionTo('cart.verify');
 
-        $shippingMethod = ShippingMethod::factory()->create(['public' => true]);
+        $shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
         $lowRange = PriceRange::create(['start' => 0]);
         $lowRange->prices()->create(['value' => 10]);
 
@@ -1761,6 +1827,87 @@ class CartTest extends TestCase
             );
     }
 
+    /**
+     * @dataProvider couponOrSaleProvider
+     */
+    public function testCartProcessInactive($user, $coupon): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $code = $coupon ? [] : ['code' => null];
+
+        $discount = Discount::factory()->create(
+            [
+                'description' => 'Testowy kupon nieaktywny',
+                'name' => 'Testowy kupon nieaktywny',
+                'value' => 10,
+                'type' => DiscountType::PERCENTAGE,
+                'target_type' => DiscountTargetType::ORDER_VALUE,
+                'target_is_allow_list' => true,
+                'active' => false,
+            ] + $code
+        );
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'type' => ConditionType::DATE_BETWEEN,
+            'value' => [
+                'start_at' => Carbon::yesterday(),
+                'end_at' => Carbon::tomorrow(),
+                'is_in_range' => true,
+            ],
+        ]);
+
+        $coupons = $coupon ? [
+            'coupons' => [
+                $discount->code,
+            ],
+        ] : [];
+
+        $response = $this->actingAs($this->$user)->postJson(
+            '/cart/process',
+            [
+                'shipping_method_id' => $this->shippingMethod->getKey(),
+                'items' => [
+                    [
+                        'cartitem_id' => '1',
+                        'product_id' => $this->product->getKey(),
+                        'quantity' => 2,
+                        'schemas' => [],
+                    ],
+                ],
+            ] + $coupons
+        );
+
+        $result = $coupon ? ['sales' => []] : ['coupons' => []];
+        $discountCode = $coupon ? ['code' => $discount->code] : [];
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment(
+                [
+                    'cart_total_initial' => 9200,
+                    'cart_total' => 9200,
+                    'shipping_price_initial' => 0,
+                    'shipping_price' => 0,
+                    'summary' => 9200,
+                ] + $result
+            )
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => 4600,
+                'price_discounted' => 4600,
+            ])
+            ->assertJsonMissing(
+                [
+                    'id' => $discount->getKey(),
+                    'name' => $discount->name,
+                    'value' => 920,
+                ] + $discountCode
+            );
+    }
+
     private function prepareDataForCouponTest($coupon): array
     {
         $code = $coupon ? [] : ['code' => null];
@@ -1808,6 +1955,452 @@ class CartTest extends TestCase
             'discount' => $discount,
             'discountApplied' => $discountApplied,
         ];
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessPurchaseLimitMoreAvailable($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $this->product->update([
+            'purchase_limit_per_user' => 5,
+        ]);
+
+        $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [],
+                ],
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 9200,
+                'cart_total' => 9200,
+                'shipping_price_initial' => 0,
+                'shipping_price' => 0,
+                'summary' => 9200,
+                'coupons' => [],
+                'sales' => [],
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => 4600,
+                'price_discounted' => 4600,
+                'quantity' => 2,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessPurchaseLimitLessAvailable($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $this->product->update([
+            'purchase_limit_per_user' => 1,
+        ]);
+
+        $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [],
+                ],
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 4600,
+                'cart_total' => 4600,
+                'shipping_price_initial' => 0,
+                'shipping_price' => 0,
+                'summary' => 4600,
+                'coupons' => [],
+                'sales' => [],
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => 4600,
+                'price_discounted' => 4600,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessPurchaseLimitWithSale($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $sale = Discount::factory()->create([
+            'code' => null,
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'name' => 'Sale for limited product',
+            'type' => DiscountType::AMOUNT,
+            'value' => 300,
+            'target_is_allow_list' => true,
+        ]);
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'type' => ConditionType::PRODUCT_IN,
+            'value' => [
+                'products' => [
+                    $this->product->getKey(),
+                ],
+                'is_allow_list' => true,
+            ],
+        ]);
+
+        $sale->conditionGroups()->attach($conditionGroup);
+
+        $this->product->update([
+            'purchase_limit_per_user' => 0,
+        ]);
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 1000,
+        ]);
+
+        $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+                [
+                    'cartitem_id' => '2',
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 1000,
+                'cart_total' => 1000,
+                'shipping_price_initial' => 0,
+                'shipping_price' => 0,
+                'summary' => 1000,
+                'coupons' => [],
+            ])
+            ->assertJsonCount(1, 'data.items')
+            ->assertJsonMissing([
+                'id' => $sale->getKey(),
+                'name' => $sale->name,
+                'value' => 300,
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '2',
+                'price' => 1000,
+                'price_discounted' => 1000,
+            ])
+            ->assertJsonMissing([
+                'cartitem_id' => '1',
+                'price' => 4600,
+                'price_discounted' => 4600,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessPurchaseLimitAlreadyPurchased($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $this->product->update([
+            'purchase_limit_per_user' => 1,
+        ]);
+
+        $order = Order::factory()->create([
+            'paid' => true,
+        ]);
+        $this->$user->orders()->save($order);
+        $order->products()->create([
+            'product_id' => $this->product->getKey(),
+            'quantity' => 1,
+            'price_initial' => 4600,
+            'price' => 4600,
+            'name' => $this->product->name,
+        ]);
+
+        $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 0,
+                'cart_total' => 0,
+                'shipping_price_initial' => 8.11,
+                'shipping_price' => 8.11,
+                'summary' => 8.11,
+                'coupons' => [],
+                'sales' => [],
+                'items' => [],
+            ])
+            ->assertJsonCount(0, 'data.items');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessPurchaseLimitAlreadyPurchasedNotPaid($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $this->product->update([
+            'purchase_limit_per_user' => 1,
+        ]);
+
+        $order = Order::factory()->create([
+            'paid' => false,
+        ]);
+        $this->$user->orders()->save($order);
+        $order->products()->create([
+            'product_id' => $this->product->getKey(),
+            'quantity' => 1,
+            'price_initial' => 4600,
+            'price' => 4600,
+            'name' => $this->product->name,
+        ]);
+
+        $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 4600,
+                'cart_total' => 4600,
+                'shipping_price_initial' => 0,
+                'shipping_price' => 0,
+                'summary' => 4600,
+            ])
+            ->assertJsonCount(1, 'data.items');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessPurchaseLimitSetAfterPurchase($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $order = Order::factory()->create([
+            'paid' => true,
+        ]);
+        $this->$user->orders()->save($order);
+        $order->products()->create([
+            'product_id' => $this->product->getKey(),
+            'quantity' => 2,
+            'price_initial' => 4600,
+            'price' => 4600,
+            'name' => $this->product->name,
+        ]);
+
+        $this->product->update([
+            'purchase_limit_per_user' => 1,
+        ]);
+
+        $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 0,
+                'cart_total' => 0,
+                'shipping_price_initial' => 8.11,
+                'shipping_price' => 8.11,
+                'summary' => 8.11,
+                'coupons' => [],
+                'sales' => [],
+                'items' => [],
+            ])
+            ->assertJsonCount(0, 'data.items');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessPurchaseLimitCanceledOrder($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $status = Status::factory()->create([
+            'cancel' => true,
+        ]);
+
+        $order = Order::factory()->create([
+            'status_id' => $status->getKey(),
+        ]);
+        $this->$user->orders()->save($order);
+        $order->products()->create([
+            'product_id' => $this->product->getKey(),
+            'quantity' => 1,
+            'price_initial' => 4600,
+            'price' => 4600,
+            'name' => $this->product->name,
+        ]);
+
+        $this->product->update([
+            'purchase_limit_per_user' => 1,
+        ]);
+
+        $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 4600,
+                'cart_total' => 4600,
+                'shipping_price_initial' => 0,
+                'shipping_price' => 0,
+                'summary' => 4600,
+                'coupons' => [],
+                'sales' => [],
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => 4600,
+                'price_discounted' => 4600,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessPurchaseLimitProductWithSchema($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $this->productWithSchema->update([
+            'purchase_limit_per_user' => 1,
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->productWithSchema->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+                [
+                    'cartitem_id' => '2',
+                    'product_id' => $this->productWithSchema->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [
+                        $this->schema->getKey() => $this->option->getKey(),
+                    ],
+                ],
+            ],
+        ]);
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 100,
+                'cart_total' => 100,
+                'shipping_price_initial' => 8.11,
+                'shipping_price' => 8.11,
+                'summary' => 108.11,
+                'coupons' => [],
+                'sales' => [],
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => 100,
+                'price_discounted' => 100,
+            ])
+            ->assertJsonMissing([
+                'cartitem_id' => '2',
+            ]);
+    }
+
+    public function testCartProcessPurchaseLimitNoAccount(): void
+    {
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('cart.verify');
+
+        $this->product->update([
+            'purchase_limit_per_user' => 1,
+        ]);
+
+        $this->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [],
+                ],
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 4600,
+                'cart_total' => 4600,
+                'shipping_price_initial' => 0,
+                'shipping_price' => 0,
+                'summary' => 4600,
+                'coupons' => [],
+                'sales' => [],
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => 4600,
+                'price_discounted' => 4600,
+            ]);
     }
 
     private function prepareCouponWithProductInSetAndCountConditions(bool $productInSet, bool $isAllowList): array

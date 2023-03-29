@@ -27,7 +27,6 @@ class ProductSetFactory extends Factory
             'slug' => Str::of($name)->slug() . '-' . rand(1, 99999),
             'public' => $this->faker->boolean,
             'public_parent' => true,
-            'hide_on_index' => $this->faker->boolean,
             'description_html' => '<p>' . $this->faker->sentence(10) . '</p>',
         ];
     }

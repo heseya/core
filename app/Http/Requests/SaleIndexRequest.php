@@ -18,6 +18,8 @@ class SaleIndexRequest extends FormRequest
             'description' => ['string', 'max:255'],
             'metadata' => ['nullable', 'array'],
             'metadata_private' => ['nullable', 'array'],
+            'ids' => ['array'],
+            'ids.*' => ['uuid'],
         ];
     }
 }

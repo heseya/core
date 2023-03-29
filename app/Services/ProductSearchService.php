@@ -29,7 +29,6 @@ class ProductSearchService implements ProductSearchServiceContract
                 'name_text' => $product->name,
                 'slug' => $product->slug,
                 'google_product_category' => $product->google_product_category,
-                'hide_on_index' => $this->mapHideOnIndex($product),
                 'available' => $product->available,
                 'public' => $product->public,
                 'price' => $product->price,
@@ -37,11 +36,16 @@ class ProductSearchService implements ProductSearchServiceContract
                 'price_max' => $product->price_max,
                 'price_min_initial' => $product->price_min_initial,
                 'price_max_initial' => $product->price_max_initial,
-                'description' => strip_tags($product->description_html),
+                'description' => $product->description_html ? strip_tags($product->description_html) : null,
                 'description_short' => $product->description_short,
-                'created_at' => $product->created_at->toIso8601String(),
-                'updated_at' => $product->updated_at->toIso8601String(),
+                'created_at' => $product->created_at?->toIso8601String(),
+                'updated_at' => $product->updated_at?->toIso8601String(),
                 'order' => $product->order,
+                'shipping_digital' => $product->shipping_digital,
+                'shipping_date' => $product->shipping_date,
+                'shipping_time' => $product->shipping_time,
+                'quantity' => $product->quantity,
+                'purchase_limit_per_user' => $product->purchase_limit_per_user,
                 'cover' => $this->mapCover($product),
                 'tags_id' => $product->tags->map(fn (Tag $tag): string => $tag->getKey())->toArray(),
                 'tags' => $product->tags->map(fn (Tag $tag): array => $this->mapTag($tag))->toArray(),
@@ -83,7 +87,6 @@ class ProductSearchService implements ProductSearchServiceContract
             'name_text' => 'text',
             'slug' => 'text',
             'google_product_category' => 'integer',
-            'hide_on_index' => 'boolean',
             'available' => 'boolean',
             'public' => 'boolean',
             'price' => 'float',
@@ -134,13 +137,6 @@ class ProductSearchService implements ProductSearchServiceContract
             'attributes.*^5',
             '*',
         ];
-    }
-
-    private function mapHideOnIndex(Product $product): bool
-    {
-        $sets = $this->productSetService->flattenParentsSetsTree($product->sets);
-
-        return $sets->contains(fn (ProductSet $set) => $set->hide_on_index);
     }
 
     private function mapCover(Product $product): ?array
@@ -194,7 +190,7 @@ class ProductSearchService implements ProductSearchServiceContract
             'id' => $set->getKey(),
             'name' => $set->name,
             'slug' => $set->slug,
-            'description' => strip_tags($set->description_html),
+            'description' => $set->description_html ? strip_tags($set->description_html) : null,
         ];
     }
 

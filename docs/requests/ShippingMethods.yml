@@ -1,0 +1,98 @@
+ShippingMethod:
+  type: object
+  properties:
+    name:
+      type: string
+      example: dpd
+    public:
+      type: boolean
+    block_list:
+      type: boolean
+    payment_methods:
+      type: array
+      items:
+        type: string
+        format: uuid
+    countries:
+      type: array
+      items:
+        type: string
+        example: PL
+    price_ranges:
+      type: array
+      items:
+        properties:
+          start:
+            description: 'Start of the range. The range goes to the start of the next range or infinity'
+            type: number
+            minimum: 0
+            example: 0
+          value:
+            description: 'price in this range'
+            type: number
+            example: 18.7
+        type: object
+    shipping_time_min:
+      type: number
+      example: 2
+    shipping_time_max:
+      type: number
+      example: 3
+    shipping_points:
+      type: array
+      items:
+        properties:
+          name:
+            description: 'Name of the shipping point'
+            type: string
+            example: 'Test point'
+        type: object
+    integration_key:
+      type: string
+      format: uuid
+
+
+ShippingMethodReorder:
+  content:
+    application/json:
+      schema:
+        properties:
+          shipping_methods:
+            type: array
+            items:
+              type: string
+              format: uuid
+        type: object
+
+ShippingMethodStore:
+  content:
+    application/json:
+      schema:
+        required:
+          - name
+          - price_ranges
+          - shipping_time_min
+          - shipping_time_max
+        type: object
+        allOf:
+          - $ref: '#/ShippingMethod'
+          - properties:
+              shipping_type:
+                type: string
+                enum:
+                  - digital
+                  - address
+                  - point
+                  - point-external
+              metadata:
+                $ref: './../schemas/Metadata.yml#/Metadata'
+              metadata_private:
+                $ref: './../schemas/Metadata.yml#/Metadata'
+
+ShippingMethodUpdate:
+  content:
+    application/json:
+      schema:
+        allOf:
+          - $ref: '#/ShippingMethod'
+        type: object

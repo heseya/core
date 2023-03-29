@@ -5,7 +5,6 @@ namespace App\Http\Requests;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Models\Discount;
-use App\Rules\Boolean;
 use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Validation\Rule;
 
@@ -22,12 +21,13 @@ class CouponUpdateRequest extends CouponCreateRequest
             'type' => [new EnumValue(DiscountType::class, false)],
             'priority' => ['integer'],
             'target_type' => [new EnumValue(DiscountTargetType::class, false)],
-            'target_is_allow_list' => [new Boolean()],
+            'target_is_allow_list' => ['boolean'],
             'code' => [
                 'alpha_dash',
                 'max:64',
                 Rule::unique('discounts')->ignore($coupon->code, 'code'),
             ],
+            'active' => ['boolean'],
         ]);
     }
 }

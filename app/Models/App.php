@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\WhereInIds;
 use App\Enums\SavedAddressType;
 use App\Services\Contracts\UrlServiceContract;
 use App\Traits\HasMetadata;
@@ -58,6 +59,7 @@ class App extends Model implements
     protected array $criteria = [
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
+        'ids' => WhereInIds::class,
     ];
 
     public function setUrlAttribute(string $url): void
@@ -78,16 +80,16 @@ class App extends Model implements
         return [];
     }
 
-    public function deliveryAddresses(): HasMany
+    public function shippingAddresses(): HasMany
     {
         return $this->hasMany(SavedAddress::class, 'user_id')
-            ->where('type', '=', SavedAddressType::DELIVERY);
+            ->where('type', '=', SavedAddressType::SHIPPING);
     }
 
-    public function invoiceAddresses(): HasMany
+    public function billingAddresses(): HasMany
     {
         return $this->hasMany(SavedAddress::class, 'user_id')
-            ->where('type', '=', SavedAddressType::INVOICE);
+            ->where('type', '=', SavedAddressType::BILLING);
     }
 
     public function orders(): MorphMany
@@ -100,6 +102,11 @@ class App extends Model implements
         return $this->belongsTo(Role::class);
     }
 
+    public function shippingMethods(): HasMany
+    {
+        return $this->hasMany(ShippingMethod::class);
+    }
+
     public function hasRole(
         string|int|array|\Spatie\Permission\Contracts\Role|Collection $roles,
         ?string $guard = null
@@ -107,8 +114,18 @@ class App extends Model implements
         return false;
     }
 
+    public function wishlistProducts(): MorphMany
+    {
+        return $this->morphMany(WishlistProduct::class, 'user');
+    }
+
     protected function hasPermissionViaRole(Permission $permission): bool
     {
         return false;
+    }
+
+    public function favouriteProductSets(): MorphMany
+    {
+        return $this->morphMany(FavouriteProductSet::class, 'user');
     }
 }

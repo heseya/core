@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Dtos\UserCreateDto;
 use App\Dtos\UserDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
@@ -19,23 +20,25 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 
 class UserService implements UserServiceContract
 {
-    public function __construct(private MetadataServiceContract $metadataService)
-    {
+    public function __construct(
+        private MetadataServiceContract $metadataService,
+    ) {
     }
 
-    public function index(array $search, ?string $sort, int $limit): LengthAwarePaginator
+    public function index(array $search, ?string $sort): LengthAwarePaginator
     {
         return User::searchByCriteria($search)
             ->sort($sort)
             ->with('metadata')
-            ->paginate($limit);
+            ->paginate(Config::get('pagination.per_page'));
     }
 
-    public function create(UserDto $dto): User
+    public function create(UserCreateDto $dto): User
     {
         if (!$dto->getRoles() instanceof Missing) {
             $roleModels = Role::query()
@@ -52,16 +55,14 @@ class UserService implements UserServiceContract
             fn ($role) => $role->type->value !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
         )->unique();
 
-        if (!Auth::user()->hasAllPermissions($permissions)) {
+        if (!Auth::user()?->hasAllPermissions($permissions)) {
             throw new ClientException(Exceptions::CLIENT_GIVE_ROLE_THAT_USER_DOESNT_HAVE, simpleLogs: true);
         }
 
+        $fields = $dto->toArray();
+        $fields['password'] = Hash::make($dto->getPassword());
         /** @var User $user */
-        $user = User::query()->create([
-            'name' => $dto->getName(),
-            'email' => $dto->getEmail(),
-            'password' => Hash::make($dto->getPassword()),
-        ]);
+        $user = User::query()->create($fields);
 
         $preferences = UserPreference::query()->create();
         $preferences->refresh();
@@ -99,7 +100,7 @@ class UserService implements UserServiceContract
                 fn ($role) => $role->type->value !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
             )->unique();
 
-            if (!$authenticable->hasAllPermissions($permissions)) {
+            if (!$authenticable?->hasAllPermissions($permissions)) {
                 throw new ClientException(Exceptions::CLIENT_GIVE_ROLE_THAT_USER_DOESNT_HAVE);
             }
 
@@ -111,6 +112,7 @@ class UserService implements UserServiceContract
                 throw new ClientException(Exceptions::CLIENT_REMOVE_ROLE_THAT_USER_DOESNT_HAVE);
             }
 
+            /** @var Role $owner */
             $owner = Role::query()
                 ->where('type', RoleType::OWNER)
                 ->first();
@@ -148,14 +150,14 @@ class UserService implements UserServiceContract
     {
         $authenticable = Auth::user();
 
-        $owner = Role::where('type', RoleType::OWNER)->first();
+        $owner = Role::query()->where('type', RoleType::OWNER)->firstOrFail();
 
         if ($user->hasRole($owner)) {
-            if (!$authenticable->hasRole($owner)) {
+            if (!$authenticable?->hasRole($owner)) {
                 throw new ClientException(Exceptions::CLIENT_ONLY_OWNER_REMOVES_OWNER_ROLE);
             }
 
-            $ownerCount = User::whereHas(
+            $ownerCount = User::query()->whereHas(
                 'roles',
                 fn (Builder $query) => $query->where('type', RoleType::OWNER),
             )->count();

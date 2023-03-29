@@ -22,7 +22,7 @@ return [
     |
      */
 
-    'ver' => '3.0.2',
+    'ver' => '4.0.0',
 
     /*
     |--------------------------------------------------------------------------
@@ -91,7 +91,7 @@ return [
     |
      */
 
-    'locale' => 'en',
+    'locale' => env('APP_LOCATE', 'en'),
 
     /*
     |--------------------------------------------------------------------------
@@ -170,7 +170,7 @@ return [
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
-
+        \SocialiteProviders\Manager\ServiceProvider::class,
         /*
          * PackageTemplate Service Providers...
          */
@@ -187,7 +187,6 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\TimeServiceProvider::class,
-
     ],
 
     /*

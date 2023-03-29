@@ -1,0 +1,259 @@
+Order:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    code:
+      type: string
+      example: 'FMBZRK'
+    email:
+      type: string
+      example: admin@example.com
+    payable:
+      type: boolean
+    currency:
+      type: string
+      example: PLN
+    comment:
+      type: string
+      example: 'asap plz'
+    cart_total_initial:
+      type: number
+      example: 38.7
+    cart_total:
+      type: number
+      example: 18.7
+    shipping_price_initial:
+      type: number
+      example: 38.7
+    shipping_price:
+      type: number
+      example: 18.7
+    summary:
+      type: number
+    summary_paid:
+      description: 'Summary amount of paid.'
+      type: number
+      example: 199.99
+    paid:
+      type: boolean
+    status:
+      $ref: './Statuses.yml#/Status'
+    shipping_method:
+      $ref: './ShippingMethods.yml#/ShippingMethod'
+    digital_shipping_method:
+      $ref: './ShippingMethods.yml#/ShippingMethod'
+    documents:
+      $ref: './Documents.yml#/Document'
+    shipping_type:
+      type: string
+      example: 'address'
+    invoice_requested:
+      type: boolean
+    billing_address:
+      $ref: './Addresses.yml#/Address'
+    shipping_place:
+      oneOf:
+        - $ref: './Addresses.yml#/Address'
+        - type: string
+          example: 'Test 12 11-111 Test'
+    created_at:
+      type: string
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+
+OrderProduct:
+  type: object
+  properties:
+    quantity:
+      type: number
+      example: '12.4'
+    price:
+      type: number
+      example: '199.99'
+    price_initial:
+      type: number
+      example: '299.99'
+    schemas:
+      type: array
+      items:
+        $ref: '#/OrderSchema'
+    deposits:
+      type: array
+      items:
+        $ref: './Deposits.yml#/Deposit'
+    discounts:
+      type: array
+      items:
+        $ref: '#/OrderDiscount'
+    shipping_digital:
+      type: boolean
+    is_delivered:
+      type: boolean
+    urls:
+      type: array
+      items:
+        $ref: '#/OrderProductUrl'
+
+OrderDiscount:
+  type: object
+  properties:
+    discount:
+      oneOf:
+        - $ref: './Sales.yml#/SaleShow'
+        - $ref: './Coupons.yml#/CouponShow'
+    name:
+      type: string
+      example: 'Black Week'
+    code:
+      type: string
+      example: 'BLACK22'
+    type:
+      type: string
+      enum: ['amount', 'percentage']
+    target_type:
+      type: string
+      enum: [ 'order-value', 'products', 'product-sets', 'shipping-price' ]
+    value:
+      type: number
+      example: 9.99
+    applied_discount:
+      type: number
+      example: 9.99
+
+OrderSchema:
+  type: object
+  properties:
+    name:
+      type: string
+      example: Size
+    value:
+      type: string
+      example: XL
+    price:
+      type: number
+      example: '49.99'
+    price_initial:
+      type: number
+      example: '59.99'
+
+OrderView:
+  type: object
+  allOf:
+    - $ref: '#/Order'
+    - properties:
+        products:
+          type: array
+          items:
+            $ref: '#/OrderProduct'
+        payments:
+          type: array
+          items:
+            $ref: './Payments.yml#/Payment'
+        shipping_number:
+          type: string
+          example: '630552359128340015809770'
+        buyer:
+          oneOf:
+            - $ref: './Users.yml#/UserView'
+            - $ref: './Apps.yml#/AppView'
+        discounts:
+          type: array
+          items:
+            $ref: '#/OrderDiscount'
+
+OrderSummary:
+  properties:
+    id:
+      type: string
+      format: uuid
+    code:
+      description: 'Product''s secondary identifier'
+      type: string
+      example: G3K4DH
+    status:
+      $ref: './Statuses.yml#/Status'
+    paid:
+      type: boolean
+    payable:
+      type: boolean
+    cart_total_initial:
+      type: number
+      example: 380.7
+    cart_total:
+      type: number
+      example: 180.7
+    shipping_price_initial:
+      type: number
+      example: 38.7
+    shipping_price:
+      type: number
+      example: 18.7
+    summary:
+      type: number
+    shipping_method:
+      $ref: './ShippingMethods.yml#/ShippingMethod'
+    digital_shipping_method:
+      $ref: './ShippingMethods.yml#/ShippingMethod'
+    created_at:
+      type: string
+      format: date-time
+      example: '2021-09-13T11:11'
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+  type: object
+
+OrderProductUrl:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string
+      example: first_link
+    url:
+      type: string
+      example: https://example.com
+
+OrderProductPublic:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    order_id:
+      type: string
+      format: uuid
+    name:
+      type: string
+      example: Produkt
+    quantity:
+      type: number
+      example: '12.4'
+    price:
+      type: number
+      example: '199.99'
+    price_initial:
+      type: number
+      example: '299.99'
+    vat_rate:
+      type: number
+      example: '0.23'
+    schemas:
+      type: array
+      items:
+        $ref: '#/OrderSchema'
+    shipping_digital:
+      type: boolean
+    product:
+      $ref: './Products.yml#/ProductView'
+    urls:
+      type: array
+      items:
+        $ref: '#/OrderProductUrl'

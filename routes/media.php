@@ -5,16 +5,16 @@ use App\Http\Controllers\MetadataController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('media')->group(function (): void {
-    $auth = 'permission:pages.add|pages.edit|products.add|products.edit|seo.edit|product_sets.add|product_sets.edit';
-
+    Route::get(null, [MediaController::class, 'index'])
+        ->middleware('can:media.show');
     Route::post(null, [MediaController::class, 'store'])
-        ->middleware($auth);
+        ->middleware('can:media.add');
     Route::patch('id:{media:id}', [MediaController::class, 'update'])
-        ->middleware($auth);
+        ->middleware('can:media.edit');
     Route::patch('id:{media:id}/metadata', [MetadataController::class, 'updateOrCreate'])
-        ->middleware($auth);
+        ->middleware('can:media.edit');
     Route::patch('id:{media:id}/metadata-private', [MetadataController::class, 'updateOrCreate'])
-        ->middleware($auth);
+        ->middleware('can:media.edit');
     Route::delete('id:{media:id}', [MediaController::class, 'destroy'])
-        ->middleware($auth);
+        ->middleware('can:media.remove');
 });

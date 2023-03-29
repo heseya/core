@@ -1,0 +1,77 @@
+Item:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string
+      example: Chain
+    sku:
+      type: string
+      example: K121
+    quantity:
+      type: number
+      example: '20'
+    shipping_time:
+      type: integer
+      example: 5
+    shipping_date:
+      type: string
+      format: date-time
+      example: '2021-09-13T11:11'
+    unlimited_shipping_time:
+      type: integer
+      example: 5
+    unlimited_shipping_date:
+      type: string
+      format: date-time
+      example: '2021-09-13T11:11'
+    availability:
+      type: array
+      items:
+        $ref: '#/AvailabilityResource'
+
+ItemWithRequiredQuantity:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string
+      example: Chain
+    sku:
+      type: string
+      example: K121
+    required_quantity:
+      type: number
+      example: '5'
+
+AvailabilityResource:
+  type: object
+  properties:
+    quantity:
+      type: number
+      example: '20'
+    shipping_time:
+      type: integer
+      example: 5
+    shipping_date:
+      type: string
+      format: date-time
+      example: '2021-09-13T11:11'
+
+ItemWithProducts:
+  type: object
+  allOf:
+    - $ref: '#/Item'
+    - properties:
+        products:
+          type: array
+          items:
+            $ref: './Products.yml#/ProductShort'
+        schemas:
+          type: array
+          items:
+            $ref: './Schemas.yml#/SchemaShort'
