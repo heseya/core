@@ -188,6 +188,11 @@ readonly class DiscountService implements DiscountServiceContract
         ]);
     }
 
+    /**
+     * This executes for orders and cart
+     *
+     * It needs to account for current session user and calculate personalized price
+     */
     public function checkCondition(
         DiscountCondition $condition,
         ?CartOrderDto $dto = null,
@@ -373,6 +378,7 @@ readonly class DiscountService implements DiscountServiceContract
             [$minPriceDiscounted, $maxPriceDiscounted] = $this->calcAllDiscountsOnProduct(
                 $product,
                 $salesWithBlockList,
+                true,
             );
 
             return new ProductPriceDto(
@@ -605,6 +611,7 @@ readonly class DiscountService implements DiscountServiceContract
     private function calcAllDiscountsOnProduct(
         Product $product,
         Collection $salesWithBlockList,
+        bool $calcForCurrentUser,
     ): array {
         $sales = $this->sortDiscounts($product->allProductSales($salesWithBlockList));
 
@@ -617,7 +624,7 @@ readonly class DiscountService implements DiscountServiceContract
         $productSales = Collection::make();
 
         foreach ($sales as $sale) {
-            if ($this->checkConditionGroupsForProduct($sale)) {
+            if ($this->checkConditionGroupsForProduct($sale, $calcForCurrentUser)) {
                 if ($minPriceDiscounted !== $minimalProductPrice) {
                     $minPriceDiscounted = $this
                         ->calcProductPriceDiscount($sale, $minPriceDiscounted, $minimalProductPrice);
@@ -648,7 +655,7 @@ readonly class DiscountService implements DiscountServiceContract
             $minPriceDiscounted,
             $maxPriceDiscounted,
             $productSales,
-        ] = $this->calcAllDiscountsOnProduct($product, $salesWithBlockList);
+        ] = $this->calcAllDiscountsOnProduct($product, $salesWithBlockList, false);
 
         // + 1 query for product
         $product->update([
@@ -807,7 +814,7 @@ readonly class DiscountService implements DiscountServiceContract
     /**
      * Check if product have any valid condition group.
      */
-    private function checkConditionGroupsForProduct(Discount $discount): bool
+    private function checkConditionGroupsForProduct(Discount $discount, bool $checkForCurrentUser): bool
     {
         // return true if there is no condition groups
         if ($discount->conditionGroups->count() <= 0) {
@@ -816,7 +823,7 @@ readonly class DiscountService implements DiscountServiceContract
 
         foreach ($discount->conditionGroups as $conditionGroup) {
             // return true if any condition group is valid
-            if ($this->checkConditionGroupForProduct($conditionGroup)) {
+            if ($this->checkConditionGroupForProduct($conditionGroup, $checkForCurrentUser)) {
                 return true;
             }
         }
@@ -827,11 +834,11 @@ readonly class DiscountService implements DiscountServiceContract
     /**
      * Check if given condition group is valid.
      */
-    private function checkConditionGroupForProduct(ConditionGroup $group): bool
+    private function checkConditionGroupForProduct(ConditionGroup $group, bool $checkForCurrentUser): bool
     {
         foreach ($group->conditions as $condition) {
             // return false if any condition is not valid
-            if (!$this->checkConditionForProduct($condition)) {
+            if (!$this->checkConditionForProduct($condition, $checkForCurrentUser)) {
                 return false;
             }
         }
@@ -841,21 +848,29 @@ readonly class DiscountService implements DiscountServiceContract
 
     /**
      * Check if given condition is valid for product feed.
+     *
+     * This executes for price cache on products
+     *
+     * It should ignore current active user and calc general price for everyone
      */
-    private function checkConditionForProduct(DiscountCondition $condition): bool
+    private function checkConditionForProduct(DiscountCondition $condition, bool $checkForCurrentUser): bool
     {
         return match ($condition->type->value) {
+            // ignore discount dependant on cart state
             ConditionType::ORDER_VALUE => false,
+            // ignore discount dependant on cart state
             ConditionType::PRODUCT_IN_SET => false,
+            // ignore discount dependant on cart state
             ConditionType::PRODUCT_IN => false,
-            ConditionType::USER_IN_ROLE => $this->checkConditionUserInRole($condition),
-            ConditionType::USER_IN => $this->checkConditionUserIn($condition),
+            ConditionType::USER_IN_ROLE => $checkForCurrentUser && $this->checkConditionUserInRole($condition),
+            ConditionType::USER_IN => $checkForCurrentUser && $this->checkConditionUserIn($condition),
             ConditionType::DATE_BETWEEN => $this->checkConditionDateBetween($condition),
             ConditionType::TIME_BETWEEN => $this->checkConditionTimeBetween($condition),
             ConditionType::MAX_USES => $this->checkConditionMaxUses($condition),
-            ConditionType::MAX_USES_PER_USER => $this->checkConditionMaxUsesPerUser($condition),
+            ConditionType::MAX_USES_PER_USER => $checkForCurrentUser && $this->checkConditionMaxUsesPerUser($condition),
             ConditionType::WEEKDAY_IN => $this->checkConditionWeekdayIn($condition),
             ConditionType::CART_LENGTH => false,
+            // For product price cache assume no promo codes used
             ConditionType::COUPONS_COUNT => $this->checkConditionCouponsCount($condition, 0),
             // don't add default false, better to crash site than got unexpected behaviour
             default => throw new ServerException('Unknown condition type: ' . $condition->type->value),
