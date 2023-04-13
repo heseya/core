@@ -23,9 +23,9 @@ use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
- * @property DiscountType $type;
- * @property DiscountTargetType $target_type;
  * @property mixed $pivot
+ * @property DiscountType $type
+ * @property DiscountTargetType $target_type
  * @mixin IdeHelperDiscount
  */
 class Discount extends Model implements AuditableContract

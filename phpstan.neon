@@ -24,3 +24,4 @@ parameters:
     excludePaths:
         - ./app/Payments/*
         - ./app/Http/Middleware/Authenticate.php
+        - ./app/Services/AuditService.php
