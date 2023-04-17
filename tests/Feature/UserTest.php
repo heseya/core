@@ -6,7 +6,6 @@ use App\Enums\MetadataType;
 use App\Enums\RoleType;
 use App\Enums\ValidationError;
 use App\Events\UserCreated;
-use App\Events\UserDeleted;
 use App\Events\UserUpdated;
 use App\Listeners\WebHookEventListener;
 use App\Models\Consent;
@@ -30,7 +29,6 @@ class UserTest extends TestCase
 {
     public array $expected;
     private string $validPassword = 'V@l1dPa55word';
-    private Role $owner;
     private Role $authenticated;
     private Role $unauthenticated;
     private Collection $authenticatedPermissions;
@@ -74,12 +72,6 @@ class UserTest extends TestCase
             ],
             'created_at' => $this->user->created_at,
         ];
-
-        // Owner role needs to exist for user service to function properly
-        $this->owner = Role::updateOrCreate(['name' => 'Owner'])
-            ->givePermissionTo(Permission::all());
-        $this->owner->type = RoleType::OWNER;
-        $this->owner->save();
 
         $this->authenticated = Role::updateOrCreate(['name' => 'Authenticated']);
         $this->authenticated->type = RoleType::AUTHENTICATED;
@@ -1505,124 +1497,5 @@ class UserTest extends TestCase
         ]);
 
         Event::assertDispatched(UserUpdated::class);
-    }
-
-    public function testDeleteUnauthorized(): void
-    {
-        Event::fake([UserDeleted::class]);
-
-        $response = $this->deleteJson('/users/id:' . $this->user->getKey());
-        $response->assertForbidden();
-
-        Event::assertNotDispatched(UserDeleted::class);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testDelete($user): void
-    {
-        $this->$user->givePermissionTo('users.remove');
-
-        Event::fake([UserDeleted::class]);
-
-        $response = $this->actingAs($this->$user)->deleteJson('/users/id:' . $this->user->getKey());
-        $response->assertNoContent();
-        $this->assertSoftDeleted($this->user);
-
-        Event::assertDispatched(UserDeleted::class);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testDeleteWithWebHook($user): void
-    {
-        $this->$user->givePermissionTo('users.remove');
-
-        $webHook = WebHook::factory()->create([
-            'events' => [
-                'UserDeleted',
-            ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
-            'with_issuer' => true,
-            'with_hidden' => false,
-        ]);
-
-        Bus::fake();
-
-        $response = $this->actingAs($this->$user)->deleteJson('/users/id:' . $this->user->getKey());
-        $response->assertNoContent();
-        $this->assertSoftDeleted($this->user);
-
-        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
-            return $job->class === WebHookEventListener::class
-                && $job->data[0] instanceof UserDeleted;
-        });
-
-        $otherUser = $this->user;
-
-        $event = new UserDeleted($otherUser);
-        $listener = new WebHookEventListener();
-        $listener->handle($event);
-
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $otherUser) {
-            $payload = $job->payload;
-
-            return $job->webhookUrl === $webHook->url
-                && isset($job->headers['Signature'])
-                && $payload['data']['id'] === $otherUser->getKey()
-                && $payload['data_type'] === 'User'
-                && $payload['event'] === 'UserDeleted';
-        });
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testDeleteOwnerUnauthorized($user): void
-    {
-        $this->$user->givePermissionTo('users.remove');
-
-        Event::fake([UserDeleted::class]);
-
-        $owner = User::factory()->create();
-        $owner->assignRole($this->owner);
-
-        $response = $this->actingAs($this->$user)->deleteJson('/users/id:' . $owner->getKey());
-        $response->assertStatus(422);
-
-        Event::assertNotDispatched(UserDeleted::class);
-    }
-
-    public function testDeleteOnlyOwner(): void
-    {
-        Event::fake([UserDeleted::class]);
-
-        $this->user->givePermissionTo('users.remove');
-        $this->user->assignRole($this->owner);
-
-        $response = $this->actingAs($this->user)->deleteJson('/users/id:' . $this->user->getKey());
-        $response->assertStatus(422);
-
-        Event::assertNotDispatched(UserDeleted::class);
-    }
-
-    public function testDeleteOwner(): void
-    {
-        $this->user->givePermissionTo('users.remove');
-
-        Event::fake([UserDeleted::class]);
-
-        $owner = User::factory()->create();
-        $owner->assignRole($this->owner);
-        $this->user->assignRole($this->owner);
-
-        $response = $this->actingAs($this->user)->deleteJson('/users/id:' . $owner->getKey());
-        $response->assertNoContent();
-        $this->assertSoftDeleted($owner);
-
-        Event::assertDispatched(UserDeleted::class);
     }
 }

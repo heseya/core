@@ -32,6 +32,7 @@ use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UserLoginAttemptServiceContract;
+use App\Services\Contracts\UserServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Carbon;
@@ -51,7 +52,8 @@ class AuthService implements AuthServiceContract
         protected OneTimeSecurityCodeContract $oneTimeSecurityCodeService,
         protected ConsentServiceContract $consentService,
         protected UserLoginAttemptServiceContract $userLoginAttemptService,
-        private MetadataServiceContract $metadataService,
+        protected UserServiceContract $userService,
+        protected MetadataServiceContract $metadataService,
     ) {
     }
 
@@ -352,6 +354,20 @@ class AuthService implements AuthServiceContract
         $this->consentService->updateUserConsents(Collection::make($dto->getConsents()), $user);
 
         return $user;
+    }
+
+    public function selfRemove(string $password): void
+    {
+        if ($this->isAppAuthenticated()) {
+            throw new ClientException(Exceptions::CLIENT_APPS_NO_ACCESS);
+        }
+
+        /** @var User $user */
+        $user = Auth::user();
+
+        $this->checkCredentials($user, $password);
+
+        $this->userService->destroy($user);
     }
 
     private function verifyTFA(?string $code): void

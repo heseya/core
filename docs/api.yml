@@ -210,6 +210,8 @@ paths:
     $ref: './paths/Users.yml#/Users'
   '/users/id:{id}':
     $ref: './paths/Users.yml#/UsersParams'
+  /users/self-remove:
+    $ref: './paths/Users.yml#/SelfRemove'
   '/products/id:{id}/metadata':
     $ref: './paths/Metadata.yml#/Metadata'
   '/products/id:{id}/metadata-private':
