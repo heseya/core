@@ -10,7 +10,9 @@ use App\Events\UserCreated;
 use App\Events\UserDeleted;
 use App\Events\UserUpdated;
 use App\Exceptions\ClientException;
+use App\Models\DiscountCondition;
 use App\Models\Role;
+use App\Models\SavedAddress;
 use App\Models\User;
 use App\Models\UserPreference;
 use App\Services\Contracts\MetadataServiceContract;
@@ -21,7 +23,9 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UserService implements UserServiceContract
 {
@@ -167,8 +171,94 @@ class UserService implements UserServiceContract
             }
         }
 
-        if ($user->delete()) {
-            UserDeleted::dispatch($user);
-        }
+        DB::transaction(function () use ($user) {
+            // Delete user addresses not bound to orders
+            $user->shippingAddresses()->each(function (SavedAddress $address) {
+                if (!$address->address?->orders()->exists()) {
+                    $address->address?->delete();
+                }
+            });
+            $user->shippingAddresses()->delete();
+            $user->billingAddresses()->each(function (SavedAddress $address) {
+                if (!$address->address?->orders()->exists()) {
+                    $address->address?->delete();
+                }
+            });
+            $user->billingAddresses()->delete();
+
+            // Delete user consents
+            $user->consents()->delete();
+
+            // Delete user from discount conditions
+            // Potentially need to delete user from value json field
+            $user->discountConditions()->each(function (DiscountCondition $condition) use ($user) {
+                // Remove user id from the array
+                $value = $condition->value;
+                $value['users'] = array_diff($value['users'], [$user->id]);
+                $condition->update(['value' => $value]);
+            });
+            $user->discountConditions()->detach();
+
+            // Delete favourite product sets
+            $user->favouriteProductSets()->forceDelete();
+
+            // Delete user metadata
+            $user->metadata()->delete();
+            $user->metadataPrivate()->delete();
+            $user->metadataPersonal()->delete();
+
+            // Delete user one time security codes
+            $user->securityCodes()->delete();
+
+            // Disassociate orders from the user
+            // Order has audits containing buyer_id, but they cannot just be deleted :(
+            $user->orders()->update([
+                'buyer_id' => null,
+                'buyer_type' => null,
+            ]);
+
+            // Detach user from roles
+            $user->roles()->detach();
+
+            // Delete user login attempts
+            $user->loginAttempts()->delete();
+
+            // Delete user oauth providers
+            $user->providers()->delete();
+
+            // Delete user wishlist
+            $user->wishlistProducts()->forceDelete();
+
+            $preferences = $user->preferences;
+
+            $user->fill([
+                'name' => 'Deleted user',
+                // Emails in database must be unique strings
+                'email' => Str::uuid(),
+                'password' => null,
+                'tfa_type' => null,
+                'tfa_secret' => null,
+                'is_tfa_active' => false,
+                'preferences_id' => null,
+                'birthday_date' => null,
+                'phone_country' => null,
+                'phone_number' => null,
+            ]);
+            $user->remember_token = null;
+            $user->save();
+
+            // Delete audits related to the user
+            // Must be done after the user is updated
+            // Not using relationship to avoid phpstan error
+            // @phpstan-ignore-next-line
+            $user->audits->each(fn ($audit) => $audit->delete());
+
+            // Delete user preferences
+            $preferences?->delete();
+
+            if ($user->delete()) {
+                UserDeleted::dispatch($user);
+            }
+        });
     }
 }

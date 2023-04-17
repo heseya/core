@@ -285,6 +285,7 @@ class OrderTest extends TestCase
 
         $this->$user->orders()->save($order);
 
+        // @var User $another_user
         $another_user = User::factory()->create();
 
         $order_another_user = Order::factory()->create([
@@ -975,6 +976,7 @@ class OrderTest extends TestCase
     {
         $this->$user->givePermissionTo('orders.show_own');
 
+        /** @var User $another_user */
         $another_user = User::factory()->create();
 
         $order = Order::factory()->create();

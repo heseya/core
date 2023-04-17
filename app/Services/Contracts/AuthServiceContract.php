@@ -49,4 +49,6 @@ interface AuthServiceContract
     public function register(RegisterDto $dto): User;
 
     public function updateProfile(UpdateProfileDto $dto): User;
+
+    public function selfRemove(string $password): void;
 }
