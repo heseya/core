@@ -2,9 +2,13 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Discount;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
+/**
+ * @property Discount $resource
+ */
 class SaleResource extends Resource
 {
     use MetadataResource;
@@ -21,6 +25,7 @@ class SaleResource extends Resource
         return array_merge([
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
+            'slug' => $this->resource->slug,
             'description' => $this->resource->description,
             'value' => $this->resource->value,
             'type' => $this->resource->type,
@@ -35,6 +40,7 @@ class SaleResource extends Resource
     public function view(Request $request): array
     {
         return [
+            'description_html' => $this->resource->description_html,
             'condition_groups' => ConditionGroupResource::collection($this->resource->conditionGroups),
             'target_products' => ProductResource::collection($this->resource->products),
             'target_sets' => ProductSetResource::collection($this->resource->productSets),
