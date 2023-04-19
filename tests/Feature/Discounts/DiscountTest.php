@@ -1,16 +1,14 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Discounts;
 
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\ValidationError;
 use App\Events\CouponCreated;
-use App\Events\CouponDeleted;
 use App\Events\CouponUpdated;
 use App\Events\SaleCreated;
-use App\Events\SaleDeleted;
 use App\Events\SaleUpdated;
 use App\Listeners\WebHookEventListener;
 use App\Models\ConditionGroup;
@@ -40,19 +38,19 @@ class DiscountTest extends TestCase
     use WithFaker;
 
     private array $conditions;
-    private $role;
-    private $conditionUser;
-    private $conditionProduct;
-    private $conditionProductSet;
+    private Role $role;
+    private User $conditionUser;
+    private Product $conditionProduct;
+    private ProductSet $conditionProductSet;
     private array $expectedStructure;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        // kupony
+        // coupons
         Discount::factory()->count(10)->create();
-        // promocje
+        // sales
         Discount::factory([
             'code' => null,
             'target_type' => DiscountTargetType::ORDER_VALUE,
@@ -263,7 +261,7 @@ class DiscountTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowWithConditions($user): void
+    public function testShowWithConditions(string $user): void
     {
         $this->$user->givePermissionTo('coupons.show_details');
         $discount = Discount::factory()->create();
@@ -373,7 +371,7 @@ class DiscountTest extends TestCase
     /**
      * @dataProvider couponOrSaleProvider
      */
-    public function testShowByIdUnauthorized($discountKind): void
+    public function testShowByIdUnauthorized(string $discountKind): void
     {
         $code = $discountKind === 'coupons' ? [] : ['code' => null];
 
@@ -386,7 +384,7 @@ class DiscountTest extends TestCase
     /**
      * @dataProvider authWithDiscountProvider
      */
-    public function testShowById($user, $discountKind): void
+    public function testShowById(string $user, string $discountKind): void
     {
         $this->$user->givePermissionTo("{$discountKind}.show_details");
 
@@ -406,7 +404,7 @@ class DiscountTest extends TestCase
     /**
      * @dataProvider authWithDiscountProvider
      */
-    public function testShowByIdInactive($user, $discountKind): void
+    public function testShowByIdInactive(string $user, string $discountKind): void
     {
         $this->$user->givePermissionTo("{$discountKind}.show_details");
 
@@ -427,7 +425,7 @@ class DiscountTest extends TestCase
     /**
      * @dataProvider authWithDiscountProvider
      */
-    public function testShowInvalidDiscount($user, $discountKind): void
+    public function testShowInvalidDiscount(string $user, string $discountKind): void
     {
         $this->$user->givePermissionTo("{$discountKind}.show_details");
 
@@ -443,9 +441,11 @@ class DiscountTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowWrongCode($user): void
+    public function testShowWrongCode(string $user): void
     {
         $this->$user->givePermissionTo('coupons.show_details');
+
+        /** @var Discount $discount */
         $discount = Discount::factory()->create();
 
         $this
@@ -476,7 +476,7 @@ class DiscountTest extends TestCase
     /**
      * @dataProvider authWithDiscountProvider
      */
-    public function testCreateSimple($user, $discountKind): void
+    public function testCreateSimple(string $user, string $discountKind): void
     {
         $this->$user->givePermissionTo("{$discountKind}.add");
 
@@ -485,8 +485,10 @@ class DiscountTest extends TestCase
         Event::fake($event);
 
         $discount = [
-            'name' => 'Kupon',
-            'description' => 'Testowy kupon',
+            'name' => 'Coupon',
+            'slug' => 'slug',
+            'description' => 'Test coupon',
+            'description_html' => 'html',
             'value' => 10,
             'type' => DiscountType::PERCENTAGE,
             'priority' => 1,
@@ -523,7 +525,7 @@ class DiscountTest extends TestCase
                 'type' => ConditionType::MAX_USES,
             ]);
 
-        $discountId = $response->getData()->data->id;
+        $discountId = $response->json('data.id');
 
         $this->assertDatabaseHas('discounts', $discount + ['id' => $discountId]);
         $this->assertDatabaseCount('condition_groups', 1);
@@ -533,7 +535,8 @@ class DiscountTest extends TestCase
         Event::assertDispatched($event);
         Queue::fake();
 
-        $discount = Discount::find($response->getData()->data->id);
+        /** @var Discount $discount */
+        $discount = Discount::query()->find($discountId);
         $event = $discountKind === 'coupons' ? new CouponCreated($discount) : new SaleCreated($discount);
         $listener = new WebHookEventListener();
 
@@ -1777,7 +1780,9 @@ class DiscountTest extends TestCase
 
         $discountNew = [
             'name' => 'Kupon',
+            'slug' => 'slug',
             'description' => 'Testowy kupon',
+            'description_html' => 'html',
             'value' => 10,
             'type' => DiscountType::PERCENTAGE,
             'priority' => 1,
@@ -2254,284 +2259,6 @@ class DiscountTest extends TestCase
             'price_max_initial' => 350,
             'price_min' => 290,
             'price_max' => 350,
-        ]);
-    }
-
-    /**
-     * @dataProvider couponOrSaleProvider
-     */
-    public function testDeleteUnauthorized($discountKind): void
-    {
-        $code = $discountKind === 'coupons' ? [] : ['code' => null];
-        $discount = Discount::factory($code)->create();
-
-        Event::fake();
-
-        $this
-            ->deleteJson("/{$discountKind}/id:" . $discount->getKey())
-            ->assertForbidden();
-
-        $event = $discountKind === 'coupons' ? CouponDeleted::class : SaleDeleted::class;
-        Event::assertNotDispatched($event);
-    }
-
-    /**
-     * @dataProvider authWithDiscountProvider
-     */
-    public function testDeleteInvalidDiscount($user, $discountKind): void
-    {
-        $this->$user->givePermissionTo("{$discountKind}.remove");
-
-        $code = $discountKind === 'sales' ? [] : ['code' => null];
-        $discount = Discount::factory($code)->create();
-
-        Event::fake();
-
-        $this
-            ->actingAs($this->$user)
-            ->deleteJson("/{$discountKind}/id:" . $discount->getKey())
-            ->assertNotFound();
-
-        $event = $discountKind === 'coupons' ? CouponDeleted::class : SaleDeleted::class;
-        Event::assertNotDispatched($event);
-    }
-
-    /**
-     * @dataProvider authWithDiscountProvider
-     */
-    public function testDelete($user, $discountKind): void
-    {
-        $this->$user->givePermissionTo("{$discountKind}.remove");
-        $code = $discountKind === 'coupons' ? [] : ['code' => null];
-        $discount = Discount::factory($code)->create();
-
-        Queue::fake();
-
-        $response = $this->actingAs($this->$user)->deleteJson("/{$discountKind}/id:" . $discount->getKey());
-        $response->assertNoContent();
-        $this->assertSoftDeleted($discount);
-
-        Queue::assertPushed(CallQueuedListener::class, function ($job) {
-            return $job->class === WebHookEventListener::class;
-        });
-
-        $event = $discountKind === 'coupons' ? new CouponDeleted($discount) : new SaleDeleted($discount);
-        $listener = new WebHookEventListener();
-
-        $listener->handle($event);
-
-        Queue::assertNotPushed(CallWebhookJob::class);
-    }
-
-    /**
-     * @dataProvider authWithDiscountProvider
-     */
-    public function testDeleteWithWebHookQueue($user, $discountKind): void
-    {
-        $this->$user->givePermissionTo("{$discountKind}.remove");
-
-        if ($discountKind === 'coupons') {
-            $webHookEvent = 'CouponDeleted';
-            $code = [];
-        } else {
-            $webHookEvent = 'SaleDeleted';
-            $code = ['code' => null];
-        }
-
-        $discount = Discount::factory($code)->create();
-
-        $webHook = WebHook::factory()->create([
-            'events' => [
-                $webHookEvent,
-            ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
-            'with_issuer' => false,
-            'with_hidden' => false,
-        ]);
-
-        Queue::fake();
-
-        $response = $this->actingAs($this->$user)->deleteJson("/{$discountKind}/id:" . $discount->getKey());
-
-        Queue::assertPushed(CallQueuedListener::class, function ($job) {
-            return $job->class === WebHookEventListener::class;
-        });
-
-        $response->assertNoContent();
-        $this->assertSoftDeleted($discount);
-
-        $event = $discountKind === 'coupons' ? new CouponDeleted($discount) : new SaleDeleted($discount);
-        $listener = new WebHookEventListener();
-
-        $listener->handle($event);
-
-        Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $discount, $webHookEvent) {
-            $payload = $job->payload;
-            return $job->webhookUrl === $webHook->url
-                && isset($job->headers['Signature'])
-                && $payload['data']['id'] === $discount->getKey()
-                && $payload['data_type'] === 'Discount'
-                && $payload['event'] === $webHookEvent;
-        });
-    }
-
-    /**
-     * @dataProvider authWithDiscountProvider
-     */
-    public function testDeleteWithWebHookDispatched($user, $discountKind): void
-    {
-        $this->$user->givePermissionTo("{$discountKind}.remove");
-
-        if ($discountKind === 'coupons') {
-            $webHookEvent = 'CouponDeleted';
-            $code = [];
-        } else {
-            $webHookEvent = 'SaleDeleted';
-            $code = ['code' => null];
-        }
-
-        $discount = Discount::factory($code)->create();
-
-        $webHook = WebHook::factory()->create([
-            'events' => [
-                $webHookEvent,
-            ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
-            'with_issuer' => false,
-            'with_hidden' => false,
-        ]);
-
-        Bus::fake();
-
-        $response = $this->actingAs($this->$user)->deleteJson("/{$discountKind}/id:" . $discount->getKey());
-
-        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
-            return $job->class === WebHookEventListener::class;
-        });
-
-        $response->assertNoContent();
-        $this->assertSoftDeleted($discount);
-
-        $event = $discountKind === 'coupons' ? new CouponDeleted($discount) : new SaleDeleted($discount);
-        $listener = new WebHookEventListener();
-
-        $listener->handle($event);
-
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $discount, $webHookEvent) {
-            $payload = $job->payload;
-            return $job->webhookUrl === $webHook->url
-                && isset($job->headers['Signature'])
-                && $payload['data']['id'] === $discount->getKey()
-                && $payload['data_type'] === 'Discount'
-                && $payload['event'] === $webHookEvent;
-        });
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testDeleteSaleWithProduct($user): void
-    {
-        $this->$user->givePermissionTo('sales.remove');
-        $discount = Discount::factory([
-            'type' => DiscountType::AMOUNT,
-            'value' => 10,
-            'code' => null,
-            'target_type' => DiscountTargetType::PRODUCTS,
-            'target_is_allow_list' => true,
-        ])->create();
-
-        $product = Product::factory()->create([
-            'public' => true,
-            'price' => 100,
-            'price_min_initial' => 100,
-            'price_max_initial' => 200,
-        ]);
-
-        $discount->products()->attach($product);
-
-        /** @var DiscountServiceContract $discountService */
-        $discountService = App::make(DiscountServiceContract::class);
-
-        // Apply discount to products before update
-        $discountService->applyDiscountsOnProducts(Collection::make([$product]));
-
-        $this->assertDatabaseHas('products', [
-            'id' => $product->getKey(),
-            'price_min' => 90,
-            'price_max' => 190,
-        ]);
-
-        $response = $this->actingAs($this->$user)->deleteJson('/sales/id:' . $discount->getKey());
-        $response->assertNoContent();
-        $this->assertSoftDeleted($discount);
-
-        $this->assertDatabaseHas('products', [
-            'id' => $product->getKey(),
-            'price_min' => 100,
-            'price_max' => 200,
-        ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testDeleteSaleWithProductInChildSet($user): void
-    {
-        $this->$user->givePermissionTo('sales.remove');
-        $discount = Discount::factory([
-            'type' => DiscountType::AMOUNT,
-            'value' => 10,
-            'code' => null,
-            'target_type' => DiscountTargetType::PRODUCTS,
-            'target_is_allow_list' => true,
-        ])->create();
-
-        $product = Product::factory()->create([
-            'public' => true,
-            'price' => 100,
-            'price_min_initial' => 100,
-            'price_max_initial' => 200,
-        ]);
-
-        $parentSet = ProductSet::factory()->create(['public' => true]);
-        $childSet = ProductSet::factory()->create([
-            'public' => true,
-            'public_parent' => true,
-            'parent_id' => $parentSet->getKey(),
-        ]);
-        $subChildSet = ProductSet::factory()->create([
-            'public' => true,
-            'public_parent' => true,
-            'parent_id' => $childSet->getKey(),
-        ]);
-
-        $product->sets()->sync([$subChildSet->getKey()]);
-
-        $discount->productSets()->attach($parentSet);
-
-        /** @var DiscountServiceContract $discountService */
-        $discountService = App::make(DiscountServiceContract::class);
-
-        // Apply discount to products before update
-        $discountService->applyDiscountsOnProducts(Collection::make([$product]));
-
-        $this->assertDatabaseHas('products', [
-            'id' => $product->getKey(),
-            'price_min' => 90,
-            'price_max' => 190,
-        ]);
-
-        $response = $this->actingAs($this->$user)->deleteJson('/sales/id:' . $discount->getKey());
-        $response->assertNoContent();
-        $this->assertSoftDeleted($discount);
-
-        $this->assertDatabaseHas('products', [
-            'id' => $product->getKey(),
-            'price_min' => 100,
-            'price_max' => 200,
         ]);
     }
 

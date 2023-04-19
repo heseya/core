@@ -58,6 +58,7 @@ use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
+use App\Services\Contracts\SeoMetadataServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
 use App\Services\Contracts\ShippingTimeDateServiceContract;
 use Heseya\Dto\Missing;
@@ -74,9 +75,10 @@ use Illuminate\Support\Str;
 readonly class DiscountService implements DiscountServiceContract
 {
     public function __construct(
-        private SettingsServiceContract $settingsService,
         private MetadataServiceContract $metadataService,
-        private ShippingTimeDateServiceContract $shippingTimeDateService
+        private SettingsServiceContract $settingsService,
+        private SeoMetadataServiceContract $seoMetadataService,
+        private ShippingTimeDateServiceContract $shippingTimeDateService,
     ) {
     }
 
@@ -90,7 +92,8 @@ readonly class DiscountService implements DiscountServiceContract
 
     public function store(SaleDto|CouponDto $dto): Discount
     {
-        $discount = Discount::create($dto->toArray());
+        /** @var Discount $discount */
+        $discount = Discount::query()->create($dto->toArray());
 
         $discount->products()->attach($dto->getTargetProducts());
         $discount->productSets()->attach($dto->getTargetSets());
@@ -103,6 +106,10 @@ readonly class DiscountService implements DiscountServiceContract
 
         if (!($dto->getMetadata() instanceof Missing)) {
             $this->metadataService->sync($discount, $dto->getMetadata());
+        }
+
+        if (!($dto->getSeo() instanceof Missing)) {
+            $this->seoMetadataService->createOrUpdateFor($discount, $dto->getSeo());
         }
 
         if ($dto instanceof CouponDto) {
@@ -140,6 +147,10 @@ readonly class DiscountService implements DiscountServiceContract
             if (count($conditionGroup) > 0) {
                 $discount->conditionGroups()->attach($this->createConditionGroupsToAttach($conditionGroup));
             }
+        }
+
+        if (!($dto->getSeo() instanceof Missing)) {
+            $this->seoMetadataService->createOrUpdateFor($discount, $dto->getSeo());
         }
 
         if ($dto instanceof CouponDto) {

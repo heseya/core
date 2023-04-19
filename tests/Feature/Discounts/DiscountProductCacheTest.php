@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Discounts;
 
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
@@ -50,7 +50,7 @@ class DiscountProductCacheTest extends TestCase
 
         $response = $this
             ->actingAs($this->user)
-            ->json('POST', "/sales", $discount + $conditions);
+            ->json('POST', '/sales', $discount + $conditions);
 
         $response->assertCreated();
 

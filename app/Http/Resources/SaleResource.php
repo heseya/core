@@ -17,9 +17,8 @@ class SaleResource extends Resource
     {
         if (isset($this->resource->pivot, $this->resource->pivot->type)) {
             // @phpstan-ignore-next-line
-            $this->resource->type = $this->resource->pivot->type;
-            // @phpstan-ignore-next-line
             $this->resource->value = $this->resource->pivot->value;
+            $this->resource->type = $this->resource->pivot->type;
         }
 
         return array_merge([

@@ -93,4 +93,22 @@ abstract class TestCase extends BaseTestCase
             'as application false' => ['application', false, false],
         ];
     }
+
+    public static function couponOrSaleProvider(): array
+    {
+        return [
+            'coupons' => ['coupons'],
+            'sales' => ['sales'],
+        ];
+    }
+
+    public static function authWithDiscountProvider(): array
+    {
+        return [
+            'as user coupons' => ['user', 'coupons'],
+            'as user sales' => ['user', 'sales'],
+            'as app coupons' => ['application', 'coupons'],
+            'as app sales' => ['application', 'sales'],
+        ];
+    }
 }

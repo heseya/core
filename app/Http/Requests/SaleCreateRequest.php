@@ -5,12 +5,17 @@ namespace App\Http\Requests;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Traits\MetadataRules;
+use App\Traits\SeoRules;
 use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SaleCreateRequest extends FormRequest
 {
+    use SeoRules;
+    use MetadataRules;
+
     /**
      * Get the validation rules that apply to the request.
      */
@@ -48,7 +53,7 @@ class SaleCreateRequest extends FormRequest
 
             'target_shipping_methods' => ['array'],
             'target_shipping_methods.*' => ['uuid', 'exists:shipping_methods,id'],
-        ];
+        ] + $this->seoRules() + $this->metadataRules();
     }
 
     public function withValidator(Validator $validator): void
