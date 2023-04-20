@@ -53,7 +53,7 @@ class ProductResource extends Resource
             )
             : $this->resource->sets;
 
-        $attachments = Gate::denies('products.show_private_attachments')
+        $attachments = Gate::denies('products.show_attachments_private')
             ? $this->resource->attachments->filter(
                 fn (MediaAttachment $attachment) => $attachment->visibility === VisibilityType::PUBLIC,
             )
