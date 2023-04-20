@@ -23,7 +23,9 @@ class SaleCreateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'slug' => ['nullable', 'string', 'max:128', 'alpha_dash'],
             'description' => ['nullable', 'string', 'max:255'],
+            'description_html' => ['nullable', 'string'],
             'value' => ['required', 'numeric', 'min:0'],
             'type' => ['required', new EnumValue(DiscountType::class, false)],
             'priority' => ['required', 'integer'],

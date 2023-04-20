@@ -1,12 +1,20 @@
 Sale:
   type: object
   properties:
+    id:
+      type: string
+      format: uuid
     name:
       type: string
       example: 'Black'
+    slug:
+      type: string
+      example: 'promo-123'
     description:
       type: string
       example: 'Black Weekend 2021'
+    description_html:
+      type: string
     type:
       type: string
       enum: [ 'amount', 'percentage' ]
