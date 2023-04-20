@@ -28,6 +28,7 @@ use App\Services\Contracts\EventServiceContract;
 use App\Services\Contracts\FavouriteServiceContract;
 use App\Services\Contracts\GoogleCategoryServiceContract;
 use App\Services\Contracts\ItemServiceContract;
+use App\Services\Contracts\MediaAttachmentServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\NameServiceContract;
@@ -68,6 +69,7 @@ use App\Services\EventService;
 use App\Services\FavouriteService;
 use App\Services\GoogleCategoryService;
 use App\Services\ItemService;
+use App\Services\MediaAttachmentService;
 use App\Services\MediaService;
 use App\Services\MetadataService;
 use App\Services\NameService;
@@ -156,6 +158,7 @@ class AppServiceProvider extends ServiceProvider
         PaymentMethodServiceContract::class => PaymentMethodService::class,
         PaymentServiceContract::class => PaymentService::class,
         PriceServiceContract::class => PriceService::class,
+        MediaAttachmentServiceContract::class => MediaAttachmentService::class,
     ];
 
     /**
