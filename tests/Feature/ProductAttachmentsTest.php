@@ -43,6 +43,22 @@ class ProductAttachmentsTest extends TestCase
         $this->showProductsWithAttachments($this->$user, VisibilityType::PRIVATE);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductsWithAttachmentsPrivateNoPermissions(string $user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $attachment = $this->createAttachment(VisibilityType::PRIVATE);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson("/products/id:{$this->product->getKey()}")
+            ->assertOk()
+            ->assertJsonCount(0, 'data.attachments');
+    }
+
     public function testAddAttachmentUnauthorized(): void
     {
         $this
@@ -102,15 +118,7 @@ class ProductAttachmentsTest extends TestCase
 
     public function testEditAttachmentUnauthorized(): void
     {
-        $attachment = MediaAttachment::query()->create([
-            'name' => 'Test',
-            'type' => MediaAttachmentType::OTHER,
-            'visibility' => VisibilityType::PUBLIC,
-            'label' => 'test',
-            'media_id' => $this->media->getKey(),
-            'model_id' => $this->product->getKey(),
-            'model_type' => Product::class,
-        ]);
+        $attachment = $this->createAttachment(VisibilityType::PUBLIC);
 
         $this
             ->patchJson("/products/id:{$this->product->getKey()}/attachments/id:{$attachment->getKey()}")
@@ -164,15 +172,7 @@ class ProductAttachmentsTest extends TestCase
 
     public function testDeleteAttachmentUnauthorized(): void
     {
-        $attachment = MediaAttachment::query()->create([
-            'name' => 'Test',
-            'type' => MediaAttachmentType::OTHER,
-            'visibility' => VisibilityType::PUBLIC,
-            'label' => 'test',
-            'media_id' => $this->media->getKey(),
-            'model_id' => $this->product->getKey(),
-            'model_type' => Product::class,
-        ]);
+        $attachment = $this->createAttachment(VisibilityType::PUBLIC);
 
         $this
             ->deleteJson("/products/id:{$this->product->getKey()}/attachments/id:{$attachment->getKey()}")
@@ -186,15 +186,7 @@ class ProductAttachmentsTest extends TestCase
     {
         $this->$user->givePermissionTo(['products.edit', 'products.show_private_attachments']);
 
-        $attachment = MediaAttachment::query()->create([
-            'name' => 'Test',
-            'type' => MediaAttachmentType::OTHER,
-            'visibility' => VisibilityType::PUBLIC,
-            'label' => 'test',
-            'media_id' => $this->media->getKey(),
-            'model_id' => $this->product->getKey(),
-            'model_type' => Product::class,
-        ]);
+        $attachment = $this->createAttachment(VisibilityType::PUBLIC);
 
         $this
             ->actingAs($this->$user)
@@ -205,9 +197,9 @@ class ProductAttachmentsTest extends TestCase
         $this->assertModelMissing($this->media);
     }
 
-    private function showProductsWithAttachments($user, VisibilityType $visibility): void
+    private function createAttachment(VisibilityType $visibility)
     {
-        $attachment = MediaAttachment::query()->create([
+        return MediaAttachment::query()->create([
             'name' => 'Test',
             'type' => MediaAttachmentType::OTHER,
             'visibility' => $visibility,
@@ -216,6 +208,11 @@ class ProductAttachmentsTest extends TestCase
             'model_id' => $this->product->getKey(),
             'model_type' => Product::class,
         ]);
+    }
+
+    private function showProductsWithAttachments($user, VisibilityType $visibility): void
+    {
+        $attachment = $this->createAttachment($visibility);
 
         $this
             ->actingAs($user)
