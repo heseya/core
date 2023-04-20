@@ -33,6 +33,7 @@ class SaleResource extends Resource
             'target_type' => $this->resource->target_type,
             'target_is_allow_list' => $this->resource->target_is_allow_list,
             'active' => $this->resource->active,
+            'description_html' => $this->resource->description_html,
         ], $this->metadataResource('sales.show_metadata_private'));
     }
 
@@ -40,7 +41,6 @@ class SaleResource extends Resource
     {
         return [
             'seo' => SeoMetadataResource::make($this->resource->seo),
-            'description_html' => $this->resource->description_html,
             'condition_groups' => ConditionGroupResource::collection($this->resource->conditionGroups),
             'target_products' => ProductResource::collection($this->resource->products),
             'target_sets' => ProductSetResource::collection($this->resource->productSets),
