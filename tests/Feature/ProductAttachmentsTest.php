@@ -102,7 +102,7 @@ class ProductAttachmentsTest extends TestCase
 
     public function testEditAttachmentUnauthorized(): void
     {
-        $attachment = MediaAttachment::query()->create( [
+        $attachment = MediaAttachment::query()->create([
             'name' => 'Test',
             'type' => MediaAttachmentType::OTHER,
             'visibility' => VisibilityType::PUBLIC,
@@ -121,7 +121,7 @@ class ProductAttachmentsTest extends TestCase
      * @dataProvider authProvider
      */
     public function testEditAttachment(string $user): void
-{
+    {
         $this->$user->givePermissionTo(['products.edit', 'products.show_private_attachments']);
 
         $data = [
@@ -164,7 +164,7 @@ class ProductAttachmentsTest extends TestCase
 
     public function testDeleteAttachmentUnauthorized(): void
     {
-        $attachment = MediaAttachment::query()->create( [
+        $attachment = MediaAttachment::query()->create([
             'name' => 'Test',
             'type' => MediaAttachmentType::OTHER,
             'visibility' => VisibilityType::PUBLIC,
@@ -186,7 +186,7 @@ class ProductAttachmentsTest extends TestCase
     {
         $this->$user->givePermissionTo(['products.edit', 'products.show_private_attachments']);
 
-        $attachment = MediaAttachment::query()->create( [
+        $attachment = MediaAttachment::query()->create([
             'name' => 'Test',
             'type' => MediaAttachmentType::OTHER,
             'visibility' => VisibilityType::PUBLIC,

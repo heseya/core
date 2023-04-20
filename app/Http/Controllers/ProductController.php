@@ -92,10 +92,8 @@ class ProductController extends Controller
         return MediaAttachmentResource::make($attachment);
     }
 
-    public function editAttachment(MediaAttachmentUpdateRequest $request, Product $product, string $attachmentId): JsonResource
+    public function editAttachment(MediaAttachmentUpdateRequest $request, Product $product, MediaAttachment $attachment): JsonResource
     {
-        $attachment = MediaAttachment::query()->findOrFail($attachmentId);
-
         $attachment = $this->attachmentService->editAttachment(
             $attachment,
             MediaAttachmentUpdateDto::instantiateFromRequest($request),
@@ -104,10 +102,8 @@ class ProductController extends Controller
         return MediaAttachmentResource::make($attachment);
     }
 
-    public function deleteAttachment(Product $product, string $attachmentId): JsonResponse
+    public function deleteAttachment(Product $product, MediaAttachment $attachment): JsonResponse
     {
-        $attachment = MediaAttachment::query()->findOrFail($attachmentId);
-
         $this->attachmentService->removeAttachment($attachment);
 
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);

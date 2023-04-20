@@ -272,3 +272,65 @@ ProductsParams:
               type: object
     security:
       - BearerAuth: [ ]
+
+ProductsAttachments:
+  post:
+    tags:
+      - Products
+    summary: 'create product media attachment'
+    requestBody:
+      $ref: './../requests/MediaAttachments.yml#/MediaAttachmentStore'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/MediaAttachments.yml#/MediaAttachment'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+ProductsAttachmentsParams:
+  delete:
+    tags:
+      - Products
+    summary: 'delete product attachment'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]
+
+  patch:
+    tags:
+      - Products
+    summary: 'update product attachment'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    requestBody:
+      $ref: './../requests/MediaAttachments.yml#/MediaAttachmentUpdate'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/MediaAttachments.yml#/MediaAttachment'
+              type: object
+    security:
+      - BearerAuth: [ ]

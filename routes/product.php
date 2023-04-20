@@ -26,8 +26,8 @@ Route::prefix('products')->group(function (): void {
 
     Route::post('id:{product:id}/attachments', [ProductController::class, 'addAttachment'])
         ->middleware('can:products.edit');
-    Route::patch('id:{product:id}/attachments/id:{attachmentId}', [ProductController::class, 'editAttachment'])
+    Route::patch('id:{product:id}/attachments/id:{attachment:id}', [ProductController::class, 'editAttachment'])
         ->middleware('can:products.edit');
-    Route::delete('id:{product:id}/attachments/id:{attachmentId}', [ProductController::class, 'deleteAttachment'])
+    Route::delete('id:{product:id}/attachments/id:{attachment:id}', [ProductController::class, 'deleteAttachment'])
         ->middleware('can:products.edit');
 });

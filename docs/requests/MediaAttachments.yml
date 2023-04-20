@@ -1,0 +1,38 @@
+MediaAttachment:
+  type: object
+  properties:
+    name:
+      type: string
+    label:
+      type: string
+      nullable: true
+    type:
+      $ref: './../schemas/MediaAttachments.yml#/MediaAttachmentType'
+    visibility:
+      $ref: './../schemas/MediaAttachments.yml#/VisibilityType'
+
+MediaAttachmentStore:
+  content:
+    application/json:
+      schema:
+        allOf:
+          - $ref: '#/MediaAttachment'
+        type: object
+        required:
+          - media_id
+          - name
+          - type
+          - visibility
+        properties:
+          media_id:
+            type: string
+            format: uuid
+
+
+MediaAttachmentUpdate:
+  content:
+    application/json:
+      schema:
+        allOf:
+          - $ref: '#/MediaAttachment'
+        type: object
