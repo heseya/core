@@ -2,11 +2,15 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Product;
 use App\Models\ProductSet;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
+/**
+ * @property Product $resource
+ */
 class ProductResource extends Resource
 {
     use MetadataResource;
@@ -47,20 +51,19 @@ class ProductResource extends Resource
             )
             : $this->resource->sets;
 
-        $sales = $this->resource->sales ? ['sales' => SaleResource::collection($this->resource->sales)] : [];
-
         return [
             'order' => $this->resource->order,
-            'user_id' => $this->resource->user_id,
             'description_html' => $this->resource->description_html,
             'description_short' => $this->resource->description_short,
+            'descriptions' => PageShortResource::collection($this->resource->pages),
+            'sales' => SaleResource::collection($this->resource->sales),
             'items' => ProductItemResource::collection($this->resource->items),
             'gallery' => MediaResource::collection($this->resource->media),
             'schemas' => SchemaResource::collection($this->resource->schemas),
             'sets' => ProductSetResource::collection($sets),
             'attributes' => ProductAttributeResource::collection($this->resource->attributes),
             'seo' => SeoMetadataResource::make($this->resource->seo),
-        ] + $sales;
+        ];
     }
 
     public function index(Request $request): array

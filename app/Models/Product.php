@@ -246,6 +246,14 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         );
     }
 
+    public function pages(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Page::class,
+            'product_page',
+        );
+    }
+
     public function productSetSales(): Collection
     {
         $sales = Collection::make();
