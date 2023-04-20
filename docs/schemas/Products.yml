@@ -103,6 +103,10 @@ ProductView:
         description_short:
           description: 'Plain text short product description'
           type: string
+        descriptions:
+          type: array
+          items:
+            $ref: './Pages.yml#/Page'
         items:
           $ref: './Items.yml#/ItemWithRequiredQuantity'
         gallery:

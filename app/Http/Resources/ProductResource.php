@@ -55,7 +55,7 @@ class ProductResource extends Resource
             'order' => $this->resource->order,
             'description_html' => $this->resource->description_html,
             'description_short' => $this->resource->description_short,
-            'descriptions' => PageShortResource::collection($this->resource->pages),
+            'descriptions' => PageResource::collection($this->resource->pages),
             'sales' => SaleResource::collection($this->resource->sales),
             'items' => ProductItemResource::collection($this->resource->items),
             'gallery' => MediaResource::collection($this->resource->media),
