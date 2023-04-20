@@ -3,17 +3,19 @@
 namespace App\Http\Requests;
 
 use App\Enums\MediaAttachmentType;
+use App\Enums\VisibilityType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 
-class OrderDocumentRequest extends FormRequest
+class MediaAttachmentUpdateRequest extends FormRequest
 {
     public function rules(): array
     {
         return [
-            'file' => ['required', 'file'],
             'name' => ['string'],
-            'type' => ['required', new Enum(MediaAttachmentType::class)],
+            'type' => [new Enum(MediaAttachmentType::class)],
+            'label' => ['nullable', 'string'],
+            'visibility' => [new Enum(VisibilityType::class)],
         ];
     }
 }

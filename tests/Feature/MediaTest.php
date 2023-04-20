@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\MediaType;
-use App\Enums\OrderDocumentType;
+use App\Enums\MediaAttachmentType;
 use App\Models\Banner;
 use App\Models\BannerMedia;
 use App\Models\Media;
@@ -137,7 +137,7 @@ class MediaTest extends TestCase
         ]);
 
         $order = Order::factory()->create();
-        $order->documents()->save($media, ['type' => OrderDocumentType::INVOICE]);
+        $order->documents()->save($media, ['type' => MediaAttachmentType::INVOICE]);
 
         $media->products()->save($product);
 

@@ -22,6 +22,7 @@ use App\Models\Contracts\SortableContract;
 use App\Services\Contracts\ProductSearchServiceContract;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasDiscounts;
+use App\Traits\HasMediaAttachments;
 use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
 use App\Traits\Sortable;
@@ -57,6 +58,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
     use HasCriteria;
     use HasDiscountConditions;
     use HasDiscounts;
+    use HasMediaAttachments;
 
     protected $fillable = [
         'name',
