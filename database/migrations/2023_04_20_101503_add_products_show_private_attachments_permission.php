@@ -12,14 +12,14 @@ return new class extends Migration {
     public function up(): void
     {
         Permission::create([
-            'name' => 'products.show_private_attachments',
+            'name' => 'products.show_attachments_private',
             'display_name' => 'Możliwość wyświetlania prywatnych załączników produktów',
         ]);
 
         Role::query()
             ->where('type', RoleType::OWNER)
             ->firstOrFail()
-            ->givePermissionTo('products.show_private_attachments');
+            ->givePermissionTo('products.show_attachments_private');
     }
 
     /**
@@ -30,10 +30,10 @@ return new class extends Migration {
         Role::query()
             ->where('type', RoleType::OWNER)
             ->firstOrFail()
-            ->revokePermissionTo('products.show_private_attachments');
+            ->revokePermissionTo('products.show_attachments_private');
 
         Permission::query()
-            ->where('name', 'products.show_private_attachments')
+            ->where('name', 'products.show_attachments_private')
             ->delete();
     }
 };

@@ -38,7 +38,7 @@ class ProductAttachmentsTest extends TestCase
      */
     public function testProductsWithAttachmentsPrivate(string $user): void
     {
-        $this->$user->givePermissionTo(['products.show_details', 'products.show_private_attachments']);
+        $this->$user->givePermissionTo(['products.show_details', 'products.show_attachments_private']);
 
         $this->showProductsWithAttachments($this->$user, VisibilityType::PRIVATE);
     }
@@ -130,7 +130,7 @@ class ProductAttachmentsTest extends TestCase
      */
     public function testEditAttachment(string $user): void
     {
-        $this->$user->givePermissionTo(['products.edit', 'products.show_private_attachments']);
+        $this->$user->givePermissionTo(['products.edit', 'products.show_attachments_private']);
 
         $data = [
             'name' => 'Test updated',
@@ -147,7 +147,7 @@ class ProductAttachmentsTest extends TestCase
      */
     public function testEditAttachmentNullLabel(string $user): void
     {
-        $this->$user->givePermissionTo(['products.edit', 'products.show_private_attachments']);
+        $this->$user->givePermissionTo(['products.edit', 'products.show_attachments_private']);
 
         $data = [
             'label' => null,
@@ -161,7 +161,7 @@ class ProductAttachmentsTest extends TestCase
      */
     public function testEditAttachmentNoLabel(string $user): void
     {
-        $this->$user->givePermissionTo(['products.edit', 'products.show_private_attachments']);
+        $this->$user->givePermissionTo(['products.edit', 'products.show_attachments_private']);
 
         $initialData = [
             'label' => 'persisted',
@@ -184,7 +184,7 @@ class ProductAttachmentsTest extends TestCase
      */
     public function testDeleteAttachment(string $user): void
     {
-        $this->$user->givePermissionTo(['products.edit', 'products.show_private_attachments']);
+        $this->$user->givePermissionTo(['products.edit', 'products.show_attachments_private']);
 
         $attachment = $this->createAttachment(VisibilityType::PUBLIC);
 
