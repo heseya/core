@@ -39,6 +39,7 @@ class SaleResource extends Resource
     public function view(Request $request): array
     {
         return [
+            'seo' => SeoMetadataResource::make($this->resource->seo),
             'description_html' => $this->resource->description_html,
             'condition_groups' => ConditionGroupResource::collection($this->resource->conditionGroups),
             'target_products' => ProductResource::collection($this->resource->products),
