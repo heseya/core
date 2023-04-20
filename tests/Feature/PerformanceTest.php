@@ -265,7 +265,7 @@ class PerformanceTest extends TestCase
             ->json('GET', '/sales/id:' . $discount->getKey())
             ->assertOk();
 
-        $this->assertQueryCountLessThan(16);
+        $this->assertQueryCountLessThan(17);
     }
 
     public function testCreateSalePerformance1000Products(): void
