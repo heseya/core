@@ -42,9 +42,18 @@ class ProductAttributeSearch extends Criterion
                                 $query->where($key, '>=', $value['min']);
                             } elseif (Arr::has($value, 'max')) {
                                 $query->where($key, '<=', $value['max']);
+                            } else {
+                                $query->where(function ($query) use ($value) {
+                                    foreach ($value as $option) {
+                                        $query->orWhere(
+                                            'product_attribute_attribute_option.attribute_option_id',
+                                            $option,
+                                        );
+                                    }
+                                });
                             }
                         } else {
-                            $query->where('product_attribute_attribute_option.attribute_option_id', '=', $value);
+                            $query->where('product_attribute_attribute_option.attribute_option_id', $value);
                         }
                     });
             });

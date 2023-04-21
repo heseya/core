@@ -24,8 +24,7 @@ class AttributeSearch implements Rule
     {
         $this->attributeName = Str::between($attribute, '.', '.');
         $this->message = "The attribute `{$this->attributeName}` isn't supported.";
-
-        $this->attribute = Attribute::where('slug', $this->attributeName)->first();
+        $this->attribute = Attribute::query()->where('slug', $this->attributeName)->first();
 
         if ($this->attribute === null) {
             $this->message = "The attribute `{$this->attributeName}` doesn't exists.";
@@ -98,7 +97,8 @@ class AttributeSearch implements Rule
 
         $this->message = "Invalid options for attribute `{$this->attributeName}`.";
 
-        return AttributeOption::where('attribute_id', $this->attribute?->getKey())
+        return AttributeOption::query()
+            ->where('attribute_id', $this->attribute?->getKey())
             ->whereIn('id', $value)
             ->exists();
     }
