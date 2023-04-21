@@ -50,7 +50,7 @@ class ProductAttachmentsTest extends TestCase
     {
         $this->$user->givePermissionTo('products.show_details');
 
-        $attachment = $this->createAttachment(VisibilityType::PRIVATE);
+        $this->createAttachment(VisibilityType::PRIVATE);
 
         $this
             ->actingAs($this->$user)
@@ -77,7 +77,7 @@ class ProductAttachmentsTest extends TestCase
             'name' => 'Test',
             'type' => MediaAttachmentType::OTHER->value,
             'visibility' => VisibilityType::PUBLIC->value,
-            'label' => null,
+            'description' => null,
         ];
 
         $this->addAttachment($this->$user, $data);
@@ -86,7 +86,7 @@ class ProductAttachmentsTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testAddAttachmentWithoutLabel(string $user): void
+    public function testAddAttachmentWithoutDescription(string $user): void
     {
         $this->$user->givePermissionTo('products.edit');
 
@@ -102,7 +102,7 @@ class ProductAttachmentsTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testAddAttachmentWithNullLabel(string $user): void
+    public function testAddAttachmentWithNullDescription(string $user): void
     {
         $this->$user->givePermissionTo('products.edit');
 
@@ -110,7 +110,7 @@ class ProductAttachmentsTest extends TestCase
             'name' => 'Test',
             'type' => MediaAttachmentType::OTHER->value,
             'visibility' => VisibilityType::PUBLIC->value,
-            'label' => null,
+            'description' => null,
         ];
 
         $this->addAttachment($this->$user, $data);
@@ -136,7 +136,7 @@ class ProductAttachmentsTest extends TestCase
             'name' => 'Test updated',
             'type' => MediaAttachmentType::INVOICE->value,
             'visibility' => VisibilityType::PRIVATE->value,
-            'label' => 'test-updated',
+            'description' => 'test-updated',
         ];
 
         $this->editAttachment($this->$user, $data, $data);
@@ -145,12 +145,12 @@ class ProductAttachmentsTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testEditAttachmentNullLabel(string $user): void
+    public function testEditAttachmentNullDescription(string $user): void
     {
         $this->$user->givePermissionTo(['products.edit', 'products.show_attachments_private']);
 
         $data = [
-            'label' => null,
+            'description' => null,
         ];
 
         $this->editAttachment($this->$user, $data, $data);
@@ -159,12 +159,12 @@ class ProductAttachmentsTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testEditAttachmentNoLabel(string $user): void
+    public function testEditAttachmentNoDescription(string $user): void
     {
         $this->$user->givePermissionTo(['products.edit', 'products.show_attachments_private']);
 
         $initialData = [
-            'label' => 'persisted',
+            'description' => 'persisted',
         ];
 
         $this->editAttachment($this->$user, [], $initialData, $initialData);
@@ -203,7 +203,7 @@ class ProductAttachmentsTest extends TestCase
             'name' => 'Test',
             'type' => MediaAttachmentType::OTHER,
             'visibility' => $visibility,
-            'label' => 'test',
+            'description' => 'test',
             'media_id' => $this->media->getKey(),
             'model_id' => $this->product->getKey(),
             'model_type' => Product::class,
@@ -225,7 +225,7 @@ class ProductAttachmentsTest extends TestCase
                             'id' => $attachment->getKey(),
                             'name' => $attachment->name,
                             'type' => $attachment->type->value,
-                            'label' => $attachment->label,
+                            'description' => $attachment->description,
                             'visibility' => $attachment->visibility->value,
                             'media' => [
                                 'id' => $this->media->getKey(),
@@ -265,7 +265,7 @@ class ProductAttachmentsTest extends TestCase
             'name' => 'Test',
             'type' => MediaAttachmentType::OTHER->value,
             'visibility' => VisibilityType::PUBLIC->value,
-            'label' => 'test',
+            'description' => 'test',
         ];
 
         $attachment = MediaAttachment::query()->create($createData + [

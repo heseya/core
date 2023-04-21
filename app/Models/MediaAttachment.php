@@ -12,8 +12,9 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 /**
  * @property string $name
  * @property MediaAttachmentType $type
- * @property string|null $label
+ * @property string|null $description
  * @property VisibilityType $visibility
+ * @property string|null $label used for grouping attachments in different relations
  * @property Media $media
  * @mixin IdeHelperMediaAttachment
  */
@@ -25,11 +26,12 @@ class MediaAttachment extends Pivot
     protected $fillable = [
         'name',
         'type',
-        'label',
+        'description',
         'visibility',
         'model_id',
         'model_type',
         'media_id',
+        'label',
     ];
 
     protected $casts = [

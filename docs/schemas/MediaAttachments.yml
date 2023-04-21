@@ -19,9 +19,10 @@ MediaAttachment:
       format: uuid
     name:
       type: string
-    label:
+    description:
       type: string
       nullable: true
+      maxLength: 1000
     type:
       $ref: '#/MediaAttachmentType'
     visibility:

@@ -136,6 +136,11 @@ ProductView:
           type: array
           items:
             $ref: './Sales.yml#/Sale'
+        attachments:
+          description: 'List of all media attachments'
+          type: array
+          items:
+            $ref: './MediaAttachments.yml#/MediaAttachment'
 
 ProductIndex:
   type: object

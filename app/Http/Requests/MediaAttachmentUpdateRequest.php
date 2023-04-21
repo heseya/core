@@ -14,7 +14,7 @@ class MediaAttachmentUpdateRequest extends FormRequest
         return [
             'name' => ['string'],
             'type' => [new Enum(MediaAttachmentType::class)],
-            'label' => ['nullable', 'string'],
+            'description' => ['nullable', 'string', 'max:1000'],
             'visibility' => [new Enum(VisibilityType::class)],
         ];
     }
