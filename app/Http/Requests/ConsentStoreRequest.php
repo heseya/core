@@ -10,7 +10,7 @@ class ConsentStoreRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'description_html' => ['required', 'string', 'max:65000'],
+            'description_html' => ['required', 'string', 'max:16000'],
             'required' => ['required', 'boolean'],
         ];
     }

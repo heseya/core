@@ -10,7 +10,7 @@ class ConsentUpdateRequest extends FormRequest
     {
         return [
             'name' => ['string', 'max:255'],
-            'description_html' => ['string', 'max:65000'],
+            'description_html' => ['string', 'max:16000'],
             'required' => ['boolean'],
         ];
     }
