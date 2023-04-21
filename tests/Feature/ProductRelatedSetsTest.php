@@ -10,7 +10,7 @@ class ProductRelatedSetsTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowSets($user): void
+    public function testShowRelatedSets($user): void
     {
         $this->$user->givePermissionTo('products.show_details');
 
@@ -65,7 +65,7 @@ class ProductRelatedSetsTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowPrivateSetsNoPermission($user): void
+    public function testShowPrivateRelatedSetsNoPermission($user): void
     {
         $this->$user->givePermissionTo('products.show_details');
 
@@ -107,7 +107,7 @@ class ProductRelatedSetsTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowPrivateSetsWithPermission($user): void
+    public function testShowPrivateRelatedSetsWithPermission($user): void
     {
         $this->$user->givePermissionTo(['products.show_details', 'product_sets.show_hidden']);
 
@@ -163,7 +163,7 @@ class ProductRelatedSetsTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithSets($user): void
+    public function testCreateWithRelatedSets($user): void
     {
         $this->$user->givePermissionTo('products.add');
 
@@ -199,7 +199,7 @@ class ProductRelatedSetsTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateChangeSets($user): void
+    public function testUpdateChangeRelatedSets($user): void
     {
         $this->$user->givePermissionTo('products.edit');
 
@@ -240,7 +240,7 @@ class ProductRelatedSetsTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateDeleteSets($user): void
+    public function testUpdateDeleteRelatedSets($user): void
     {
         $this->$user->givePermissionTo('products.edit');
 
