@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\VisibilityType;
+use App\Models\MediaAttachment;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Traits\MetadataResource;
@@ -51,18 +53,25 @@ class ProductResource extends Resource
             )
             : $this->resource->sets;
 
+        $attachments = Gate::denies('products.show_attachments_private')
+            ? $this->resource->attachments->filter(
+                fn (MediaAttachment $attachment) => $attachment->visibility === VisibilityType::PUBLIC,
+            )
+            : $this->resource->attachments;
+
         return [
             'order' => $this->resource->order,
             'description_html' => $this->resource->description_html,
             'description_short' => $this->resource->description_short,
             'descriptions' => PageResource::collection($this->resource->pages),
-            'sales' => SaleResource::collection($this->resource->sales),
             'items' => ProductItemResource::collection($this->resource->items),
             'gallery' => MediaResource::collection($this->resource->media),
             'schemas' => SchemaResource::collection($this->resource->schemas),
             'sets' => ProductSetResource::collection($sets),
             'attributes' => ProductAttributeResource::collection($this->resource->attributes),
             'seo' => SeoMetadataResource::make($this->resource->seo),
+            'sales' => SaleResource::collection($this->resource->sales),
+            'attachments' => MediaAttachmentResource::collection($attachments),
         ];
     }
 

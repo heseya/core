@@ -1,0 +1,30 @@
+MediaAttachmentType:
+  type: string
+  enum:
+    - other
+    - receipt
+    - invoice
+
+VisibilityType:
+  type: string
+  enum:
+    - public
+    - private
+
+MediaAttachment:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string
+    label:
+      type: string
+      nullable: true
+    type:
+      $ref: '#/MediaAttachmentType'
+    visibility:
+      $ref: '#/VisibilityType'
+    media:
+      $ref: './Media.yml#/Media'
