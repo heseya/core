@@ -120,7 +120,12 @@ ProductView:
           items:
             $ref: './../api.yml#/components/schemas/Schema'
         sets:
-          description: 'Ids of assigned subsets'
+          description: 'Assigned product sets'
+          type: array
+          items:
+            $ref: './ProductSets.yml#/ProductSet'
+        related_sets:
+          description: 'Sets with products related to this one'
           type: array
           items:
             $ref: './ProductSets.yml#/ProductSet'

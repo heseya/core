@@ -53,6 +53,12 @@ class ProductResource extends Resource
             )
             : $this->resource->sets;
 
+        $relatedSets = Gate::denies('product_sets.show_hidden')
+            ? $this->resource->relatedSets->filter(
+                fn (ProductSet $set) => $set->public === true && $set->public_parent === true
+            )
+            : $this->resource->relatedSets;
+
         $attachments = Gate::denies('products.show_attachments_private')
             ? $this->resource->attachments->filter(
                 fn (MediaAttachment $attachment) => $attachment->visibility === VisibilityType::PUBLIC,
@@ -68,6 +74,7 @@ class ProductResource extends Resource
             'gallery' => MediaResource::collection($this->resource->media),
             'schemas' => SchemaResource::collection($this->resource->schemas),
             'sets' => ProductSetResource::collection($sets),
+            'related_sets' => ProductSetResource::collection($relatedSets),
             'attributes' => ProductAttributeResource::collection($this->resource->attributes),
             'seo' => SeoMetadataResource::make($this->resource->seo),
             'sales' => SaleResource::collection($this->resource->sales),

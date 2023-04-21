@@ -59,6 +59,9 @@ class ProductCreateRequest extends FormRequest implements SeoRequestContract, Me
                     'nullable',
                     'integer',
                 ],
+
+                'related_sets' => ['nullable', 'array'],
+                'related_sets.*' => ['uuid', 'exists:product_sets,id'],
             ],
         );
     }

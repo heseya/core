@@ -39,40 +39,44 @@ readonly class ProductService implements ProductServiceContract
 
     private function setup(Product $product, ProductCreateDto|ProductUpdateDto $dto): Product
     {
-        if (!($dto->getSchemas() instanceof Missing)) {
-            $this->schemaService->sync($product, $dto->getSchemas());
+        if (!($dto->schemas instanceof Missing)) {
+            $this->schemaService->sync($product, $dto->schemas);
         }
 
-        if (!($dto->getSets() instanceof Missing)) {
-            $product->sets()->sync($dto->getSets());
+        if (!($dto->sets instanceof Missing)) {
+            $product->sets()->sync($dto->sets);
         }
 
-        if (!($dto->getItems() instanceof Missing)) {
-            $this->assignItems($product, $dto->getItems());
+        if (!($dto->items instanceof Missing)) {
+            $this->assignItems($product, $dto->items);
         }
 
-        if (!($dto->getMedia() instanceof Missing)) {
-            $this->mediaService->sync($product, $dto->getMedia());
+        if (!($dto->media instanceof Missing)) {
+            $this->mediaService->sync($product, $dto->media);
         }
 
-        if (!($dto->getTags() instanceof Missing)) {
-            $product->tags()->sync($dto->getTags());
+        if (!($dto->tags instanceof Missing)) {
+            $product->tags()->sync($dto->tags);
         }
 
         if (!($dto->getMetadata() instanceof Missing)) {
             $this->metadataService->sync($product, $dto->getMetadata());
         }
 
-        if (!($dto->getAttributes() instanceof Missing)) {
-            $this->attributeService->sync($product, $dto->getAttributes());
+        if (!($dto->attributes instanceof Missing)) {
+            $this->attributeService->sync($product, $dto->attributes);
         }
 
-        if (!($dto->getDescriptions() instanceof Missing)) {
-            $product->pages()->sync($dto->getDescriptions());
+        if (!($dto->descriptions instanceof Missing)) {
+            $product->pages()->sync($dto->descriptions);
         }
 
-        if (!($dto->getSeo() instanceof Missing)) {
-            $this->seoMetadataService->createOrUpdateFor($product, $dto->getSeo());
+        if (!($dto->seo instanceof Missing)) {
+            $this->seoMetadataService->createOrUpdateFor($product, $dto->seo);
+        }
+
+        if (!($dto->relatedSets instanceof Missing)) {
+            $product->relatedSets()->sync($dto->relatedSets);
         }
 
         [$priceMin, $priceMax] = $this->getMinMaxPrices($product);
