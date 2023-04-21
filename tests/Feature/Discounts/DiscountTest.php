@@ -536,7 +536,7 @@ class DiscountTest extends TestCase
         Queue::fake();
 
         /** @var Discount $discount */
-        $discount = Discount::query()->find($discountId);
+        $discount = Discount::query()->findOrFail($discountId);
         $event = $discountKind === 'coupons' ? new CouponCreated($discount) : new SaleCreated($discount);
         $listener = new WebHookEventListener();
 
