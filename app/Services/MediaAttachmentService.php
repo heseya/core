@@ -16,13 +16,14 @@ readonly class MediaAttachmentService implements MediaAttachmentServiceContract
         private MediaServiceContract $mediaService,
     ) {
     }
-    public function addAttachment(Model $model, MediaAttachmentDto $dto): MediaAttachment
+    public function addAttachment(Model $model, MediaAttachmentDto $dto, ?string $label = null): MediaAttachment
     {
         Media::query()->findOrFail($dto->media_id);
 
         return MediaAttachment::query()->create([
             'model_id' => $model->getKey(),
             'model_type' => $model::class,
+            'label' => $label,
         ] + $dto->toArray());
     }
 

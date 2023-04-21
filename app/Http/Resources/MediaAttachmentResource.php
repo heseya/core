@@ -16,7 +16,7 @@ class MediaAttachmentResource extends Resource
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
             'type' => $this->resource->type,
-            'label' => $this->resource->label,
+            'description' => $this->resource->description,
             'visibility' => $this->resource->visibility,
             'media' => new MediaResource($this->resource->media),
         ];

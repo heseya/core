@@ -15,7 +15,7 @@ class MediaAttachmentCreateRequest extends FormRequest
             'media_id' => ['required', 'uuid'],
             'name' => ['required', 'string'],
             'type' => ['required', new Enum(MediaAttachmentType::class)],
-            'label' => ['nullable', 'string'],
+            'description' => ['nullable', 'string', 'max:1000'],
             'visibility' => ['required', new Enum(VisibilityType::class)],
         ];
     }

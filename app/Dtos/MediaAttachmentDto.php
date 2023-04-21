@@ -17,7 +17,7 @@ class MediaAttachmentDto extends Dto implements InstantiateFromRequest
         public readonly string $name,
         public readonly MediaAttachmentType $type,
         public readonly VisibilityType $visibility,
-        public readonly string|Missing $label = new Missing(),
+        public readonly string|Missing $description = new Missing(),
     ) {
     }
 
@@ -38,7 +38,7 @@ class MediaAttachmentDto extends Dto implements InstantiateFromRequest
             name: $request->input('name'),
             type: $type,
             visibility: $visibility,
-            label: $request->input('label') ?? new Missing()
+            description: $request->input('description') ?? new Missing()
         );
     }
 }

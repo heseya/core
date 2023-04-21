@@ -9,7 +9,7 @@ use App\Models\MediaAttachment;
 
 interface MediaAttachmentServiceContract
 {
-    public function addAttachment(Model $model, MediaAttachmentDto $dto): MediaAttachment;
+    public function addAttachment(Model $model, MediaAttachmentDto $dto, ?string $label = null): MediaAttachment;
     public function editAttachment(MediaAttachment $attachment, MediaAttachmentUpdateDto $dto): MediaAttachment;
     public function removeAttachment(MediaAttachment $attachment): MediaAttachment;
 }

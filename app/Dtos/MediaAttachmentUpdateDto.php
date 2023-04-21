@@ -14,7 +14,7 @@ class MediaAttachmentUpdateDto extends Dto implements InstantiateFromRequest
     public function __construct(
         public readonly string|Missing $name = new Missing(),
         public readonly MediaAttachmentType|Missing $type = new Missing(),
-        public readonly string|null|Missing $label = new Missing(),
+        public readonly string|null|Missing $description = new Missing(),
         public readonly VisibilityType|Missing $visibility = new Missing(),
     ) {
     }
@@ -24,7 +24,7 @@ class MediaAttachmentUpdateDto extends Dto implements InstantiateFromRequest
         return new self(
             name: $request->input('name', new Missing()),
             type: $request->enum('type', MediaAttachmentType::class) ?? new Missing(),
-            label: $request->has('label') ? $request->input('label') : new Missing(),
+            description: $request->has('description') ? $request->input('description') : new Missing(),
             visibility: $request->enum('visibility', VisibilityType::class) ?? new Missing(),
         );
     }
