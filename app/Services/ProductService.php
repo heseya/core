@@ -24,7 +24,7 @@ use Heseya\Dto\Missing;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-class ProductService implements ProductServiceContract
+readonly class ProductService implements ProductServiceContract
 {
     public function __construct(
         private MediaServiceContract $mediaService,
@@ -65,6 +65,10 @@ class ProductService implements ProductServiceContract
 
         if (!($dto->getAttributes() instanceof Missing)) {
             $this->attributeService->sync($product, $dto->getAttributes());
+        }
+
+        if (!($dto->getDescriptions() instanceof Missing)) {
+            $product->pages()->sync($dto->getDescriptions());
         }
 
         if (!($dto->getSeo() instanceof Missing)) {

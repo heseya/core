@@ -31,6 +31,7 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
     public array|Missing $items;
     public SeoMetadataDto|Missing $seo;
     public array|Missing $attributes;
+    public array|Missing $descriptions;
 
     public static function instantiateFromRequest(FormRequest $request): self
     {
@@ -54,6 +55,7 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
             items: $request->input('items', new Missing()),
             seo: $request->has('seo') ? SeoMetadataDto::instantiateFromRequest($request) : new Missing(),
             attributes: $request->input('attributes', new Missing()),
+            descriptions: $request->input('descriptions', new Missing()),
         );
     }
 
@@ -100,5 +102,10 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
     public function getPurchaseLimitPerUser(): float|Missing|null
     {
         return $this->purchase_limit_per_user;
+    }
+
+    public function getDescriptions(): Missing|array
+    {
+        return $this->descriptions;
     }
 }

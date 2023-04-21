@@ -34,14 +34,16 @@ class PageService implements PageServiceContract
     public function getPaginated(?array $search): LengthAwarePaginator
     {
         $query = Page::query()
-            ->searchByCriteria($search ?? [])
-            ->with(['seo', 'metadata']);
+            ->whereDoesntHave('products')
+            ->with(['seo', 'metadata'])
+            ->orderBy('order')
+            ->searchByCriteria($search ?? []);
 
         if (!Auth::user()?->can('pages.show_hidden')) {
             $query->where('public', true);
         }
 
-        return $query->sort('order')->paginate(Config::get('pagination.per_page'));
+        return $query->paginate(Config::get('pagination.per_page'));
     }
 
     public function create(PageDto $dto): Page

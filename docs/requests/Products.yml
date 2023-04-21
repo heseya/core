@@ -13,6 +13,11 @@ Product:
       type: string
     description_short:
       type: string
+    descriptions:
+      type: array
+      items:
+        type: string
+        format: uuid
     quantity_step:
       type: number
     vat_rate:

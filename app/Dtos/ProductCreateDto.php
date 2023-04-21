@@ -35,6 +35,7 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
     public SeoMetadataDto|Missing $seo;
     public array|Missing $metadata;
     public array|Missing $attributes;
+    public array|Missing $descriptions;
 
     public static function instantiateFromRequest(FormRequest $request): self
     {
@@ -59,6 +60,7 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
             seo: $request->has('seo') ? SeoMetadataDto::instantiateFromRequest($request) : new Missing(),
             metadata: self::mapMetadata($request),
             attributes: $request->input('attributes', new Missing()),
+            descriptions: $request->input('descriptions', new Missing()),
         );
     }
 
@@ -105,5 +107,10 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
     public function getPurchaseLimitPerUser(): float|Missing|null
     {
         return $this->purchase_limit_per_user;
+    }
+
+    public function getDescriptions(): Missing|array
+    {
+        return $this->descriptions;
     }
 }
