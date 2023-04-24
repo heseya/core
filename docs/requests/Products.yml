@@ -65,6 +65,11 @@ Product:
       items:
         type: string
         format: uuid
+    related_sets:
+      type: array
+      items:
+        type: string
+        format: uuid
     google_product_category:
       type: integer
     seo:

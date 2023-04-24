@@ -186,6 +186,12 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
             ->withPivot('order');
     }
 
+    public function relatedSets(): BelongsToMany
+    {
+        return $this
+            ->belongsToMany(ProductSet::class, 'related_product_sets');
+    }
+
     public function items(): BelongsToMany
     {
         return $this

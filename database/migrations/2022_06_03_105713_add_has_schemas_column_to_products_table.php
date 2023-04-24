@@ -25,7 +25,7 @@ return new class extends Migration {
     public function down()
     {
         Schema::table('product_set_product', function (Blueprint $table) {
-            $table->dropColumn('order');
+            $table->dropColumn('has_schemas');
         });
     }
 };
