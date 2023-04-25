@@ -37,7 +37,7 @@ Sales:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Sales.yml#/SaleShow'
+                    $ref: './../schemas/Sales.yml#/Sale'
               type: object
     security:
       - BearerAuth: [ ]
