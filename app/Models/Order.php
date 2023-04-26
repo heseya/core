@@ -86,8 +86,6 @@ class Order extends Model implements AuditableContract, SortableContract
 
     protected array $attributeModifiers = [
         'status_id' => StatusRedactor::class,
-        'shipping_method_id' => ShippingMethodRedactor::class,
-        'digital_shipping_method_id' => ShippingMethodRedactor::class,
         'billing_address_id' => AddressRedactor::class,
         'shipping_address_id' => AddressRedactor::class,
     ];
