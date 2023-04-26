@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Audits\Redactors\AddressRedactor;
-use App\Audits\Redactors\ShippingMethodRedactor;
 use App\Audits\Redactors\StatusRedactor;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;

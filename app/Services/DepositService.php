@@ -102,24 +102,22 @@ class DepositService implements DepositServiceContract
 
     public function getDepositsGroupByDateForItem(Item $item, string $order = 'ASC'): array
     {
-        $deposits = Deposit::query()
+        return Deposit::query()
             ->selectRaw('SUM(quantity) as quantity, shipping_date')
             ->whereNotNull('shipping_date')
             ->where('item_id', '=', $item->getKey())
             ->where('from_unlimited', '=', false)
             ->where('shipping_date', '>=', Carbon::now())
-            ->groupBy(['shipping_date', 'from_unlimited'])
+            ->groupBy(['shipping_date'])
             ->having('quantity', '>', '0')
-            ->orderBy('shipping_date', 'desc')
-            ->orderBy('from_unlimited', 'desc')
+            ->orderBy('shipping_date', $order)
             ->get()->toArray();
-
-        return $deposits;
     }
 
     public function getDepositsGroupByTimeForItem(Item $item, string $order = 'ASC'): array
     {
-        return Deposit::query()->selectRaw('SUM(quantity) as quantity, shipping_time')
+        return Deposit::query()
+            ->selectRaw('SUM(quantity) as quantity, shipping_time')
             ->whereNotNull('shipping_time')
             ->where('item_id', '=', $item->getKey())
             ->having('quantity', '>', '0')

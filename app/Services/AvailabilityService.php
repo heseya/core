@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\SchemaType;
 use App\Events\ProductUpdated;
 use App\Exceptions\ServerException;
+use App\Models\Deposit;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Product;
@@ -316,7 +317,15 @@ class AvailabilityService implements AvailabilityServiceContract
                 $quantity = $itemQuantity;
             }
 
-            foreach ($item->groupedDeposits as $deposit) {
+            /** @var Collection<Deposit> $groupedDeposits */
+            $groupedDeposits = $item->groupedDeposits;
+            $sortedDeposits = $groupedDeposits->sort(static function (Deposit $a, Deposit $b) {
+                $sortByTime = $a->shipping_time <=> $b->shipping_time;
+                $sortByDate = $a->shipping_date <=> $b->shipping_date;
+                return $sortByDate === 0 ? $sortByTime : $sortByDate;
+            });
+
+            foreach ($sortedDeposits as $deposit) {
                 if ($requiredQuantity > 0.0 && $deposit->quantity >= $requiredQuantity) {
                     $shipping_time = max($deposit->shipping_time, $shipping_time);
                     $shipping_date = $this->compareShippingDate($deposit->shipping_date, $shipping_date);

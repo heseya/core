@@ -80,14 +80,16 @@ class AvailabilityTest extends TestCase
             ->actingAs($this->$user)
             ->json('POST', '/items/id:' . $item->getKey() . '/deposits', [
                 'quantity' => 6,
-            ]);
+                'shipping_time' => 0,
+            ])
+            ->assertCreated();
 
         $this
             ->assertDatabaseHas('products', [
                 'id' => $this->product->getKey(),
                 'quantity' => 6,
                 'available' => true,
-                'shipping_time' => null,
+                'shipping_time' => 0,
             ])
             ->assertDatabaseHas('schemas', [
                 'id' => $schema->getKey(),
@@ -161,9 +163,12 @@ class AvailabilityTest extends TestCase
 
         $this->product->schemas()->saveMany([$schemaOne, $schemaTwo]);
 
-        $this->actingAs($this->$user)->postJson('/items/id:' . $itemTwo->getKey() . '/deposits', [
-            'quantity' => 20,
-        ]);
+        $this->actingAs($this->$user)
+            ->postJson('/items/id:' . $itemTwo->getKey() . '/deposits', [
+                'quantity' => 20,
+                'shipping_time' => 0,
+            ])
+            ->assertCreated();
 
         $this
             ->assertDatabaseHas('products', [
@@ -213,9 +218,12 @@ class AvailabilityTest extends TestCase
 
         $this->product->schemas()->saveMany([$data->get('schemaOne'), $data->get('schemaTwo')]);
 
-        $this->actingAs($this->$user)->postJson('/items/id:' . $data->get('item')->getKey() . '/deposits', [
-            'quantity' => 2,
-        ]);
+        $this->actingAs($this->$user)
+            ->postJson('/items/id:' . $data->get('item')->getKey() . '/deposits', [
+                'quantity' => 2,
+                'shipping_time' => 0,
+            ])
+            ->assertCreated();
 
         $this->assertTrue($this->product->refresh()->available);
         $this->assertDatabaseHas('products', [
@@ -261,7 +269,9 @@ class AvailabilityTest extends TestCase
             ->actingAs($this->$user)
             ->postJson('/items/id:' . $data->get('item')->getKey() . '/deposits', [
                 'quantity' => 1,
-            ]);
+                'shipping_time' => 0,
+            ])
+            ->assertCreated();
 
         $this
             ->assertDatabaseHas('products', [
@@ -635,9 +645,12 @@ class AvailabilityTest extends TestCase
 
         Event::fake(ItemUpdatedQuantity::class);
 
-        $this->actingAs($this->$user)->json('POST', "/items/id:{$item->getKey()}/deposits", [
-            'quantity' => 100,
-        ])->assertCreated();
+        $this->actingAs($this->$user)
+            ->json('POST', "/items/id:{$item->getKey()}/deposits", [
+                'quantity' => 100,
+                'shipping_time' => 0,
+            ])
+            ->assertCreated();
 
         Event::assertDispatched(ItemUpdatedQuantity::class);
     }
