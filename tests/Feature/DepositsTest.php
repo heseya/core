@@ -216,6 +216,7 @@ class DepositsTest extends TestCase
 
         $deposit = [
             'quantity' => 1200000.50,
+            'shipping_time' => 0,
         ];
 
         $response = $this->actingAs($this->$user)->postJson(
@@ -262,6 +263,7 @@ class DepositsTest extends TestCase
 
         $deposit = [
             'quantity' => 1200000.50,
+            'shipping_time' => 0,
         ];
 
         $response = $this->actingAs($this->$user)->postJson(

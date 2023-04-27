@@ -16,6 +16,7 @@ class DepositSeeder extends Seeder
                 'order_product_id' => $product->getKey(),
                 'quantity' => -1 * rand(1, 5),
                 'item_id' => Item::query()->select('id')->inRandomOrder()->first()->getKey(),
+                'shipping_time' => 0,
             ]);
         }
     }
