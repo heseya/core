@@ -51,7 +51,8 @@ class ProductAvailabilityTest extends TestCase
             ->json('POST', "/items/id:{$this->item->getKey()}/deposits", [
                 'quantity' => 16,
                 'shipping_time' => 1,
-            ]);
+            ])
+            ->assertCreated();
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),

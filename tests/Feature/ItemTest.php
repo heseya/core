@@ -1139,10 +1139,10 @@ class ItemTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'availability' => [
-                    ['quantity' => 2, 'shipping_time' => null, 'shipping_date' => null],
-                    ['quantity' => 2, 'shipping_time' => null, 'shipping_date' => $date],
-                    ['quantity' => 4, 'shipping_time' => 4, 'shipping_date' => null],
-                    ['quantity' => 2, 'shipping_time' => 9, 'shipping_date' => null],
+                    ['quantity' => 2, 'shipping_time' => null, 'shipping_date' => null, 'from_unlimited' => false],
+                    ['quantity' => 2, 'shipping_time' => null, 'shipping_date' => $date, 'from_unlimited' => false],
+                    ['quantity' => 4, 'shipping_time' => 4, 'shipping_date' => null, 'from_unlimited' => false],
+                    ['quantity' => 2, 'shipping_time' => 9, 'shipping_date' => null, 'from_unlimited' => false],
                 ],
             ]);
     }
@@ -1174,7 +1174,7 @@ class ItemTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'availability' => [
-                    ['quantity' => 10, 'shipping_time' => 10, 'shipping_date' => null],
+                    ['quantity' => 10, 'shipping_time' => 10, 'shipping_date' => null, 'from_unlimited' => false],
                 ],
             ]);
 
@@ -1184,7 +1184,7 @@ class ItemTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'availability' => [
-                    ['quantity' => 10, 'shipping_time' => 10, 'shipping_date' => null],
+                    ['quantity' => 10, 'shipping_time' => 10, 'shipping_date' => null, 'from_unlimited' => false],
                 ],
             ]);
     }

@@ -371,13 +371,7 @@ class CartTest extends TestCase
         ]);
 
         $response
-            ->assertOk()
-            ->assertJsonFragment([
-                'cart_total_initial' => 0,
-                'cart_total' => 0,
-                'coupons' => [],
-                'sales' => [],
-            ]);
+            ->assertUnprocessable();
     }
 
     /**

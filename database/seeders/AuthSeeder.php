@@ -13,6 +13,6 @@ class AuthSeeder extends Seeder
      */
     public function run(): void
     {
-//        Artisan::call('passport:install');
+        //        Artisan::call('passport:install');
     }
 }

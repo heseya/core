@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use OwenIt\Auditing\Auditable;
@@ -70,8 +71,8 @@ class Item extends Model implements AuditableContract, SortableContract
 
     protected $casts = [
         'quantity' => 'float',
-        'shipping_date' => 'date',
-        'unlimited_stock_shipping_date' => 'date',
+        'shipping_date' => 'datetime',
+        'unlimited_stock_shipping_date' => 'datetime',
     ];
 
     public function getQuantity(string|null $day): float
@@ -90,8 +91,9 @@ class Item extends Model implements AuditableContract, SortableContract
     public function getQuantityRealAttribute(): float
     {
         return $this->deposits
+            ->where(fn (Deposit $deposit) => $deposit->shipping_date === null || $deposit->shipping_date >= Carbon::now())
             ->where('from_unlimited', false)
-            ->sum('quantity');
+            ->sum('quantity') ?? 0;
     }
 
     public function products(): BelongsToMany
@@ -111,12 +113,13 @@ class Item extends Model implements AuditableContract, SortableContract
 
     public function groupedDeposits(): HasMany
     {
-        return $this->hasMany(Deposit::class)
-            ->selectRaw('item_id, SUM(quantity) as quantity, shipping_time, shipping_date')
-            ->groupBy(['shipping_time', 'shipping_date', 'item_id'])
-            ->having('quantity', '>', '0')
-            ->orderBy('shipping_date')
-            ->orderBy('shipping_time');
+        return $this->deposits()
+            ->selectRaw('item_id, SUM(quantity) as quantity, shipping_time, shipping_date, from_unlimited')
+            ->groupBy(['shipping_time', 'shipping_date', 'item_id', 'from_unlimited'])
+            ->having('quantity', '!=', '0')
+            ->orderBy('shipping_time', 'desc')
+            ->orderBy('shipping_date', 'desc')
+            ->orderBy('from_unlimited', 'desc');
     }
 
     public function getSchemasAttribute(): Collection

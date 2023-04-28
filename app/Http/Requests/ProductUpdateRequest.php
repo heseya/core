@@ -15,8 +15,8 @@ class ProductUpdateRequest extends ProductCreateRequest
         $product = $this->route('product');
 
         // TODO: should be uncommented in future
-//        $rules['metadata'] = ['prohibited'];
-//        $rules['metadata_private'] = ['prohibited'];
+        //        $rules['metadata'] = ['prohibited'];
+        //        $rules['metadata_private'] = ['prohibited'];
         $rules['name'] = ['string', 'max:255'];
         $rules['price'] = ['numeric', 'min:0'];
         $rules['public'] = ['boolean'];
