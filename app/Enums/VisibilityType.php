@@ -11,5 +11,5 @@ enum VisibilityType: string
      * TODO: Implement this visibility type.
      * This visibility type makes resource visible with specific request param.
      */
-//    case HIDDEN = 'hidden';
+    //    case HIDDEN = 'hidden';
 }
