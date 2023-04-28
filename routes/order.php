@@ -8,9 +8,9 @@ use App\Http\Middleware\SecureHeaders;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('orders')->group(function (): void {
-    Route::get(null, [OrderController::class, 'index'])
+    Route::get('/', [OrderController::class, 'index'])
         ->middleware('can:orders.show');
-    Route::post(null, [OrderController::class, 'store'])
+    Route::post('/', [OrderController::class, 'store'])
         ->middleware('can:orders.add');
     Route::get('my', [OrderController::class, 'indexUserOrder'])
         ->middleware('can:orders.show_own');
@@ -55,9 +55,4 @@ Route::prefix('orders')->group(function (): void {
         ->middleware('can:payments.offline');
     Route::post('{order:code}/pay/id:{paymentMethod}', [PaymentController::class, 'pay'])
         ->middleware('can:payments.add');
-});
-
-Route::prefix('cart')->group(function (): void {
-    Route::post('process', [OrderController::class, 'cartProcess'])
-        ->middleware('can:cart.verify');
 });
