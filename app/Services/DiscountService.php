@@ -64,7 +64,6 @@ use App\Services\Contracts\ShippingTimeDateServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -300,22 +299,23 @@ readonly class DiscountService implements DiscountServiceContract
         $shippingMethodDigital = null;
 
         if (!$cart->getShippingMethodId() instanceof Missing) {
-            $shippingMethod = ShippingMethod::findOrFail($cart->getShippingMethodId());
+            $shippingMethod = ShippingMethod::query()->findOrFail($cart->getShippingMethodId());
         }
 
         if (!$cart->getDigitalShippingMethodId() instanceof Missing) {
-            $shippingMethodDigital = ShippingMethod::findOrFail($cart->getDigitalShippingMethodId());
+            $shippingMethodDigital = ShippingMethod::query()->findOrFail($cart->getDigitalShippingMethodId());
         }
 
-        // Obliczanie wartości początkowej koszyka
         $cartItems = [];
         $cartValue = 0;
 
-        foreach ($products as $product) {
-            /** @var CartItemDto $cartItem */
-            $cartItem = Arr::first($cart->getItems(), function ($value, $key) use ($product) {
-                return $value->getProductId() === $product->getKey();
-            });
+        foreach ($cart->getItems() as $cartItem) {
+            $product = $products->firstWhere('id', $cartItem->getProductId());
+
+            if (!($product instanceof Product)) {
+                // skip when product is not avaiable
+                continue;
+            }
 
             $price = $product->price;
 
@@ -377,6 +377,7 @@ readonly class DiscountService implements DiscountServiceContract
         $cartResource->shipping_price = round($cartResource->shipping_price, 2, PHP_ROUND_HALF_UP);
 
         $cartResource->summary = $cartResource->cart_total + $cartResource->shipping_price;
+
         return $cartResource;
     }
 
