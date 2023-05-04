@@ -2529,4 +2529,50 @@ class CartTest extends TestCase
 
         return [$product, $couponWithLimit, $coupon2];
     }
+
+    public function testCartProcessWithZeroSale(): void
+    {
+        $this->user->givePermissionTo('cart.verify');
+
+        $discountApplied = Discount::factory()->create([
+            'value' => 0,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => false,
+        ]);
+
+        $response = $this->actingAs($this->user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+            'coupons' => [
+                $discountApplied->code,
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                    'cart_total_initial' => 4600,
+                    'cart_total' => 4600,
+                    'shipping_price_initial' => 0,
+                    'shipping_price' => 0,
+                    'summary' => 4600,
+                ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => 4600,
+                'price_discounted' => 4600,
+            ])
+            ->assertJsonFragment([
+                'id' => $discountApplied->getKey(),
+                'value' => 0,
+            ]);
+    }
 }

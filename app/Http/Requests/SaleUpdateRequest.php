@@ -15,7 +15,7 @@ class SaleUpdateRequest extends SaleCreateRequest
     {
         return array_merge(parent::rules(), [
             'name' => ['filled', 'string', 'max:255'],
-            'value' => ['numeric'],
+            'value' => ['numeric', 'gte:0'],
             'type' => [new EnumValue(DiscountType::class, false)],
             'priority' => ['integer'],
             'target_type' => [new EnumValue(DiscountTargetType::class, false)],
