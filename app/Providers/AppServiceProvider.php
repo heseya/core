@@ -54,6 +54,7 @@ use App\Services\Contracts\SeoMetadataServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
 use App\Services\Contracts\ShippingMethodServiceContract;
 use App\Services\Contracts\ShippingTimeDateServiceContract;
+use App\Services\Contracts\SilverboxServiceContract;
 use App\Services\Contracts\SortServiceContract;
 use App\Services\Contracts\StatusServiceContract;
 use App\Services\Contracts\TokenServiceContract;
@@ -95,6 +96,7 @@ use App\Services\SeoMetadataService;
 use App\Services\SettingsService;
 use App\Services\ShippingMethodService;
 use App\Services\ShippingTimeDateService;
+use App\Services\SilverboxService;
 use App\Services\SortService;
 use App\Services\StatusService;
 use App\Services\TokenService;
@@ -159,6 +161,7 @@ class AppServiceProvider extends ServiceProvider
         PaymentServiceContract::class => PaymentService::class,
         PriceServiceContract::class => PriceService::class,
         MediaAttachmentServiceContract::class => MediaAttachmentService::class,
+        SilverboxServiceContract::class => SilverboxService::class,
     ];
 
     /**

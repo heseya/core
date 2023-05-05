@@ -3,27 +3,23 @@
 namespace App\Services;
 
 use App\Dtos\MediaDto;
-use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\MediaSource;
 use App\Enums\MediaType;
-use App\Exceptions\ClientException;
-use App\Exceptions\ServerException;
 use App\Models\Media;
 use App\Models\Product;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
+use App\Services\Contracts\SilverboxServiceContract;
 use Heseya\Dto\Missing;
-use Illuminate\Http\Client\Response;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
 
-class MediaService implements MediaServiceContract
+final readonly class MediaService implements MediaServiceContract
 {
     public function __construct(
         private ReorderServiceContract $reorderService,
         private MetadataServiceContract $metadataService,
+        private SilverboxServiceContract $silverboxService,
     ) {
     }
 
@@ -41,47 +37,35 @@ class MediaService implements MediaServiceContract
 
     public function destroy(Media $media): void
     {
-        if (Str::contains($media->url, Config::get('silverbox.host'))) {
-            Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
-                ->delete($media->url);
-        }
-
-        // no need to handle failed response while removing media
-
+        $this->silverboxService->delete($media);
         $media->forceDelete();
     }
 
-    /**
-     * @throws ServerException|ClientException
-     */
     public function store(MediaDto $dto, bool $private = false): Media
     {
         /** @var UploadedFile $file */
-        $file = $dto->getFile();
-        $private = $private ? '?private' : '';
+        $file = $dto->file;
 
-        /** @var Response $response */
-        $response = Http::attach('file', $file->getContent(), 'file')
-            ->withHeaders(['x-api-key' => Config::get('silverbox.key')])
-            ->post(Config::get('silverbox.host') . '/' . Config::get('silverbox.client') . $private);
+        [$url, $type] = match ($dto->source) {
+            MediaSource::EXTERNAL => [$dto->url, $dto->type],
+            MediaSource::SILVERBOX => [
+                $this->silverboxService->upload($file, $private),
+                $this->getMediaType($file->extension()),
+            ],
+        };
 
-        if ($response->failed()) {
-            throw new ServerException(
-                message: Exceptions::SERVER_CDN_ERROR,
-                errorArray: $response->json(),
-            );
+        if (!($dto->slug instanceof Missing)) {
+            // @phpstan-ignore-next-line
+            $url = $this->silverboxService->updateSlug($url, $dto->slug);
         }
 
-        $url = Config::get('silverbox.host') . '/' . $response->json('0.path');
-        if (!$dto->getSlug() instanceof Missing) {
-            $url = $this->updateSlug($url, $dto->getSlug());
-        }
-
-        $media = Media::create([
-            'type' => $this->getMediaType($file->extension()),
+        /** @var Media $media */
+        $media = Media::query()->create([
+            'type' => $type,
             'url' => $url,
-            'alt' => $dto->getAlt() instanceof Missing ? null : $dto->getAlt(),
-            'slug' => $dto->getSlug() instanceof Missing ? null : $dto->getSlug(),
+            'alt' => $dto->alt instanceof Missing ? null : $dto->alt,
+            'slug' => $dto->slug instanceof Missing ? null : $dto->slug,
+            'source' => $dto->source,
         ]);
 
         if (!($dto->getMetadata() instanceof Missing)) {
@@ -93,16 +77,16 @@ class MediaService implements MediaServiceContract
 
     public function update(Media $media, MediaDto $dto): Media
     {
-        if (!($dto->getSlug() instanceof Missing)) {
-            if ($media->slug !== $dto->getSlug() && $dto->getSlug() !== null) {
-                $media->url = $this->updateSlug($media->url, $dto->getSlug());
+        if (!($dto->slug instanceof Missing)) {
+            if ($media->slug !== $dto->slug && $dto->slug !== null) {
+                $media->url = $this->silverboxService->updateSlug($media->url, $dto->slug);
             }
 
-            $media->slug = $dto->getSlug();
+            $media->slug = $dto->slug;
         }
 
-        if (!($dto->getAlt() instanceof Missing)) {
-            $media->alt = $dto->getAlt();
+        if (!($dto->alt instanceof Missing)) {
+            $media->alt = $dto->alt;
         }
 
         $media->save();
@@ -118,29 +102,5 @@ class MediaService implements MediaServiceContract
             'pdf', 'doc', 'docx', 'odt', 'xls', 'xlsx' => MediaType::DOCUMENT,
             default => MediaType::OTHER,
         };
-    }
-
-    private function updateSlug(string $mediaUrl, ?string $slug): string
-    {
-        if (!Str::contains($mediaUrl, Config::get('silverbox.host'))) {
-            throw new ClientException(message: Exceptions::CDN_NOT_ALLOWED_TO_CHANGE_ALT);
-        }
-
-        /** @var Response $response */
-        $response = Http::asJson()
-            ->acceptJson()
-            ->withHeaders(['x-api-key' => Config::get('silverbox.key')])
-            ->patch($mediaUrl, [
-                'slug' => $slug,
-            ]);
-
-        if ($response->failed() || !isset($response['path'])) {
-            throw new ServerException(
-                message: Exceptions::SERVER_CDN_ERROR,
-                errorArray: $response->json() ?? [],
-            );
-        }
-
-        return Config::get('silverbox.host') . '/' . $response['path'];
     }
 }
