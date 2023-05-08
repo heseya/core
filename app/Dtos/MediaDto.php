@@ -37,10 +37,10 @@ class MediaDto extends Dto implements InstantiateFromRequest
         return new self(
             file: $file,
             url: $request->input('url', new Missing()),
-            type: $request->input('type', new Missing()),
+            type: $request->enum('type', MediaType::class) ?? new Missing(),
             alt: $request->input('alt', new Missing()),
             slug: $request->input('slug', new Missing()),
-            source: $request->input('source', MediaSource::SILVERBOX),
+            source: $request->enum('source', MediaSource::class) ?? MediaSource::SILVERBOX,
             metadata: self::mapMetadata($request),
         );
     }

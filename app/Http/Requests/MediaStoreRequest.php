@@ -2,9 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\MediaSource;
 use App\Enums\MediaType;
-use BenSampo\Enum\Rules\Enum;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class MediaStoreRequest extends FormRequest
 {
@@ -30,8 +31,10 @@ class MediaStoreRequest extends FormRequest
             'slug' => ['string', 'max:64', 'unique:media'],
             'type' => [
                 'required_with:url',
-                'string',
                 new Enum(MediaType::class),
+            ],
+            'source' => [
+                new Enum(MediaSource::class),
             ],
         ];
     }

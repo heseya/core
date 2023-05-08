@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Media;
 
-use App\Enums\MediaType;
 use App\Enums\MediaAttachmentType;
+use App\Enums\MediaType;
 use App\Models\Banner;
 use App\Models\BannerMedia;
 use App\Models\Media;

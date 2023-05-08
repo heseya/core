@@ -94,7 +94,7 @@ final readonly class MediaService implements MediaServiceContract
         return $media;
     }
 
-    private function getMediaType(string $extension): string
+    private function getMediaType(string $extension): MediaType
     {
         return match ($extension) {
             'jpeg', 'jpg', 'png', 'gif', 'bmp', 'svg', 'webp' => MediaType::PHOTO,
