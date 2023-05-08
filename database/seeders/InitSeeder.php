@@ -77,7 +77,7 @@ class InitSeeder extends Seeder
 
     private function createAuthProviders(): void
     {
-        $enums = Collection::make(AuthProviderKey::getInstances());
+        $enums = Collection::make(AuthProviderKey::cases());
         $enums->each(fn (AuthProviderKey $enum) => AuthProvider::factory()->create([
             'key' => $enum->value,
             'active' => false,
