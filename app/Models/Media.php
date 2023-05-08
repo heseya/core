@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Criteria\MediaWhereHasRelations;
 use App\Criteria\WhereInIds;
+use App\Enums\MediaSource;
 use App\Enums\MediaType;
 use App\Traits\HasMetadata;
 use Heseya\Searchable\Traits\HasCriteria;
@@ -31,14 +32,17 @@ class Media extends Model
         'url',
         'slug',
         'alt',
+        'source',
     ];
 
     protected $casts = [
         'type' => MediaType::class,
+        'source' => MediaSource::class,
     ];
 
     protected array $criteria = [
         'type',
+        'source',
         'has_relationships' => MediaWhereHasRelations::class,
         'ids' => WhereInIds::class,
     ];
