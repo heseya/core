@@ -12,7 +12,7 @@ use App\Services\Contracts\MetadataServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Support\Arr;
 
-class AttributeService implements AttributeServiceContract
+readonly class AttributeService implements AttributeServiceContract
 {
     public function __construct(
         private AttributeOptionServiceContract $attributeOptionService,
@@ -22,7 +22,9 @@ class AttributeService implements AttributeServiceContract
 
     public function create(AttributeDto $dto): Attribute
     {
-        $attribute = Attribute::create($dto->toArray());
+        /** @var Attribute $attribute */
+        $attribute = Attribute::query()->create($dto->toArray());
+
         if (!($dto->getMetadata() instanceof Missing)) {
             $this->metadataService->sync($attribute, $dto->getMetadata());
         }
@@ -59,12 +61,12 @@ class AttributeService implements AttributeServiceContract
         if ($attribute !== null) {
             $attribute->refresh();
 
-            if ($attribute->type->value === AttributeType::NUMBER) {
+            if ($attribute->type === AttributeType::NUMBER) {
                 $attribute->setAttribute('min_number', $attribute->options->min('value_number'));
                 $attribute->setAttribute('max_number', $attribute->options->max('value_number'));
             }
 
-            if ($attribute->type->value === AttributeType::DATE) {
+            if ($attribute->type === AttributeType::DATE) {
                 $attribute->setAttribute('min_date', $attribute->options->min('value_date'));
                 $attribute->setAttribute('max_date', $attribute->options->max('value_date'));
             }

@@ -21,8 +21,8 @@ class GoogleCategoryJob implements ShouldQueue
     {
         $categoryService = app(GoogleCategoryServiceContract::class);
 
-        foreach (GoogleCategoriesLang::getValues() as $lang) {
-            $categoryService->getGoogleProductCategory($lang, true);
+        foreach (GoogleCategoriesLang::cases() as $lang) {
+            $categoryService->getGoogleProductCategory($lang->value, true);
         }
     }
 }

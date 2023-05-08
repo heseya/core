@@ -2,10 +2,8 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
-
-final class GoogleCategoriesLang extends Enum
+enum GoogleCategoriesLang: string
 {
-    public const EN = 'en-US';
-    public const PL = 'pl-PL';
+    case EN = 'en-US';
+    case PL = 'pl-PL';
 }

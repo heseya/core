@@ -1188,9 +1188,9 @@ readonly class DiscountService implements DiscountServiceContract
     {
         // Sortowanie zniżek w kolejności naliczania (Target type ASC, Discount type ASC, Priority DESC)
         return $discounts->sortBy([
-            fn ($a, $b) => DiscountTargetType::getPriority($a->target_type->value)
-                <=> DiscountTargetType::getPriority($b->target_type->value),
-            fn ($a, $b) => DiscountType::getPriority($a->type->value) <=> DiscountType::getPriority($b->type->value),
+            fn ($a, $b) => DiscountTargetType::getPriority($a->target_type)
+                <=> DiscountTargetType::getPriority($b->target_type),
+            fn ($a, $b) => DiscountType::getPriority($a->type) <=> DiscountType::getPriority($b->type),
             fn ($a, $b) => $b->priority <=> $a->priority,
         ]);
     }
