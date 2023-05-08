@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\MediaSource;
 use App\Enums\MediaType;
 use App\Models\Media;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -23,6 +24,7 @@ class MediaFactory extends Factory
         return [
             'type' => MediaType::PHOTO,
             'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+            'source' => MediaSource::SILVERBOX,
         ];
     }
 }

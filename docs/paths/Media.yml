@@ -9,7 +9,7 @@ Media:
         required: false
         schema:
           type: string
-          enum: [photo]
+          enum: [ 'other', 'photo', 'video', 'document' ]
       - name: has_relationships
         in: query
         required: false
@@ -41,25 +41,7 @@ Media:
       - Media
     summary: 'upload new file'
     requestBody:
-      content:
-        multipart/form-data:
-          schema:
-            properties:
-              file:
-                description: 'File. Accepted extensions: jpeg, png, gif, bmp, svg, mp4, webm, ogg, avi, mov, wmv'
-                type: string
-                format: binary
-              slug:
-                type: string
-                example: 'awesome-photo'
-              alt:
-                type: string
-                example: 'alt'
-              metadata.*:
-                type: string
-                example: 'value'
-                description: 'asterisk has to be replaced with metadata key'
-            type: object
+      $ref: './../requests/Media.yml#/MediaStore'
     responses:
       201:
         description: Created
