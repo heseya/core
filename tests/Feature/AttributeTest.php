@@ -646,35 +646,15 @@ class AttributeTest extends TestCase
     {
         $this->$user->givePermissionTo('attributes.edit');
 
-        while (true) {
-            $randomType = AttributeType::getRandomValue();
-
-            if ($randomType !== $this->attribute->type->value) {
-                $this->attribute->type = $randomType;
-                break;
-            }
-        }
-
-        $attributeUpdate = [
-            'name' => 'Test ' . $this->attribute->name,
-            'slug' => $this->attribute->slug,
-            'description' => 'Test ' . $this->attribute->description,
-            'type' => $this->attribute->type,
-            'global' => true,
-            'sortable' => true,
-            'options' => [
-                [
-                    'id' => $this->option->getKey(),
-                    'name' => 'Test ' . $this->option->name,
-                    'value_number' => $this->option->value_number,
-                    'value_date' => $this->option->value_date,
-                ],
-            ],
-        ];
+        $attribute = Attribute::factory()->create([
+            'type' => AttributeType::SINGLE_OPTION,
+        ]);
 
         $this
             ->actingAs($this->$user)
-            ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
+            ->patchJson('/attributes/id:' . $attribute->getKey(), [
+                'type' => AttributeType::DATE,
+            ])
             ->assertUnprocessable();
     }
 
