@@ -3,16 +3,20 @@
 namespace App\Http\Resources;
 
 use App\Enums\AttributeType;
+use App\Models\Attribute;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
+/**
+ * @property Attribute $resource
+ */
 class AttributeResource extends Resource
 {
     use MetadataResource;
 
     public function base(Request $request): array
     {
-        [$min, $max] = match ($this->resource->type->value) {
+        [$min, $max] = match ($this->resource->type) {
             AttributeType::NUMBER => [$this->resource->min_number, $this->resource->max_number],
             AttributeType::DATE => [$this->resource->min_date, $this->resource->max_date],
             default => [null, null],

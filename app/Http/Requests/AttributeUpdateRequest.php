@@ -24,7 +24,7 @@ class AttributeUpdateRequest extends AttributeStoreRequest
 
         $rules['type'] = [
             'required',
-            Rule::in($this->attribute->type),
+            Rule::in($this->attribute->type->value),
         ];
 
         return $rules;

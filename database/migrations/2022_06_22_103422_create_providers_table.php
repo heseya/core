@@ -3,19 +3,21 @@
 use App\Enums\AuthProviderKey;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('auth_providers', function (Blueprint $table): void {
             $table->uuid('id');
-            $table->enum('key', AuthProviderKey::asArray());
+            $table->enum(
+                'key',
+                Arr::map(AuthProviderKey::cases(), fn ($provider) => $provider->value),
+            );
             $table->boolean('active');
             $table->string('client_id')->nullable();
             $table->string('client_secret')->nullable();
@@ -23,7 +25,10 @@ return new class extends Migration {
 
         Schema::create('user_providers', function (Blueprint $table): void {
             $table->uuid('id');
-            $table->enum('provider', AuthProviderKey::asArray());
+            $table->enum(
+                'provider',
+                Arr::map(AuthProviderKey::cases(), fn ($provider) => $provider->value),
+            );
             $table->string('provider_user_id');
             $table->string('user_id');
         });
@@ -35,10 +40,8 @@ return new class extends Migration {
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('auth_providers');
         Schema::dropIfExists('user_providers');

@@ -9,14 +9,13 @@ use Illuminate\Foundation\Http\FormRequest;
 class AttributeOptionRequest extends FormRequest
 {
     use MetadataRules;
+
     /**
-     * Get the validation rules that apply to the request.
-     *
      * @return array<string, array<string>>
      */
     public function rules(): array
     {
-        $nameRule = match ($this->attribute?->type->value ?? $this->input('type')) {
+        $nameRule = match ($this->attribute?->type ?? $this->enum('type', AttributeType::class)) {
             AttributeType::SINGLE_OPTION => 'required',
             default => 'nullable',
         };
