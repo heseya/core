@@ -5,7 +5,6 @@ namespace App\Http;
 use App\Http\Middleware\AppAccessRestrict;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\Language;
-use App\Http\Middleware\SecureHeaders;
 use App\Http\Middleware\TrimStrings;
 use App\Http\Middleware\TrustProxies;
 use App\Http\Middleware\UndotParams;
@@ -32,7 +31,6 @@ class Kernel extends HttpKernel
      */
     protected $middleware = [
         HandleCors::class,
-        SecureHeaders::class,
         ValidatePostSize::class,
         Language::class,
         TrustProxies::class,
@@ -83,7 +81,6 @@ class Kernel extends HttpKernel
     protected $middlewarePriority = [
         HandleCors::class,
         UndotParams::class,
-        SecureHeaders::class,
         SubstituteBindings::class,
         Authenticate::class,
         AppAccessRestrict::class,
