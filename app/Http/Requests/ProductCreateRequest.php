@@ -29,7 +29,7 @@ class ProductCreateRequest extends FormRequest implements SeoRequestContract, Me
                 'shipping_digital' => ['required', 'boolean'],
 
                 'description_html' => ['nullable', 'string'],
-                'description_short' => ['nullable', 'string', 'between:30,5000'],
+                'description_short' => ['nullable', 'string', 'max:5000'],
 
                 'quantity_step' => ['numeric'],
                 'order' => ['numeric'],
