@@ -11,6 +11,7 @@ MediaStore:
           url:
             description: 'Url to external file'
             type: string
+            maxLength: 500
           type:
             enum: [ 'other', 'photo', 'video', 'document' ]
             description: required with url
