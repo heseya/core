@@ -32,6 +32,7 @@ class CartTest extends TestCase
     private Product $productWithSchema;
     private Schema $schema;
     private Option $option;
+    private Option $option2;
     private Item $item;
 
     public function setUp(): void
@@ -44,7 +45,8 @@ class CartTest extends TestCase
         $lowRange = PriceRange::create(['start' => 0]);
         $lowRange->prices()->create(['value' => 8.11]);
 
-        $highRange = PriceRange::create(['start' => 210]);
+        /** @var PriceRange $highRange */
+        $highRange = PriceRange::query()->create(['start' => 210]);
         $highRange->prices()->create(['value' => 0.0]);
 
         $this->shippingMethod->priceRanges()->saveMany([$lowRange, $highRange]);
@@ -64,12 +66,22 @@ class CartTest extends TestCase
             'hidden' => false,
         ]);
         $this->productWithSchema->schemas()->sync([$this->schema->getKey()]);
+
         $this->option = $this->schema->options()->create([
             'name' => 'XL',
             'price' => 0,
         ]);
         $this->item = Item::factory()->create();
         $this->option->items()->sync([$this->item->getKey()]);
+
+        $this->option2 = $this->schema->options()->create([
+            'name' => 'L',
+            'price' => 100,
+        ]);
+
+        $this->digitalProduct = Product::factory()->create([
+            'public' => true,
+        ]);
     }
 
     public function testCartProcessUnauthorized(): void
@@ -126,7 +138,63 @@ class CartTest extends TestCase
             ]);
     }
 
-    public function couponOrSaleProvider(): array
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessWithMultipleSchemas(string $user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $this->item->deposits()->create([
+            'quantity' => 1,
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->productWithSchema->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [
+                        $this->schema->getKey() => $this->option->getKey(),
+                    ],
+                ],
+                [
+                    'cartitem_id' => '2',
+                    'product_id' => $this->productWithSchema->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [
+                        $this->schema->getKey() => $this->option2->getKey(),
+                    ],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 300,
+                'cart_total' => 300,
+                'shipping_price_initial' => 0,
+                'shipping_price' => 0,
+                'summary' => 300,
+                'coupons' => [],
+                'sales' => [],
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => 100,
+                'price_discounted' => 100,
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '2',
+                'price' => 200,
+                'price_discounted' => 200,
+            ]);
+    }
+
+    public static function couponOrSaleProvider(): array
     {
         return [
             'as user coupon' => ['user', true],
