@@ -27,6 +27,7 @@ class MediaStoreRequest extends FormRequest
                 'required_without:file',
                 'prohibits:file',
                 'string',
+                'max:500',
             ],
             'slug' => ['string', 'max:64', 'unique:media'],
             'type' => [
