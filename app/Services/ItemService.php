@@ -53,7 +53,7 @@ class ItemService implements ItemServiceContract
             });
 
             if ($item->quantity < $count) {
-                //TODO dodanie danych do błędu
+                // TODO dodanie danych do błędu
                 throw new ClientException(Exceptions::CLIENT_NOT_ENOUGH_ITEMS);
             }
         }

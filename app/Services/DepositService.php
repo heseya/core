@@ -29,7 +29,7 @@ class DepositService implements DepositServiceContract
             /** @var Item $item */
             $item = $cartItem['item'];
             $timeDate = $this->getShippingTimeDateForQuantity($item, $cartItem['quantity']);
-            //if missing item return time/date as null
+            // if missing item return time/date as null
             if (is_null($timeDate['shipping_time']) && is_null($timeDate['shipping_date'])) {
                 return $timeDate;
             }

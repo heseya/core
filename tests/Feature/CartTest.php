@@ -2559,12 +2559,12 @@ class CartTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonFragment([
-                    'cart_total_initial' => 4600,
-                    'cart_total' => 4600,
-                    'shipping_price_initial' => 0,
-                    'shipping_price' => 0,
-                    'summary' => 4600,
-                ])
+                'cart_total_initial' => 4600,
+                'cart_total' => 4600,
+                'shipping_price_initial' => 0,
+                'shipping_price' => 0,
+                'summary' => 4600,
+            ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
                 'price' => 4600,

@@ -168,8 +168,9 @@ return [
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
-        \SocialiteProviders\Manager\ServiceProvider::class,
+
         // PackageTemplate Service Providers...
+        SocialiteProviders\Manager\ServiceProvider::class,
         Spatie\Permission\PermissionServiceProvider::class,
         OwenIt\Auditing\AuditingServiceProvider::class,
 
@@ -177,7 +178,6 @@ return [
         App\Providers\AppServiceProvider::class,
         App\Providers\RepositoryServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
-        // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\TimeServiceProvider::class,

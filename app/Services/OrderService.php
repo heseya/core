@@ -304,7 +304,7 @@ class OrderService implements OrderServiceContract
             );
 
             $billingAddressId = $billingAddress instanceof Address
-                ? ['billing_address_id' => $billingAddress->getKey() ]
+                ? ['billing_address_id' => $billingAddress->getKey()]
                 : (!$dto->getBillingAddress() instanceof Missing ? ['billing_address_id' => null] : []);
 
             $order->update([
@@ -512,7 +512,7 @@ class OrderService implements OrderServiceContract
             $quantity = $productItem->pivot->required_quantity * $orderProduct->quantity;
 
             if (!isset($itemsToRemove[$productItem->getKey()])) {
-                $itemsToRemove[$productItem->getKey()] = ['item' => $productItem,'quantity' => $quantity];
+                $itemsToRemove[$productItem->getKey()] = ['item' => $productItem, 'quantity' => $quantity];
             } else {
                 $itemsToRemove[$productItem->getKey()]['quantity'] += $quantity;
             }

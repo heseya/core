@@ -23,10 +23,10 @@ return new class extends Migration {
         ]);
 
         Role::whereIn('type', [
-                RoleType::OWNER,
-                RoleType::AUTHENTICATED,
-                RoleType::UNAUTHENTICATED,
-            ])
+            RoleType::OWNER,
+            RoleType::AUTHENTICATED,
+            RoleType::UNAUTHENTICATED,
+        ])
             ->firstOrFail()
             ->givePermissionTo('auth.login');
     }

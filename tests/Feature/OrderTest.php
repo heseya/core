@@ -771,7 +771,7 @@ class OrderTest extends TestCase
             ->getJson('/orders/id:its-not-uuid')
             ->assertNotFound();
 
-        $this->assertEquals(404, $response->getData()->error->code); //get error code from our error handle structure
+        $this->assertEquals(404, $response->getData()->error->code); // get error code from our error handle structure
 
         $response = $this->actingAs($this->$user)
             ->getJson('/orders/id:' . $this->order->getKey() . $this->order->getKey())
@@ -847,7 +847,7 @@ class OrderTest extends TestCase
             ->getJson('/orders/its_wrong_code')
             ->assertNotFound();
 
-        $this->assertEquals(404, $response->getData()->error->code); //get error code from our error handle structure
+        $this->assertEquals(404, $response->getData()->error->code); // get error code from our error handle structure
 
         $response = $this->actingAs($this->$user)
             ->getJson('/orders/' . $this->order->code . '_' . $this->order->code)

@@ -472,9 +472,9 @@ class OrderDepositTest extends TestCase
         $response->assertCreated();
 
         /** @var Order $order */
-        $order = Order::query()->find($response->getData()->data->id); //order created
+        $order = Order::query()->find($response->getData()->data->id); // order created
 
-        $this->assertDatabaseHas('deposits', [ //was taken from the deposit of 3 items in shipping time 3
+        $this->assertDatabaseHas('deposits', [ // was taken from the deposit of 3 items in shipping time 3
             'quantity' => -3,
             'item_id' => $this->item->getKey(),
             'order_product_id' => $order->products->first()->getKey(),
@@ -484,10 +484,10 @@ class OrderDepositTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $product->getKey(),
-            'shipping_time' => 1, //product now got 1 days shipping time
+            'shipping_time' => 1, // product now got 1 days shipping time
         ]);
 
-        //third order 1 product
+        // third order 1 product
         $request = [
             'email' => 'test1@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -527,9 +527,9 @@ class OrderDepositTest extends TestCase
         $response->assertCreated();
 
         /** @var Order $order */
-        $order = Order::query()->find($response->getData()->data->id); //order created
+        $order = Order::query()->find($response->getData()->data->id); // order created
 
-        $this->assertDatabaseHas('deposits', [ //was taken from the deposit of 1 items in shipping time 1
+        $this->assertDatabaseHas('deposits', [ // was taken from the deposit of 1 items in shipping time 1
             'quantity' => -1,
             'item_id' => $this->item->getKey(),
             'order_product_id' => $order->products->first()->getKey(),
@@ -539,7 +539,7 @@ class OrderDepositTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $product->getKey(),
-            'shipping_time' => 3, //product now got 3 days shipping time
+            'shipping_time' => 3, // product now got 3 days shipping time
         ]);
     }
 

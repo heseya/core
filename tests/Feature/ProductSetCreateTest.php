@@ -358,7 +358,7 @@ class ProductSetCreateTest extends TestCase
                 'slug_suffix' => 'test-parent',
                 'slug' => 'test-parent',
                 'children_ids' => [
-//                    $this->privateSet->getKey(),
+                    //                    $this->privateSet->getKey(),
                     $this->set->getKey(),
                 ],
             ],

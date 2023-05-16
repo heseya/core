@@ -227,7 +227,7 @@ class ProductAvailabilityTest extends TestCase
         //
         // Shipping time 2:
         // item | quantity | overstock |
-        //------------------------------
+        // ------------------------------
         //   1  |    5     |     0     |
         //   2  |    1     |     0     |
         //   3  |    0     |     0     |
@@ -236,7 +236,7 @@ class ProductAvailabilityTest extends TestCase
         //
         // Shipping time 3:
         // item | quantity | overstock |
-        //------------------------------
+        // ------------------------------
         //   1  |    1     |     5     |
         //   2  |    5     |     1     |
         //   3  |    5     |     0     |

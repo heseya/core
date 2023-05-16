@@ -6,7 +6,7 @@ use App\Models\BannerMedia;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\BannerMedia>
+ * @extends Factory<BannerMedia>
  */
 class BannerMediaFactory extends Factory
 {

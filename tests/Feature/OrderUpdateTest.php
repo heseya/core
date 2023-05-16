@@ -620,7 +620,7 @@ class OrderUpdateTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonFragment([
-                 // should remain the same
+                // should remain the same
                 'shipping_place' => [
                     'address' => $this->addressDelivery->address,
                     'city' => $this->addressDelivery->city,
@@ -718,7 +718,7 @@ class OrderUpdateTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonFragment([
-                 // should remain the same
+                // should remain the same
                 'billing_address' => [
                     'address' => $this->addressInvoice->address,
                     'city' => $this->addressInvoice->city,
@@ -943,7 +943,7 @@ class OrderUpdateTest extends TestCase
      */
     public function testShippingListDispatched($user): void
     {
-        $this->$user->givePermissionTo(['orders.edit','orders.edit.status']);
+        $this->$user->givePermissionTo(['orders.edit', 'orders.edit.status']);
 
         $webHook = WebHook::factory()->create([
             'events' => [
@@ -994,7 +994,7 @@ class OrderUpdateTest extends TestCase
      */
     public function testShippingListNotExistingPackageTemplate($user): void
     {
-        $this->$user->givePermissionTo(['orders.edit','orders.edit.status']);
+        $this->$user->givePermissionTo(['orders.edit', 'orders.edit.status']);
 
         Event::fake([OrderRequestedShipping::class]);
 

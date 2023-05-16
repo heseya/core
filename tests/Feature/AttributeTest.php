@@ -358,13 +358,13 @@ class AttributeTest extends TestCase
                 'sortable' => $attribute->sortable,
             ]);
 
-        //checking rest of min/max fields in attribute
+        // checking rest of min/max fields in attribute
         $this->assertDatabaseHas('attributes', [
             'id' => $attribute->getKey(),
             'min_date' => null,
             'max_date' => null,
         ]);
-        //making sure to other attributes was not updated by this one
+        // making sure to other attributes was not updated by this one
         $this->assertDatabaseMissing('attributes', [
             'id' => $this->attribute->getKey(),
             'min_number' => $option2->value_number,
@@ -422,13 +422,13 @@ class AttributeTest extends TestCase
                 'sortable' => $attribute->sortable,
             ]);
 
-        //checking rest of min/max fields in attribute
+        // checking rest of min/max fields in attribute
         $this->assertDatabaseHas('attributes', [
             'id' => $attribute->getKey(),
             'min_number' => null,
             'max_number' => null,
         ]);
-        //making sure to other attributes was not updated by this one
+        // making sure to other attributes was not updated by this one
         $this->assertDatabaseMissing('attributes', [
             'id' => $this->attribute->getKey(),
             'min_date' => $option2->value_date,

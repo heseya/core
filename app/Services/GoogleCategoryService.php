@@ -30,7 +30,7 @@ class GoogleCategoryService implements GoogleCategoryServiceContract
 
         $data ??= $this->getGoogleProductCategoryFileContent($lang);
 
-        # Removing google header from text and last empty line then reindexing.
+        // Removing google header from text and last empty line then reindexing.
         unset($data[0]);
         array_pop($data);
         $data = array_values($data);

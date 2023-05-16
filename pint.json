@@ -17,8 +17,22 @@
     "no_unused_imports": true,
     "object_operator_without_whitespace": true,
     "no_useless_return": true,
+    "array_indentation": true,
+    "trim_array_spaces": true,
+    "single_line_comment_spacing": true,
+    "no_trailing_whitespace_in_comment": true,
+    "standardize_not_equals": true,
+    "whitespace_after_comma_in_array": {
+      "ensure_single_space": true
+    },
+    "multiline_whitespace_before_semicolons": {
+      "strategy": "no_multi_line"
+    },
+    "array_syntax": {
+      "syntax": "short"
+    },
     "single_line_comment_style": {
-      "comment_types": ["asterisk"]
+      "comment_types": ["asterisk", "hash"]
     },
     "align_multiline_comment": {
       "comment_type": "phpdocs_only"
