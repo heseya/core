@@ -221,7 +221,7 @@ class ItemTest extends TestCase
     {
         $this->$user->givePermissionTo('items.show');
 
-        $created_at = Carbon::yesterday()->addHours(12);
+        $created_at = Carbon::yesterday()->startOfDay()->addHours(12);
 
         $item2 = Item::factory()->create([
             'created_at' => $created_at,
@@ -850,7 +850,7 @@ class ItemTest extends TestCase
             'name' => 'Test',
             'sku' => 'TES/T1',
             'unlimited_stock_shipping_time' => 10,
-            'unlimited_stock_shipping_date' => '1999-02-01 10:10:10',
+            'unlimited_stock_shipping_date' => '1999-02-01',
         ];
 
         $this->actingAs($this->$user)->postJson('/items', $item)->assertStatus(422);
@@ -870,7 +870,7 @@ class ItemTest extends TestCase
         $item = [
             'sku' => 'TES/T3',
             'unlimited_stock_shipping_time' => 10,
-            'unlimited_stock_shipping_date' => '1999-02-01 10:10:10',
+            'unlimited_stock_shipping_date' => '1999-02-01',
         ];
 
         $this->actingAs($this->$user)->patchJson(
@@ -893,12 +893,12 @@ class ItemTest extends TestCase
         Deposit::factory()->create([
             'item_id' => $this->item->getKey(),
             'quantity' => 2.0,
-            'shipping_date' => Carbon::now()->addDays(4)->toDateTimeString(),
+            'shipping_date' => Carbon::now()->startOfDay()->addDays(4)->toDateTimeString(),
         ]);
 
         $item = [
             'sku' => 'TES/T3',
-            'unlimited_stock_shipping_date' => Carbon::now()->addDays(1)->toDateTimeString(),
+            'unlimited_stock_shipping_date' => Carbon::now()->startOfDay()->addDay()->toDateTimeString(),
         ];
 
         $this->actingAs($this->$user)->patchJson(
@@ -1078,7 +1078,7 @@ class ItemTest extends TestCase
             'name' => 'Test',
             'sku' => 'TES/T1',
             'unlimited_stock_shipping_time' => null,
-            'unlimited_stock_shipping_date' => Carbon::now()->addDays(5)->toIso8601String(),
+            'unlimited_stock_shipping_date' => Carbon::now()->startOfDay()->addDays(5)->toIso8601String(),
         ];
 
         $response = $this->actingAs($this->$user)->postJson('/items', $item);
@@ -1112,7 +1112,7 @@ class ItemTest extends TestCase
             'quantity' => 2.0,
             'shipping_time' => $time + 5,
         ]);
-        $date = Carbon::now()->addDays(5)->toIso8601String();
+        $date = Carbon::now()->startOfDay()->addDays(5)->toIso8601String();
         Deposit::factory()->create([
             'item_id' => $item->getKey(),
             'quantity' => 2.0,
@@ -1139,10 +1139,10 @@ class ItemTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'availability' => [
-                    ['quantity' => 2, 'shipping_time' => null, 'shipping_date' => null],
-                    ['quantity' => 2, 'shipping_time' => null, 'shipping_date' => $date],
-                    ['quantity' => 4, 'shipping_time' => 4, 'shipping_date' => null],
-                    ['quantity' => 2, 'shipping_time' => 9, 'shipping_date' => null],
+                    ['quantity' => 2, 'shipping_time' => null, 'shipping_date' => null, 'from_unlimited' => false],
+                    ['quantity' => 2, 'shipping_time' => null, 'shipping_date' => $date, 'from_unlimited' => false],
+                    ['quantity' => 4, 'shipping_time' => 4, 'shipping_date' => null, 'from_unlimited' => false],
+                    ['quantity' => 2, 'shipping_time' => 9, 'shipping_date' => null, 'from_unlimited' => false],
                 ],
             ]);
     }
@@ -1174,7 +1174,7 @@ class ItemTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'availability' => [
-                    ['quantity' => 10, 'shipping_time' => 10, 'shipping_date' => null],
+                    ['quantity' => 10, 'shipping_time' => 10, 'shipping_date' => null, 'from_unlimited' => false],
                 ],
             ]);
 
@@ -1184,7 +1184,7 @@ class ItemTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'availability' => [
-                    ['quantity' => 10, 'shipping_time' => 10, 'shipping_date' => null],
+                    ['quantity' => 10, 'shipping_time' => 10, 'shipping_date' => null, 'from_unlimited' => false],
                 ],
             ]);
     }

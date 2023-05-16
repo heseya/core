@@ -184,7 +184,7 @@ class StatusTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function statusUpdateProvider(): array
+    public static function statusUpdateProvider(): array
     {
         return [
             'as user cancel false' => ['user', false],

@@ -26,12 +26,17 @@ use Illuminate\Support\Str;
 
 /**
  * @property mixed $pivot
- *
  * @mixin IdeHelperProductSet
  */
 class ProductSet extends Model
 {
-    use HasCriteria, HasFactory, SoftDeletes, HasSeoMetadata, HasMetadata, HasDiscountConditions, HasDiscounts;
+    use HasCriteria;
+    use HasFactory;
+    use SoftDeletes;
+    use HasSeoMetadata;
+    use HasMetadata;
+    use HasDiscountConditions;
+    use HasDiscounts;
 
     protected $fillable = [
         'name',
@@ -157,24 +162,17 @@ class ProductSet extends Model
 
     public function allProductsSales(): Collection
     {
-        $sales = $this->discounts
-            ->filter(fn ($discount): bool => $discount->code === null
+        $sales = $this->discounts->filter(
+            fn (Discount $discount): bool => $discount->code === null
                 && $discount->active
-                && $discount->target_type->is(DiscountTargetType::PRODUCTS));
+                && $discount->target_type->is(DiscountTargetType::PRODUCTS),
+        );
 
         if ($this->parent) {
             $sales = $sales->merge($this->parent->allProductsSales());
         }
 
         return $sales->unique('id');
-    }
-
-    protected static function booted(): void
-    {
-        static::addGlobalScope(
-            'ordered',
-            fn (Builder $builder) => $builder->orderBy('product_sets.order'),
-        );
     }
 
     public function allChildrenIds(string $relation): Collection
@@ -186,5 +184,13 @@ class ProductSet extends Model
         }
 
         return $result->unique();
+    }
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope(
+            'ordered',
+            fn (Builder $builder) => $builder->orderBy('product_sets.order'),
+        );
     }
 }

@@ -10,7 +10,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class ProductSetStoreRequest extends FormRequest implements SeoRequestContract, MetadataRequestContract
 {
-    use SeoRules, MetadataRules;
+    use SeoRules;
+    use MetadataRules;
 
     public function rules(): array
     {

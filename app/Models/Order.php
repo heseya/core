@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Audits\Redactors\AddressRedactor;
-use App\Audits\Redactors\ShippingMethodRedactor;
 use App\Audits\Redactors\StatusRedactor;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
@@ -37,7 +36,13 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Order extends Model implements AuditableContract, SortableContract
 {
-    use HasFactory, HasCriteria, Sortable, Notifiable, Auditable, HasMetadata, HasOrderDiscount;
+    use HasFactory;
+    use HasCriteria;
+    use Sortable;
+    use Notifiable;
+    use Auditable;
+    use HasMetadata;
+    use HasOrderDiscount;
 
     protected $fillable = [
         'code',
@@ -80,8 +85,6 @@ class Order extends Model implements AuditableContract, SortableContract
 
     protected array $attributeModifiers = [
         'status_id' => StatusRedactor::class,
-        'shipping_method_id' => ShippingMethodRedactor::class,
-        'digital_shipping_method_id' => ShippingMethodRedactor::class,
         'billing_address_id' => AddressRedactor::class,
         'shipping_address_id' => AddressRedactor::class,
     ];

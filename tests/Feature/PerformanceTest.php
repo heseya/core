@@ -152,7 +152,7 @@ class PerformanceTest extends TestCase
         ]);
         $this
             ->actingAs($this->user)
-            ->getJson('/attributes/id:'. $attribute->getKey())
+            ->getJson('/attributes/id:' . $attribute->getKey())
             ->assertOk();
 
         $this->assertQueryCountLessThan(9);
@@ -352,7 +352,7 @@ class PerformanceTest extends TestCase
         $productItem = Item::factory()->create();
 
         $product = Product::factory()->create();
-        $product->items()->attach([$productItem->getKey()  => [
+        $product->items()->attach([$productItem->getKey() => [
             'required_quantity' => 1,
         ],
         ]);

@@ -39,7 +39,8 @@ use Tests\TestCase;
 
 class OrderCreateTest extends TestCase
 {
-    use RefreshDatabase, WithFaker;
+    use RefreshDatabase;
+    use WithFaker;
 
     private ShippingMethod $shippingMethod;
     private ProductSet $category;

@@ -18,8 +18,8 @@ class OneTimeSecurityCode extends Model
         'expires_at',
     ];
 
-    protected $dates = [
-        'expires_at',
+    protected $casts = [
+        'expires_at' => 'date',
     ];
 
     public function user(): HasOne

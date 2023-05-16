@@ -15,7 +15,8 @@ use Illuminate\Database\Eloquent\Relations\HasOneThrough;
  */
 class Deposit extends Model
 {
-    use HasFactory, HasCriteria;
+    use HasFactory;
+    use HasCriteria;
 
     protected $fillable = [
         'quantity',
@@ -26,11 +27,8 @@ class Deposit extends Model
         'from_unlimited',
     ];
 
-    protected $dates = [
-        'shipping_date',
-    ];
-
     protected $casts = [
+        'shipping_date' => 'datetime',
         'from_unlimited' => 'bool',
     ];
 

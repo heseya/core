@@ -113,13 +113,13 @@ class PayU implements PaymentMethod
 
         $list = explode(';', rtrim($data, ';'));
         if (!count($list)) {
-            return null;
+            return;
         }
 
         foreach ($list as $value) {
             $explode = explode('=', $value);
             if (count($explode) !== 2) {
-                return null;
+                return;
             }
             $signatureData[$explode[0]] = $explode[1];
         }

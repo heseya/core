@@ -26,12 +26,16 @@ use Spatie\Permission\PermissionRegistrar;
  * @property RoleType $type
  * @property string $name
  * @property bool $is_registration_role
- *
  * @mixin IdeHelperRole
  */
 class Role extends SpatieRole implements AuditableContract
 {
-    use HasCriteria, HasUuid, HasFactory, Auditable, HasMetadata, HasDiscountConditions;
+    use HasCriteria;
+    use HasUuid;
+    use HasFactory;
+    use Auditable;
+    use HasMetadata;
+    use HasDiscountConditions;
 
     protected $fillable = [
         'name',
@@ -55,13 +59,6 @@ class Role extends SpatieRole implements AuditableContract
         'ids' => WhereInIds::class,
     ];
 
-    protected static function booted(): void
-    {
-        static::addGlobalScope('order', function (Builder $builder): void {
-            $builder->orderByRaw('type = ' . RoleType::OWNER . ' DESC, type ASC');
-        });
-    }
-
     public function users(): BelongsToMany
     {
         return $this->morphedByMany(
@@ -82,5 +79,12 @@ class Role extends SpatieRole implements AuditableContract
             && $this->type->isNot(RoleType::UNAUTHENTICATED)
             && $this->type->isNot(RoleType::AUTHENTICATED)
             && $user->hasAllPermissions($this->getAllPermissions());
+    }
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope('order', function (Builder $builder): void {
+            $builder->orderByRaw('type = ' . RoleType::OWNER . ' DESC, type ASC');
+        });
     }
 }

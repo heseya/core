@@ -372,8 +372,7 @@ class ProductSetService implements ProductSetServiceContract
         bool|Missing $isOverridden,
         string|Missing|null $slugSuffix,
         string $parentSlug
-    ): ?string
-    {
+    ): ?string {
         $slug = $slugSuffix instanceof Missing ? null : $slugSuffix;
         if (!$isOverridden instanceof Missing && !$isOverridden) {
             return "{$parentSlug}-{$slug}";

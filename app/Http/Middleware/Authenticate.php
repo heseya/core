@@ -46,14 +46,4 @@ class Authenticate extends Middleware
 
         return $next($request);
     }
-
-    /**
-     * Get the path the user should be redirected to when they are not authenticated.
-     *
-     * @return null
-     */
-    protected function redirectTo($request)
-    {
-        return null;
-    }
 }

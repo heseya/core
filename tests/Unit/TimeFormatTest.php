@@ -66,7 +66,7 @@ class TimeFormatTest extends TestCase
         $item = Item::factory()->create();
         $deposit = Deposit::factory()->create([
             'item_id' => $item->getKey(),
-            'shipping_date' => Carbon::now()->addDay(),
+            'shipping_date' => Carbon::now()->startOfDay()->addDay(),
         ]);
 
         $this->modelTimeFormat($deposit, ['created_at', 'updated_at', 'shipping_date']);
@@ -88,7 +88,7 @@ class TimeFormatTest extends TestCase
     {
         /** @var Item $item */
         $item = Item::factory()->create([
-            'shipping_date' => Carbon::now()->addDay(),
+            'shipping_date' => Carbon::now()->startOfDay()->addDay(),
             'unlimited_stock_shipping_date' => Carbon::now()->addDay(),
         ]);
         $item->delete();
@@ -192,7 +192,7 @@ class TimeFormatTest extends TestCase
 
     public function testPriceTimeFormat(): void
     {
-        $price = Price::create([
+        $price = Price::query()->create([
             'model_id' => 'model_id',
             'model_type' => 'model_type',
             'value' => 10,
@@ -203,7 +203,7 @@ class TimeFormatTest extends TestCase
 
     public function testPriceRangeTimeFormat(): void
     {
-        $priceRange = PriceRange::create([
+        $priceRange = PriceRange::query()->create([
             'start' => 0,
         ]);
 
@@ -213,7 +213,7 @@ class TimeFormatTest extends TestCase
     public function testProductTimeFormat(): void
     {
         $product = Product::factory()->create([
-            'shipping_date' => Carbon::now()->addDay(),
+            'shipping_date' => Carbon::now()->startOfDay()->addDay(),
         ]);
 
         $this->modelTimeFormat($product, ['created_at', 'updated_at', 'shipping_date']);
@@ -284,11 +284,11 @@ class TimeFormatTest extends TestCase
         $model->refresh();
 
         Collection::make($fields)->each(fn ($field) => [
-            $this->assertInstanceOf(Carbon::class, $model->$field, "Field ${field} error:"),
+            $this->assertInstanceOf(Carbon::class, $model->$field, "Field {$field} error:"),
             $this->assertEquals(
                 $model->$field->toIso8601String(),
                 $model->$field . '',
-                "Field ${field} error:",
+                "Field {$field} error:",
             ),
         ]);
     }

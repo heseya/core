@@ -446,7 +446,7 @@ class AuthService implements AuthServiceContract
         $security_codes = Auth::user()?->securityCodes()
             ->whereNull('expires_at')->get();
 
-        $security_codes = $security_codes ?? [];
+        $security_codes ??= [];
         foreach ($security_codes as $security_code) {
             if (Hash::check($code, $security_code->code)) {
                 $security_code->delete();

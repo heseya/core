@@ -32,7 +32,7 @@ class OrderResource extends Resource
             'shipping_type' => $this->resource->shippingType,
             'invoice_requested' => $this->resource->invoice_requested,
             'billing_address' => AddressResource::make($this->resource->invoiceAddress),
-            'shipping_place' =>  $this->resource->shippingAddress
+            'shipping_place' => $this->resource->shippingAddress
                 ? AddressResource::make($this->resource->shippingAddress)
                 : $this->resource->shipping_place,
             'documents' => OrderDocumentResource::collection($this->resource->documents->pluck('pivot')),

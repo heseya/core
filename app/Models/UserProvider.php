@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property User $user
- *
  * @mixin IdeHelperUserProvider
  */
 class UserProvider extends Model
@@ -25,10 +24,7 @@ class UserProvider extends Model
 
     protected $casts = [
         'provider' => AuthProviderKey::class,
-    ];
-
-    protected $dates = [
-        'merge_token_expires_at',
+        'merge_token_expires_at' => 'date',
     ];
 
     public function user(): BelongsTo

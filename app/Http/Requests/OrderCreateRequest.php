@@ -34,7 +34,7 @@ class OrderCreateRequest extends OrderItemsRequest
                     'string',
                     'max:64',
                     Rule::exists('discounts', 'code')->where(function ($query) {
-                       return $query->where('active', true);
+                        return $query->where('active', true);
                     }),
                 ],
 

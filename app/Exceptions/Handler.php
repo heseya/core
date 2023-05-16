@@ -93,7 +93,7 @@ final class Handler extends ExceptionHandler
                 $exception instanceof StoreException ?
                     $exception->getCode() : ErrorCode::getCode(self::ERRORS[$class]),
                 $exception instanceof StoreException ?
-                    $exception->getKey() : ErrorCode::fromValue(self::ERRORS[$class])->key,
+                    $exception->getKey() : ErrorCode::fromValue(self::ERRORS[$class])->key ?? '',
                 $this->getExceptionData($exception),
             );
         } else {

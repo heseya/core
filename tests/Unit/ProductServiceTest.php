@@ -34,7 +34,7 @@ class ProductServiceTest extends TestCase
         );
     }
 
-    public function schemaProvider(): array
+    public static function schemaProvider(): array
     {
         $base = [
             $price = 10,
@@ -85,7 +85,7 @@ class ProductServiceTest extends TestCase
         );
     }
 
-    public function selectSchemaProvider(): array
+    public static function selectSchemaProvider(): array
     {
         $base = [
             $price = 10,
@@ -157,7 +157,7 @@ class ProductServiceTest extends TestCase
         );
     }
 
-    public function multiplySchemaProvider(): array
+    public static function multiplySchemaProvider(): array
     {
         $base = [
             $price = 10,
@@ -212,7 +212,7 @@ class ProductServiceTest extends TestCase
         );
     }
 
-    public function multiplyAnotherSchemaProvider(): array
+    public static function multiplyAnotherSchemaProvider(): array
     {
         $base = [
             $price = 10,

@@ -20,7 +20,10 @@ use Tests\Traits\JsonQueryCounter;
 
 abstract class TestCase extends BaseTestCase
 {
-    use CreatesApplication, RefreshDatabase, JsonQueryCounter, ElasticTest;
+    use CreatesApplication;
+    use RefreshDatabase;
+    use JsonQueryCounter;
+    use ElasticTest;
 
     public User $user;
     public Application $application;
@@ -51,12 +54,11 @@ abstract class TestCase extends BaseTestCase
         $this->application = Application::factory()->create();
     }
 
-    public function authProvider(): array
+    protected function tearDown(): void
     {
-        return [
-            'as user' => ['user'],
-            'as app' => ['application'],
-        ];
+        parent::tearDown();
+
+        app()->forgetInstances();
     }
 
     public function actingAs(Authenticatable $authenticatable, $guard = null): self
@@ -68,13 +70,21 @@ abstract class TestCase extends BaseTestCase
         );
 
         $this->withHeaders(
-            $this->defaultHeaders + ['Authorization' => "Bearer ${token}"],
+            $this->defaultHeaders + ['Authorization' => "Bearer {$token}"],
         );
 
         return $this;
     }
 
-    public function booleanProvider(): array
+    public static function authProvider(): array
+    {
+        return [
+            'as user' => ['user'],
+            'as app' => ['application'],
+        ];
+    }
+
+    public static function booleanProvider(): array
     {
         return [
             'as user true' => ['user', true, true],
@@ -82,12 +92,5 @@ abstract class TestCase extends BaseTestCase
             'as user false' => ['user', false, false],
             'as application false' => ['application', false, false],
         ];
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        app()->forgetInstances();
     }
 }

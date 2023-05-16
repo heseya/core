@@ -43,21 +43,20 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @property mixed $pivot
- *
  * @mixin IdeHelperProduct
  */
 class Product extends Model implements AuditableContract, Explored, SortableContract, SearchableFields
 {
-    use HasFactory,
-        SoftDeletes,
-        Searchable,
-        Sortable,
-        Auditable,
-        HasSeoMetadata,
-        HasMetadata,
-        HasCriteria,
-        HasDiscountConditions,
-        HasDiscounts;
+    use HasFactory;
+    use SoftDeletes;
+    use Searchable;
+    use Sortable;
+    use Auditable;
+    use HasSeoMetadata;
+    use HasMetadata;
+    use HasCriteria;
+    use HasDiscountConditions;
+    use HasDiscounts;
 
     protected $fillable = [
         'name',
@@ -96,11 +95,8 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'order',
     ];
 
-    protected $dates = [
-        'shipping_date',
-    ];
-
     protected $casts = [
+        'shipping_date' => 'date',
         'price' => 'float',
         'public' => 'bool',
         'available' => 'bool',
@@ -266,7 +262,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
     public function allProductSales(Collection $salesWithBlockList): Collection
     {
         $sales = $this->discounts->filter(
-            fn ($discount): bool => $discount->code === null
+            fn (Discount $discount): bool => $discount->code === null
                 && $discount->active
                 && $discount->target_type->is(DiscountTargetType::PRODUCTS)
                 && $discount->target_is_allow_list

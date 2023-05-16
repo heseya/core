@@ -16,7 +16,9 @@ use Illuminate\Support\Str;
 
 abstract class WebHookEvent
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use InteractsWithSockets;
+    use SerializesModels;
 
     protected bool $encrypted;
     protected string $triggered_at;

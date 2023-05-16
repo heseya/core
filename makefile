@@ -14,3 +14,6 @@ build:
 
 validate-swagger:
 	- swagger-cli validate ./public/docs/api.yml
+
+pre-commit:
+	- docker exec store-api-app-1 composer pre-commit

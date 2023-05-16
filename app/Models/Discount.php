@@ -24,12 +24,17 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @property mixed $pivot
- *
+ * @property DiscountType $type
+ * @property DiscountTargetType $target_type
  * @mixin IdeHelperDiscount
  */
 class Discount extends Model implements AuditableContract
 {
-    use HasFactory, HasCriteria, SoftDeletes, Auditable, HasMetadata;
+    use HasFactory;
+    use HasCriteria;
+    use SoftDeletes;
+    use Auditable;
+    use HasMetadata;
 
     protected $fillable = [
         'name',

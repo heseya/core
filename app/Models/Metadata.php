@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
+ * @property MetadataType $value_type;
  * @mixin IdeHelperMetadata
  */
 class Metadata extends Model

@@ -1,0 +1,49 @@
+{
+  "preset": "psr12",
+  "rules": {
+    "not_operator_with_space": false,
+    "simplified_null_return": true,
+    "assign_null_coalescing_to_coalesce_equal": true,
+    "array_push": true,
+    "combine_consecutive_issets": true,
+    "control_structure_braces": true,
+    "explicit_string_variable": true,
+    "function_typehint_space": true,
+    "method_chaining_indentation": true,
+    "native_function_casing": true,
+    "no_multiple_statements_per_line": true,
+    "no_short_bool_cast": true,
+    "no_useless_else": true,
+    "no_unused_imports": true,
+    "object_operator_without_whitespace": true,
+    "no_useless_return": true,
+    "single_line_comment_style": {
+      "comment_types": ["asterisk"]
+    },
+    "align_multiline_comment": {
+      "comment_type": "phpdocs_only"
+    },
+    "types_spaces": {
+      "space": "none"
+    },
+    "no_mixed_echo_print": {
+      "use": "echo"
+    },
+    "control_structure_continuation_position": {
+      "position": "same_line"
+    },
+    "cast_spaces": {
+      "space": "single"
+    },
+    "concat_space": {
+      "spacing": "one"
+    },
+    "no_useless_concat_operator": {
+      "juggle_simple_strings": true
+    },
+    "new_with_braces": {
+      "anonymous_class": false,
+      "named_class": true
+    }
+  }
+}

@@ -19,11 +19,11 @@ class AddAvailableColumnToOptionsSchemasAndProducts extends Migration
             $table->boolean('available')->default(false);
         });
 
-//        /** @var AvailabilityService $availabilityService */
-//        $availabilityService = app(AvailabilityServiceContract::class);
-//
-//        $items = Item::all();
-//        $items->each(fn ($item) => $availabilityService->calculateAvailabilityOnAllItemRelations($item));
+        //        /** @var AvailabilityService $availabilityService */
+        //        $availabilityService = app(AvailabilityServiceContract::class);
+        //
+        //        $items = Item::all();
+        //        $items->each(fn ($item) => $availabilityService->calculateAvailabilityOnAllItemRelations($item));
 
         $products = Product::doesntHave('schemas')->get();
         $products->each(function (Product $product): void {

@@ -49,21 +49,21 @@ class User extends Model implements
     JWTSubject,
     SortableContract
 {
-    use Notifiable,
-        Authenticatable,
-        Authorizable,
-        CanResetPassword,
-        MustVerifyEmail,
-        HasFactory,
-        HasRoles,
-        SoftDeletes,
-        HasCriteria,
-        Sortable,
-        Auditable,
-        HasWebHooks,
-        HasMetadata,
-        HasDiscountConditions,
-        HasMetadataPersonal;
+    use Notifiable;
+    use Authenticatable;
+    use Authorizable;
+    use CanResetPassword;
+    use MustVerifyEmail;
+    use HasFactory;
+    use HasRoles;
+    use SoftDeletes;
+    use HasCriteria;
+    use Sortable;
+    use Auditable;
+    use HasWebHooks;
+    use HasMetadata;
+    use HasDiscountConditions;
+    use HasMetadataPersonal;
 
     // Bez tego nie działały testy, w których jako aplikacja tworzy się użytkownika z określoną rolą
     protected string $guard_name = 'api';
@@ -119,7 +119,7 @@ class User extends Model implements
     public function getPhoneAttribute(): ?string
     {
         return $this->phone_number !== null && $this->phone_country !== null
-            ? PhoneNumber::make($this->phone_number, $this->phone_country) : null;
+            ? new PhoneNumber($this->phone_number, $this->phone_country) : null;
     }
 
     public function getJWTIdentifier(): string

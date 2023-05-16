@@ -35,7 +35,7 @@ class OneTimeSecurityCodeService implements OneTimeSecurityCodeContract
         $recovery_codes = [];
 
         for ($i = 0; $i < $codes; $i++) {
-            array_push($recovery_codes, $this->generateOneTimeSecurityCode($user));
+            $recovery_codes[] = $this->generateOneTimeSecurityCode($user);
         }
 
         if ($user->preferences !== null && $user->preferences->recovery_code_changed_alert) {

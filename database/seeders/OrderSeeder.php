@@ -93,7 +93,8 @@ class OrderSeeder extends Seeder
             );
     }
 
-    private function addProductsToOrder(Order $order, bool $digital): void {
+    private function addProductsToOrder(Order $order, bool $digital): void
+    {
         $products = OrderProduct::factory()
             ->count(rand(1, 3))
             ->state(

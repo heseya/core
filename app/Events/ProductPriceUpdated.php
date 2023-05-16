@@ -14,8 +14,7 @@ class ProductPriceUpdated extends WebHookEvent
         private ?float $oldPriceMax,
         private float $newPriceMin,
         private float $newPriceMax,
-    )
-    {
+    ) {
         $this->updatedAt = Carbon::now()->toIso8601String();
         parent::__construct();
     }

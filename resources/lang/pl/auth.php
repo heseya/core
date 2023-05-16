@@ -15,7 +15,7 @@ return [
     'failed' => 'Błędny login lub hasło.',
     'throttle' => 'Za dużo nieudanych prób logowania. Proszę spróbować za :seconds sekund.',
 
-    /* Custom */
+    // Custom
     'registration-unavailable' => 'Rejestracja nie jest obecnie dostępna.',
 
     'no-organization-header' => 'Brak nagłówka organizacji.',

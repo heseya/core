@@ -10,7 +10,6 @@ use Illuminate\Validation\Validator;
 
 class WebHookCreateRequest extends FormRequest
 {
-
     public function rules(): array
     {
         return [

@@ -18,12 +18,15 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @property float $price
- *
  * @mixin IdeHelperShippingMethod
  */
 class ShippingMethod extends Model implements AuditableContract
 {
-    use HasFactory, Auditable, HasCriteria, HasMetadata, HasDiscounts;
+    use HasFactory;
+    use Auditable;
+    use HasCriteria;
+    use HasMetadata;
+    use HasDiscounts;
 
     /**
      * The attributes that are mass assignable.

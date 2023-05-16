@@ -2,13 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Enums\RoleType;
-use App\Models\Role;
 use App\Models\User;
 use App\Models\WebHook;
 use App\Models\WebHookEventLogEntry;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class WebHookEventLogSeeder extends Seeder
 {

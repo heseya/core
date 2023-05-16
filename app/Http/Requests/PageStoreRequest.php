@@ -9,7 +9,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class PageStoreRequest extends FormRequest implements SeoRequestContract
 {
-    use SeoRules, MetadataRules;
+    use SeoRules;
+    use MetadataRules;
 
     public function rules(): array
     {

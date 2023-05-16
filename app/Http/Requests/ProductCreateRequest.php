@@ -13,7 +13,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class ProductCreateRequest extends FormRequest implements SeoRequestContract, MetadataRequestContract
 {
-    use SeoRules, MetadataRules;
+    use SeoRules;
+    use MetadataRules;
 
     public function rules(): array
     {
@@ -45,7 +46,8 @@ class ProductCreateRequest extends FormRequest implements SeoRequestContract, Me
                 'attributes.*' => ['bail', 'array', new ProductAttributeOptions()],
                 'attributes.*.*' => ['uuid', new AttributeOptionExist()],
 
-                'items' => ['nullable', 'array', new UniqueIdInRequest()],
+                'items' => ['array', new UniqueIdInRequest()],
+                'items.*' => ['array'],
                 'items.*.id' => ['uuid', 'exists:items,id'],
                 'items.*.required_quantity' => ['numeric', 'gte:0.0001'],
 

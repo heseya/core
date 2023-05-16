@@ -27,7 +27,8 @@ use Tests\TestCase;
 
 class CartTest extends TestCase
 {
-    use RefreshDatabase, WithFaker;
+    use RefreshDatabase;
+    use WithFaker;
 
     private ShippingMethod $shippingMethod;
     private ShippingMethod $digitalShippingMethod;
@@ -189,7 +190,7 @@ class CartTest extends TestCase
             ]);
     }
 
-    public function couponOrSaleProvider(): array
+    public static function couponOrSaleProvider(): array
     {
         return [
             'as user coupon' => ['user', true],
@@ -370,13 +371,7 @@ class CartTest extends TestCase
         ]);
 
         $response
-            ->assertOk()
-            ->assertJsonFragment([
-                'cart_total_initial' => 0,
-                'cart_total' => 0,
-                'coupons' => [],
-                'sales' => [],
-            ]);
+            ->assertUnprocessable();
     }
 
     /**
@@ -1247,7 +1242,7 @@ class CartTest extends TestCase
     {
         $this->$user->givePermissionTo('cart.verify');
 
-        $shipping_date = Carbon::now()->addDays(10)->toIso8601String();
+        $shipping_date = Carbon::now()->startOfDay()->addDays(10)->toIso8601String();
 
         $itemData = ['unlimited_stock_shipping_date' => $shipping_date];
 
@@ -1286,7 +1281,7 @@ class CartTest extends TestCase
     {
         $this->$user->givePermissionTo('cart.verify');
 
-        $shippingDate = Carbon::now()->addDays(10)->toIso8601String();
+        $shippingDate = Carbon::now()->startOfDay()->addDays(10)->toIso8601String();
 
         $item = Item::factory()->create();
 
@@ -1342,7 +1337,7 @@ class CartTest extends TestCase
                 'shipping_date' => null,
             ]);
 
-        $shippingDate2 = Carbon::now()->addDays(20)->toIso8601String();
+        $shippingDate2 = Carbon::now()->startOfDay()->addDays(20)->toIso8601String();
 
         Deposit::factory([
             'quantity' => 150,
@@ -1384,7 +1379,7 @@ class CartTest extends TestCase
     {
         $this->$user->givePermissionTo('cart.verify');
 
-        $shippingDate = Carbon::now()->addDays(10)->toIso8601String();
+        $shippingDate = Carbon::now()->startOfDay()->addDays(10)->toIso8601String();
 
         $item = Item::factory()->create();
         $item2 = Item::factory()->create();
@@ -1908,55 +1903,6 @@ class CartTest extends TestCase
             );
     }
 
-    private function prepareDataForCouponTest($coupon): array
-    {
-        $code = $coupon ? [] : ['code' => null];
-
-        $discountApplied = Discount::factory()->create([
-            'description' => 'Testowy kupon obowiązujący',
-            'name' => 'Testowy kupon obowiązujący',
-            'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
-            'target_type' => DiscountTargetType::ORDER_VALUE,
-            'target_is_allow_list' => true,
-        ] + $code);
-
-        $discount = Discount::factory()->create([
-            'description' => 'Testowy kupon',
-            'name' => 'Testowy kupon',
-            'value' => 100,
-            'type' => DiscountType::AMOUNT,
-            'target_type' => DiscountTargetType::ORDER_VALUE,
-            'target_is_allow_list' => true,
-        ] + $code);
-
-        $conditionGroup = ConditionGroup::create();
-
-        $conditionGroup->conditions()->create([
-            'type' => ConditionType::DATE_BETWEEN,
-            'value' => [
-                'start_at' => Carbon::tomorrow(),
-                'is_in_range' => true,
-            ],
-        ]);
-
-        $discount->conditionGroups()->attach($conditionGroup);
-
-        $coupons = $coupon ? [
-            'coupons' => [
-                $discount->code,
-                $discountApplied->code,
-                'blablabla',
-            ],
-        ] : [];
-
-        return [
-            'coupons' => $coupons,
-            'discount' => $discount,
-            'discountApplied' => $discountApplied,
-        ];
-    }
-
     /**
      * @dataProvider authProvider
      */
@@ -2401,6 +2347,55 @@ class CartTest extends TestCase
                 'price' => 4600,
                 'price_discounted' => 4600,
             ]);
+    }
+
+    private function prepareDataForCouponTest($coupon): array
+    {
+        $code = $coupon ? [] : ['code' => null];
+
+        $discountApplied = Discount::factory()->create([
+            'description' => 'Testowy kupon obowiązujący',
+            'name' => 'Testowy kupon obowiązujący',
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => true,
+        ] + $code);
+
+        $discount = Discount::factory()->create([
+            'description' => 'Testowy kupon',
+            'name' => 'Testowy kupon',
+            'value' => 100,
+            'type' => DiscountType::AMOUNT,
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => true,
+        ] + $code);
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'type' => ConditionType::DATE_BETWEEN,
+            'value' => [
+                'start_at' => Carbon::tomorrow(),
+                'is_in_range' => true,
+            ],
+        ]);
+
+        $discount->conditionGroups()->attach($conditionGroup);
+
+        $coupons = $coupon ? [
+            'coupons' => [
+                $discount->code,
+                $discountApplied->code,
+                'blablabla',
+            ],
+        ] : [];
+
+        return [
+            'coupons' => $coupons,
+            'discount' => $discount,
+            'discountApplied' => $discountApplied,
+        ];
     }
 
     private function prepareCouponWithProductInSetAndCountConditions(bool $productInSet, bool $isAllowList): array

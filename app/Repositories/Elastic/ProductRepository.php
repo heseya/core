@@ -237,7 +237,7 @@ class ProductRepository implements ProductRepositoryContract
 
     private function filterSlug(Builder $query, string $key, array $slugs): Builder
     {
-        return $query->filter(new Terms("${key}_slug", $slugs));
+        return $query->filter(new Terms("{$key}_slug", $slugs));
     }
 
     private function filterNotSlug(Builder $query, string $key, array $slugs): Builder
@@ -251,7 +251,7 @@ class ProductRepository implements ProductRepositoryContract
 
     private function filterId(Builder $query, string $key, array $ids): Builder
     {
-        return $query->filter(new Terms("${key}_id", $ids));
+        return $query->filter(new Terms("{$key}_id", $ids));
     }
 
     private function filterNotId(Builder $query, string $key, array $ids): Builder
@@ -277,8 +277,8 @@ class ProductRepository implements ProductRepositoryContract
             array_values($meta)
         );
 
-        $query->filter(new Terms("${key}.name", array_keys($meta)));
-        $query->filter(new Terms("${key}.value", $values));
+        $query->filter(new Terms("{$key}.name", array_keys($meta)));
+        $query->filter(new Terms("{$key}.value", $values));
 
         return $query;
     }

@@ -12,6 +12,7 @@ use Propaganistas\LaravelPhone\PhoneNumber;
 
 class RegisterDto extends Dto implements InstantiateFromRequest
 {
+    protected array|Missing $metadata_personal;
     private string $name;
     private string $email;
     private string $password;
@@ -20,12 +21,11 @@ class RegisterDto extends Dto implements InstantiateFromRequest
     private string|null|Missing $birthday_date;
     private string|null|Missing $phone_country;
     private string|null|Missing $phone_number;
-    protected array|Missing $metadata_personal;
 
     public static function instantiateFromRequest(FormRequest|RegisterRequest $request): self
     {
         $phone = $request->has('phone') && $request->input('phone')
-            ? PhoneNumber::make($request->input('phone')) : $request->input('phone', new Missing());
+            ? new PhoneNumber($request->input('phone')) : $request->input('phone', new Missing());
         return new self(
             name: $request->input('name'),
             email: $request->input('email'),

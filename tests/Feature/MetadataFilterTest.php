@@ -20,7 +20,7 @@ use Tests\TestCase;
 
 class MetadataFilterTest extends TestCase
 {
-    public function dataProvider(): array
+    public static function dataProvider(): array
     {
         return [
             'schemas as user' => [

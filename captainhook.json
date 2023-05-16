@@ -11,7 +11,7 @@
         "enabled": true,
         "actions": [
             {
-                "action": "docker exec store-api-app-1 composer pre-commit",
+                "action": "make pre-commit",
                 "options": []
             }
         ]
