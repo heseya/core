@@ -20,10 +20,12 @@ class ShippingDate implements Rule
      */
     public function passes($attribute, $value): bool
     {
+        $time = Carbon::parse($value);
+
         return is_null($this->item->unlimited_stock_shipping_date)
             || $this->item->unlimited_stock_shipping_date < Carbon::now()
-            || $value < Carbon::now()
-            || $this->item->unlimited_stock_shipping_date >= $value;
+            || $time < Carbon::now()
+            || $this->item->unlimited_stock_shipping_date >= $time;
     }
 
     public function message(): string
