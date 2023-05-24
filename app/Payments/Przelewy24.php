@@ -97,15 +97,20 @@ class Przelewy24 implements PaymentMethod
         ]);
 
         if ($validated['sign'] !== $sign) {
-            Log::error('Przelewy24 - Not found payments with ID');
+            Log::error('Przelewy24 - Payment sign not match');
             throw new ClientException(Exceptions::CLIENT_INVALID_PAYMENT);
         }
 
         $sign = self::sign([
+            'merchantId' => $validated['merchantId'],
+            'posId' => $validated['posId'],
             'sessionId' => $sessionId,
-            'orderId' => $validated['orderId'],
             'amount' => $validated['amount'],
+            'originAmount' => $validated['originAmount'],
             'currency' => $validated['currency'],
+            'orderId' => $validated['orderId'],
+            'methodId' => $validated['methodId'],
+            'statement' => $validated['statement'],
             'crc' => Config::get('przelewy24.crc'),
         ]);
 
@@ -117,12 +122,16 @@ class Przelewy24 implements PaymentMethod
             'posId' => $validated['posId'],
             'sessionId' => $sessionId,
             'amount' => $validated['amount'],
+            'originAmount' => $validated['originAmount'],
             'currency' => $validated['currency'],
             'orderId' => $validated['orderId'],
+            'methodId' => $validated['methodId'],
+            'statement' => $validated['statement'],
             'sign' => $sign,
         ]);
 
         if ($response->failed()) {
+            Log::error('Przelewy24 - verification request failed', (array) $response->json());
             throw new ClientException(Exceptions::CLIENT_VERIFY_PAYMENT);
         }
 
