@@ -65,7 +65,7 @@ class Przelewy24 implements PaymentMethod
         ]);
 
         /** @var Payment $payment */
-        $payment = Payment::query()->with('order')->findOr($sessionId, function () use ($sessionId) {
+        $payment = Payment::query()->with('order')->where('id', $sessionId)->firstOr(function () use ($sessionId) {
             Log::error("Przelewy24 - Not found payments with ID: $sessionId");
             throw new ClientException(Exceptions::CLIENT_INVALID_PAYMENT);
         });
