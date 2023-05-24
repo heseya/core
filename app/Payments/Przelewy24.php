@@ -102,15 +102,10 @@ class Przelewy24 implements PaymentMethod
         }
 
         $sign = self::sign([
-            'merchantId' => $validated['merchantId'],
-            'posId' => $validated['posId'],
             'sessionId' => $sessionId,
-            'amount' => $validated['amount'],
-            'originAmount' => $validated['originAmount'],
-            'currency' => $validated['currency'],
             'orderId' => $validated['orderId'],
-            'methodId' => $validated['methodId'],
-            'statement' => $validated['statement'],
+            'amount' => $amount,
+            'currency' => $payment->order->currency,
             'crc' => Config::get('przelewy24.crc'),
         ]);
 
@@ -121,12 +116,9 @@ class Przelewy24 implements PaymentMethod
             'merchantId' => $validated['merchantId'],
             'posId' => $validated['posId'],
             'sessionId' => $sessionId,
-            'amount' => $validated['amount'],
-            'originAmount' => $validated['originAmount'],
-            'currency' => $validated['currency'],
+            'amount' => $amount,
+            'currency' => $payment->order->currency,
             'orderId' => $validated['orderId'],
-            'methodId' => $validated['methodId'],
-            'statement' => $validated['statement'],
             'sign' => $sign,
         ]);
 
