@@ -112,7 +112,7 @@ class Przelewy24 implements PaymentMethod
         $response = Http::withBasicAuth(
             Config::get('przelewy24.pos_id'),
             Config::get('przelewy24.secret_id'),
-        )->post(Config::get('przelewy24.url') . '/api/' . self::API_VER . '/transaction/verify', [
+        )->put(Config::get('przelewy24.url') . '/api/' . self::API_VER . '/transaction/verify', [
             'merchantId' => $validated['merchantId'],
             'posId' => $validated['posId'],
             'sessionId' => $sessionId,
