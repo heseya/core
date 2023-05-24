@@ -58,7 +58,7 @@ class Przelewy24 implements PaymentMethod
 
     public static function translateNotification(Request $request): mixed
     {
-        Log::info('Received Przelewy24 notification', $request->json());
+        Log::info('Received Przelewy24 notification', (array) $request->json());
 
         ['sessionId' => $sessionId] = $request->validate([
             'sessionId' => ['required', 'string', 'exists:payments,id'],
