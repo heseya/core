@@ -4,6 +4,7 @@ namespace App\Rules;
 
 use App\Models\Item;
 use App\Services\Contracts\DepositServiceContract;
+use Carbon\Carbon;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\App;
 
@@ -24,11 +25,18 @@ class UnlimitedShippingDate implements Rule
         if (is_null($value)) {
             return true;
         }
-        $depositService = App::make(DepositServiceContract::class);
-        $depositsDate = $depositService->getDepositsGroupByDateForItem($this->item, 'DESC');
+        $shippingDate = Carbon::parse($value);
 
-        return !isset($depositsDate[0]) ||
-            $value >= $depositsDate[0]['shipping_date'];
+        $depositService = App::make(DepositServiceContract::class);
+        $deposits = $depositService->getDepositsGroupByDateForItem($this->item, 'DESC');
+
+        if (!isset($deposits[0])) {
+            return true;
+        }
+
+        $depositsDate = Carbon::parse($deposits[0]['shipping_date']);
+
+        return !$shippingDate->isBefore($depositsDate);
     }
 
     public function message(): string
