@@ -24,4 +24,9 @@ abstract class UserEvent extends WebHookEvent
     {
         return $this->getModelClass($this->user);
     }
+
+    public function getUser(): User
+    {
+        return $this->user;
+    }
 }

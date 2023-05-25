@@ -11,6 +11,7 @@ use App\Traits\HasSeoMetadata;
 use App\Traits\Sortable;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
@@ -51,4 +52,12 @@ class Page extends Model implements AuditableContract, SortableContract
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,
     ];
+
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Product::class,
+            'product_page',
+        );
+    }
 }

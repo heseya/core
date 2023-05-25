@@ -28,7 +28,7 @@ class Deposit extends Model
     ];
 
     protected $casts = [
-        'shipping_date' => 'date',
+        'shipping_date' => 'datetime',
         'from_unlimited' => 'bool',
     ];
 

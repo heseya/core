@@ -45,18 +45,17 @@ use App\Listeners\ItemUpdatedQuantityListener;
 use App\Listeners\MakeSetProductsSearchable;
 use App\Listeners\OrderCreatedListener;
 use App\Listeners\OrderUpdatedStatusListener;
+use App\Listeners\UserCreatedListener;
 use App\Listeners\WebHookEventListener;
 use App\Listeners\WebHookFailedListener;
 use App\Models\AttributeOption;
 use App\Models\Deposit;
 use App\Models\ItemProduct;
-use App\Models\Page;
 use App\Models\Payment;
 use App\Models\Schema;
 use App\Observers\AttributeOptionObserver;
 use App\Observers\DepositObserver;
 use App\Observers\ItemProductObserver;
-use App\Observers\PageObserver;
 use App\Observers\PaymentObserver;
 use App\Observers\SchemaObserver;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -90,6 +89,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         ProductSetUpdated::class => [
             MakeSetProductsSearchable::class,
+        ],
+        UserCreated::class => [
+            UserCreatedListener::class,
         ],
     ];
 
@@ -149,7 +151,6 @@ class EventServiceProvider extends ServiceProvider
         AttributeOption::observe(AttributeOptionObserver::class);
         Deposit::observe(DepositObserver::class);
         ItemProduct::observe(ItemProductObserver::class);
-        Page::observe(PageObserver::class);
         Payment::observe(PaymentObserver::class);
         Schema::observe(SchemaObserver::class);
     }

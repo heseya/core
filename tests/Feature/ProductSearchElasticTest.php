@@ -1112,7 +1112,7 @@ class ProductSearchElasticTest extends TestCase
                 ],
             ],
         ]);
-        //Case: Attributes as array
+        // Case: Attributes as array
         $this
             ->actingAs($this->$user)
             ->json('GET', '/products', [
@@ -1163,7 +1163,7 @@ class ProductSearchElasticTest extends TestCase
                 ],
             ],
         ]);
-        //Case: Attributes as string - coma as delimiter
+        // Case: Attributes as string - coma as delimiter
         $this
             ->actingAs($this->$user)
             ->json('GET', '/products', [
@@ -1283,7 +1283,7 @@ class ProductSearchElasticTest extends TestCase
                 ],
             ],
         ]);
-        //Case: Attributes as array
+        // Case: Attributes as array
         $this
             ->actingAs($this->$user)
             ->json('GET', '/products', [
@@ -1338,7 +1338,7 @@ class ProductSearchElasticTest extends TestCase
                 ],
             ],
         ]);
-        //Case: Attributes as string - coma as delimiter
+        // Case: Attributes as string - coma as delimiter
         $this
             ->actingAs($this->$user)
             ->json('GET', '/products', [

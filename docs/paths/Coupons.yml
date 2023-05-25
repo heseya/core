@@ -42,7 +42,7 @@ Coupons:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Coupons.yml#/CouponShow'
+                    $ref: './../schemas/Coupons.yml#/Coupon'
               type: object
     security:
       - BearerAuth: [ ]

@@ -1,64 +1,35 @@
 Coupon:
   type: object
   allOf:
-    - $ref: './Sales.yml#/Sale'
     - properties:
         code:
           type: string
           example: '83734AE'
+    - $ref: './Sales.yml#/Sale'
 
 CouponShow:
   type: object
   allOf:
-    - $ref: '#/Coupon'
     - properties:
-        id:
+        code:
           type: string
-          format: uuid
-        condition_groups:
-          type: array
-          items:
-            $ref: './DiscountConditions.yml#/ConditionGroupShow'
-        metadata:
-          $ref: './../schemas/Metadata.yml#/Metadata'
-        metadata_private:
-          $ref: './../schemas/Metadata.yml#/Metadata'
+          example: '83734AE'
+    - $ref: './Sales.yml#/SaleShow'
 
 CouponUpdate:
   type: object
   allOf:
-    - $ref: '#/Coupon'
     - properties:
-        condition_groups:
-          type: array
-          items:
-            $ref: './DiscountConditions.yml#/ConditionGroup'
-        target_products:
-          type: array
-          items:
-            type: string
-            format: uuid
-        target_sets:
-          type: array
-          items:
-            type: string
-            format: uuid
-        target_shipping_methods:
-          type: array
-          items:
-            type: string
-            format: uuid
+        code:
+          type: string
+          example: '83734AE'
+    - $ref: './Sales.yml#/SaleUpdate'
 
 CouponStore:
   type: object
   allOf:
-    - $ref: '#/CouponUpdate'
     - properties:
-        condition_groups:
-          type: array
-          items:
-            $ref: './DiscountConditions.yml#/ConditionGroup'
-        metadata:
-          $ref: './../schemas/Metadata.yml#/Metadata'
-        metadata_private:
-          $ref: './../schemas/Metadata.yml#/Metadata'
+        code:
+          type: string
+          example: '83734AE'
+    - $ref: './Sales.yml#/SaleStore'

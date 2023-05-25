@@ -20,15 +20,18 @@ class DepositCreateRequest extends FormRequest
             'shipping_time' => [
                 'nullable',
                 'integer',
-                'prohibited_unless:shipping_date,null',
+                'required_without:shipping_date',
+                'prohibits:shipping_date',
                 new ShippingTime($item),
             ],
             'shipping_date' => [
                 'nullable',
                 'date',
-                'prohibited_unless:shipping_time,null',
+                'required_without:shipping_time',
+                'prohibits:shipping_time',
                 new ShippingDate($item),
             ],
+            'from_unlimited' => ['boolean'],
         ];
     }
 }

@@ -177,6 +177,26 @@ UsersParams:
     security:
       - BearerAuth: [ ]
 
+SelfRemove:
+  post:
+    tags:
+      - Users
+    summary: 'Remove your own account'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              password:
+                type: string
+                format: password
+            type: object
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]
+
 UserTFARemove:
   post:
     tags:

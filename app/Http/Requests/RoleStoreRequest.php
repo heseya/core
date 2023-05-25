@@ -16,6 +16,7 @@ class RoleStoreRequest extends FormRequest
             [
                 'name' => ['required', 'string', 'unique:roles,name'],
                 'description' => ['nullable', 'string'],
+                'is_registration_role' => ['boolean'],
                 'permissions' => ['array'],
                 'permissions.*' => ['string'],
             ]

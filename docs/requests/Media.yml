@@ -1,3 +1,33 @@
+MediaStore:
+  content:
+    multipart/form-data:
+      schema:
+        type: object
+        properties:
+          file:
+            description: 'File. Accepted extensions: jpeg, png, gif, bmp, svg, mp4, webm, ogg, avi, mov, wmv'
+            type: string
+            format: binary
+          url:
+            description: 'Url to external file'
+            type: string
+            maxLength: 500
+          type:
+            enum: [ 'other', 'photo', 'video', 'document' ]
+            description: required with url
+          source:
+            enum: [ 'external', 'silverbox' ]
+            description: required with url
+          slug:
+            type: string
+            example: 'awesome-photo'
+          alt:
+            type: string
+            example: 'alt'
+          metadata.*:
+            type: string
+            example: 'value'
+
 MediaUpdate:
   content:
     application/json:

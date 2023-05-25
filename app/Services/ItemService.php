@@ -53,7 +53,7 @@ class ItemService implements ItemServiceContract
             });
 
             if ($item->quantity < $count) {
-                //TODO dodanie danych do błędu
+                // TODO dodanie danych do błędu
                 throw new ClientException(Exceptions::CLIENT_NOT_ENOUGH_ITEMS);
             }
         }
@@ -90,6 +90,9 @@ class ItemService implements ItemServiceContract
         return $products;
     }
 
+    /**
+     * Returns only avaiable products.
+     */
     public function checkCartItems(array $items): array
     {
         $selectedItems = [];
@@ -100,9 +103,9 @@ class ItemService implements ItemServiceContract
 
         /** @var CartItemDto $item */
         foreach ($items as $item) {
-            $product = Product::find($item->getProductId());
+            $product = Product::query()->find($item->getProductId());
 
-            if ($product === null) {
+            if (!($product instanceof Product)) {
                 continue;
             }
 

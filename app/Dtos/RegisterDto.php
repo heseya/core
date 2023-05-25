@@ -17,6 +17,7 @@ class RegisterDto extends Dto implements InstantiateFromRequest
     private string $email;
     private string $password;
     private Collection $consents;
+    protected array|Missing $roles;
     private string|null|Missing $birthday_date;
     private string|null|Missing $phone_country;
     private string|null|Missing $phone_number;
@@ -30,6 +31,7 @@ class RegisterDto extends Dto implements InstantiateFromRequest
             email: $request->input('email'),
             password: $request->input('password'),
             consents: new Collection($request->input('consents')),
+            roles: $request->input('roles', new Missing()),
             birthday_date: $request->input('birthday_date', new Missing()),
             phone_country: $phone instanceof PhoneNumber ? $phone->getCountry() : $phone,
             phone_number: $phone instanceof PhoneNumber ? $phone->formatNational() : $phone,
@@ -55,6 +57,11 @@ class RegisterDto extends Dto implements InstantiateFromRequest
     public function getConsents(): Collection
     {
         return $this->consents;
+    }
+
+    public function getRoles(): Missing|array
+    {
+        return $this->roles;
     }
 
     public function getBirthdayDate(): Missing|string|null

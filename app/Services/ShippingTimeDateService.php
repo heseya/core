@@ -49,7 +49,7 @@ class ShippingTimeDateService implements ShippingTimeDateServiceContract
             foreach ($items as $item) {
                 $quantity = $item->pivot->required_quantity * $cartItem->getQuantity();
                 if (!isset($cartItemsAndQuantity[$item->getKey()])) {
-                    $cartItemsAndQuantity[$item->getKey()] = ['item' => $item,'quantity' => $quantity];
+                    $cartItemsAndQuantity[$item->getKey()] = ['item' => $item, 'quantity' => $quantity];
                 } else {
                     $cartItemsAndQuantity[$item->getKey()]['quantity'] += $quantity;
                 }

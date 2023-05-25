@@ -2,24 +2,13 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
-
-final class AuthProviderKey extends Enum
+enum AuthProviderKey: string
 {
-    public const FACEBOOK = 'facebook';
-    public const GOOGLE = 'google';
-    public const APPLE = 'apple';
-//    public const TWITTER = 'twitter';
-    public const GITHUB = 'github';
-    public const GITLAB = 'gitlab';
-    public const BITBUCKET = 'bitbucket';
-    public const LINKEDIN = 'linkedin';
-
-    public static function getDriver(string $value): string
-    {
-        return match ($value) {
-//            self::TWITTER => 'twitter-oauth-2',
-            default => $value,
-        };
-    }
+    case FACEBOOK = 'facebook';
+    case GOOGLE = 'google';
+    case APPLE = 'apple';
+    case GITHUB = 'github';
+    case GITLAB = 'gitlab';
+    case BITBUCKET = 'bitbucket';
+    case LINKEDIN = 'linkedin';
 }

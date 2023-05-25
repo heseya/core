@@ -23,12 +23,12 @@ use App\Services\Contracts\BannerServiceContract;
 use App\Services\Contracts\ConsentServiceContract;
 use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
-use App\Services\Contracts\DiscountStoreServiceContract;
 use App\Services\Contracts\DocumentServiceContract;
 use App\Services\Contracts\EventServiceContract;
 use App\Services\Contracts\FavouriteServiceContract;
 use App\Services\Contracts\GoogleCategoryServiceContract;
 use App\Services\Contracts\ItemServiceContract;
+use App\Services\Contracts\MediaAttachmentServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\NameServiceContract;
@@ -40,6 +40,7 @@ use App\Services\Contracts\PageServiceContract;
 use App\Services\Contracts\PaymentMethodServiceContract;
 use App\Services\Contracts\PaymentServiceContract;
 use App\Services\Contracts\PermissionServiceContract;
+use App\Services\Contracts\PriceServiceContract;
 use App\Services\Contracts\ProductSearchServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use App\Services\Contracts\ProductSetServiceContract;
@@ -53,6 +54,7 @@ use App\Services\Contracts\SeoMetadataServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
 use App\Services\Contracts\ShippingMethodServiceContract;
 use App\Services\Contracts\ShippingTimeDateServiceContract;
+use App\Services\Contracts\SilverboxServiceContract;
 use App\Services\Contracts\SortServiceContract;
 use App\Services\Contracts\StatusServiceContract;
 use App\Services\Contracts\TokenServiceContract;
@@ -63,12 +65,12 @@ use App\Services\Contracts\WebHookServiceContract;
 use App\Services\Contracts\WishlistServiceContract;
 use App\Services\DepositService;
 use App\Services\DiscountService;
-use App\Services\DiscountStoreService;
 use App\Services\DocumentService;
 use App\Services\EventService;
 use App\Services\FavouriteService;
 use App\Services\GoogleCategoryService;
 use App\Services\ItemService;
+use App\Services\MediaAttachmentService;
 use App\Services\MediaService;
 use App\Services\MetadataService;
 use App\Services\NameService;
@@ -80,6 +82,7 @@ use App\Services\PageService;
 use App\Services\PaymentMethodService;
 use App\Services\PaymentService;
 use App\Services\PermissionService;
+use App\Services\PriceService;
 use App\Services\ProductSearchService;
 use App\Services\ProductService;
 use App\Services\ProductSetService;
@@ -93,6 +96,7 @@ use App\Services\SeoMetadataService;
 use App\Services\SettingsService;
 use App\Services\ShippingMethodService;
 use App\Services\ShippingTimeDateService;
+use App\Services\SilverboxService;
 use App\Services\SortService;
 use App\Services\StatusService;
 use App\Services\TokenService;
@@ -148,7 +152,6 @@ class AppServiceProvider extends ServiceProvider
         StatusServiceContract::class => StatusService::class,
         PackageTemplateServiceContract::class => PackageTemplateService::class,
         DepositServiceContract::class => DepositService::class,
-        DiscountStoreServiceContract::class => DiscountStoreService::class,
         ShippingTimeDateServiceContract::class => ShippingTimeDateService::class,
         ProviderServiceContract::class => ProviderService::class,
         GoogleCategoryServiceContract::class => GoogleCategoryService::class,
@@ -156,6 +159,9 @@ class AppServiceProvider extends ServiceProvider
         FavouriteServiceContract::class => FavouriteService::class,
         PaymentMethodServiceContract::class => PaymentMethodService::class,
         PaymentServiceContract::class => PaymentService::class,
+        PriceServiceContract::class => PriceService::class,
+        MediaAttachmentServiceContract::class => MediaAttachmentService::class,
+        SilverboxServiceContract::class => SilverboxService::class,
     ];
 
     /**

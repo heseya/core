@@ -54,6 +54,9 @@ AvailabilityResource:
     quantity:
       type: number
       example: '20'
+    from_unlimited:
+      type: boolean
+      example: false
     shipping_time:
       type: integer
       example: 5

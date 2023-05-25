@@ -15,6 +15,9 @@ Route::prefix('users')->group(function (): void {
     Route::post('/id:{user:id}/2fa/remove', [AuthController::class, 'removeUsersTFA'])
         ->middleware('permission:users.2fa_remove');
 
+    Route::post('/self-remove', [UserController::class, 'selfRemove'])
+        ->middleware(['app.restrict', 'can:users.self_remove']);
+
     Route::get(null, [UserController::class, 'index'])
         ->middleware('can:users.show');
     Route::get('id:{user:id}', [UserController::class, 'show'])

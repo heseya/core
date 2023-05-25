@@ -214,7 +214,7 @@ class OrderController extends Controller
     public function sendDocuments(SendDocumentRequest $request, Order $order): JsonResponse
     {
         $documents = OrderDocument::findMany($request->input('uuid'));
-        //MAIL MICROSERVICE
+        // MAIL MICROSERVICE
         SendOrderDocument::dispatch($order, $documents);
 
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);

@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: 'Heseya Store API'
   description: "IMPORTANT! You need specific permissions to access each endpoint: <https://escl24.atlassian.net/wiki/spaces/HES/pages/6476169217/Autoryzacja>"
-  version: 4.0.0
+  version: 5.1.0
 paths:
   /analytics/payments:
     $ref: './paths/Analytics.yml#/Analytics'
@@ -148,12 +148,18 @@ paths:
     $ref: './paths/Payments.yml#/PaymentParams'
   /permissions:
     $ref: './paths/Permissions.yml#/Permissions'
+  /prices/products:
+    $ref: './paths/Prices.yml#/Products'
   /products:
     $ref: './paths/Products.yml#/Products'
   '/products/{slug}':
     $ref: './paths/Products.yml#/ProductsSlug'
   '/products/id:{id}':
     $ref: './paths/Products.yml#/ProductsParams'
+  '/products/id:{id}/attachments':
+    $ref: './paths/Products.yml#/ProductsAttachments'
+  '/products/id:{id}/attachments/id:{attachment_id}':
+    $ref: './paths/Products.yml#/ProductsAttachmentsParams'
   /product-sets:
     $ref: './paths/ProductSets.yml#/ProductSets'
   '/product-sets/{slug}':
@@ -208,6 +214,8 @@ paths:
     $ref: './paths/Users.yml#/Users'
   '/users/id:{id}':
     $ref: './paths/Users.yml#/UsersParams'
+  /users/self-remove:
+    $ref: './paths/Users.yml#/SelfRemove'
   '/products/id:{id}/metadata':
     $ref: './paths/Metadata.yml#/Metadata'
   '/products/id:{id}/metadata-private':

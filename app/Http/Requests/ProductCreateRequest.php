@@ -29,36 +29,40 @@ class ProductCreateRequest extends FormRequest implements SeoRequestContract, Me
                 'shipping_digital' => ['required', 'boolean'],
 
                 'description_html' => ['nullable', 'string'],
-                'description_short' => ['nullable', 'string', 'between:30,5000'],
+                'description_short' => ['nullable', 'string', 'max:5000'],
 
                 'quantity_step' => ['numeric'],
-                'order' => ['nullable', 'numeric'],
-                'vat_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+                'order' => ['numeric'],
+                'vat_rate' => ['numeric', 'min:0', 'max:100'],
                 'purchase_limit_per_user' => ['nullable', 'numeric', 'min:0'],
 
-                'media' => ['nullable', 'array'],
+                'media' => ['array'],
                 'media.*' => ['uuid', 'exists:media,id'],
 
-                'tags' => ['nullable', 'array'],
+                'tags' => ['array'],
                 'tags.*' => ['uuid', 'exists:tags,id'],
 
-                'attributes' => ['nullable', 'array'],
+                'attributes' => ['array'],
                 'attributes.*' => ['bail', 'array', new ProductAttributeOptions()],
                 'attributes.*.*' => ['uuid', new AttributeOptionExist()],
 
-                'items' => ['nullable', 'array', new UniqueIdInRequest()],
-                'items.*.id' => ['uuid'],
-                'items.*.required_quantity' => ['numeric', 'min:0.000001'],
+                'items' => ['array', new UniqueIdInRequest()],
+                'items.*' => ['array'],
+                'items.*.id' => ['uuid', 'exists:items,id'],
+                'items.*.required_quantity' => ['numeric', 'gte:0.0001'],
 
-                'schemas' => ['nullable', 'array'],
+                'schemas' => ['array'],
                 'schemas.*' => ['uuid', 'exists:schemas,id'],
 
-                'sets' => ['nullable', 'array'],
+                'sets' => ['array'],
                 'sets.*' => ['uuid', 'exists:product_sets,id'],
                 'google_product_category' => [
                     'nullable',
                     'integer',
                 ],
+
+                'related_sets' => ['array'],
+                'related_sets.*' => ['uuid', 'exists:product_sets,id'],
             ],
         );
     }

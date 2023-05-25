@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Order;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -26,7 +27,7 @@ class MakeOrderDiscountsPolymorphic extends Migration
         DB::table('order_discounts')->orderBy('model_id')->chunk(100, function ($orderDiscounts): void {
             foreach ($orderDiscounts as $orderDiscount) {
                 DB::table('order_discounts')->where('model_id', $orderDiscount->model_id)->update([
-                    'model_type' => \App\Models\Order::class,
+                    'model_type' => Order::class,
                 ]);
             }
         });

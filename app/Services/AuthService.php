@@ -26,13 +26,13 @@ use App\Models\UserPreference;
 use App\Notifications\ResetPassword;
 use App\Notifications\TFAInitialization;
 use App\Notifications\TFASecurityCode;
-use App\Notifications\UserRegistered;
 use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\ConsentServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UserLoginAttemptServiceContract;
+use App\Services\Contracts\UserServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Carbon;
@@ -52,7 +52,8 @@ class AuthService implements AuthServiceContract
         protected OneTimeSecurityCodeContract $oneTimeSecurityCodeService,
         protected ConsentServiceContract $consentService,
         protected UserLoginAttemptServiceContract $userLoginAttemptService,
-        private MetadataServiceContract $metadataService,
+        protected UserServiceContract $userService,
+        protected MetadataServiceContract $metadataService,
     ) {
     }
 
@@ -90,7 +91,6 @@ class AuthService implements AuthServiceContract
             'typ' => TokenType::ACCESS,
             'jti' => $uuid,
         ]);
-
         Auth::login($user);
         // @phpstan-ignore-next-line
         $token = Auth::fromUser($user);
@@ -300,21 +300,34 @@ class AuthService implements AuthServiceContract
         $this->removeUserTFAData($user);
     }
 
+    /**
+     * @throws ClientException
+     */
     public function register(RegisterDto $dto): User
     {
         $fields = $dto->toArray();
         $fields['password'] = Hash::make($dto->getPassword());
-        $user = User::create($fields);
 
         $authenticated = Role::where('type', RoleType::AUTHENTICATED)->first();
 
-        if ($authenticated) {
-            $user->syncRoles($authenticated);
+        $roleIds = !$dto->getRoles() instanceof Missing ? $dto->getRoles() : [];
+        $roleModels = Role::query()
+            ->whereIn('id', $roleIds)
+            ->get();
+
+        $nonRegistrationRoles = $roleModels->filter(fn (Role $role) => !$role->is_registration_role);
+
+        if ($nonRegistrationRoles->isNotEmpty()) {
+            throw new ClientException(Exceptions::CLIENT_REGISTER_WITH_NON_REGISTRATION_ROLE);
         }
+
+        /** @var User $user */
+        $user = User::query()->create($fields);
+        $user->syncRoles([$authenticated, ...$roleModels]);
 
         $this->consentService->syncUserConsents($user, $dto->getConsents());
 
-        $preferences = UserPreference::create();
+        $preferences = UserPreference::query()->create();
         $preferences->refresh();
 
         $user->preferences()->associate($preferences);
@@ -324,8 +337,6 @@ class AuthService implements AuthServiceContract
         }
 
         $user->save();
-
-        $user->notify(new UserRegistered());
 
         UserCreated::dispatch($user);
 
@@ -343,6 +354,20 @@ class AuthService implements AuthServiceContract
         $this->consentService->updateUserConsents(Collection::make($dto->getConsents()), $user);
 
         return $user;
+    }
+
+    public function selfRemove(string $password): void
+    {
+        if ($this->isAppAuthenticated()) {
+            throw new ClientException(Exceptions::CLIENT_APPS_NO_ACCESS);
+        }
+
+        /** @var User $user */
+        $user = Auth::user();
+
+        $this->checkCredentials($user, $password);
+
+        $this->userService->destroy($user);
     }
 
     private function verifyTFA(?string $code): void

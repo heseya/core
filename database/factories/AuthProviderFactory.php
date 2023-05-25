@@ -21,7 +21,7 @@ class AuthProviderFactory extends Factory
     public function definition(): array
     {
         return [
-            'key' => AuthProviderKey::getRandomValue(),
+            'key' => AuthProviderKey::GITLAB,
             'active' => $this->faker->boolean,
             'client_id' => $this->faker->unique()->word,
             'client_secret' => $this->faker->unique()->word,

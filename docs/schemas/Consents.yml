@@ -9,6 +9,7 @@ Consent:
     description_html:
       type: string
       example: '<h1>Lorem ipsum dolor sit amet</h1>'
+      maxLength: 16000
     required:
       type: boolean
     created_at:

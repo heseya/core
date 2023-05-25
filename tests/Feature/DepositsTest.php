@@ -216,6 +216,7 @@ class DepositsTest extends TestCase
 
         $deposit = [
             'quantity' => 1200000.50,
+            'shipping_time' => 0,
         ];
 
         $response = $this->actingAs($this->$user)->postJson(
@@ -262,6 +263,7 @@ class DepositsTest extends TestCase
 
         $deposit = [
             'quantity' => 1200000.50,
+            'shipping_time' => 0,
         ];
 
         $response = $this->actingAs($this->$user)->postJson(
@@ -396,6 +398,36 @@ class DepositsTest extends TestCase
         $response->assertStatus(422);
 
         Event::assertNotDispatched(ItemUpdatedQuantity::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateValidationShippingDateEqualToItemUnlimitedShippingDate($user): void
+    {
+        $this->$user->givePermissionTo('deposits.add');
+
+        Event::fake(ItemUpdatedQuantity::class);
+        $date = Carbon::tomorrow()->startOfDay();
+
+        $this->item->unlimited_stock_shipping_date = $date->toDateTimeString();
+        $this->item->save();
+
+        $deposit = [
+            'quantity' => 1200000.50,
+            'shipping_date' => $date->toDateTimeString(),
+            'from_unlimited' => false,
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson(
+            "/items/id:{$this->item->getKey()}/deposits",
+            $deposit,
+        );
+
+        $response->assertCreated();
+        $this->assertDatabaseHas('deposits', $deposit);
+
+        Event::assertDispatched(ItemUpdatedQuantity::class);
     }
 
     /**

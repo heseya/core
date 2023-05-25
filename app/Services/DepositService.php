@@ -29,7 +29,7 @@ class DepositService implements DepositServiceContract
             /** @var Item $item */
             $item = $cartItem['item'];
             $timeDate = $this->getShippingTimeDateForQuantity($item, $cartItem['quantity']);
-            //if missing item return time/date as null
+            // if missing item return time/date as null
             if (is_null($timeDate['shipping_time']) && is_null($timeDate['shipping_date'])) {
                 return $timeDate;
             }
@@ -52,9 +52,10 @@ class DepositService implements DepositServiceContract
         if (!is_null($groupedDepositsByDate['shipping_date'])) {
             return ['shipping_time' => null, 'shipping_date' => $groupedDepositsByDate['shipping_date']];
         }
+
         if (
             !is_null($item->unlimited_stock_shipping_date) &&
-            $item->unlimited_stock_shipping_date >= Carbon::now()
+            !$item->unlimited_stock_shipping_date->isPast()
         ) {
             return ['shipping_time' => null, 'shipping_date' => $item->unlimited_stock_shipping_date];
         }
@@ -102,18 +103,22 @@ class DepositService implements DepositServiceContract
 
     public function getDepositsGroupByDateForItem(Item $item, string $order = 'ASC'): array
     {
-        return Deposit::query()->selectRaw('SUM(quantity) as quantity, shipping_date')
+        return Deposit::query()
+            ->selectRaw('SUM(quantity) as quantity, shipping_date')
             ->whereNotNull('shipping_date')
             ->where('item_id', '=', $item->getKey())
+            ->where('from_unlimited', '=', false)
+            ->where('shipping_date', '>=', Carbon::now())
+            ->groupBy(['shipping_date'])
             ->having('quantity', '>', '0')
-            ->groupBy('shipping_date')
             ->orderBy('shipping_date', $order)
             ->get()->toArray();
     }
 
     public function getDepositsGroupByTimeForItem(Item $item, string $order = 'ASC'): array
     {
-        return Deposit::query()->selectRaw('SUM(quantity) as quantity, shipping_time')
+        return Deposit::query()
+            ->selectRaw('SUM(quantity) as quantity, shipping_time')
             ->whereNotNull('shipping_time')
             ->where('item_id', '=', $item->getKey())
             ->having('quantity', '>', '0')
@@ -183,7 +188,7 @@ class DepositService implements DepositServiceContract
         }
         if (
             !is_null($item->unlimited_stock_shipping_date) &&
-            $item->unlimited_stock_shipping_date >= Carbon::now()
+            !$item->unlimited_stock_shipping_date->isPast()
         ) {
             return $this->removeFromWarehouse(
                 $orderProduct,
@@ -232,9 +237,13 @@ class DepositService implements DepositServiceContract
         bool $fromUnlimited,
     ): bool {
         if (!is_null($shippingTimeAndDate['shipping_date'])) {
+            $shippingDate = Carbon::parse($shippingTimeAndDate['shipping_date']);
+
             $groupedDepositsByDate = $this->getDepositsGroupByDateForItem($item, 'DESC');
             foreach ($groupedDepositsByDate as $deposit) {
-                if ($deposit['shipping_date'] <= $shippingTimeAndDate['shipping_date'] && $quantity > 0) {
+                $depositDate = Carbon::parse($deposit['shipping_date']);
+
+                if (!$depositDate->isAfter($shippingDate) && $quantity > 0) {
                     $quantity -= $deposit['quantity'];
                     $this->removeFromWarehouse(
                         $orderProduct,

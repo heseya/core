@@ -998,7 +998,7 @@ class ItemTest extends TestCase
     public function testUpdateUnlimitedShippingDate($user): void
     {
         $this->$user->givePermissionTo('items.edit');
-        $date = Carbon::create(2023, 3, 20);
+        $date = Carbon::today()->addDays(4);
 
         Deposit::factory()->create([
             'item_id' => $this->item->getKey(),
@@ -1026,6 +1026,31 @@ class ItemTest extends TestCase
             $item,
         )->assertOk()
             ->assertJson(['data' => $item]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateUnlimitedShippingDateWithSameDateAsDeposit($user): void
+    {
+        $this->$user->givePermissionTo('items.edit');
+        $date = Carbon::today()->addDays(4);
+
+        Deposit::factory()->create([
+            'item_id' => $this->item->getKey(),
+            'quantity' => 2.0,
+            'shipping_date' => $date->addDays(4)->toDateTimeString(),
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/items/id:' . $this->item->getKey(), [
+                'unlimited_stock_shipping_date' => $date->toDateTimeString(),
+            ])
+            ->assertOk()
+            ->assertJson(['data' => [
+                'unlimited_stock_shipping_date' => $date->toIso8601String(),
+            ]]);
     }
 
     /**
@@ -1139,10 +1164,10 @@ class ItemTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'availability' => [
-                    ['quantity' => 2, 'shipping_time' => null, 'shipping_date' => null],
-                    ['quantity' => 2, 'shipping_time' => null, 'shipping_date' => $date],
-                    ['quantity' => 4, 'shipping_time' => 4, 'shipping_date' => null],
-                    ['quantity' => 2, 'shipping_time' => 9, 'shipping_date' => null],
+                    ['quantity' => 2, 'shipping_time' => null, 'shipping_date' => null, 'from_unlimited' => false],
+                    ['quantity' => 2, 'shipping_time' => null, 'shipping_date' => $date, 'from_unlimited' => false],
+                    ['quantity' => 4, 'shipping_time' => 4, 'shipping_date' => null, 'from_unlimited' => false],
+                    ['quantity' => 2, 'shipping_time' => 9, 'shipping_date' => null, 'from_unlimited' => false],
                 ],
             ]);
     }
@@ -1174,7 +1199,7 @@ class ItemTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'availability' => [
-                    ['quantity' => 10, 'shipping_time' => 10, 'shipping_date' => null],
+                    ['quantity' => 10, 'shipping_time' => 10, 'shipping_date' => null, 'from_unlimited' => false],
                 ],
             ]);
 
@@ -1184,7 +1209,7 @@ class ItemTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'availability' => [
-                    ['quantity' => 10, 'shipping_time' => 10, 'shipping_date' => null],
+                    ['quantity' => 10, 'shipping_time' => 10, 'shipping_date' => null, 'from_unlimited' => false],
                 ],
             ]);
     }

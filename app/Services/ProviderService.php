@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Dtos\AuthProviderDto;
 use App\Dtos\AuthProviderLoginDto;
 use App\Dtos\AuthProviderMergeAccountDto;
-use App\Enums\AuthProviderKey;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
 use App\Exceptions\ClientException;
@@ -20,7 +19,6 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
@@ -29,48 +27,33 @@ use Throwable;
 
 class ProviderService implements ProviderServiceContract
 {
-    public function __construct(private AuthServiceContract $authService)
-    {
+    public function __construct(
+        private AuthServiceContract $authService,
+    ) {
     }
 
     public function getProvidersList(bool|null $active): JsonResource
     {
-        $providers = AuthProvider::all();
-
-        $enums = Collection::make(AuthProviderKey::getInstances());
-
-        $list = Collection::make();
-
-        $enums->each(function ($enum) use ($providers, $list): void {
-            $provider = $providers->where('key', $enum->value)->first();
-            if ($provider !== null && $provider->client_id !== null && $provider->client_secret !== null) {
-                $list->push($provider);
-            } else {
-                $list->push(new AuthProvider([
-                    'key' => $enum->value,
-                    'active' => false,
-                ]));
-            }
-        });
+        $query = AuthProvider::query();
 
         if ($active !== null) {
-            $list = $list->filter(function (AuthProvider $value) use ($active) {
-                return $value->active === $active;
-            });
+            $query->where('active', $active);
         }
 
-        return AuthProviderListResource::collection($list);
+        return AuthProviderListResource::collection(
+            $query->paginate(Config::get('pagination.per_page')),
+        );
     }
 
     public function getProvider(string $authProviderKey): ?AuthProvider
     {
-        $providerEnum = AuthProviderKey::fromValue($authProviderKey);
-        return AuthProvider::query()->where('key', $providerEnum->value)->first();
+        return AuthProvider::query()->where('key', $authProviderKey)->first();
     }
 
     public function update(AuthProviderDto $dto, AuthProvider $provider): AuthProvider
     {
         $provider->update($dto->toArray());
+
         return $provider;
     }
 
@@ -111,7 +94,7 @@ class ProviderService implements ProviderServiceContract
         try {
             // @phpstan-ignore-next-line
             $user = Socialite::driver($authProviderKey)->stateless()->user();
-        } catch (Throwable $exception) {
+        } catch (Throwable) {
             throw new ClientException(Exceptions::CLIENT_INVALID_CREDENTIALS);
         }
 

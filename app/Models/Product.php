@@ -22,6 +22,7 @@ use App\Models\Contracts\SortableContract;
 use App\Services\Contracts\ProductSearchServiceContract;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasDiscounts;
+use App\Traits\HasMediaAttachments;
 use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
 use App\Traits\Sortable;
@@ -57,6 +58,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
     use HasCriteria;
     use HasDiscountConditions;
     use HasDiscounts;
+    use HasMediaAttachments;
 
     protected $fillable = [
         'name',
@@ -184,6 +186,12 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
             ->withPivot('order');
     }
 
+    public function relatedSets(): BelongsToMany
+    {
+        return $this
+            ->belongsToMany(ProductSet::class, 'related_product_sets');
+    }
+
     public function items(): BelongsToMany
     {
         return $this
@@ -246,6 +254,14 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         );
     }
 
+    public function pages(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Page::class,
+            'product_page',
+        );
+    }
+
     public function productSetSales(): Collection
     {
         $sales = Collection::make();
@@ -261,21 +277,12 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
 
     public function allProductSales(Collection $salesWithBlockList): Collection
     {
-        $sales = $this->discounts->filter(function ($discount): bool {
-            if (
-                $discount->code === null
+        $sales = $this->discounts->filter(
+            fn (Discount $discount): bool => $discount->code === null
                 && $discount->active
                 && $discount->target_type->is(DiscountTargetType::PRODUCTS)
                 && $discount->target_is_allow_list
-            ) {
-                if ($discount->products->contains(function ($value): bool {
-                    return $value->getKey() === $this->getKey();
-                })) {
-                    return true;
-                }
-            }
-            return false;
-        });
+        );
 
         $salesBlockList = $salesWithBlockList->filter(function ($sale): bool {
             if ($sale->products->contains(function ($value): bool {
