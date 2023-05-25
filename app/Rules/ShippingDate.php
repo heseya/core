@@ -23,9 +23,9 @@ class ShippingDate implements Rule
         $time = Carbon::parse($value);
 
         return is_null($this->item->unlimited_stock_shipping_date)
-            || $this->item->unlimited_stock_shipping_date < Carbon::now()
-            || $time < Carbon::now()
-            || $this->item->unlimited_stock_shipping_date >= $time;
+            || $this->item->unlimited_stock_shipping_date->isPast()
+            || $time->isPast()
+            || !$time->isAfter($this->item->unlimited_stock_shipping_date);
     }
 
     public function message(): string

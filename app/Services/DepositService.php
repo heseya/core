@@ -52,9 +52,10 @@ class DepositService implements DepositServiceContract
         if (!is_null($groupedDepositsByDate['shipping_date'])) {
             return ['shipping_time' => null, 'shipping_date' => $groupedDepositsByDate['shipping_date']];
         }
+
         if (
             !is_null($item->unlimited_stock_shipping_date) &&
-            $item->unlimited_stock_shipping_date >= Carbon::now()
+            !$item->unlimited_stock_shipping_date->isPast()
         ) {
             return ['shipping_time' => null, 'shipping_date' => $item->unlimited_stock_shipping_date];
         }
@@ -187,7 +188,7 @@ class DepositService implements DepositServiceContract
         }
         if (
             !is_null($item->unlimited_stock_shipping_date) &&
-            $item->unlimited_stock_shipping_date >= Carbon::now()
+            !$item->unlimited_stock_shipping_date->isPast()
         ) {
             return $this->removeFromWarehouse(
                 $orderProduct,
@@ -236,9 +237,13 @@ class DepositService implements DepositServiceContract
         bool $fromUnlimited,
     ): bool {
         if (!is_null($shippingTimeAndDate['shipping_date'])) {
+            $shippingDate = Carbon::parse($shippingTimeAndDate['shipping_date']);
+
             $groupedDepositsByDate = $this->getDepositsGroupByDateForItem($item, 'DESC');
             foreach ($groupedDepositsByDate as $deposit) {
-                if ($deposit['shipping_date'] <= $shippingTimeAndDate['shipping_date'] && $quantity > 0) {
+                $depositDate = Carbon::parse($deposit['shipping_date']);
+
+                if (!$depositDate->isAfter($shippingDate) && $quantity > 0) {
                     $quantity -= $deposit['quantity'];
                     $this->removeFromWarehouse(
                         $orderProduct,
