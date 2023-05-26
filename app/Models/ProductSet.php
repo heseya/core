@@ -26,6 +26,7 @@ use Illuminate\Support\Str;
 
 /**
  * @property mixed $pivot
+ *
  * @mixin IdeHelperProductSet
  */
 class ProductSet extends Model

@@ -206,7 +206,7 @@ class MetadataTest extends TestCase
 
         if ($data['model'] === Option::class) {
             $related = [
-                'schema_id' => (Schema::factory()->create())->getKey(),
+                'schema_id' => Schema::factory()->create()->getKey(),
             ];
         }
 
@@ -244,7 +244,7 @@ class MetadataTest extends TestCase
 
         if ($data['model'] === Option::class) {
             $related = [
-                'schema_id' => (Schema::factory()->create())->getKey(),
+                'schema_id' => Schema::factory()->create()->getKey(),
             ];
         }
 
@@ -280,7 +280,7 @@ class MetadataTest extends TestCase
 
         if ($data['model'] === Option::class) {
             $related = [
-                'schema_id' => (Schema::factory()->create())->getKey(),
+                'schema_id' => Schema::factory()->create()->getKey(),
             ];
         }
 
@@ -365,7 +365,7 @@ class MetadataTest extends TestCase
 
         if ($data['model'] === Option::class) {
             $related = [
-                'schema_id' => (Schema::factory()->create())->getKey(),
+                'schema_id' => Schema::factory()->create()->getKey(),
             ];
         }
 
@@ -407,7 +407,7 @@ class MetadataTest extends TestCase
 
         if ($data['model'] === Option::class) {
             $related = [
-                'schema_id' => (Schema::factory()->create())->getKey(),
+                'schema_id' => Schema::factory()->create()->getKey(),
             ];
         }
 
@@ -460,7 +460,7 @@ class MetadataTest extends TestCase
 
         if ($data['model'] === Option::class) {
             $related = [
-                'schema_id' => (Schema::factory()->create())->getKey(),
+                'schema_id' => Schema::factory()->create()->getKey(),
             ];
         }
 

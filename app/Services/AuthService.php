@@ -397,12 +397,7 @@ class AuthService implements AuthServiceContract
             TfaSecurityCodeEvent::dispatch(Auth::user(), $code);
             Auth::user()->notify(new TFASecurityCode($code));
         }
-        throw new ClientException(
-            Exceptions::CLIENT_TFA_REQUIRED,
-            403,
-            simpleLogs: true,
-            errorArray: ['type' => Auth::user()?->tfa_type]
-        );
+        throw new ClientException(Exceptions::CLIENT_TFA_REQUIRED, 403, simpleLogs: true, errorArray: ['type' => Auth::user()?->tfa_type]);
     }
 
     private function checkIsValidTFA(string $code): void
@@ -431,6 +426,7 @@ class AuthService implements AuthServiceContract
 
         /** @var User $user */
         $user = Auth::user();
+
         return $user->tfa_secret !== null && $google_authenticator->verifyCode($user->tfa_secret, $code);
     }
 
@@ -443,6 +439,7 @@ class AuthService implements AuthServiceContract
             foreach ($security_codes as $security_code) {
                 if (Hash::check($code, $security_code->code)) {
                     $security_code->delete();
+
                     return true;
                 }
             }
@@ -467,6 +464,7 @@ class AuthService implements AuthServiceContract
             if (Hash::check($code, $security_code->code)) {
                 $security_code->delete();
                 Auth::user()?->securityCodes()->whereNotNull('expires_at')->delete();
+
                 return true;
             }
         }

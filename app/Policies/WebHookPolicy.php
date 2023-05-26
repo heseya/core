@@ -22,11 +22,6 @@ class WebHookPolicy
 
     /**
      * Determine whether the user can update the model.
-     *
-     * @param User|App $user
-     * @param WebHook $webHook
-     *
-     * @return Response
      */
     public function update(User|App $user, WebHook $webHook, array $newWebHook): Response
     {
@@ -42,11 +37,6 @@ class WebHookPolicy
 
     /**
      * Determine whether the user can delete the model.
-     *
-     * @param User|App $user
-     * @param WebHook $webHook
-     *
-     * @return Response
      */
     public function delete(User|App $user, WebHook $webHook): Response
     {
@@ -60,16 +50,12 @@ class WebHookPolicy
             // Zalogowana aplikacja i aplikacja stworzyła danego Webhooka
             return ($user instanceof App) && $user->getKey() === $webHook->creator_id
                 ? Response::allow()
-                : throw new ClientException(Exceptions::CLIENT_WEBHOOK_APP_ACTION, errorArray: [
-                    'method' => $method,
-                ]);
+                : throw new ClientException(Exceptions::CLIENT_WEBHOOK_APP_ACTION, errorArray: ['method' => $method]);
         }
         // Webhook stworzony przez użytkownika
         return $user instanceof User
             ? Response::allow()
-            : throw new ClientException(Exceptions::CLIENT_WEBHOOK_USER_ACTION, errorArray: [
-                'method' => $method,
-            ]);
+            : throw new ClientException(Exceptions::CLIENT_WEBHOOK_USER_ACTION, errorArray: ['method' => $method]);
     }
 
     private function getRequiredPermissions(array $events, bool $with_issuer, bool $with_hidden): array
@@ -91,6 +77,7 @@ class WebHookPolicy
                 array_push($result, ...$event_permissions_hidden[$event]);
             }
         }
+
         return array_unique($result);
     }
 
@@ -100,6 +87,7 @@ class WebHookPolicy
         if (!$user->can($permissions)) {
             throw new ClientException(Exceptions::CLIENT_NO_REQUIRED_PERMISSIONS_TO_EVENTS);
         }
+
         return Response::allow();
     }
 }

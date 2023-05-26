@@ -47,9 +47,7 @@ class ItemService implements ItemServiceContract
         foreach ($items as $id => $count) {
             /** @var Item $item */
             $item = Item::query()->findOr($id, function () use ($id): void {
-                throw new ClientException(Exceptions::CLIENT_ITEM_NOT_FOUND, errorArray: [
-                    'id' => $id,
-                ]);
+                throw new ClientException(Exceptions::CLIENT_ITEM_NOT_FOUND, errorArray: ['id' => $id]);
             });
 
             if ($item->quantity < $count) {
@@ -78,6 +76,7 @@ class ItemService implements ItemServiceContract
                 return false;
             }
         }
+
         return true;
     }
 
@@ -278,6 +277,7 @@ class ItemService implements ItemServiceContract
             }
             $products->push($product);
         }
+
         return [$products, $selectedItems];
     }
 
@@ -300,16 +300,11 @@ class ItemService implements ItemServiceContract
         }
 
         if ($limit < $quantity) {
-            throw new ClientException(
-                Exceptions::PRODUCT_PURCHASE_LIMIT,
-                errorArray: [
-                    'id' => $productId,
-                    'limit' => $limit,
-                ],
-            );
+            throw new ClientException(Exceptions::PRODUCT_PURCHASE_LIMIT, errorArray: ['id' => $productId, 'limit' => $limit]);
         }
 
         $purchasedProducts[$productId] = $quantity;
+
         return $purchasedProducts;
     }
 }

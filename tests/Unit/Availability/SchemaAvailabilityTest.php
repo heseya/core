@@ -12,7 +12,7 @@ class SchemaAvailabilityTest extends TestCase
     use AvailabilityUntiles;
 
     /**
-     * All schema types without SELECT
+     * All schema types without SELECT.
      */
     public static function schemaTypesProvider(): array
     {
@@ -23,7 +23,7 @@ class SchemaAvailabilityTest extends TestCase
     }
 
     /**
-     * Without any options schema should be available
+     * Without any options schema should be available.
      *
      * @dataProvider schemaTypesProvider
      */

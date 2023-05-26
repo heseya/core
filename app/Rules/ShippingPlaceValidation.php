@@ -16,7 +16,7 @@ class ShippingPlaceValidation implements ImplicitRule, DataAwareRule
     /**
      * Determine if the validation rule passes.
      *
-     * @param  string  $attribute
+     * @param string $attribute
      */
     public function passes($attribute, mixed $value): bool
     {

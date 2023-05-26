@@ -13,6 +13,7 @@ class WhereCreatedBefore extends Criterion
         if (!Str::contains($this->value, ':')) {
             $this->value = Str::before($this->value, 'T') . 'T23:59:59';
         }
+
         return $query->where('created_at', '<=', $this->value);
     }
 }

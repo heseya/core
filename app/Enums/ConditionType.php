@@ -8,7 +8,7 @@ final class ConditionType extends Enum
 {
     /**
      * If you're adding a new condition, remember to add its logic
-     * in the DiscountService in method checkConditionForProduct()
+     * in the DiscountService in method checkConditionForProduct().
      */
     public const ORDER_VALUE = 'order-value';
     public const USER_IN_ROLE = 'user-in-role';

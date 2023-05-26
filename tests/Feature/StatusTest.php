@@ -22,9 +22,7 @@ class StatusTest extends TestCase
 
         $this->status_model = Status::factory()->create();
 
-        /**
-         * Expected response
-         */
+        // Expected response
         $this->expected = [
             'id' => $this->status_model->getKey(),
             'name' => $this->status_model->name,

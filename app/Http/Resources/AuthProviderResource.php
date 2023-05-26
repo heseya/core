@@ -24,6 +24,7 @@ class AuthProviderResource extends Resource
                 'active' => $this->resource->active,
             ], $client);
         }
+
         return [];
     }
 }

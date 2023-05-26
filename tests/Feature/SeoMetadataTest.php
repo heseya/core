@@ -234,6 +234,7 @@ class SeoMetadataTest extends TestCase
     {
         $different = ['Different1', 'Different2', 'Different3'];
         $less = ['PHP', 'Laravel'];
+
         return [
             'as user different keywords' => ['user', $different],
             'as user less keywords' => ['user', $less],
@@ -276,6 +277,7 @@ class SeoMetadataTest extends TestCase
     {
         $same_order = ['PHP', 'Laravel', 'Java'];
         $different_order = ['Java', 'PHP', 'Laravel'];
+
         return [
             'as user same order keywords' => ['user', $same_order],
             'as user different order keywords' => ['user', $different_order],

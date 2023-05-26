@@ -8,6 +8,7 @@ use Throwable;
 class PackageException extends StoreException
 {
     private mixed $errors;
+
     public function __construct(
         string $message = '',
         int $code = 0,
@@ -26,9 +27,11 @@ class PackageException extends StoreException
                 $field = Str::replace('/', '.', $key->field);
                 $response[$field] = [$key->message . ' [' . $field . ']'];
             }
+
             return $response;
         }
         $field = Str::replace('/', '.', $this->errors->field);
+
         return [$field => [$this->errors->message . ' [' . $field . ']']];
     }
 }

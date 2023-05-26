@@ -13,9 +13,6 @@ use Illuminate\Support\Facades\Auth;
 class CanDownloadDocument
 {
     /**
-     * @param Request $request
-     * @param Closure $next
-     *
      * @return mixed
      *
      * @throws AuthException

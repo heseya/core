@@ -42,6 +42,7 @@ class OrderProductUpdateDto extends Dto implements InstantiateFromRequest
         foreach ($urls as $key => $value) {
             $urlDtos[] = OrderProductUrlDto::init($key, $value);
         }
+
         return $urlDtos;
     }
 }

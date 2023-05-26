@@ -1,12 +1,10 @@
 {
-  "preset": "psr12",
+  "preset": "symfony",
   "rules": {
     "not_operator_with_space": false,
     "simplified_null_return": true,
     "assign_null_coalescing_to_coalesce_equal": true,
     "array_push": true,
-    "combine_consecutive_issets": true,
-    "control_structure_braces": true,
     "explicit_string_variable": true,
     "function_typehint_space": true,
     "method_chaining_indentation": true,
@@ -23,6 +21,19 @@
     "no_trailing_whitespace_in_comment": true,
     "standardize_not_equals": true,
     "is_null": true,
+    "phpdoc_align": {
+      "align": "left"
+    },
+    "global_namespace_import": {
+      "import_classes": true,
+      "import_constants": true,
+      "import_functions": true
+    },
+    "yoda_style": {
+      "equal": false,
+      "identical": false,
+      "less_and_greater": false
+    },
     "yoda_style": {
       "equal": false,
       "identical": false,

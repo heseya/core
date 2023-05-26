@@ -76,6 +76,7 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
         foreach ($this->items as $item) {
             $result[] = $item->getProductId();
         }
+
         return $result;
     }
 
@@ -86,6 +87,7 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
         foreach ($this->items as $item) {
             $length += $item->getQuantity();
         }
+
         return $length;
     }
 
@@ -95,6 +97,7 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
         foreach ($items as $item) {
             $existingItem = $result->first(function ($cartItem) use ($item) {
                 $schemas = array_key_exists('schemas', $item) ? $item['schemas'] : [];
+
                 return $cartItem->getCartItemId() === $item['cartitem_id']
                     && $cartItem->getProductId() === $item['product_id']
                     && count(array_diff($cartItem->getSchemas(), $schemas)) === 0;
@@ -106,6 +109,7 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
                 $result->push(CartItemDto::fromArray($item));
             }
         }
+
         return $result->toArray();
     }
 }

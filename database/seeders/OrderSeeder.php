@@ -21,8 +21,6 @@ class OrderSeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     *
-     * @return void
      */
     public function run(): void
     {
@@ -86,7 +84,7 @@ class OrderSeeder extends Seeder
                         'cart_total_initial' => $cart_total,
                     ]);
 
-                    for ($i = 0; $i < rand(0, 5); $i++) {
+                    for ($i = 0; $i < rand(0, 5); ++$i) {
                         $order->payments()->save(Payment::factory()->make());
                     }
                 }

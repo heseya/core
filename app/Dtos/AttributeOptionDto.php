@@ -41,33 +41,21 @@ class AttributeOptionDto extends Dto implements InstantiateFromRequest
         );
     }
 
-    /**
-     * @return string|Missing|null
-     */
     public function getId(): string|null|Missing
     {
         return $this->id;
     }
 
-    /**
-     * @return string|Missing|null
-     */
     public function getName(): string|null|Missing
     {
         return $this->name;
     }
 
-    /**
-     * @return float|Missing|null
-     */
     public function getValueNumber(): float|null|Missing
     {
         return $this->value_number;
     }
 
-    /**
-     * @return string|Missing|null
-     */
     public function getValueDate(): string|null|Missing
     {
         return $this->value_date;

@@ -17,6 +17,7 @@ class SeoKeywordsResource extends Resource
             'id' => $item['model_id'],
             'model_type' => Str::afterLast($item['model_type'], '\\'),
         ]);
+
         return [
             'duplicated' => $duplicates->isNotEmpty(),
             'duplicates' => $duplicates->toArray(),

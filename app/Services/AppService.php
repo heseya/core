@@ -56,28 +56,11 @@ class AppService implements AppServiceContract
         }
 
         if ($response->failed()) {
-            throw new ClientException(
-                Exceptions::CLIENT_APP_INFO_RESPONDED_WITH_INVALID_CODE,
-                0,
-                null,
-                false,
-                [
-                    'code' => $response->status(),
-                    'body' => $response->body(),
-                ],
-            );
+            throw new ClientException(Exceptions::CLIENT_APP_INFO_RESPONDED_WITH_INVALID_CODE, 0, null, false, ['code' => $response->status(), 'body' => $response->body()]);
         }
 
         if (!$this->isAppRootValid($response)) {
-            throw new ClientException(
-                Exceptions::CLIENT_APP_RESPONDED_WITH_INVALID_INFO,
-                0,
-                null,
-                false,
-                [
-                    "Body: {$response->body()}",
-                ],
-            );
+            throw new ClientException(Exceptions::CLIENT_APP_RESPONDED_WITH_INVALID_INFO, 0, null, false, ["Body: {$response->body()}"]);
         }
 
         /** @var array $appConfig */
@@ -155,31 +138,14 @@ class AppService implements AppServiceContract
         if ($response->failed()) {
             $app->delete();
 
-            throw new ClientException(
-                Exceptions::CLIENT_APP_INSTALLATION_RESPONDED_WITH_INVALID_CODE,
-                0,
-                null,
-                false,
-                [
-                    "Status code: {$response->status()}",
-                    "Body: {$response->body()}",
-                ],
-            );
+            throw new ClientException(Exceptions::CLIENT_APP_INSTALLATION_RESPONDED_WITH_INVALID_CODE, 0, null, false, ["Status code: {$response->status()}", "Body: {$response->body()}"]);
         }
         if (!$this->isResponseValid($response, [
             'uninstall_token' => ['required', 'string', 'max:255'],
         ])) {
             $app->delete();
 
-            throw new ClientException(
-                Exceptions::CLIENT_INVALID_INSTALLATION_RESPONSE,
-                0,
-                null,
-                false,
-                [
-                    "Body: {$response->body()}",
-                ],
-            );
+            throw new ClientException(Exceptions::CLIENT_INVALID_INSTALLATION_RESPONSE, 0, null, false, ["Body: {$response->body()}"]);
         }
 
         $app->update([
@@ -287,10 +253,7 @@ class AppService implements AppServiceContract
     }
 
     /**
-     * Create app owner role and assign it to the current user
-     *
-     * @param App $app
-     * @param Collection $internalPermissions
+     * Create app owner role and assign it to the current user.
      */
     private function createAppOwnerRole(App $app, Collection $internalPermissions): void
     {
@@ -307,11 +270,7 @@ class AppService implements AppServiceContract
     }
 
     /**
-     * Grant unauthenticated users public app permissions
-     *
-     * @param App $app
-     * @param Collection $internalPermissions
-     * @param Collection $publicPermissions
+     * Grant unauthenticated users public app permissions.
      */
     private function makePermissionsPublic(
         App $app,

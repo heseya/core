@@ -7,7 +7,6 @@ use OwenIt\Auditing\Resolvers\UserAgentResolver;
 use OwenIt\Auditing\Resolvers\UserResolver;
 
 return [
-
     'enabled' => env('AUDITING_ENABLED', true),
 
     /*

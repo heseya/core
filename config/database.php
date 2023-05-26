@@ -3,7 +3,6 @@
 use Illuminate\Support\Str;
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Default Database Connection Name
@@ -34,7 +33,6 @@ return [
      */
 
     'connections' => [
-
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DATABASE_URL'),
@@ -69,7 +67,6 @@ return [
             'schema' => 'public',
             'sslmode' => 'prefer',
         ],
-
     ],
 
     /*
@@ -97,7 +94,6 @@ return [
      */
 
     'redis' => [
-
         'client' => env('REDIS_CLIENT', 'predis'),
 
         'options' => [
@@ -124,7 +120,5 @@ return [
             'scheme' => env('REDIS_CACHE_SCHEME', 'tcp'),
             'path' => env('REDIS_CACHE_PATH', ''),
         ],
-
     ],
-
 ];

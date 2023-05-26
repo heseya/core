@@ -22,15 +22,13 @@ trait PermissionUtility
     }
 
     /**
-     * Allows to change returned prefix to desired model if is different to table name
+     * Allows to change returned prefix to desired model if is different to table name.
      *
-     * @param Model $model
-     *
-     * @return string
      * */
     protected function getPermissionPrefix(Model $model): string
     {
         $segments = Request::segments();
+
         return match ($model::class) {
             AttributeOption::class => 'attributes',
             PackageTemplate::class => 'packages',

@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Default Search Engine
@@ -97,5 +96,4 @@ return [
     */
 
     'identify' => env('SCOUT_IDENTIFY', false),
-
 ];

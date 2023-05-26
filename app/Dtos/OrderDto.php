@@ -117,6 +117,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
         foreach ($this->items as $item) {
             $result[] = $item->getProductId();
         }
+
         return $result;
     }
 
@@ -131,6 +132,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
         foreach ($this->items as $item) {
             $length += $item->getQuantity();
         }
+
         return $length;
     }
 

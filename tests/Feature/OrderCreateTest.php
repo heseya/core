@@ -413,6 +413,7 @@ class OrderCreateTest extends TestCase
         $order = Order::find($response->getData()->data->id)->with('shippingMethod')->first();
 
         Event::assertDispatched(OrderCreated::class);
+
         return [$order, new OrderCreated($order)];
     }
 
@@ -594,6 +595,7 @@ class OrderCreateTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $item) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $item->getKey()

@@ -18,6 +18,7 @@ class OrderProductDto extends Dto
                 $schemas[$schema] = $value ?? '';
             }
         }
+
         return new self(
             product_id: $array['product_id'],
             quantity: $array['quantity'],

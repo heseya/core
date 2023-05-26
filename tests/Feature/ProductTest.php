@@ -123,9 +123,7 @@ class ProductTest extends TestCase
 
         $availabilityService->calculateItemAvailability($item);
 
-        /**
-         * Expected short response
-         */
+        // Expected short response
         $this->expected_short = [
             'id' => $this->product->getKey(),
             'name' => $this->product->name,
@@ -165,9 +163,7 @@ class ProductTest extends TestCase
             'sortable' => $attribute->sortable,
         ];
 
-        /**
-         * Expected full response
-         */
+        // Expected full response
         $this->expected = array_merge($this->expected_short, $expected_attribute, [
             'description_html' => $this->product->description_html,
             'description_short' => $this->product->description_short,
@@ -725,7 +721,7 @@ class ProductTest extends TestCase
     }
 
     /**
-     * Sets shouldn't affect product visibility
+     * Sets shouldn't affect product visibility.
      *
      * @dataProvider authProvider
      */
@@ -1305,6 +1301,7 @@ class ProductTest extends TestCase
 
         Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $product) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $product->getKey()
@@ -1377,6 +1374,7 @@ class ProductTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $product) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $product->getKey()
@@ -1513,6 +1511,7 @@ class ProductTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $product) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $product->getKey()
@@ -2460,6 +2459,7 @@ class ProductTest extends TestCase
 
         Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $product) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $product->getKey()
@@ -2519,6 +2519,7 @@ class ProductTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $product) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $product->getKey()
@@ -3104,6 +3105,7 @@ class ProductTest extends TestCase
 
         Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $product) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $product->getKey()
@@ -3150,6 +3152,7 @@ class ProductTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $product) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $product->getKey()

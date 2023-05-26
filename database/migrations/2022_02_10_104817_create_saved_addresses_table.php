@@ -8,8 +8,6 @@ class CreateSavedAddressesTable extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
     public function up(): void
     {
@@ -26,8 +24,6 @@ class CreateSavedAddressesTable extends Migration
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
     public function down(): void
     {

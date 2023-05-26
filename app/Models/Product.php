@@ -44,6 +44,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @property mixed $pivot
+ *
  * @mixin IdeHelperProduct
  */
 class Product extends Model implements AuditableContract, Explored, SortableContract, SearchableFields
@@ -154,18 +155,21 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
     public function mappableAs(): array
     {
         $searchService = app(ProductSearchServiceContract::class);
+
         return $searchService->mappableAs();
     }
 
     public function toSearchableArray(): array
     {
         $searchService = app(ProductSearchServiceContract::class);
+
         return $searchService->mapSearchableArray($this);
     }
 
     public function getSearchableFields(): array
     {
         $searchService = app(ProductSearchServiceContract::class);
+
         return $searchService->searchableFields();
     }
 
@@ -297,6 +301,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
                     return false;
                 }
             }
+
             return true;
         });
 

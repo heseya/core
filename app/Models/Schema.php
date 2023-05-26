@@ -25,6 +25,7 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @property SchemaType $type;
+ *
  * @mixin IdeHelperSchema
  */
 class Schema extends Model implements SortableContract
@@ -78,7 +79,7 @@ class Schema extends Model implements SortableContract
     ];
 
     /**
-     * Check if user input is valid
+     * Check if user input is valid.
      */
     public function validate(mixed $value): void
     {
@@ -179,12 +180,6 @@ class Schema extends Model implements SortableContract
         return $this->belongsToMany(Product::class, 'product_schemas');
     }
 
-    /**
-     * @param mixed $value
-     * @param array $schemas
-     *
-     * @return float
-     */
     public function getPrice(mixed $value, array $schemas): float
     {
         $schemaKeys = Collection::make($schemas)->keys();
@@ -216,12 +211,6 @@ class Schema extends Model implements SortableContract
         );
     }
 
-    /**
-     * @param mixed $value
-     * @param array $schemas
-     *
-     * @return float
-     */
     private function getUsedPrice(mixed $value, array $schemas): float
     {
         $price = $this->price;

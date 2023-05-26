@@ -90,9 +90,7 @@ class OrderTest extends TestCase
             'summary' => $orderService->calcSummary($this->order),
         ]);
 
-        /**
-         * Expected response
-         */
+        // Expected response
         $this->expected_summary = [
             'code' => $this->order->code,
             'status' => [
