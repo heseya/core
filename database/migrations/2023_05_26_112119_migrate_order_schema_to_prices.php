@@ -57,15 +57,13 @@ return new class extends Migration
         });
 
         DB::table('order_schemas')->lazyById()->each(function (object $orderSchema) {
-            $price = DB::table('prices')
+            $getPrice = fn(string $type) => DB::table('prices')
                 ->where('model_id', $orderSchema->id)
-                ->where('price_type', 'price')
+                ->where('price_type', $type)
                 ->first();
 
-            $priceInitial = DB::table('prices')
-                ->where('model_id', $orderSchema->id)
-                ->where('price_type', 'price_initial')
-                ->first();
+            $price = $getPrice('price');
+            $priceInitial = $getPrice('price_initial');
 
             $moneyPrice = Money::of($price->value, 'PLN');
             $moneyPriceInitial = Money::of($priceInitial->value, 'PLN');

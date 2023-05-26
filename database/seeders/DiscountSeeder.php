@@ -87,7 +87,7 @@ class DiscountSeeder extends Seeder
         $appliedDiscount = $discountService->calcAppliedDiscount($price, $appliedDiscount, $minimalPrice);
 
         $update = [
-            $field => $price - $appliedDiscount,
+            $field => round($price - $appliedDiscount, 2),
         ];
         return [$appliedDiscount, $update];
     }

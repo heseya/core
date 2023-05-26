@@ -16,8 +16,11 @@ class PriceRange extends Model
      */
     protected $fillable = [
         'start',
+//
+//        'value',
     ];
 
+    ////////////////////////
     /**
      * The attributes that should be cast to native types.
      *
@@ -31,4 +34,5 @@ class PriceRange extends Model
     {
         return $this->morphMany(Price::class, 'model');
     }
+    ////////////////////
 }

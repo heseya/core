@@ -47,32 +47,37 @@ class Order extends Model implements AuditableContract, SortableContract
     protected $fillable = [
         'code',
         'email',
-        'currency',
         'comment',
         'status_id',
+        'created_at',
+
         'shipping_method_id',
         'digital_shipping_method_id',
-        'shipping_price_initial',
-        'shipping_price',
         'shipping_number',
+        'shipping_place',
+        'shipping_type',
+
         'billing_address_id',
         'shipping_address_id',
-        'created_at',
+        'invoice_requested',
+
         'buyer_id',
         'buyer_type',
-        'summary',
+
         'paid',
+        // Useless with new price system
+        'currency',
+//////
+        'summary',
+        'shipping_price_initial',
+        'shipping_price',
         'cart_total_initial',
         'cart_total',
-        'shipping_place',
-        'invoice_requested',
-        'shipping_type',
     ];
 
     protected array $auditInclude = [
         'code',
         'email',
-        'currency',
         'comment',
         'status_id',
         'shipping_method_id',
@@ -81,6 +86,8 @@ class Order extends Model implements AuditableContract, SortableContract
         'shipping_number',
         'billing_address_id',
         'shipping_address_id',
+        // Useless with new price system
+        'currency',
     ];
 
     protected array $attributeModifiers = [

@@ -17,18 +17,20 @@ class Payment extends Model
     protected $fillable = [
         'external_id',
         'method',
-        'amount',
         'redirect_url',
         'continue_url',
         'created_at',
         'status',
         'order_id',
         'method_id',
+/////
+        'amount',
     ];
 
     protected $casts = [
-        'amount' => 'float',
         'status' => PaymentStatus::class,
+/////
+        'amount' => 'float',
     ];
 
     public function order(): BelongsTo

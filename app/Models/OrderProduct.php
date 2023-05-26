@@ -23,16 +23,17 @@ class OrderProduct extends Model
 
     protected $fillable = [
         'quantity',
-        'base_price_initial',
-        'base_price',
-        'price_initial',
-        'price',
         'order_id',
         'product_id',
         'name',
         'vat_rate',
         'shipping_digital',
         'is_delivered',
+
+        'base_price_initial',
+        'base_price',
+        'price_initial',
+        'price',
     ];
 
     protected $casts = [

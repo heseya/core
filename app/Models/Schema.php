@@ -38,7 +38,6 @@ class Schema extends Model implements SortableContract
         'type',
         'name',
         'description',
-        'price',
         'hidden',
         'required',
         'max',
@@ -50,14 +49,17 @@ class Schema extends Model implements SortableContract
         'available',
         'shipping_time',
         'shipping_date',
+///////////
+        'price',
     ];
 
     protected $casts = [
-        'price' => 'float',
         'hidden' => 'bool',
         'required' => 'bool',
         'available' => 'bool',
         'type' => SchemaType::class,
+////////
+        'price' => 'float',
     ];
 
     protected array $criteria = [

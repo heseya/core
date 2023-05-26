@@ -24,14 +24,14 @@ class Option extends Model
         'available',
         'shipping_time',
         'shipping_date',
-
+/////////
         'price',
     ];
 
     protected $casts = [
         'disabled' => 'bool',
         'available' => 'bool',
-
+//////////////
         'price' => 'float',
     ];
 

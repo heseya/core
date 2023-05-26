@@ -11,7 +11,7 @@
     "ext-openssl": "*",
     "ext-soap": "*",
     "bensampo/laravel-enum": "^v6.2.1",
-    "brick/math": "^0.10.2",
+    "brick/math": "^0.11.0",
     "brick/money": "^0.8.0",
     "bvlinsky/explorer": "^3.4.4",
     "guzzlehttp/guzzle": "^7.4",
