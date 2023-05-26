@@ -31,6 +31,8 @@ class AvailabilityService implements AvailabilityServiceContract
      */
     public function calculateItemAvailability(Item $item): void
     {
+        $item->update($this->getCalculateItemDatesAvailability($item));
+
         // Options
         $options = $item->options;
         $options->each(fn (Option $option) => $this->calculateOptionAvailability($option));
@@ -68,6 +70,20 @@ class AvailabilityService implements AvailabilityServiceContract
         if ($product->wasChanged()) {
             ProductUpdated::dispatch($product);
         }
+    }
+
+    /**
+     * @return array{quantity: float, shipping_time: (int|null), shipping_date: (\Carbon\Carbon|null)}
+     */
+    public function getCalculateItemDatesAvailability(Item $item): array
+    {
+        $dateTime = $this->depositService->getShippingTimeDateForQuantity($item);
+
+        return [
+            'quantity' => $item->quantity_real,
+            'shipping_time' => $dateTime['shipping_time'],
+            'shipping_date' => $dateTime['shipping_date'],
+        ];
     }
 
     /**

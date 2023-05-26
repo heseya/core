@@ -22,7 +22,7 @@ class UnlimitedShippingDate implements Rule
      */
     public function passes($attribute, $value): bool
     {
-        if (is_null($value)) {
+        if ($value === null) {
             return true;
         }
         $shippingDate = Carbon::parse($value);

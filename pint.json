@@ -22,6 +22,12 @@
     "single_line_comment_spacing": true,
     "no_trailing_whitespace_in_comment": true,
     "standardize_not_equals": true,
+    "is_null": true,
+    "yoda_style": {
+      "equal": false,
+      "identical": false,
+      "less_and_greater": false
+    },
     "whitespace_after_comma_in_array": {
       "ensure_single_space": true
     },

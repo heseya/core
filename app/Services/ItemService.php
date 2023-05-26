@@ -71,8 +71,8 @@ class ItemService implements ItemServiceContract
 
             if (
                 $item->quantity < $count &&
-                is_null($item->unlimited_stock_shipping_time) &&
-                (is_null($item->unlimited_stock_shipping_date) ||
+                $item->unlimited_stock_shipping_time === null &&
+                ($item->unlimited_stock_shipping_date === null ||
                     $item->unlimited_stock_shipping_date < Carbon::now())
             ) {
                 return false;

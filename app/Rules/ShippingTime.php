@@ -19,7 +19,7 @@ class ShippingTime implements Rule
      */
     public function passes($attribute, $value): bool
     {
-        return is_null($this->item->unlimited_stock_shipping_time)
+        return $this->item->unlimited_stock_shipping_time === null
             || $this->item->unlimited_stock_shipping_time >= $value;
     }
 

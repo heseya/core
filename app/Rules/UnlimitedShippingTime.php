@@ -21,7 +21,7 @@ class UnlimitedShippingTime implements Rule
      */
     public function passes($attribute, $value): bool
     {
-        if (is_null($value)) {
+        if ($value === null) {
             return true;
         }
         $depositService = App::make(DepositServiceContract::class);
