@@ -19,7 +19,7 @@ final readonly class DepositObserver
 
         $deposit->item->update([
             'quantity' => $deposit->item->getQuantityRealAttribute(),
-            ...$depositService->getShippingTimeDateForQuantity($deposit->item)
+            ...$depositService->getShippingTimeDateForQuantity($deposit->item),
         ]);
     }
 }
