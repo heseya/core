@@ -17,15 +17,18 @@ class ProductAttributeOptions implements Rule
 
         if ($attributeModel === null) {
             $this->message = 'Attribute :attribute not found';
+
             return false;
         }
 
         if ($attributeModel->type === AttributeType::MULTI_CHOICE_OPTION) {
             $this->message = 'Attribute :attribute must have at least one option';
+
             return count($value) >= 1;
         }
 
         $this->message = 'Attribute :attribute must have one option';
+
         return count($value) === 1;
     }
 

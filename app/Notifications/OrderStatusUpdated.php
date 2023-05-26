@@ -33,6 +33,7 @@ class OrderStatusUpdated extends Notification
     {
         /** @var string $subject */
         $subject = Lang::get('mail.subject-status-changed', ['number' => $this->order->code], $this->locale);
+
         return (new MailMessage())
             ->subject($subject)
             ->view('mail.status-change', [

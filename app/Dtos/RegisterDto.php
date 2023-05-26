@@ -26,6 +26,7 @@ class RegisterDto extends Dto implements InstantiateFromRequest
     {
         $phone = $request->has('phone') && $request->input('phone')
             ? new PhoneNumber($request->input('phone')) : $request->input('phone', new Missing());
+
         return new self(
             name: $request->input('name'),
             email: $request->input('email'),
@@ -92,6 +93,7 @@ class RegisterDto extends Dto implements InstantiateFromRequest
                 $metadata->push(MetadataPersonalDto::manualInit($key, $value));
             }
         }
+
         return $metadata->isEmpty() ? new Missing() : $metadata->toArray();
     }
 }

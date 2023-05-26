@@ -173,7 +173,7 @@ class AppServiceProvider extends ServiceProvider
             $this->app->bind($abstract, $concrete);
         }
 
-        /**
+        /*
          * Local register of ide helper.
          * Needs to be full path.
          */

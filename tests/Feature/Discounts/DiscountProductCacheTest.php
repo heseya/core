@@ -13,7 +13,7 @@ class DiscountProductCacheTest extends TestCase
 {
     public function testDontCacheUserDiscount(): void
     {
-        $this->user->givePermissionTo("sales.add");
+        $this->user->givePermissionTo('sales.add');
 
         $discount = [
             'name' => 'Discount',
@@ -64,7 +64,7 @@ class DiscountProductCacheTest extends TestCase
 
     public function testDontCacheRoleDiscount(): void
     {
-        $this->user->givePermissionTo("sales.add");
+        $this->user->givePermissionTo('sales.add');
 
         $discount = [
             'name' => 'Discount',
@@ -104,7 +104,7 @@ class DiscountProductCacheTest extends TestCase
 
         $response = $this
             ->actingAs($this->user)
-            ->json('POST', "/sales", $discount + $conditions);
+            ->json('POST', '/sales', $discount + $conditions);
 
         $response->assertCreated();
 
@@ -118,7 +118,7 @@ class DiscountProductCacheTest extends TestCase
 
     public function testDontCacheMaxUsesPerUserDiscount(): void
     {
-        $this->user->givePermissionTo("sales.add");
+        $this->user->givePermissionTo('sales.add');
 
         $discount = [
             'name' => 'Discount',
@@ -157,7 +157,7 @@ class DiscountProductCacheTest extends TestCase
 
         $response = $this
             ->actingAs($this->user)
-            ->json('POST', "/sales", $discount + $conditions);
+            ->json('POST', '/sales', $discount + $conditions);
 
         $response->assertCreated();
 

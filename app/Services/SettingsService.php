@@ -58,6 +58,7 @@ class SettingsService implements SettingsServiceContract
             $value = floatval($this->getSetting($name)->value);
             Cache::put($name, $value);
         }
+
         return $value;
     }
 }

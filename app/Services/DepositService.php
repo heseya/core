@@ -30,7 +30,7 @@ class DepositService implements DepositServiceContract
             $item = $cartItem['item'];
             $timeDate = $this->getShippingTimeDateForQuantity($item, $cartItem['quantity']);
             // if missing item return time/date as null
-            if (is_null($timeDate['shipping_time']) && is_null($timeDate['shipping_date'])) {
+            if ($timeDate['shipping_time'] === null && $timeDate['shipping_date'] === null) {
                 return $timeDate;
             }
             $maxProductItemsTimeDate = $this->maxShippingTimeAndDate($timeDate, $maxProductItemsTimeDate);
@@ -42,19 +42,19 @@ class DepositService implements DepositServiceContract
     public function getShippingTimeDateForQuantity(Item $item, float $quantity = 1): array
     {
         $groupedDepositsByTime = $this->getShippingTimeForQuantity($item, $quantity);
-        if (!is_null($groupedDepositsByTime['shipping_time'])) {
+        if ($groupedDepositsByTime['shipping_time'] !== null) {
             return ['shipping_time' => $groupedDepositsByTime['shipping_time'], 'shipping_date' => null];
         }
-        if (!is_null($item->unlimited_stock_shipping_time)) {
+        if ($item->unlimited_stock_shipping_time !== null) {
             return ['shipping_time' => $item->unlimited_stock_shipping_time, 'shipping_date' => null];
         }
         $groupedDepositsByDate = $this->getShippingDateForQuantity($item, $groupedDepositsByTime['quantity']);
-        if (!is_null($groupedDepositsByDate['shipping_date'])) {
+        if ($groupedDepositsByDate['shipping_date'] !== null) {
             return ['shipping_time' => null, 'shipping_date' => $groupedDepositsByDate['shipping_date']];
         }
 
         if (
-            !is_null($item->unlimited_stock_shipping_date) &&
+            $item->unlimited_stock_shipping_date !== null &&
             !$item->unlimited_stock_shipping_date->isPast()
         ) {
             return ['shipping_time' => null, 'shipping_date' => $item->unlimited_stock_shipping_date];
@@ -140,14 +140,14 @@ class DepositService implements DepositServiceContract
 
     private function maxShippingTimeAndDate(array $timeDate1, array $timeDate2): array
     {
-        if (!is_null($timeDate1['shipping_date'])) {
+        if ($timeDate1['shipping_date'] !== null) {
             $timeDate2['shipping_time'] = null;
-            $timeDate2['shipping_date'] = !is_null($timeDate2['shipping_date']) ?
+            $timeDate2['shipping_date'] = $timeDate2['shipping_date'] !== null ?
                 max($timeDate2['shipping_date'], $timeDate1['shipping_date']) : $timeDate1['shipping_date'];
-        } elseif (!is_null($timeDate2['shipping_date'])) {
+        } elseif ($timeDate2['shipping_date'] !== null) {
             return $timeDate2;
-        } elseif (!is_null($timeDate1['shipping_time'])) {
-            $timeDate2['shipping_time'] = !is_null($timeDate2['shipping_time']) ?
+        } elseif ($timeDate1['shipping_time'] !== null) {
+            $timeDate2['shipping_time'] = $timeDate2['shipping_time'] !== null ?
                 max($timeDate2['shipping_time'], $timeDate1['shipping_time']) : $timeDate1['shipping_time'];
             $timeDate2['shipping_date'] = null;
         }
@@ -158,7 +158,7 @@ class DepositService implements DepositServiceContract
     private function removeItemFromWarehouse(Item $item, float $quantity, OrderProduct $orderProduct): bool
     {
         $groupedDepositsByTime = $this->getShippingTimeForQuantity($item, $quantity);
-        if (!is_null($groupedDepositsByTime['shipping_time'])) {
+        if ($groupedDepositsByTime['shipping_time'] !== null) {
             return $this->removeFromShippingTimeAndDate(
                 $orderProduct,
                 $item,
@@ -167,7 +167,7 @@ class DepositService implements DepositServiceContract
                 false,
             );
         }
-        if (!is_null($item->unlimited_stock_shipping_time)) {
+        if ($item->unlimited_stock_shipping_time !== null) {
             return $this->removeFromWarehouse(
                 $orderProduct,
                 $item,
@@ -177,7 +177,7 @@ class DepositService implements DepositServiceContract
             );
         }
         $groupedDepositsByDate = $this->getShippingDateForQuantity($item, $groupedDepositsByTime['quantity']);
-        if (!is_null($groupedDepositsByDate['shipping_date'])) {
+        if ($groupedDepositsByDate['shipping_date'] !== null) {
             return $this->removeFromShippingTimeAndDate(
                 $orderProduct,
                 $item,
@@ -187,7 +187,7 @@ class DepositService implements DepositServiceContract
             );
         }
         if (
-            !is_null($item->unlimited_stock_shipping_date) &&
+            $item->unlimited_stock_shipping_date !== null &&
             !$item->unlimited_stock_shipping_date->isPast()
         ) {
             return $this->removeFromWarehouse(
@@ -236,7 +236,7 @@ class DepositService implements DepositServiceContract
         array $shippingTimeAndDate,
         bool $fromUnlimited,
     ): bool {
-        if (!is_null($shippingTimeAndDate['shipping_date'])) {
+        if ($shippingTimeAndDate['shipping_date'] !== null) {
             $shippingDate = Carbon::parse($shippingTimeAndDate['shipping_date']);
 
             $groupedDepositsByDate = $this->getDepositsGroupByDateForItem($item, 'DESC');
@@ -260,7 +260,7 @@ class DepositService implements DepositServiceContract
             $groupedDepositsByTime = $this->getDepositsGroupByTimeForItem($item, 'DESC');
             foreach ($groupedDepositsByTime as $deposit) {
                 if (($deposit['shipping_time'] <= $shippingTimeAndDate['shipping_time'] ||
-                        is_null($shippingTimeAndDate['shipping_time'])) && $quantity > 0) {
+                        $shippingTimeAndDate['shipping_time'] === null) && $quantity > 0) {
                     $quantity -= $deposit['quantity'];
                     $this->removeFromWarehouse(
                         $orderProduct,

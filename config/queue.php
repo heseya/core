@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Default Queue Connection Name
@@ -29,7 +28,6 @@ return [
      */
 
     'connections' => [
-
         'sync' => [
             'driver' => 'sync',
         ],
@@ -66,7 +64,6 @@ return [
             'timeout' => 180,
             'block_for' => null,
         ],
-
     ],
 
     /*
@@ -84,5 +81,4 @@ return [
         'database' => env('DB_CONNECTION', 'mysql'),
         'table' => 'failed_jobs',
     ],
-
 ];

@@ -28,6 +28,7 @@ class AttributeSearch implements Rule
 
         if ($this->attribute === null) {
             $this->message = "The attribute `{$this->attributeName}` doesn't exists.";
+
             return false;
         }
 
@@ -53,11 +54,13 @@ class AttributeSearch implements Rule
     {
         if (Arr::has($value, 'min') && !is_numeric($value['min'])) {
             $this->message = "Min value for attribute `{$this->attributeName}` must be a number.";
+
             return false;
         }
 
         if (Arr::has($value, 'max') && !is_numeric($value['max'])) {
             $this->message = "Max value for attribute `{$this->attributeName}` must be a number.";
+
             return false;
         }
 
@@ -69,11 +72,13 @@ class AttributeSearch implements Rule
     {
         if (Arr::has($value, 'min') && !is_string($value['min'])) {
             $this->message = "Min value for attribute `{$this->attributeName}` must be a date.";
+
             return false;
         }
 
         if (Arr::has($value, 'max') && !is_string($value['max'])) {
             $this->message = "Max value for attribute `{$this->attributeName}` must be a date.";
+
             return false;
         }
 
@@ -90,6 +95,7 @@ class AttributeSearch implements Rule
         foreach ($value as $option) {
             if (!Str::isUuid($option)) {
                 $this->message = "Option `{$option}` for attribute `{$this->attributeName}` must be a valid UUID.";
+
                 return false;
             }
         }

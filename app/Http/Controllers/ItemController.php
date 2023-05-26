@@ -39,6 +39,7 @@ class ItemController extends Controller
             'products',
             'products.media',
         ]);
+
         return ItemResource::make($item);
     }
 

@@ -27,10 +27,7 @@ use Spatie\Permission\Traits\HasPermissions;
 /**
  * @mixin IdeHelperApp
  */
-class App extends Model implements
-    AuthorizableContract,
-    AuthenticatableContract,
-    JWTSubject
+class App extends Model implements AuthorizableContract, AuthenticatableContract, JWTSubject
 {
     use HasFactory;
     use HasCriteria;

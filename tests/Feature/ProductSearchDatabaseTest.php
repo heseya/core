@@ -424,6 +424,7 @@ class ProductSearchDatabaseTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $product->getKey()]);
     }
+
     /**
      * @dataProvider authProvider
      */

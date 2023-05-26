@@ -33,6 +33,7 @@ class OrderCreated extends Notification
     {
         /** @var string $subject */
         $subject = Lang::get('mail.subject-new-order', ['number' => $this->order->code], $this->locale);
+
         return (new MailMessage())
             ->subject($subject)
             ->view('mail.new-order', [

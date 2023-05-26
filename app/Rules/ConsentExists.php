@@ -21,6 +21,7 @@ class ConsentExists implements Rule
     public function passes($attribute, $value)
     {
         $this->id = Str::after($attribute, 'consents.');
+
         return Consent::where('id', $this->id)->exists();
     }
 

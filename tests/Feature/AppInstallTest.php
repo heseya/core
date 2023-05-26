@@ -1006,7 +1006,6 @@ class AppInstallTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-
     public function testReinstall($user): void
     {
         $this->$user->givePermissionTo([

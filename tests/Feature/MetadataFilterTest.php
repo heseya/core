@@ -627,6 +627,7 @@ class MetadataFilterTest extends TestCase
                 'metadata_private' => [],
             ]);
     }
+
     /**
      * @dataProvider dataProvider
      */

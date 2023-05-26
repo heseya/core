@@ -13,8 +13,10 @@ class WhereBelongsToManyById extends Criterion
             if (is_array($this->value)) {
                 return $query->whereIn($this->key . '.id', $this->value);
             }
+
             return $query->where($this->key . '.id', $this->value);
         });
+
         return $query;
     }
 }

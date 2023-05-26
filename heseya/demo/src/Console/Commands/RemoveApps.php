@@ -45,6 +45,7 @@ class RemoveApps extends Command
 
             if ($count === 0) {
                 $this->info('Nothing to remove.');
+
                 return;
             }
 
@@ -59,6 +60,7 @@ class RemoveApps extends Command
             $this->info(PHP_EOL . 'Successfully removed all apps!');
         } catch (Exception $exception) {
             $this->error($exception->getMessage());
+
             return;
         }
     }

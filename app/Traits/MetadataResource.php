@@ -25,9 +25,7 @@ trait MetadataResource
      */
     private function processMetadata(Collection $data): object
     {
-        /**
-         * Special workaround for frond-end requirements
-         * */
+        // Special workaround for frond-end requirements
         if ($data->count() <= 0) {
             return (object) [];
         }

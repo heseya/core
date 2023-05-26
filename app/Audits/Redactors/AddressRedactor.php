@@ -14,6 +14,7 @@ class AddressRedactor implements AttributeRedactor
 
         if ($cache !== null) {
             Cache::forget("address.{$value}");
+
             return $cache;
         }
 

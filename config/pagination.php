@@ -5,7 +5,6 @@ declare(strict_types=1);
 use Illuminate\Support\Env;
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Limit Key
@@ -35,5 +34,4 @@ return [
     |
     */
     'max' => (int) Env::get('PAGINATION_MAX', 500),
-
 ];

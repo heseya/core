@@ -4,7 +4,6 @@ use Spatie\WebhookServer\BackoffStrategy\ExponentialBackoffStrategy;
 use Spatie\WebhookServer\Signer\DefaultSigner;
 
 return [
-
     // The default queue that should be used to send webhook requests.
     'queue' => 'default',
 

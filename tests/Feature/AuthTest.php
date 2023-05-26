@@ -153,6 +153,7 @@ class AuthTest extends TestCase
         $attempt = UserLoginAttempt::where('user_id', $this->user->id)->latest()->first();
 
         Event::assertDispatched(SuccessfulLoginAttempt::class);
+
         return [$this->user, $attempt, new SuccessfulLoginAttempt($attempt)];
     }
 
@@ -220,6 +221,7 @@ class AuthTest extends TestCase
         $attempt = UserLoginAttempt::where('user_id', $this->user->id)->latest()->first();
 
         Event::assertDispatched(NewLocalizationLoginAttempt::class);
+
         return [$this->user, $attempt, new NewLocalizationLoginAttempt($attempt)];
     }
 
@@ -240,6 +242,7 @@ class AuthTest extends TestCase
         $attempt = UserLoginAttempt::where('user_id', $this->user->id)->latest()->first();
 
         Event::assertDispatched(NewLocalizationLoginAttempt::class);
+
         return [$this->user, $attempt, new NewLocalizationLoginAttempt($attempt)];
     }
 
@@ -497,6 +500,7 @@ class AuthTest extends TestCase
         $code = OneTimeSecurityCode::where('user_id', $this->user->id)->first()->code;
 
         Event::assertDispatched(TfaSecurityCodeEvent::class);
+
         return [$this->user, $code, new TfaSecurityCodeEvent($this->user, $code)];
     }
 
@@ -1621,6 +1625,7 @@ class AuthTest extends TestCase
         ])->assertOk();
 
         Event::assertDispatched(TfaRecoveryCodesChanged::class);
+
         return [$this->user, new TfaRecoveryCodesChanged($this->user)];
     }
 
@@ -1701,6 +1706,7 @@ class AuthTest extends TestCase
         $code = OneTimeSecurityCode::where('user_id', $this->user->getKey())->first();
 
         Event::assertDispatched(TfaInit::class);
+
         return [$this->user, $code->code, new TfaInit($this->user, $code->code)];
     }
 
@@ -1801,6 +1807,7 @@ class AuthTest extends TestCase
         ])->assertOk();
 
         Event::assertDispatched(TfaRecoveryCodesChanged::class);
+
         return [$this->user, new TfaRecoveryCodesChanged($this->user)];
     }
 
@@ -1960,6 +1967,7 @@ class AuthTest extends TestCase
         ])->assertOk();
 
         Event::assertDispatched(TfaRecoveryCodesChanged::class);
+
         return [$this->user, new TfaRecoveryCodesChanged($this->user)];
     }
 

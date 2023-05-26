@@ -49,9 +49,7 @@ class PageTest extends TestCase
             'public' => true,
         ]);
 
-        /**
-         * Expected response
-         */
+        // Expected response
         $this->expected = [
             'id' => $this->page->getKey(),
             'name' => $this->page->name,
@@ -432,6 +430,7 @@ class PageTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $page) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $page->getKey()
@@ -501,7 +500,7 @@ class PageTest extends TestCase
 
         $uuids = [];
 
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 3; ++$i) {
             $name = ' order test ' . $this->faker->sentence(rand(1, 3));
             $page = [
                 'name' => $name,
@@ -665,6 +664,7 @@ class PageTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $page) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $page->getKey()

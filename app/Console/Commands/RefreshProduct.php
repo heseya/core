@@ -33,6 +33,7 @@ class RefreshProduct extends Command
 
         if (!($product instanceof Product)) {
             $this->error('Product not found.');
+
             return 0;
         }
 
@@ -41,6 +42,7 @@ class RefreshProduct extends Command
         $product->searchable();
 
         $this->info('Done.');
+
         return 1;
     }
 }

@@ -59,6 +59,7 @@ class Address extends Model
 
             return $phone->formatForMobileDialingInCountry($this->country);
         }
+
         return null;
     }
 }

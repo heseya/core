@@ -16,12 +16,12 @@ interface ProductServiceContract
 
     /**
      * Returns minimum and maximum possible product price in
-     * array formatted as such: [minimum, maximum]
+     * array formatted as such: [minimum, maximum].
      */
     public function getMinMaxPrices(Product $product): array;
 
     /**
-     * Updates minimum and maximum possible product price
+     * Updates minimum and maximum possible product price.
      */
     public function updateMinMaxPrices(Product $product): void;
 }

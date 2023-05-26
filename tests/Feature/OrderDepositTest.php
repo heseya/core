@@ -223,7 +223,7 @@ class OrderDepositTest extends TestCase
     }
 
     /**
-     * HES-488
+     * HES-488.
      *
      * If an order has two required schemes using the same item,
      * you cannot buy the product when there is only one item left in stock.
@@ -325,7 +325,7 @@ class OrderDepositTest extends TestCase
      * Sample example deposit stock
      * - 1 item in 1 days shipping time
      * - 4 items in 3 days shipping time
-     * - unlimited number of items in 10 days shipping time
+     * - unlimited number of items in 10 days shipping time.
      *
      * The user wants to order 20 items, so the following deposits are created for the order:
      * - 20 items with a time of 10 days shipping time (from unlimited stock)

@@ -1692,6 +1692,7 @@ class DiscountTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $discount, $webHookEvent) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $discount->getKey()
@@ -1972,6 +1973,7 @@ class DiscountTest extends TestCase
 
         Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $discount, $webHookEvent) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $discount->getKey()
@@ -2028,6 +2030,7 @@ class DiscountTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $discount, $webHookEvent) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $discount->getKey()

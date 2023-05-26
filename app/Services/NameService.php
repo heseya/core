@@ -47,7 +47,7 @@ class NameService implements NameServiceContract
         $tags = [];
         $splittedCount = count($splitted);
 
-        for ($i = 0; $i < $splittedCount; $i++) {
+        for ($i = 0; $i < $splittedCount; ++$i) {
             $arr[$i] = '';
             $pairs = 0;
 
@@ -63,7 +63,7 @@ class NameService implements NameServiceContract
                     $arr[$i] .= implode('}', $closures);
                 } else {
                     $arr[$i] .= $piece . '{';
-                    $pairs--;
+                    --$pairs;
                 }
             }
 
@@ -78,7 +78,7 @@ class NameService implements NameServiceContract
             if (count($temp) > 1 && isset($params[$temp[0]])) {
                 $param = $params[$temp[0]];
                 if (is_numeric($temp[1])) {
-                    $param = substr($param, - (int) $temp[1]);
+                    $param = substr($param, -(int) $temp[1]);
                 } else {
                     throw new ClientException(Exceptions::CLIENT_ORDER_CODE_LENGTH_MUST_BE_NUMERIC);
                 }

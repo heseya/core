@@ -16,7 +16,7 @@ return new class extends Migration {
         Permission::create([
             'name' => 'auth.providers.manage',
             'display_name' => 'Możliwość konfiguracji logowania przez media społecznościowe',
-            'description' => 'Uprawnienie pozwalające na dodawanie, edycje i blokowanie możliwości logowania się przez zewnętrznych dostawców jak Google, Apple itp.'
+            'description' => 'Uprawnienie pozwalające na dodawanie, edycje i blokowanie możliwości logowania się przez zewnętrznych dostawców jak Google, Apple itp.',
         ]);
 
         $owner = Role::where('type', '=', RoleType::OWNER)->firstOrFail();

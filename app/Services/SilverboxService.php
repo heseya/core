@@ -24,10 +24,7 @@ final readonly class SilverboxService implements SilverboxServiceContract
             ->post(Config::get('silverbox.host') . '/' . Config::get('silverbox.client') . $private);
 
         if ($response->failed()) {
-            throw new ServerException(
-                message: Exceptions::SERVER_CDN_ERROR,
-                errorArray: $response->json(),
-            );
+            throw new ServerException(message: Exceptions::SERVER_CDN_ERROR, errorArray: $response->json());
         }
 
         return Config::get('silverbox.host') . '/' . $response->json('0.path');
@@ -48,10 +45,7 @@ final readonly class SilverboxService implements SilverboxServiceContract
             ]);
 
         if ($response->failed() || !isset($response['path'])) {
-            throw new ServerException(
-                message: Exceptions::SERVER_CDN_ERROR,
-                errorArray: $response->json() ?? [],
-            );
+            throw new ServerException(message: Exceptions::SERVER_CDN_ERROR, errorArray: $response->json() ?? []);
         }
 
         return Config::get('silverbox.host') . '/' . $response['path'];

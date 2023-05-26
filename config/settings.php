@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     'store_name' => [
         'value' => 'Heseya Dev Store',
         'public' => true,

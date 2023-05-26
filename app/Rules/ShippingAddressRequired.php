@@ -14,7 +14,7 @@ class ShippingAddressRequired implements ImplicitRule, DataAwareRule
     /**
      * Determine if the validation rule passes.
      *
-     * @param  string  $attribute
+     * @param string $attribute
      */
     public function passes(mixed $attribute, mixed $value): bool
     {
