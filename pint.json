@@ -34,11 +34,6 @@
       "identical": false,
       "less_and_greater": false
     },
-    "yoda_style": {
-      "equal": false,
-      "identical": false,
-      "less_and_greater": false
-    },
     "whitespace_after_comma_in_array": {
       "ensure_single_space": true
     },
