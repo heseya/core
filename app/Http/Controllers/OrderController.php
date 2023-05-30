@@ -35,7 +35,6 @@ use App\Models\Order;
 use App\Models\OrderDocument;
 use App\Models\OrderProduct;
 use App\Models\Status;
-use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DocumentServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Illuminate\Http\JsonResponse;
@@ -49,9 +48,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class OrderController extends Controller
 {
     public function __construct(
-        private OrderServiceContract $orderService,
-        private DocumentServiceContract $documentService,
-        private DepositServiceContract $depositService
+        private readonly OrderServiceContract $orderService,
+        private readonly DocumentServiceContract $documentService,
     ) {
     }
 
@@ -112,6 +110,9 @@ class OrderController extends Controller
         );
     }
 
+    /**
+     * @throws ClientException
+     */
     public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResponse
     {
         if ($order->status && $order->status->cancel) {
@@ -136,11 +137,8 @@ class OrderController extends Controller
             $deposits = $order->deposits()->with('item')->get();
             $order->deposits()->delete();
             foreach ($deposits as $deposit) {
-                $item = $deposit->item;
-                if ($item !== null) {
-                    $item->decrement('quantity', $deposit->quantity);
-                    $deposit->item?->update($this->depositService->getShippingTimeDateForQuantity($item));
-                    ItemUpdatedQuantity::dispatch($item);
+                if ($deposit->item !== null) {
+                    ItemUpdatedQuantity::dispatch($deposit->item);
                 }
             }
         }

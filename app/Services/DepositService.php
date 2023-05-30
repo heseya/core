@@ -9,7 +9,7 @@ use App\Models\OrderProduct;
 use App\Services\Contracts\DepositServiceContract;
 use Illuminate\Support\Carbon;
 
-class DepositService implements DepositServiceContract
+final class DepositService implements DepositServiceContract
 {
     public function removeItemsFromWarehouse(array $itemsToRemove, OrderProduct $orderProduct): bool
     {
@@ -39,15 +39,20 @@ class DepositService implements DepositServiceContract
         return $maxProductItemsTimeDate;
     }
 
+    /**
+     * @return array{shipping_time: (int|null), shipping_date: (\Carbon\Carbon|null)}
+     */
     public function getShippingTimeDateForQuantity(Item $item, float $quantity = 1): array
     {
         $groupedDepositsByTime = $this->getShippingTimeForQuantity($item, $quantity);
         if ($groupedDepositsByTime['shipping_time'] !== null) {
             return ['shipping_time' => $groupedDepositsByTime['shipping_time'], 'shipping_date' => null];
         }
+
         if ($item->unlimited_stock_shipping_time !== null) {
             return ['shipping_time' => $item->unlimited_stock_shipping_time, 'shipping_date' => null];
         }
+
         $groupedDepositsByDate = $this->getShippingDateForQuantity($item, $groupedDepositsByTime['quantity']);
         if ($groupedDepositsByDate['shipping_date'] !== null) {
             return ['shipping_time' => null, 'shipping_date' => $groupedDepositsByDate['shipping_date']];
