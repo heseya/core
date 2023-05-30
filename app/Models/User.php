@@ -15,6 +15,7 @@ use App\Traits\HasDiscountConditions;
 use App\Traits\HasMetadata;
 use App\Traits\HasMetadataPersonal;
 use App\Traits\HasWebHooks;
+use App\Traits\HasWishlist;
 use App\Traits\Sortable;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
@@ -60,6 +61,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     use HasMetadata;
     use HasDiscountConditions;
     use HasMetadataPersonal;
+    use HasWishlist;
 
     // Bez tego nie działały testy, w których jako aplikacja tworzy się użytkownika z określoną rolą
     protected string $guard_name = 'api';
@@ -155,11 +157,6 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     public function securityCodes(): HasMany
     {
         return $this->hasMany(OneTimeSecurityCode::class, 'user_id', 'id');
-    }
-
-    public function wishlistProducts(): MorphMany
-    {
-        return $this->morphMany(WishlistProduct::class, 'user');
     }
 
     public function preferences(): BelongsTo
