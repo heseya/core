@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\WishlistProductStoreRequest;
 use App\Http\Resources\WishlistProductResource;
+use App\Models\App;
 use App\Models\Product;
+use App\Models\User;
 use App\Services\Contracts\WishlistServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,14 +23,20 @@ class WishlistController extends Controller
 
     public function index(Request $request): JsonResource
     {
+        /** @var User|App $user */
+        $user = $request->user();
+
         return WishlistProductResource::collection(
-            $this->wishlistService->index($request->user()),
+            $this->wishlistService->index($user),
         );
     }
 
     public function show(Request $request, Product $product): JsonResource|JsonResponse
     {
-        if (!$this->wishlistService->canView($request->user(), $product)) {
+        /** @var User|App $user */
+        $user = $request->user();
+
+        if (!$this->wishlistService->canView($user, $product)) {
             return Response::json(null, ResponseAlias::HTTP_NOT_FOUND);
         }
 
@@ -37,9 +45,12 @@ class WishlistController extends Controller
 
     public function store(WishlistProductStoreRequest $request): JsonResource
     {
+        /** @var User|App $user */
+        $user = $request->user();
+
         return WishlistProductResource::make(
             $this->wishlistService->storeWishlistProduct(
-                $request->user(),
+                $user,
                 $request->input('product_id'),
             ),
         );
@@ -47,14 +58,20 @@ class WishlistController extends Controller
 
     public function destroy(Request $request, Product $product): JsonResponse
     {
-        $this->wishlistService->destroy($request->user(), $product);
+        /** @var User|App $user */
+        $user = $request->user();
+
+        $this->wishlistService->destroy($user, $product);
 
         return Response::json(null, ResponseAlias::HTTP_NO_CONTENT);
     }
 
     public function destroyAll(Request $request): JsonResponse
     {
-        $this->wishlistService->destroyAll($request->user());
+        /** @var User|App $user */
+        $user = $request->user();
+
+        $this->wishlistService->destroyAll($user);
 
         return Response::json(null, ResponseAlias::HTTP_NO_CONTENT);
     }
