@@ -28,7 +28,7 @@ class OrderProductFactory extends Factory
             'price_initial' => $price,
             'base_price' => $price,
             'base_price_initial' => $price,
-            'product_id' => Product::select('id')->inRandomOrder()->first()->getKey(),
+            'product_id' => Product::query()->select('id')->inRandomOrder()->first()->getKey(),
         ];
     }
 }

@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\OrderProduct;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -10,50 +14,13 @@ use Illuminate\Support\Str;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         DB::table('order_products')->lazyById()->each(function (object $orderProduct) {
-            $moneyPrice = Money::of($orderProduct->price, 'PLN');
-            $moneyPriceInitial = Money::of($orderProduct->price_initial, 'PLN');
-            $moneyBasePrice = Money::of($orderProduct->base_price, 'PLN');
-            $moneyBasePriceInitial = Money::of($orderProduct->base_price_initial, 'PLN');
-
-            DB::table('prices')->insert([
-                'id' => Str::uuid(),
-                'model_id' => $orderProduct->id,
-                'model_type' => OrderProduct::class,
-                'price_type' => 'price',
-                'value' => $moneyPrice->getMinorAmount(),
-            ]);
-
-            DB::table('prices')->insert([
-                'id' => Str::uuid(),
-                'model_id' => $orderProduct->id,
-                'model_type' => OrderProduct::class,
-                'price_type' => 'price_initial',
-                'value' => $moneyPriceInitial->getMinorAmount(),
-            ]);
-
-            DB::table('prices')->insert([
-                'id' => Str::uuid(),
-                'model_id' => $orderProduct->id,
-                'model_type' => OrderProduct::class,
-                'price_type' => 'base_price',
-                'value' => $moneyBasePrice->getMinorAmount(),
-            ]);
-
-            DB::table('prices')->insert([
-                'id' => Str::uuid(),
-                'model_id' => $orderProduct->id,
-                'model_type' => OrderProduct::class,
-                'price_type' => 'base_price_initial',
-                'value' => $moneyBasePriceInitial->getMinorAmount(),
-            ]);
+            $this->insertPrice('price', $orderProduct->price, $orderProduct->id);
+            $this->insertPrice('price_initial', $orderProduct->price_initial, $orderProduct->id);
+            $this->insertPrice('base_price', $orderProduct->base_price, $orderProduct->id);
+            $this->insertPrice('base_price_initial', $orderProduct->base_price_initial, $orderProduct->id);
         });
 
         Schema::table('order_products', function (Blueprint $table) {
@@ -64,44 +31,53 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::table('order_products', function (Blueprint $table) {
-            $table->double('price', 19, 4);
-            $table->double('price_initial', 19, 4);
-            $table->double('base_price', 19, 4)->default(0);
-            $table->double('base_price_initial', 19, 4)->default(0);
+        $columnSpec = fn(Blueprint $table, string $name) => $table->float($name, 19, 4);
+
+        Schema::table('order_products', function (Blueprint $table) use ($columnSpec) {
+            $columnSpec($table, 'price')->nullable();
+            $columnSpec($table, 'price_initial')->nullable();
+
+            $table->decimal('base_price', 19, 4)->default(0);
+            $table->decimal('base_price_initial', 19, 4)->default(0);
         });
 
         DB::table('order_products')->lazyById()->each(function (object $orderProduct) {
-            $getPrice = fn(string $type) => DB::table('prices')
-                ->where('model_id', $orderProduct->id)
-                ->where('price_type', $type)
-                ->first();
+            $data = [
+                'price' => $this->getPrice('price', $orderProduct->id),
+                'price_initial' => $this->getPrice('price_initial', $orderProduct->id),
+                'base_price' => $this->getPrice('base_price', $orderProduct->id),
+                'base_price_initial' => $this->getPrice('base_price_initial', $orderProduct->id),
+            ];
 
-            $price = $getPrice('price');
-            $priceInitial = $getPrice('price_initial');
-            $basePrice = $getPrice('base_price');
-            $basePriceInitial = $getPrice('base_price_initial');
-
-            $moneyPrice = Money::of($price->value, 'PLN');
-            $moneyPriceInitial = Money::of($priceInitial->value, 'PLN');
-            $moneyBasePrice = Money::of($basePrice->value, 'PLN');
-            $moneyBasePriceInitial = Money::of($basePriceInitial->value, 'PLN');
-
-            DB::table('options')
+            DB::table('order_products')
                 ->where('id', $orderProduct->id)
-                ->update([
-                    'price' => $moneyPrice->getAmount(),
-                    'price_initial' => $moneyPriceInitial->getAmount(),
-                    'base_price' => $moneyBasePrice->getAmount(),
-                    'base_price_initial' => $moneyBasePriceInitial->getAmount(),
-                ]);
+                ->update($data);
         });
+
+        Schema::table('order_products', function (Blueprint $table) use ($columnSpec) {
+            $columnSpec($table, 'price')->nullable(false)->change();
+            $columnSpec($table, 'price_initial')->nullable(false)->change();
+        });
+    }
+
+    private function getPrice(string $type, string $modelId): BigDecimal {
+        $price = DB::table('prices')
+            ->where('model_id', $modelId)
+            ->where('price_type', $type)
+            ->first();
+
+        return Money::of($price->value, 'PLN')->getAmount();
+    }
+
+    private function insertPrice(string $type, string|float $value, string $modelId): void {
+        DB::table('prices')->insert([
+            'id' => Str::uuid(),
+            'model_id' => $modelId,
+            'model_type' => OrderProduct::class,
+            'price_type' => $type,
+            'value' => Money::of($value, 'PLN', roundingMode: RoundingMode::HALF_UP)->getMinorAmount(),
+        ]);
     }
 };

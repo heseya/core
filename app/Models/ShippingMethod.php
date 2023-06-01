@@ -29,8 +29,6 @@ class ShippingMethod extends Model implements AuditableContract
     use HasDiscounts;
 
     /**
-     * The attributes that are mass assignable.
-     *
      * @var array<string>
      */
     protected $fillable = [
@@ -45,9 +43,8 @@ class ShippingMethod extends Model implements AuditableContract
         'app_id',
         'shipping_type',
     ];
+
     /**
-     * The attributes that should be cast to native types.
-     *
      * @var array<string, string>
      */
     protected $casts = [

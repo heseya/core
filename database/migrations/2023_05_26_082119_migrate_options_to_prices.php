@@ -1,6 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Option;
+use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -10,15 +13,10 @@ use Illuminate\Support\Str;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         DB::table('options')->lazyById()->each(function (object $option) {
-            $money = Money::of($option->price, 'PLN');
+            $money = Money::of($option->price, 'PLN', roundingMode: RoundingMode::HALF_UP);
 
             DB::table('prices')->insert([
                 'id' => Str::uuid(),
@@ -33,12 +31,7 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::table('options', function (Blueprint $table) {
             $table->float('price', 19, 4)->default(0);

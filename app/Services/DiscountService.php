@@ -1003,11 +1003,13 @@ readonly class DiscountService implements DiscountServiceContract
                     );
                 }
 
-                $product->discounts->each(fn (Discount $discount) => $this->attachDiscount(
-                    $newProduct,
-                    $discount,
-                    $discount->pivot->applied_discount,
-                ));
+                $product->discounts->each(function (Discount $discount) use ($newProduct) {
+                    $this->attachDiscount(
+                        $newProduct,
+                        $discount,
+                        $discount->pivot->applied_discount,
+                    );
+                });
 
                 $product = $newProduct;
             }

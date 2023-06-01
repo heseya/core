@@ -1,6 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\PriceRange;
+use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -10,12 +13,7 @@ use Illuminate\Support\Str;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('price_ranges', function (Blueprint $table) {
             $table->decimal('start', 27, 0)->change();
@@ -27,7 +25,7 @@ return new class extends Migration
                 ->where('model_id', $priceRange->id)
                 ->first();
 
-            $money = Money::of($price->value, 'PLN');
+            $money = Money::of($price->value, 'PLN', roundingMode: RoundingMode::HALF_UP);
 
             DB::table('price_ranges')
                 ->where('id', $priceRange->id)
@@ -37,12 +35,7 @@ return new class extends Migration
         Schema::drop('prices');
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::create('prices', function (Blueprint $table): void {
             $table->uuid('id')->primary();

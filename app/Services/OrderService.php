@@ -259,10 +259,10 @@ class OrderService implements OrderServiceContract
             DB::rollBack();
 
             throw $exception;
-        } catch (Throwable) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
-            throw new ServerException(Exceptions::SERVER_TRANSACTION_ERROR);
+            throw new ServerException(Exceptions::SERVER_TRANSACTION_ERROR, previous: $e);
         }
     }
 

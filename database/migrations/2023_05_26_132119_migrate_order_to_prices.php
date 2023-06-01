@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Order;
 use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -11,33 +14,14 @@ use Illuminate\Support\Str;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         DB::table('orders')->lazyById()->each(function (object $order) {
-            $moneySummary = Money::of($order->summary, 'PLN');
-            $moneyShippingPrice = Money::of($order->shipping_price, 'PLN');
-            $moneyShippingPriceInitial = Money::of($order->shipping_price_initial, 'PLN');
-            $moneyCartTotal = Money::of($order->cart_total, 'PLN');
-            $moneyCartTotalInitial = Money::of($order->cart_total_initial, 'PLN');
-
-            $insertPrice = fn(string $type, BigDecimal $value) => DB::table('prices')->insert([
-                'id' => Str::uuid(),
-                'model_id' => $order->id,
-                'model_type' => Order::class,
-                'price_type' => $type,
-                'value' => $value,
-            ]);
-
-            $insertPrice('summary', $moneySummary->getMinorAmount());
-            $insertPrice('shipping_price', $moneyShippingPrice->getMinorAmount());
-            $insertPrice('shipping_price_initial', $moneyShippingPriceInitial->getMinorAmount());
-            $insertPrice('cart_total', $moneyCartTotal->getMinorAmount());
-            $insertPrice('cart_total_initial', $moneyCartTotalInitial->getMinorAmount());
+            $this->insertPrice('summary', $order->summary, $order->id);
+            $this->insertPrice('shipping_price', $order->shipping_price, $order->id);
+            $this->insertPrice('shipping_price_initial', $order->shipping_price_initial, $order->id);
+            $this->insertPrice('cart_total', $order->cart_total, $order->id);
+            $this->insertPrice('cart_total_initial', $order->cart_total_initial, $order->id);
         });
 
         Schema::table('orders', function (Blueprint $table) {
@@ -49,48 +33,56 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
+        $columnSpec = fn(Blueprint $table, string $name) => $table->float($name, 19, 4);
+
+        Schema::table('orders', function (Blueprint $table) use ($columnSpec) {
             $table->double('summary', 19, 4)->default(0);
-            $table->double('shipping_price', 19, 4);
-            $table->double('shipping_price_initial', 19, 4);
+
+            $columnSpec($table, 'shipping_price')->nullable();
+            $columnSpec($table, 'shipping_price_initial')->nullable();
+
             $table->double('cart_total', 19, 4)->default(0);
             $table->double('cart_total_initial', 19, 4)->default(0);
         });
 
         DB::table('orders')->lazyById()->each(function (object $order) {
-            $getPrice = fn(string $type) => DB::table('prices')
-                ->where('model_id', $order->id)
-                ->where('price_type', $type)
-                ->first();
+            $data = [
+                'summary' => $this->getPrice('summary', $order->id),
+                'shipping_price' => $this->getPrice('shipping_price', $order->id),
+                'shipping_price_initial' => $this->getPrice('shipping_price_initial', $order->id),
+                'cart_total' => $this->getPrice('cart_total', $order->id),
+                'cart_total_initial' => $this->getPrice('cart_total_initial', $order->id),
+            ];
 
-            $summary = $getPrice('summary');
-            $shippingPrice = $getPrice('shipping_price');
-            $shippingPriceInitial = $getPrice('shipping_price_initial');
-            $cartTotal = $getPrice('cart_total');
-            $cartTotalInitial = $getPrice('cart_total_initial');
-
-            $moneySummary = Money::of($summary->value, 'PLN');
-            $moneyShippingPrice = Money::of($shippingPrice->value, 'PLN');
-            $moneyShippingPriceInitial = Money::of($shippingPriceInitial->value, 'PLN');
-            $moneyCartTotal = Money::of($cartTotal->value, 'PLN');
-            $moneyCartTotalInitial = Money::of($cartTotalInitial->value, 'PLN');
-
-            DB::table('options')
+            DB::table('orders')
                 ->where('id', $order->id)
-                ->update([
-                    'summary' => $moneySummary->getAmount(),
-                    'shipping_price' => $moneyShippingPrice->getAmount(),
-                    'shipping_price_initial' => $moneyShippingPriceInitial->getAmount(),
-                    'cart_total' => $moneyCartTotal->getAmount(),
-                    'cart_total_initial' => $moneyCartTotalInitial->getAmount(),
-                ]);
+                ->update($data);
         });
+
+        Schema::table('orders', function (Blueprint $table) use ($columnSpec) {
+            $columnSpec($table, 'shipping_price')->nullable(false)->change();
+            $columnSpec($table, 'shipping_price_initial')->nullable(false)->change();
+        });
+    }
+
+    private function getPrice(string $type, string $modelId): BigDecimal {
+        $price = DB::table('prices')
+            ->where('model_id', $modelId)
+            ->where('price_type', $type)
+            ->first();
+
+        return Money::of($price->value, 'PLN')->getAmount();
+    }
+
+    private function insertPrice(string $type, string|float $value, string $modelId): void {
+        DB::table('prices')->insert([
+            'id' => Str::uuid(),
+            'model_id' => $modelId,
+            'model_type' => Order::class,
+            'price_type' => $type,
+            'value' => Money::of($value, 'PLN', roundingMode: RoundingMode::HALF_UP)->getMinorAmount(),
+        ]);
     }
 };

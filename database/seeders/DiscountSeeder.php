@@ -29,7 +29,7 @@ class DiscountSeeder extends Seeder
 
         $discountService->applyDiscountsOnProducts(Product::all());
 
-        foreach (Order::inRandomOrder()->limit(30)->get() as $order) {
+        foreach (Order::query()->inRandomOrder()->limit(30)->get() as $order) {
             $discount = $discounts
                 ->whereIn(
                     'target_type',

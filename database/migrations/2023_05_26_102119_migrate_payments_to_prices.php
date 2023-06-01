@@ -1,6 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Payment;
+use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -10,15 +13,10 @@ use Illuminate\Support\Str;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         DB::table('payments')->lazyById()->each(function (object $payment) {
-            $money = Money::of($payment->amount, 'PLN');
+            $money = Money::of($payment->amount, 'PLN', roundingMode: RoundingMode::HALF_UP);
 
             DB::table('prices')->insert([
                 'id' => Str::uuid(),
@@ -33,15 +31,12 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::table('payments', function (Blueprint $table) {
-            $table->float('amount', 19, 4)->default(0);
+        $amountColumn = fn(Blueprint $table) => $table->float('amount', 19, 4);
+
+        Schema::table('payments', function (Blueprint $table) use ($amountColumn) {
+            $amountColumn($table)->nullable();
         });
 
         DB::table('payments')->lazyById()->each(function (object $payment) {
@@ -51,9 +46,13 @@ return new class extends Migration
 
             $money = Money::of($price->value, 'PLN');
 
-            DB::table('options')
+            DB::table('payments')
                 ->where('id', $payment->id)
                 ->update(['amount' => $money->getAmount()]);
+        });
+
+        Schema::table('payments', function (Blueprint $table) use ($amountColumn) {
+            $amountColumn($table)->nullable(false)->change();
         });
     }
 };
