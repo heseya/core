@@ -11,7 +11,7 @@ class ParentIdSearch extends Criterion
     {
         $searchValue = $this->value !== '' ? $this->value : null;
 
-        is_null($searchValue) ?
+        $searchValue === null ?
             $query->whereNull('parent_id') :
             $query->where('parent_id', 'LIKE', '%' . $searchValue . '%');
 

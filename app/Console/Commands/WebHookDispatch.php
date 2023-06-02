@@ -40,14 +40,17 @@ class WebHookDispatch extends Command
 
             if (!($order instanceof Order)) {
                 $this->error('Order not found.');
+
                 return 0;
             }
 
             $this->dispatch($event, $order);
+
             return 1;
         }
 
         $this->error('Not supported event type.');
+
         return 0;
     }
 

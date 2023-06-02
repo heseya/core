@@ -37,9 +37,7 @@ class ItemTest extends TestCase
 
         $this->item->refresh();
 
-        /**
-         * Expected response
-         */
+        // Expected response
         $this->expected = [
             'id' => $this->item->getKey(),
             'name' => $this->item->name,
@@ -585,6 +583,7 @@ class ItemTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $item) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $item->getKey()
@@ -748,6 +747,7 @@ class ItemTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $item) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $item->getKey()
@@ -829,6 +829,7 @@ class ItemTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $item) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $item->getKey()

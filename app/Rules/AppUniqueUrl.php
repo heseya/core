@@ -10,11 +10,12 @@ use Illuminate\Support\Facades\App as AppFacade;
 class AppUniqueUrl implements Rule
 {
     protected string $error;
+
     /**
      * Determine if the validation rule passes.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
+     * @param string $attribute
+     * @param mixed $value
      */
     public function passes($attribute, $value): bool
     {

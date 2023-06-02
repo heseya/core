@@ -12,6 +12,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class ProductCreateDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
+
     public function __construct(
         readonly public string $name,
         readonly public string $slug,

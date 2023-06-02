@@ -15,8 +15,6 @@ class DiscountSeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     *
-     * @return void
      */
     public function run(): void
     {
@@ -89,6 +87,7 @@ class DiscountSeeder extends Seeder
         $update = [
             $field => round($price - $appliedDiscount, 2),
         ];
+
         return [$appliedDiscount, $update];
     }
 }

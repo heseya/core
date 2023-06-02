@@ -20,6 +20,7 @@ class UserRegistered extends Notification
     {
         /** @var string $subject */
         $subject = Lang::get('mail.subject-user-registered');
+
         return (new MailMessage())
             ->subject($subject)
             ->view('mail.user-registered');

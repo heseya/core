@@ -21,6 +21,7 @@ class OrderProductFactory extends Factory
     public function definition(): array
     {
         $price = rand(100, 200);
+
         return [
             'name' => $this->faker->word,
             'quantity' => rand(1, 4),

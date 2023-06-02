@@ -22,7 +22,7 @@ class MediaSlug implements Rule
      */
     public function passes($attribute, $value): bool
     {
-        return (is_null($this->media->slug) && is_null($value)) || !is_null($value);
+        return ($this->media->slug === null && $value === null) || $value !== null;
     }
 
     public function message(): string

@@ -16,12 +16,12 @@ class UnlimitedShippingTime implements Rule
     /**
      * Determine if the validation rule passes.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
+     * @param string $attribute
+     * @param mixed $value
      */
     public function passes($attribute, $value): bool
     {
-        if (is_null($value)) {
+        if ($value === null) {
             return true;
         }
         $depositService = App::make(DepositServiceContract::class);

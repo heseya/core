@@ -12,9 +12,11 @@ class OrderUpdateRequest extends FormRequest
         return [
             'email' => ['nullable', 'email'],
             'comment' => ['nullable', 'string', 'max:1000'],
-            'shipping_number' => ['nullable', 'string'],
-            'shipping_method_id' => ['nullable', 'uuid'],
+
             'digital_shipping_method_id' => ['nullable', 'uuid'],
+            'shipping_method_id' => ['nullable', 'uuid'],
+            'shipping_place' => ['nullable', 'required_with:shipping_method_id', new ShippingPlaceValidation()],
+            'shipping_number' => ['nullable', 'string'],
 
             'billing_address' => ['nullable', 'array'],
             'billing_address.name' => ['string', 'max:255'],
@@ -26,7 +28,6 @@ class OrderUpdateRequest extends FormRequest
             'billing_address.vat' => ['nullable', 'string', 'max:15'],
 
             'invoice_requested' => ['boolean'],
-            'shipping_place' => ['nullable', new ShippingPlaceValidation()],
         ];
     }
 }

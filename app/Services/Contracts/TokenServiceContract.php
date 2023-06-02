@@ -10,56 +10,32 @@ use PHPOpenSourceSaver\JWTAuth\Payload;
 interface TokenServiceContract
 {
     /**
-     * Returns whether token is valid or not
-     *
-     * @param string $token
-     *
-     * @return bool
+     * Returns whether token is valid or not.
      */
     public function validate(string $token): bool;
 
     /**
-     * Returns user identified by the token or null if the token is invalid
-     *
-     * @param string $token
-     *
-     * @return Authenticatable|null
+     * Returns user identified by the token or null if the token is invalid.
      */
     public function getUser(string $token): ?Authenticatable;
 
     /**
-     * Returns token payload or null if the token is invalid
-     *
-     * @param string $token
-     *
-     * @return Payload|null
+     * Returns token payload or null if the token is invalid.
      */
     public function payload(string $token): ?Payload;
 
     /**
-     * Returns new token for a given user
-     *
-     * @param JWTSubject $user
-     * @param TokenType $type
-     *
-     * @return string
+     * Returns new token for a given user.
      */
     public function createToken(JWTSubject $user, TokenType $type, ?string $uuid): string;
 
     /**
-     * Invalidates the given token
-     *
-     * @param string $token
+     * Invalidates the given token.
      */
     public function invalidateToken(string $token): void;
 
     /**
-     * Returns whether token is of given type
-     *
-     * @param string $token
-     * @param TokenType $type
-     *
-     * @return bool
+     * Returns whether token is of given type.
      */
     public function isTokenType(string $token, TokenType $type): bool;
 }

@@ -17,5 +17,6 @@ interface MetadataServiceContract
     public function returnModel(array $routeSegments): Model|Role|null;
 
     public function updateOrCreateMyPersonal(MetadataPersonalListDto $dto): Collection;
+
     public function updateOrCreateUserPersonal(MetadataPersonalListDto $dto, string $userId): Collection;
 }

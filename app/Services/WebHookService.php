@@ -34,6 +34,7 @@ class WebHookService implements WebHookServiceContract
     public function update(WebHook $webHook, array $attributes): WebHook
     {
         $webHook->update($attributes);
+
         return $webHook;
     }
 

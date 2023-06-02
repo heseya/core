@@ -31,6 +31,8 @@ class AvailabilityService implements AvailabilityServiceContract
      */
     public function calculateItemAvailability(Item $item): void
     {
+        $item->update($this->getCalculateItemDatesAvailability($item));
+
         // Options
         $options = $item->options;
         $options->each(fn (Option $option) => $this->calculateOptionAvailability($option));
@@ -68,6 +70,20 @@ class AvailabilityService implements AvailabilityServiceContract
         if ($product->wasChanged()) {
             ProductUpdated::dispatch($product);
         }
+    }
+
+    /**
+     * @return array{quantity: float, shipping_time: (int|null), shipping_date: (\Carbon\Carbon|null)}
+     */
+    public function getCalculateItemDatesAvailability(Item $item): array
+    {
+        $dateTime = $this->depositService->getShippingTimeDateForQuantity($item);
+
+        return [
+            'quantity' => $item->quantity_real,
+            'shipping_time' => $dateTime['shipping_time'],
+            'shipping_date' => $dateTime['shipping_date'],
+        ];
     }
 
     /**
@@ -245,7 +261,7 @@ class AvailabilityService implements AvailabilityServiceContract
     }
 
     /**
-     * Check single product permutation
+     * Check single product permutation.
      */
     public function checkProductPermutation(
         float $quantityStep,
@@ -322,6 +338,7 @@ class AvailabilityService implements AvailabilityServiceContract
             $sortedDeposits = $groupedDeposits->sort(static function (Deposit $a, Deposit $b) {
                 $sortByTime = $a->shipping_time <=> $b->shipping_time;
                 $sortByDate = $a->shipping_date <=> $b->shipping_date;
+
                 return $sortByDate === 0 ? $sortByTime : $sortByDate;
             });
 
@@ -347,7 +364,7 @@ class AvailabilityService implements AvailabilityServiceContract
     }
 
     /**
-     * Helper method for always generating same return array
+     * Helper method for always generating same return array.
      */
     private function returnProductAvailability(
         bool $available = false,
@@ -364,7 +381,7 @@ class AvailabilityService implements AvailabilityServiceContract
     }
 
     /**
-     * Get only required schemas of type SELECT and with related items
+     * Get only required schemas of type SELECT and with related items.
      */
     private function getRequiredSchemasWithItems(Product $product): Collection
     {
@@ -377,7 +394,7 @@ class AvailabilityService implements AvailabilityServiceContract
     }
 
     /**
-     * Get all items required by products required items and required schemas
+     * Get all items required by products required items and required schemas.
      */
     private function getAllRequiredItems(Product $product, Collection $requiredSchemas): Collection
     {
@@ -397,7 +414,7 @@ class AvailabilityService implements AvailabilityServiceContract
     }
 
     /**
-     * Compares whether $shippingDate1 is before $shippingDate2
+     * Compares whether $shippingDate1 is before $shippingDate2.
      */
     private function compareShippingDate(
         \Carbon\Carbon|string|null $shippingDate1,

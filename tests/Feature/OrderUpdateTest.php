@@ -418,6 +418,7 @@ class OrderUpdateTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $order) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $order->getKey()
@@ -607,7 +608,7 @@ class OrderUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateOrderWithMissingShippingAddress($user): void
+    public function testUpdateOrderWithMissingShippingAddress(string $user): void
     {
         $this->$user->givePermissionTo('orders.edit');
 
@@ -648,7 +649,7 @@ class OrderUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateOrderByInvoiceAddress($user): void
+    public function testUpdateOrderByInvoiceAddress(string $user): void
     {
         $this->$user->givePermissionTo('orders.edit');
 
@@ -893,7 +894,7 @@ class OrderUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateOrderWithMissingShippingAddressForShippingPlace($user): void
+    public function testUpdateOrderWithMissingShippingAddressForShippingPlace(string $user): void
     {
         $this->$user->givePermissionTo('orders.edit');
 
@@ -917,7 +918,7 @@ class OrderUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateOrderWithMissingShippingPlace($user): void
+    public function testUpdateOrderWithMissingShippingPlace(string $user): void
     {
         $this->$user->givePermissionTo('orders.edit');
 
@@ -981,6 +982,7 @@ class OrderUpdateTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $package) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['order']['id'] === $this->order->getKey()
@@ -989,6 +991,7 @@ class OrderUpdateTest extends TestCase
                 && $payload['event'] === 'OrderRequestedShipping';
         });
     }
+
     /**
      * @dataProvider authProvider
      */
@@ -1268,7 +1271,6 @@ class OrderUpdateTest extends TestCase
                 "/orders/id:{$order->getKey()}",
                 [
                     'comment' => 'New comment',
-
                 ]
             )
             ->assertOk()

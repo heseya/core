@@ -20,6 +20,7 @@ class OrderFactory extends Factory
     public function definition(): array
     {
         $shipping_price = rand(8, 20) + 0.99;
+
         return [
             'code' => $this->faker->regexify('[A-Z0-9]{6}'),
             'email' => $this->faker->unique()->safeEmail,

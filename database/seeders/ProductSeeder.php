@@ -22,8 +22,6 @@ class ProductSeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     *
-     * @return void
      */
     public function run(): void
     {
@@ -115,7 +113,7 @@ class ProductSeeder extends Seeder
 
     private function media(Product $product): void
     {
-        for ($i = 0; $i < rand(0, 5); $i++) {
+        for ($i = 0; $i < rand(0, 5); ++$i) {
             $media = Media::factory()->create();
             $product->media()->attach($media);
         }
@@ -123,7 +121,7 @@ class ProductSeeder extends Seeder
 
     private function sets(Product $product, Collection $sets): void
     {
-        for ($i = 0; $i < rand(0, 3); $i++) {
+        for ($i = 0; $i < rand(0, 3); ++$i) {
             $product->sets()->syncWithoutDetaching($sets->random());
         }
     }

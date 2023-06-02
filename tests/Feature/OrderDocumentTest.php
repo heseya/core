@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Enums\ExceptionsEnums\Exceptions;
-use App\Enums\MediaType;
 use App\Enums\MediaAttachmentType;
+use App\Enums\MediaType;
 use App\Events\AddOrderDocument;
 use App\Events\SendOrderDocument;
 use App\Models\Media;

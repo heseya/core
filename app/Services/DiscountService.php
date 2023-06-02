@@ -193,13 +193,11 @@ readonly class DiscountService implements DiscountServiceContract
             return $discount->value;
         }
 
-        throw new ClientException(Exceptions::CLIENT_DISCOUNT_TYPE_NOT_SUPPORTED, errorArray: [
-            'type' => $discount->type,
-        ]);
+        throw new ClientException(Exceptions::CLIENT_DISCOUNT_TYPE_NOT_SUPPORTED, errorArray: ['type' => $discount->type]);
     }
 
     /**
-     * This executes for orders and cart
+     * This executes for orders and cart.
      *
      * It needs to account for current session user and calculate personalized price
      */
@@ -479,6 +477,7 @@ readonly class DiscountService implements DiscountServiceContract
             && $refreshedOrder?->discounts->count() === 0) {
             $order = $this->roundProductPrices($order);
         }
+
         return match ($discount->target_type->value) {
             DiscountTargetType::PRODUCTS => $this->applyDiscountOnOrderProducts($order, $discount),
             DiscountTargetType::ORDER_VALUE => $this->applyDiscountOnOrderValue($order, $discount),
@@ -530,6 +529,7 @@ readonly class DiscountService implements DiscountServiceContract
                     }
                 }
             }
+
             return $sale->conditionGroups->isEmpty();
         });
     }
@@ -550,6 +550,7 @@ readonly class DiscountService implements DiscountServiceContract
                 }
             }
         }
+
         return false;
     }
 
@@ -568,6 +569,7 @@ readonly class DiscountService implements DiscountServiceContract
                 }
             }
         }
+
         return false;
     }
 
@@ -746,10 +748,7 @@ readonly class DiscountService implements DiscountServiceContract
                 $discount->code !== null
             ) {
                 [$type, $id] = $discount->code !== null ? ['coupon', $discount->code] : ['sale', $discount->getKey()];
-                throw new ClientException(Exceptions::CLIENT_CANNOT_APPLY_SELECTED_DISCOUNT_TYPE, errorArray: [
-                    'type' => $type,
-                    'id' => $id,
-                ]);
+                throw new ClientException(Exceptions::CLIENT_CANNOT_APPLY_SELECTED_DISCOUNT_TYPE, errorArray: ['type' => $type, 'id' => $id]);
             }
         }
 
@@ -820,6 +819,7 @@ readonly class DiscountService implements DiscountServiceContract
     private function calcProductPriceDiscount(Discount $discount, float $price, float $minimalProductPrice): float
     {
         $price -= $this->calc($price, $discount);
+
         return max($price, $minimalProductPrice);
     }
 
@@ -1057,6 +1057,7 @@ readonly class DiscountService implements DiscountServiceContract
 
             $cartResource->shipping_price = round($cartResource->shipping_price, 2, PHP_ROUND_HALF_UP);
         }
+
         return $cartResource;
     }
 
@@ -1068,6 +1069,7 @@ readonly class DiscountService implements DiscountServiceContract
             'minimal_order_price',
         );
         $cartResource->cart_total = round($cartResource->cart_total, 2, PHP_ROUND_HALF_UP);
+
         return $cartResource;
     }
 
@@ -1263,8 +1265,10 @@ readonly class DiscountService implements DiscountServiceContract
             if ($productSets->contains($productSet->parent->id)) {
                 return $allowList;
             }
+
             return $this->checkProductSetParentInDiscount($productSet->parent, $productSets, $allowList);
         }
+
         return !$allowList;
     }
 
@@ -1274,6 +1278,7 @@ readonly class DiscountService implements DiscountServiceContract
         foreach ($conditions as $condition) {
             $result[] = $this->createConditionGroup($condition);
         }
+
         return Collection::make($result)->pluck('id')->all();
     }
 
@@ -1354,6 +1359,7 @@ readonly class DiscountService implements DiscountServiceContract
         if (Auth::user()) {
             return in_array(Auth::id(), $conditionDto->getUsers()) === $conditionDto->isIsAllowList();
         }
+
         return false;
     }
 
@@ -1417,6 +1423,7 @@ readonly class DiscountService implements DiscountServiceContract
         if (!$endAt instanceof Missing) {
             return $actualDate->lessThanOrEqualTo($endAt) === $conditionDto->isIsInRange();
         }
+
         return false;
     }
 
@@ -1435,6 +1442,7 @@ readonly class DiscountService implements DiscountServiceContract
             if ($endAt->lessThanOrEqualTo($startAt)) {
                 $startAt = $startAt->subDay();
             }
+
             return $actualTime->between($startAt, $endAt) === $conditionDto->isIsInRange();
         }
 
@@ -1452,6 +1460,7 @@ readonly class DiscountService implements DiscountServiceContract
     private function checkConditionMaxUses(DiscountCondition $condition): bool
     {
         $conditionDto = MaxUsesConditionDto::fromArray($condition->value + ['type' => $condition->type]);
+
         return $condition->conditionGroup?->discounts()->first()?->orders()->count() < $conditionDto->getMaxUses();
     }
 

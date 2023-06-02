@@ -18,9 +18,9 @@ readonly class PriceService implements PriceServiceContract
     }
 
     /**
-     * @throws ClientException
-     *
      * @return ProductPriceDto[]
+     *
+     * @throws ClientException
      */
     public function calcProductsListDiscounts(array $productIds): array
     {

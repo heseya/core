@@ -156,7 +156,7 @@ final class Handler extends ExceptionHandler
                     ];
                 }
 
-                $index++;
+                ++$index;
             }
         }
 
@@ -174,6 +174,7 @@ final class Handler extends ExceptionHandler
         if ($exception instanceof ValidationException) {
             return $this->mapValidationErrors($exception->validator);
         }
+
         return [];
     }
 

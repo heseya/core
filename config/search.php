@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     'pl' => [
         'stopwords' => [
             'a',
@@ -80,5 +79,4 @@ return [
             'jakaś',
         ],
     ],
-
 ];

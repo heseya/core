@@ -41,6 +41,7 @@ class WebHookController extends Controller
         Gate::inspect('create', [WebHook::class, $attributes]);
 
         $webHook = $this->webHookService->create($attributes);
+
         return WebHookResource::make($webHook);
     }
 
@@ -50,6 +51,7 @@ class WebHookController extends Controller
         Gate::inspect('update', [$webHook, $attributes]);
 
         $webHook = $this->webHookService->update($webHook, $attributes);
+
         return WebHookResource::make($webHook);
     }
 
@@ -58,6 +60,7 @@ class WebHookController extends Controller
         Gate::inspect('delete', $webHook);
 
         $this->webHookService->delete($webHook);
+
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

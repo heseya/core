@@ -5,8 +5,8 @@ namespace App\Services;
 use App\Dtos\MediaAttachmentDto;
 use App\Dtos\MediaAttachmentUpdateDto;
 use App\Models\Media;
-use App\Models\Model;
 use App\Models\MediaAttachment;
+use App\Models\Model;
 use App\Services\Contracts\MediaAttachmentServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 
@@ -16,6 +16,7 @@ readonly class MediaAttachmentService implements MediaAttachmentServiceContract
         private MediaServiceContract $mediaService,
     ) {
     }
+
     public function addAttachment(Model $model, MediaAttachmentDto $dto, ?string $label = null): MediaAttachment
     {
         Media::query()->findOrFail($dto->media_id);

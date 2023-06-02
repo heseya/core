@@ -31,6 +31,7 @@ class FavouriteController extends Controller
     public function show(ProductSet $productSet): JsonResource|JsonResponse
     {
         $favouriteProductSet = $this->favouriteService->showProductSet($productSet->getKey());
+
         return $favouriteProductSet ? FavouriteProductSetResource::make($favouriteProductSet)
             : Response::json(null, ResponseStatus::HTTP_NO_CONTENT);
     }
@@ -45,12 +46,14 @@ class FavouriteController extends Controller
     public function destroy(ProductSet $productSet): JsonResponse
     {
         $this->favouriteService->destroy($productSet->getKey());
+
         return Response::json(null, ResponseStatus::HTTP_NO_CONTENT);
     }
 
     public function destroyAll(): JsonResponse
     {
         $this->favouriteService->destroyAll();
+
         return Response::json(null, ResponseStatus::HTTP_NO_CONTENT);
     }
 }

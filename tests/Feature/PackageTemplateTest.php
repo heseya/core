@@ -17,9 +17,7 @@ class PackageTemplateTest extends TestCase
 
         $this->package = PackageTemplate::factory()->create();
 
-        /**
-         * Expected response
-         */
+        // Expected response
         $this->expected = [
             'id' => $this->package->getKey(),
             'name' => $this->package->name,

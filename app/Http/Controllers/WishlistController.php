@@ -29,6 +29,7 @@ class WishlistController extends Controller
     public function show(Product $product): JsonResource|JsonResponse
     {
         $wishlistProduct = Auth::user()?->wishlistProducts()->where('product_id', $product->getKey())->first();
+
         return $wishlistProduct === null ?
             Response::json(null, ResponseAlias::HTTP_NOT_FOUND) : WishlistProductResource::make($wishlistProduct);
     }
@@ -45,12 +46,14 @@ class WishlistController extends Controller
     public function destroy(Product $product): JsonResponse
     {
         $this->wishlistService->destroy($product);
+
         return Response::json(null, ResponseAlias::HTTP_NO_CONTENT);
     }
 
     public function destroyAll(): JsonResponse
     {
         $this->wishlistService->destroyAll();
+
         return Response::json(null, ResponseAlias::HTTP_NO_CONTENT);
     }
 }

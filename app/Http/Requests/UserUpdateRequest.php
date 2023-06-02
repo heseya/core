@@ -13,6 +13,7 @@ class UserUpdateRequest extends FormRequest
     {
         /** @var User $user */
         $user = $this->route('user');
+
         return [
             'name' => ['nullable', 'string', 'max:255'],
             'email' => [

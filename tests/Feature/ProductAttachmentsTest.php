@@ -233,7 +233,7 @@ class ProductAttachmentsTest extends TestCase
                                 'url' => $this->media->url,
                                 'slug' => $this->media->slug,
                                 'alt' => $this->media->alt,
-                            ]
+                            ],
                         ],
                     ],
                 ],

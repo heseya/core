@@ -6,21 +6,20 @@ use App\Models\Deposit;
 use App\Services\Contracts\DepositServiceContract;
 use Illuminate\Support\Facades\App;
 
-class DepositObserver
+final readonly class DepositObserver
 {
     public function created(Deposit $deposit): void
     {
-        /** @var DepositServiceContract $depositService */
-        $depositService = App::make(DepositServiceContract::class);
-
         if (!$deposit->item) {
             return;
         }
 
+        /** @var DepositServiceContract $depositService */
+        $depositService = App::make(DepositServiceContract::class);
+
         $deposit->item->update([
             'quantity' => $deposit->item->getQuantityRealAttribute(),
+            ...$depositService->getShippingTimeDateForQuantity($deposit->item),
         ]);
-
-        $deposit->item->update($depositService->getShippingTimeDateForQuantity($deposit->item));
     }
 }

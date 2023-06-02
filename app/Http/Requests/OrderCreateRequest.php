@@ -18,8 +18,10 @@ class OrderCreateRequest extends OrderItemsRequest
             [
                 'email' => ['required', 'email', 'max:255'],
                 'comment' => ['nullable', 'string', 'max:1000'],
-                'shipping_method_id' => ['nullable', 'uuid'],
+
                 'digital_shipping_method_id' => ['nullable', 'uuid'],
+                'shipping_method_id' => ['nullable', 'uuid'],
+                'shipping_place' => ['nullable', 'required_with:shipping_method_id', new ShippingPlaceValidation()],
 
                 'billing_address.name' => ['required', 'string', 'max:255'],
                 'billing_address.phone' => ['required', 'string', 'max:20'],
@@ -47,7 +49,6 @@ class OrderCreateRequest extends OrderItemsRequest
                 ],
 
                 'invoice_requested' => ['boolean'],
-                'shipping_place' => ['nullable', new ShippingPlaceValidation()],
             ]
         );
     }

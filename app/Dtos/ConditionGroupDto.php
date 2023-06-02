@@ -42,6 +42,7 @@ class ConditionGroupDto extends Dto
                 default => throw new Exception('Unknown condition type.')
             };
         }
+
         return $result;
     }
 }
