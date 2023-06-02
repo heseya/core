@@ -585,7 +585,7 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdate($user): void
+    public function testUpdate(string $user): void
     {
         $this->$user->givePermissionTo('pages.edit');
 
@@ -599,12 +599,12 @@ class PageTest extends TestCase
             'content_html' => $html,
         ];
 
-        $response = $this->actingAs($this->$user)->patchJson(
-            '/pages/id:' . $this->page->getKey(),
-            $page,
-        );
-
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->patchJson(
+                '/pages/id:' . $this->page->getKey(),
+                $page,
+            )
             ->assertOk()
             ->assertJson(['data' => $page]);
 
@@ -616,7 +616,21 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateWithWebHook($user): void
+    public function testUpdateMissingFields(string $user): void
+    {
+        $this->$user->givePermissionTo('pages.edit');
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/pages/id:' . $this->page->getKey(), [
+                'public' => true,
+            ])
+            ->assertOk();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithWebHook(string $user): void
     {
         $this->$user->givePermissionTo('pages.edit');
 

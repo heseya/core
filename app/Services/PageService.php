@@ -2,7 +2,8 @@
 
 namespace App\Services;
 
-use App\Dtos\PageDto;
+use App\Dtos\PageCreateDto;
+use App\Dtos\PageUpdateDto;
 use App\Events\PageCreated;
 use App\Events\PageDeleted;
 use App\Events\PageUpdated;
@@ -46,7 +47,7 @@ class PageService implements PageServiceContract
         return $query->paginate(Config::get('pagination.per_page'));
     }
 
-    public function create(PageDto $dto): Page
+    public function create(PageCreateDto $dto): Page
     {
         $attributes = $dto->toArray();
         $pageCurrentOrder = Page::query()->orderByDesc('order')->value('order');
@@ -70,7 +71,7 @@ class PageService implements PageServiceContract
         return $page;
     }
 
-    public function update(Page $page, PageDto $dto): Page
+    public function update(Page $page, PageUpdateDto $dto): Page
     {
         $page->update($dto->toArray());
 

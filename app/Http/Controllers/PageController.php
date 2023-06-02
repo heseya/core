@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Dtos\PageDto;
+use App\Dtos\PageCreateDto;
+use App\Dtos\PageUpdateDto;
 use App\Http\Requests\PageIndexRequest;
 use App\Http\Requests\PageReorderRequest;
 use App\Http\Requests\PageStoreRequest;
@@ -16,11 +17,9 @@ use Illuminate\Support\Facades\Response;
 
 class PageController extends Controller
 {
-    private PageServiceContract $pageService;
-
-    public function __construct(PageServiceContract $pageService)
-    {
-        $this->pageService = $pageService;
+    public function __construct(
+        private readonly PageServiceContract $pageService,
+    ) {
     }
 
     public function index(PageIndexRequest $request): JsonResource
@@ -39,7 +38,7 @@ class PageController extends Controller
 
     public function store(PageStoreRequest $request): JsonResource
     {
-        $dto = PageDto::instantiateFromRequest($request);
+        $dto = PageCreateDto::instantiateFromRequest($request);
         $page = $this->pageService->create($dto);
 
         return PageResource::make($page);
@@ -47,7 +46,7 @@ class PageController extends Controller
 
     public function update(Page $page, PageUpdateRequest $request): JsonResource
     {
-        $dto = PageDto::instantiateFromRequest($request);
+        $dto = PageUpdateDto::instantiateFromRequest($request);
         $page = $this->pageService->update($page, $dto);
 
         return PageResource::make($page);
