@@ -16,18 +16,22 @@ class WishlistService implements WishlistServiceContract
 {
     public function index(User|App $user): LengthAwarePaginator
     {
-        $query = $user->hasPermissionTo('products.show_hidden') ?
-            $user->wishlistProducts() :
-            $user->wishlistProductsPublic();
+        $query = $user->wishlistProducts();
+
+        if (!$user->hasPermissionTo('products.show_hidden')) {
+            $query->where('public', '=', true);
+        }
 
         return $query->paginate(Config::get('pagination.per_page'));
     }
 
     public function canView(User|App $user, Product $product): bool
     {
-        $query = $user->hasPermissionTo('products.show_hidden') ?
-            $user->wishlistProducts() :
-            $user->wishlistProductsPublic();
+        $query = $user->wishlistProducts();
+
+        if (!$user->hasPermissionTo('products.show_hidden')) {
+            $query->where('public', '=', true);
+        }
 
         return $query
             ->where('product_id', $product->getKey())
