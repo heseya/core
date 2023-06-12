@@ -15,28 +15,28 @@ class OrderSchema extends Model
         'name',
         'value',
         'order_product_id',
-//////////////
+        // ////////////
         'price_initial',
         'price',
     ];
 
-//    public function price(): MorphOneWithIdentifier
-//    {
-//        return $this->morphOneWithIdentifier(
-//            Price::class,
-//            'model',
-//            'price_type',
-//            'price',
-//        );
-//    }
-//
-//    public function priceInitial(): MorphOneWithIdentifier
-//    {
-//        return $this->morphOneWithIdentifier(
-//            Price::class,
-//            'model',
-//            'price_type',
-//            'price_initial',
-//        );
-//    }
+    //    public function price(): MorphOneWithIdentifier
+    //    {
+    //        return $this->morphOneWithIdentifier(
+    //            Price::class,
+    //            'model',
+    //            'price_type',
+    //            'price',
+    //        );
+    //    }
+    //
+    //    public function priceInitial(): MorphOneWithIdentifier
+    //    {
+    //        return $this->morphOneWithIdentifier(
+    //            Price::class,
+    //            'model',
+    //            'price_type',
+    //            'price_initial',
+    //        );
+    //    }
 }

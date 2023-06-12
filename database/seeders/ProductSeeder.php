@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
 use App\Enums\SchemaType;
@@ -29,70 +31,130 @@ class ProductSeeder extends Seeder
             /** @var ProductServiceContract $productService */
             $productService = App::make(ProductServiceContract::class);
 
-            $products = Product::factory()->count(100)
-                ->state(fn ($sequence) => [
-                    'shipping_digital' => rand(0, 1),
-                ])
-                ->create();
+            $products = $this->createProducts(100);
 
             $sets = ProductSet::all();
+            $brands = $this->createBrands();
+            $categories = $this->createCategories();
 
-            $brands = ProductSet::factory([
-                'name' => 'Brands',
-                'slug' => 'brands',
-            ])->make();
-            $this->seo($brands);
-            $brands = ProductSet::factory([
-                'parent_id' => $brands->getKey(),
-            ])->count(4)->create();
-
-            $brands->each(fn ($set) => $this->seo($set));
-
-            $categories = ProductSet::factory([
-                'name' => 'Categories',
-                'slug' => 'categories',
-            ])->create();
-            $this->seo($categories);
-            $categories = ProductSet::factory([
-                'parent_id' => $categories->getKey(),
-            ])->count(4)->create();
-
-            $categories->each(fn ($set) => $this->seo($set));
-
-            $products->each(function ($product, $index) use ($sets, $brands, $categories, $productService): void {
-                if (rand(0, 1)) {
-                    $this->schemas($product);
-                }
-
-                $this->media($product);
-                $this->sets($product, $sets);
-                $this->seo($product);
-
-                if ($index >= 75) {
-                    $this->brands($product, $brands);
-                } elseif ($index >= 50) {
-                    $this->categories($product, $categories);
-                } elseif ($index >= 25) {
-                    $this->brands($product, $brands);
-                    $this->categories($product, $categories);
-                }
-
-                $product->refresh();
-                $product->save();
-                $productService->updateMinMaxPrices($product);
-            });
+            $this->setupProduct($products, $sets);
+            $this->attachRandomBrandOrCategory($products, $brands, $categories);
+            $this->persistsProducts($products, $productService);
 
             $this->setAvailability();
         });
     }
 
-    private function seo(Product|ProductSet $product): void
+    private function createProducts(int $count)
+    {
+        $product = Product::factory()->count($count)
+            ->state(fn ($sequence) => [
+                'shipping_digital' => rand(0, 1),
+            ])
+            ->create();
+
+        //        'price' => round(rand(500, 6000), -2)
+        //        $price = Price::factory([
+        //            'type' => 'price',
+        //        ])->create();
+
+        return $product;
+    }
+
+    /**
+     * @param Collection<Product> $products
+     * @param Collection<ProductSet> $sets
+     */
+    private function setupProduct(
+        Collection $products,
+        Collection $sets,
+    ): void {
+        $products->each(function (Product $product) use ($sets) {
+            if (rand(0, 1)) {
+                $this->attachNewSchema($product);
+            }
+
+            $this->attachNewMedia($product);
+            $this->attachRandomSets($product, $sets);
+            $this->attachNewSeo($product);
+        });
+    }
+
+    /**
+     * @param Collection<Product> $products
+     */
+    private function persistsProducts(Collection $products, ProductServiceContract $productService): void
+    {
+        $products->each(function (Product $product) use ($productService) {
+            $product->refresh();
+            $product->save();
+            $productService->updateMinMaxPrices($product);
+        });
+    }
+
+    /**
+     * @param Collection<Product> $products
+     * @param Collection<ProductSet> $brands
+     * @param Collection<ProductSet> $categories
+     */
+    private function attachRandomBrandOrCategory(Collection $products, Collection $brands, Collection $categories): void
+    {
+        $products->split(4);
+
+        $products->pop()
+            ->each(fn (Product $product) => $this->attachRandomSet($product, $brands));
+
+        $products->pop()
+            ->each(fn (Product $product) => $this->attachRandomSet($product, $categories));
+
+        $products->pop()
+            ->each(function (Product $product) use ($brands, $categories) {
+                $this->attachRandomSet($product, $brands);
+                $this->attachRandomSet($product, $categories);
+            });
+    }
+
+    /** @return Collection<ProductSet> */
+    private function createBrands(): Collection
+    {
+        $brandsRoot = ProductSet::factory([
+            'name' => 'Brands',
+            'slug' => 'brands',
+        ])->make();
+        $this->attachNewSeo($brandsRoot);
+
+        $brands = ProductSet::factory([
+            'parent_id' => $brandsRoot->getKey(),
+        ])->count(4)->create();
+        $brands->each(fn ($set) => $this->attachNewSeo($set));
+
+        return $brands;
+    }
+
+    /** @return Collection<ProductSet> */
+    private function createCategories(): Collection
+    {
+        $categoryRoot = ProductSet::factory([
+            'name' => 'Categories',
+            'slug' => 'categories',
+        ])->create();
+        $this->attachNewSeo($categoryRoot);
+
+        $categories = ProductSet::factory([
+            'parent_id' => $categoryRoot->getKey(),
+        ])->count(4)->create();
+        $categories->each(fn ($set) => $this->attachNewSeo($set));
+
+        return $categories;
+    }
+
+    private function attachNewSeo(Product|ProductSet $product): void
     {
         $seo = SeoMetadata::factory()->create();
         $product->seo()->save($seo);
     }
 
-    private function schemas(Product $product): void
+    private function attachNewSchema(Product $product): void
     {
         /** @var Schema $schema */
         $schema = Schema::factory()->create([
@@ -105,13 +167,13 @@ class ProductSeeder extends Seeder
             $item = Item::factory()->create();
             $item->deposits()->saveMany(Deposit::factory()->count(rand(0, 2))->make());
             $schema->options()->saveMany(Option::factory()->count(rand(0, 4))->make());
-//            $schema->options->each(
-//                fn (Option $option) => $option->price()->save(Price::factory()->make()),
-//            );
+            //            $schema->options->each(
+            //                fn (Option $option) => $option->price()->save(Price::factory()->make()),
+            //            );
         }
     }
 
-    private function media(Product $product): void
+    private function attachNewMedia(Product $product): void
     {
         for ($i = 0; $i < rand(0, 5); ++$i) {
             $media = Media::factory()->create();
@@ -119,21 +181,16 @@ class ProductSeeder extends Seeder
         }
     }
 
-    private function sets(Product $product, Collection $sets): void
+    private function attachRandomSets(Product $product, Collection $sets): void
     {
         for ($i = 0; $i < rand(0, 3); ++$i) {
-            $product->sets()->syncWithoutDetaching($sets->random());
+            $this->attachRandomSet($product, $sets);
         }
     }
 
-    private function brands(Product $product, Collection $brands): void
+    private function attachRandomSet(Product $product, Collection $set): void
     {
-        $product->sets()->syncWithoutDetaching($brands->random());
-    }
-
-    private function categories(Product $product, Collection $categories): void
-    {
-        $product->sets()->syncWithoutDetaching($categories->random());
+        $product->sets()->syncWithoutDetaching($set->random());
     }
 
     private function setAvailability(): void

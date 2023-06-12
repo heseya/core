@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Price;
 use App\Models\Schema;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -22,7 +23,6 @@ class SchemaFactory extends Factory
         return [
             'name' => $this->faker->word,
             'description' => $this->faker->sentence(10),
-            'price' => rand(0, 2) ? 0 : rand(10, 40),
             'hidden' => rand(0, 10) === 0,
             'required' => $this->faker->boolean,
             'max' => null,
@@ -30,6 +30,17 @@ class SchemaFactory extends Factory
             'default' => null,
             'pattern' => null,
             'validation' => null,
+
+            //            'price' => rand(0, 2) ? 0 : rand(10, 40),
         ];
+    }
+
+    public function configure(): SchemaFactory
+    {
+        return $this->afterCreating(function (Schema $schema) {
+            $schema->price()->save(
+                Price::factory()->make(),
+            );
+        });
     }
 }

@@ -20,6 +20,10 @@ use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
+use Brick\Math\Exception\MathException;
+use Brick\Money\Exception\MoneyMismatchException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
 use Heseya\Dto\Missing;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -169,6 +173,11 @@ readonly class ProductService implements ProductServiceContract
         Product::query()->where('id', $productId)->withTrashed()->first()?->unsearchable();
     }
 
+    /**
+     * @throws MathException
+     * @throws MoneyMismatchException
+     * @throws UnknownCurrencyException
+     */
     public function getMinMaxPrices(Product $product): array
     {
         [$schemaMin, $schemaMax] = $this->getSchemasPrices(
@@ -177,18 +186,33 @@ readonly class ProductService implements ProductServiceContract
         );
 
         return [
-            $product->price + $schemaMin,
-            $product->price + $schemaMax,
+            $product->price->value->plus($schemaMin),
+            $product->price->value->plus($schemaMax),
         ];
     }
 
+    /**
+     * @throws MathException
+     * @throws MoneyMismatchException
+     * @throws UnknownCurrencyException
+     */
     public function updateMinMaxPrices(Product $product): void
     {
         $productMinMaxPrices = $this->getMinMaxPrices($product);
-        $product->update([
-            'price_min_initial' => $productMinMaxPrices[0],
-            'price_max_initial' => $productMinMaxPrices[1],
+
+        //        $product->update([
+        //            'price_min_initial' => $productMinMaxPrices[0],
+        //            'price_max_initial' => $productMinMaxPrices[1],
+        //        ]);
+
+        $product->priceMinInitial()->updateOrCreate([
+            'value' => $productMinMaxPrices[0],
         ]);
+
+        $product->priceMaxInitial()->updateOrCreate([
+            'value' => $productMinMaxPrices[1],
+        ]);
+
         $this->discountService->applyDiscountsOnProduct($product);
     }
 
@@ -203,6 +227,16 @@ readonly class ProductService implements ProductServiceContract
         $product->items()->sync($items);
     }
 
+    /**
+     * @param Collection<Schema> $allSchemas
+     * @param Collection<Schema> $remainingSchemas
+     *
+     * @return Money[]
+     *
+     * @throws MathException
+     * @throws MoneyMismatchException
+     * @throws UnknownCurrencyException
+     */
     private function getSchemasPrices(
         Collection $allSchemas,
         Collection $remainingSchemas,
@@ -239,12 +273,14 @@ readonly class ProductService implements ProductServiceContract
                 ),
             };
         } else {
+            $currency = 'PLN';
+
             $price = $allSchemas->reduce(
-                fn (float $carry, Schema $current) => $carry + $current->getPrice(
+                fn (Money $carry, Schema $current) => $carry->plus($current->getPrice(
                     $values[$current->getKey()],
                     $values,
-                ),
-                0,
+                )),
+                Money::zero($currency),
             );
 
             $minmax = [
@@ -256,6 +292,7 @@ readonly class ProductService implements ProductServiceContract
         return $minmax;
     }
 
+    /** @return Money[] */
     private function getBestSchemasPrices(
         Collection $allSchemas,
         Collection $remainingSchemas,

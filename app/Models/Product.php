@@ -64,25 +64,26 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
     protected $fillable = [
         'name',
         'slug',
-        'price',
         'description_html',
         'description_short',
         'public',
         'quantity_step',
         'google_product_category',
         'vat_rate',
-        'price_min',
-        'price_max',
         'available',
         'order',
-        'price_min_initial',
-        'price_max_initial',
         'shipping_time',
         'shipping_date',
         'has_schemas',
         'quantity',
         'shipping_digital',
         'purchase_limit_per_user',
+
+        //        'price',
+        //        'price_min',
+        //        'price_max',
+        //        'price_min_initial',
+        //        'price_max_initial',
     ];
 
     protected array $auditInclude = [
@@ -92,15 +93,15 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'description_short',
         'public',
         'quantity_step',
-        'price_min',
-        'price_max',
         'available',
         'order',
+
+        //        'price_min',
+        //        'price_max',
     ];
 
     protected $casts = [
         'shipping_date' => 'date',
-        'price' => 'float',
         'public' => 'bool',
         'available' => 'bool',
         'quantity_step' => 'float',
@@ -109,21 +110,24 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'quantity' => 'float',
         'shipping_digital' => 'bool',
         'purchase_limit_per_user' => 'float',
+
+        //        'price' => 'float',
     ];
 
     protected array $sortable = [
         'id',
-        'price',
         'name',
         'created_at',
         'updated_at',
         'order',
         'public',
         'available',
-        'price_min',
-        'price_max',
         'attribute.*',
         'set.*',
+
+        //        'price',
+        //        'price_min',
+        //        'price_max',
     ];
 
     protected array $criteria = [
@@ -139,14 +143,15 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'tags_not' => WhereNotId::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
-        'price_max' => LessOrEquals::class,
-        'price_min' => MoreOrEquals::class,
         'attribute' => ProductAttributeSearch::class,
         'attribute_not' => ProductNotAttributeSearch::class,
         'has_cover' => WhereHasPhoto::class,
         'has_items' => WhereHasItems::class,
         'has_schemas' => WhereHasSchemas::class,
         'shipping_digital' => Equals::class,
+
+        //        'price_max' => LessOrEquals::class,
+        //        'price_min' => MoreOrEquals::class,
     ];
 
     protected string $defaultSortBy = 'products.order';
@@ -313,5 +318,55 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         $sales = $sales->diff($productSetSales->where('target_is_allow_list', false));
 
         return $sales->unique('id');
+    }
+
+    public function price(): MorphOneWithIdentifier
+    {
+        return $this->morphOneWithIdentifier(
+            Price::class,
+            'model',
+            'price_type',
+            'price',
+        );
+    }
+
+    public function priceMin(): MorphOneWithIdentifier
+    {
+        return $this->morphOneWithIdentifier(
+            Price::class,
+            'model',
+            'price_type',
+            'price_min',
+        );
+    }
+
+    public function priceMax(): MorphOneWithIdentifier
+    {
+        return $this->morphOneWithIdentifier(
+            Price::class,
+            'model',
+            'price_type',
+            'price_max',
+        );
+    }
+
+    public function priceMinInitial(): MorphOneWithIdentifier
+    {
+        return $this->morphOneWithIdentifier(
+            Price::class,
+            'model',
+            'price_type',
+            'price_min_initial',
+        );
+    }
+
+    public function priceMaxInitial(): MorphOneWithIdentifier
+    {
+        return $this->morphOneWithIdentifier(
+            Price::class,
+            'model',
+            'price_type',
+            'price_max_initial',
+        );
     }
 }

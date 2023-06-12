@@ -7,6 +7,9 @@ namespace App\Models;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
 
+/**
+ * @mixin IdeHelperOrderDiscount
+ */
 class OrderDiscount extends MorphPivot
 {
     use HasUUID;
@@ -18,7 +21,7 @@ class OrderDiscount extends MorphPivot
         'name',
         'code',
         'target_type',
-///////
+        // /////
         'value',
         'applied_discount',
     ];

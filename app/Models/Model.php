@@ -64,8 +64,8 @@ abstract class Model extends LaravelModel
         return $this->newMorphOneWithIdentifier(
             $instance->newQuery(),
             $this,
-            $table.'.'.$type,
-            $table.'.'.$id,
+            $table . '.' . $type,
+            $table . '.' . $id,
             $localKey,
             $identifierName,
             $identifier,

@@ -24,13 +24,13 @@ class Payment extends Model
         'status',
         'order_id',
         'method_id',
-/////
+        // ///
         'amount',
     ];
 
     protected $casts = [
         'status' => PaymentStatus::class,
-/////
+        // ///
         'amount' => 'float',
     ];
 

@@ -11,8 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         DB::table('payments')->lazyById()->each(function (object $payment) {
@@ -33,7 +32,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        $amountColumn = fn(Blueprint $table) => $table->float('amount', 19, 4);
+        $amountColumn = fn (Blueprint $table) => $table->float('amount', 19, 4);
 
         Schema::table('payments', function (Blueprint $table) use ($amountColumn) {
             $amountColumn($table)->nullable();

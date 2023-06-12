@@ -29,7 +29,7 @@ class OrderProduct extends Model
         'vat_rate',
         'shipping_digital',
         'is_delivered',
-/////////
+        // ///////
         'base_price_initial',
         'base_price',
         'price_initial',

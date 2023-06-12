@@ -3,6 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\Price;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -20,7 +22,9 @@ class PriceFactory extends Factory
      * Define the model's default state.
      *
      * @throws UnknownCurrencyException
-    */
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     */
     public function definition(): array
     {
         $randomInt = rand(0, 1) ? $this->faker->numberBetween(0, 100) : 0;

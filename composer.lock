@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b001b745efc4e3d77a6dca0f3ef947d7",
+    "content-hash": "87fb9ed760b05e65a45bb3de2aec22bd",
     "packages": [
         {
             "name": "bensampo/laravel-enum",
@@ -4502,6 +4502,7 @@
                 "issues": "https://github.com/php-http/message-factory/issues",
                 "source": "https://github.com/php-http/message-factory/tree/1.1.0"
             },
+            "abandoned": "psr/http-factory",
             "time": "2023-04-14T14:16:17+00:00"
         },
         {

@@ -12,6 +12,13 @@ use App\Rules\OptionAvailable;
 use App\Traits\HasMetadata;
 use App\Traits\Sortable;
 use BenSampo\Enum\Exceptions\InvalidEnumKeyException;
+use Brick\Math\Exception\MathException;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Math\RoundingMode;
+use Brick\Money\Exception\MoneyMismatchException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -50,8 +57,8 @@ class Schema extends Model implements SortableContract
         'available',
         'shipping_time',
         'shipping_date',
-///////////
-        'price',
+
+        //        'price',
     ];
 
     protected $casts = [
@@ -59,8 +66,8 @@ class Schema extends Model implements SortableContract
         'required' => 'bool',
         'available' => 'bool',
         'type' => SchemaType::class,
-////////
-        'price' => 'float',
+
+        //        'price' => 'float',
     ];
 
     protected array $criteria = [
@@ -182,12 +189,20 @@ class Schema extends Model implements SortableContract
         return $this->belongsToMany(Product::class, 'product_schemas');
     }
 
-    public function getPrice(mixed $value, array $schemas): float
+    /**
+     * @throws RoundingNecessaryException
+     * @throws MoneyMismatchException
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
+    public function getPrice(mixed $value, array $schemas): Money
     {
         $schemaKeys = Collection::make($schemas)->keys();
+        $currency = 'PLN';
 
         if ($this->usedBySchemas()->whereIn($this->getKeyName(), $schemaKeys)->exists()) {
-            return 0.0;
+            return Money::of(0, $currency);
         }
 
         return $this->getUsedPrice($value, $schemas);
@@ -213,41 +228,64 @@ class Schema extends Model implements SortableContract
         );
     }
 
-    private function getUsedPrice(mixed $value, array $schemas): float
+    /**
+     * @throws MathException
+     * @throws MoneyMismatchException
+     * @throws UnknownCurrencyException
+     */
+    private function getUsedPrice(mixed $value, array $schemas): Money
     {
-        $price = $this->price;
+        $price = $this->price->value;
+        $currency = 'PLN';
 
         if (!$this->required && $value === null) {
-            return 0;
+            return Money::of(0, $currency);
         }
 
         if (
             ($this->type->is(SchemaType::STRING) || $this->type->is(SchemaType::NUMERIC)) &&
             Str::length(trim($value)) === 0
         ) {
-            return 0;
+            return Money::of(0, $currency);
         }
 
         if ($this->type->is(SchemaType::BOOLEAN) && ((bool) $value) === false) {
-            return 0;
+            return Money::of(0, $currency);
         }
 
         if ($this->type->is(SchemaType::SELECT)) {
+            /** @var Option $option */
             $option = $this->options()->findOrFail($value);
 
-            $price += $option->price;
+            $price = $price->plus($option->price->value);
         }
 
         if ($this->type->is(SchemaType::MULTIPLY)) {
-            $price *= (float) $value;
+            $price = $price->multipliedBy((float) $value, roundingMode: RoundingMode::HALF_UP);
         }
 
         if ($this->type->is(SchemaType::MULTIPLY_SCHEMA)) {
             /** @var Schema $usedSchema */
             $usedSchema = $this->usedSchemas()->firstOrFail();
-            $price = $value * $usedSchema->getUsedPrice($schemas[$usedSchema->getKey()], $schemas);
+
+            $price = $usedSchema
+                ->getUsedPrice($schemas[$usedSchema->getKey()], $schemas)
+                ->multipliedBy(
+                    (float) $value,
+                    roundingMode: RoundingMode::HALF_UP,
+                );
         }
 
         return $price;
+    }
+
+    public function price(): MorphOneWithIdentifier
+    {
+        return $this->morphOneWithIdentifier(
+            Price::class,
+            'model',
+            'price_type',
+            'price',
+        );
     }
 }

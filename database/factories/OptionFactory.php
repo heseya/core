@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Option;
+use App\Models\Price;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class OptionFactory extends Factory
@@ -21,8 +22,18 @@ class OptionFactory extends Factory
     {
         return [
             'name' => $this->faker->word,
-            'price' => rand(0, 1) ? $this->faker->numberBetween(0, 100) : 0,
             'disabled' => rand(0, 10) === 0,
+
+            //            'price' => rand(0, 1) ? $this->faker->numberBetween(0, 100) : 0,
         ];
+    }
+
+    public function configure(): OptionFactory
+    {
+        return $this->afterCreating(function (Option $option) {
+            $option->price()->save(
+                Price::factory()->make(),
+            );
+        });
     }
 }

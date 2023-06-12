@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Dtos\CartDto;
@@ -61,6 +63,14 @@ use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
 use App\Services\Contracts\ShippingTimeDateServiceContract;
+use Brick\Math\BigDecimal;
+use Brick\Math\Exception\MathException;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Math\RoundingMode;
+use Brick\Money\Exception\MoneyMismatchException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
 use Heseya\Dto\Missing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -178,19 +188,26 @@ readonly class DiscountService implements DiscountServiceContract
         }
     }
 
-    public function calc(float $value, Discount $discount): float
+    /**
+     * @throws MathException
+     * @throws NumberFormatException
+     * @throws ClientException
+     */
+    public function calc(Money $value, Discount $discount): Money
     {
         if (isset($discount->pivot) && $discount->pivot->type !== null) {
             $discount->type = $discount->pivot->type;
-            $discount->value = $discount->pivot->value;
+            $discount->percentage = $discount->pivot->percentage;
         }
 
         if ($discount->type->is(DiscountType::PERCENTAGE)) {
-            return $value * $discount->value / 100;
+            $percentage = BigDecimal::of($discount->percentage)->dividedBy(100, 2, RoundingMode::HALF_UP);
+
+            return $value->multipliedBy($percentage, RoundingMode::HALF_UP);
         }
 
         if ($discount->type->is(DiscountType::AMOUNT)) {
-            return $discount->value;
+            return $discount->amount->value;
         }
 
         throw new ClientException(Exceptions::CLIENT_DISCOUNT_TYPE_NOT_SUPPORTED, errorArray: ['type' => $discount->type]);
@@ -399,18 +416,25 @@ readonly class DiscountService implements DiscountServiceContract
         })->toArray();
     }
 
+    /**
+     * @throws RoundingNecessaryException
+     * @throws MoneyMismatchException
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
     public function applyDiscountOnProduct(
         Product $product,
         OrderProductDto $orderProductDto,
         Discount $discount
     ): OrderProduct {
-        $price = $product->price;
+        $price = $product->price->value;
 
         foreach ($orderProductDto->getSchemas() as $schemaId => $value) {
             /** @var Schema $schema */
             $schema = $product->schemas()->findOrFail($schemaId);
 
-            $price += $schema->getPrice($value, $orderProductDto->getSchemas());
+            $price = $price->plus($schema->getPrice($value, $orderProductDto->getSchemas()));
         }
 
         return new OrderProduct([
@@ -1199,16 +1223,30 @@ readonly class DiscountService implements DiscountServiceContract
         ]);
     }
 
-    private function calcPrice(float $price, string $productId, Discount $discount): float
+    /**
+     * @throws ClientException
+     * @throws MathException
+     * @throws MoneyMismatchException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
+     */
+    private function calcPrice(Money $price, string $productId, Discount $discount): Money
     {
         $minimalProductPrice = $this->settingsService->getMinimalPrice('minimal_product_price');
+        // THIS IS TEMPORARY SOLUTION
+        // YOU NEED MINIMAL PRICE FOR EACH CURRENCY
+        $minimalProductPrice = Money::of($minimalProductPrice, $price->getCurrency());
 
         if ($price !== $minimalProductPrice && $this->checkIsProductInDiscount($productId, $discount)) {
-            $price -= $this->calc($price, $discount);
-            $price = max($price, $minimalProductPrice);
+            $price = $price->minus($this->calc($price, $discount));
+
+            $price = $price->isGreaterThan($minimalProductPrice)
+                ? $price
+                : $minimalProductPrice;
         }
 
-        return round($price, 2, PHP_ROUND_HALF_UP);
+        return $price;
     }
 
     private function checkIsProductInDiscount(string $productId, Discount $discount): bool

@@ -12,8 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         DB::table('order_schemas')->lazyById()->each(function (object $orderSchema) {
@@ -29,7 +28,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        $columnSpec = fn(Blueprint $table, string $name) => $table->float($name, 19, 4);
+        $columnSpec = fn (Blueprint $table, string $name) => $table->float($name, 19, 4);
 
         Schema::table('order_schemas', function (Blueprint $table) use ($columnSpec) {
             $columnSpec($table, 'price')->nullable();
@@ -53,7 +52,8 @@ return new class extends Migration
         });
     }
 
-    private function getPrice(string $type, string $modelId): BigDecimal {
+    private function getPrice(string $type, string $modelId): BigDecimal
+    {
         $price = DB::table('prices')
             ->where('model_id', $modelId)
             ->where('price_type', $type)
@@ -62,7 +62,8 @@ return new class extends Migration
         return Money::of($price->value, 'PLN')->getAmount();
     }
 
-    private function insertPrice(string $type, float $value, string $modelId): void {
+    private function insertPrice(string $type, float $value, string $modelId): void
+    {
         DB::table('prices')->insert([
             'id' => Str::uuid(),
             'model_id' => $modelId,

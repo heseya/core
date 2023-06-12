@@ -45,21 +45,20 @@ class Discount extends Model implements AuditableContract
         'description',
         'description_html',
         'code',
-        'value',
-        'type',
         'target_type',
         'target_is_allow_list',
         'priority',
         'active',
-    ];
 
+        'type',
+        'percentage',
+    ];
     protected $casts = [
         'type' => DiscountType::class,
         'target_type' => DiscountTargetType::class,
         'target_is_allow_list' => 'boolean',
         'active' => 'boolean',
     ];
-
     protected array $criteria = [
         'description' => Like::class,
         'code' => Like::class,
@@ -127,5 +126,15 @@ class Discount extends Model implements AuditableContract
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('active', true);
+    }
+
+    public function amount(): MorphOneWithIdentifier
+    {
+        return $this->morphOneWithIdentifier(
+            Price::class,
+            'model',
+            'model_type',
+            'amount'
+        );
     }
 }

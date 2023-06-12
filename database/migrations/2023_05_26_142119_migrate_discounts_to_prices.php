@@ -12,8 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::table('discounts', function (Blueprint $table) {
@@ -48,9 +47,9 @@ return new class extends Migration
 
     public function down(): void
     {
-        $valueColumn = fn(Blueprint $table) => $table->float('value', 19, 4);
+        $valueColumn = fn (Blueprint $table) => $table->float('value', 19, 4);
 
-        Schema::table('discounts', function (Blueprint $table) use ($valueColumn) {
+        Schema::table('discounts', function (Blueprint $table) {
             $table->string('type', 255);
             $table->renameColumn('percentage', 'value');
         });
@@ -77,7 +76,8 @@ return new class extends Migration
         });
     }
 
-    private function getPrice(string $type, string $modelId): ?BigDecimal {
+    private function getPrice(string $type, string $modelId): ?BigDecimal
+    {
         $price = DB::table('prices')
             ->where('model_id', $modelId)
             ->where('price_type', $type)
@@ -90,7 +90,8 @@ return new class extends Migration
         return Money::of($price->value, 'PLN')->getAmount();
     }
 
-    private function insertPrice(string $type, ?float $value, string $modelId): void {
+    private function insertPrice(string $type, ?float $value, string $modelId): void
+    {
         if ($value === null) {
             return;
         }

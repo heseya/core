@@ -6,7 +6,6 @@ use App\Traits\HasMetadata;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 /**
  * @mixin IdeHelperOption
@@ -24,15 +23,15 @@ class Option extends Model
         'available',
         'shipping_time',
         'shipping_date',
-/////////
-        'price',
+
+        //        'price',
     ];
 
     protected $casts = [
         'disabled' => 'bool',
         'available' => 'bool',
-//////////////
-        'price' => 'float',
+
+        //        'price' => 'float',
     ];
 
     public function items(): BelongsToMany
@@ -46,9 +45,14 @@ class Option extends Model
     {
         return $this->belongsTo(Schema::class);
     }
-//
-//    public function price(): MorphOne
-//    {
-//        return $this->morphOne(Price::class, 'model');
-//    }
+
+    public function price(): MorphOneWithIdentifier
+    {
+        return $this->morphOneWithIdentifier(
+            Price::class,
+            'model',
+            'price_type',
+            'price',
+        );
+    }
 }

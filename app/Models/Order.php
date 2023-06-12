@@ -67,7 +67,7 @@ class Order extends Model implements AuditableContract, SortableContract
         'paid',
         // Useless with new price system
         'currency',
-//////
+        // ////
         'summary',
         'shipping_price_initial',
         'shipping_price',
