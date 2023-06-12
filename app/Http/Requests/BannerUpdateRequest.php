@@ -24,9 +24,9 @@ class BannerUpdateRequest extends FormRequest
             'active' => ['boolean'],
 
             'banner_media' => ['array'],
-            'banner_media.*.title' => ['string', 'max:255'],
-            'banner_media.*.subtitle' => ['string', 'max:255'],
-            'banner_media.*.url' => ['string', 'max:255'],
+            'banner_media.*.title' => ['nullable', 'string', 'max:255'],
+            'banner_media.*.subtitle' => ['nullable', 'string', 'max:255'],
+            'banner_media.*.url' => ['nullable', 'string', 'max:255'],
             'banner_media.*.media' => ['array'],
             'banner_media.*.media.*.min_screen_width' => ['required', 'numeric'],
             'banner_media.*.media.*.media' => ['required', 'uuid', 'exists:media,id'],

@@ -19,9 +19,9 @@ class BannerStoreRequest extends FormRequest
                 'active' => ['required', 'boolean'],
 
                 'banner_media' => ['required', 'array'],
-                'banner_media.*.title' => ['required', 'string', 'max:255'],
-                'banner_media.*.subtitle' => ['required', 'string', 'max:255'],
-                'banner_media.*.url' => ['required', 'string', 'max:255'],
+                'banner_media.*.title' => ['nullable', 'string', 'max:255'],
+                'banner_media.*.subtitle' => ['nullable', 'string', 'max:255'],
+                'banner_media.*.url' => ['nullable', 'string', 'max:255'],
                 'banner_media.*.media' => ['required', 'array'],
                 'banner_media.*.media.*.min_screen_width' => ['required', 'numeric'],
                 'banner_media.*.media.*.media' => ['required', 'uuid', 'exists:media,id'],

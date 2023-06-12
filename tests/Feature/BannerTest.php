@@ -283,6 +283,18 @@ class BannerTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateBannerWithEmptyBannerMedia(string $user): void
+    {
+        $this->$user->givePermissionTo('banners.add');
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/banners', $this->newBanner + ['banner_media' => [$this->medias]])
+            ->assertCreated();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateBannerWithMetadata($user): void
     {
         $this->$user->givePermissionTo('banners.add');

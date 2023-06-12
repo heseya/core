@@ -608,7 +608,7 @@ class OrderUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateOrderWithMissingShippingAddress($user): void
+    public function testUpdateOrderWithMissingShippingAddress(string $user): void
     {
         $this->$user->givePermissionTo('orders.edit');
 
@@ -649,7 +649,7 @@ class OrderUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateOrderByInvoiceAddress($user): void
+    public function testUpdateOrderByInvoiceAddress(string $user): void
     {
         $this->$user->givePermissionTo('orders.edit');
 
@@ -894,7 +894,7 @@ class OrderUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateOrderWithMissingShippingAddressForShippingPlace($user): void
+    public function testUpdateOrderWithMissingShippingAddressForShippingPlace(string $user): void
     {
         $this->$user->givePermissionTo('orders.edit');
 
@@ -918,7 +918,7 @@ class OrderUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateOrderWithMissingShippingPlace($user): void
+    public function testUpdateOrderWithMissingShippingPlace(string $user): void
     {
         $this->$user->givePermissionTo('orders.edit');
 

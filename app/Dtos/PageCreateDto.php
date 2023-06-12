@@ -10,7 +10,7 @@ use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 
-class PageDto extends Dto implements InstantiateFromRequest
+class PageCreateDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
@@ -31,26 +31,6 @@ class PageDto extends Dto implements InstantiateFromRequest
             seo: $request->has('seo') ? SeoMetadataDto::instantiateFromRequest($request) : new Missing(),
             metadata: self::mapMetadata($request),
         );
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    public function getSlug(): string
-    {
-        return $this->slug;
-    }
-
-    public function isPublic(): bool
-    {
-        return $this->public;
-    }
-
-    public function getContentHtml(): string
-    {
-        return $this->content_html;
     }
 
     public function getSeo(): SeoMetadataDto|Missing

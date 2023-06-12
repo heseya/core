@@ -6,20 +6,18 @@ use App\Http\Controllers\MetadataController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('attributes')->group(function (): void {
-    Route::get(null, [AttributeController::class, 'index'])
+    Route::get('/', [AttributeController::class, 'index'])
         ->middleware('can:attributes.show');
-    Route::post(null, [AttributeController::class, 'store'])
+    Route::post('/', [AttributeController::class, 'store'])
         ->middleware('can:attributes.add');
     Route::get('id:{attribute:id}', [AttributeController::class, 'show'])
-        ->middleware('can:attributes.show')
-        ->whereUuid('attribute');
+        ->middleware('can:attributes.show');
     Route::patch('id:{attribute:id}', [AttributeController::class, 'update'])
         ->middleware('can:attributes.edit');
     Route::delete('id:{attribute:id}', [AttributeController::class, 'destroy'])
         ->middleware('can:attributes.remove');
     Route::get('id:{attribute:id}/options', [AttributeOptionController::class, 'index'])
-        ->middleware('can:attributes.show')
-        ->whereUuid('attribute');
+        ->middleware('can:attributes.show');
     Route::post('id:{attribute:id}/options', [AttributeOptionController::class, 'store'])
         ->middleware('can:attributes.edit');
     Route::patch('id:{attribute:id}/metadata', [MetadataController::class, 'updateOrCreate'])

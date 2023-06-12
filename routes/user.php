@@ -18,12 +18,11 @@ Route::prefix('users')->group(function (): void {
     Route::post('/self-remove', [UserController::class, 'selfRemove'])
         ->middleware(['app.restrict', 'can:users.self_remove']);
 
-    Route::get(null, [UserController::class, 'index'])
+    Route::get('/', [UserController::class, 'index'])
         ->middleware('can:users.show');
     Route::get('id:{user:id}', [UserController::class, 'show'])
-        ->middleware('can:users.show_details')
-        ->whereUuid('user');
-    Route::post(null, [UserController::class, 'store'])
+        ->middleware('can:users.show_details');
+    Route::post('/', [UserController::class, 'store'])
         ->middleware('can:users.add');
     Route::patch('id:{user:id}', [UserController::class, 'update'])
         ->middleware('can:users.edit');
