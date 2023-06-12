@@ -6,13 +6,12 @@ use App\Http\Controllers\MetadataController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('items')->group(function (): void {
-    Route::get(null, [ItemController::class, 'index'])
+    Route::get('/', [ItemController::class, 'index'])
         ->middleware('can:items.show');
-    Route::post(null, [ItemController::class, 'store'])
+    Route::post('/', [ItemController::class, 'store'])
         ->middleware('can:items.add');
     Route::get('id:{item:id}', [ItemController::class, 'show'])
-        ->middleware('can:items.show_details')
-        ->whereUuid('item');
+        ->middleware('can:items.show_details');
     Route::patch('id:{item:id}', [ItemController::class, 'update'])
         ->middleware('can:items.edit');
     Route::patch('id:{item:id}/metadata', [MetadataController::class, 'updateOrCreate'])
@@ -23,8 +22,7 @@ Route::prefix('items')->group(function (): void {
         ->middleware('can:items.remove');
 
     Route::get('id:{item:id}/deposits', [DepositController::class, 'show'])
-        ->middleware('can:deposits.show')
-        ->whereUuid('item');
+        ->middleware('can:deposits.show');
     Route::post('id:{item:id}/deposits', [DepositController::class, 'store'])
         ->middleware('can:deposits.add');
 });

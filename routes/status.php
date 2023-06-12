@@ -5,9 +5,9 @@ use App\Http\Controllers\StatusController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('statuses')->group(function (): void {
-    Route::get(null, [StatusController::class, 'index'])
+    Route::get('/', [StatusController::class, 'index'])
         ->middleware('can:statuses.show');
-    Route::post(null, [StatusController::class, 'store'])
+    Route::post('/', [StatusController::class, 'store'])
         ->middleware('can:statuses.add');
     Route::patch('id:{status:id}', [StatusController::class, 'update'])
         ->middleware('can:statuses.edit');
