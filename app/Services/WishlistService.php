@@ -16,26 +16,21 @@ class WishlistService implements WishlistServiceContract
 {
     public function index(User|App $user): LengthAwarePaginator
     {
-        $query = $user->wishlistProducts();
-
-        if (!$user->hasPermissionTo('products.show_hidden')) {
-            $query->where('public', '=', true);
-        }
+        $query = $user->hasPermissionTo('products.show_hidden') ?
+            $user->wishlistProducts() :
+            $user->wishlistProductsPublic();
 
         return $query->paginate(Config::get('pagination.per_page'));
     }
 
-    public function canView(User|App $user, Product $product): bool
+    public function show(User|App $user, Product $product): WishlistProduct|null
     {
-        $query = $user->wishlistProducts();
+        $query = $user->hasPermissionTo('products.show_hidden') ?
+            $user->wishlistProducts() :
+            $user->wishlistProductsPublic();
 
-        if (!$user->hasPermissionTo('products.show_hidden')) {
-            $query->where('public', '=', true);
-        }
-
-        return $query
-            ->where('product_id', $product->getKey())
-            ->exists();
+        // weird firstOr because laravel typing -_-
+        return $query->where('product_id', $product->getKey())->firstOr(fn () => null);
     }
 
     public function storeWishlistProduct(User|App $user, string $id): WishlistProduct

@@ -12,7 +12,7 @@ interface WishlistServiceContract
 {
     public function index(User|App $user): LengthAwarePaginator;
 
-    public function canView(User|App $user, Product $product): bool;
+    public function show(User|App $user, Product $product): WishlistProduct|null;
 
     public function storeWishlistProduct(User|App $user, string $id): WishlistProduct;
 

@@ -35,12 +35,11 @@ class WishlistController extends Controller
     {
         /** @var User|App $user */
         $user = $request->user();
+        $wishlistProduct = $this->wishlistService->show($user, $product);
 
-        if (!$this->wishlistService->canView($user, $product)) {
-            return Response::json(null, ResponseAlias::HTTP_NOT_FOUND);
-        }
-
-        return WishlistProductResource::make($product);
+        return $wishlistProduct === null ?
+            Response::json(null, ResponseAlias::HTTP_NOT_FOUND) :
+            WishlistProductResource::make($wishlistProduct);
     }
 
     public function store(WishlistProductStoreRequest $request): JsonResource
