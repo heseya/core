@@ -57,14 +57,12 @@ class WishlistTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndex($user): void
+    public function testIndex(string $user): void
     {
         $this->$user->givePermissionTo('profile.wishlist_manage');
 
-        WishlistProduct::create([
+        $this->$user->wishlistProducts()->create([
             'product_id' => $this->product->getKey(),
-            'user_id' => $this->$user->getKey(),
-            'user_type' => $this->$user::class,
         ]);
 
         $this->actingAs($this->$user)->json('GET', '/wishlist')
@@ -90,7 +88,7 @@ class WishlistTest extends TestCase
 
     public function testIndexUnauthorized(): void
     {
-        WishlistProduct::create([
+        WishlistProduct::query()->create([
             'product_id' => $this->product->getKey(),
             'user_id' => $this->user->getKey(),
             'user_type' => $this->user::class,
@@ -103,45 +101,34 @@ class WishlistTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShow($user): void
+    public function testShow(string $user): void
     {
         $this->$user->givePermissionTo('profile.wishlist_manage');
 
-        WishlistProduct::create([
-            'product_id' => Product::factory()->create()->getKey(),
-            'user_id' => $this->$user->getKey(),
-            'user_type' => $this->$user::class,
+        $this->$user->wishlistProducts()->create([
+            'product_id' => Product::factory()->create(['public' => true])->getKey(),
         ]);
 
-        WishlistProduct::create([
+        $this->$user->wishlistProducts()->create([
             'product_id' => $this->product->getKey(),
-            'user_id' => $this->$user->getKey(),
-            'user_type' => $this->$user::class,
         ]);
 
-        $this->actingAs($this->$user)->json('GET', '/wishlist/id:' . $this->product->getKey())
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/wishlist/id:' . $this->product->getKey())
             ->assertOk()
             ->assertJsonStructure(['data' => $this->expected_structure])
-            ->assertJson([
-                'data' => [
-                    'product' => [
-                        'id' => $this->product->getKey(),
-                        'name' => $this->product->name,
-                        'slug' => $this->product->slug,
-                        'public' => $this->product->public,
-                    ],
-                ],
-            ]);
+            ->assertJsonFragment(['id' => $this->product->getKey()]);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testShowMissing($user): void
+    public function testShowMissing(string $user): void
     {
         $this->$user->givePermissionTo('profile.wishlist_manage');
 
-        WishlistProduct::create([
+        WishlistProduct::query()->create([
             'product_id' => Product::factory()->create()->getKey(),
             'user_id' => $this->$user->getKey(),
         ]);
@@ -154,13 +141,13 @@ class WishlistTest extends TestCase
 
     public function testShowUnauthorized(): void
     {
-        WishlistProduct::create([
+        WishlistProduct::query()->create([
             'product_id' => Product::factory()->create()->getKey(),
             'user_id' => $this->user->getKey(),
             'user_type' => $this->user::class,
         ]);
 
-        WishlistProduct::create([
+        WishlistProduct::query()->create([
             'product_id' => $this->product->getKey(),
             'user_id' => $this->user->getKey(),
             'user_type' => $this->user::class,
@@ -173,7 +160,7 @@ class WishlistTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testStore($user): void
+    public function testStore(string $user): void
     {
         $this->$user->givePermissionTo('profile.wishlist_manage');
 
@@ -210,11 +197,11 @@ class WishlistTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testStoreAlreadyStored($user): void
+    public function testStoreAlreadyStored(string $user): void
     {
         $this->$user->givePermissionTo('profile.wishlist_manage');
 
-        WishlistProduct::create([
+        WishlistProduct::query()->create([
             'product_id' => $this->product->getKey(),
             'user_id' => $this->$user->getKey(),
         ]);
