@@ -8,7 +8,6 @@ use App\Models\Attribute;
 use App\Models\AttributeOption;
 use App\Models\Option;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
 

@@ -13,18 +13,18 @@ use Illuminate\Foundation\Http\FormRequest;
 class ProductSetDto extends Dto implements InstantiateFromRequest
 {
     public function __construct(
-        private string|Missing $id,
-        private string $name,
-        private string|null|Missing $slug_suffix,
-        private bool $slug_override,
-        private bool $public,
-        private string|null|Missing $parent_id,
-        private array $children_ids,
-        private SeoMetadataDto|Missing $seo,
-        private string|null|Missing $description_html,
-        private string|null|Missing $cover_id,
-        private array|null|Missing $attributes_ids,
-        private array|Missing $metadata,
+        public readonly string|Missing $id,
+        public readonly string $name,
+        public readonly string|null|Missing $slug_suffix,
+        public readonly bool $slug_override,
+        public readonly bool $public,
+        public readonly string|null|Missing $parent_id,
+        public readonly array $children_ids,
+        public readonly SeoMetadataDto|Missing $seo,
+        public readonly string|null|Missing $description_html,
+        public readonly string|null|Missing $cover_id,
+        public readonly array|null|Missing $attributes_ids,
+        public readonly array|Missing $metadata,
     ) {
     }
 
@@ -48,60 +48,5 @@ class ProductSetDto extends Dto implements InstantiateFromRequest
             attributes_ids: $request->input('attributes'),
             metadata: ProductCreateDto::mapMetadata($request),
         );
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    public function getSlugSuffix(): Missing|string|null
-    {
-        return $this->slug_suffix;
-    }
-
-    public function isSlugOverridden(): bool
-    {
-        return $this->slug_override;
-    }
-
-    public function isPublic(): bool
-    {
-        return $this->public;
-    }
-
-    public function getParentId(): Missing|string|null
-    {
-        return $this->parent_id;
-    }
-
-    public function getChildrenIds(): array
-    {
-        return $this->children_ids;
-    }
-
-    public function getSeo(): SeoMetadataDto|Missing
-    {
-        return $this->seo;
-    }
-
-    public function getDescriptionHtml(): Missing|string|null
-    {
-        return $this->description_html;
-    }
-
-    public function getCoverId(): Missing|string|null
-    {
-        return $this->cover_id;
-    }
-
-    public function getAttributesIds(): Missing|null|array
-    {
-        return $this->attributes_ids;
-    }
-
-    public function getMetadata(): Missing|array
-    {
-        return $this->metadata;
     }
 }

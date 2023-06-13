@@ -194,8 +194,8 @@ class ItemService implements ItemServiceContract
     {
         $item = Item::create($dto->toArray());
 
-        if (!($dto->getMetadata() instanceof Missing)) {
-            $this->metadataService->sync($item, $dto->getMetadata());
+        if (!($dto->metadata instanceof Missing)) {
+            $this->metadataService->sync($item, $dto->metadata);
         }
 
         ItemCreated::dispatch($item);
@@ -209,8 +209,8 @@ class ItemService implements ItemServiceContract
 
         ItemUpdated::dispatch($item);
         if (
-            !($dto->getUnlimitedStockShippingDate() instanceof Missing) ||
-            !($dto->getUnlimitedStockShippingTime() instanceof Missing)
+            !($dto->unlimited_stock_shipping_date instanceof Missing) ||
+            !($dto->unlimited_stock_shipping_time instanceof Missing)
         ) {
             ItemUpdatedQuantity::dispatch($item);
         }

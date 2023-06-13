@@ -18,8 +18,8 @@ class MediaDto extends Dto implements InstantiateFromRequest
     use MapMetadata;
 
     public function __construct(
-        public readonly string|Missing $id = new Missing(),
         public readonly UploadedFile|Missing|null $file,
+        public readonly string|Missing $id = new Missing(),
         public readonly string|Missing $url = new Missing(),
         public readonly MediaType|Missing $type = new Missing(),
         public readonly string|null|Missing $alt = new Missing(),
@@ -40,8 +40,8 @@ class MediaDto extends Dto implements InstantiateFromRequest
         }
 
         return new self(
-            id: $request->input('id') ?? new Missing(),
             file: $file,
+            id: $request->input('id') ?? new Missing(),
             url: $request->input('url', new Missing()),
             type: $request->enum('type', MediaType::class) ?? new Missing(),
             alt: $request->input('alt', new Missing()),

@@ -15,11 +15,11 @@ class AttributeOptionDto extends Dto implements InstantiateFromRequest
     use MapMetadata;
 
     public function __construct(
-        private string|null|Missing $id,
-        private string|null|Missing $name,
-        private float|null|Missing $value_number,
-        private string|null|Missing $value_date,
-        private array|Missing $metadata,
+        public readonly string|null|Missing $id,
+        public readonly string|null|Missing $name,
+        public readonly float|null|Missing $value_number,
+        public readonly string|null|Missing $value_date,
+        public readonly array|Missing $metadata,
     ) {
     }
 
@@ -49,25 +49,5 @@ class AttributeOptionDto extends Dto implements InstantiateFromRequest
             value_date: array_key_exists('value_date', $data) ? $data['value_date'] : null,
             metadata: self::mapMetadataFromArray($data),
         );
-    }
-
-    public function getId(): string|null|Missing
-    {
-        return $this->id;
-    }
-
-    public function getName(): string|null|Missing
-    {
-        return $this->name;
-    }
-
-    public function getValueNumber(): float|null|Missing
-    {
-        return $this->value_number;
-    }
-
-    public function getValueDate(): string|null|Missing
-    {
-        return $this->value_date;
     }
 }

@@ -65,22 +65,22 @@ class ProductSetService implements ProductSetServiceContract
      */
     public function create(ProductSetDto $dto): ProductSet
     {
-        if ($dto->getParentId() !== null) {
+        if ($dto->parent_id !== null) {
             /** @var ProductSet $parent */
-            $parent = ProductSet::query()->findOrFail($dto->getParentId());
+            $parent = ProductSet::query()->findOrFail($dto->parent_id);
             $lastChild = $parent->children()->reversed()->first();
 
             $order = $lastChild ? $lastChild->order + 1 : 0;
             // Here slug is always string because slug_suffix is required when creating product set
             /** @var string $slug */
-            $slug = $this->prepareSlug($dto->isSlugOverridden(), $dto->getSlugSuffix(), $parent->slug);
+            $slug = $this->prepareSlug($dto->slug_override, $dto->slug_suffix, $parent->slug);
             $publicParent = $parent->public && $parent->public_parent;
         } else {
             $last = ProductSet::reversed()->first();
 
             $order = $last ? $last->order + 1 : 0;
             /** @var string $slug */
-            $slug = $dto->getSlugSuffix();
+            $slug = $dto->slug_suffix;
             $publicParent = true;
         }
 
@@ -96,25 +96,25 @@ class ProductSetService implements ProductSetServiceContract
         ]);
 
         $attributes = null;
-        if (!$dto->getAttributesIds() instanceof Missing) {
-            $attributes = Collection::make($dto->getAttributesIds());
+        if (!$dto->attributes_ids instanceof Missing) {
+            $attributes = Collection::make($dto->attributes_ids);
         }
         if ($attributes !== null && $attributes->isNotEmpty()) {
             $set->attributes()->sync($attributes);
         }
 
-        $children = Collection::make($dto->getChildrenIds());
+        $children = Collection::make($dto->children_ids);
         if ($children->isNotEmpty()) {
             $children = $children->map(fn ($id) => ProductSet::findOrFail($id));
-            $this->updateChildren($children, $set->getKey(), $slug, $publicParent && $dto->isPublic());
+            $this->updateChildren($children, $set->getKey(), $slug, $publicParent && $dto->public);
         }
 
-        if (!($dto->getSeo() instanceof Missing)) {
-            $this->seoMetadataService->createOrUpdateFor($set, $dto->getSeo());
+        if (!($dto->seo instanceof Missing)) {
+            $this->seoMetadataService->createOrUpdateFor($set, $dto->seo);
         }
 
-        if (!($dto->getMetadata() instanceof Missing)) {
-            $this->metadataService->sync($set, $dto->getMetadata());
+        if (!($dto->metadata instanceof Missing)) {
+            $this->metadataService->sync($set, $dto->metadata);
         }
 
         // searchable is handled by the event listener
