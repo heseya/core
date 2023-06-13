@@ -10,6 +10,7 @@ use App\Http\Resources\MediaDetailResource;
 use App\Http\Resources\MediaResource;
 use App\Models\Media;
 use App\Services\Contracts\MediaServiceContract;
+use Heseya\Dto\DtoException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -33,6 +34,9 @@ class MediaController extends Controller
         return MediaDetailResource::collection($query->paginate(Config::get('pagination.per_page')));
     }
 
+    /**
+     * @throws DtoException
+     */
     public function store(MediaStoreRequest $request): JsonResource
     {
         $media = $this->mediaServiceContract->store(MediaDto::instantiateFromRequest($request));
@@ -40,6 +44,9 @@ class MediaController extends Controller
         return MediaDetailResource::make($media);
     }
 
+    /**
+     * @throws DtoException
+     */
     public function update(Media $media, MediaUpdateRequest $request): JsonResource
     {
         $media = $this->mediaServiceContract->update(

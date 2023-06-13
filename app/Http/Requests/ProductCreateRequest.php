@@ -22,6 +22,8 @@ class ProductCreateRequest extends FormRequest implements SeoRequestContract, Me
             $this->seoRules(),
             $this->metadataRules(),
             [
+                'id' => ['uuid'],
+
                 'name' => ['required', 'string', 'max:255'],
                 'slug' => ['required', 'string', 'max:255', 'unique:products', 'alpha_dash'],
                 'price' => ['required', 'numeric', 'min:0'],

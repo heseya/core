@@ -26,6 +26,7 @@ class Attribute extends Model
     use HasMetadata;
 
     protected $fillable = [
+        'id',
         'name',
         'slug',
         'description',

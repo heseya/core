@@ -6,6 +6,7 @@ use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\AttributeOptionRequest;
 use App\Traits\MapMetadata;
 use Heseya\Dto\Dto;
+use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -13,12 +14,18 @@ class AttributeOptionDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    private array|Missing $metadata;
-    private string|null|Missing $id;
-    private string|null|Missing $name;
-    private float|null|Missing $value_number;
-    private string|null|Missing $value_date;
+    public function __construct(
+        private string|null|Missing $id,
+        private string|null|Missing $name,
+        private float|null|Missing $value_number,
+        private string|null|Missing $value_date,
+        private array|Missing $metadata,
+    ) {
+    }
 
+    /**
+     * @throws DtoException
+     */
     public static function instantiateFromRequest(FormRequest|AttributeOptionRequest $request): self
     {
         return new self(
@@ -30,6 +37,9 @@ class AttributeOptionDto extends Dto implements InstantiateFromRequest
         );
     }
 
+    /**
+     * @throws DtoException
+     */
     public static function fromDataArray(array $data): self
     {
         return new self(

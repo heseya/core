@@ -14,18 +14,24 @@ class AttributeDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    private array|Missing $metadata;
-    private string $name;
-    private string $slug;
-    private string|null|Missing $description;
-    private string $type;
-    private bool $global;
-    private bool $sortable;
+    public function __construct(
+        private string|Missing $id,
+        private string $name,
+        private string $slug,
+        private string|null|Missing $description,
+        private string $type,
+        private bool $global,
+        private bool $sortable,
+        private array|Missing $metadata,
+    ) {
+    }
+
 
     public static function instantiateFromRequest(
         FormRequest|AttributeStoreRequest|AttributeUpdateRequest $request
     ): self {
         return new self(
+            id: $request->input('id', new Missing()),
             name: $request->input('name'),
             slug: $request->input('slug'),
             description: $request->input('description', new Missing()),

@@ -12,15 +12,20 @@ class ItemDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    public string|Missing $name;
-    public string|Missing $sku;
-    public int|null|Missing $unlimited_stock_shipping_time;
-    public string|null|Missing $unlimited_stock_shipping_date;
-    public array|Missing $metadata;
+    public function __construct(
+        public string|Missing $id,
+        public string|Missing $name,
+        public string|Missing $sku,
+        public int|null|Missing $unlimited_stock_shipping_time,
+        public string|null|Missing $unlimited_stock_shipping_date,
+        public array|Missing $metadata,
+    ) {
+    }
 
     public static function instantiateFromRequest(FormRequest $request): self
     {
         return new self(
+            id: $request->input('id') ?? new Missing(),
             name: $request->input('name', new Missing()),
             sku: $request->input('sku', new Missing()),
             unlimited_stock_shipping_time: $request->input('unlimited_stock_shipping_time', new Missing()),

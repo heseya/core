@@ -16,6 +16,8 @@ class MediaStoreRequest extends FormRequest
         $documents = 'application/pdf';
 
         return [
+            'id' => ['uuid'],
+
             'alt' => ['nullable', 'string', 'max:100'],
             'file' => [
                 'required_without:url',

@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ProductSetService implements ProductSetServiceContract
@@ -59,6 +60,9 @@ class ProductSetService implements ProductSetServiceContract
         return $query->paginate(Config::get('pagination.per_page'));
     }
 
+    /**
+     * @throws ValidationException
+     */
     public function create(ProductSetDto $dto): ProductSet
     {
         if ($dto->getParentId() !== null) {
@@ -85,7 +89,7 @@ class ProductSetService implements ProductSetServiceContract
         ])->validate();
 
         /** @var ProductSet $set */
-        $set = ProductSet::create($dto->toArray() + [
+        $set = ProductSet::query()->create($dto->toArray() + [
             'order' => $order,
             'slug' => $slug,
             'public_parent' => $publicParent,

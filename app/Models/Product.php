@@ -62,6 +62,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
     use HasMediaAttachments;
 
     protected $fillable = [
+        'id',
         'name',
         'slug',
         'price',

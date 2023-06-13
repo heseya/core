@@ -6,28 +6,36 @@ use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\ProductSetStoreRequest;
 use App\Http\Requests\ProductSetUpdateRequest;
 use Heseya\Dto\Dto;
+use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProductSetDto extends Dto implements InstantiateFromRequest
 {
-    private string $name;
-    private string|null|Missing $slug_suffix;
-    private bool $slug_override;
-    private bool $public;
-    private string|null|Missing $parent_id;
-    private array $children_ids;
-    private SeoMetadataDto|Missing $seo;
-    private string|null|Missing $description_html;
-    private string|null|Missing $cover_id;
-    private array|null|Missing $attributes_ids;
+    public function __construct(
+        private string|Missing $id,
+        private string $name,
+        private string|null|Missing $slug_suffix,
+        private bool $slug_override,
+        private bool $public,
+        private string|null|Missing $parent_id,
+        private array $children_ids,
+        private SeoMetadataDto|Missing $seo,
+        private string|null|Missing $description_html,
+        private string|null|Missing $cover_id,
+        private array|null|Missing $attributes_ids,
+        private array|Missing $metadata,
+    ) {
+    }
 
-    private array|Missing $metadata;
-
+    /**
+     * @throws DtoException
+     */
     public static function instantiateFromRequest(
         FormRequest|ProductSetStoreRequest|ProductSetUpdateRequest $request
     ): self {
         return new self(
+            id: $request->input('id') ?? new Missing(),
             name: $request->input('name'),
             slug_suffix: $request->input('slug_suffix'),
             slug_override: $request->boolean('slug_override', false),

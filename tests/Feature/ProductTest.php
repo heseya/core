@@ -33,6 +33,8 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Str;
+use Ramsey\Uuid\Uuid;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
@@ -1542,6 +1544,44 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'name' => 'Test',
             'price' => 0,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithUuid($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $uuid = Uuid::uuid4()->toString();
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/products', [
+                'id' => $uuid,
+                'name' => 'Test',
+                'slug' => 'test',
+                'price' => 100,
+                'public' => true,
+                'shipping_digital' => false,
+            ])
+            ->assertCreated()
+            ->assertJson(['data' => [
+                'id' => $uuid,
+                'slug' => 'test',
+                'name' => 'Test',
+                'price' => 100,
+                'public' => true,
+                'shipping_digital' => false,
+            ]]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $uuid,
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 100,
+            'shipping_digital' => false,
         ]);
     }
 

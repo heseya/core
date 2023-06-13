@@ -59,14 +59,20 @@ final readonly class MediaService implements MediaServiceContract
             $url = $this->silverboxService->updateSlug($url, $dto->slug);
         }
 
-        /** @var Media $media */
-        $media = Media::query()->create([
+        $data = [
             'type' => $type,
             'url' => $url,
             'alt' => $dto->alt instanceof Missing ? null : $dto->alt,
             'slug' => $dto->slug instanceof Missing ? null : $dto->slug,
             'source' => $dto->source,
-        ]);
+        ];
+
+        if (!($dto->id instanceof Missing)) {
+            $data['id'] = $dto->id;
+        }
+
+        /** @var Media $media */
+        $media = Media::query()->create($data);
 
         if (!($dto->getMetadata() instanceof Missing)) {
             $this->metadataService->sync($media, $dto->getMetadata());
