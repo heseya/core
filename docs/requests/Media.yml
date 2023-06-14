@@ -4,6 +4,9 @@ MediaStore:
       schema:
         type: object
         properties:
+          id:
+            type: string
+            format: uuid
           file:
             description: 'File. Accepted extensions: jpeg, png, gif, bmp, svg, mp4, webm, ogg, avi, mov, wmv'
             type: string
