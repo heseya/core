@@ -38,6 +38,7 @@ class Item extends Model implements AuditableContract, SortableContract
     use HasMetadata;
 
     protected $fillable = [
+        'id',
         'name',
         'sku',
         'quantity',

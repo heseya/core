@@ -89,6 +89,9 @@ ProductStore:
           - $ref: '#/Product'
         type: object
         properties:
+          id:
+            type: string
+            format: uuid
           metadata:
             $ref: './../schemas/Metadata.yml#/Metadata'
           metadata_private:

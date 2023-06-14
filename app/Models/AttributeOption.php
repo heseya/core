@@ -25,6 +25,7 @@ class AttributeOption extends Model
     use HasMetadata;
 
     protected $fillable = [
+        'id',
         'name',
         'index',
         'value_number',

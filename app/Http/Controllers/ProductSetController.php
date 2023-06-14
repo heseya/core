@@ -19,6 +19,7 @@ use App\Http\Resources\ProductSetParentResource;
 use App\Http\Resources\ProductSetResource;
 use App\Models\ProductSet;
 use App\Services\Contracts\ProductSetServiceContract;
+use Heseya\Dto\DtoException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
@@ -55,6 +56,9 @@ class ProductSetController extends Controller
         return ProductSetParentResource::make($productSet);
     }
 
+    /**
+     * @throws DtoException
+     */
     public function store(ProductSetStoreRequest $request): JsonResource
     {
         $dto = ProductSetDto::instantiateFromRequest($request);

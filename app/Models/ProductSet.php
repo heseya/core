@@ -40,6 +40,7 @@ class ProductSet extends Model
     use HasDiscounts;
 
     protected $fillable = [
+        'id',
         'name',
         'slug',
         'public',

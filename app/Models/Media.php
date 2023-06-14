@@ -28,6 +28,7 @@ class Media extends Model
     protected $table = 'media';
 
     protected $fillable = [
+        'id',
         'type',
         'url',
         'slug',
