@@ -775,7 +775,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider noIndexProvider
      */
-    public function testShowSeoNoIndex($user, $noIndex): void
+    public function testShowSeoNoIndex(string $user, bool $noIndex): void
     {
         $this->$user->givePermissionTo('products.show_details');
 
@@ -800,14 +800,14 @@ class ProductTest extends TestCase
                 'og_image' => null,
                 'twitter_card' => $seo->twitter_card,
                 'keywords' => $seo->keywords,
-            ],
-            ]);
+                'header_tags' => null,
+            ]]);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testShowWithSales($user): void
+    public function testShowWithSales(string $user): void
     {
         $this->$user->givePermissionTo('products.show_details');
 

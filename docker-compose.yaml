@@ -48,7 +48,7 @@ services:
       - mysql_service
       - redis
   mysql_service:
-    image: mariadb:10.5
+    image: mysql:8.0
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}

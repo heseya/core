@@ -22,6 +22,7 @@ class SeoMetadataTest extends TestCase
             'keywords',
             'og_image',
             'twitter_card',
+            'header_tags',
         ];
     }
 
@@ -408,7 +409,7 @@ class SeoMetadataTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateProduct($user): void
+    public function testUpdateProduct(string $user): void
     {
         $this->$user->givePermissionTo('products.edit');
 
@@ -418,6 +419,7 @@ class SeoMetadataTest extends TestCase
             'title' => 'product-title',
             'description' => 'product-description',
             'keywords' => ['product', 'key', 'words'],
+            'header_tags' => ['meta' => ['name' => 'description', 'content' => 'My amazing site.']],
         ];
 
         $this
