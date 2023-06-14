@@ -419,7 +419,7 @@ class SeoMetadataTest extends TestCase
             'title' => 'product-title',
             'description' => 'product-description',
             'keywords' => ['product', 'key', 'words'],
-            'header_tags' => ['meta' => ['name' => 'description', 'content' => 'My amazing site.']]
+            'header_tags' => ['meta' => ['name' => 'description', 'content' => 'My amazing site.']],
         ];
 
         $this
