@@ -11,7 +11,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('seo_metadata', function (Blueprint $table) {
-            $table->json('header_tags')->default('[]');
+            $table->json('header_tags')->nullable();
         });
     }
 
