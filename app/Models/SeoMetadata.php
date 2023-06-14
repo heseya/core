@@ -26,6 +26,7 @@ class SeoMetadata extends Model
         'model_id',
         'model_type',
         'no_index',
+        'header_tags',
     ];
 
     protected $casts = [
@@ -35,6 +36,7 @@ class SeoMetadata extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'no_index' => 'bool',
+        'header_tags' => 'array',
     ];
 
     protected $attributes = [
