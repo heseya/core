@@ -785,6 +785,7 @@ class ProductTest extends TestCase
 
         $seo = SeoMetadata::factory([
             'no_index' => $noIndex,
+            'header_tags' => ['test1', 'test2'],
         ])->create();
 
         $product->seo()->save($seo);
@@ -800,7 +801,7 @@ class ProductTest extends TestCase
                 'og_image' => null,
                 'twitter_card' => $seo->twitter_card,
                 'keywords' => $seo->keywords,
-                'header_tags' => null,
+                'header_tags' => ['test1', 'test2'],
             ]]);
     }
 
@@ -1786,6 +1787,7 @@ class ProductTest extends TestCase
                 'description' => 'seo description',
                 'og_image_id' => $media->getKey(),
                 'no_index' => $boolean,
+                'header_tags' => ['test1', 'test2'],
             ],
         ]);
 
@@ -1807,9 +1809,9 @@ class ProductTest extends TestCase
                         'id' => $media->getKey(),
                     ],
                     'no_index' => $booleanValue,
+                    'header_tags' => ['test1', 'test2'],
                 ],
-            ],
-            ]);
+            ]]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',

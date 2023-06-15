@@ -20,6 +20,7 @@ class SeoMetadataDto extends Dto implements InstantiateFromRequest
     private string|null|Missing $model_id;
     private string|null|Missing $model_type;
     private bool|Missing $no_index;
+    private array|null|Missing $header_tags;
 
     /**
      * @throws DtoException
@@ -41,6 +42,7 @@ class SeoMetadataDto extends Dto implements InstantiateFromRequest
             model_id: $request->input($seo . 'model_id', new Missing()),
             model_type: $request->input($seo . 'model_type', new Missing()),
             no_index: $request->input($seo . 'no_index', new Missing()),
+            header_tags: $request->input($seo . 'header_tags', new Missing()),
         );
     }
 
