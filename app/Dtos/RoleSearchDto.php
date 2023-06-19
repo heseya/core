@@ -2,11 +2,10 @@
 
 namespace App\Dtos;
 
-use App\Dtos\Contracts\DtoContract;
 use App\Dtos\Contracts\InstantiateFromRequest;
 use Illuminate\Foundation\Http\FormRequest;
 
-class RoleSearchDto implements DtoContract, InstantiateFromRequest
+class RoleSearchDto implements InstantiateFromRequest
 {
     public function __construct(
         private ?string $search,

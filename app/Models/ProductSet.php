@@ -57,15 +57,20 @@ class ProductSet extends Model
     ];
 
     protected array $criteria = [
+        'search' => ProductSetSearch::class,
         'name' => Like::class,
         'slug' => Like::class,
-        'search' => ProductSetSearch::class,
+        'parent_id' => ParentIdSearch::class,
         'public',
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
-        'parent_id' => ParentIdSearch::class,
         'ids' => WhereInIds::class,
     ];
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_id');
+    }
 
     public function getSlugOverrideAttribute(): bool
     {
@@ -73,11 +78,6 @@ class ProductSet extends Model
             $this->slug,
             $this->parent->slug . '-',
         );
-    }
-
-    public function parent(): BelongsTo
-    {
-        return $this->belongsTo(self::class, 'parent_id');
     }
 
     public function getSlugSuffixAttribute(): string
@@ -91,15 +91,20 @@ class ProductSet extends Model
         return $query->where('public', true)->where('public_parent', true);
     }
 
-    public function scopeRoot(Builder $query): Builder
-    {
-        return $query->whereNull('parent_id');
-    }
-
     public function scopeReversed(Builder $query): Builder
     {
         return $query->withoutGlobalScope('ordered')
             ->orderBy('order', 'desc');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_id');
+    }
+
+    public function childrenPublic(): HasMany
+    {
+        return $this->children()->public();
     }
 
     public function allChildren(): HasMany
@@ -113,16 +118,6 @@ class ProductSet extends Model
         ]);
     }
 
-    public function children(): HasMany
-    {
-        return $this->hasMany(self::class, 'parent_id');
-    }
-
-    public function attributes(): BelongsToMany
-    {
-        return $this->belongsToMany(Attribute::class);
-    }
-
     public function allChildrenPublic(): HasMany
     {
         return $this->childrenPublic()->with([
@@ -133,9 +128,9 @@ class ProductSet extends Model
         ]);
     }
 
-    public function childrenPublic(): HasMany
+    public function attributes(): BelongsToMany
     {
-        return $this->children()->public();
+        return $this->belongsToMany(Attribute::class);
     }
 
     public function products(): BelongsToMany

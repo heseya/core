@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\DTO\ProductSetIndexDto;
 use App\Dtos\ProductSetDto;
 use App\Dtos\ProductSetUpdateDto;
 use App\Dtos\ProductsReorderDto;
@@ -24,7 +25,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class ProductSetService implements ProductSetServiceContract
+readonly class ProductSetService implements ProductSetServiceContract
 {
     public function __construct(
         private SeoMetadataServiceContract $seoMetadataService,
@@ -42,9 +43,9 @@ class ProductSetService implements ProductSetServiceContract
         }
     }
 
-    public function searchAll(array $attributes, bool $root): LengthAwarePaginator
+    public function searchAll(ProductSetIndexDto $dto): LengthAwarePaginator
     {
-        $query = ProductSet::searchByCriteria($attributes)
+        $query = ProductSet::searchByCriteria($dto->all())
             ->with(['metadata', 'media', 'media.metadata']);
 
         if (Gate::denies('product_sets.show_hidden')) {
@@ -53,8 +54,8 @@ class ProductSetService implements ProductSetServiceContract
             $query->with(['children', 'metadataPrivate', 'media.metadataPrivate']);
         }
 
-        if ($root) {
-            $query->root();
+        if ($dto->root) {
+            $query->whereNull('parent_id');
         }
 
         return $query->paginate(Config::get('pagination.per_page'));

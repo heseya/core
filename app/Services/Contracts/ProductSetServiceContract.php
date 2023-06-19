@@ -2,6 +2,7 @@
 
 namespace App\Services\Contracts;
 
+use App\DTO\ProductSetIndexDto;
 use App\Dtos\ProductSetDto;
 use App\Dtos\ProductSetUpdateDto;
 use App\Dtos\ProductsReorderDto;
@@ -13,7 +14,7 @@ interface ProductSetServiceContract
 {
     public function authorize(ProductSet $set): void;
 
-    public function searchAll(array $attributes, bool $root): LengthAwarePaginator;
+    public function searchAll(ProductSetIndexDto $dto): LengthAwarePaginator;
 
     public function create(ProductSetDto $dto): ProductSet;
 
