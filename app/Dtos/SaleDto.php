@@ -15,7 +15,9 @@ class SaleDto extends Dto implements InstantiateFromRequest
     use MapMetadata;
 
     protected string|Missing $name;
+    protected string|null|Missing $slug;
     protected string|null|Missing $description;
+    protected string|null|Missing $description_html;
     protected float|Missing $value;
     protected string|Missing $type;
     protected int|Missing $priority;
@@ -28,12 +30,15 @@ class SaleDto extends Dto implements InstantiateFromRequest
     protected bool|Missing $active;
 
     protected array|Missing $metadata;
+    protected SeoMetadataDto|Missing $seo;
 
     public static function instantiateFromRequest(FormRequest|SaleCreateRequest|StatusUpdateRequest $request): self
     {
         return new self(
             name: $request->input('name', new Missing()),
+            slug: $request->input('slug', new Missing()),
             description: $request->input('description', new Missing()),
+            description_html: $request->input('description_html', new Missing()),
             value: $request->input('value', new Missing()),
             type: $request->input('type', new Missing()),
             priority: $request->input('priority', new Missing()),
@@ -43,8 +48,9 @@ class SaleDto extends Dto implements InstantiateFromRequest
             target_products: $request->input('target_products', new Missing()),
             target_sets: $request->input('target_sets', new Missing()),
             target_shipping_methods: $request->input('target_shipping_methods', new Missing()),
-            metadata: self::mapMetadata($request),
             active: $request->input('active', new Missing()),
+            metadata: self::mapMetadata($request),
+            seo: $request->has('seo') ? SeoMetadataDto::instantiateFromRequest($request) : new Missing(),
         );
     }
 
@@ -106,6 +112,11 @@ class SaleDto extends Dto implements InstantiateFromRequest
     public function getActive(): Missing|bool
     {
         return $this->active;
+    }
+
+    public function getSeo(): SeoMetadataDto|Missing
+    {
+        return $this->seo;
     }
 
     protected static function mapConditionGroups(array|Missing $conditionGroups): array|Missing

@@ -11,25 +11,28 @@ class ProductAttributeOptions implements Rule
 {
     private string $message;
 
-    public function passes($attribute, $value)
+    public function passes($attribute, $value): bool
     {
-        $attributeModel = Attribute::find(Str::afterLast($attribute, '.'));
+        $attributeModel = Attribute::query()->find(Str::afterLast($attribute, '.'));
 
         if ($attributeModel === null) {
             $this->message = 'Attribute :attribute not found';
+
             return false;
         }
 
-        if ($attributeModel->type->is(AttributeType::MULTI_CHOICE_OPTION)) {
+        if ($attributeModel->type === AttributeType::MULTI_CHOICE_OPTION) {
             $this->message = 'Attribute :attribute must have at least one option';
+
             return count($value) >= 1;
         }
 
         $this->message = 'Attribute :attribute must have one option';
+
         return count($value) === 1;
     }
 
-    public function message()
+    public function message(): string
     {
         return $this->message;
     }

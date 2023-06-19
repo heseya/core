@@ -103,6 +103,10 @@ ProductView:
         description_short:
           description: 'Plain text short product description'
           type: string
+        descriptions:
+          type: array
+          items:
+            $ref: './Pages.yml#/Page'
         items:
           $ref: './Items.yml#/ItemWithRequiredQuantity'
         gallery:
@@ -116,7 +120,12 @@ ProductView:
           items:
             $ref: './../api.yml#/components/schemas/Schema'
         sets:
-          description: 'Ids of assigned subsets'
+          description: 'Assigned product sets'
+          type: array
+          items:
+            $ref: './ProductSets.yml#/ProductSet'
+        related_sets:
+          description: 'Sets with products related to this one'
           type: array
           items:
             $ref: './ProductSets.yml#/ProductSet'
@@ -132,6 +141,11 @@ ProductView:
           type: array
           items:
             $ref: './Sales.yml#/Sale'
+        attachments:
+          description: 'List of all media attachments'
+          type: array
+          items:
+            $ref: './MediaAttachments.yml#/MediaAttachment'
 
 ProductIndex:
   type: object

@@ -58,9 +58,7 @@ class ShippingMethodTest extends TestCase
 
         $this->shipping_method_hidden->priceRanges()->saveMany([$lowRange, $highRange]);
 
-        /**
-         * Expected response
-         */
+        // Expected response
         $this->expected = [
             'id' => $this->shipping_method->getKey(),
             'name' => $this->shipping_method->name,
@@ -278,7 +276,7 @@ class ShippingMethodTest extends TestCase
     }
 
     /**
-     * Price range testing with no initial 'start' value of zero
+     * Price range testing with no initial 'start' value of zero.
      *
      * @dataProvider authProvider
      */
@@ -303,7 +301,7 @@ class ShippingMethodTest extends TestCase
     }
 
     /**
-     * Price range testing with duplicate "start" values
+     * Price range testing with duplicate "start" values.
      *
      * @dataProvider authProvider
      */
@@ -644,7 +642,7 @@ class ShippingMethodTest extends TestCase
     }
 
     /**
-     * Price range testing with no initial 'start' value of zero
+     * Price range testing with no initial 'start' value of zero.
      *
      * @dataProvider authProvider
      */
@@ -716,7 +714,7 @@ class ShippingMethodTest extends TestCase
     }
 
     /**
-     * Price range testing with duplicate "start" values
+     * Price range testing with duplicate "start" values.
      *
      * @dataProvider authProvider
      */

@@ -12,7 +12,7 @@ use App\Models\WebHook;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Str;
+use Ramsey\Uuid\Uuid;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
@@ -104,6 +104,33 @@ class ProductSetCreateTest extends TestCase
         $this->assertDatabaseHas('product_sets', $set + $defaults + [
             'parent_id' => null,
         ]);
+
+        Event::assertDispatched(ProductSetCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithUuid($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.add');
+
+        Event::fake([ProductSetCreated::class]);
+
+        $set = [
+            'name' => 'Test',
+            'id' => Uuid::uuid4()->toString(),
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + [
+            'slug_suffix' => 'test',
+            'slug_override' => false,
+        ]);
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => $set]);
+
+        $this->assertDatabaseHas('product_sets', $set);
 
         Event::assertDispatched(ProductSetCreated::class);
     }
@@ -211,6 +238,7 @@ class ProductSetCreateTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $set) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $set->getKey()
@@ -252,7 +280,7 @@ class ProductSetCreateTest extends TestCase
                 'slug' => 'test',
                 'cover' => [
                     'id' => $media->getKey(),
-                    'type' => Str::lower($media->type->key),
+                    'type' => $media->type->value,
                     'url' => $media->url,
                 ],
             ],
@@ -322,6 +350,7 @@ class ProductSetCreateTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $set) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $set->getKey()
@@ -359,7 +388,7 @@ class ProductSetCreateTest extends TestCase
                 'slug_suffix' => 'test-parent',
                 'slug' => 'test-parent',
                 'children_ids' => [
-//                    $this->privateSet->getKey(),
+                    //                    $this->privateSet->getKey(),
                     $this->set->getKey(),
                 ],
             ],

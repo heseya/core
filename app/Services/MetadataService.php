@@ -71,8 +71,10 @@ class MetadataService implements MetadataServiceContract
             foreach ($dto->getMetadata() as $metadata) {
                 $this->processMetadata($user, $metadata, 'metadataPersonal');
             }
+
             return $user->metadataPersonal;
         }
+
         return Collection::make();
     }
 
@@ -82,6 +84,7 @@ class MetadataService implements MetadataServiceContract
         foreach ($dto->getMetadata() as $metadata) {
             $this->processMetadata($user, $metadata, 'metadataPersonal');
         }
+
         return $user->metadataPersonal;
     }
 

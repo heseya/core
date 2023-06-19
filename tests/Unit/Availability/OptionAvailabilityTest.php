@@ -11,7 +11,7 @@ class OptionAvailabilityTest extends TestCase
 
     /**
      * Digital items
-     * Without any items Option should be available
+     * Without any items Option should be available.
      */
     public function testNoItems(): void
     {
@@ -25,7 +25,7 @@ class OptionAvailabilityTest extends TestCase
     }
 
     /**
-     * Options with items
+     * Options with items.
      */
     public function testWithItem(): void
     {
@@ -132,7 +132,7 @@ class OptionAvailabilityTest extends TestCase
     }
 
     /**
-     * Unlimited items
+     * Unlimited items.
      */
     public function testUnlimitedShippingTime(): void
     {

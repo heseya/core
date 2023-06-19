@@ -28,6 +28,7 @@ use App\Services\Contracts\EventServiceContract;
 use App\Services\Contracts\FavouriteServiceContract;
 use App\Services\Contracts\GoogleCategoryServiceContract;
 use App\Services\Contracts\ItemServiceContract;
+use App\Services\Contracts\MediaAttachmentServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\NameServiceContract;
@@ -53,6 +54,7 @@ use App\Services\Contracts\SeoMetadataServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
 use App\Services\Contracts\ShippingMethodServiceContract;
 use App\Services\Contracts\ShippingTimeDateServiceContract;
+use App\Services\Contracts\SilverboxServiceContract;
 use App\Services\Contracts\SortServiceContract;
 use App\Services\Contracts\StatusServiceContract;
 use App\Services\Contracts\TokenServiceContract;
@@ -68,6 +70,7 @@ use App\Services\EventService;
 use App\Services\FavouriteService;
 use App\Services\GoogleCategoryService;
 use App\Services\ItemService;
+use App\Services\MediaAttachmentService;
 use App\Services\MediaService;
 use App\Services\MetadataService;
 use App\Services\NameService;
@@ -93,6 +96,7 @@ use App\Services\SeoMetadataService;
 use App\Services\SettingsService;
 use App\Services\ShippingMethodService;
 use App\Services\ShippingTimeDateService;
+use App\Services\SilverboxService;
 use App\Services\SortService;
 use App\Services\StatusService;
 use App\Services\TokenService;
@@ -156,6 +160,8 @@ class AppServiceProvider extends ServiceProvider
         PaymentMethodServiceContract::class => PaymentMethodService::class,
         PaymentServiceContract::class => PaymentService::class,
         PriceServiceContract::class => PriceService::class,
+        MediaAttachmentServiceContract::class => MediaAttachmentService::class,
+        SilverboxServiceContract::class => SilverboxService::class,
     ];
 
     /**
@@ -167,7 +173,7 @@ class AppServiceProvider extends ServiceProvider
             $this->app->bind($abstract, $concrete);
         }
 
-        /**
+        /*
          * Local register of ide helper.
          * Needs to be full path.
          */

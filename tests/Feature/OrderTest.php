@@ -90,9 +90,7 @@ class OrderTest extends TestCase
             'summary' => $orderService->calcSummary($this->order),
         ]);
 
-        /**
-         * Expected response
-         */
+        // Expected response
         $this->expected_summary = [
             'code' => $this->order->code,
             'status' => [
@@ -285,6 +283,7 @@ class OrderTest extends TestCase
 
         $this->$user->orders()->save($order);
 
+        // @var User $another_user
         $another_user = User::factory()->create();
 
         $order_another_user = Order::factory()->create([
@@ -770,7 +769,7 @@ class OrderTest extends TestCase
             ->getJson('/orders/id:its-not-uuid')
             ->assertNotFound();
 
-        $this->assertEquals(404, $response->getData()->error->code); //get error code from our error handle structure
+        $this->assertEquals(404, $response->getData()->error->code); // get error code from our error handle structure
 
         $response = $this->actingAs($this->$user)
             ->getJson('/orders/id:' . $this->order->getKey() . $this->order->getKey())
@@ -846,7 +845,7 @@ class OrderTest extends TestCase
             ->getJson('/orders/its_wrong_code')
             ->assertNotFound();
 
-        $this->assertEquals(404, $response->getData()->error->code); //get error code from our error handle structure
+        $this->assertEquals(404, $response->getData()->error->code); // get error code from our error handle structure
 
         $response = $this->actingAs($this->$user)
             ->getJson('/orders/' . $this->order->code . '_' . $this->order->code)
@@ -975,6 +974,7 @@ class OrderTest extends TestCase
     {
         $this->$user->givePermissionTo('orders.show_own');
 
+        /** @var User $another_user */
         $another_user = User::factory()->create();
 
         $order = Order::factory()->create();

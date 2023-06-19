@@ -13,6 +13,11 @@ Product:
       type: string
     description_short:
       type: string
+    descriptions:
+      type: array
+      items:
+        type: string
+        format: uuid
     quantity_step:
       type: number
     vat_rate:
@@ -60,6 +65,11 @@ Product:
       items:
         type: string
         format: uuid
+    related_sets:
+      type: array
+      items:
+        type: string
+        format: uuid
     google_product_category:
       type: integer
     seo:
@@ -79,6 +89,9 @@ ProductStore:
           - $ref: '#/Product'
         type: object
         properties:
+          id:
+            type: string
+            format: uuid
           metadata:
             $ref: './../schemas/Metadata.yml#/Metadata'
           metadata_private:

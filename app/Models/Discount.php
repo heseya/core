@@ -11,6 +11,7 @@ use App\Criteria\WhereInIds;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Traits\HasMetadata;
+use App\Traits\HasSeoMetadata;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Builder;
@@ -26,6 +27,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property mixed $pivot
  * @property DiscountType $type
  * @property DiscountTargetType $target_type
+ *
  * @mixin IdeHelperDiscount
  */
 class Discount extends Model implements AuditableContract
@@ -35,10 +37,13 @@ class Discount extends Model implements AuditableContract
     use SoftDeletes;
     use Auditable;
     use HasMetadata;
+    use HasSeoMetadata;
 
     protected $fillable = [
         'name',
+        'slug',
         'description',
+        'description_html',
         'code',
         'value',
         'type',

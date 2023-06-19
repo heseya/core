@@ -28,7 +28,7 @@ class OrderQATest extends TestCase
     ];
 
     /**
-     * HES-1962
+     * HES-1962.
      */
     public function testSalesAndCode(): void
     {
@@ -130,7 +130,7 @@ class OrderQATest extends TestCase
     }
 
     /**
-     * HES-1962
+     * HES-1962.
      */
     public function testTargetProductSale(): void
     {

@@ -2,11 +2,17 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\VisibilityType;
+use App\Models\MediaAttachment;
+use App\Models\Product;
 use App\Models\ProductSet;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
+/**
+ * @property Product $resource
+ */
 class ProductResource extends Resource
 {
     use MetadataResource;
@@ -47,20 +53,33 @@ class ProductResource extends Resource
             )
             : $this->resource->sets;
 
-        $sales = $this->resource->sales ? ['sales' => SaleResource::collection($this->resource->sales)] : [];
+        $relatedSets = Gate::denies('product_sets.show_hidden')
+            ? $this->resource->relatedSets->filter(
+                fn (ProductSet $set) => $set->public === true && $set->public_parent === true
+            )
+            : $this->resource->relatedSets;
+
+        $attachments = Gate::denies('products.show_attachments_private')
+            ? $this->resource->attachments->filter(
+                fn (MediaAttachment $attachment) => $attachment->visibility === VisibilityType::PUBLIC,
+            )
+            : $this->resource->attachments;
 
         return [
             'order' => $this->resource->order,
-            'user_id' => $this->resource->user_id,
             'description_html' => $this->resource->description_html,
             'description_short' => $this->resource->description_short,
+            'descriptions' => PageResource::collection($this->resource->pages),
             'items' => ProductItemResource::collection($this->resource->items),
             'gallery' => MediaResource::collection($this->resource->media),
             'schemas' => SchemaResource::collection($this->resource->schemas),
             'sets' => ProductSetResource::collection($sets),
+            'related_sets' => ProductSetResource::collection($relatedSets),
             'attributes' => ProductAttributeResource::collection($this->resource->attributes),
             'seo' => SeoMetadataResource::make($this->resource->seo),
-        ] + $sales;
+            'sales' => SaleResource::collection($this->resource->sales),
+            'attachments' => MediaAttachmentResource::collection($attachments),
+        ];
     }
 
     public function index(Request $request): array

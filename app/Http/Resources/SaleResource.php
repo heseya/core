@@ -2,9 +2,13 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Discount;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
+/**
+ * @property Discount $resource
+ */
 class SaleResource extends Resource
 {
     use MetadataResource;
@@ -13,14 +17,14 @@ class SaleResource extends Resource
     {
         if (isset($this->resource->pivot, $this->resource->pivot->type)) {
             // @phpstan-ignore-next-line
-            $this->resource->type = $this->resource->pivot->type;
-            // @phpstan-ignore-next-line
             $this->resource->value = $this->resource->pivot->value;
+            $this->resource->type = $this->resource->pivot->type;
         }
 
         return array_merge([
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
+            'slug' => $this->resource->slug,
             'description' => $this->resource->description,
             'value' => $this->resource->value,
             'type' => $this->resource->type,
@@ -29,12 +33,14 @@ class SaleResource extends Resource
             'target_type' => $this->resource->target_type,
             'target_is_allow_list' => $this->resource->target_is_allow_list,
             'active' => $this->resource->active,
+            'description_html' => $this->resource->description_html,
         ], $this->metadataResource('sales.show_metadata_private'));
     }
 
     public function view(Request $request): array
     {
         return [
+            'seo' => SeoMetadataResource::make($this->resource->seo),
             'condition_groups' => ConditionGroupResource::collection($this->resource->conditionGroups),
             'target_products' => ProductResource::collection($this->resource->products),
             'target_sets' => ProductSetResource::collection($this->resource->productSets),

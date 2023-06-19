@@ -22,6 +22,7 @@ use App\Models\Contracts\SortableContract;
 use App\Services\Contracts\ProductSearchServiceContract;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasDiscounts;
+use App\Traits\HasMediaAttachments;
 use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
 use App\Traits\Sortable;
@@ -43,6 +44,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @property mixed $pivot
+ *
  * @mixin IdeHelperProduct
  */
 class Product extends Model implements AuditableContract, Explored, SortableContract, SearchableFields
@@ -57,8 +59,10 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
     use HasCriteria;
     use HasDiscountConditions;
     use HasDiscounts;
+    use HasMediaAttachments;
 
     protected $fillable = [
+        'id',
         'name',
         'slug',
         'price',
@@ -152,18 +156,21 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
     public function mappableAs(): array
     {
         $searchService = app(ProductSearchServiceContract::class);
+
         return $searchService->mappableAs();
     }
 
     public function toSearchableArray(): array
     {
         $searchService = app(ProductSearchServiceContract::class);
+
         return $searchService->mapSearchableArray($this);
     }
 
     public function getSearchableFields(): array
     {
         $searchService = app(ProductSearchServiceContract::class);
+
         return $searchService->searchableFields();
     }
 
@@ -182,6 +189,12 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         return $this
             ->belongsToMany(ProductSet::class, 'product_set_product')
             ->withPivot('order');
+    }
+
+    public function relatedSets(): BelongsToMany
+    {
+        return $this
+            ->belongsToMany(ProductSet::class, 'related_product_sets');
     }
 
     public function items(): BelongsToMany
@@ -246,6 +259,14 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         );
     }
 
+    public function pages(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Page::class,
+            'product_page',
+        );
+    }
+
     public function productSetSales(): Collection
     {
         $sales = Collection::make();
@@ -281,6 +302,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
                     return false;
                 }
             }
+
             return true;
         });
 

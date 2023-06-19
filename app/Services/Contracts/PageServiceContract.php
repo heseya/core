@@ -2,7 +2,8 @@
 
 namespace App\Services\Contracts;
 
-use App\Dtos\PageDto;
+use App\Dtos\PageCreateDto;
+use App\Dtos\PageUpdateDto;
 use App\Models\Page;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
@@ -12,9 +13,9 @@ interface PageServiceContract
 
     public function getPaginated(?array $search): LengthAwarePaginator;
 
-    public function create(PageDto $dto): Page;
+    public function create(PageCreateDto $dto): Page;
 
-    public function update(Page $page, PageDto $dto): Page;
+    public function update(Page $page, PageUpdateDto $dto): Page;
 
     public function delete(Page $page): void;
 

@@ -5,9 +5,9 @@ use App\Http\Controllers\MetadataController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('media')->group(function (): void {
-    Route::get(null, [MediaController::class, 'index'])
+    Route::get('/', [MediaController::class, 'index'])
         ->middleware('can:media.show');
-    Route::post(null, [MediaController::class, 'store'])
+    Route::post('/', [MediaController::class, 'store'])
         ->middleware('can:media.add');
     Route::patch('id:{media:id}', [MediaController::class, 'update'])
         ->middleware('can:media.edit');

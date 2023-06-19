@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Dtos\AuthProviderDto;
 use App\Dtos\AuthProviderLoginDto;
 use App\Dtos\AuthProviderMergeAccountDto;
-use App\Enums\AuthProviderKey;
 use App\Http\Requests\AuthProviderIndexRequest;
 use App\Http\Requests\AuthProviderLoginRequest;
 use App\Http\Requests\AuthProviderMergeAccountRequest;
@@ -66,10 +65,8 @@ class ProviderController extends Controller
             $request->input('return_url'),
         );
 
-        $driver = AuthProviderKey::getDriver($authProviderKey);
-
         return AuthProviderRedirectResource::make([
-            'redirect_url' => Socialite::driver($driver) // @phpstan-ignore-line
+            'redirect_url' => Socialite::driver($authProviderKey) // @phpstan-ignore-line
                 ->stateless()
                 ->redirect()
                 ->getTargetUrl(),

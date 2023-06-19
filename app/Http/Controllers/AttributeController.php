@@ -16,8 +16,9 @@ use Illuminate\Support\Facades\Response;
 
 class AttributeController extends Controller
 {
-    public function __construct(private AttributeServiceContract $attributeService)
-    {
+    public function __construct(
+        private readonly AttributeServiceContract $attributeService
+    ) {
     }
 
     public function index(AttributeIndexRequest $request): JsonResource

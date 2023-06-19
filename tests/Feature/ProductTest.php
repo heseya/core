@@ -33,7 +33,7 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
-use Illuminate\Support\Str;
+use Ramsey\Uuid\Uuid;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
@@ -124,9 +124,7 @@ class ProductTest extends TestCase
 
         $availabilityService->calculateItemAvailability($item);
 
-        /**
-         * Expected short response
-         */
+        // Expected short response
         $this->expected_short = [
             'id' => $this->product->getKey(),
             'name' => $this->product->name,
@@ -166,9 +164,7 @@ class ProductTest extends TestCase
             'sortable' => $attribute->sortable,
         ];
 
-        /**
-         * Expected full response
-         */
+        // Expected full response
         $this->expected = array_merge($this->expected_short, $expected_attribute, [
             'description_html' => $this->product->description_html,
             'description_short' => $this->product->description_short,
@@ -608,10 +604,11 @@ class ProductTest extends TestCase
                     'metadata' => [],
                     'cover' => [
                         'id' => $media1->getKey(),
-                        'type' => Str::lower($media1->type->key),
+                        'type' => $media1->type->value,
                         'url' => $media1->url,
                         'slug' => $media1->slug,
                         'alt' => $media1->alt,
+                        'source' => $media1->source->value,
                         'metadata' => [],
                     ],
                 ],
@@ -628,10 +625,11 @@ class ProductTest extends TestCase
                     'metadata' => [],
                     'cover' => [
                         'id' => $media2->getKey(),
-                        'type' => Str::lower($media2->type->key),
+                        'type' => $media2->type->value,
                         'url' => $media2->url,
                         'slug' => $media2->slug,
                         'alt' => $media2->alt,
+                        'source' => $media2->source->value,
                         'metadata' => [],
                     ],
                 ],
@@ -724,7 +722,7 @@ class ProductTest extends TestCase
     }
 
     /**
-     * Sets shouldn't affect product visibility
+     * Sets shouldn't affect product visibility.
      *
      * @dataProvider authProvider
      */
@@ -777,7 +775,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider noIndexProvider
      */
-    public function testShowSeoNoIndex($user, $noIndex): void
+    public function testShowSeoNoIndex(string $user, bool $noIndex): void
     {
         $this->$user->givePermissionTo('products.show_details');
 
@@ -787,6 +785,7 @@ class ProductTest extends TestCase
 
         $seo = SeoMetadata::factory([
             'no_index' => $noIndex,
+            'header_tags' => ['test1', 'test2'],
         ])->create();
 
         $product->seo()->save($seo);
@@ -802,14 +801,14 @@ class ProductTest extends TestCase
                 'og_image' => null,
                 'twitter_card' => $seo->twitter_card,
                 'keywords' => $seo->keywords,
-            ],
-            ]);
+                'header_tags' => ['test1', 'test2'],
+            ]]);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testShowWithSales($user): void
+    public function testShowWithSales(string $user): void
     {
         $this->$user->givePermissionTo('products.show_details');
 
@@ -1304,6 +1303,7 @@ class ProductTest extends TestCase
 
         Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $product) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $product->getKey()
@@ -1376,6 +1376,7 @@ class ProductTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $product) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $product->getKey()
@@ -1512,6 +1513,7 @@ class ProductTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $product) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $product->getKey()
@@ -1542,6 +1544,44 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'name' => 'Test',
             'price' => 0,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithUuid($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $uuid = Uuid::uuid4()->toString();
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/products', [
+                'id' => $uuid,
+                'name' => 'Test',
+                'slug' => 'test',
+                'price' => 100,
+                'public' => true,
+                'shipping_digital' => false,
+            ])
+            ->assertCreated()
+            ->assertJson(['data' => [
+                'id' => $uuid,
+                'slug' => 'test',
+                'name' => 'Test',
+                'price' => 100,
+                'public' => true,
+                'shipping_digital' => false,
+            ]]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $uuid,
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 100,
+            'shipping_digital' => false,
         ]);
     }
 
@@ -1747,6 +1787,7 @@ class ProductTest extends TestCase
                 'description' => 'seo description',
                 'og_image_id' => $media->getKey(),
                 'no_index' => $boolean,
+                'header_tags' => ['test1', 'test2'],
             ],
         ]);
 
@@ -1768,9 +1809,9 @@ class ProductTest extends TestCase
                         'id' => $media->getKey(),
                     ],
                     'no_index' => $booleanValue,
+                    'header_tags' => ['test1', 'test2'],
                 ],
-            ],
-            ]);
+            ]]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
@@ -2459,6 +2500,7 @@ class ProductTest extends TestCase
 
         Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $product) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $product->getKey()
@@ -2518,6 +2560,7 @@ class ProductTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $product) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $product->getKey()
@@ -3103,6 +3146,7 @@ class ProductTest extends TestCase
 
         Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $product) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $product->getKey()
@@ -3149,6 +3193,7 @@ class ProductTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $product) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $product->getKey()

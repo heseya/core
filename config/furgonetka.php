@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     'enabled' => env('FURGONETKA_ENABLED', false),
 
     'webhook_salt' => env('FURGONETKA_WEBHOOK_SALT', 'tajnasól'),
@@ -17,5 +16,4 @@ return [
     'client_id' => env('FURGONETKA_CLIENT_ID', 'client-id'),
 
     'client_secret' => env('FURGONETKA_CLIENT_SECRET', 'clientsecret'),
-
 ];

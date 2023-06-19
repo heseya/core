@@ -101,9 +101,7 @@ class PayU implements PaymentMethod
     }
 
     /**
-     * Function returns signature data object
-     *
-     * @param string $data
+     * Function returns signature data object.
      *
      * @return array|null
      */
@@ -128,7 +126,7 @@ class PayU implements PaymentMethod
     }
 
     /**
-     * Function returns signature validate
+     * Function returns signature validate.
      */
     public static function verifySignature(
         mixed $message,

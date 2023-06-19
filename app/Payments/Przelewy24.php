@@ -59,25 +59,23 @@ class Przelewy24 implements PaymentMethod
     public static function translateNotification(Request $request): mixed
     {
         $request->validate([
-            'sessionId' => 'required|integer|exists:payments,id',
+            'sessionId' => ['required', 'string', 'exists:payments,id'],
         ]);
 
         /** @var Payment $payment */
-        $payment = Payment::find($request->sesionId)->with('order');
-
+        $payment = Payment::query()->with('order')->find($request->sesionId);
         $amount = round($payment->amount * 100, 0);
 
         $validated = $request->validate([
-            'merchantId' => 'required|integer|in:' . Config::get('przelewy24.merchant_id'),
-            'posId' => 'required|integer|in:' . Config::get('przelewy24.pos_id'),
-            'sessionId' => 'required',
-            'amount' => 'required|integer|in:' . $amount,
-            'originAmount' => 'required|integer|in:' . $amount,
-            'currency' => 'required|string|in:' . $payment->order->currency,
-            'orderId' => 'required|number',
-            'methodId' => 'required|number',
-            'statement' => 'required|string',
-            'sign' => 'required|string',
+            'merchantId' => ['required', 'integer', 'in:' . Config::get('przelewy24.merchant_id')],
+            'posId' => ['required', 'integer', 'in:' . Config::get('przelewy24.pos_id')],
+            'amount' => ['required', 'integer', 'in:' . $amount],
+            'originAmount' => ['required', 'integer', 'in:' . $amount],
+            'currency' => ['required', 'string', 'in:' . $payment->order->currency],
+            'orderId' => ['required', 'integer'],
+            'methodId' => ['required', 'integer'],
+            'statement' => ['required', 'string'],
+            'sign' => ['required', 'string'],
         ]);
 
         $sign = self::sign([

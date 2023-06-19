@@ -14,18 +14,23 @@ class AttributeDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    private array|Missing $metadata;
-    private string $name;
-    private string $slug;
-    private string|null|Missing $description;
-    private string $type;
-    private bool $global;
-    private bool $sortable;
+    public function __construct(
+        public readonly string|Missing $id,
+        public readonly string $name,
+        public readonly string $slug,
+        public readonly string|null|Missing $description,
+        public readonly string $type,
+        public readonly bool $global,
+        public readonly bool $sortable,
+        public readonly array|Missing $metadata,
+    ) {
+    }
 
     public static function instantiateFromRequest(
         FormRequest|AttributeStoreRequest|AttributeUpdateRequest $request
     ): self {
         return new self(
+            id: $request->input('id', new Missing()),
             name: $request->input('name'),
             slug: $request->input('slug'),
             description: $request->input('description', new Missing()),
@@ -34,35 +39,5 @@ class AttributeDto extends Dto implements InstantiateFromRequest
             sortable: $request->input('sortable'),
             metadata: self::mapMetadata($request),
         );
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    public function getSlug(): string
-    {
-        return $this->slug;
-    }
-
-    public function getDescription(): string|null|Missing
-    {
-        return $this->description;
-    }
-
-    public function getType(): string
-    {
-        return $this->type;
-    }
-
-    public function isGlobal(): bool
-    {
-        return $this->global;
-    }
-
-    public function isSortable(): bool
-    {
-        return $this->sortable;
     }
 }

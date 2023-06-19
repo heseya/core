@@ -24,7 +24,9 @@ final class CouponDto extends SaleDto implements InstantiateFromRequest
         return new self(
             code: $request->input('code', new Missing()),
             name: $request->input('name', new Missing()),
+            slug: $request->input('slug', new Missing()),
             description: $request->input('description', new Missing()),
+            description_html: $request->input('description_html', new Missing()),
             value: $request->input('value', new Missing()),
             type: $request->input('type', new Missing()),
             priority: $request->input('priority', new Missing()),
@@ -34,8 +36,9 @@ final class CouponDto extends SaleDto implements InstantiateFromRequest
             target_products: $request->input('target_products', new Missing()),
             target_sets: $request->input('target_sets', new Missing()),
             target_shipping_methods: $request->input('target_shipping_methods', new Missing()),
-            metadata: self::mapMetadata($request),
             active: $request->input('active', new Missing()),
+            metadata: self::mapMetadata($request),
+            seo: $request->has('seo') ? SeoMetadataDto::instantiateFromRequest($request) : new Missing(),
         );
     }
 

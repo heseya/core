@@ -140,7 +140,7 @@ final class Handler extends ExceptionHandler
                         $errors[$field][$index] : null
                     : null;
 
-                #Workaround for Password::defaults() rule
+                // Workaround for Password::defaults() rule
                 if ($key === ValidationError::PASSWORD) {
                     $key = Str::contains($message, 'data leak') ?
                         ValidationError::PASSWORDCOMPROMISED : ValidationError::PASSWORDLENGTH;
@@ -156,7 +156,7 @@ final class Handler extends ExceptionHandler
                     ];
                 }
 
-                $index++;
+                ++$index;
             }
         }
 
@@ -174,6 +174,7 @@ final class Handler extends ExceptionHandler
         if ($exception instanceof ValidationException) {
             return $this->mapValidationErrors($exception->validator);
         }
+
         return [];
     }
 

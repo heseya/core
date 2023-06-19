@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Discounts;
 
 use App\Enums\ConditionType;
 use App\Models\ConditionGroup;

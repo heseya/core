@@ -40,6 +40,7 @@ class CartTest extends TestCase
     private Product $productWithSchema;
     private Schema $schema;
     private Option $option;
+    private Option $option2;
     private Item $item;
 
     public function setUp(): void
@@ -52,10 +53,13 @@ class CartTest extends TestCase
             'public' => true,
             'shipping_type' => ShippingType::ADDRESS,
         ]);
-        $lowRange = PriceRange::create(['start' => 0]);
+
+        /** @var PriceRange $lowRange */
+        $lowRange = PriceRange::query()->create(['start' => 0]);
         $lowRange->prices()->create(['value' => 8.11]);
 
-        $highRange = PriceRange::create(['start' => 210]);
+        /** @var PriceRange $highRange */
+        $highRange = PriceRange::query()->create(['start' => 210]);
         $highRange->prices()->create(['value' => 0.0]);
 
         $this->shippingMethod->priceRanges()->saveMany([$lowRange, $highRange]);
@@ -76,12 +80,18 @@ class CartTest extends TestCase
             'required' => false,
         ]);
         $this->productWithSchema->schemas()->sync([$this->schema->getKey()]);
+
         $this->option = $this->schema->options()->create([
             'name' => 'XL',
             'price' => 0,
         ]);
         $this->item = Item::factory()->create();
         $this->option->items()->sync([$this->item->getKey()]);
+
+        $this->option2 = $this->schema->options()->create([
+            'name' => 'L',
+            'price' => 100,
+        ]);
 
         $this->digitalProduct = Product::factory()->create([
             'public' => true,
@@ -187,6 +197,62 @@ class CartTest extends TestCase
                 'cartitem_id' => '1',
                 'price' => 4600,
                 'price_discounted' => 4600,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessWithMultipleSchemas(string $user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $this->item->deposits()->create([
+            'quantity' => 1,
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->productWithSchema->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [
+                        $this->schema->getKey() => $this->option->getKey(),
+                    ],
+                ],
+                [
+                    'cartitem_id' => '2',
+                    'product_id' => $this->productWithSchema->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [
+                        $this->schema->getKey() => $this->option2->getKey(),
+                    ],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 300,
+                'cart_total' => 300,
+                'shipping_price_initial' => 0,
+                'shipping_price' => 0,
+                'summary' => 300,
+                'coupons' => [],
+                'sales' => [],
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => 100,
+                'price_discounted' => 100,
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '2',
+                'price' => 200,
+                'price_discounted' => 200,
             ]);
     }
 
@@ -2462,5 +2528,51 @@ class CartTest extends TestCase
         ]);
 
         return [$product, $couponWithLimit, $coupon2];
+    }
+
+    public function testCartProcessWithZeroSale(): void
+    {
+        $this->user->givePermissionTo('cart.verify');
+
+        $discountApplied = Discount::factory()->create([
+            'value' => 0,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => false,
+        ]);
+
+        $response = $this->actingAs($this->user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+            'coupons' => [
+                $discountApplied->code,
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 4600,
+                'cart_total' => 4600,
+                'shipping_price_initial' => 0,
+                'shipping_price' => 0,
+                'summary' => 4600,
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => 4600,
+                'price_discounted' => 4600,
+            ])
+            ->assertJsonFragment([
+                'id' => $discountApplied->getKey(),
+                'value' => 0,
+            ]);
     }
 }

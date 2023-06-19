@@ -58,12 +58,12 @@ use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
+use App\Services\Contracts\SeoMetadataServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
 use App\Services\Contracts\ShippingTimeDateServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -74,9 +74,10 @@ use Illuminate\Support\Str;
 readonly class DiscountService implements DiscountServiceContract
 {
     public function __construct(
-        private SettingsServiceContract $settingsService,
         private MetadataServiceContract $metadataService,
-        private ShippingTimeDateServiceContract $shippingTimeDateService
+        private SettingsServiceContract $settingsService,
+        private SeoMetadataServiceContract $seoMetadataService,
+        private ShippingTimeDateServiceContract $shippingTimeDateService,
     ) {
     }
 
@@ -90,7 +91,8 @@ readonly class DiscountService implements DiscountServiceContract
 
     public function store(SaleDto|CouponDto $dto): Discount
     {
-        $discount = Discount::create($dto->toArray());
+        /** @var Discount $discount */
+        $discount = Discount::query()->create($dto->toArray());
 
         $discount->products()->attach($dto->getTargetProducts());
         $discount->productSets()->attach($dto->getTargetSets());
@@ -103,6 +105,10 @@ readonly class DiscountService implements DiscountServiceContract
 
         if (!($dto->getMetadata() instanceof Missing)) {
             $this->metadataService->sync($discount, $dto->getMetadata());
+        }
+
+        if (!($dto->getSeo() instanceof Missing)) {
+            $this->seoMetadataService->createOrUpdateFor($discount, $dto->getSeo());
         }
 
         if ($dto instanceof CouponDto) {
@@ -140,6 +146,10 @@ readonly class DiscountService implements DiscountServiceContract
             if (count($conditionGroup) > 0) {
                 $discount->conditionGroups()->attach($this->createConditionGroupsToAttach($conditionGroup));
             }
+        }
+
+        if (!($dto->getSeo() instanceof Missing)) {
+            $this->seoMetadataService->createOrUpdateFor($discount, $dto->getSeo());
         }
 
         if ($dto instanceof CouponDto) {
@@ -183,13 +193,11 @@ readonly class DiscountService implements DiscountServiceContract
             return $discount->value;
         }
 
-        throw new ClientException(Exceptions::CLIENT_DISCOUNT_TYPE_NOT_SUPPORTED, errorArray: [
-            'type' => $discount->type,
-        ]);
+        throw new ClientException(Exceptions::CLIENT_DISCOUNT_TYPE_NOT_SUPPORTED, errorArray: ['type' => $discount->type]);
     }
 
     /**
-     * This executes for orders and cart
+     * This executes for orders and cart.
      *
      * It needs to account for current session user and calculate personalized price
      */
@@ -289,22 +297,23 @@ readonly class DiscountService implements DiscountServiceContract
         $shippingMethodDigital = null;
 
         if (!$cart->getShippingMethodId() instanceof Missing) {
-            $shippingMethod = ShippingMethod::findOrFail($cart->getShippingMethodId());
+            $shippingMethod = ShippingMethod::query()->findOrFail($cart->getShippingMethodId());
         }
 
         if (!$cart->getDigitalShippingMethodId() instanceof Missing) {
-            $shippingMethodDigital = ShippingMethod::findOrFail($cart->getDigitalShippingMethodId());
+            $shippingMethodDigital = ShippingMethod::query()->findOrFail($cart->getDigitalShippingMethodId());
         }
 
-        // Obliczanie wartości początkowej koszyka
         $cartItems = [];
         $cartValue = 0;
 
-        foreach ($products as $product) {
-            /** @var CartItemDto $cartItem */
-            $cartItem = Arr::first($cart->getItems(), function ($value, $key) use ($product) {
-                return $value->getProductId() === $product->getKey();
-            });
+        foreach ($cart->getItems() as $cartItem) {
+            $product = $products->firstWhere('id', $cartItem->getProductId());
+
+            if (!($product instanceof Product)) {
+                // skip when product is not avaiable
+                continue;
+            }
 
             $price = $product->price;
 
@@ -366,6 +375,7 @@ readonly class DiscountService implements DiscountServiceContract
         $cartResource->shipping_price = round($cartResource->shipping_price, 2, PHP_ROUND_HALF_UP);
 
         $cartResource->summary = $cartResource->cart_total + $cartResource->shipping_price;
+
         return $cartResource;
     }
 
@@ -467,6 +477,7 @@ readonly class DiscountService implements DiscountServiceContract
             && $refreshedOrder?->discounts->count() === 0) {
             $order = $this->roundProductPrices($order);
         }
+
         return match ($discount->target_type->value) {
             DiscountTargetType::PRODUCTS => $this->applyDiscountOnOrderProducts($order, $discount),
             DiscountTargetType::ORDER_VALUE => $this->applyDiscountOnOrderValue($order, $discount),
@@ -518,6 +529,7 @@ readonly class DiscountService implements DiscountServiceContract
                     }
                 }
             }
+
             return $sale->conditionGroups->isEmpty();
         });
     }
@@ -538,6 +550,7 @@ readonly class DiscountService implements DiscountServiceContract
                 }
             }
         }
+
         return false;
     }
 
@@ -556,6 +569,7 @@ readonly class DiscountService implements DiscountServiceContract
                 }
             }
         }
+
         return false;
     }
 
@@ -734,10 +748,7 @@ readonly class DiscountService implements DiscountServiceContract
                 $discount->code !== null
             ) {
                 [$type, $id] = $discount->code !== null ? ['coupon', $discount->code] : ['sale', $discount->getKey()];
-                throw new ClientException(Exceptions::CLIENT_CANNOT_APPLY_SELECTED_DISCOUNT_TYPE, errorArray: [
-                    'type' => $type,
-                    'id' => $id,
-                ]);
+                throw new ClientException(Exceptions::CLIENT_CANNOT_APPLY_SELECTED_DISCOUNT_TYPE, errorArray: ['type' => $type, 'id' => $id]);
             }
         }
 
@@ -808,6 +819,7 @@ readonly class DiscountService implements DiscountServiceContract
     private function calcProductPriceDiscount(Discount $discount, float $price, float $minimalProductPrice): float
     {
         $price -= $this->calc($price, $discount);
+
         return max($price, $minimalProductPrice);
     }
 
@@ -1043,6 +1055,7 @@ readonly class DiscountService implements DiscountServiceContract
 
             $cartResource->shipping_price = round($cartResource->shipping_price, 2, PHP_ROUND_HALF_UP);
         }
+
         return $cartResource;
     }
 
@@ -1054,6 +1067,7 @@ readonly class DiscountService implements DiscountServiceContract
             'minimal_order_price',
         );
         $cartResource->cart_total = round($cartResource->cart_total, 2, PHP_ROUND_HALF_UP);
+
         return $cartResource;
     }
 
@@ -1176,9 +1190,9 @@ readonly class DiscountService implements DiscountServiceContract
     {
         // Sortowanie zniżek w kolejności naliczania (Target type ASC, Discount type ASC, Priority DESC)
         return $discounts->sortBy([
-            fn ($a, $b) => DiscountTargetType::getPriority($a->target_type->value)
-                <=> DiscountTargetType::getPriority($b->target_type->value),
-            fn ($a, $b) => DiscountType::getPriority($a->type->value) <=> DiscountType::getPriority($b->type->value),
+            fn ($a, $b) => DiscountTargetType::getPriority($a->target_type)
+                <=> DiscountTargetType::getPriority($b->target_type),
+            fn ($a, $b) => DiscountType::getPriority($a->type) <=> DiscountType::getPriority($b->type),
             fn ($a, $b) => $b->priority <=> $a->priority,
         ]);
     }
@@ -1249,8 +1263,10 @@ readonly class DiscountService implements DiscountServiceContract
             if ($productSets->contains($productSet->parent->id)) {
                 return $allowList;
             }
+
             return $this->checkProductSetParentInDiscount($productSet->parent, $productSets, $allowList);
         }
+
         return !$allowList;
     }
 
@@ -1260,6 +1276,7 @@ readonly class DiscountService implements DiscountServiceContract
         foreach ($conditions as $condition) {
             $result[] = $this->createConditionGroup($condition);
         }
+
         return Collection::make($result)->pluck('id')->all();
     }
 
@@ -1340,6 +1357,7 @@ readonly class DiscountService implements DiscountServiceContract
         if (Auth::user()) {
             return in_array(Auth::id(), $conditionDto->getUsers()) === $conditionDto->isIsAllowList();
         }
+
         return false;
     }
 
@@ -1403,6 +1421,7 @@ readonly class DiscountService implements DiscountServiceContract
         if (!$endAt instanceof Missing) {
             return $actualDate->lessThanOrEqualTo($endAt) === $conditionDto->isIsInRange();
         }
+
         return false;
     }
 
@@ -1421,6 +1440,7 @@ readonly class DiscountService implements DiscountServiceContract
             if ($endAt->lessThanOrEqualTo($startAt)) {
                 $startAt = $startAt->subDay();
             }
+
             return $actualTime->between($startAt, $endAt) === $conditionDto->isIsInRange();
         }
 
@@ -1438,6 +1458,7 @@ readonly class DiscountService implements DiscountServiceContract
     private function checkConditionMaxUses(DiscountCondition $condition): bool
     {
         $conditionDto = MaxUsesConditionDto::fromArray($condition->value + ['type' => $condition->type]);
+
         return $condition->conditionGroup?->discounts()->first()?->orders()->count() < $conditionDto->getMaxUses();
     }
 

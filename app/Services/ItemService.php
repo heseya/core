@@ -47,13 +47,11 @@ class ItemService implements ItemServiceContract
         foreach ($items as $id => $count) {
             /** @var Item $item */
             $item = Item::query()->findOr($id, function () use ($id): void {
-                throw new ClientException(Exceptions::CLIENT_ITEM_NOT_FOUND, errorArray: [
-                    'id' => $id,
-                ]);
+                throw new ClientException(Exceptions::CLIENT_ITEM_NOT_FOUND, errorArray: ['id' => $id]);
             });
 
             if ($item->quantity < $count) {
-                //TODO dodanie danych do błędu
+                // TODO dodanie danych do błędu
                 throw new ClientException(Exceptions::CLIENT_NOT_ENOUGH_ITEMS);
             }
         }
@@ -71,13 +69,14 @@ class ItemService implements ItemServiceContract
 
             if (
                 $item->quantity < $count &&
-                is_null($item->unlimited_stock_shipping_time) &&
-                (is_null($item->unlimited_stock_shipping_date) ||
+                $item->unlimited_stock_shipping_time === null &&
+                ($item->unlimited_stock_shipping_date === null ||
                     $item->unlimited_stock_shipping_date < Carbon::now())
             ) {
                 return false;
             }
         }
+
         return true;
     }
 
@@ -90,6 +89,9 @@ class ItemService implements ItemServiceContract
         return $products;
     }
 
+    /**
+     * Returns only avaiable products.
+     */
     public function checkCartItems(array $items): array
     {
         $selectedItems = [];
@@ -100,9 +102,9 @@ class ItemService implements ItemServiceContract
 
         /** @var CartItemDto $item */
         foreach ($items as $item) {
-            $product = Product::find($item->getProductId());
+            $product = Product::query()->find($item->getProductId());
 
-            if ($product === null) {
+            if (!($product instanceof Product)) {
                 continue;
             }
 
@@ -192,8 +194,8 @@ class ItemService implements ItemServiceContract
     {
         $item = Item::create($dto->toArray());
 
-        if (!($dto->getMetadata() instanceof Missing)) {
-            $this->metadataService->sync($item, $dto->getMetadata());
+        if (!($dto->metadata instanceof Missing)) {
+            $this->metadataService->sync($item, $dto->metadata);
         }
 
         ItemCreated::dispatch($item);
@@ -207,8 +209,8 @@ class ItemService implements ItemServiceContract
 
         ItemUpdated::dispatch($item);
         if (
-            !($dto->getUnlimitedStockShippingDate() instanceof Missing) ||
-            !($dto->getUnlimitedStockShippingTime() instanceof Missing)
+            !($dto->unlimited_stock_shipping_date instanceof Missing) ||
+            !($dto->unlimited_stock_shipping_time instanceof Missing)
         ) {
             ItemUpdatedQuantity::dispatch($item);
         }
@@ -275,6 +277,7 @@ class ItemService implements ItemServiceContract
             }
             $products->push($product);
         }
+
         return [$products, $selectedItems];
     }
 
@@ -297,16 +300,11 @@ class ItemService implements ItemServiceContract
         }
 
         if ($limit < $quantity) {
-            throw new ClientException(
-                Exceptions::PRODUCT_PURCHASE_LIMIT,
-                errorArray: [
-                    'id' => $productId,
-                    'limit' => $limit,
-                ],
-            );
+            throw new ClientException(Exceptions::PRODUCT_PURCHASE_LIMIT, errorArray: ['id' => $productId, 'limit' => $limit]);
         }
 
         $purchasedProducts[$productId] = $quantity;
+
         return $purchasedProducts;
     }
 }

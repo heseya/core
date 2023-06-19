@@ -5,9 +5,9 @@ use App\Http\Controllers\ShippingMethodController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('shipping-methods')->group(function (): void {
-    Route::get(null, [ShippingMethodController::class, 'index'])
+    Route::get('/', [ShippingMethodController::class, 'index'])
         ->middleware('can:shipping_methods.show');
-    Route::post(null, [ShippingMethodController::class, 'store'])
+    Route::post('/', [ShippingMethodController::class, 'store'])
         ->middleware('can:shipping_methods.add');
     Route::patch('id:{shipping_method:id}', [ShippingMethodController::class, 'update'])
         ->middleware('can:shipping_methods.edit');

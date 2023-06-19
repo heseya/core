@@ -14,6 +14,8 @@ class ItemCreateRequest extends FormRequest
         return array_merge(
             $this->metadataRules(),
             [
+                'id' => ['uuid'],
+
                 'name' => ['required', 'string', 'max:255'],
                 'sku' => ['required', 'string', 'unique:items', 'max:255'],
                 'unlimited_stock_shipping_time' => [

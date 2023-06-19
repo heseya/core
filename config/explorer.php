@@ -15,7 +15,7 @@ return [
         'host' => Env::get('ELASTICSEARCH_HOST', 'elasticsearch'),
     ],
 
-    /**
+    /*
      * An index may be defined on an Eloquent model or inline below. A more in depth explanation
      * of the mapping possibilities can be found in the documentation of Explorer's repository.
      */
@@ -23,7 +23,7 @@ return [
         Product::class,
     ],
 
-    /**
+    /*
      * You may opt to keep the old indices after the alias is pointed to a new index.
      * A model is only using index aliases if it implements the Aliased interface.
      */

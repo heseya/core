@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\MediaAttachmentType;
 use App\Enums\MediaType;
-use App\Enums\OrderDocumentType;
 use App\Events\AddOrderDocument;
 use App\Events\SendOrderDocument;
 use App\Models\Media;
@@ -61,13 +61,13 @@ class OrderDocumentTest extends TestCase
 
         $response = $this->actingAs($this->$user)->postJson('orders/id:' . $this->order->getKey() . '/docs', [
             'file' => $this->file,
-            'type' => OrderDocumentType::OTHER,
+            'type' => MediaAttachmentType::OTHER,
             'name' => 'test',
         ]);
 
         $response->assertJsonFragment([
             'id' => OrderDocument::all()->first()->getKey(),
-            'type' => OrderDocumentType::OTHER,
+            'type' => MediaAttachmentType::OTHER,
             'name' => 'test',
         ]);
 
@@ -88,7 +88,7 @@ class OrderDocumentTest extends TestCase
 
         $media = Media::factory()->create();
 
-        $this->order->documents()->attach($media, ['type' => OrderDocumentType::OTHER, 'name' => 'test']);
+        $this->order->documents()->attach($media, ['type' => MediaAttachmentType::OTHER, 'name' => 'test']);
 
         $response = $this->actingAs($this->$user)
             ->deleteJson(
@@ -114,8 +114,8 @@ class OrderDocumentTest extends TestCase
         $mediaOne = Media::factory()->create();
         $mediaTwo = Media::factory()->create();
 
-        $this->order->documents()->attach($mediaOne, ['type' => OrderDocumentType::OTHER, 'name' => 'test']);
-        $this->order->documents()->attach($mediaTwo, ['type' => OrderDocumentType::OTHER, 'name' => 'test']);
+        $this->order->documents()->attach($mediaOne, ['type' => MediaAttachmentType::OTHER, 'name' => 'test']);
+        $this->order->documents()->attach($mediaTwo, ['type' => MediaAttachmentType::OTHER, 'name' => 'test']);
 
         $response = $this->actingAs($this->$user)->postJson('orders/id:' . $this->order->getKey() . '/docs/send', [
             'uuid' => [
@@ -141,8 +141,8 @@ class OrderDocumentTest extends TestCase
         $mediaOne = Media::factory()->create();
         $mediaTwo = Media::factory()->create();
 
-        $this->order->documents()->attach($mediaOne, ['type' => OrderDocumentType::OTHER, 'name' => 'test']);
-        $order->documents()->attach($mediaTwo, ['type' => OrderDocumentType::OTHER, 'name' => 'test']);
+        $this->order->documents()->attach($mediaOne, ['type' => MediaAttachmentType::OTHER, 'name' => 'test']);
+        $order->documents()->attach($mediaTwo, ['type' => MediaAttachmentType::OTHER, 'name' => 'test']);
 
         $wrongDocId = $order->documents->last()->pivot->id;
 
@@ -176,7 +176,7 @@ class OrderDocumentTest extends TestCase
             'url' => 'silverbox/heseya/test.jpeg',
         ]);
 
-        $this->order->documents()->attach($media, ['type' => OrderDocumentType::INVOICE, 'name' => 'test']);
+        $this->order->documents()->attach($media, ['type' => MediaAttachmentType::INVOICE, 'name' => 'test']);
 
         Http::fake(['*' => Http::response($file)]);
 
@@ -208,7 +208,7 @@ class OrderDocumentTest extends TestCase
             'url' => 'silverbox/heseya/test.jpeg',
         ]);
 
-        $this->order->documents()->attach($media, ['type' => OrderDocumentType::INVOICE, 'name' => 'test']);
+        $this->order->documents()->attach($media, ['type' => MediaAttachmentType::INVOICE, 'name' => 'test']);
 
         Http::fake(['*' => Http::response($file)]);
 
@@ -240,7 +240,7 @@ class OrderDocumentTest extends TestCase
             'url' => 'silverbox/heseya/test.jpeg',
         ]);
 
-        $this->order->documents()->attach($media, ['type' => OrderDocumentType::INVOICE, 'name' => 'test']);
+        $this->order->documents()->attach($media, ['type' => MediaAttachmentType::INVOICE, 'name' => 'test']);
 
         Http::fake(['*' => Http::response($file)]);
 

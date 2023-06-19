@@ -26,7 +26,7 @@ class MetadataController extends Controller
             return Response::json(null, JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        # Workaround for attribute option metadata
+        // Workaround for attribute option metadata
         $model = $modelClass instanceof AttributeOption ?
             $modelClass->where('name', $request->route('option'))->firstOrFail()
             : $modelClass->where('id', $modelId)->firstOrFail();

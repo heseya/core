@@ -138,9 +138,7 @@ class OrderService implements OrderServiceContract
             $status = Status::query()
                 ->select('id')
                 ->orderBy('order')
-                ->firstOr(callback: fn () => throw new ServerException(
-                    Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED,
-                ));
+                ->firstOr(callback: fn () => throw new ServerException(Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED));
 
             /** @var User|App $buyer */
             $buyer = Auth::user();
@@ -254,6 +252,7 @@ class OrderService implements OrderServiceContract
 
             DB::commit();
             OrderCreated::dispatch($order);
+
             return $order;
         } catch (StoreException $exception) {
             DB::rollBack();
@@ -304,7 +303,7 @@ class OrderService implements OrderServiceContract
             );
 
             $billingAddressId = $billingAddress instanceof Address
-                ? ['billing_address_id' => $billingAddress->getKey() ]
+                ? ['billing_address_id' => $billingAddress->getKey()]
                 : (!$dto->getBillingAddress() instanceof Missing ? ['billing_address_id' => null] : []);
 
             $order->update([
@@ -406,6 +405,7 @@ class OrderService implements OrderServiceContract
                 );
             }
         }
+
         return $product;
     }
 
@@ -499,6 +499,7 @@ class OrderService implements OrderServiceContract
         if ($attribute === 'shipping_address_id' && $order->shipping_type === ShippingType::POINT) {
             return Address::create($addressDto->toArray());
         }
+
         return Address::updateOrCreate(['id' => $order->$attribute], $addressDto->toArray());
     }
 
@@ -512,7 +513,7 @@ class OrderService implements OrderServiceContract
             $quantity = $productItem->pivot->required_quantity * $orderProduct->quantity;
 
             if (!isset($itemsToRemove[$productItem->getKey()])) {
-                $itemsToRemove[$productItem->getKey()] = ['item' => $productItem,'quantity' => $quantity];
+                $itemsToRemove[$productItem->getKey()] = ['item' => $productItem, 'quantity' => $quantity];
             } else {
                 $itemsToRemove[$productItem->getKey()]['quantity'] += $quantity;
             }
@@ -561,9 +562,7 @@ class OrderService implements OrderServiceContract
                 }
 
                 if (!($shippingPlace instanceof Address)) {
-                    throw new ServerException(
-                        'Attempting to resolve shipping of type address but place is not Address',
-                    );
+                    throw new ServerException('Attempting to resolve shipping of type address but place is not Address');
                 }
 
                 return $shippingPlace->getKey();

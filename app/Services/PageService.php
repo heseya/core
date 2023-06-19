@@ -2,7 +2,8 @@
 
 namespace App\Services;
 
-use App\Dtos\PageDto;
+use App\Dtos\PageCreateDto;
+use App\Dtos\PageUpdateDto;
 use App\Events\PageCreated;
 use App\Events\PageDeleted;
 use App\Events\PageUpdated;
@@ -34,25 +35,28 @@ class PageService implements PageServiceContract
     public function getPaginated(?array $search): LengthAwarePaginator
     {
         $query = Page::query()
-            ->searchByCriteria($search ?? [])
-            ->with(['seo', 'metadata']);
+            ->whereDoesntHave('products')
+            ->with(['seo', 'metadata'])
+            ->orderBy('order')
+            ->searchByCriteria($search ?? []);
 
         if (!Auth::user()?->can('pages.show_hidden')) {
             $query->where('public', true);
         }
 
-        return $query->sort('order')->paginate(Config::get('pagination.per_page'));
+        return $query->paginate(Config::get('pagination.per_page'));
     }
 
-    public function create(PageDto $dto): Page
+    public function create(PageCreateDto $dto): Page
     {
         $attributes = $dto->toArray();
-        $pageCurrentOrder = Page::orderByDesc('order')->value('order');
+        $pageCurrentOrder = Page::query()->orderByDesc('order')->value('order');
         if ($pageCurrentOrder !== null) {
             $attributes = array_merge($attributes, ['order' => $pageCurrentOrder + 1]);
         }
 
-        $page = Page::create($attributes);
+        /** @var Page $page */
+        $page = Page::query()->create($attributes);
 
         if (!($dto->getSeo() instanceof Missing)) {
             $this->seoMetadataService->createOrUpdateFor($page, $dto->getSeo());
@@ -67,7 +71,7 @@ class PageService implements PageServiceContract
         return $page;
     }
 
-    public function update(Page $page, PageDto $dto): Page
+    public function update(Page $page, PageUpdateDto $dto): Page
     {
         $page->update($dto->toArray());
 
@@ -88,13 +92,15 @@ class PageService implements PageServiceContract
             if ($page->seo !== null) {
                 $this->seoMetadataService->delete($page->seo);
             }
+            $page->slug .= '_' . $page->deleted_at;
+            $page->save();
         }
     }
 
     public function reorder(array $pages): void
     {
         foreach ($pages as $key => $id) {
-            Page::where('id', $id)->update(['order' => $key]);
+            Page::query()->where('id', $id)->update(['order' => $key]);
         }
     }
 }

@@ -16,6 +16,7 @@ use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
+use Ramsey\Uuid\Uuid;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
@@ -37,9 +38,7 @@ class ItemTest extends TestCase
 
         $this->item->refresh();
 
-        /**
-         * Expected response
-         */
+        // Expected response
         $this->expected = [
             'id' => $this->item->getKey(),
             'name' => $this->item->name,
@@ -463,6 +462,31 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateWithUuid($user): void
+    {
+        $this->$user->givePermissionTo('items.add');
+
+        Event::fake(ItemCreated::class);
+
+        $item = [
+            'name' => 'Test',
+            'sku' => 'TES/T1',
+            'id' => Uuid::uuid4()->toString(),
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/items', $item);
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => $item]);
+
+        $this->assertDatabaseHas('items', $item);
+
+        Event::assertDispatched(ItemCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateWithoutPermission($user): void
     {
         Event::fake(ItemCreated::class);
@@ -585,6 +609,7 @@ class ItemTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $item) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $item->getKey()
@@ -748,6 +773,7 @@ class ItemTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $item) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $item->getKey()
@@ -829,6 +855,7 @@ class ItemTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $item) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $item->getKey()

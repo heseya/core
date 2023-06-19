@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
+use Mockery;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
@@ -708,7 +709,7 @@ class ProviderTest extends TestCase
 
     private function mockSocialiteUser(string $key): void
     {
-        $user = \Mockery::mock('Laravel\Socialite\Two\User');
+        $user = Mockery::mock('Laravel\Socialite\Two\User');
         $user
             ->shouldReceive('getId')
             ->andReturn(123456789)
@@ -719,7 +720,7 @@ class ProviderTest extends TestCase
             ->shouldReceive('getAvatar')
             ->andReturn('https://en.gravatar.com/userimage');
 
-        $provider = \Mockery::mock('Laravel\Socialite\Contracts\Provider');
+        $provider = Mockery::mock('Laravel\Socialite\Contracts\Provider');
         $provider
             ->shouldReceive('stateless')
             ->andReturn($provider)

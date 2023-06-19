@@ -34,7 +34,7 @@ class OneTimeSecurityCodeService implements OneTimeSecurityCodeContract
         $user->securityCodes()->delete();
         $recovery_codes = [];
 
-        for ($i = 0; $i < $codes; $i++) {
+        for ($i = 0; $i < $codes; ++$i) {
             $recovery_codes[] = $this->generateOneTimeSecurityCode($user);
         }
 

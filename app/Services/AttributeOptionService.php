@@ -34,8 +34,8 @@ class AttributeOptionService implements AttributeOptionServiceContract
 
     public function updateOrCreate(string $attributeId, AttributeOptionDto $dto): AttributeOption
     {
-        if ($dto->getId() !== null && !$dto->getId() instanceof Missing) {
-            $attributeOption = AttributeOption::findOrFail($dto->getId());
+        if ($dto->id !== null && !$dto->id instanceof Missing) {
+            $attributeOption = AttributeOption::findOrFail($dto->id);
             $attributeOption->update($dto->toArray());
 
             return $attributeOption;

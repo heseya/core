@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Dtos\AuthProviderDto;
 use App\Dtos\AuthProviderLoginDto;
 use App\Dtos\AuthProviderMergeAccountDto;
-use App\Enums\AuthProviderKey;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
 use App\Exceptions\ClientException;
@@ -48,9 +47,7 @@ class ProviderService implements ProviderServiceContract
 
     public function getProvider(string $authProviderKey): ?AuthProvider
     {
-        $providerEnum = AuthProviderKey::fromValue($authProviderKey);
-
-        return AuthProvider::query()->where('key', $providerEnum->value)->first();
+        return AuthProvider::query()->where('key', $authProviderKey)->first();
     }
 
     public function update(AuthProviderDto $dto, AuthProvider $provider): AuthProvider
@@ -134,9 +131,7 @@ class ProviderService implements ProviderServiceContract
                     'merge_token_expires_at' => Carbon::now()->addDay(),
                 ]);
 
-                throw new ClientException(Exceptions::CLIENT_ALREADY_HAS_ACCOUNT, errorArray: [
-                    'merge_token' => $mergeToken,
-                ]);
+                throw new ClientException(Exceptions::CLIENT_ALREADY_HAS_ACCOUNT, errorArray: ['merge_token' => $mergeToken]);
             }
             $newUser = User::create([
                 'name' => $user->getName(),
@@ -158,6 +153,7 @@ class ProviderService implements ProviderServiceContract
                 $dto->getUserAgent(),
             );
         }
+
         return $data;
     }
 

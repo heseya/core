@@ -15,6 +15,7 @@ class DocumentsBelongToOrder implements Rule
         $order = request()->route('order');
 
         $this->error = $value;
+
         return $order->documents()->wherePivot('id', $value)->exists();
     }
 

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property User $user
+ *
  * @mixin IdeHelperUserProvider
  */
 class UserProvider extends Model

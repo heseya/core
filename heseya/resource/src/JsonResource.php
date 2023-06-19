@@ -25,8 +25,6 @@ class JsonResource extends \Illuminate\Http\Resources\Json\JsonResource
      * Transform the resource into an array.
      *
      * @param Request $request
-     *
-     * @return array
      */
     public function toArray($request): array
     {
@@ -56,7 +54,7 @@ class JsonResource extends \Illuminate\Http\Resources\Json\JsonResource
     }
 
     /**
-     * Parameters displayed on index and view
+     * Parameters displayed on index and view.
      */
     public function base(Request $request): array
     {
@@ -64,7 +62,7 @@ class JsonResource extends \Illuminate\Http\Resources\Json\JsonResource
     }
 
     /**
-     * Parameters displayed on index only
+     * Parameters displayed on index only.
      */
     public function index(Request $request): array
     {
@@ -72,7 +70,7 @@ class JsonResource extends \Illuminate\Http\Resources\Json\JsonResource
     }
 
     /**
-     * Parameters displayed on view only
+     * Parameters displayed on view only.
      */
     public function view(Request $request): array
     {
@@ -80,7 +78,7 @@ class JsonResource extends \Illuminate\Http\Resources\Json\JsonResource
     }
 
     /**
-     * Display only base parameters
+     * Display only base parameters.
      */
     public function baseOnly(bool $baseOnly = true): self
     {
@@ -90,7 +88,7 @@ class JsonResource extends \Illuminate\Http\Resources\Json\JsonResource
     }
 
     /**
-     * Display only base parameters
+     * Display only base parameters.
      */
     public function isIndex(bool $isIndex = true): self
     {

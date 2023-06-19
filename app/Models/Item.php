@@ -25,6 +25,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @property mixed $pivot
+ *
  * @mixin IdeHelperItem
  */
 class Item extends Model implements AuditableContract, SortableContract
@@ -37,6 +38,7 @@ class Item extends Model implements AuditableContract, SortableContract
     use HasMetadata;
 
     protected $fillable = [
+        'id',
         'name',
         'sku',
         'quantity',
@@ -81,10 +83,12 @@ class Item extends Model implements AuditableContract, SortableContract
             if (!Str::contains($day, ':')) {
                 $day = Str::before($day, 'T') . 'T23:59:59';
             }
+
             return $this->deposits
                 ->where('created_at', '<=', $day)
                 ->sum('quantity');
         }
+
         return $this->quantity ?? 0;
     }
 

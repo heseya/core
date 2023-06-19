@@ -15,14 +15,14 @@ class ShippingDate implements Rule
     /**
      * Determine if the validation rule passes.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
+     * @param string $attribute
+     * @param mixed $value
      */
     public function passes($attribute, $value): bool
     {
         $time = Carbon::parse($value);
 
-        return is_null($this->item->unlimited_stock_shipping_date)
+        return $this->item->unlimited_stock_shipping_date === null
             || $this->item->unlimited_stock_shipping_date->isPast()
             || $time->isPast()
             || !$time->isAfter($this->item->unlimited_stock_shipping_date);

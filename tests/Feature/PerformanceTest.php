@@ -70,7 +70,7 @@ class PerformanceTest extends TestCase
             ->json('GET', '/products/id:' . $product->getKey())
             ->assertOk();
 
-        $this->assertQueryCountLessThan(24);
+        $this->assertQueryCountLessThan(26);
     }
 
     public function testIndexPerformanceListAttribute500(): void
@@ -265,7 +265,7 @@ class PerformanceTest extends TestCase
             ->json('GET', '/sales/id:' . $discount->getKey())
             ->assertOk();
 
-        $this->assertQueryCountLessThan(16);
+        $this->assertQueryCountLessThan(17);
     }
 
     public function testCreateSalePerformance1000Products(): void

@@ -6,6 +6,7 @@ use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\AttributeOptionRequest;
 use App\Traits\MapMetadata;
 use Heseya\Dto\Dto;
+use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -13,12 +14,18 @@ class AttributeOptionDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    private array|Missing $metadata;
-    private string|null|Missing $id;
-    private string|null|Missing $name;
-    private float|null|Missing $value_number;
-    private string|null|Missing $value_date;
+    public function __construct(
+        public readonly string|null|Missing $id,
+        public readonly string|null|Missing $name,
+        public readonly float|null|Missing $value_number,
+        public readonly string|null|Missing $value_date,
+        public readonly array|Missing $metadata,
+    ) {
+    }
 
+    /**
+     * @throws DtoException
+     */
     public static function instantiateFromRequest(FormRequest|AttributeOptionRequest $request): self
     {
         return new self(
@@ -30,6 +37,9 @@ class AttributeOptionDto extends Dto implements InstantiateFromRequest
         );
     }
 
+    /**
+     * @throws DtoException
+     */
     public static function fromDataArray(array $data): self
     {
         return new self(
@@ -39,37 +49,5 @@ class AttributeOptionDto extends Dto implements InstantiateFromRequest
             value_date: array_key_exists('value_date', $data) ? $data['value_date'] : null,
             metadata: self::mapMetadataFromArray($data),
         );
-    }
-
-    /**
-     * @return string|Missing|null
-     */
-    public function getId(): string|null|Missing
-    {
-        return $this->id;
-    }
-
-    /**
-     * @return string|Missing|null
-     */
-    public function getName(): string|null|Missing
-    {
-        return $this->name;
-    }
-
-    /**
-     * @return float|Missing|null
-     */
-    public function getValueNumber(): float|null|Missing
-    {
-        return $this->value_number;
-    }
-
-    /**
-     * @return string|Missing|null
-     */
-    public function getValueDate(): string|null|Missing
-    {
-        return $this->value_date;
     }
 }

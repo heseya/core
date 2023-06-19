@@ -4,8 +4,8 @@ namespace App\Dtos;
 
 use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\Contracts\SeoRequestContract;
-use Exception;
 use Heseya\Dto\Dto;
+use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
@@ -20,11 +20,15 @@ class SeoMetadataDto extends Dto implements InstantiateFromRequest
     private string|null|Missing $model_id;
     private string|null|Missing $model_type;
     private bool|Missing $no_index;
+    private array|null|Missing $header_tags;
 
+    /**
+     * @throws DtoException
+     */
     public static function instantiateFromRequest(FormRequest|SeoRequestContract $request): self
     {
         if (!($request instanceof Request)) {
-            throw new Exception('$request must be an instance of Illuminate\Http\Request');
+            throw new DtoException('$request must be an instance of Illuminate\Http\Request');
         }
 
         $seo = $request->has('seo') ? 'seo.' : '';
@@ -38,6 +42,7 @@ class SeoMetadataDto extends Dto implements InstantiateFromRequest
             model_id: $request->input($seo . 'model_id', new Missing()),
             model_type: $request->input($seo . 'model_type', new Missing()),
             no_index: $request->input($seo . 'no_index', new Missing()),
+            header_tags: $request->input($seo . 'header_tags', new Missing()),
         );
     }
 

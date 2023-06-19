@@ -26,6 +26,7 @@ use Illuminate\Support\Str;
 
 /**
  * @property mixed $pivot
+ *
  * @mixin IdeHelperProductSet
  */
 class ProductSet extends Model
@@ -39,6 +40,7 @@ class ProductSet extends Model
     use HasDiscounts;
 
     protected $fillable = [
+        'id',
         'name',
         'slug',
         'public',

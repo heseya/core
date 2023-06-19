@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\OrderDocumentType;
-use BenSampo\Enum\Rules\EnumValue;
+use App\Enums\MediaAttachmentType;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class OrderDocumentRequest extends FormRequest
 {
@@ -13,7 +13,7 @@ class OrderDocumentRequest extends FormRequest
         return [
             'file' => ['required', 'file'],
             'name' => ['string'],
-            'type' => ['required', new EnumValue(OrderDocumentType::class, false)],
+            'type' => ['required', new Enum(MediaAttachmentType::class)],
         ];
     }
 }

@@ -15,6 +15,7 @@ class SeoMetadataResource extends Resource
             'og_image' => MediaResource::make($this->resource->media),
             'twitter_card' => $this->resource->twitter_card,
             'no_index' => $this->resource->no_index,
+            'header_tags' => $this->resource->header_tags,
         ];
     }
 }

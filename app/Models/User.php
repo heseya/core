@@ -15,6 +15,7 @@ use App\Traits\HasDiscountConditions;
 use App\Traits\HasMetadata;
 use App\Traits\HasMetadataPersonal;
 use App\Traits\HasWebHooks;
+use App\Traits\HasWishlist;
 use App\Traits\Sortable;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
@@ -39,15 +40,11 @@ use Propaganistas\LaravelPhone\PhoneNumber;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
+ * @property string|null $remember_token
+ *
  * @mixin IdeHelperUser
  */
-class User extends Model implements
-    AuthenticatableContract,
-    AuthorizableContract,
-    CanResetPasswordContract,
-    AuditableContract,
-    JWTSubject,
-    SortableContract
+class User extends Model implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, AuditableContract, JWTSubject, SortableContract
 {
     use Notifiable;
     use Authenticatable;
@@ -64,6 +61,7 @@ class User extends Model implements
     use HasMetadata;
     use HasDiscountConditions;
     use HasMetadataPersonal;
+    use HasWishlist;
 
     // Bez tego nie działały testy, w których jako aplikacja tworzy się użytkownika z określoną rolą
     protected string $guard_name = 'api';
@@ -159,11 +157,6 @@ class User extends Model implements
     public function securityCodes(): HasMany
     {
         return $this->hasMany(OneTimeSecurityCode::class, 'user_id', 'id');
-    }
-
-    public function wishlistProducts(): MorphMany
-    {
-        return $this->morphMany(WishlistProduct::class, 'user');
     }
 
     public function preferences(): BelongsTo

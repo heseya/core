@@ -8,8 +8,6 @@ class AttributeUpdateRequest extends AttributeStoreRequest
 {
     /**
      * Get the validation rules that apply to the request.
-     *
-     * @return array
      */
     public function rules(): array
     {
@@ -24,7 +22,7 @@ class AttributeUpdateRequest extends AttributeStoreRequest
 
         $rules['type'] = [
             'required',
-            Rule::in($this->attribute->type),
+            Rule::in($this->attribute->type->value),
         ];
 
         return $rules;

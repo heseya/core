@@ -13,9 +13,9 @@ class BannerDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    private string|Missing $slug;
-    private string|Missing $name;
-    private bool|Missing $active;
+    private null|string|Missing $slug;
+    private null|string|Missing $name;
+    private null|bool|Missing $active;
     private Collection|Missing $banner_media;
     private array|Missing $metadata;
 
@@ -32,21 +32,6 @@ class BannerDto extends Dto implements InstantiateFromRequest
                 ->map(fn ($group) => BannerMediaDto::fromDataArray($group)),
             metadata: self::mapMetadata($request),
         );
-    }
-
-    public function getSlug(): string|Missing
-    {
-        return $this->slug;
-    }
-
-    public function getName(): string|Missing
-    {
-        return $this->name;
-    }
-
-    public function isActive(): bool|Missing
-    {
-        return $this->active;
     }
 
     public function getBannerMedia(): Collection|Missing

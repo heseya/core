@@ -49,9 +49,7 @@ class PageTest extends TestCase
             'public' => true,
         ]);
 
-        /**
-         * Expected response
-         */
+        // Expected response
         $this->expected = [
             'id' => $this->page->getKey(),
             'name' => $this->page->name,
@@ -432,6 +430,7 @@ class PageTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $page) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $page->getKey()
@@ -501,7 +500,7 @@ class PageTest extends TestCase
 
         $uuids = [];
 
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 3; ++$i) {
             $name = ' order test ' . $this->faker->sentence(rand(1, 3));
             $page = [
                 'name' => $name,
@@ -586,7 +585,7 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdate($user): void
+    public function testUpdate(string $user): void
     {
         $this->$user->givePermissionTo('pages.edit');
 
@@ -600,12 +599,12 @@ class PageTest extends TestCase
             'content_html' => $html,
         ];
 
-        $response = $this->actingAs($this->$user)->patchJson(
-            '/pages/id:' . $this->page->getKey(),
-            $page,
-        );
-
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->patchJson(
+                '/pages/id:' . $this->page->getKey(),
+                $page,
+            )
             ->assertOk()
             ->assertJson(['data' => $page]);
 
@@ -617,7 +616,21 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateWithWebHook($user): void
+    public function testUpdateMissingFields(string $user): void
+    {
+        $this->$user->givePermissionTo('pages.edit');
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/pages/id:' . $this->page->getKey(), [
+                'public' => true,
+            ])
+            ->assertOk();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithWebHook(string $user): void
     {
         $this->$user->givePermissionTo('pages.edit');
 
@@ -665,6 +678,7 @@ class PageTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $page) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $page->getKey()

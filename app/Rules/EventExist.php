@@ -17,6 +17,7 @@ class EventExist implements Rule
         foreach ($value as $v) {
             if (!EventType::hasValue($v)) {
                 $this->event = $v;
+
                 return false;
             }
         }

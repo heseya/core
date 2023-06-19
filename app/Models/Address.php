@@ -27,7 +27,9 @@ class Address extends Model
 
     public function orders(): HasMany
     {
-        return $this->hasMany(Order::class);
+        return $this
+            ->hasMany(Order::class, 'billing_address_id')
+            ->orWhere('shipping_address_id', $this->id);
     }
 
     public function countryModel(): BelongsTo
@@ -57,6 +59,7 @@ class Address extends Model
 
             return $phone->formatForMobileDialingInCountry($this->country);
         }
+
         return null;
     }
 }

@@ -12,7 +12,7 @@ trait MapMetadata
 {
     public static function mapMetadata(Request $request): array|Missing
     {
-        #mapping form data
+        // mapping form data
         $data = [];
         foreach ($request->input() as $key => $value) {
             data_set($data, $key, $value);

@@ -1,21 +1,30 @@
 Sale:
   type: object
   properties:
+    id:
+      type: string
+      format: uuid
     name:
       type: string
       example: 'Black'
+    slug:
+      type: string
+      example: 'promo-123'
     description:
       type: string
       example: 'Black Weekend 2021'
+    description_html:
+      type: string
+    value:
+      type: number
+      example: 50
     type:
       type: string
       enum: [ 'amount', 'percentage' ]
-    value:
-      type: number
-      example: '50'
     priority:
       type: number
-      example: 1
+    uses:
+      type: number
     target_type:
       type: string
       enum: [ 'order-value', 'products', 'shipping-price', 'cheapest-product' ]
@@ -23,15 +32,18 @@ Sale:
       type: boolean
     active:
       type: boolean
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
 
 SaleShow:
   type: object
   allOf:
     - $ref: '#/Sale'
     - properties:
-        id:
-          type: string
-          format: uuid
+        seo:
+          $ref: './Seo.yml#/SeoView'
         condition_groups:
           type: array
           items:
@@ -48,16 +60,14 @@ SaleShow:
           type: array
           items:
             $ref: './ShippingMethods.yml#/ShippingMethod'
-        metadata:
-          $ref: './../schemas/Metadata.yml#/Metadata'
-        metadata_private:
-          $ref: './../schemas/Metadata.yml#/Metadata'
 
 SaleUpdate:
   type: object
   allOf:
     - $ref: '#/Sale'
     - properties:
+        seo:
+          $ref: './Seo.yml#/SeoStore'
         condition_groups:
           type: array
           items:
@@ -83,6 +93,8 @@ SaleStore:
   allOf:
     - $ref: '#/SaleUpdate'
     - properties:
+        seo:
+          $ref: './Seo.yml#/SeoStore'
         metadata:
           $ref: './../schemas/Metadata.yml#/Metadata'
         metadata_private:

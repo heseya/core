@@ -104,6 +104,7 @@ final class Exceptions extends Enum
     public const SERVER_TRANSACTION_ERROR = 'Unexpected error occurred during the database transaction.';
     public const SERVER_PAYMENT_MICROSERVICE_ERROR = 'Payment service error.';
     public const SERVER_MAPPING_NOT_FOUND = 'Not found mapping for this query';
+    public const SERVER_SHIPPING_TYPE_NO_VALIDATION = 'Validation is not implemented for selected shipping type';
 
     public const ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE = 'Not every item is available';
     public const ORDER_SHIPPING_METHOD_TYPE_MISMATCH = 'Selected shipping methods don\'t match selected product types';
@@ -113,7 +114,7 @@ final class Exceptions extends Enum
 
     public const PRODUCT_PURCHASE_LIMIT = 'The limit of purchased product units per user has been exceeded';
 
-    public const PRODUCT_NOT_FOUND = "Product with given id was not found";
+    public const PRODUCT_NOT_FOUND = 'Product with given id was not found';
 
     public const PAYMENT_METHOD_NOT_AVAILABLE_FOR_SHIPPING =
         'Payment method not available for selected shipping method';

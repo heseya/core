@@ -6,7 +6,9 @@ use App\Enums\AttributeType;
 use App\Enums\MetadataType;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
+use App\Models\Option;
 use Illuminate\Support\Carbon;
+use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
 
 class AttributeTest extends TestCase
@@ -62,13 +64,13 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndex($user): void
+    public function testIndex(string $user): void
     {
         $this->$user->givePermissionTo('attributes.show');
 
         $this->newAttribute['global'] = !$this->attribute->global;
         unset($this->newAttribute['options']);
-        Attribute::create($this->newAttribute);
+        Attribute::query()->create($this->newAttribute);
 
         $this
             ->actingAs($this->$user)
@@ -90,13 +92,13 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexByIds($user): void
+    public function testIndexByIds(string $user): void
     {
         $this->$user->givePermissionTo('attributes.show');
 
         $this->newAttribute['global'] = !$this->attribute->global;
         unset($this->newAttribute['options']);
-        Attribute::create($this->newAttribute);
+        Attribute::query()->create($this->newAttribute);
 
         $this
             ->actingAs($this->$user)
@@ -121,12 +123,14 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexMetadata($user): void
+    public function testIndexMetadata(string $user): void
     {
         $this->$user->givePermissionTo('attributes.show');
 
         unset($this->newAttribute['options']);
-        $attribute = Attribute::create($this->newAttribute);
+
+        /** @var Attribute $attribute */
+        $attribute = Attribute::query()->create($this->newAttribute);
         $attribute->metadata()->create([
             'name' => 'Dystrybucja',
             'value' => 'Polska',
@@ -147,11 +151,12 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexMetadataNotFound($user): void
+    public function testIndexMetadataNotFound(string $user): void
     {
         $this->$user->givePermissionTo('attributes.show');
 
-        $attribute = Attribute::create($this->newAttribute);
+        /** @var Attribute $attribute */
+        $attribute = Attribute::query()->create($this->newAttribute);
         $attribute->metadata()->create([
             'name' => 'Dystrybucja',
             'value' => 'Francja',
@@ -169,12 +174,14 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexMetadataPrivate($user): void
+    public function testIndexMetadataPrivate(string $user): void
     {
         $this->$user->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
 
         unset($this->newAttribute['options']);
-        $attribute = Attribute::create($this->newAttribute);
+
+        /** @var Attribute $attribute */
+        $attribute = Attribute::query()->create($this->newAttribute);
         $attribute->metadata()->create([
             'name' => 'Dystrybucja',
             'value' => 'Polska',
@@ -195,11 +202,12 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexMetadataPrivateNotFound($user): void
+    public function testIndexMetadataPrivateNotFound(string $user): void
     {
         $this->$user->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
 
-        $attribute = Attribute::create($this->newAttribute);
+        /** @var Attribute $attribute */
+        $attribute = Attribute::query()->create($this->newAttribute);
         $attribute->metadata()->create([
             'name' => 'Dystrybucja',
             'value' => 'Francja',
@@ -217,7 +225,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testSearch($user): void
+    public function testSearch(string $user): void
     {
         $this->$user->givePermissionTo('attributes.show');
         $first = Attribute::factory()->create(['name' => 'here will by description for test']);
@@ -249,7 +257,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testSearchNotFound($user): void
+    public function testSearchNotFound(string $user): void
     {
         $this->$user->givePermissionTo('attributes.show');
 
@@ -265,7 +273,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShow($user): void
+    public function testShow(string $user): void
     {
         $this->$user->givePermissionTo('attributes.show');
 
@@ -286,7 +294,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowWrongId($user): void
+    public function testShowWrongId(string $user): void
     {
         $this->$user->givePermissionTo('attributes.show');
 
@@ -304,11 +312,12 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowMinMaxNumber($user): void
+    public function testShowMinMaxNumber(string $user): void
     {
         $this->$user->givePermissionTo('attributes.show');
 
-        $attribute = Attribute::create([
+        /** @var Attribute $attribute */
+        $attribute = Attribute::query()->create([
             'name' => 'Monitor screen size',
             'slug' => 'monitor-screen-size',
             'description' => 'MinMax attribute number description',
@@ -317,7 +326,8 @@ class AttributeTest extends TestCase
             'sortable' => true,
         ]);
 
-        $option1 = AttributeOption::create([
+        /** @var AttributeOption $option1 */
+        $option1 = AttributeOption::query()->create([
             'index' => 1,
             'name' => 'Modern screen size',
             'value_number' => 27,
@@ -325,7 +335,8 @@ class AttributeTest extends TestCase
             'attribute_id' => $attribute->getKey(),
         ]);
 
-        $option2 = AttributeOption::create([
+        /** @var AttributeOption $option2 */
+        $option2 = AttributeOption::query()->create([
             'index' => 2,
             'name' => 'Old screen size',
             'value_number' => 15,
@@ -348,13 +359,13 @@ class AttributeTest extends TestCase
                 'sortable' => $attribute->sortable,
             ]);
 
-        //checking rest of min/max fields in attribute
+        // checking rest of min/max fields in attribute
         $this->assertDatabaseHas('attributes', [
             'id' => $attribute->getKey(),
             'min_date' => null,
             'max_date' => null,
         ]);
-        //making sure to other attributes was not updated by this one
+        // making sure to other attributes was not updated by this one
         $this->assertDatabaseMissing('attributes', [
             'id' => $this->attribute->getKey(),
             'min_number' => $option2->value_number,
@@ -365,11 +376,12 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowMinMaxDate($user): void
+    public function testShowMinMaxDate(string $user): void
     {
         $this->$user->givePermissionTo('attributes.show');
 
-        $attribute = Attribute::create([
+        /** @var Attribute $attribute */
+        $attribute = Attribute::query()->create([
             'name' => 'Release date',
             'slug' => 'release-date',
             'description' => 'MinMax attribute date description',
@@ -378,7 +390,8 @@ class AttributeTest extends TestCase
             'sortable' => true,
         ]);
 
-        $option1 = AttributeOption::create([
+        /** @var AttributeOption $option1 */
+        $option1 = AttributeOption::query()->create([
             'index' => 1,
             'name' => 'Book #1',
             'value_number' => null,
@@ -386,7 +399,8 @@ class AttributeTest extends TestCase
             'attribute_id' => $attribute->getKey(),
         ]);
 
-        $option2 = AttributeOption::create([
+        /** @var AttributeOption $option2 */
+        $option2 = AttributeOption::query()->create([
             'index' => 2,
             'name' => 'Book #2',
             'value_number' => null,
@@ -409,13 +423,13 @@ class AttributeTest extends TestCase
                 'sortable' => $attribute->sortable,
             ]);
 
-        //checking rest of min/max fields in attribute
+        // checking rest of min/max fields in attribute
         $this->assertDatabaseHas('attributes', [
             'id' => $attribute->getKey(),
             'min_number' => null,
             'max_number' => null,
         ]);
-        //making sure to other attributes was not updated by this one
+        // making sure to other attributes was not updated by this one
         $this->assertDatabaseMissing('attributes', [
             'id' => $this->attribute->getKey(),
             'min_date' => $option2->value_date,
@@ -426,7 +440,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreate($user): void
+    public function testCreate(string $user): void
     {
         $this->$user->givePermissionTo('attributes.add');
 
@@ -448,7 +462,32 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithMetadata($user): void
+    public function testCreateWithUuid(string $user): void
+    {
+        $this->$user->givePermissionTo('attributes.add');
+
+        $uuid = Uuid::uuid4()->toString();
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/attributes', $this->newAttribute + ['id' => $uuid])
+            ->assertCreated()
+            ->assertJsonStructure($this->expectedStructure)
+            ->assertJsonFragment([
+                'name' => $this->newAttribute['name'],
+                'id' => $uuid,
+            ]);
+
+        $this->assertDatabaseHas('attributes', [
+            'id' => $uuid,
+            'name' => $this->newAttribute['name'],
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadata(string $user): void
     {
         $this->$user->givePermissionTo('attributes.add');
 
@@ -484,7 +523,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateSingleOptionAndOptionWithoutName($user): void
+    public function testCreateSingleOptionAndOptionWithoutName(string $user): void
     {
         $this->$user->givePermissionTo('attributes.add');
 
@@ -502,7 +541,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithInvalidValueNumber($user): void
+    public function testCreateWithInvalidValueNumber(string $user): void
     {
         $this->$user->givePermissionTo('attributes.add');
 
@@ -525,7 +564,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateIncompleteData($user): void
+    public function testCreateIncompleteData(string $user): void
     {
         $this->$user->givePermissionTo('attributes.add');
 
@@ -540,7 +579,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateUnauthorized($user): void
+    public function testCreateUnauthorized(string $user): void
     {
         $this
             ->actingAs($this->$user)
@@ -551,7 +590,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdate($user): void
+    public function testUpdate(string $user): void
     {
         $this->$user->givePermissionTo('attributes.edit');
 
@@ -590,7 +629,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateWithoutSlug($user): void
+    public function testUpdateWithoutSlug(string $user): void
     {
         $this->$user->givePermissionTo('attributes.edit');
 
@@ -629,46 +668,26 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateChangeType($user): void
+    public function testUpdateChangeType(string $user): void
     {
         $this->$user->givePermissionTo('attributes.edit');
 
-        while (true) {
-            $randomType = AttributeType::getRandomValue();
-
-            if ($randomType !== $this->attribute->type->value) {
-                $this->attribute->type = $randomType;
-                break;
-            }
-        }
-
-        $attributeUpdate = [
-            'name' => 'Test ' . $this->attribute->name,
-            'slug' => $this->attribute->slug,
-            'description' => 'Test ' . $this->attribute->description,
-            'type' => $this->attribute->type,
-            'global' => true,
-            'sortable' => true,
-            'options' => [
-                [
-                    'id' => $this->option->getKey(),
-                    'name' => 'Test ' . $this->option->name,
-                    'value_number' => $this->option->value_number,
-                    'value_date' => $this->option->value_date,
-                ],
-            ],
-        ];
+        $attribute = Attribute::factory()->create([
+            'type' => AttributeType::SINGLE_OPTION,
+        ]);
 
         $this
             ->actingAs($this->$user)
-            ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
+            ->patchJson('/attributes/id:' . $attribute->getKey(), [
+                'type' => AttributeType::DATE,
+            ])
             ->assertUnprocessable();
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateIncompleteData($user): void
+    public function testUpdateIncompleteData(string $user): void
     {
         $this->$user->givePermissionTo('attributes.edit');
 
@@ -685,7 +704,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateNotExistingAttribute($user): void
+    public function testUpdateNotExistingAttribute(string $user): void
     {
         $this->$user->givePermissionTo('attributes.edit');
 
@@ -704,7 +723,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateUnauthorized($user): void
+    public function testUpdateUnauthorized(string $user): void
     {
         $attributeUpdate = [
             'name' => 'Test ' . $this->attribute->name,
@@ -732,7 +751,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDelete($user): void
+    public function testDelete(string $user): void
     {
         $this->$user->givePermissionTo('attributes.remove');
 
@@ -749,7 +768,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteNotExistingAttribute($user): void
+    public function testDeleteNotExistingAttribute(string $user): void
     {
         $this->$user->givePermissionTo('attributes.remove');
 
@@ -764,7 +783,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteUnauthorized($user): void
+    public function testDeleteUnauthorized(string $user): void
     {
         $this
             ->actingAs($this->$user)
@@ -775,7 +794,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexOptions($user): void
+    public function testIndexOptions(string $user): void
     {
         $this->$user->givePermissionTo('attributes.show');
 
@@ -801,7 +820,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexOptionsWithPagination($user): void
+    public function testIndexOptionsWithPagination(string $user): void
     {
         $this->$user->givePermissionTo('attributes.show');
 
@@ -827,7 +846,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexOptionsWrongId($user): void
+    public function testIndexOptionsWrongId(string $user): void
     {
         $this->$user->givePermissionTo('attributes.show');
 
@@ -845,7 +864,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexOptionsMetadata($user): void
+    public function testIndexOptionsMetadata(string $user): void
     {
         $this->$user->givePermissionTo('attributes.show');
 
@@ -876,7 +895,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexOptionsMetadataNotFound($user): void
+    public function testIndexOptionsMetadataNotFound(string $user): void
     {
         $this->$user->givePermissionTo('attributes.show');
 
@@ -904,7 +923,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexOptionsMetadataPrivate($user): void
+    public function testIndexOptionsMetadataPrivate(string $user): void
     {
         $this->$user->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
 
@@ -935,7 +954,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexOptionsMetadataPrivateNotFound($user): void
+    public function testIndexOptionsMetadataPrivateNotFound(string $user): void
     {
         $this->$user->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
 
@@ -963,7 +982,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testAddOption($user): void
+    public function testAddOption(string $user): void
     {
         $this->$user->givePermissionTo('attributes.edit');
 
@@ -979,7 +998,29 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testAddOptionWithMetadata($user): void
+    public function testAddOptionWithUuid(string $user): void
+    {
+        $this->$user->givePermissionTo('attributes.edit');
+
+        $uuid = Uuid::uuid4()->toString();
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption + [
+                'id' => $uuid,
+            ])
+            ->assertCreated()
+            ->assertJsonFragment($this->newOption);
+
+        $this->assertDatabaseHas('attribute_options', $this->newOption + [
+            'id' => $uuid,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testAddOptionWithMetadata(string $user): void
     {
         $this->$user->givePermissionTo('attributes.edit');
 
@@ -1004,7 +1045,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testAddOptionNumberWithoutName($user): void
+    public function testAddOptionNumberWithoutName(string $user): void
     {
         $this->$user->givePermissionTo('attributes.edit');
 
@@ -1025,7 +1066,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testAddOptionIncompleteData($user): void
+    public function testAddOptionIncompleteData(string $user): void
     {
         $this->$user->givePermissionTo('attributes.edit');
 
@@ -1043,7 +1084,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testAddOptionToDeletedAttribute($user): void
+    public function testAddOptionToDeletedAttribute(string $user): void
     {
         $this->$user->givePermissionTo('attributes.edit');
 
@@ -1058,7 +1099,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testAddOptionUnauthorized($user): void
+    public function testAddOptionUnauthorized(string $user): void
     {
         $this
             ->actingAs($this->$user)
@@ -1069,7 +1110,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateOption($user): void
+    public function testUpdateOption(string $user): void
     {
         $this->$user->givePermissionTo('attributes.edit');
 
@@ -1095,7 +1136,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateOptionWithoutId($user): void
+    public function testUpdateOptionWithoutId(string $user): void
     {
         $this->$user->givePermissionTo('attributes.edit');
 
@@ -1120,7 +1161,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateOptionIncompleteData($user): void
+    public function testUpdateOptionIncompleteData(string $user): void
     {
         $this->$user->givePermissionTo('attributes.edit');
 
@@ -1152,7 +1193,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateOptionNotExisting($user): void
+    public function testUpdateOptionNotExisting(string $user): void
     {
         $this->$user->givePermissionTo('attributes.edit');
 
@@ -1179,7 +1220,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateOptionNotRelatedOption($user): void
+    public function testUpdateOptionNotRelatedOption(string $user): void
     {
         $this->$user->givePermissionTo('attributes.edit');
 
@@ -1206,7 +1247,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateOptionUnauthorized($user): void
+    public function testUpdateOptionUnauthorized(string $user): void
     {
         $optionUpdate = [
             'id' => $this->option->id,
@@ -1228,7 +1269,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteOption($user): void
+    public function testDeleteOption(string $user): void
     {
         $this->$user->givePermissionTo('attributes.edit');
 
@@ -1243,7 +1284,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteOptionNotExisting($user): void
+    public function testDeleteOptionNotExisting(string $user): void
     {
         $this->$user->givePermissionTo('attributes.edit');
 
@@ -1258,7 +1299,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteOptionNotRelatedOption($user): void
+    public function testDeleteOptionNotRelatedOption(string $user): void
     {
         $this->$user->givePermissionTo('attributes.edit');
 
@@ -1273,7 +1314,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteOptionUnauthorized($user): void
+    public function testDeleteOptionUnauthorized(string $user): void
     {
         $this
             ->actingAs($this->$user)
@@ -1284,7 +1325,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIncrementIndex($user): void
+    public function testIncrementIndex(string $user): void
     {
         $this->$user->givePermissionTo(['attributes.show', 'attributes.edit', 'attributes.add']);
 
@@ -1355,7 +1396,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateMinMaxNumberOnUpdateOption($user): void
+    public function testUpdateMinMaxNumberOnUpdateOption(string $user): void
     {
         $this->$user->givePermissionTo('attributes.show');
 
@@ -1391,7 +1432,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateMinMaxNumberOnDeleteOption($user): void
+    public function testUpdateMinMaxNumberOnDeleteOption(string $user): void
     {
         $this->$user->givePermissionTo('attributes.show');
 
@@ -1426,7 +1467,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateMinMaxDateOnUpdateOption($user): void
+    public function testUpdateMinMaxDateOnUpdateOption(string $user): void
     {
         $this->$user->givePermissionTo('attributes.show');
 
@@ -1462,7 +1503,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateMinMaxDateOnDeleteOption($user): void
+    public function testUpdateMinMaxDateOnDeleteOption(string $user): void
     {
         $this->$user->givePermissionTo('attributes.show');
 
@@ -1497,17 +1538,22 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexAttributeOptionPrivateMetadata($user): void
+    public function testIndexAttributeOptionPrivateMetadata(string $user): void
     {
         $this->$user->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
 
         unset($this->newAttribute['options']);
-        $attribute = Attribute::create($this->newAttribute);
 
+        /** @var Attribute $attribute */
+        $attribute = Attribute::query()->create($this->newAttribute);
+
+        /** @var Option $attrOptionOne */
         $attrOptionOne = AttributeOption::factory()->create([
             'attribute_id' => $attribute->getKey(),
             'index' => 1,
         ]);
+
+        /** @var Option $attrOptionTwo */
         $attrOptionTwo = AttributeOption::factory()->create([
             'attribute_id' => $attribute->getKey(),
             'index' => 2,
@@ -1535,14 +1581,14 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexAttributeHasOnlyItsOwnOptions($user): void
+    public function testIndexAttributeHasOnlyItsOwnOptions(string $user): void
     {
         $this->$user->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
 
-        $attributeOne = Attribute::create([
+        $attributeOne = Attribute::query()->create([
             'name' => 'testone',
             'slug' => 't1',
-            'type' => 'single-option',
+            'type' => AttributeType::SINGLE_OPTION,
             'global' => true,
             'sortable' => true,
         ]);
@@ -1552,10 +1598,10 @@ class AttributeTest extends TestCase
             'index' => 1,
         ]);
 
-        $attributeTwo = Attribute::create([
+        $attributeTwo = Attribute::query()->create([
             'name' => 'testtwo',
             'slug' => 't2',
-            'type' => 'single-option',
+            'type' => AttributeType::SINGLE_OPTION,
             'global' => true,
             'sortable' => true,
         ]);
@@ -1585,12 +1631,13 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexAttributeOptionName($user): void
+    public function testIndexAttributeOptionName(string $user): void
     {
         $this->$user->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
 
         unset($this->newAttribute['options']);
-        $attribute = Attribute::create($this->newAttribute);
+        /** @var Attribute $attribute */
+        $attribute = Attribute::query()->create($this->newAttribute);
 
         AttributeOption::factory()->create([
             'attribute_id' => $attribute->getKey(),

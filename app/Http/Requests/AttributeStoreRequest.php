@@ -4,8 +4,8 @@ namespace App\Http\Requests;
 
 use App\Enums\AttributeType;
 use App\Traits\MetadataRules;
-use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class AttributeStoreRequest extends FormRequest
 {
@@ -13,8 +13,6 @@ class AttributeStoreRequest extends FormRequest
 
     /**
      * Get the validation rules that apply to the request.
-     *
-     * @return array
      */
     public function rules(): array
     {
@@ -29,10 +27,12 @@ class AttributeStoreRequest extends FormRequest
             $optionRules,
             $this->metadataRules(),
             [
+                'id' => ['uuid'],
+
                 'name' => ['required', 'string', 'max:255'],
                 'slug' => ['required', 'string', 'max:255', 'unique:attributes'],
                 'description' => ['nullable', 'string', 'max:255'],
-                'type' => ['required', new EnumValue(AttributeType::class, false)],
+                'type' => ['required', new Enum(AttributeType::class)],
                 'global' => ['required', 'boolean'],
                 'sortable' => ['required', 'boolean'],
             ]

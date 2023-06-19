@@ -734,13 +734,14 @@ class AvailabilityTest extends TestCase
         ]);
 
         $product->schemas()->attach($schema->getKey());
+
         return $product->refresh();
     }
 
     private function createSchemasWithOptions(int $schemaCount): array
     {
         $schemas = [];
-        for ($i = 0; $i < $schemaCount; $i++) {
+        for ($i = 0; $i < $schemaCount; ++$i) {
             $item1 = Item::factory()->create();
             $item2 = Item::factory()->create();
 
@@ -789,6 +790,7 @@ class AvailabilityTest extends TestCase
 
             $schemas[$schema1->getKey()] = $option1->getKey();
         }
+
         return $schemas;
     }
 }

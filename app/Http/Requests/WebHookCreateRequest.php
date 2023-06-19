@@ -30,6 +30,7 @@ class WebHookCreateRequest extends FormRequest
                     return true;
                 }
             }
+
             return false;
         });
 
@@ -39,6 +40,7 @@ class WebHookCreateRequest extends FormRequest
                     return true;
                 }
             }
+
             return false;
         });
     }

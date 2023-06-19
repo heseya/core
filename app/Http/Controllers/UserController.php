@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Dtos\UserCreateDto;
 use App\Dtos\UserDto;
+use App\Http\Requests\SelfDeleteRequest;
 use App\Http\Requests\UserCreateRequest;
 use App\Http\Requests\UserIndexRequest;
 use App\Http\Requests\UserUpdateRequest;
 use App\Http\Resources\ResourceCollection;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\UserServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -17,8 +19,10 @@ use Illuminate\Support\Facades\Response;
 
 class UserController extends Controller
 {
-    public function __construct(private UserServiceContract $userService)
-    {
+    public function __construct(
+        private UserServiceContract $userService,
+        private AuthServiceContract $authService,
+    ) {
     }
 
     public function index(UserIndexRequest $request): JsonResource
@@ -71,6 +75,13 @@ class UserController extends Controller
     public function destroy(User $user): JsonResponse
     {
         $this->userService->destroy($user);
+
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    public function selfRemove(SelfDeleteRequest $request): JsonResponse
+    {
+        $this->authService->selfRemove($request->input('password'));
 
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }

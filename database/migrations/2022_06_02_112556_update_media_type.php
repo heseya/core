@@ -19,13 +19,13 @@ return new class extends Migration {
         });
 
         Media::query()->where('type', '0')->update([
-            'type' => MediaType::OTHER
+            'type' => MediaType::OTHER,
         ]);
         Media::query()->where('type', '1')->update([
-            'type' => MediaType::PHOTO
+            'type' => MediaType::PHOTO,
         ]);
         Media::query()->where('type', '2')->update([
-            'type' => MediaType::VIDEO
+            'type' => MediaType::VIDEO,
         ]);
     }
 

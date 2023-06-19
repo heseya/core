@@ -10,7 +10,6 @@
  */
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | JWT Authentication Secret
@@ -45,7 +44,6 @@ return [
     */
 
     'keys' => [
-
         /*
         |--------------------------------------------------------------------------
         | Public Key
@@ -82,7 +80,6 @@ return [
         */
 
         'passphrase' => env('JWT_PASSPHRASE'),
-
     ],
 
     /*
@@ -266,7 +263,6 @@ return [
     */
 
     'providers' => [
-
         /*
         |--------------------------------------------------------------------------
         | JWT Provider
@@ -299,7 +295,5 @@ return [
         */
 
         'storage' => PHPOpenSourceSaver\JWTAuth\Providers\Storage\Illuminate::class,
-
     ],
-
 ];

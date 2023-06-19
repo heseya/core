@@ -424,6 +424,7 @@ class ProductSearchDatabaseTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $product->getKey()]);
     }
+
     /**
      * @dataProvider authProvider
      */
@@ -703,6 +704,72 @@ class ProductSearchDatabaseTest extends TestCase
             ->assertJsonMissing([
                 'id' => $options[1]->getKey(),
                 'name' => $options[1]->name,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByAttributeMultippleId($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $products = Product::factory()->count(2)->create([
+            'public' => true,
+        ]);
+
+        /** @var Attribute $attribute */
+        $attribute = Attribute::factory()->create([
+            'name' => 'Serie',
+            'slug' => 'serie',
+            'sortable' => 1,
+            'type' => 'multi-choice-option',
+        ]);
+
+        /** @var AttributeOption $option1 */
+        $option1 = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 2,
+        ]);
+
+        /** @var AttributeOption $option2 */
+        $option2 = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+        ]);
+
+        $products[0]->attributes()->attach($attribute->getKey());
+        $products[0]->attributes->first()->pivot->options()->attach($option1->getKey());
+
+        $products[1]->attributes()->attach($attribute->getKey());
+        $products[1]->attributes->first()->pivot->options()->attach($option2->getKey());
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute' => [
+                        $attribute->slug => [
+                            $option1->getKey(),
+                            $option2->getKey(),
+                        ],
+                    ],
+                ]
+            )
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'name' => $attribute->name,
+            ])
+            ->assertJsonFragment([
+                'id' => $option1->getKey(),
+                'name' => $option1->name,
+            ])
+            ->assertJsonFragment([
+                'id' => $option2->getKey(),
+                'name' => $option2->name,
             ]);
     }
 

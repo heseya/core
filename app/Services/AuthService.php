@@ -32,6 +32,7 @@ use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UserLoginAttemptServiceContract;
+use App\Services\Contracts\UserServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Carbon;
@@ -51,7 +52,8 @@ class AuthService implements AuthServiceContract
         protected OneTimeSecurityCodeContract $oneTimeSecurityCodeService,
         protected ConsentServiceContract $consentService,
         protected UserLoginAttemptServiceContract $userLoginAttemptService,
-        private MetadataServiceContract $metadataService,
+        protected UserServiceContract $userService,
+        protected MetadataServiceContract $metadataService,
     ) {
     }
 
@@ -354,6 +356,20 @@ class AuthService implements AuthServiceContract
         return $user;
     }
 
+    public function selfRemove(string $password): void
+    {
+        if ($this->isAppAuthenticated()) {
+            throw new ClientException(Exceptions::CLIENT_APPS_NO_ACCESS);
+        }
+
+        /** @var User $user */
+        $user = Auth::user();
+
+        $this->checkCredentials($user, $password);
+
+        $this->userService->destroy($user);
+    }
+
     private function verifyTFA(?string $code): void
     {
         if (!Auth::user()?->is_tfa_active && $code !== null) {
@@ -381,12 +397,7 @@ class AuthService implements AuthServiceContract
             TfaSecurityCodeEvent::dispatch(Auth::user(), $code);
             Auth::user()->notify(new TFASecurityCode($code));
         }
-        throw new ClientException(
-            Exceptions::CLIENT_TFA_REQUIRED,
-            403,
-            simpleLogs: true,
-            errorArray: ['type' => Auth::user()?->tfa_type]
-        );
+        throw new ClientException(Exceptions::CLIENT_TFA_REQUIRED, 403, simpleLogs: true, errorArray: ['type' => Auth::user()?->tfa_type]);
     }
 
     private function checkIsValidTFA(string $code): void
@@ -415,6 +426,7 @@ class AuthService implements AuthServiceContract
 
         /** @var User $user */
         $user = Auth::user();
+
         return $user->tfa_secret !== null && $google_authenticator->verifyCode($user->tfa_secret, $code);
     }
 
@@ -427,6 +439,7 @@ class AuthService implements AuthServiceContract
             foreach ($security_codes as $security_code) {
                 if (Hash::check($code, $security_code->code)) {
                     $security_code->delete();
+
                     return true;
                 }
             }
@@ -451,6 +464,7 @@ class AuthService implements AuthServiceContract
             if (Hash::check($code, $security_code->code)) {
                 $security_code->delete();
                 Auth::user()?->securityCodes()->whereNotNull('expires_at')->delete();
+
                 return true;
             }
         }
