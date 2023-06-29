@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Response;
 class AttributeOptionController extends Controller
 {
     public function __construct(
-        private AttributeOptionServiceContract $attributeOptionService
+        private readonly AttributeOptionServiceContract $attributeOptionService
     ) {
     }
 
@@ -26,6 +26,7 @@ class AttributeOptionController extends Controller
         $query = $attribute
             ->options()
             ->searchByCriteria($request->validated())
+            ->orderBy('order')
             ->with(['metadata', 'metadataPrivate']);
 
         return AttributeOptionResource::collection(

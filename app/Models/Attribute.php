@@ -37,6 +37,7 @@ class Attribute extends Model
         'type',
         'global',
         'sortable',
+        'order',
     ];
 
     protected $casts = [

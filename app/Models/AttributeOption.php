@@ -31,6 +31,7 @@ class AttributeOption extends Model
         'value_number',
         'value_date',
         'attribute_id',
+        'order',
     ];
 
     protected $casts = [

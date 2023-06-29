@@ -24,6 +24,7 @@ class AttributeController extends Controller
     public function index(AttributeIndexRequest $request): JsonResource
     {
         $query = Attribute::searchByCriteria($request->validated())
+            ->orderBy('order')
             ->with(['metadata', 'metadataPrivate']);
 
         return AttributeResource::collection(
