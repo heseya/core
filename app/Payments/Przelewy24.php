@@ -10,6 +10,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class Przelewy24 implements PaymentMethod
 {
@@ -58,12 +59,17 @@ class Przelewy24 implements PaymentMethod
 
     public static function translateNotification(Request $request): mixed
     {
-        $request->validate([
+        Log::info('Received Przelewy24 notification', (array) $request->json());
+
+        ['sessionId' => $sessionId] = $request->validate([
             'sessionId' => ['required', 'string', 'exists:payments,id'],
         ]);
 
         /** @var Payment $payment */
-        $payment = Payment::query()->with('order')->find($request->sesionId);
+        $payment = Payment::query()->with('order')->where('id', $sessionId)->firstOr(function () use ($sessionId) {
+            Log::error("Przelewy24 - Not found payments with ID: $sessionId");
+            throw new ClientException(Exceptions::CLIENT_INVALID_PAYMENT);
+        });
         $amount = round($payment->amount * 100, 0);
 
         $validated = $request->validate([
@@ -81,7 +87,7 @@ class Przelewy24 implements PaymentMethod
         $sign = self::sign([
             'merchantId' => $validated['merchantId'],
             'posId' => $validated['posId'],
-            'sessionId' => $validated['sessionId'],
+            'sessionId' => $sessionId,
             'amount' => $validated['amount'],
             'originAmount' => $validated['originAmount'],
             'currency' => $validated['currency'],
@@ -92,11 +98,12 @@ class Przelewy24 implements PaymentMethod
         ]);
 
         if ($validated['sign'] !== $sign) {
+            Log::error('Przelewy24 - Payment sign not match');
             throw new ClientException(Exceptions::CLIENT_INVALID_PAYMENT);
         }
 
         $sign = self::sign([
-            'sessionId' => $validated['sessionId'],
+            'sessionId' => $sessionId,
             'orderId' => $validated['orderId'],
             'amount' => $validated['amount'],
             'currency' => $validated['currency'],
@@ -106,10 +113,10 @@ class Przelewy24 implements PaymentMethod
         $response = Http::withBasicAuth(
             Config::get('przelewy24.pos_id'),
             Config::get('przelewy24.secret_id'),
-        )->post(Config::get('przelewy24.url') . '/api/' . self::API_VER . '/transaction/verify', [
+        )->put(Config::get('przelewy24.url') . '/api/' . self::API_VER . '/transaction/verify', [
             'merchantId' => $validated['merchantId'],
             'posId' => $validated['posId'],
-            'sessionId' => $validated['sessionId'],
+            'sessionId' => $sessionId,
             'amount' => $validated['amount'],
             'currency' => $validated['currency'],
             'orderId' => $validated['orderId'],
@@ -117,6 +124,7 @@ class Przelewy24 implements PaymentMethod
         ]);
 
         if ($response->failed()) {
+            Log::error('Przelewy24 - verification request failed: ' . $response->body());
             throw new ClientException(Exceptions::CLIENT_VERIFY_PAYMENT);
         }
 

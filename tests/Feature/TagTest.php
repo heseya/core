@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Product;
 use App\Models\Tag;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
 
 class TagTest extends TestCase
@@ -132,6 +133,30 @@ class TagTest extends TestCase
         $this->$user->givePermissionTo('products.edit');
 
         $this->create($user);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithId($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $id = Uuid::uuid4()->toString();
+
+        $response = $this->actingAs($this->$user)->postJson('/tags', [
+            'name' => 'test sale',
+            'color' => '444444',
+            'id' => $id,
+        ]);
+
+        $response->assertCreated();
+
+        $this->assertDatabaseHas('tags', [
+            'name' => 'test sale',
+            'color' => '444444',
+            'id' => $id,
+        ]);
     }
 
     public function testUpdateUnauthorized(): void
