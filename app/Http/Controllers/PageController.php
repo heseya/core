@@ -11,7 +11,6 @@ use App\Http\Requests\PageUpdateRequest;
 use App\Http\Resources\PageResource;
 use App\Models\Page;
 use App\Services\Contracts\PageServiceContract;
-use App\Services\Contracts\ReorderServiceContract;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
 
@@ -19,7 +18,6 @@ class PageController extends Controller
 {
     public function __construct(
         private readonly PageServiceContract $pageService,
-        private readonly ReorderServiceContract $reorderService,
     ) {
     }
 
