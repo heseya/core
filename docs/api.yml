@@ -166,7 +166,7 @@ paths:
     $ref: './paths/ProductSets.yml#/ProductSetsSlug'
   '/product-sets/id:{id}':
     $ref: './paths/ProductSets.yml#/ProductSetsParams'
-  /product-sets'/':
+  /product-sets/reorder:
     $ref: './paths/ProductSets.yml#/ProductSetsReorder'
   '/product-sets/reorder/id:{id}':
     $ref: './paths/ProductSets.yml#/ProductSetsReorderParams'

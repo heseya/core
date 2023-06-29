@@ -58,12 +58,16 @@ class Attribute extends Model
 
     public function options(): HasMany
     {
-        return $this->hasMany(AttributeOption::class)->with('metadata', 'metadataPrivate');
+        return $this
+            ->hasMany(AttributeOption::class)
+            ->orderBy('order')
+            ->with('metadata', 'metadataPrivate');
     }
 
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class, 'product_attribute')
+        return $this
+            ->belongsToMany(Product::class, 'product_attribute')
             ->withPivot('id')
             ->using(ProductAttribute::class);
     }

@@ -11,11 +11,11 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('attributes', function (Blueprint $table) {
-            $table->unsignedInteger('order');
+            $table->unsignedInteger('order')->default(0);
         });
 
         Schema::table('attribute_options', function (Blueprint $table) {
-            $table->unsignedInteger('order');
+            $table->unsignedInteger('order')->default(0);
         });
     }
 
