@@ -9,7 +9,7 @@ class TagCreateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id' => ['uuid'],
+            'id' => ['nullable', 'uuid'],
 
             'name' => ['required', 'string', 'max:30'],
             'color' => ['nullable', 'string', 'max:6'],

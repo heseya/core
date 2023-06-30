@@ -27,7 +27,7 @@ class AttributeStoreRequest extends FormRequest
             $optionRules,
             $this->metadataRules(),
             [
-                'id' => ['uuid'],
+                'id' => ['nullable', 'uuid'],
 
                 'name' => ['required', 'string', 'max:255'],
                 'slug' => ['required', 'string', 'max:255', 'unique:attributes'],

@@ -111,3 +111,5 @@ services:
       default:
         aliases:
           - ${SILVERBOX_HOST}
+    volumes:
+        - ./files:/usr/src/app/storage/app/***REMOVED***/

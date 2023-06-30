@@ -23,7 +23,7 @@ class AttributeOptionRequest extends FormRequest
         return array_merge(
             $this->metadataRules(),
             [
-                'id' => ['uuid'],
+                'id' => ['nullable', 'uuid'],
 
                 'name' => [$nameRule, 'string', 'max:255'],
                 'value_number' => ['nullable', 'numeric', 'regex:/^\d{1,6}(\.\d{1,2}|)$/'],
