@@ -18,6 +18,7 @@ class Tag extends Model
     use HasCriteria;
 
     protected $fillable = [
+        'id',
         'name',
         'color',
     ];

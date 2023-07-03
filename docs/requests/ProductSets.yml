@@ -7,6 +7,9 @@ ProductSetStore:
           - slug_suffix
           - slug_override
         properties:
+          id:
+            type: string
+            format: uuid
           name:
             description: 'Name displayed to the user'
             type: string

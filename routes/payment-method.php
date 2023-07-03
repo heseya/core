@@ -6,9 +6,9 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('payment-methods')->group(function (): void {
     Route::get('id:{payment_method:id}', [PaymentMethodController::class, 'show'])
         ->middleware('can:payment_methods.show_details');
-    Route::get(null, [PaymentMethodController::class, 'index'])
+    Route::get('/', [PaymentMethodController::class, 'index'])
         ->middleware('can:payment_methods.show');
-    Route::post(null, [PaymentMethodController::class, 'store'])
+    Route::post('/', [PaymentMethodController::class, 'store'])
         ->middleware(['can:payment_methods.add', 'user.restrict']);
     Route::patch('id:{payment_method:id}', [PaymentMethodController::class, 'update'])
         ->middleware(['can:payment_methods.edit', 'user.restrict']);

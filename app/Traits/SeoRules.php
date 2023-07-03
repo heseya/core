@@ -16,6 +16,7 @@ trait SeoRules
             "{$prefix}og_image_id" => ['nullable', 'uuid', 'exists:media,id'],
             "{$prefix}twitter_card" => ['nullable', new EnumValue(TwitterCardType::class, false)],
             "{$prefix}no_index" => ['boolean'],
+            "{$prefix}header_tags" => ['nullable', 'array'],
         ];
     }
 }

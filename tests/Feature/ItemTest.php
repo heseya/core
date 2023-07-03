@@ -16,6 +16,7 @@ use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
+use Ramsey\Uuid\Uuid;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
@@ -446,6 +447,31 @@ class ItemTest extends TestCase
         $item = [
             'name' => 'Test',
             'sku' => 'TES/T1',
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/items', $item);
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => $item]);
+
+        $this->assertDatabaseHas('items', $item);
+
+        Event::assertDispatched(ItemCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithUuid($user): void
+    {
+        $this->$user->givePermissionTo('items.add');
+
+        Event::fake(ItemCreated::class);
+
+        $item = [
+            'name' => 'Test',
+            'sku' => 'TES/T1',
+            'id' => Uuid::uuid4()->toString(),
         ];
 
         $response = $this->actingAs($this->$user)->postJson('/items', $item);

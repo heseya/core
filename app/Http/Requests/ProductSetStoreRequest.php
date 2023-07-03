@@ -19,6 +19,8 @@ class ProductSetStoreRequest extends FormRequest implements SeoRequestContract, 
             $this->seoRules(),
             $this->metadataRules(),
             [
+                'id' => ['uuid'],
+
                 'name' => ['required', 'string', 'max:255'],
                 'slug_suffix' => [
                     'required',

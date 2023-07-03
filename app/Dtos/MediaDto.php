@@ -8,6 +8,7 @@ use App\Enums\MediaType;
 use App\Http\Requests\MediaStoreRequest;
 use App\Traits\MapMetadata;
 use Heseya\Dto\Dto;
+use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\UploadedFile;
@@ -18,6 +19,7 @@ class MediaDto extends Dto implements InstantiateFromRequest
 
     public function __construct(
         public readonly UploadedFile|Missing|null $file,
+        public readonly string|Missing $id = new Missing(),
         public readonly string|Missing $url = new Missing(),
         public readonly MediaType|Missing $type = new Missing(),
         public readonly string|null|Missing $alt = new Missing(),
@@ -27,6 +29,9 @@ class MediaDto extends Dto implements InstantiateFromRequest
     ) {
     }
 
+    /**
+     * @throws DtoException
+     */
     public static function instantiateFromRequest(FormRequest|MediaStoreRequest $request): self
     {
         $file = $request->file('file', new Missing());
@@ -36,6 +41,7 @@ class MediaDto extends Dto implements InstantiateFromRequest
 
         return new self(
             file: $file,
+            id: $request->input('id') ?? new Missing(),
             url: $request->input('url', new Missing()),
             type: $request->enum('type', MediaType::class) ?? new Missing(),
             alt: $request->input('alt', new Missing()),
@@ -45,6 +51,9 @@ class MediaDto extends Dto implements InstantiateFromRequest
         );
     }
 
+    /**
+     * @throws DtoException
+     */
     public static function instantiateFromFile(UploadedFile $file): self
     {
         return new self(

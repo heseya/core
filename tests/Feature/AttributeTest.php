@@ -8,6 +8,7 @@ use App\Models\Attribute;
 use App\Models\AttributeOption;
 use App\Models\Option;
 use Illuminate\Support\Carbon;
+use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
 
 class AttributeTest extends TestCase
@@ -456,6 +457,31 @@ class AttributeTest extends TestCase
                 'global' => $this->newAttribute['global'],
                 'sortable' => $this->newAttribute['sortable'],
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithUuid(string $user): void
+    {
+        $this->$user->givePermissionTo('attributes.add');
+
+        $uuid = Uuid::uuid4()->toString();
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/attributes', $this->newAttribute + ['id' => $uuid])
+            ->assertCreated()
+            ->assertJsonStructure($this->expectedStructure)
+            ->assertJsonFragment([
+                'name' => $this->newAttribute['name'],
+                'id' => $uuid,
+            ]);
+
+        $this->assertDatabaseHas('attributes', [
+            'id' => $uuid,
+            'name' => $this->newAttribute['name'],
+        ]);
     }
 
     /**
@@ -967,6 +993,28 @@ class AttributeTest extends TestCase
             ->assertJsonFragment($this->newOption);
 
         $this->assertDatabaseHas('attribute_options', $this->newOption);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testAddOptionWithUuid(string $user): void
+    {
+        $this->$user->givePermissionTo('attributes.edit');
+
+        $uuid = Uuid::uuid4()->toString();
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption + [
+                'id' => $uuid,
+            ])
+            ->assertCreated()
+            ->assertJsonFragment($this->newOption);
+
+        $this->assertDatabaseHas('attribute_options', $this->newOption + [
+            'id' => $uuid,
+        ]);
     }
 
     /**

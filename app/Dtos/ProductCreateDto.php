@@ -14,6 +14,7 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
     use MapMetadata;
 
     public function __construct(
+        readonly public string|Missing $id,
         readonly public string $name,
         readonly public string $slug,
         readonly public float $price,
@@ -45,6 +46,7 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
     public static function instantiateFromRequest(FormRequest $request): self
     {
         return new self(
+            id: $request->input('id') ?? new Missing(),
             name: $request->input('name'),
             slug: $request->input('slug'),
             price: $request->input('price'),

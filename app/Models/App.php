@@ -9,6 +9,7 @@ use App\Enums\SavedAddressType;
 use App\Services\Contracts\UrlServiceContract;
 use App\Traits\HasMetadata;
 use App\Traits\HasWebHooks;
+use App\Traits\HasWishlist;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
@@ -36,6 +37,7 @@ class App extends Model implements AuthorizableContract, AuthenticatableContract
     use HasPermissions;
     use HasWebHooks;
     use HasMetadata;
+    use HasWishlist;
 
     protected string $guard_name = 'api';
     protected $fillable = [
@@ -109,11 +111,6 @@ class App extends Model implements AuthorizableContract, AuthenticatableContract
         ?string $guard = null
     ): bool {
         return false;
-    }
-
-    public function wishlistProducts(): MorphMany
-    {
-        return $this->morphMany(WishlistProduct::class, 'user');
     }
 
     public function favouriteProductSets(): MorphMany

@@ -33,6 +33,7 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Ramsey\Uuid\Uuid;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
@@ -774,7 +775,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider noIndexProvider
      */
-    public function testShowSeoNoIndex($user, $noIndex): void
+    public function testShowSeoNoIndex(string $user, bool $noIndex): void
     {
         $this->$user->givePermissionTo('products.show_details');
 
@@ -784,6 +785,7 @@ class ProductTest extends TestCase
 
         $seo = SeoMetadata::factory([
             'no_index' => $noIndex,
+            'header_tags' => ['test1', 'test2'],
         ])->create();
 
         $product->seo()->save($seo);
@@ -799,14 +801,14 @@ class ProductTest extends TestCase
                 'og_image' => null,
                 'twitter_card' => $seo->twitter_card,
                 'keywords' => $seo->keywords,
-            ],
-            ]);
+                'header_tags' => ['test1', 'test2'],
+            ]]);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testShowWithSales($user): void
+    public function testShowWithSales(string $user): void
     {
         $this->$user->givePermissionTo('products.show_details');
 
@@ -1548,6 +1550,44 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateWithUuid($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $uuid = Uuid::uuid4()->toString();
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/products', [
+                'id' => $uuid,
+                'name' => 'Test',
+                'slug' => 'test',
+                'price' => 100,
+                'public' => true,
+                'shipping_digital' => false,
+            ])
+            ->assertCreated()
+            ->assertJson(['data' => [
+                'id' => $uuid,
+                'slug' => 'test',
+                'name' => 'Test',
+                'price' => 100,
+                'public' => true,
+                'shipping_digital' => false,
+            ]]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $uuid,
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 100,
+            'shipping_digital' => false,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateDigital($user): void
     {
         $this->$user->givePermissionTo('products.add');
@@ -1747,6 +1787,7 @@ class ProductTest extends TestCase
                 'description' => 'seo description',
                 'og_image_id' => $media->getKey(),
                 'no_index' => $boolean,
+                'header_tags' => ['test1', 'test2'],
             ],
         ]);
 
@@ -1768,9 +1809,9 @@ class ProductTest extends TestCase
                         'id' => $media->getKey(),
                     ],
                     'no_index' => $booleanValue,
+                    'header_tags' => ['test1', 'test2'],
                 ],
-            ],
-            ]);
+            ]]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',

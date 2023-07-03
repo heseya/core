@@ -22,6 +22,9 @@ Seo:
     no_index:
       description: 'Whether seo indexing is disabled'
       type: boolean
+    header_tags:
+      description: 'Custom header tags'
+      type: array
 
 SeoStore:
   allOf:
