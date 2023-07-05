@@ -30,10 +30,10 @@ class OrderProduct extends Model
         'shipping_digital',
         'is_delivered',
         // ///////
-        'base_price_initial',
-        'base_price',
-        'price_initial',
-        'price',
+        //        'base_price_initial',
+        //        'base_price',
+        //        'price_initial',
+        //        'price',
     ];
 
     protected $casts = [
@@ -77,5 +77,45 @@ class OrderProduct extends Model
     public function urls(): HasMany
     {
         return $this->hasMany(OrderProductUrl::class);
+    }
+
+    public function basePriceInitial(): MorphOneWithIdentifier
+    {
+        return $this->morphOneWithIdentifier(
+            Price::class,
+            'model',
+            'price_type',
+            'base_price_initial',
+        );
+    }
+
+    public function basePrice(): MorphOneWithIdentifier
+    {
+        return $this->morphOneWithIdentifier(
+            Price::class,
+            'model',
+            'price_type',
+            'base_price',
+        );
+    }
+
+    public function priceInitial(): MorphOneWithIdentifier
+    {
+        return $this->morphOneWithIdentifier(
+            Price::class,
+            'model',
+            'price_type',
+            'price_initial',
+        );
+    }
+
+    public function price(): MorphOneWithIdentifier
+    {
+        return $this->morphOneWithIdentifier(
+            Price::class,
+            'model',
+            'price_type',
+            'price',
+        );
     }
 }

@@ -4,6 +4,10 @@ namespace App\Services;
 
 use App\Models\Setting;
 use App\Services\Contracts\SettingsServiceContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
@@ -51,14 +55,19 @@ class SettingsService implements SettingsServiceContract
         return $setting;
     }
 
-    public function getMinimalPrice(string $name): float
+    /**
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     */
+    public function getMinimalPrice(string $name): Money
     {
         $value = Cache::get($name);
         if ($value === null) {
-            $value = floatval($this->getSetting($name)->value);
+            $value = $this->getSetting($name)->value;
             Cache::put($name, $value);
         }
 
-        return $value;
+        return Money::of($value, 'PLN'); // Add multi-currency support
     }
 }

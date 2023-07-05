@@ -7,6 +7,7 @@ use App\Criteria\MetadataSearch;
 use App\Criteria\WhereInIds;
 use App\Traits\HasDiscounts;
 use App\Traits\HasMetadata;
+use Brick\Money\Money;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -97,14 +98,15 @@ class ShippingMethod extends Model implements AuditableContract
         return $this->belongsToMany(Address::class, 'address_shipping_method');
     }
 
-    public function getPrice(float $orderTotal): float
+    public function getPrice(Money $orderTotal): Money
     {
+        /** @var PriceRange $priceRange */
         $priceRange = $this->priceRanges()
-            ->where('start', '<=', $orderTotal)
+            ->where('start', '<=', $orderTotal->getMinorAmount())
             ->orderBy('start', 'desc')
             ->first();
 
-        return $priceRange && $priceRange->prices()->first() ? ($priceRange->prices()->first()->value ?? 0.0) : 0.0;
+        return $priceRange->value ?? Money::zero($orderTotal->getCurrency());
     }
 
     public function priceRanges(): HasMany

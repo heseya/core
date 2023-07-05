@@ -39,12 +39,12 @@ interface DiscountServiceContract
     public function checkCondition(
         DiscountCondition $condition,
         ?CartOrderDto $dto = null,
-        float $cartValue = 0
+        Money $cartValue
     ): bool;
 
-    public function checkConditionGroup(ConditionGroup $group, CartOrderDto $dto, float $cartValue): bool;
+    public function checkConditionGroup(ConditionGroup $group, CartOrderDto $dto, Money $cartValue): bool;
 
-    public function checkConditionGroups(Discount $discount, CartOrderDto $dto, float $cartValue): bool;
+    public function checkConditionGroups(Discount $discount, CartOrderDto $dto, Money $cartValue): bool;
 
     public function applyDiscountOnProduct(
         Product $product,
@@ -75,7 +75,7 @@ interface DiscountServiceContract
 
     public function applyDiscountOnOrder(Discount $discount, Order $order): Order;
 
-    public function calcAppliedDiscount(float $price, float $appliedDiscount, string $setting): float;
+    public function calcAppliedDiscount(Money $price, Money $appliedDiscount, string $setting): Money;
 
     public function activeSales(): Collection;
 
