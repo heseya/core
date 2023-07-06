@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Attributes;
 
 use App\Models\Attribute;
 use App\Models\AttributeOption;

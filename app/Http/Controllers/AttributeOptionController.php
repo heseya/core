@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\DTO\ReorderDto;
 use App\Dtos\AttributeOptionDto;
 use App\Http\Requests\AttributeOptionIndexRequest;
 use App\Http\Requests\AttributeOptionRequest;
@@ -9,15 +10,17 @@ use App\Http\Resources\AttributeOptionResource;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
 use App\Services\Contracts\AttributeOptionServiceContract;
-use Illuminate\Http\JsonResponse;
+use App\Services\Contracts\ReorderServiceContract;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
 
 class AttributeOptionController extends Controller
 {
     public function __construct(
-        private readonly AttributeOptionServiceContract $attributeOptionService
+        private readonly AttributeOptionServiceContract $attributeOptionService,
+        private readonly ReorderServiceContract $reorderService,
     ) {
     }
 
@@ -58,10 +61,17 @@ class AttributeOptionController extends Controller
         return AttributeOptionResource::make($attributeOption);
     }
 
-    public function destroy(Attribute $attribute, AttributeOption $option): JsonResponse
+    public function destroy(AttributeOption $option): HttpResponse
     {
         $this->attributeOptionService->delete($option);
 
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::noContent();
+    }
+
+    public function reorder(ReorderDto $dto): HttpResponse
+    {
+        $this->reorderService->reorderAndSave(AttributeOption::class, $dto);
+
+        return Response::noContent();
     }
 }

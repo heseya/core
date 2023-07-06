@@ -11,7 +11,6 @@ use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -19,10 +18,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class AttributeOption extends Model
 {
-    use HasFactory;
-    use SoftDeletes;
     use HasCriteria;
+    use HasFactory;
     use HasMetadata;
+    use SoftDeletes;
 
     protected $fillable = [
         'id',
@@ -50,10 +49,5 @@ class AttributeOption extends Model
     public function attribute(): BelongsTo
     {
         return $this->belongsTo(Attribute::class);
-    }
-
-    public function productAttributes(): BelongsToMany
-    {
-        return $this->belongsToMany(ProductAttribute::class);
     }
 }
