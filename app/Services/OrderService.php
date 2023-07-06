@@ -493,14 +493,14 @@ class OrderService implements OrderServiceContract
             return null;
         }
 
-        $old = Address::find($order->$attribute);
-        Cache::add('address.' . $order->$attribute, $old ? ((string) $old) : null);
+        $old = Address::find($order->{$attribute});
+        Cache::add('address.' . $order->{$attribute}, $old ? ((string) $old) : null);
         $order->forceAudit($attribute);
         if ($attribute === 'shipping_address_id' && $order->shipping_type === ShippingType::POINT) {
             return Address::create($addressDto->toArray());
         }
 
-        return Address::updateOrCreate(['id' => $order->$attribute], $addressDto->toArray());
+        return Address::updateOrCreate(['id' => $order->{$attribute}], $addressDto->toArray());
     }
 
     private function removeItemsFromWarehouse(OrderProduct $orderProduct, array $tempSchemaOrderProduct): bool

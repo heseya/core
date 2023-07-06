@@ -14,9 +14,9 @@ class DiscountSeoTest extends TestCase
      */
     public function testCreate(string $user): void
     {
-        $this->$user->givePermissionTo('sales.add');
+        $this->{$user}->givePermissionTo('sales.add');
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/sales', [
                 'name' => 'Sale',
                 'type' => DiscountType::PERCENTAGE,
@@ -46,9 +46,9 @@ class DiscountSeoTest extends TestCase
     {
         $sale = Discount::factory()->create();
 
-        $this->$user->givePermissionTo('coupons.edit');
+        $this->{$user}->givePermissionTo('coupons.edit');
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('PATCH', "/coupons/id:{$sale->getKey()}", [
                 'seo' => [
                     'title' => 'Sale',

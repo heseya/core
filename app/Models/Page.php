@@ -21,13 +21,13 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Page extends Model implements AuditableContract, SortableContract
 {
-    use HasFactory;
-    use HasCriteria;
-    use Sortable;
     use Auditable;
-    use SoftDeletes;
-    use HasSeoMetadata;
+    use HasCriteria;
+    use HasFactory;
     use HasMetadata;
+    use HasSeoMetadata;
+    use SoftDeletes;
+    use Sortable;
 
     protected $fillable = [
         'order',

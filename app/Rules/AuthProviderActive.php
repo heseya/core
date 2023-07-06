@@ -6,7 +6,7 @@ use App\Models\AuthProvider;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\Rule;
 
-class AuthProviderActive implements Rule, DataAwareRule
+class AuthProviderActive implements DataAwareRule, Rule
 {
     protected array $data;
 

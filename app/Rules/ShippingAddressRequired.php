@@ -7,7 +7,7 @@ use App\Models\ShippingMethod;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ImplicitRule;
 
-class ShippingAddressRequired implements ImplicitRule, DataAwareRule
+class ShippingAddressRequired implements DataAwareRule, ImplicitRule
 {
     protected array $data = [];
 

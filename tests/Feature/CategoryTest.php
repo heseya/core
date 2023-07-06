@@ -32,7 +32,7 @@ class CategoryTest extends TestCase
 '
             ),
         ]);
-        $this->actingAs($this->$user)->json('get', '/google-categories/en-US')
+        $this->actingAs($this->{$user})->json('get', '/google-categories/en-US')
             ->assertOk()
             ->assertJsonStructure([
                 'data' => [
@@ -50,7 +50,7 @@ class CategoryTest extends TestCase
     public function testGoogleCategoryFailed($user): void
     {
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/google-categories/test-TEST')
             ->assertStatus(422);
     }

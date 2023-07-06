@@ -52,9 +52,9 @@ class PaymentMethodTest extends TestCase
      */
     public function testIndex($user): void
     {
-        $this->$user->givePermissionTo('payment_methods.show');
+        $this->{$user}->givePermissionTo('payment_methods.show');
 
-        $response = $this->actingAs($this->$user)->getJson('/payment-methods');
+        $response = $this->actingAs($this->{$user})->getJson('/payment-methods');
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data') // Should show only public payment methods.
@@ -67,9 +67,9 @@ class PaymentMethodTest extends TestCase
      */
     public function testIndexByIds($user): void
     {
-        $this->$user->givePermissionTo('payment_methods.show');
+        $this->{$user}->givePermissionTo('payment_methods.show');
 
-        $response = $this->actingAs($this->$user)->json('GET', '/payment-methods', [
+        $response = $this->actingAs($this->{$user})->json('GET', '/payment-methods', [
             'ids' => [
                 $this->payment_method->getKey(),
             ],
@@ -86,13 +86,13 @@ class PaymentMethodTest extends TestCase
      */
     public function testIndexByOrderCode($user): void
     {
-        $this->$user->givePermissionTo('payment_methods.show');
+        $this->{$user}->givePermissionTo('payment_methods.show');
 
         $order = Order::factory()->create([
             'shipping_method_id' => $this->shipping_method->getKey(),
         ]);
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->json('GET', '/payment-methods', ['order_code' => $order->code])
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public payment methods.
@@ -104,13 +104,13 @@ class PaymentMethodTest extends TestCase
      */
     public function testIndexByOrderCodeDigitalShipping($user): void
     {
-        $this->$user->givePermissionTo('payment_methods.show');
+        $this->{$user}->givePermissionTo('payment_methods.show');
 
         $order = Order::factory()->create([
             'digital_shipping_method_id' => $this->shipping_method->getKey(),
         ]);
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->json('GET', '/payment-methods', ['order_code' => $order->code])
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public payment methods.
@@ -122,7 +122,7 @@ class PaymentMethodTest extends TestCase
      */
     public function testIndexByOrderCodeOnlyPhysicalShipping($user): void
     {
-        $this->$user->givePermissionTo('payment_methods.show');
+        $this->{$user}->givePermissionTo('payment_methods.show');
 
         $digitalShipping = ShippingMethod::factory()->create(['public' => true]);
         $digitalPayment = PaymentMethod::factory()->create(['public' => true]);
@@ -133,7 +133,7 @@ class PaymentMethodTest extends TestCase
             'digital_shipping_method_id' => $digitalShipping->getKey(),
         ]);
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->json('GET', '/payment-methods', ['order_code' => $order->code])
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public payment methods.
@@ -146,9 +146,9 @@ class PaymentMethodTest extends TestCase
      */
     public function testIndexByShippingMethod($user): void
     {
-        $this->$user->givePermissionTo('payment_methods.show');
+        $this->{$user}->givePermissionTo('payment_methods.show');
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->json('GET', '/payment-methods', ['shipping_method_id' => $this->shipping_method->getKey()])
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public payment methods.
@@ -160,12 +160,12 @@ class PaymentMethodTest extends TestCase
      */
     public function testShow($user): void
     {
-        $this->$user->givePermissionTo('payment_methods.show_details');
+        $this->{$user}->givePermissionTo('payment_methods.show_details');
 
         PaymentMethod::query()->delete();
         $paymentMethod = PaymentMethod::factory()->create();
 
-        $response = $this->actingAs($this->$user)->getJson('/payment-methods/id:' . $paymentMethod->getKey());
+        $response = $this->actingAs($this->{$user})->getJson('/payment-methods/id:' . $paymentMethod->getKey());
 
         $response
             ->assertOk()
@@ -185,9 +185,9 @@ class PaymentMethodTest extends TestCase
      */
     public function testIndexHidden($user): void
     {
-        $this->$user->givePermissionTo(['payment_methods.show', 'payment_methods.show_hidden']);
+        $this->{$user}->givePermissionTo(['payment_methods.show', 'payment_methods.show_hidden']);
 
-        $response = $this->actingAs($this->$user)->getJson('/payment-methods');
+        $response = $this->actingAs($this->{$user})->getJson('/payment-methods');
         $response
             ->assertOk()
             ->assertJsonCount(3, 'data') // Should show only public payment methods.

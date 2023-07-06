@@ -53,7 +53,7 @@ class AvailabilityTest extends TestCase
     {
         Event::fake(ProductUpdated::class);
 
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         $schema = Schema::factory()->create([
             'required' => true,
@@ -77,7 +77,7 @@ class AvailabilityTest extends TestCase
         $item->options()->save($option);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/items/id:' . $item->getKey() . '/deposits', [
                 'quantity' => 6,
                 'shipping_time' => 0,
@@ -113,7 +113,7 @@ class AvailabilityTest extends TestCase
      */
     public function testRestockUnavailable($user): void
     {
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         Event::fake(ProductUpdated::class);
 
@@ -163,7 +163,7 @@ class AvailabilityTest extends TestCase
 
         $this->product->schemas()->saveMany([$schemaOne, $schemaTwo]);
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->postJson('/items/id:' . $itemTwo->getKey() . '/deposits', [
                 'quantity' => 20,
                 'shipping_time' => 0,
@@ -210,7 +210,7 @@ class AvailabilityTest extends TestCase
     {
         Event::fake(ProductUpdated::class);
 
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         $data = $this->createDataPatternOne();
 
@@ -218,7 +218,7 @@ class AvailabilityTest extends TestCase
 
         $this->product->schemas()->saveMany([$data->get('schemaOne'), $data->get('schemaTwo')]);
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->postJson('/items/id:' . $data->get('item')->getKey() . '/deposits', [
                 'quantity' => 2,
                 'shipping_time' => 0,
@@ -258,7 +258,7 @@ class AvailabilityTest extends TestCase
     {
         Event::fake(ProductUpdated::class);
 
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         $data = $this->createDataPatternOne();
         $data->get('item')->options()->saveMany([$data->get('optionOne'), $data->get('optionTwo')]);
@@ -266,7 +266,7 @@ class AvailabilityTest extends TestCase
         $this->product->schemas()->saveMany([$data->get('schemaOne'), $data->get('schemaTwo')]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/items/id:' . $data->get('item')->getKey() . '/deposits', [
                 'quantity' => 1,
                 'shipping_time' => 0,
@@ -306,7 +306,7 @@ class AvailabilityTest extends TestCase
     {
         Event::fake(ProductUpdated::class);
 
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         $data = $this->createDataPatternOne();
 
@@ -320,7 +320,7 @@ class AvailabilityTest extends TestCase
         $this->product->schemas()->saveMany([$data->get('schemaOne'), $data->get('schemaTwo')]);
         $this->product->update(['available' => true]);
 
-        $this->actingAs($this->$user)->postJson('/orders', [
+        $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => 'test@test.test',
             'shipping_method_id' => ShippingMethod::factory()->create([
                 'shipping_type' => ShippingType::ADDRESS,
@@ -387,10 +387,10 @@ class AvailabilityTest extends TestCase
             'price' => 0,
         ]);
 
-        $this->$user->givePermissionTo('orders.add');
-        $this->$user->givePermissionTo('orders.edit.status');
+        $this->{$user}->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.edit.status');
 
-        $response = $this->actingAs($this->$user)->postJson('/orders', [
+        $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => 'test@test.test',
             'shipping_method_id' => ShippingMethod::factory()->create([
                 'shipping_type' => ShippingType::ADDRESS,
@@ -417,7 +417,7 @@ class AvailabilityTest extends TestCase
 
         $this->product->refresh();
 
-        $this->actingAs($this->$user)->patchJson("/orders/id:{$order->getKey()}/status", [
+        $this->actingAs($this->{$user})->patchJson("/orders/id:{$order->getKey()}/status", [
             'status_id' => $statusCancel->getKey(),
         ]);
 
@@ -481,8 +481,8 @@ class AvailabilityTest extends TestCase
             'quantity' => 5,
         ]);
 
-        $this->$user->givePermissionTo('products.edit');
-        $this->actingAs($this->$user)->patchJson('/products/id:' . $product->getKey(), [
+        $this->{$user}->givePermissionTo('products.edit');
+        $this->actingAs($this->{$user})->patchJson('/products/id:' . $product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
             'price' => 10,
@@ -523,8 +523,8 @@ class AvailabilityTest extends TestCase
             'quantity' => 5,
         ]);
 
-        $this->$user->givePermissionTo('products.edit');
-        $this->actingAs($this->$user)->patchJson('/products/id:' . $product->getKey(), [
+        $this->{$user}->givePermissionTo('products.edit');
+        $this->actingAs($this->{$user})->patchJson('/products/id:' . $product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
             'price' => 10,
@@ -565,7 +565,7 @@ class AvailabilityTest extends TestCase
      */
     public function testCreateOrderProductWithMultipleSchemasWithOption($user, $schemaCount): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
         $email = $this->faker->freeEmail;
 
         $product = Product::factory()->create([
@@ -593,7 +593,7 @@ class AvailabilityTest extends TestCase
             'price' => 100,
         ]);
 
-        $this->actingAs($this->$user)->postJson('/orders', [
+        $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => $email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_place' => $address->toArray(),
@@ -616,11 +616,11 @@ class AvailabilityTest extends TestCase
      */
     public function testCreateWithMultipleSchemasWithOptions($user, int $schemaCount): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
         $schemas = $this->createSchemasWithOptions($schemaCount);
 
-        $this->actingAs($this->$user)->postJson('/products', [
+        $this->actingAs($this->{$user})->postJson('/products', [
             'name' => 'Test',
             'slug' => 'test',
             'price' => 10,
@@ -636,7 +636,7 @@ class AvailabilityTest extends TestCase
      */
     public function testAddDepositToItemInSchemaOption($user, int $schemaCount): void
     {
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         $schemas = $this->createSchemasWithOptions($schemaCount);
 
@@ -645,7 +645,7 @@ class AvailabilityTest extends TestCase
 
         Event::fake(ItemUpdatedQuantity::class);
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->json('POST', "/items/id:{$item->getKey()}/deposits", [
                 'quantity' => 100,
                 'shipping_time' => 0,

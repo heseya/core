@@ -30,12 +30,12 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Item extends Model implements AuditableContract, SortableContract
 {
-    use SoftDeletes;
-    use HasFactory;
-    use HasCriteria;
-    use Sortable;
     use Auditable;
+    use HasCriteria;
+    use HasFactory;
     use HasMetadata;
+    use SoftDeletes;
+    use Sortable;
 
     protected $fillable = [
         'id',

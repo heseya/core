@@ -13,8 +13,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class SaleCreateRequest extends FormRequest
 {
-    use SeoRules;
     use MetadataRules;
+    use SeoRules;
 
     /**
      * Get the validation rules that apply to the request.

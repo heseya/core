@@ -18,7 +18,7 @@ class FilterTest extends TestCase
         Attribute::factory()->create(['global' => 0]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/filters')
             ->assertJsonCount(3, 'data');
     }
@@ -89,7 +89,7 @@ class FilterTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/filters', [
                 'sets' => [$firstProductSet->getKey(), $secondProductSet->getKey()],
             ])

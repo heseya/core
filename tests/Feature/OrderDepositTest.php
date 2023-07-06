@@ -80,10 +80,10 @@ class OrderDepositTest extends TestCase
      */
     public function testCantCreateOrder($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/orders', $this->request)
             ->assertUnprocessable();
     }
@@ -93,14 +93,14 @@ class OrderDepositTest extends TestCase
      */
     public function testCreateOrder($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         $this->item->deposits()->create([
             'quantity' => 2,
         ]);
 
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/orders', $this->request);
 
         $response->assertCreated();
@@ -142,7 +142,7 @@ class OrderDepositTest extends TestCase
      */
     public function testDeleteOrder($user): void
     {
-        $this->$user->givePermissionTo('orders.edit.status');
+        $this->{$user}->givePermissionTo('orders.edit.status');
 
         $this->item->deposits()->create([
             'quantity' => 2,
@@ -176,7 +176,7 @@ class OrderDepositTest extends TestCase
         $this->assertEquals(0, $this->item->quantity);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('PATCH', "/orders/id:{$order->getKey()}/status", [
                 'status_id' => $status->getKey(),
             ])
@@ -208,14 +208,14 @@ class OrderDepositTest extends TestCase
      */
     public function testCantCreateOrderWithoutItems($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         $this->item->deposits()->create([
             'quantity' => 1,
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/orders', $this->request)
             ->assertUnprocessable();
 
@@ -248,7 +248,7 @@ class OrderDepositTest extends TestCase
             'quantity' => 1,
         ]);
 
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         $this->request['items'] = [
             'product_id' => $this->product->getKey(),
@@ -260,7 +260,7 @@ class OrderDepositTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/orders', $this->request)
             ->assertUnprocessable();
 
@@ -272,7 +272,7 @@ class OrderDepositTest extends TestCase
      */
     public function testCreateOrderWithProductThatGotItemsAndSchema($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         $this->item->deposits()->create([
             'quantity' => 6,
@@ -282,7 +282,7 @@ class OrderDepositTest extends TestCase
         $this->product->items()->attach($this->item->getKey(), ['required_quantity' => 2]);
 
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/orders', $this->request);
 
         $response->assertCreated();
@@ -342,8 +342,8 @@ class OrderDepositTest extends TestCase
      */
     public function testCreateOrdersAndCheckDeposits($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $this->item->deposits()->create([
             'quantity' => 1,
@@ -386,7 +386,7 @@ class OrderDepositTest extends TestCase
             ],
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -405,7 +405,7 @@ class OrderDepositTest extends TestCase
             ]);
 
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/orders', $request);
 
         $response->assertCreated();
@@ -447,7 +447,7 @@ class OrderDepositTest extends TestCase
             ],
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -466,7 +466,7 @@ class OrderDepositTest extends TestCase
             ]);
 
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/orders', $request);
 
         $response->assertCreated();
@@ -502,7 +502,7 @@ class OrderDepositTest extends TestCase
             ],
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -521,7 +521,7 @@ class OrderDepositTest extends TestCase
             ]);
 
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/orders', $request);
 
         $response->assertCreated();
@@ -548,7 +548,7 @@ class OrderDepositTest extends TestCase
      */
     public function testDeleteOrderCheckDeposits($user): void
     {
-        $this->$user->givePermissionTo('orders.edit.status');
+        $this->{$user}->givePermissionTo('orders.edit.status');
 
         $date = Carbon::now()->startOfDay()->addDays(4)->toDateTimeString();
 
@@ -589,7 +589,7 @@ class OrderDepositTest extends TestCase
         $this->assertEquals(0, $this->item->quantity);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('PATCH', "/orders/id:{$order->getKey()}/status", [
                 'status_id' => $status->getKey(),
             ])
@@ -622,8 +622,8 @@ class OrderDepositTest extends TestCase
      */
     public function testCreateOrdersWithPreOrderItemAndCheckDeposits($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $date = Carbon::now()->startOfDay()->addDays(10)->toIso8601String();
 
@@ -657,7 +657,7 @@ class OrderDepositTest extends TestCase
             ],
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -676,7 +676,7 @@ class OrderDepositTest extends TestCase
             ]);
 
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/orders', $request);
 
         $response->assertCreated();

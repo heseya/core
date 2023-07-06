@@ -276,7 +276,7 @@ class ProductSetService implements ProductSetServiceContract
     public function flattenSetsTree(Collection $sets, string $relation): Collection
     {
         $subsets = $sets->map(
-            fn ($set) => $this->flattenSetsTree($set->$relation, $relation),
+            fn ($set) => $this->flattenSetsTree($set->{$relation}, $relation),
         );
 
         return $subsets->flatten()->concat($sets->toArray());

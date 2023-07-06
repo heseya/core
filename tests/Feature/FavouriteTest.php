@@ -33,13 +33,13 @@ class FavouriteTest extends TestCase
      */
     public function testIndex($user): void
     {
-        $this->$user->givePermissionTo('profile.favourites_manage');
+        $this->{$user}->givePermissionTo('profile.favourites_manage');
 
-        $this->$user->favouriteProductSets()->create([
+        $this->{$user}->favouriteProductSets()->create([
             'product_set_id' => $this->productSet->getKey(),
         ]);
 
-        $this->actingAs($this->$user)->json('GET', '/product-sets/favourites')
+        $this->actingAs($this->{$user})->json('GET', '/product-sets/favourites')
             ->assertOk()
             ->assertJson([
                 'data' => [
@@ -71,14 +71,14 @@ class FavouriteTest extends TestCase
      */
     public function testShow($user): void
     {
-        $this->$user->givePermissionTo('profile.favourites_manage');
+        $this->{$user}->givePermissionTo('profile.favourites_manage');
 
-        $this->$user->favouriteProductSets()->create([
+        $this->{$user}->favouriteProductSets()->create([
             'product_set_id' => $this->productSet->getKey(),
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/product-sets/favourites/id:' . $this->productSet->getKey())
             ->assertOk()
             ->assertJson([
@@ -107,10 +107,10 @@ class FavouriteTest extends TestCase
      */
     public function testStore($user): void
     {
-        $this->$user->givePermissionTo('profile.favourites_manage');
+        $this->{$user}->givePermissionTo('profile.favourites_manage');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/product-sets/favourites', [
                 'product_set_id' => $this->productSet->getKey(),
             ])
@@ -130,14 +130,14 @@ class FavouriteTest extends TestCase
      */
     public function testStoreAlreadyLiked($user): void
     {
-        $this->$user->givePermissionTo('profile.favourites_manage');
+        $this->{$user}->givePermissionTo('profile.favourites_manage');
 
-        $this->$user->favouriteProductSets()->create([
+        $this->{$user}->favouriteProductSets()->create([
             'product_set_id' => $this->productSet->getKey(),
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/product-sets/favourites', [
                 'product_set_id' => $this->productSet->getKey(),
             ])
@@ -149,9 +149,9 @@ class FavouriteTest extends TestCase
      */
     public function testStoreAnother($user): void
     {
-        $this->$user->givePermissionTo('profile.favourites_manage');
+        $this->{$user}->givePermissionTo('profile.favourites_manage');
 
-        $this->$user->favouriteProductSets()->create([
+        $this->{$user}->favouriteProductSets()->create([
             'product_set_id' => $this->productSet->getKey(),
         ]);
 
@@ -161,7 +161,7 @@ class FavouriteTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/product-sets/favourites', [
                 'product_set_id' => $productSet->getKey(),
             ])
@@ -181,16 +181,16 @@ class FavouriteTest extends TestCase
      */
     public function testStoreAfterDelete($user): void
     {
-        $this->$user->givePermissionTo('profile.favourites_manage');
+        $this->{$user}->givePermissionTo('profile.favourites_manage');
 
-        $favouriteProductSet = $this->$user->favouriteProductSets()->create([
+        $favouriteProductSet = $this->{$user}->favouriteProductSets()->create([
             'product_set_id' => $this->productSet->getKey(),
         ]);
 
         $favouriteProductSet->delete();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/product-sets/favourites', [
                 'product_set_id' => $this->productSet->getKey(),
             ])
@@ -207,7 +207,7 @@ class FavouriteTest extends TestCase
         $this->assertSoftDeleted($favouriteProductSet);
 
         $this->assertDatabaseHas('favourite_product_sets', [
-            'user_id' => $this->$user->getKey(),
+            'user_id' => $this->{$user}->getKey(),
             'product_set_id' => $this->productSet->getKey(),
         ]);
     }
@@ -229,14 +229,14 @@ class FavouriteTest extends TestCase
      */
     public function testDelete($user): void
     {
-        $this->$user->givePermissionTo('profile.favourites_manage');
+        $this->{$user}->givePermissionTo('profile.favourites_manage');
 
-        $favouriteProductSet = $this->$user->favouriteProductSets()->create([
+        $favouriteProductSet = $this->{$user}->favouriteProductSets()->create([
             'product_set_id' => $this->productSet->getKey(),
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('DELETE', '/product-sets/favourites/id:' . $this->productSet->getKey())
             ->assertNoContent();
 
@@ -248,10 +248,10 @@ class FavouriteTest extends TestCase
      */
     public function testDeleteDoesntExist($user): void
     {
-        $this->$user->givePermissionTo('profile.favourites_manage');
+        $this->{$user}->givePermissionTo('profile.favourites_manage');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('DELETE', '/product-sets/favourites/id:' . $this->productSet->getKey())
             ->assertUnprocessable();
     }
@@ -261,9 +261,9 @@ class FavouriteTest extends TestCase
      */
     public function testDeleteAll($user): void
     {
-        $this->$user->givePermissionTo('profile.favourites_manage');
+        $this->{$user}->givePermissionTo('profile.favourites_manage');
 
-        $favouriteProductSet1 = $this->$user->favouriteProductSets()->create([
+        $favouriteProductSet1 = $this->{$user}->favouriteProductSets()->create([
             'product_set_id' => $this->productSet->getKey(),
         ]);
 
@@ -272,12 +272,12 @@ class FavouriteTest extends TestCase
             'name' => 'another product set',
         ]);
 
-        $favouriteProductSet2 = $this->$user->favouriteProductSets()->create([
+        $favouriteProductSet2 = $this->{$user}->favouriteProductSets()->create([
             'product_set_id' => $productSet->getKey(),
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('DELETE', '/product-sets/favourites')
             ->assertNoContent();
 

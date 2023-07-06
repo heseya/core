@@ -14,7 +14,7 @@ class MediaCreateTest extends TestCase
      */
     public function testUploadWithSourceExternal(string $user): void
     {
-        $this->$user->givePermissionTo('media.add');
+        $this->{$user}->givePermissionTo('media.add');
 
         $media = [
             'source' => MediaSource::EXTERNAL,
@@ -23,7 +23,7 @@ class MediaCreateTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/media', $media)
             ->assertCreated();
 
@@ -35,7 +35,7 @@ class MediaCreateTest extends TestCase
      */
     public function testUploadWithUuid(string $user): void
     {
-        $this->$user->givePermissionTo('media.add');
+        $this->{$user}->givePermissionTo('media.add');
 
         $media = [
             'source' => MediaSource::EXTERNAL,
@@ -45,7 +45,7 @@ class MediaCreateTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/media', $media)
             ->assertCreated();
 

@@ -59,13 +59,13 @@ class WishlistTest extends TestCase
      */
     public function testIndex(string $user): void
     {
-        $this->$user->givePermissionTo('profile.wishlist_manage');
+        $this->{$user}->givePermissionTo('profile.wishlist_manage');
 
-        $this->$user->wishlistProducts()->create([
+        $this->{$user}->wishlistProducts()->create([
             'product_id' => $this->product->getKey(),
         ]);
 
-        $this->actingAs($this->$user)->json('GET', '/wishlist')
+        $this->actingAs($this->{$user})->json('GET', '/wishlist')
             ->assertOk()
             ->assertJsonStructure([
                 'data' => [
@@ -103,18 +103,18 @@ class WishlistTest extends TestCase
      */
     public function testShow(string $user): void
     {
-        $this->$user->givePermissionTo('profile.wishlist_manage');
+        $this->{$user}->givePermissionTo('profile.wishlist_manage');
 
-        $this->$user->wishlistProducts()->create([
+        $this->{$user}->wishlistProducts()->create([
             'product_id' => Product::factory()->create(['public' => true])->getKey(),
         ]);
 
-        $this->$user->wishlistProducts()->create([
+        $this->{$user}->wishlistProducts()->create([
             'product_id' => $this->product->getKey(),
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/wishlist/id:' . $this->product->getKey())
             ->assertOk()
             ->assertJsonStructure(['data' => $this->expected_structure])
@@ -126,16 +126,16 @@ class WishlistTest extends TestCase
      */
     public function testShowMissing(string $user): void
     {
-        $this->$user->givePermissionTo('profile.wishlist_manage');
+        $this->{$user}->givePermissionTo('profile.wishlist_manage');
 
         WishlistProduct::query()->create([
             'product_id' => Product::factory()->create()->getKey(),
-            'user_id' => $this->$user->getKey(),
+            'user_id' => $this->{$user}->getKey(),
         ]);
 
         $newProduct = Product::factory()->create(['public' => true]);
 
-        $this->actingAs($this->$user)->json('GET', '/wishlist/id:' . $newProduct->getKey())
+        $this->actingAs($this->{$user})->json('GET', '/wishlist/id:' . $newProduct->getKey())
             ->assertNotFound();
     }
 
@@ -162,9 +162,9 @@ class WishlistTest extends TestCase
      */
     public function testStore(string $user): void
     {
-        $this->$user->givePermissionTo('profile.wishlist_manage');
+        $this->{$user}->givePermissionTo('profile.wishlist_manage');
 
-        $this->actingAs($this->$user)->json('POST', '/wishlist', [
+        $this->actingAs($this->{$user})->json('POST', '/wishlist', [
             'product_id' => $this->product->getKey(),
         ])
             ->assertCreated()
@@ -181,7 +181,7 @@ class WishlistTest extends TestCase
             ]);
 
         $this->assertDatabaseHas('wishlist_products', [
-            'user_id' => $this->$user->getKey(),
+            'user_id' => $this->{$user}->getKey(),
             'product_id' => $this->product->getKey(),
         ]);
     }
@@ -199,14 +199,14 @@ class WishlistTest extends TestCase
      */
     public function testStoreAlreadyStored(string $user): void
     {
-        $this->$user->givePermissionTo('profile.wishlist_manage');
+        $this->{$user}->givePermissionTo('profile.wishlist_manage');
 
         WishlistProduct::query()->create([
             'product_id' => $this->product->getKey(),
-            'user_id' => $this->$user->getKey(),
+            'user_id' => $this->{$user}->getKey(),
         ]);
 
-        $this->actingAs($this->$user)->json('POST', '/wishlist', [
+        $this->actingAs($this->{$user})->json('POST', '/wishlist', [
             'product_id' => $this->product->getKey(),
         ])
             ->assertStatus(422)
@@ -220,7 +220,7 @@ class WishlistTest extends TestCase
      */
     public function testStoreAfterSoftDelete($user): void
     {
-        $this->$user->givePermissionTo('profile.wishlist_manage');
+        $this->{$user}->givePermissionTo('profile.wishlist_manage');
 
         $wishlistProduct = WishlistProduct::create([
             'product_id' => $this->product->getKey(),
@@ -230,7 +230,7 @@ class WishlistTest extends TestCase
 
         $wishlistProduct->delete();
 
-        $this->actingAs($this->$user)->json('POST', '/wishlist', [
+        $this->actingAs($this->{$user})->json('POST', '/wishlist', [
             'product_id' => $this->product->getKey(),
         ])
             ->assertCreated()
@@ -247,7 +247,7 @@ class WishlistTest extends TestCase
             ]);
 
         $this->assertDatabaseHas('wishlist_products', [
-            'user_id' => $this->$user->getKey(),
+            'user_id' => $this->{$user}->getKey(),
             'product_id' => $this->product->getKey(),
         ]);
     }
@@ -257,20 +257,20 @@ class WishlistTest extends TestCase
      */
     public function testDelete($user): void
     {
-        $this->$user->givePermissionTo('profile.wishlist_manage');
+        $this->{$user}->givePermissionTo('profile.wishlist_manage');
 
         WishlistProduct::create([
             'product_id' => $this->product->getKey(),
-            'user_id' => $this->$user->getKey(),
-            'user_type' => $this->$user::class,
+            'user_id' => $this->{$user}->getKey(),
+            'user_type' => $this->{$user}::class,
         ]);
 
-        $this->actingAs($this->$user)->json('DELETE', '/wishlist/id:' . $this->product->getKey())
+        $this->actingAs($this->{$user})->json('DELETE', '/wishlist/id:' . $this->product->getKey())
             ->assertNoContent();
 
         $this->assertSoftDeleted('wishlist_products', [
             'product_id' => $this->product->getKey(),
-            'user_id' => $this->$user->getKey(),
+            'user_id' => $this->{$user}->getKey(),
         ]);
     }
 
@@ -291,9 +291,9 @@ class WishlistTest extends TestCase
      */
     public function testDeleteDoesntExist($user): void
     {
-        $this->$user->givePermissionTo('profile.wishlist_manage');
+        $this->{$user}->givePermissionTo('profile.wishlist_manage');
 
-        $this->actingAs($this->$user)->json('DELETE', '/wishlist/id:' . $this->product->getKey())
+        $this->actingAs($this->{$user})->json('DELETE', '/wishlist/id:' . $this->product->getKey())
             ->assertStatus(422)
             ->assertJsonFragment([
                 'key' => Exceptions::getKey(Exceptions::PRODUCT_IS_NOT_ON_WISHLIST),
@@ -310,9 +310,9 @@ class WishlistTest extends TestCase
      */
     public function testDeleteAll($user): void
     {
-        $this->$user->givePermissionTo('profile.wishlist_manage');
+        $this->{$user}->givePermissionTo('profile.wishlist_manage');
 
-        $wishlistProduct1 = $this->$user->wishlistProducts()->create([
+        $wishlistProduct1 = $this->{$user}->wishlistProducts()->create([
             'product_id' => $this->product->getKey(),
         ]);
 
@@ -321,11 +321,11 @@ class WishlistTest extends TestCase
             'name' => 'another test product',
         ]);
 
-        $wishlistProduct2 = $this->$user->wishlistProducts()->create([
+        $wishlistProduct2 = $this->{$user}->wishlistProducts()->create([
             'product_id' => $product->getKey(),
         ]);
 
-        $this->actingAs($this->$user)->json('DELETE', '/wishlist')->assertNoContent();
+        $this->actingAs($this->{$user})->json('DELETE', '/wishlist')->assertNoContent();
 
         $this->assertSoftDeleted($wishlistProduct1);
         $this->assertSoftDeleted($wishlistProduct2);

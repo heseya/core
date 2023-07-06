@@ -15,8 +15,8 @@ use Illuminate\Database\Eloquent\Relations\HasOneThrough;
  */
 class Deposit extends Model
 {
-    use HasFactory;
     use HasCriteria;
+    use HasFactory;
 
     protected $fillable = [
         'quantity',

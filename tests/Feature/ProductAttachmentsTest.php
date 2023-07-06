@@ -28,9 +28,9 @@ class ProductAttachmentsTest extends TestCase
      */
     public function testShowProductsWithAttachments(string $user): void
     {
-        $this->$user->givePermissionTo('products.show_details');
+        $this->{$user}->givePermissionTo('products.show_details');
 
-        $this->showProductsWithAttachments($this->$user, VisibilityType::PUBLIC);
+        $this->showProductsWithAttachments($this->{$user}, VisibilityType::PUBLIC);
     }
 
     /**
@@ -38,9 +38,9 @@ class ProductAttachmentsTest extends TestCase
      */
     public function testProductsWithAttachmentsPrivate(string $user): void
     {
-        $this->$user->givePermissionTo(['products.show_details', 'products.show_attachments_private']);
+        $this->{$user}->givePermissionTo(['products.show_details', 'products.show_attachments_private']);
 
-        $this->showProductsWithAttachments($this->$user, VisibilityType::PRIVATE);
+        $this->showProductsWithAttachments($this->{$user}, VisibilityType::PRIVATE);
     }
 
     /**
@@ -48,12 +48,12 @@ class ProductAttachmentsTest extends TestCase
      */
     public function testProductsWithAttachmentsPrivateNoPermissions(string $user): void
     {
-        $this->$user->givePermissionTo('products.show_details');
+        $this->{$user}->givePermissionTo('products.show_details');
 
         $this->createAttachment(VisibilityType::PRIVATE);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson("/products/id:{$this->product->getKey()}")
             ->assertOk()
             ->assertJsonCount(0, 'data.attachments');
@@ -71,7 +71,7 @@ class ProductAttachmentsTest extends TestCase
      */
     public function testAddAttachment(string $user): void
     {
-        $this->$user->givePermissionTo('products.edit');
+        $this->{$user}->givePermissionTo('products.edit');
 
         $data = [
             'name' => 'Test',
@@ -80,7 +80,7 @@ class ProductAttachmentsTest extends TestCase
             'description' => null,
         ];
 
-        $this->addAttachment($this->$user, $data);
+        $this->addAttachment($this->{$user}, $data);
     }
 
     /**
@@ -88,7 +88,7 @@ class ProductAttachmentsTest extends TestCase
      */
     public function testAddAttachmentWithoutDescription(string $user): void
     {
-        $this->$user->givePermissionTo('products.edit');
+        $this->{$user}->givePermissionTo('products.edit');
 
         $data = [
             'name' => 'Test',
@@ -96,7 +96,7 @@ class ProductAttachmentsTest extends TestCase
             'visibility' => VisibilityType::PUBLIC->value,
         ];
 
-        $this->addAttachment($this->$user, $data);
+        $this->addAttachment($this->{$user}, $data);
     }
 
     /**
@@ -104,7 +104,7 @@ class ProductAttachmentsTest extends TestCase
      */
     public function testAddAttachmentWithNullDescription(string $user): void
     {
-        $this->$user->givePermissionTo('products.edit');
+        $this->{$user}->givePermissionTo('products.edit');
 
         $data = [
             'name' => 'Test',
@@ -113,7 +113,7 @@ class ProductAttachmentsTest extends TestCase
             'description' => null,
         ];
 
-        $this->addAttachment($this->$user, $data);
+        $this->addAttachment($this->{$user}, $data);
     }
 
     public function testEditAttachmentUnauthorized(): void
@@ -130,7 +130,7 @@ class ProductAttachmentsTest extends TestCase
      */
     public function testEditAttachment(string $user): void
     {
-        $this->$user->givePermissionTo(['products.edit', 'products.show_attachments_private']);
+        $this->{$user}->givePermissionTo(['products.edit', 'products.show_attachments_private']);
 
         $data = [
             'name' => 'Test updated',
@@ -139,7 +139,7 @@ class ProductAttachmentsTest extends TestCase
             'description' => 'test-updated',
         ];
 
-        $this->editAttachment($this->$user, $data, $data);
+        $this->editAttachment($this->{$user}, $data, $data);
     }
 
     /**
@@ -147,13 +147,13 @@ class ProductAttachmentsTest extends TestCase
      */
     public function testEditAttachmentNullDescription(string $user): void
     {
-        $this->$user->givePermissionTo(['products.edit', 'products.show_attachments_private']);
+        $this->{$user}->givePermissionTo(['products.edit', 'products.show_attachments_private']);
 
         $data = [
             'description' => null,
         ];
 
-        $this->editAttachment($this->$user, $data, $data);
+        $this->editAttachment($this->{$user}, $data, $data);
     }
 
     /**
@@ -161,13 +161,13 @@ class ProductAttachmentsTest extends TestCase
      */
     public function testEditAttachmentNoDescription(string $user): void
     {
-        $this->$user->givePermissionTo(['products.edit', 'products.show_attachments_private']);
+        $this->{$user}->givePermissionTo(['products.edit', 'products.show_attachments_private']);
 
         $initialData = [
             'description' => 'persisted',
         ];
 
-        $this->editAttachment($this->$user, [], $initialData, $initialData);
+        $this->editAttachment($this->{$user}, [], $initialData, $initialData);
     }
 
     public function testDeleteAttachmentUnauthorized(): void
@@ -184,12 +184,12 @@ class ProductAttachmentsTest extends TestCase
      */
     public function testDeleteAttachment(string $user): void
     {
-        $this->$user->givePermissionTo(['products.edit', 'products.show_attachments_private']);
+        $this->{$user}->givePermissionTo(['products.edit', 'products.show_attachments_private']);
 
         $attachment = $this->createAttachment(VisibilityType::PUBLIC);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson("/products/id:{$this->product->getKey()}/attachments/id:{$attachment->getKey()}")
             ->assertNoContent();
 

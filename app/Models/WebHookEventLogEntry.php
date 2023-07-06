@@ -13,8 +13,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class WebHookEventLogEntry extends Model
 {
-    use HasFactory;
     use HasCriteria;
+    use HasFactory;
 
     public $timestamps = null;
 

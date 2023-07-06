@@ -15,7 +15,7 @@ class AnalyticsTest extends TestCase
      */
     public function testPaymentsInRange($user): void
     {
-        $this->$user->givePermissionTo('analytics.payments');
+        $this->{$user}->givePermissionTo('analytics.payments');
         $from = Carbon::today()->subHour();
         $to = Carbon::tomorrow();
 
@@ -55,7 +55,7 @@ class AnalyticsTest extends TestCase
             'created_at' => $orderAfter->created_at,
         ]));
 
-        $this->actingAs($this->$user)->json('GET', '/analytics/payments', [
+        $this->actingAs($this->{$user})->json('GET', '/analytics/payments', [
             'from' => $from->toDateTimeString(),
             'to' => $to->toDateTimeString(),
             'group' => 'total',
@@ -72,7 +72,7 @@ class AnalyticsTest extends TestCase
      */
     public function testPaymentsInRangeDoublePayment($user): void
     {
-        $this->$user->givePermissionTo('analytics.payments');
+        $this->{$user}->givePermissionTo('analytics.payments');
         $from = Carbon::today()->subHour();
         $to = Carbon::tomorrow();
 
@@ -117,7 +117,7 @@ class AnalyticsTest extends TestCase
             'created_at' => $orderAfter->created_at,
         ]));
 
-        $this->actingAs($this->$user)->json('GET', '/analytics/payments', [
+        $this->actingAs($this->{$user})->json('GET', '/analytics/payments', [
             'from' => $from->toDateTimeString(),
             'to' => $to->toDateTimeString(),
             'group' => 'total',

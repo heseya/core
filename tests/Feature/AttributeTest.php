@@ -66,14 +66,14 @@ class AttributeTest extends TestCase
      */
     public function testIndex(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.show');
+        $this->{$user}->givePermissionTo('attributes.show');
 
         $this->newAttribute['global'] = !$this->attribute->global;
         unset($this->newAttribute['options']);
         Attribute::query()->create($this->newAttribute);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/attributes')
             ->assertOk()
             ->assertJsonCount(2, 'data')
@@ -94,14 +94,14 @@ class AttributeTest extends TestCase
      */
     public function testIndexByIds(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.show');
+        $this->{$user}->givePermissionTo('attributes.show');
 
         $this->newAttribute['global'] = !$this->attribute->global;
         unset($this->newAttribute['options']);
         Attribute::query()->create($this->newAttribute);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/attributes', [
                 'ids' => [
                     $this->attribute->getKey(),
@@ -125,7 +125,7 @@ class AttributeTest extends TestCase
      */
     public function testIndexMetadata(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.show');
+        $this->{$user}->givePermissionTo('attributes.show');
 
         unset($this->newAttribute['options']);
 
@@ -139,7 +139,7 @@ class AttributeTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/attributes?metadata[Dystrybucja]=Polska')
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -153,7 +153,7 @@ class AttributeTest extends TestCase
      */
     public function testIndexMetadataNotFound(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.show');
+        $this->{$user}->givePermissionTo('attributes.show');
 
         /** @var Attribute $attribute */
         $attribute = Attribute::query()->create($this->newAttribute);
@@ -165,7 +165,7 @@ class AttributeTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/attributes?metadata[Dystrybucja]=Polska')
             ->assertOk()
             ->assertJsonCount(0, 'data');
@@ -176,7 +176,7 @@ class AttributeTest extends TestCase
      */
     public function testIndexMetadataPrivate(string $user): void
     {
-        $this->$user->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
+        $this->{$user}->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
 
         unset($this->newAttribute['options']);
 
@@ -190,7 +190,7 @@ class AttributeTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/attributes?metadata[Dystrybucja]=Polska')
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -204,7 +204,7 @@ class AttributeTest extends TestCase
      */
     public function testIndexMetadataPrivateNotFound(string $user): void
     {
-        $this->$user->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
+        $this->{$user}->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
 
         /** @var Attribute $attribute */
         $attribute = Attribute::query()->create($this->newAttribute);
@@ -216,7 +216,7 @@ class AttributeTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/attributes?metadata[Dystrybucja]=Polska')
             ->assertOk()
             ->assertJsonCount(0, 'data');
@@ -227,7 +227,7 @@ class AttributeTest extends TestCase
      */
     public function testSearch(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.show');
+        $this->{$user}->givePermissionTo('attributes.show');
         $first = Attribute::factory()->create(['name' => 'here will by description for test']);
         Attribute::factory()->create([
             'name' => 'new name',
@@ -242,13 +242,13 @@ class AttributeTest extends TestCase
         Attribute::factory()->create(['name' => 'new name test ' . $first->id]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/attributes', ['search' => 'description'])
             ->assertOk()
             ->assertJsonCount(3, 'data');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/attributes', ['search' => $first->id])
             ->assertOk()
             ->assertJsonCount(2, 'data');
@@ -259,12 +259,12 @@ class AttributeTest extends TestCase
      */
     public function testSearchNotFound(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.show');
+        $this->{$user}->givePermissionTo('attributes.show');
 
         Attribute::create($this->newAttribute);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/attributes', ['search' => 'abc not found in search'])
             ->assertOk()
             ->assertJsonCount(0, 'data');
@@ -275,10 +275,10 @@ class AttributeTest extends TestCase
      */
     public function testShow(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.show');
+        $this->{$user}->givePermissionTo('attributes.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/attributes/id:' . $this->attribute->getKey())
             ->assertOk()
             ->assertJsonFragment([
@@ -296,15 +296,15 @@ class AttributeTest extends TestCase
      */
     public function testShowWrongId(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.show');
+        $this->{$user}->givePermissionTo('attributes.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/attributes/id:its-not-uuid')
             ->assertNotFound();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/attributes/id:' . $this->attribute->getKey() . $this->attribute->getKey())
             ->assertNotFound();
     }
@@ -314,7 +314,7 @@ class AttributeTest extends TestCase
      */
     public function testShowMinMaxNumber(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.show');
+        $this->{$user}->givePermissionTo('attributes.show');
 
         /** @var Attribute $attribute */
         $attribute = Attribute::query()->create([
@@ -345,7 +345,7 @@ class AttributeTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/attributes/id:' . $attribute->getKey())
             ->assertOk()
             ->assertJsonFragment([
@@ -378,7 +378,7 @@ class AttributeTest extends TestCase
      */
     public function testShowMinMaxDate(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.show');
+        $this->{$user}->givePermissionTo('attributes.show');
 
         /** @var Attribute $attribute */
         $attribute = Attribute::query()->create([
@@ -409,7 +409,7 @@ class AttributeTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/attributes/id:' . $attribute->getKey())
             ->assertOk()
             ->assertJsonFragment([
@@ -442,10 +442,10 @@ class AttributeTest extends TestCase
      */
     public function testCreate(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.add');
+        $this->{$user}->givePermissionTo('attributes.add');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/attributes', $this->newAttribute)
             ->assertCreated()
             ->assertJsonStructure($this->expectedStructure)
@@ -464,12 +464,12 @@ class AttributeTest extends TestCase
      */
     public function testCreateWithUuid(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.add');
+        $this->{$user}->givePermissionTo('attributes.add');
 
         $uuid = Uuid::uuid4()->toString();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/attributes', $this->newAttribute + ['id' => $uuid])
             ->assertCreated()
             ->assertJsonStructure($this->expectedStructure)
@@ -489,11 +489,11 @@ class AttributeTest extends TestCase
      */
     public function testCreateWithMetadata(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.add');
+        $this->{$user}->givePermissionTo('attributes.add');
 
         $attribute = Attribute::factory()->make()->toArray();
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->postJson('/attributes', $attribute + [
                 'metadata' => [
                     'attributeMeta' => 'attributeValueOne',
@@ -525,7 +525,7 @@ class AttributeTest extends TestCase
      */
     public function testCreateSingleOptionAndOptionWithoutName(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.add');
+        $this->{$user}->givePermissionTo('attributes.add');
 
         $this->newAttribute['type'] = AttributeType::SINGLE_OPTION;
         unset($this->newAttribute['options']);
@@ -533,7 +533,7 @@ class AttributeTest extends TestCase
         $this->newAttribute['options'] = [$this->newOption];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/attributes', $this->newAttribute)
             ->assertUnprocessable();
     }
@@ -543,7 +543,7 @@ class AttributeTest extends TestCase
      */
     public function testCreateWithInvalidValueNumber(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.add');
+        $this->{$user}->givePermissionTo('attributes.add');
 
         $attribute = Attribute::factory()->make([
             'type' => AttributeType::SINGLE_OPTION,
@@ -555,7 +555,7 @@ class AttributeTest extends TestCase
         ];
 
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/attributes', $attribute->toArray());
 
         $response->assertUnprocessable();
@@ -566,12 +566,12 @@ class AttributeTest extends TestCase
      */
     public function testCreateIncompleteData(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.add');
+        $this->{$user}->givePermissionTo('attributes.add');
 
         unset($this->newAttribute['name']);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/attributes', $this->newAttribute)
             ->assertUnprocessable();
     }
@@ -582,7 +582,7 @@ class AttributeTest extends TestCase
     public function testCreateUnauthorized(string $user): void
     {
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/attributes', $this->newAttribute)
             ->assertForbidden();
     }
@@ -592,7 +592,7 @@ class AttributeTest extends TestCase
      */
     public function testUpdate(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.edit');
+        $this->{$user}->givePermissionTo('attributes.edit');
 
         $attributeUpdate = [
             'name' => 'Test ' . $this->attribute->name,
@@ -612,7 +612,7 @@ class AttributeTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
             ->assertOk()
             ->assertJsonStructure($this->expectedStructure)
@@ -631,7 +631,7 @@ class AttributeTest extends TestCase
      */
     public function testUpdateWithoutSlug(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.edit');
+        $this->{$user}->givePermissionTo('attributes.edit');
 
         $attributeUpdate = [
             'name' => 'Test ' . $this->attribute->name,
@@ -651,7 +651,7 @@ class AttributeTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
             ->assertOk()
             ->assertJsonStructure($this->expectedStructure)
@@ -670,14 +670,14 @@ class AttributeTest extends TestCase
      */
     public function testUpdateChangeType(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.edit');
+        $this->{$user}->givePermissionTo('attributes.edit');
 
         $attribute = Attribute::factory()->create([
             'type' => AttributeType::SINGLE_OPTION,
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->patchJson('/attributes/id:' . $attribute->getKey(), [
                 'type' => AttributeType::DATE,
             ])
@@ -689,14 +689,14 @@ class AttributeTest extends TestCase
      */
     public function testUpdateIncompleteData(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.edit');
+        $this->{$user}->givePermissionTo('attributes.edit');
 
         $attributeUpdate = [
             'name' => 'Test update attribute name',
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
             ->assertUnprocessable();
     }
@@ -706,7 +706,7 @@ class AttributeTest extends TestCase
      */
     public function testUpdateNotExistingAttribute(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.edit');
+        $this->{$user}->givePermissionTo('attributes.edit');
 
         Attribute::destroy($this->attribute->getKey());
 
@@ -715,7 +715,7 @@ class AttributeTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
             ->assertNotFound();
     }
@@ -743,7 +743,7 @@ class AttributeTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
             ->assertForbidden();
     }
@@ -753,10 +753,10 @@ class AttributeTest extends TestCase
      */
     public function testDelete(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.remove');
+        $this->{$user}->givePermissionTo('attributes.remove');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/attributes/id:' . $this->attribute->getKey())
             ->assertNoContent();
 
@@ -770,12 +770,12 @@ class AttributeTest extends TestCase
      */
     public function testDeleteNotExistingAttribute(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.remove');
+        $this->{$user}->givePermissionTo('attributes.remove');
 
         Attribute::destroy($this->attribute->getKey());
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/attributes/id:' . $this->attribute->getKey())
             ->assertNotFound();
     }
@@ -786,7 +786,7 @@ class AttributeTest extends TestCase
     public function testDeleteUnauthorized(string $user): void
     {
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/attributes/id:' . $this->attribute->getKey())
             ->assertForbidden();
     }
@@ -796,10 +796,10 @@ class AttributeTest extends TestCase
      */
     public function testIndexOptions(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.show');
+        $this->{$user}->givePermissionTo('attributes.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson("/attributes/id:{$this->attribute->getKey()}/options")
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -822,7 +822,7 @@ class AttributeTest extends TestCase
      */
     public function testIndexOptionsWithPagination(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.show');
+        $this->{$user}->givePermissionTo('attributes.show');
 
         AttributeOption::factory()
             ->count(20)
@@ -832,7 +832,7 @@ class AttributeTest extends TestCase
             ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', "/attributes/id:{$this->attribute->getKey()}/options", ['limit' => 10])
             ->assertOk()
             ->assertJsonCount(10, 'data')
@@ -848,15 +848,15 @@ class AttributeTest extends TestCase
      */
     public function testIndexOptionsWrongId(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.show');
+        $this->{$user}->givePermissionTo('attributes.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/attributes/id:its-not-uuid/options')
             ->assertNotFound();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson("/attributes/id:{$this->attribute->getKey()}{$this->attribute->getKey()}/options")
             ->assertNotFound();
     }
@@ -866,7 +866,7 @@ class AttributeTest extends TestCase
      */
     public function testIndexOptionsMetadata(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.show');
+        $this->{$user}->givePermissionTo('attributes.show');
 
         $option = AttributeOption::create(
             $this->newOption +
@@ -883,7 +883,7 @@ class AttributeTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson("/attributes/id:{$this->attribute->getKey()}/options?metadata[Dystrybucja]=Polska")
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -897,7 +897,7 @@ class AttributeTest extends TestCase
      */
     public function testIndexOptionsMetadataNotFound(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.show');
+        $this->{$user}->givePermissionTo('attributes.show');
 
         $option = AttributeOption::create(
             $this->newOption +
@@ -914,7 +914,7 @@ class AttributeTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson("/attributes/id:{$this->attribute->getKey()}/options?metadata[Dystrybucja]=Polska")
             ->assertOk()
             ->assertJsonCount(0, 'data');
@@ -925,7 +925,7 @@ class AttributeTest extends TestCase
      */
     public function testIndexOptionsMetadataPrivate(string $user): void
     {
-        $this->$user->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
+        $this->{$user}->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
 
         $option = AttributeOption::create(
             $this->newOption +
@@ -942,7 +942,7 @@ class AttributeTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson("/attributes/id:{$this->attribute->getKey()}/options?metadata[Dystrybucja]=Polska")
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -956,7 +956,7 @@ class AttributeTest extends TestCase
      */
     public function testIndexOptionsMetadataPrivateNotFound(string $user): void
     {
-        $this->$user->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
+        $this->{$user}->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
 
         $option = AttributeOption::create(
             $this->newOption +
@@ -973,7 +973,7 @@ class AttributeTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson("/attributes/id:{$this->attribute->getKey()}/options?metadata[Dystrybucja]=Polska")
             ->assertOk()
             ->assertJsonCount(0, 'data');
@@ -984,10 +984,10 @@ class AttributeTest extends TestCase
      */
     public function testAddOption(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.edit');
+        $this->{$user}->givePermissionTo('attributes.edit');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption)
             ->assertCreated()
             ->assertJsonFragment($this->newOption);
@@ -1000,12 +1000,12 @@ class AttributeTest extends TestCase
      */
     public function testAddOptionWithUuid(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.edit');
+        $this->{$user}->givePermissionTo('attributes.edit');
 
         $uuid = Uuid::uuid4()->toString();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption + [
                 'id' => $uuid,
             ])
@@ -1022,9 +1022,9 @@ class AttributeTest extends TestCase
      */
     public function testAddOptionWithMetadata(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.edit');
+        $this->{$user}->givePermissionTo('attributes.edit');
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption + [
                 'metadata' => [
                     'optionMeta' => 'testValue',
@@ -1047,7 +1047,7 @@ class AttributeTest extends TestCase
      */
     public function testAddOptionNumberWithoutName(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.edit');
+        $this->{$user}->givePermissionTo('attributes.edit');
 
         $attribute = Attribute::factory([
             'type' => AttributeType::NUMBER,
@@ -1055,7 +1055,7 @@ class AttributeTest extends TestCase
         unset($this->newOption['name']);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/attributes/id:' . $attribute->getKey() . '/options', $this->newOption)
             ->assertCreated()
             ->assertJsonFragment($this->newOption);
@@ -1068,7 +1068,7 @@ class AttributeTest extends TestCase
      */
     public function testAddOptionIncompleteData(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.edit');
+        $this->{$user}->givePermissionTo('attributes.edit');
 
         $attribute = Attribute::factory([
             'type' => AttributeType::SINGLE_OPTION,
@@ -1076,7 +1076,7 @@ class AttributeTest extends TestCase
         unset($this->newOption['name']);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/attributes/id:' . $attribute->getKey() . '/options', $this->newOption)
             ->assertUnprocessable();
     }
@@ -1086,12 +1086,12 @@ class AttributeTest extends TestCase
      */
     public function testAddOptionToDeletedAttribute(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.edit');
+        $this->{$user}->givePermissionTo('attributes.edit');
 
         Attribute::destroy($this->attribute->getKey());
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption)
             ->assertNotFound();
     }
@@ -1102,7 +1102,7 @@ class AttributeTest extends TestCase
     public function testAddOptionUnauthorized(string $user): void
     {
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption)
             ->assertForbidden();
     }
@@ -1112,7 +1112,7 @@ class AttributeTest extends TestCase
      */
     public function testUpdateOption(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.edit');
+        $this->{$user}->givePermissionTo('attributes.edit');
 
         $optionUpdate = [
             'id' => $this->option->id,
@@ -1123,7 +1123,7 @@ class AttributeTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'PATCH',
                 '/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey(),
@@ -1138,7 +1138,7 @@ class AttributeTest extends TestCase
      */
     public function testUpdateOptionWithoutId(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.edit');
+        $this->{$user}->givePermissionTo('attributes.edit');
 
         $optionUpdate = [
             'name' => 'Test ' . $this->option->name,
@@ -1148,7 +1148,7 @@ class AttributeTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'PATCH',
                 '/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey(),
@@ -1163,7 +1163,7 @@ class AttributeTest extends TestCase
      */
     public function testUpdateOptionIncompleteData(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.edit');
+        $this->{$user}->givePermissionTo('attributes.edit');
 
         $attribute = Attribute::factory([
             'type' => AttributeType::SINGLE_OPTION,
@@ -1181,7 +1181,7 @@ class AttributeTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'PATCH',
                 '/attributes/id:' . $attribute->getKey() . '/options/id:' . $option->getKey(),
@@ -1195,7 +1195,7 @@ class AttributeTest extends TestCase
      */
     public function testUpdateOptionNotExisting(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.edit');
+        $this->{$user}->givePermissionTo('attributes.edit');
 
         $optionUpdate = [
             'id' => $this->option->id,
@@ -1208,7 +1208,7 @@ class AttributeTest extends TestCase
         $this->option->delete();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'PATCH',
                 '/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey(),
@@ -1222,7 +1222,7 @@ class AttributeTest extends TestCase
      */
     public function testUpdateOptionNotRelatedOption(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.edit');
+        $this->{$user}->givePermissionTo('attributes.edit');
 
         $attribute = Attribute::factory()->create();
 
@@ -1235,7 +1235,7 @@ class AttributeTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'PATCH',
                 '/attributes/id:' . $attribute->getKey() . '/options/id:' . $this->option->getKey(),
@@ -1258,7 +1258,7 @@ class AttributeTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->patchJson(
                 '/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey(),
                 $optionUpdate
@@ -1271,10 +1271,10 @@ class AttributeTest extends TestCase
      */
     public function testDeleteOption(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.edit');
+        $this->{$user}->givePermissionTo('attributes.edit');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey())
             ->assertNoContent();
 
@@ -1286,12 +1286,12 @@ class AttributeTest extends TestCase
      */
     public function testDeleteOptionNotExisting(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.edit');
+        $this->{$user}->givePermissionTo('attributes.edit');
 
         $this->option->delete();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey())
             ->assertNotFound();
     }
@@ -1301,12 +1301,12 @@ class AttributeTest extends TestCase
      */
     public function testDeleteOptionNotRelatedOption(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.edit');
+        $this->{$user}->givePermissionTo('attributes.edit');
 
         $attribute = Attribute::factory()->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/attributes/id:' . $attribute->getKey() . '/options/id:' . $this->option->getKey())
             ->assertNotFound();
     }
@@ -1317,7 +1317,7 @@ class AttributeTest extends TestCase
     public function testDeleteOptionUnauthorized(string $user): void
     {
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey())
             ->assertForbidden();
     }
@@ -1327,10 +1327,10 @@ class AttributeTest extends TestCase
      */
     public function testIncrementIndex(string $user): void
     {
-        $this->$user->givePermissionTo(['attributes.show', 'attributes.edit', 'attributes.add']);
+        $this->{$user}->givePermissionTo(['attributes.show', 'attributes.edit', 'attributes.add']);
 
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/attributes', $this->newAttribute)
             ->assertCreated()
             ->assertJsonStructure($this->expectedStructure)
@@ -1363,13 +1363,13 @@ class AttributeTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/attributes/id:' . $response['data']['id'] . '/options', $this->newOption)
             ->assertCreated()
             ->assertJsonFragment(['index' => 3] + $this->newOption);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/attributes/id:' . $response['data']['id'])
             ->assertOk()
             ->assertJsonFragment([
@@ -1398,7 +1398,7 @@ class AttributeTest extends TestCase
      */
     public function testUpdateMinMaxNumberOnUpdateOption(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.show');
+        $this->{$user}->givePermissionTo('attributes.show');
 
         $attribute = Attribute::factory([
             'type' => AttributeType::NUMBER,
@@ -1420,7 +1420,7 @@ class AttributeTest extends TestCase
         $option2->update(['value_number' => 190]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/attributes/id:' . $attribute->getKey())
             ->assertOk()
             ->assertJsonFragment([
@@ -1434,7 +1434,7 @@ class AttributeTest extends TestCase
      */
     public function testUpdateMinMaxNumberOnDeleteOption(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.show');
+        $this->{$user}->givePermissionTo('attributes.show');
 
         $attribute = Attribute::factory([
             'type' => AttributeType::NUMBER,
@@ -1455,7 +1455,7 @@ class AttributeTest extends TestCase
         $option2->delete();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/attributes/id:' . $attribute->getKey())
             ->assertOk()
             ->assertJsonFragment([
@@ -1469,7 +1469,7 @@ class AttributeTest extends TestCase
      */
     public function testUpdateMinMaxDateOnUpdateOption(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.show');
+        $this->{$user}->givePermissionTo('attributes.show');
 
         $attribute = Attribute::factory([
             'type' => AttributeType::DATE,
@@ -1491,7 +1491,7 @@ class AttributeTest extends TestCase
         $option2->update(['value_date' => '2019-01-01']);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/attributes/id:' . $attribute->getKey())
             ->assertOk()
             ->assertJsonFragment([
@@ -1505,7 +1505,7 @@ class AttributeTest extends TestCase
      */
     public function testUpdateMinMaxDateOnDeleteOption(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.show');
+        $this->{$user}->givePermissionTo('attributes.show');
 
         $attribute = Attribute::factory([
             'type' => AttributeType::DATE,
@@ -1526,7 +1526,7 @@ class AttributeTest extends TestCase
         $option2->delete();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/attributes/id:' . $attribute->getKey())
             ->assertOk()
             ->assertJsonFragment([
@@ -1540,7 +1540,7 @@ class AttributeTest extends TestCase
      */
     public function testIndexAttributeOptionPrivateMetadata(string $user): void
     {
-        $this->$user->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
+        $this->{$user}->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
 
         unset($this->newAttribute['options']);
 
@@ -1571,7 +1571,7 @@ class AttributeTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/attributes/id:' . $attribute->getKey() . '/options?metadata_private[qwe]=asd')
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -1583,7 +1583,7 @@ class AttributeTest extends TestCase
      */
     public function testIndexAttributeHasOnlyItsOwnOptions(string $user): void
     {
-        $this->$user->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
+        $this->{$user}->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
 
         $attributeOne = Attribute::query()->create([
             'name' => 'testone',
@@ -1612,7 +1612,7 @@ class AttributeTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/attributes/id:' . $attributeOne->getKey() . '/options')
             ->assertJsonCount(1, 'data')
             ->assertJson([
@@ -1633,7 +1633,7 @@ class AttributeTest extends TestCase
      */
     public function testIndexAttributeOptionName(string $user): void
     {
-        $this->$user->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
+        $this->{$user}->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
 
         unset($this->newAttribute['options']);
         /** @var Attribute $attribute */
@@ -1651,7 +1651,7 @@ class AttributeTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/attributes/id:' . $attribute->getKey() . '/options', ['name' => 'Searched name'])
             ->assertOk()
             ->assertJsonCount(1, 'data')

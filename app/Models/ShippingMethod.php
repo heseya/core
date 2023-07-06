@@ -23,11 +23,11 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class ShippingMethod extends Model implements AuditableContract
 {
-    use HasFactory;
     use Auditable;
     use HasCriteria;
-    use HasMetadata;
     use HasDiscounts;
+    use HasFactory;
+    use HasMetadata;
 
     /**
      * The attributes that are mass assignable.

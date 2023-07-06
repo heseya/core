@@ -95,7 +95,7 @@ class MetadataService implements MetadataServiceContract
 
     private function processMetadata(Model|Role $model, MetadataDto|MetadataPersonalDto $dto, string $relation): void
     {
-        $query = $model->$relation();
+        $query = $model->{$relation}();
 
         if ($dto->getValue() === null) {
             $query->where('name', $dto->getName())->delete();

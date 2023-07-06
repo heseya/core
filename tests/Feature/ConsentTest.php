@@ -31,7 +31,7 @@ class ConsentTest extends TestCase
     {
         Consent::factory()->count(10)->create();
 
-        $response = $this->actingAs($this->$user)->json('get', '/consents');
+        $response = $this->actingAs($this->{$user})->json('get', '/consents');
 
         $response->assertForbidden();
     }
@@ -41,11 +41,11 @@ class ConsentTest extends TestCase
      */
     public function testIndex($user): void
     {
-        $this->$user->givePermissionTo('consents.show');
+        $this->{$user}->givePermissionTo('consents.show');
 
         Consent::factory()->count(10)->create();
 
-        $response = $this->actingAs($this->$user)->json('get', '/consents');
+        $response = $this->actingAs($this->{$user})->json('get', '/consents');
 
         $response->assertOk();
         $response->assertJsonCount(12, 'data');
@@ -56,12 +56,12 @@ class ConsentTest extends TestCase
      */
     public function testShow($user): void
     {
-        $this->$user->givePermissionTo('consents.show_details');
+        $this->{$user}->givePermissionTo('consents.show_details');
 
         Consent::factory()->count(10)->create();
         $consent = Consent::factory()->create();
 
-        $response = $this->actingAs($this->$user)->json('get', '/consents/id:' . $consent->getKey());
+        $response = $this->actingAs($this->{$user})->json('get', '/consents/id:' . $consent->getKey());
 
         $response
             ->assertOk()
@@ -82,7 +82,7 @@ class ConsentTest extends TestCase
         Consent::factory()->count(10)->create();
         $consent = Consent::factory()->create();
 
-        $response = $this->actingAs($this->$user)->json('get', '/consents/id:' . $consent->getKey());
+        $response = $this->actingAs($this->{$user})->json('get', '/consents/id:' . $consent->getKey());
 
         $response->assertForbidden();
     }
@@ -94,7 +94,7 @@ class ConsentTest extends TestCase
     {
         $consent = Consent::factory()->make();
 
-        $response = $this->actingAs($this->$user)->json('post', '/consents', $consent->toArray());
+        $response = $this->actingAs($this->{$user})->json('post', '/consents', $consent->toArray());
 
         $response->assertForbidden();
     }
@@ -104,11 +104,11 @@ class ConsentTest extends TestCase
      */
     public function testStore($user): void
     {
-        $this->$user->givePermissionTo('consents.add');
+        $this->{$user}->givePermissionTo('consents.add');
 
         $consent = Consent::factory()->make();
 
-        $response = $this->actingAs($this->$user)->json('post', '/consents', $consent->toArray());
+        $response = $this->actingAs($this->{$user})->json('post', '/consents', $consent->toArray());
 
         $response->assertCreated();
         $response->assertJsonFragment($consent->toArray());
@@ -126,7 +126,7 @@ class ConsentTest extends TestCase
     {
         $consent = Consent::factory()->make();
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->json('patch', '/consents/id:' . $this->consent->getKey(), $consent->toArray());
 
         $response->assertForbidden();
@@ -137,11 +137,11 @@ class ConsentTest extends TestCase
      */
     public function testFullUpdate($user): void
     {
-        $this->$user->givePermissionTo('consents.edit');
+        $this->{$user}->givePermissionTo('consents.edit');
 
         $consent = Consent::factory()->make();
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->json('patch', '/consents/id:' . $this->consent->getKey(), $consent->toArray());
 
         $response->assertOk();
@@ -156,11 +156,11 @@ class ConsentTest extends TestCase
      */
     public function testUpdate($user): void
     {
-        $this->$user->givePermissionTo('consents.edit');
+        $this->{$user}->givePermissionTo('consents.edit');
 
         $data = ['name' => 'updated'];
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->json('patch', '/consents/id:' . $this->consent->getKey(), $data);
 
         $response->assertOk();
@@ -183,7 +183,7 @@ class ConsentTest extends TestCase
      */
     public function testDeleteUnauthorized($user): void
     {
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->json('delete', '/consents/id:' . $this->consent->getKey());
 
         $response->assertForbidden();
@@ -194,9 +194,9 @@ class ConsentTest extends TestCase
      */
     public function testDelete($user): void
     {
-        $this->$user->givePermissionTo('consents.remove');
+        $this->{$user}->givePermissionTo('consents.remove');
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->json('delete', '/consents/id:' . $this->consent->getKey());
 
         $response->assertStatus(204);

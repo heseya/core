@@ -58,7 +58,7 @@ class ProductSetIndexTest extends TestCase
      */
     public function testIndexSetsShow($user): void
     {
-        $this->$user->givePermissionTo('product_sets.show');
+        $this->{$user}->givePermissionTo('product_sets.show');
 
         $this->index($user);
     }
@@ -68,9 +68,9 @@ class ProductSetIndexTest extends TestCase
      */
     public function index($user): void
     {
-        $this->$user->givePermissionTo('product_sets.show');
+        $this->{$user}->givePermissionTo('product_sets.show');
 
-        $response = $this->actingAs($this->$user)->getJson('/product-sets');
+        $response = $this->actingAs($this->{$user})->getJson('/product-sets');
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data') // Should show only public sets.
@@ -106,9 +106,9 @@ class ProductSetIndexTest extends TestCase
      */
     public function testIndexByIds($user): void
     {
-        $this->$user->givePermissionTo('product_sets.show');
+        $this->{$user}->givePermissionTo('product_sets.show');
 
-        $response = $this->actingAs($this->$user)->json('GET', '/product-sets', [
+        $response = $this->actingAs($this->{$user})->json('GET', '/product-sets', [
             'ids' => [
                 $this->set->getKey(),
             ],
@@ -138,9 +138,9 @@ class ProductSetIndexTest extends TestCase
      */
     public function testIndexParentIdEmpty($user): void
     {
-        $this->$user->givePermissionTo('product_sets.show');
+        $this->{$user}->givePermissionTo('product_sets.show');
 
-        $response = $this->actingAs($this->$user)->getJson('/product-sets?parent_id=');
+        $response = $this->actingAs($this->{$user})->getJson('/product-sets?parent_id=');
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public sets.
@@ -218,7 +218,7 @@ class ProductSetIndexTest extends TestCase
      */
     public function testIndexProductsAdd($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
         $this->index($user);
     }
@@ -228,7 +228,7 @@ class ProductSetIndexTest extends TestCase
      */
     public function testIndexSetsProductsEdit($user): void
     {
-        $this->$user->givePermissionTo('products.edit');
+        $this->{$user}->givePermissionTo('products.edit');
 
         $this->index($user);
     }
@@ -238,9 +238,9 @@ class ProductSetIndexTest extends TestCase
      */
     public function testIndexHidden($user): void
     {
-        $this->$user->givePermissionTo(['product_sets.show', 'product_sets.show_hidden']);
+        $this->{$user}->givePermissionTo(['product_sets.show', 'product_sets.show_hidden']);
 
-        $response = $this->actingAs($this->$user)->getJson('/product-sets');
+        $response = $this->actingAs($this->{$user})->getJson('/product-sets');
         $response
             ->assertOk()
             ->assertJsonCount(4, 'data') // Should show only public sets.
@@ -298,9 +298,9 @@ class ProductSetIndexTest extends TestCase
      */
     public function testIndexRoot($user): void
     {
-        $this->$user->givePermissionTo('product_sets.show');
+        $this->{$user}->givePermissionTo('product_sets.show');
 
-        $response = $this->actingAs($this->$user)->json('GET', '/product-sets', ['root' => true]);
+        $response = $this->actingAs($this->{$user})->json('GET', '/product-sets', ['root' => true]);
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public sets.
@@ -326,9 +326,9 @@ class ProductSetIndexTest extends TestCase
      */
     public function testIndexRootHidden($user): void
     {
-        $this->$user->givePermissionTo(['product_sets.show', 'product_sets.show_hidden']);
+        $this->{$user}->givePermissionTo(['product_sets.show', 'product_sets.show_hidden']);
 
-        $response = $this->actingAs($this->$user)->json('GET', '/product-sets', ['root' => true]);
+        $response = $this->actingAs($this->{$user})->json('GET', '/product-sets', ['root' => true]);
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data') // Should show only public sets.
@@ -364,9 +364,9 @@ class ProductSetIndexTest extends TestCase
      */
     public function testIndexTree($user): void
     {
-        $this->$user->givePermissionTo('product_sets.show');
+        $this->{$user}->givePermissionTo('product_sets.show');
 
-        $response = $this->actingAs($this->$user)->json('GET', '/product-sets', ['tree' => true]);
+        $response = $this->actingAs($this->{$user})->json('GET', '/product-sets', ['tree' => true]);
 
         $response
             ->assertOk()
@@ -414,14 +414,14 @@ class ProductSetIndexTest extends TestCase
      */
     public function testIndexTreeFilterByNameAll($user): void
     {
-        $this->$user->givePermissionTo('product_sets.show');
+        $this->{$user}->givePermissionTo('product_sets.show');
 
         $sets = $this->prepareProductSets();
 
         /** @var ProductSet $set */
         $set = $sets->get('setTwo');
 
-        $response = $this->actingAs($this->$user)->json('GET', '/product-sets', [
+        $response = $this->actingAs($this->{$user})->json('GET', '/product-sets', [
             'name' => $set->name,
         ]);
 
@@ -450,14 +450,14 @@ class ProductSetIndexTest extends TestCase
      */
     public function testIndexTreeFilterByNameTree($user): void
     {
-        $this->$user->givePermissionTo('product_sets.show');
+        $this->{$user}->givePermissionTo('product_sets.show');
 
         $sets = $this->prepareProductSets();
 
         /** @var ProductSet $set */
         $set = $sets->get('setTwo');
 
-        $response = $this->actingAs($this->$user)->json('GET', '/product-sets', [
+        $response = $this->actingAs($this->{$user})->json('GET', '/product-sets', [
             'tree' => true,
             'name' => $set->name,
         ]);
@@ -498,14 +498,14 @@ class ProductSetIndexTest extends TestCase
      */
     public function testIndexTreeFilterByNameTreeAndRoot($user): void
     {
-        $this->$user->givePermissionTo('product_sets.show');
+        $this->{$user}->givePermissionTo('product_sets.show');
 
         $sets = $this->prepareProductSets();
 
         /** @var ProductSet $set */
         $set = $sets->get('setTwo');
 
-        $response = $this->actingAs($this->$user)->json('GET', '/product-sets', [
+        $response = $this->actingAs($this->{$user})->json('GET', '/product-sets', [
             'tree' => true,
             'root' => true,
             'name' => $set->name,
@@ -521,14 +521,14 @@ class ProductSetIndexTest extends TestCase
      */
     public function testIndexTreeFilterByNameTreeAndRootMissing($user): void
     {
-        $this->$user->givePermissionTo('product_sets.show');
+        $this->{$user}->givePermissionTo('product_sets.show');
 
         $sets = $this->prepareProductSets();
 
         /** @var ProductSet $set */
         $set = $sets->get('setOne');
 
-        $response = $this->actingAs($this->$user)->json('GET', '/product-sets', [
+        $response = $this->actingAs($this->{$user})->json('GET', '/product-sets', [
             'tree' => true,
             'root' => true,
             'name' => $set->name,
@@ -561,10 +561,10 @@ class ProductSetIndexTest extends TestCase
      */
     public function testIndexTreeHidden($user): void
     {
-        $this->$user->givePermissionTo(['product_sets.show', 'product_sets.show_hidden']);
+        $this->{$user}->givePermissionTo(['product_sets.show', 'product_sets.show_hidden']);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/product-sets', ['tree' => true])
             ->assertOk()
             ->assertJsonCount(4, 'data') // Should show only public sets.
@@ -652,7 +652,7 @@ class ProductSetIndexTest extends TestCase
      */
     public function testSearchByParentId($user): void
     {
-        $this->$user->givePermissionTo('product_sets.show');
+        $this->{$user}->givePermissionTo('product_sets.show');
 
         $parent = ProductSet::factory()->create([
             'public' => true,
@@ -664,7 +664,7 @@ class ProductSetIndexTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/product-sets', ['parent_id' => $parent->getKey()])
             ->assertOk()
             ->assertJsonCount(1, 'data')

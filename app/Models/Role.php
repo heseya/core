@@ -31,12 +31,12 @@ use Spatie\Permission\PermissionRegistrar;
  */
 class Role extends SpatieRole implements AuditableContract
 {
-    use HasCriteria;
-    use HasUuid;
-    use HasFactory;
     use Auditable;
-    use HasMetadata;
+    use HasCriteria;
     use HasDiscountConditions;
+    use HasFactory;
+    use HasMetadata;
+    use HasUuid;
 
     protected $fillable = [
         'name',

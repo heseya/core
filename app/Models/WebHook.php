@@ -21,12 +21,12 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class WebHook extends Model implements AuditableContract, SortableContract
 {
-    use HasFactory;
-    use SoftDeletes;
-    use HasCriteria;
-    use Sortable;
     use Auditable;
+    use HasCriteria;
+    use HasFactory;
     use Notifiable;
+    use SoftDeletes;
+    use Sortable;
 
     protected $fillable = [
         'name',
