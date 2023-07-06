@@ -13,12 +13,12 @@ class AttributeReorderTest extends TestCase
      */
     public function testReorder(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.edit');
+        $this->{$user}->givePermissionTo('attributes.edit');
 
         $attributes = Attribute::factory()->count(3)->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/attributes/reorder', [
                 'ids' => $attributes->pluck('id')->toArray(),
             ])
@@ -43,7 +43,7 @@ class AttributeReorderTest extends TestCase
      */
     public function testReorderOptions(string $user): void
     {
-        $this->$user->givePermissionTo('attributes.edit');
+        $this->{$user}->givePermissionTo('attributes.edit');
 
         $attribute = Attribute::factory()->create();
         $options = AttributeOption::factory()->count(3)->create([
@@ -52,7 +52,7 @@ class AttributeReorderTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', "/attributes/id:{$attribute->getKey()}/reorder", [
                 'ids' => $options->pluck('id')->toArray(),
             ])
