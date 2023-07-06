@@ -304,10 +304,14 @@ paths:
     $ref: './paths/WebHooks.yml#/WebhooksParams'
   '/attributes':
     $ref: './paths/Attributes.yml#/Attributes'
+  '/attributes/reorder':
+    $ref: './paths/Attributes.yml#/AttributesReorder'
   '/attributes/id:{id}':
     $ref: './paths/Attributes.yml#/AttributesParams'
   '/attributes/id:{id}/options':
     $ref: './paths/Attributes.yml#/AttributeOption'
+  '/attributes/id:{id}/reorder':
+    $ref: './paths/Attributes.yml#/AttributeOptionReorder'
   '/attributes/id:{attribute_id}/options/id:{option_id}':
     $ref: './paths/Attributes.yml#/AttributeOptionParams'
   '/consents':
