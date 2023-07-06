@@ -86,7 +86,7 @@ class PaymentTest extends TestCase
      */
     public function testPayuUrl($user): void
     {
-        $this->$user->givePermissionTo('payments.add');
+        $this->{$user}->givePermissionTo('payments.add');
 
         Http::fakeSequence()
             ->push([
@@ -102,7 +102,7 @@ class PaymentTest extends TestCase
 
         $code = $this->order->code;
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', "/orders/{$code}/pay/id:" . $this->paymentMethod->getKey(), [
                 'continue_url' => 'continue_url',
             ]);
@@ -126,11 +126,11 @@ class PaymentTest extends TestCase
      */
     public function testNotAvailablePaymentMethod($user): void
     {
-        $this->$user->givePermissionTo('payments.add');
+        $this->{$user}->givePermissionTo('payments.add');
 
         $code = $this->order->code;
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson("/orders/{$code}/pay/id:026eda8b-8acf-40e4-8764-d44aa8b8db7a", [
                 'continue_url' => 'continue_url',
             ])
@@ -142,7 +142,7 @@ class PaymentTest extends TestCase
      */
     public function testNotAvailablePaymentMethodDigital($user): void
     {
-        $this->$user->givePermissionTo('payments.add');
+        $this->{$user}->givePermissionTo('payments.add');
 
         $paymentMethod = PaymentMethod::factory()->create([
             'public' => true,
@@ -159,7 +159,7 @@ class PaymentTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/orders/' . $this->order->code . '/pay/id:' . $paymentMethod->getKey(), [
                 'continue_url' => 'continue_url',
             ])
@@ -174,7 +174,7 @@ class PaymentTest extends TestCase
      */
     public function testPaymentMethodDigital($user): void
     {
-        $this->$user->givePermissionTo('payments.add');
+        $this->{$user}->givePermissionTo('payments.add');
 
         Http::fakeSequence()
             ->push([
@@ -204,7 +204,7 @@ class PaymentTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson("/orders/{$code}/pay/id:" . $paymentMethod->getKey(), [
                 'continue_url' => 'continue_url',
             ])
@@ -247,7 +247,7 @@ class PaymentTest extends TestCase
     {
         Event::fake(OrderUpdatedPaid::class);
 
-        $this->$user->givePermissionTo('payments.edit');
+        $this->{$user}->givePermissionTo('payments.edit');
 
         $payment = Payment::factory()->make([
             'status' => PaymentStatus::PENDING,
@@ -263,7 +263,7 @@ class PaymentTest extends TestCase
         ];
         $signature = md5(json_encode($body) . Config::get('payu.second_key'));
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->postJson('/payments/payu', $body, [
                 'OpenPayu-Signature' => "signature={$signature};algorithm=MD5",
             ]);
@@ -283,7 +283,7 @@ class PaymentTest extends TestCase
     public function testOfflinePaymentUnauthorized($user): void
     {
         $code = $this->order->code;
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->postJson("/orders/{$code}/pay/offline");
 
         $response->assertForbidden();
@@ -296,10 +296,10 @@ class PaymentTest extends TestCase
     {
         Event::fake(OrderUpdatedPaid::class);
 
-        $this->$user->givePermissionTo('payments.offline');
+        $this->{$user}->givePermissionTo('payments.offline');
 
         $code = $this->order->code;
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->postJson("/orders/{$code}/pay/offline");
 
         $payment = Payment::find($response->getData()->data->id);
@@ -338,10 +338,10 @@ class PaymentTest extends TestCase
      */
     public function testPaymentHasDate($user): void
     {
-        $this->$user->givePermissionTo('payments.offline');
+        $this->{$user}->givePermissionTo('payments.offline');
 
         $code = $this->order->code;
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->postJson("/orders/{$code}/pay/offline");
 
         $response
@@ -356,7 +356,7 @@ class PaymentTest extends TestCase
      */
     public function testOfflinePaymentOverpaid($user): void
     {
-        $this->$user->givePermissionTo('payments.offline');
+        $this->{$user}->givePermissionTo('payments.offline');
 
         $amount = $this->order->summary - 1;
 
@@ -367,7 +367,7 @@ class PaymentTest extends TestCase
         ]);
 
         $code = $this->order->code;
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->postJson("/orders/{$code}/pay/offline");
 
         $payment = Payment::find($response->getData()->data->id);
@@ -404,13 +404,13 @@ class PaymentTest extends TestCase
      */
     public function testIndex($user): void
     {
-        $this->$user->givePermissionTo('payments.show');
+        $this->{$user}->givePermissionTo('payments.show');
 
         Payment::factory()->count(10)->create([
             'order_id' => $this->order->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)->json('GET', '/payments');
+        $response = $this->actingAs($this->{$user})->json('GET', '/payments');
 
         $response->assertJsonCount(10, 'data');
     }
@@ -420,13 +420,13 @@ class PaymentTest extends TestCase
      */
     public function testShow($user): void
     {
-        $this->$user->givePermissionTo('payments.show_details');
+        $this->{$user}->givePermissionTo('payments.show_details');
 
         $payment = Payment::factory()->create([
             'order_id' => $this->order->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)->json('GET', '/payments/id:' . $payment->getKey());
+        $response = $this->actingAs($this->{$user})->json('GET', '/payments/id:' . $payment->getKey());
 
         $response->assertJson(['data' => [
             'id' => $payment->getKey(),

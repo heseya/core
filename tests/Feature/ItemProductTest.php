@@ -26,8 +26,8 @@ class ItemProductTest extends TestCase
      */
     public function testStoreProductWithItems($user): void
     {
-        $this->$user->givePermissionTo('products.add');
-        $response = $this->actingAs($this->$user)->postJson('/products', [
+        $this->{$user}->givePermissionTo('products.add');
+        $response = $this->actingAs($this->{$user})->postJson('/products', [
             'name' => 'test',
             'slug' => 'test',
             'price' => 50,
@@ -54,9 +54,9 @@ class ItemProductTest extends TestCase
      */
     public function testProductItemsCannotSetRequiredQuantityBelowZero($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/products', [
                 'name' => 'test',
                 'slug' => 'test',
@@ -78,8 +78,8 @@ class ItemProductTest extends TestCase
      */
     public function testUpdateProductWithItems($user): void
     {
-        $this->$user->givePermissionTo('products.edit');
-        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
+        $this->{$user}->givePermissionTo('products.edit');
+        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
             'price' => 50,
@@ -105,8 +105,8 @@ class ItemProductTest extends TestCase
      */
     public function testUpdateProductWithoutItems($user): void
     {
-        $this->$user->givePermissionTo('products.edit');
-        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
+        $this->{$user}->givePermissionTo('products.edit');
+        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
             'price' => 50,
@@ -122,8 +122,8 @@ class ItemProductTest extends TestCase
      */
     public function testUpdateProductWithEmptyItems($user): void
     {
-        $this->$user->givePermissionTo('products.edit');
-        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
+        $this->{$user}->givePermissionTo('products.edit');
+        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
             'price' => 50,
@@ -144,8 +144,8 @@ class ItemProductTest extends TestCase
         $this->product->items()->attach($this->items->get(0)->getKey(), ['required_quantity' => 5]);
         $this->product->items()->attach($this->items->get(1)->getKey(), ['required_quantity' => 15]);
 
-        $this->$user->givePermissionTo('products.edit');
-        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
+        $this->{$user}->givePermissionTo('products.edit');
+        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
             'price' => 50,
@@ -179,8 +179,8 @@ class ItemProductTest extends TestCase
         $this->product->items()->attach($this->items->get(0)->getKey(), ['required_quantity' => 5]);
         $this->product->items()->attach($this->items->get(1)->getKey(), ['required_quantity' => 15]);
 
-        $this->$user->givePermissionTo('products.edit');
-        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
+        $this->{$user}->givePermissionTo('products.edit');
+        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
             'price' => 50,
@@ -214,9 +214,9 @@ class ItemProductTest extends TestCase
         $this->product->items()->attach($this->items->get(0)->getKey(), ['required_quantity' => 5]);
         $this->product->items()->attach($this->items->get(1)->getKey(), ['required_quantity' => 15]);
 
-        $this->$user->givePermissionTo('products.edit');
+        $this->{$user}->givePermissionTo('products.edit');
 
-        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
             'price' => 50,
@@ -246,12 +246,12 @@ class ItemProductTest extends TestCase
      */
     public function testProductItemsHasRequiredQuantityInsteadOfQuantity($user): void
     {
-        $this->$user->givePermissionTo('products.edit');
+        $this->{$user}->givePermissionTo('products.edit');
 
         $this->product->items()->attach($this->items->get(0)->getKey(), ['required_quantity' => 5]);
         $this->product->items()->attach($this->items->get(1)->getKey(), ['required_quantity' => 15]);
 
-        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
             'price' => 50,

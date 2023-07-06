@@ -36,13 +36,13 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Order extends Model implements AuditableContract, SortableContract
 {
-    use HasFactory;
-    use HasCriteria;
-    use Sortable;
-    use Notifiable;
     use Auditable;
+    use HasCriteria;
+    use HasFactory;
     use HasMetadata;
     use HasOrderDiscount;
+    use Notifiable;
+    use Sortable;
 
     protected $fillable = [
         'code',

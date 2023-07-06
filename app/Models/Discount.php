@@ -32,12 +32,12 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Discount extends Model implements AuditableContract
 {
-    use HasFactory;
-    use HasCriteria;
-    use SoftDeletes;
     use Auditable;
+    use HasCriteria;
+    use HasFactory;
     use HasMetadata;
     use HasSeoMetadata;
+    use SoftDeletes;
 
     protected $fillable = [
         'name',

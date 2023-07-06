@@ -16,10 +16,10 @@ class MetadataFormsTest extends TestCase
      */
     public function testProductCreate($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/products', [
                 'name' => 'Test',
                 'slug' => 'test',
@@ -98,12 +98,12 @@ class MetadataFormsTest extends TestCase
      */
     public function testCreateMinimal($user): void
     {
-        $this->$user->givePermissionTo('product_sets.add');
+        $this->{$user}->givePermissionTo('product_sets.add');
 
         Event::fake([ProductSetCreated::class]);
 
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/product-sets', [
                 'name' => 'Test',
                 'slug_suffix' => 'test',

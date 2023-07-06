@@ -59,10 +59,10 @@ class ItemTest extends TestCase
      */
     public function testIndex($user): void
     {
-        $this->$user->givePermissionTo('items.show');
+        $this->{$user}->givePermissionTo('items.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/items')
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -79,12 +79,12 @@ class ItemTest extends TestCase
      */
     public function testIndexByIds($user): void
     {
-        $this->$user->givePermissionTo('items.show');
+        $this->{$user}->givePermissionTo('items.show');
 
         Item::factory()->count(10)->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/items', [
                 'ids' => [
                     $this->item->getKey(),
@@ -103,12 +103,12 @@ class ItemTest extends TestCase
      */
     public function testIndexPerformance($user): void
     {
-        $this->$user->givePermissionTo('items.show');
+        $this->{$user}->givePermissionTo('items.show');
 
         Item::factory()->count(499)->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/items?limit=500')
             ->assertOk()
             ->assertJsonCount(500, 'data');
@@ -121,7 +121,7 @@ class ItemTest extends TestCase
      */
     public function testIndexFilterByAvailable($user): void
     {
-        $this->$user->givePermissionTo('items.show');
+        $this->{$user}->givePermissionTo('items.show');
 
         Deposit::factory([
             'quantity' => 10,
@@ -134,7 +134,7 @@ class ItemTest extends TestCase
         $item_sold_out = Item::factory()->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/items', ['sold_out' => 0])
             ->assertOk()
             ->assertJsonMissing(['id' => $item_sold_out->getKey()])
@@ -157,7 +157,7 @@ class ItemTest extends TestCase
      */
     public function testIndexFilterBySoldOut($user, $boolean, $booleanValue): void
     {
-        $this->$user->givePermissionTo('items.show');
+        $this->{$user}->givePermissionTo('items.show');
 
         Deposit::factory([
             'quantity' => 10,
@@ -170,7 +170,7 @@ class ItemTest extends TestCase
         $itemId = $booleanValue ? $item_sold_out->getKey() : $this->item->getKey();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/items', ['sold_out' => $boolean])
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -186,10 +186,10 @@ class ItemTest extends TestCase
      */
     public function testIndexFilterBySoldOutAndDay($user): void
     {
-        $this->$user->givePermissionTo('items.show');
+        $this->{$user}->givePermissionTo('items.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/items', [
                 'sold_out' => 1,
                 'day' => Carbon::now(),
@@ -202,10 +202,10 @@ class ItemTest extends TestCase
      */
     public function testIndexSortByQuantityAndFilterByDay($user): void
     {
-        $this->$user->givePermissionTo('items.show');
+        $this->{$user}->givePermissionTo('items.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/items', [
                 'sort' => 'quantity:asc',
                 'day' => Carbon::now(),
@@ -218,7 +218,7 @@ class ItemTest extends TestCase
      */
     public function testIndexFilterByDay($user): void
     {
-        $this->$user->givePermissionTo('items.show');
+        $this->{$user}->givePermissionTo('items.show');
 
         $created_at = Carbon::yesterday()->startOfDay()->addHours(12);
 
@@ -239,7 +239,7 @@ class ItemTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/items', ['day' => $created_at->format('Y-m-d')])
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -258,7 +258,7 @@ class ItemTest extends TestCase
      */
     public function testIndexFilterByDayWithHour($user): void
     {
-        $this->$user->givePermissionTo('items.show');
+        $this->{$user}->givePermissionTo('items.show');
 
         $item2 = Item::factory()->create([
             'created_at' => Carbon::yesterday(),
@@ -277,7 +277,7 @@ class ItemTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/items', ['day' => Carbon::yesterday()])
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -302,10 +302,10 @@ class ItemTest extends TestCase
      */
     public function testView($user): void
     {
-        $this->$user->givePermissionTo('items.show_details');
+        $this->{$user}->givePermissionTo('items.show_details');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/items/id:' . $this->item->getKey())
             ->assertOk()
             ->assertJson(['data' => $this->expected + ['products' => [], 'schemas' => []]]);
@@ -318,7 +318,7 @@ class ItemTest extends TestCase
      */
     public function testViewWithProducts($user): void
     {
-        $this->$user->givePermissionTo('items.show_details');
+        $this->{$user}->givePermissionTo('items.show_details');
 
         $product1 = Product::factory()->create(['public' => true]);
         $product1->items()->attach([$this->item->getKey() => [
@@ -333,7 +333,7 @@ class ItemTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/items/id:' . $this->item->getKey())
             ->assertOk()
             ->assertJson(['data' => $this->expected])
@@ -355,7 +355,7 @@ class ItemTest extends TestCase
      */
     public function testViewWithSchemas($user): void
     {
-        $this->$user->givePermissionTo('items.show_details');
+        $this->{$user}->givePermissionTo('items.show_details');
 
         $schema1 = Schema::factory()->create([
             'type' => 'select',
@@ -390,7 +390,7 @@ class ItemTest extends TestCase
         $option3->items()->sync([$this->item->getKey()]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/items/id:' . $this->item->getKey())
             ->assertOk()
             ->assertJson(['data' => $this->expected])
@@ -412,15 +412,15 @@ class ItemTest extends TestCase
      */
     public function testViewWrongId($user): void
     {
-        $this->$user->givePermissionTo('items.show_details');
+        $this->{$user}->givePermissionTo('items.show_details');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/items/id:its-not-id')
             ->assertNotFound();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/items/id:' . $this->item->getKey() . $this->item->getKey())
             ->assertNotFound();
     }
@@ -440,7 +440,7 @@ class ItemTest extends TestCase
      */
     public function testCreate($user): void
     {
-        $this->$user->givePermissionTo('items.add');
+        $this->{$user}->givePermissionTo('items.add');
 
         Event::fake(ItemCreated::class);
 
@@ -449,7 +449,7 @@ class ItemTest extends TestCase
             'sku' => 'TES/T1',
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/items', $item);
+        $response = $this->actingAs($this->{$user})->postJson('/items', $item);
         $response
             ->assertCreated()
             ->assertJson(['data' => $item]);
@@ -464,7 +464,7 @@ class ItemTest extends TestCase
      */
     public function testCreateWithUuid($user): void
     {
-        $this->$user->givePermissionTo('items.add');
+        $this->{$user}->givePermissionTo('items.add');
 
         Event::fake(ItemCreated::class);
 
@@ -474,7 +474,7 @@ class ItemTest extends TestCase
             'id' => Uuid::uuid4()->toString(),
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/items', $item);
+        $response = $this->actingAs($this->{$user})->postJson('/items', $item);
         $response
             ->assertCreated()
             ->assertJson(['data' => $item]);
@@ -496,7 +496,7 @@ class ItemTest extends TestCase
             'sku' => 'TES/T1',
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/items', $item);
+        $response = $this->actingAs($this->{$user})->postJson('/items', $item);
 
         $response
             ->assertJsonFragment([
@@ -510,7 +510,7 @@ class ItemTest extends TestCase
      */
     public function testCreateWithMetadata($user): void
     {
-        $this->$user->givePermissionTo('items.add');
+        $this->{$user}->givePermissionTo('items.add');
 
         Event::fake(ItemCreated::class);
 
@@ -525,7 +525,7 @@ class ItemTest extends TestCase
             ],
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/items', $item + $metadata);
+        $response = $this->actingAs($this->{$user})->postJson('/items', $item + $metadata);
         $response
             ->assertCreated()
             ->assertJson(['data' => $item + $metadata]);
@@ -540,7 +540,7 @@ class ItemTest extends TestCase
      */
     public function testCreateWithMetadataPrivate($user): void
     {
-        $this->$user->givePermissionTo(['items.add', 'items.show_metadata_private']);
+        $this->{$user}->givePermissionTo(['items.add', 'items.show_metadata_private']);
 
         Event::fake(ItemCreated::class);
 
@@ -555,7 +555,7 @@ class ItemTest extends TestCase
             ],
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/items', $item + $metadata);
+        $response = $this->actingAs($this->{$user})->postJson('/items', $item + $metadata);
         $response
             ->assertCreated()
             ->assertJson(['data' => $item + $metadata]);
@@ -570,14 +570,14 @@ class ItemTest extends TestCase
      */
     public function testCreateWithWebHook($user): void
     {
-        $this->$user->givePermissionTo('items.add');
+        $this->{$user}->givePermissionTo('items.add');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ItemCreated',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => true,
             'with_hidden' => false,
         ]);
@@ -589,7 +589,7 @@ class ItemTest extends TestCase
             'sku' => 'TES/T1',
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/items', $item);
+        $response = $this->actingAs($this->{$user})->postJson('/items', $item);
         $response
             ->assertCreated()
             ->assertJson(['data' => $item]);
@@ -633,7 +633,7 @@ class ItemTest extends TestCase
      */
     public function testUpdate($user): void
     {
-        $this->$user->givePermissionTo('items.edit');
+        $this->{$user}->givePermissionTo('items.edit');
 
         Event::fake(ItemUpdated::class);
 
@@ -642,7 +642,7 @@ class ItemTest extends TestCase
             'sku' => 'TES/T2',
         ];
 
-        $response = $this->actingAs($this->$user)->patchJson(
+        $response = $this->actingAs($this->{$user})->patchJson(
             '/items/id:' . $this->item->getKey(),
             $item,
         );
@@ -661,7 +661,7 @@ class ItemTest extends TestCase
      */
     public function testUpdateWithPartialData($user): void
     {
-        $this->$user->givePermissionTo('items.edit');
+        $this->{$user}->givePermissionTo('items.edit');
 
         Event::fake(ItemUpdated::class);
 
@@ -669,7 +669,7 @@ class ItemTest extends TestCase
             'name' => 'Test 2',
         ];
 
-        $response = $this->actingAs($this->$user)->patchJson(
+        $response = $this->actingAs($this->{$user})->patchJson(
             '/items/id:' . $this->item->getKey(),
             $item,
         );
@@ -696,7 +696,7 @@ class ItemTest extends TestCase
      */
     public function testUpdateWithPartialDataSku($user): void
     {
-        $this->$user->givePermissionTo('items.edit');
+        $this->{$user}->givePermissionTo('items.edit');
 
         Event::fake(ItemUpdated::class);
 
@@ -704,7 +704,7 @@ class ItemTest extends TestCase
             'sku' => 'TES/T3',
         ];
 
-        $response = $this->actingAs($this->$user)->patchJson(
+        $response = $this->actingAs($this->{$user})->patchJson(
             '/items/id:' . $this->item->getKey(),
             $item,
         );
@@ -731,14 +731,14 @@ class ItemTest extends TestCase
      */
     public function testUpdateWithWebHook($user): void
     {
-        $this->$user->givePermissionTo('items.edit');
+        $this->{$user}->givePermissionTo('items.edit');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ItemUpdated',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => true,
             'with_hidden' => false,
         ]);
@@ -750,7 +750,7 @@ class ItemTest extends TestCase
             'sku' => 'TES/T2',
         ];
 
-        $response = $this->actingAs($this->$user)->patchJson(
+        $response = $this->actingAs($this->{$user})->patchJson(
             '/items/id:' . $this->item->getKey(),
             $item,
         );
@@ -804,12 +804,12 @@ class ItemTest extends TestCase
      */
     public function testDelete($user): void
     {
-        $this->$user->givePermissionTo('items.remove');
+        $this->{$user}->givePermissionTo('items.remove');
 
         Event::fake(ItemDeleted::class);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/items/id:' . $this->item->getKey())
             ->assertNoContent();
 
@@ -823,21 +823,21 @@ class ItemTest extends TestCase
      */
     public function testDeleteWithWebHook($user): void
     {
-        $this->$user->givePermissionTo('items.remove');
+        $this->{$user}->givePermissionTo('items.remove');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ItemDeleted',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => true,
             'with_hidden' => false,
         ]);
 
         Bus::fake();
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->deleteJson('/items/id:' . $this->item->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($this->item);
@@ -869,7 +869,7 @@ class ItemTest extends TestCase
      */
     public function testCreateValidationInvalidBothShippingTimeAndDate($user): void
     {
-        $this->$user->givePermissionTo('items.add');
+        $this->{$user}->givePermissionTo('items.add');
 
         Event::fake(ItemCreated::class);
 
@@ -880,7 +880,7 @@ class ItemTest extends TestCase
             'unlimited_stock_shipping_date' => '1999-02-01',
         ];
 
-        $this->actingAs($this->$user)->postJson('/items', $item)->assertStatus(422);
+        $this->actingAs($this->{$user})->postJson('/items', $item)->assertStatus(422);
 
         Event::assertNotDispatched(ItemCreated::class);
     }
@@ -890,7 +890,7 @@ class ItemTest extends TestCase
      */
     public function testUpdateValidationInvalidBothUnlimitedShippingTimeAndDate($user): void
     {
-        $this->$user->givePermissionTo('items.edit');
+        $this->{$user}->givePermissionTo('items.edit');
 
         Event::fake(ItemUpdated::class);
 
@@ -900,7 +900,7 @@ class ItemTest extends TestCase
             'unlimited_stock_shipping_date' => '1999-02-01',
         ];
 
-        $this->actingAs($this->$user)->patchJson(
+        $this->actingAs($this->{$user})->patchJson(
             '/items/id:' . $this->item->getKey(),
             $item,
         )->assertStatus(422);
@@ -913,7 +913,7 @@ class ItemTest extends TestCase
      */
     public function testUpdateValidationUnlimitedShippingDateLesserThenShippingDate($user): void
     {
-        $this->$user->givePermissionTo('items.edit');
+        $this->{$user}->givePermissionTo('items.edit');
 
         Event::fake(ItemUpdated::class);
 
@@ -928,7 +928,7 @@ class ItemTest extends TestCase
             'unlimited_stock_shipping_date' => Carbon::now()->startOfDay()->addDay()->toDateTimeString(),
         ];
 
-        $this->actingAs($this->$user)->patchJson(
+        $this->actingAs($this->{$user})->patchJson(
             '/items/id:' . $this->item->getKey(),
             $item,
         )->assertStatus(422);
@@ -941,7 +941,7 @@ class ItemTest extends TestCase
      */
     public function testUpdateValidationUnlimitedShippingTimeLesserThenShippingTime($user): void
     {
-        $this->$user->givePermissionTo('items.edit');
+        $this->{$user}->givePermissionTo('items.edit');
 
         Event::fake(ItemUpdated::class);
         $time = 4;
@@ -956,7 +956,7 @@ class ItemTest extends TestCase
             'unlimited_stock_shipping_time' => $time - 3,
         ];
 
-        $this->actingAs($this->$user)->patchJson(
+        $this->actingAs($this->{$user})->patchJson(
             '/items/id:' . $this->item->getKey(),
             $item,
         )->assertStatus(422);
@@ -969,7 +969,7 @@ class ItemTest extends TestCase
      */
     public function testUpdateUnlimitedShippingTime($user): void
     {
-        $this->$user->givePermissionTo('items.edit');
+        $this->{$user}->givePermissionTo('items.edit');
 
         $time = 4;
         Deposit::factory()->create([
@@ -993,7 +993,7 @@ class ItemTest extends TestCase
             'unlimited_stock_shipping_time' => $time - 1,
         ];
 
-        $this->actingAs($this->$user)->patchJson(
+        $this->actingAs($this->{$user})->patchJson(
             '/items/id:' . $this->item->getKey(),
             $item,
         )->assertOk()
@@ -1005,14 +1005,14 @@ class ItemTest extends TestCase
      */
     public function testUpdateUnlimitedShippingTimeNull($user): void
     {
-        $this->$user->givePermissionTo('items.edit');
+        $this->{$user}->givePermissionTo('items.edit');
 
         $item = [
             'sku' => 'TES/T3',
             'unlimited_stock_shipping_time' => null,
         ];
 
-        $this->actingAs($this->$user)->patchJson(
+        $this->actingAs($this->{$user})->patchJson(
             '/items/id:' . $this->item->getKey(),
             $item,
         )->assertOk()
@@ -1024,7 +1024,7 @@ class ItemTest extends TestCase
      */
     public function testUpdateUnlimitedShippingDate($user): void
     {
-        $this->$user->givePermissionTo('items.edit');
+        $this->{$user}->givePermissionTo('items.edit');
         $date = Carbon::today()->addDays(4);
 
         Deposit::factory()->create([
@@ -1048,7 +1048,7 @@ class ItemTest extends TestCase
             'unlimited_stock_shipping_date' => $date->addDays(3)->toIso8601String(),
         ];
 
-        $this->actingAs($this->$user)->patchJson(
+        $this->actingAs($this->{$user})->patchJson(
             '/items/id:' . $this->item->getKey(),
             $item,
         )->assertOk()
@@ -1060,7 +1060,7 @@ class ItemTest extends TestCase
      */
     public function testUpdateUnlimitedShippingDateWithSameDateAsDeposit($user): void
     {
-        $this->$user->givePermissionTo('items.edit');
+        $this->{$user}->givePermissionTo('items.edit');
         $date = Carbon::today()->addDays(4);
 
         Deposit::factory()->create([
@@ -1070,7 +1070,7 @@ class ItemTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->patchJson('/items/id:' . $this->item->getKey(), [
                 'unlimited_stock_shipping_date' => $date->toDateTimeString(),
             ])
@@ -1085,14 +1085,14 @@ class ItemTest extends TestCase
      */
     public function testUpdateUnlimitedShippingDateNull($user): void
     {
-        $this->$user->givePermissionTo('items.edit');
+        $this->{$user}->givePermissionTo('items.edit');
 
         $item = [
             'sku' => 'TES/T3',
             'unlimited_stock_shipping_date' => null,
         ];
 
-        $this->actingAs($this->$user)->patchJson(
+        $this->actingAs($this->{$user})->patchJson(
             '/items/id:' . $this->item->getKey(),
             $item,
         )->assertOk()
@@ -1104,7 +1104,7 @@ class ItemTest extends TestCase
      */
     public function testCreateUnlimitedShippingTime($user): void
     {
-        $this->$user->givePermissionTo('items.add');
+        $this->{$user}->givePermissionTo('items.add');
 
         $item = [
             'name' => 'Test',
@@ -1113,7 +1113,7 @@ class ItemTest extends TestCase
             'unlimited_stock_shipping_date' => null,
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/items', $item);
+        $response = $this->actingAs($this->{$user})->postJson('/items', $item);
         $response
             ->assertCreated()
             ->assertJson(['data' => $item]);
@@ -1124,7 +1124,7 @@ class ItemTest extends TestCase
      */
     public function testCreateUnlimitedShippingDate($user): void
     {
-        $this->$user->givePermissionTo('items.add');
+        $this->{$user}->givePermissionTo('items.add');
 
         $item = [
             'name' => 'Test',
@@ -1133,7 +1133,7 @@ class ItemTest extends TestCase
             'unlimited_stock_shipping_date' => Carbon::now()->startOfDay()->addDays(5)->toIso8601String(),
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/items', $item);
+        $response = $this->actingAs($this->{$user})->postJson('/items', $item);
         $response
             ->assertCreated()
             ->assertJson(['data' => $item]);
@@ -1144,7 +1144,7 @@ class ItemTest extends TestCase
      */
     public function testShowWhitAvailability($user): void
     {
-        $this->$user->givePermissionTo('items.show_details');
+        $this->{$user}->givePermissionTo('items.show_details');
 
         $item = Item::factory()->create();
 
@@ -1186,7 +1186,7 @@ class ItemTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/items/id:' . $item->getKey())
             ->assertOk()
             ->assertJsonFragment([
@@ -1204,9 +1204,9 @@ class ItemTest extends TestCase
      */
     public function testIndexWhitAvailability($user): void
     {
-        $this->$user->givePermissionTo('items.show');
-        $this->$user->givePermissionTo('items.show_details');
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('items.show');
+        $this->{$user}->givePermissionTo('items.show_details');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         $item = Item::factory()->create();
 
@@ -1215,13 +1215,13 @@ class ItemTest extends TestCase
             'shipping_time' => 10,
         ];
 
-        $this->actingAs($this->$user)->postJson(
+        $this->actingAs($this->{$user})->postJson(
             "/items/id:{$item->getKey()}/deposits",
             $deposit,
         )->assertCreated();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/items/id:' . $item->getKey())
             ->assertOk()
             ->assertJsonFragment([
@@ -1231,7 +1231,7 @@ class ItemTest extends TestCase
             ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/items')
             ->assertOk()
             ->assertJsonFragment([

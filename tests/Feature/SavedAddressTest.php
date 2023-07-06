@@ -39,9 +39,9 @@ class SavedAddressTest extends TestCase
      */
     public function testCreate($user): void
     {
-        $this->$user->givePermissionTo('profile.addresses_manage');
+        $this->{$user}->givePermissionTo('profile.addresses_manage');
 
-        $response = $this->actingAs($this->$user)->postJson('/auth/profile/shipping-addresses', [
+        $response = $this->actingAs($this->{$user})->postJson('/auth/profile/shipping-addresses', [
             'name' => 'test',
             'default' => false,
             'type' => SavedAddressType::SHIPPING,
@@ -82,17 +82,17 @@ class SavedAddressTest extends TestCase
      */
     public function testNewDefault($user): void
     {
-        $this->$user->givePermissionTo('profile.addresses_manage');
+        $this->{$user}->givePermissionTo('profile.addresses_manage');
 
         SavedAddress::create([
             'name' => 'test',
             'default' => true,
-            'user_id' => $this->$user->getKey(),
+            'user_id' => $this->{$user}->getKey(),
             'address_id' => $this->address->getKey(),
             'type' => SavedAddressType::SHIPPING,
         ]);
 
-        $this->actingAs($this->$user)->postJson('/auth/profile/shipping-addresses', [
+        $this->actingAs($this->{$user})->postJson('/auth/profile/shipping-addresses', [
             'name' => 'test2',
             'default' => true,
             'type' => SavedAddressType::SHIPPING,
@@ -148,17 +148,17 @@ class SavedAddressTest extends TestCase
      */
     public function testUpdate($user): void
     {
-        $this->$user->givePermissionTo('profile.addresses_manage');
+        $this->{$user}->givePermissionTo('profile.addresses_manage');
 
         $savedAddress = SavedAddress::create([
             'name' => 'test',
             'default' => false,
-            'user_id' => $this->$user->getKey(),
+            'user_id' => $this->{$user}->getKey(),
             'address_id' => $this->address->getKey(),
             'type' => SavedAddressType::SHIPPING,
         ]);
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->patchJson('/auth/profile/shipping-addresses/id:' . $savedAddress->getKey(), [
                 'name' => 'test2',
                 'default' => true,
@@ -203,17 +203,17 @@ class SavedAddressTest extends TestCase
      */
     public function testUpdateChangeDefault($user): void
     {
-        $this->$user->givePermissionTo('profile.addresses_manage');
+        $this->{$user}->givePermissionTo('profile.addresses_manage');
 
         SavedAddress::create([
             'name' => 'test1',
             'default' => true,
-            'user_id' => $this->$user->getKey(),
+            'user_id' => $this->{$user}->getKey(),
             'address_id' => $this->address->getKey(),
             'type' => SavedAddressType::SHIPPING,
         ]);
 
-        $this->actingAs($this->$user)->postJson('/auth/profile/shipping-addresses', [
+        $this->actingAs($this->{$user})->postJson('/auth/profile/shipping-addresses', [
             'name' => 'test2',
             'default' => false,
             'type' => SavedAddressType::SHIPPING,
@@ -230,11 +230,11 @@ class SavedAddressTest extends TestCase
 
         $savedAddress = SavedAddress::where([
             'name' => 'test2',
-            'user_id' => $this->$user->getKey(),
+            'user_id' => $this->{$user}->getKey(),
         ])
             ->first();
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->patchJson('/auth/profile/shipping-addresses/id:' . $savedAddress->getKey(), [
                 'name' => 'test2',
                 'default' => true,
@@ -286,7 +286,7 @@ class SavedAddressTest extends TestCase
      */
     public function testUpdateOtherUserSavedAddress($user): void
     {
-        $this->$user->givePermissionTo('profile.addresses_manage');
+        $this->{$user}->givePermissionTo('profile.addresses_manage');
 
         $savedAddress = SavedAddress::create([
             'default' => 0,
@@ -296,7 +296,7 @@ class SavedAddressTest extends TestCase
             'user_id' => $this->fakeUser->getKey(),
         ]);
 
-        $this->actingAs($this->$user)->patchJson('/auth/profile/shipping-addresses/id:' . $savedAddress->getKey(), [
+        $this->actingAs($this->{$user})->patchJson('/auth/profile/shipping-addresses/id:' . $savedAddress->getKey(), [
             'name' => 'test2',
             'default' => false,
             'type' => SavedAddressType::SHIPPING,
@@ -318,17 +318,17 @@ class SavedAddressTest extends TestCase
      */
     public function testUpdateEmptyVat($user): void
     {
-        $this->$user->givePermissionTo('profile.addresses_manage');
+        $this->{$user}->givePermissionTo('profile.addresses_manage');
 
         $savedAddress = SavedAddress::create([
             'name' => 'test',
             'default' => false,
-            'user_id' => $this->$user->getKey(),
+            'user_id' => $this->{$user}->getKey(),
             'address_id' => $this->address->getKey(),
             'type' => SavedAddressType::SHIPPING,
         ]);
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->patchJson('/auth/profile/shipping-addresses/id:' . $savedAddress->getKey(), [
                 'name' => 'test2',
                 'default' => true,
@@ -375,17 +375,17 @@ class SavedAddressTest extends TestCase
      */
     public function testDelete($user): void
     {
-        $this->$user->givePermissionTo('profile.addresses_manage');
+        $this->{$user}->givePermissionTo('profile.addresses_manage');
 
         $savedAddress = SavedAddress::create([
             'name' => 'test',
             'default' => false,
-            'user_id' => $this->$user->getKey(),
+            'user_id' => $this->{$user}->getKey(),
             'address_id' => $this->address->getKey(),
             'type' => SavedAddressType::SHIPPING,
         ]);
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->deleteJson('/auth/profile/shipping-addresses/id:' . $savedAddress->getKey());
 
         $this->assertDatabaseMissing('saved_addresses', [
@@ -398,17 +398,17 @@ class SavedAddressTest extends TestCase
      */
     public function testDeleteDefault($user): void
     {
-        $this->$user->givePermissionTo('profile.addresses_manage');
+        $this->{$user}->givePermissionTo('profile.addresses_manage');
 
         $savedAddress = SavedAddress::create([
             'name' => 'test',
             'default' => true,
-            'user_id' => $this->$user->getKey(),
+            'user_id' => $this->{$user}->getKey(),
             'address_id' => $this->address->getKey(),
             'type' => SavedAddressType::SHIPPING,
         ]);
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->deleteJson('/auth/profile/shipping-addresses/id:' . $savedAddress->getKey())
             ->assertStatus(422)
             ->assertJsonFragment(['message' => 'You cannot delete default address']);
@@ -419,9 +419,9 @@ class SavedAddressTest extends TestCase
      */
     public function testProfileHasDefaultDeliveryAndInvoiceAddresses($user): void
     {
-        $this->$user->givePermissionTo('profile.addresses_manage');
+        $this->{$user}->givePermissionTo('profile.addresses_manage');
 
-        $this->actingAs($this->$user)->postJson('/auth/profile/shipping-addresses', [
+        $this->actingAs($this->{$user})->postJson('/auth/profile/shipping-addresses', [
             'name' => 'test',
             'default' => true,
             'type' => SavedAddressType::SHIPPING,
@@ -436,7 +436,7 @@ class SavedAddressTest extends TestCase
             ],
         ]);
 
-        $this->actingAs($this->$user)->postJson('/auth/profile/billing-addresses', [
+        $this->actingAs($this->{$user})->postJson('/auth/profile/billing-addresses', [
             'name' => 'test2',
             'default' => true,
             'type' => SavedAddressType::BILLING,
@@ -451,7 +451,7 @@ class SavedAddressTest extends TestCase
             ],
         ]);
 
-        $response = $this->actingAs($this->$user)->getJson('/auth/profile');
+        $response = $this->actingAs($this->{$user})->getJson('/auth/profile');
 
         $response->assertJsonStructure([
             'data' => [

@@ -40,9 +40,9 @@ class PackageTemplateTest extends TestCase
      */
     public function testIndex($user): void
     {
-        $this->$user->givePermissionTo('packages.show');
+        $this->{$user}->givePermissionTo('packages.show');
 
-        $response = $this->actingAs($this->$user)->getJson('/package-templates');
+        $response = $this->actingAs($this->{$user})->getJson('/package-templates');
         $response
             ->assertOk()
             ->assertJson(['data' => [
@@ -56,11 +56,11 @@ class PackageTemplateTest extends TestCase
      */
     public function testIndexByIds($user): void
     {
-        $this->$user->givePermissionTo('packages.show');
+        $this->{$user}->givePermissionTo('packages.show');
 
         PackageTemplate::factory()->count(10)->create();
 
-        $response = $this->actingAs($this->$user)->json('GET', '/package-templates', [
+        $response = $this->actingAs($this->{$user})->json('GET', '/package-templates', [
             'ids' => [
                 $this->package->getKey(),
             ],
@@ -86,7 +86,7 @@ class PackageTemplateTest extends TestCase
      */
     public function testCreate($user): void
     {
-        $this->$user->givePermissionTo('packages.add');
+        $this->{$user}->givePermissionTo('packages.add');
 
         $package = [
             'name' => 'Small package',
@@ -96,7 +96,7 @@ class PackageTemplateTest extends TestCase
             'depth' => 2,
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/package-templates', $package);
+        $response = $this->actingAs($this->{$user})->postJson('/package-templates', $package);
         $response
             ->assertCreated()
             ->assertJson(['data' => $package]);
@@ -109,7 +109,7 @@ class PackageTemplateTest extends TestCase
      */
     public function testCreateWithMetadata($user): void
     {
-        $this->$user->givePermissionTo('packages.add');
+        $this->{$user}->givePermissionTo('packages.add');
 
         $package = [
             'name' => 'Small package',
@@ -123,7 +123,7 @@ class PackageTemplateTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/package-templates', $package)
             ->assertCreated()
             ->assertJson(['data' => $package]);
@@ -134,7 +134,7 @@ class PackageTemplateTest extends TestCase
      */
     public function testCreateWithMetadataPrivate($user): void
     {
-        $this->$user->givePermissionTo(['packages.add', 'packages.show_metadata_private']);
+        $this->{$user}->givePermissionTo(['packages.add', 'packages.show_metadata_private']);
 
         $package = [
             'name' => 'Small package',
@@ -148,7 +148,7 @@ class PackageTemplateTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/package-templates', $package)
             ->assertCreated()
             ->assertJson(['data' => $package]);
@@ -165,7 +165,7 @@ class PackageTemplateTest extends TestCase
      */
     public function testUpdate($user): void
     {
-        $this->$user->givePermissionTo('packages.edit');
+        $this->{$user}->givePermissionTo('packages.edit');
 
         $package = [
             'name' => 'PackageTemplate big',
@@ -175,7 +175,7 @@ class PackageTemplateTest extends TestCase
             'depth' => 20,
         ];
 
-        $response = $this->actingAs($this->$user)->patchJson(
+        $response = $this->actingAs($this->{$user})->patchJson(
             '/package-templates/id:' . $this->package->getKey(),
             $package,
         );
@@ -201,9 +201,9 @@ class PackageTemplateTest extends TestCase
      */
     public function testDelete($user): void
     {
-        $this->$user->givePermissionTo('packages.remove');
+        $this->{$user}->givePermissionTo('packages.remove');
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->deleteJson('/package-templates/id:' . $this->package->getKey());
         $response->assertNoContent();
         $this->assertModelMissing($this->package);

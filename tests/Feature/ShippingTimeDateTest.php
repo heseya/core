@@ -143,14 +143,14 @@ class ShippingTimeDateTest extends TestCase
 
         $product->items()->detach($item->getKey());
 
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         $deposit = [
             'quantity' => 120,
             'shipping_time' => 1,
         ];
 
-        $response = $this->actingAs($this->$user)->postJson(
+        $response = $this->actingAs($this->{$user})->postJson(
             "/items/id:{$item2->getKey()}/deposits",
             $deposit,
         );

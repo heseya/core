@@ -190,13 +190,13 @@ class OrderProductTest extends TestCase
      */
     public function testOrderNotSendUrls($user): void
     {
-        $this->$user->givePermissionTo('orders.show_details');
+        $this->{$user}->givePermissionTo('orders.show_details');
 
         Event::fake([SendOrderUrls::class]);
         Mail::fake();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'POST',
                 '/orders/id:' . $this->order->getKey() . '/send-urls'
@@ -216,7 +216,7 @@ class OrderProductTest extends TestCase
      */
     public function testOrderSendUrls($user): void
     {
-        $this->$user->givePermissionTo('orders.show_details');
+        $this->{$user}->givePermissionTo('orders.show_details');
 
         $this->digitalProduct->urls()->create([
             'name' => 'first_url',
@@ -227,7 +227,7 @@ class OrderProductTest extends TestCase
         Mail::fake();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'POST',
                 '/orders/id:' . $this->order->getKey() . '/send-urls'

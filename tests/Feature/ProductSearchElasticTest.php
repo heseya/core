@@ -32,10 +32,10 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testIndex($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['limit' => 100])
             ->assertOk();
 
@@ -64,10 +64,10 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testIndexSortPriceAsc($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['limit' => 100, 'sort' => 'price:asc'])
             ->assertOk();
 
@@ -106,10 +106,10 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testIndexSortPriceDesc($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['limit' => 100, 'sort' => 'price:desc'])
             ->assertOk();
 
@@ -150,10 +150,10 @@ class ProductSearchElasticTest extends TestCase
     {
         $searchQuery = 'search';
 
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['search' => $searchQuery])
             ->assertOk();
 
@@ -195,10 +195,10 @@ class ProductSearchElasticTest extends TestCase
         $uuid1 = '123e4567-e89b-12d3-a456-426655440000';
         $uuid2 = '123e4567-e89b-12d3-a456-426655440001';
 
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', [
                 'ids' => [
                     $uuid1,
@@ -239,10 +239,10 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testIndexHidden($user): void
     {
-        $this->$user->givePermissionTo(['products.show', 'products.show_hidden']);
+        $this->{$user}->givePermissionTo(['products.show', 'products.show_hidden']);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products')
             ->assertOk();
 
@@ -260,10 +260,10 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSearchByPublic($user, $boolean, $booleanValue): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['public' => $boolean])
             ->assertOk();
 
@@ -302,10 +302,10 @@ class ProductSearchElasticTest extends TestCase
             'public' => true,
         ]);
 
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['sets' => [$set->slug]])
             ->assertOk();
 
@@ -344,10 +344,10 @@ class ProductSearchElasticTest extends TestCase
             'public' => true,
         ]);
 
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['sets_not' => [$set->slug]])
             ->assertOk();
 
@@ -394,10 +394,10 @@ class ProductSearchElasticTest extends TestCase
             'public' => true,
         ]);
 
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', [
                 'sets' => [$set->slug, $set2->slug],
             ])
@@ -443,10 +443,10 @@ class ProductSearchElasticTest extends TestCase
             'public' => true,
         ]);
 
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', [
                 'sets_not' => [$set->slug, $set2->slug],
             ])
@@ -492,10 +492,10 @@ class ProductSearchElasticTest extends TestCase
             'public' => false,
         ]);
 
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['sets' => [$set->slug]])
             ->assertUnprocessable();
     }
@@ -507,10 +507,10 @@ class ProductSearchElasticTest extends TestCase
     {
         $slug = 'non-existing-set';
 
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['sets' => [$slug]])
             ->assertUnprocessable();
     }
@@ -524,10 +524,10 @@ class ProductSearchElasticTest extends TestCase
             'public' => true,
         ]);
 
-        $this->$user->givePermissionTo(['products.show', 'product_sets.show_hidden']);
+        $this->{$user}->givePermissionTo(['products.show', 'product_sets.show_hidden']);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['sets' => [$set->slug]])
             ->assertOk();
 
@@ -564,10 +564,10 @@ class ProductSearchElasticTest extends TestCase
     {
         $uuid = 'a2f4f8b0-f8c9-11e9-9eb6-2a2ae2dbcce4';
 
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['tags' => [$uuid]])
             ->assertOk();
 
@@ -604,10 +604,10 @@ class ProductSearchElasticTest extends TestCase
     {
         $uuid = 'a2f4f8b0-f8c9-11e9-9eb6-2a2ae2dbcce4';
 
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['tags_not' => [$uuid]])
             ->assertOk();
 
@@ -649,9 +649,9 @@ class ProductSearchElasticTest extends TestCase
         $uuid1 = 'a2f4f8b0-f8c9-11e9-9eb6-2a2ae2dbcce4';
         $uuid2 = 'a2f4f8b1-f8c9-11e9-9eb6-2a2ae2dbcce4';
 
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->json('GET', '/products', [
                 'tags' => [
                     $uuid1,
@@ -695,9 +695,9 @@ class ProductSearchElasticTest extends TestCase
         $uuid1 = 'a2f4f8b0-f8c9-11e9-9eb6-2a2ae2dbcce4';
         $uuid2 = 'a2f4f8b1-f8c9-11e9-9eb6-2a2ae2dbcce4';
 
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->json('GET', '/products', [
                 'tags_not' => [
                     $uuid1,
@@ -745,10 +745,10 @@ class ProductSearchElasticTest extends TestCase
         $erpId = 'a2f4f8b0-f8c9-11e9-9eb6-2a2ae2dbcce4';
         $sku = 123456789;
 
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', "/products?metadata.erp_id={$erpId}&metadata.sku={$sku}")
             ->assertOk();
 
@@ -796,10 +796,10 @@ class ProductSearchElasticTest extends TestCase
         $erpId = 'a2f4f8b0-f8c9-11e9-9eb6-2a2ae2dbcce4';
         $sku = 123456789;
 
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', "/products?metadata[erp_id]={$erpId}&metadata[sku]={$sku}")
             ->assertOk();
 
@@ -847,10 +847,10 @@ class ProductSearchElasticTest extends TestCase
         $erpId = 'a2f4f8b0-f8c9-11e9-9eb6-2a2ae2dbcce4';
         $sku = 123456789;
 
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -906,10 +906,10 @@ class ProductSearchElasticTest extends TestCase
     {
         $sku = 123456789;
 
-        $this->$user->givePermissionTo(['products.show', 'products.show_metadata_private']);
+        $this->{$user}->givePermissionTo(['products.show', 'products.show_metadata_private']);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', "/products?metadata_private.sku={$sku}")
             ->assertOk();
 
@@ -954,10 +954,10 @@ class ProductSearchElasticTest extends TestCase
     {
         $sku = 123456789;
 
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', "/products?metadata_private.sku={$sku}")
             ->assertUnprocessable();
     }
@@ -967,10 +967,10 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSearchByPrice($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['price' => ['min' => 100, 'max' => 200]])
             ->assertOk();
 
@@ -1013,10 +1013,10 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSearchByPriceZero($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['price' => ['min' => 0]])
             ->assertOk();
 
@@ -1051,7 +1051,7 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSearchByAttributeId($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $attribute = Attribute::factory()->create([
             'name' => 'Serie',
@@ -1071,7 +1071,7 @@ class ProductSearchElasticTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['attribute' => [$attribute->slug => $option1->getKey()]])
             ->assertOk();
 
@@ -1114,7 +1114,7 @@ class ProductSearchElasticTest extends TestCase
         ]);
         // Case: Attributes as array
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', [
                 'attribute' => [
                     $attribute->slug => [
@@ -1165,7 +1165,7 @@ class ProductSearchElasticTest extends TestCase
         ]);
         // Case: Attributes as string - coma as delimiter
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', [
                 'attribute' => [
                     $attribute->slug => $option1->getKey() . ',' . $option2->getKey(),
@@ -1218,7 +1218,7 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSearchByAttributeIdNegation($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $attribute = Attribute::factory()->create([
             'name' => 'Serie',
@@ -1238,7 +1238,7 @@ class ProductSearchElasticTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['attribute_not' => [$attribute->slug => $option1->getKey()]])
             ->assertOk();
 
@@ -1285,7 +1285,7 @@ class ProductSearchElasticTest extends TestCase
         ]);
         // Case: Attributes as array
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', [
                 'attribute_not' => [
                     $attribute->slug => [
@@ -1340,7 +1340,7 @@ class ProductSearchElasticTest extends TestCase
         ]);
         // Case: Attributes as string - coma as delimiter
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', [
                 'attribute_not' => [
                     $attribute->slug => $option1->getKey() . ',' . $option2->getKey(),
@@ -1397,7 +1397,7 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSearchByAttributeIdInvalidOption($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $optionId = 'a2f4f8b0-f8c9-11e9-9eb6-2a2ae2dbcce4';
 
@@ -1409,7 +1409,7 @@ class ProductSearchElasticTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['attribute' => [$attribute->slug => $optionId]])
             ->assertUnprocessable();
     }
@@ -1419,7 +1419,7 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSearchByAttributeIdInvalidAttribute($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $slug = 'serie';
         $attribute = Attribute::factory()->create([
@@ -1432,7 +1432,7 @@ class ProductSearchElasticTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['attribute' => [$slug => $option->getKey()]])
             ->assertUnprocessable();
     }
@@ -1442,7 +1442,7 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSearchByAttributeNumber($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $attribute = Attribute::factory()->create([
             'sortable' => 1,
@@ -1450,7 +1450,7 @@ class ProductSearchElasticTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -1505,7 +1505,7 @@ class ProductSearchElasticTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -1558,7 +1558,7 @@ class ProductSearchElasticTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -1616,7 +1616,7 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSearchByAttributeNumberNegation($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $attribute = Attribute::factory()->create([
             'sortable' => 1,
@@ -1624,7 +1624,7 @@ class ProductSearchElasticTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -1683,7 +1683,7 @@ class ProductSearchElasticTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -1740,7 +1740,7 @@ class ProductSearchElasticTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -1802,7 +1802,7 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSearchByAttributeInvalidNumber($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $attribute = Attribute::factory()->create([
             'sortable' => 1,
@@ -1810,7 +1810,7 @@ class ProductSearchElasticTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -1830,7 +1830,7 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSearchByAttributeDate($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $attribute = Attribute::factory()->create([
             'sortable' => 1,
@@ -1838,7 +1838,7 @@ class ProductSearchElasticTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -1893,7 +1893,7 @@ class ProductSearchElasticTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -1946,7 +1946,7 @@ class ProductSearchElasticTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -2004,7 +2004,7 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSearchByAttributeDateNegation($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $attribute = Attribute::factory()->create([
             'sortable' => 1,
@@ -2012,7 +2012,7 @@ class ProductSearchElasticTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -2071,7 +2071,7 @@ class ProductSearchElasticTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -2128,7 +2128,7 @@ class ProductSearchElasticTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -2190,7 +2190,7 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSearchByAttributeInvalidDate($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $attribute = Attribute::factory()->create([
             'sortable' => 1,
@@ -2198,7 +2198,7 @@ class ProductSearchElasticTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -2218,10 +2218,10 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSortBySet($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -2262,10 +2262,10 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSortByCover($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -2298,7 +2298,7 @@ class ProductSearchElasticTest extends TestCase
         );
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',

@@ -46,9 +46,9 @@ class StatusTest extends TestCase
      */
     public function testIndex($user): void
     {
-        $this->$user->givePermissionTo('statuses.show');
+        $this->{$user}->givePermissionTo('statuses.show');
 
-        $response = $this->actingAs($this->$user)->getJson('/statuses');
+        $response = $this->actingAs($this->{$user})->getJson('/statuses');
         $response
             ->assertOk()
             ->assertJsonCount(4, 'data') // domyślne statusy z migracji + ten utworzony teraz
@@ -60,9 +60,9 @@ class StatusTest extends TestCase
      */
     public function testIndexByIds($user): void
     {
-        $this->$user->givePermissionTo('statuses.show');
+        $this->{$user}->givePermissionTo('statuses.show');
 
-        $this->actingAs($this->$user)->json('GET', '/statuses', [
+        $this->actingAs($this->{$user})->json('GET', '/statuses', [
             'ids' => [
                 $this->status_model->getKey(),
             ],
@@ -83,7 +83,7 @@ class StatusTest extends TestCase
      */
     public function testCreate($user): void
     {
-        $this->$user->givePermissionTo('statuses.add');
+        $this->{$user}->givePermissionTo('statuses.add');
 
         $status = [
             'name' => 'Test Status',
@@ -93,7 +93,7 @@ class StatusTest extends TestCase
             'no_notifications' => true,
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/statuses', $status);
+        $response = $this->actingAs($this->{$user})->postJson('/statuses', $status);
         $response
             ->assertCreated()
             ->assertJson(['data' => $status]);
@@ -106,7 +106,7 @@ class StatusTest extends TestCase
      */
     public function testCreateWithMetadata($user): void
     {
-        $this->$user->givePermissionTo('statuses.add');
+        $this->{$user}->givePermissionTo('statuses.add');
 
         $status = [
             'name' => 'Test Status',
@@ -120,7 +120,7 @@ class StatusTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/statuses', $status)
             ->assertCreated()
             ->assertJson(['data' => $status]);
@@ -131,7 +131,7 @@ class StatusTest extends TestCase
      */
     public function testCreateWithMetadataPrivate($user): void
     {
-        $this->$user->givePermissionTo(['statuses.add', 'statuses.show_metadata_private']);
+        $this->{$user}->givePermissionTo(['statuses.add', 'statuses.show_metadata_private']);
 
         $status = [
             'name' => 'Test Status',
@@ -145,7 +145,7 @@ class StatusTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/statuses', $status)
             ->assertCreated()
             ->assertJson(['data' => $status]);
@@ -156,7 +156,7 @@ class StatusTest extends TestCase
      */
     public function testCreateDefault($user): void
     {
-        $this->$user->givePermissionTo('statuses.add');
+        $this->{$user}->givePermissionTo('statuses.add');
 
         $status = [
             'name' => 'Test Status',
@@ -164,7 +164,7 @@ class StatusTest extends TestCase
             'description' => 'To jest status testowy.',
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/statuses', $status);
+        $response = $this->actingAs($this->{$user})->postJson('/statuses', $status);
         $response
             ->assertCreated()
             ->assertJson(['data' => $status + [
@@ -197,7 +197,7 @@ class StatusTest extends TestCase
      */
     public function testUpdate($user, bool $cancel): void
     {
-        $this->$user->givePermissionTo('statuses.edit');
+        $this->{$user}->givePermissionTo('statuses.edit');
 
         $this->status_model->update([
             'cancel' => $cancel,
@@ -211,7 +211,7 @@ class StatusTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->patchJson(
                 '/statuses/id:' . $this->status_model->getKey(),
                 $status,
@@ -227,7 +227,7 @@ class StatusTest extends TestCase
      */
     public function testUpdateWhenUsedByOrder($user, bool $cancel): void
     {
-        $this->$user->givePermissionTo('statuses.edit');
+        $this->{$user}->givePermissionTo('statuses.edit');
 
         $this->status_model->update([
             'cancel' => $cancel,
@@ -243,7 +243,7 @@ class StatusTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->patchJson(
                 '/statuses/id:' . $this->status_model->getKey(),
                 $data,
@@ -262,7 +262,7 @@ class StatusTest extends TestCase
      */
     public function testUpdateWhenUsedByOrderSameCancel($user, bool $cancel): void
     {
-        $this->$user->givePermissionTo('statuses.edit');
+        $this->{$user}->givePermissionTo('statuses.edit');
 
         $this->status_model->update([
             'cancel' => $cancel,
@@ -278,7 +278,7 @@ class StatusTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'PATCH',
                 '/statuses/id:' . $this->status_model->getKey(),
@@ -294,7 +294,7 @@ class StatusTest extends TestCase
      */
     public function testUpdateHiddenWhenUsedByOrder($user, bool $hidden): void
     {
-        $this->$user->givePermissionTo('statuses.edit');
+        $this->{$user}->givePermissionTo('statuses.edit');
 
         $this->status_model->update([
             'hidden' => $hidden,
@@ -310,7 +310,7 @@ class StatusTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'PATCH',
                 '/statuses/id:' . $this->status_model->getKey(),
@@ -334,9 +334,9 @@ class StatusTest extends TestCase
      */
     public function testDelete($user): void
     {
-        $this->$user->givePermissionTo('statuses.remove');
+        $this->{$user}->givePermissionTo('statuses.remove');
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->deleteJson('/statuses/id:' . $this->status_model->getKey())
             ->assertNoContent();
 
@@ -348,13 +348,13 @@ class StatusTest extends TestCase
      */
     public function testDeleteWhenUsedByOrder($user): void
     {
-        $this->$user->givePermissionTo('statuses.remove');
+        $this->{$user}->givePermissionTo('statuses.remove');
 
         Order::factory()->create([
             'status_id' => $this->status_model->getKey(),
         ]);
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->deleteJson('/statuses/id:' . $this->status_model->getKey())
             ->assertStatus(422)
             ->assertJsonFragment([
@@ -371,7 +371,7 @@ class StatusTest extends TestCase
         $status2 = Status::factory()->create();
         $status3 = Status::factory()->create();
 
-        $this->actingAs($this->$user)->json('POST', '/statuses/reorder', [
+        $this->actingAs($this->{$user})->json('POST', '/statuses/reorder', [
             'statuses' => [
                 $status2->getKey(),
                 $status3->getKey(),
@@ -385,13 +385,13 @@ class StatusTest extends TestCase
      */
     public function testReorder($user): void
     {
-        $this->$user->givePermissionTo('statuses.edit');
+        $this->{$user}->givePermissionTo('statuses.edit');
 
         $status1 = Status::factory()->create();
         $status2 = Status::factory()->create();
         $status3 = Status::factory()->create();
 
-        $response = $this->actingAs($this->$user)->json('POST', '/statuses/reorder', [
+        $response = $this->actingAs($this->{$user})->json('POST', '/statuses/reorder', [
             'statuses' => [
                 $status2->getKey(),
                 $status3->getKey(),

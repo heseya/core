@@ -21,6 +21,13 @@
     "no_trailing_whitespace_in_comment": true,
     "standardize_not_equals": true,
     "is_null": true,
+    "ordered_traits": true,
+    "explicit_indirect_variable": true,
+    "return_assignment": true,
+    "ordered_interfaces": {
+      "direction": "ascend",
+      "order": "alpha"
+    },
     "phpdoc_align": {
       "align": "left"
     },

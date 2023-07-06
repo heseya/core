@@ -77,10 +77,10 @@ class PageTest extends TestCase
      */
     public function testIndex($user): void
     {
-        $this->$user->givePermissionTo('pages.show');
+        $this->{$user}->givePermissionTo('pages.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/pages')
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -97,12 +97,12 @@ class PageTest extends TestCase
      */
     public function testIndexByIds($user): void
     {
-        $this->$user->givePermissionTo('pages.show');
+        $this->{$user}->givePermissionTo('pages.show');
 
         Page::factory()->count(10)->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/pages', [
                 'ids' => [
                     $this->page->getKey(),
@@ -123,12 +123,12 @@ class PageTest extends TestCase
      */
     public function testIndexPerformance($user): void
     {
-        $this->$user->givePermissionTo('pages.show');
+        $this->{$user}->givePermissionTo('pages.show');
 
         Page::factory()->count(499)->create(['public' => true]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/pages?limit=500')
             ->assertOk()
             ->assertJsonCount(500, 'data');
@@ -141,9 +141,9 @@ class PageTest extends TestCase
      */
     public function testIndexHidden($user): void
     {
-        $this->$user->givePermissionTo(['pages.show', 'pages.show_hidden']);
+        $this->{$user}->givePermissionTo(['pages.show', 'pages.show_hidden']);
 
-        $response = $this->actingAs($this->$user)->getJson('/pages');
+        $response = $this->actingAs($this->{$user})->getJson('/pages');
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data');
@@ -163,15 +163,15 @@ class PageTest extends TestCase
      */
     public function testView($user): void
     {
-        $this->$user->givePermissionTo('pages.show_details');
+        $this->{$user}->givePermissionTo('pages.show_details');
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/pages/' . $this->page->slug);
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected_view]);
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/pages/id:' . $this->page->getKey());
         $response
             ->assertOk()
@@ -183,17 +183,17 @@ class PageTest extends TestCase
      */
     public function testViewWrongIdOrSlug($user): void
     {
-        $this->$user->givePermissionTo('pages.show_details');
+        $this->{$user}->givePermissionTo('pages.show_details');
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->getJson('/pages/its_wrong_slug')
             ->assertNotFound();
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->getJson('/pages/id:its-not-uuid')
             ->assertNotFound();
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->getJson('/pages/id:' . $this->page->getKey() . $this->page->getKey())
             ->assertNotFound();
     }
@@ -203,7 +203,7 @@ class PageTest extends TestCase
      */
     public function testViewPrivateMetadata($user): void
     {
-        $this->$user->givePermissionTo(['pages.show_details', 'pages.show_metadata_private']);
+        $this->{$user}->givePermissionTo(['pages.show_details', 'pages.show_metadata_private']);
 
         $privateMetadata = $this->page->metadataPrivate()->create([
             'name' => 'hiddenMetadata',
@@ -212,13 +212,13 @@ class PageTest extends TestCase
             'public' => false,
         ]);
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/pages/' . $this->page->slug);
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected_view]);
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/pages/id:' . $this->page->getKey());
         $response
             ->assertOk()
@@ -235,13 +235,13 @@ class PageTest extends TestCase
      */
     public function testViewHiddenUnauthorized($user): void
     {
-        $this->$user->givePermissionTo('pages.show_details');
+        $this->{$user}->givePermissionTo('pages.show_details');
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/pages/' . $this->page_hidden->slug);
         $response->assertNotFound();
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/pages/id:' . $this->page_hidden->getKey());
         $response->assertNotFound();
     }
@@ -251,13 +251,13 @@ class PageTest extends TestCase
      */
     public function testViewHidden($user): void
     {
-        $this->$user->givePermissionTo(['pages.show_details', 'pages.show_hidden']);
+        $this->{$user}->givePermissionTo(['pages.show_details', 'pages.show_hidden']);
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/pages/' . $this->page_hidden->slug);
         $response->assertOk();
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/pages/id:' . $this->page_hidden->getKey());
         $response->assertOk();
     }
@@ -277,7 +277,7 @@ class PageTest extends TestCase
      */
     public function testCreate($user): void
     {
-        $this->$user->givePermissionTo('pages.add');
+        $this->{$user}->givePermissionTo('pages.add');
 
         Event::fake([PageCreated::class]);
 
@@ -289,7 +289,7 @@ class PageTest extends TestCase
             'content_html' => $html,
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/pages', $page);
+        $response = $this->actingAs($this->{$user})->postJson('/pages', $page);
         $response->assertJson([
             'data' => $page,
         ])->assertCreated();
@@ -304,7 +304,7 @@ class PageTest extends TestCase
      */
     public function testCreateWithSameSlug($user): void
     {
-        $this->$user->givePermissionTo('pages.add');
+        $this->{$user}->givePermissionTo('pages.add');
 
         $html = '<h1>hello world</h1>';
         $page = [
@@ -314,7 +314,7 @@ class PageTest extends TestCase
             'content_html' => $html,
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/pages', $page);
+        $response = $this->actingAs($this->{$user})->postJson('/pages', $page);
 
         $response->assertJsonFragment([
             'key' => ValidationError::UNIQUE,
@@ -326,7 +326,7 @@ class PageTest extends TestCase
      */
     public function testCreateWithMetadata($user): void
     {
-        $this->$user->givePermissionTo('pages.add');
+        $this->{$user}->givePermissionTo('pages.add');
 
         Event::fake([PageCreated::class]);
 
@@ -342,7 +342,7 @@ class PageTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/pages', $page)
             ->assertJson([
                 'data' => $page,
@@ -357,7 +357,7 @@ class PageTest extends TestCase
      */
     public function testCreateWithMetadataPrivate($user): void
     {
-        $this->$user->givePermissionTo(['pages.add', 'pages.show_metadata_private']);
+        $this->{$user}->givePermissionTo(['pages.add', 'pages.show_metadata_private']);
 
         Event::fake([PageCreated::class]);
 
@@ -373,7 +373,7 @@ class PageTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/pages', $page)
             ->assertJson([
                 'data' => $page,
@@ -388,14 +388,14 @@ class PageTest extends TestCase
      */
     public function testCreateWithWebHook($user): void
     {
-        $this->$user->givePermissionTo('pages.add');
+        $this->{$user}->givePermissionTo('pages.add');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'PageCreated',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => true,
             'with_hidden' => false,
         ]);
@@ -410,7 +410,7 @@ class PageTest extends TestCase
             'content_html' => $html,
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/pages', $page);
+        $response = $this->actingAs($this->{$user})->postJson('/pages', $page);
         $response->assertJson([
             'data' => $page,
         ])->assertCreated();
@@ -444,7 +444,7 @@ class PageTest extends TestCase
      */
     public function testCreateWithSeo($user, $boolean, $booleanValue): void
     {
-        $this->$user->givePermissionTo('pages.add');
+        $this->{$user}->givePermissionTo('pages.add');
 
         $html = '<h1>hello world</h1>';
         $page = [
@@ -459,7 +459,7 @@ class PageTest extends TestCase
             ],
         ];
 
-        $response = $this->actingAs($this->$user)->json('POST', '/pages', $page);
+        $response = $this->actingAs($this->{$user})->json('POST', '/pages', $page);
         $response
             ->assertCreated()
             ->assertJsonFragment([
@@ -494,7 +494,7 @@ class PageTest extends TestCase
      */
     public function testCreateByOrder($user): void
     {
-        $this->$user->givePermissionTo('pages.add');
+        $this->{$user}->givePermissionTo('pages.add');
 
         Event::fake([PageCreated::class]);
 
@@ -509,7 +509,7 @@ class PageTest extends TestCase
                 'content_html' => '<p>' . $this->faker->sentence(rand(10, 30)) . '</p>',
             ];
 
-            $response = $this->actingAs($this->$user)->postJson('/pages', $page);
+            $response = $this->actingAs($this->{$user})->postJson('/pages', $page);
             $response->assertCreated();
 
             $uuids[] = $response->getData()->data->id;
@@ -536,14 +536,14 @@ class PageTest extends TestCase
      */
     public function testDeleteAndCreateWithTheSameSlug($user): void
     {
-        $this->$user->givePermissionTo('pages.add');
-        $this->$user->givePermissionTo('pages.remove');
+        $this->{$user}->givePermissionTo('pages.add');
+        $this->{$user}->givePermissionTo('pages.remove');
 
         Event::fake([PageDeleted::class]);
         $this->page->slug = 'test';
         $this->page->save();
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->deleteJson('/pages/id:' . $this->page->getKey())
             ->assertNoContent();
         $this->assertSoftDeleted($this->page);
@@ -562,7 +562,7 @@ class PageTest extends TestCase
             'content_html' => '<h1>hello world</h1>',
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/pages', $page);
+        $response = $this->actingAs($this->{$user})->postJson('/pages', $page);
         $response->assertJson([
             'data' => $page,
         ])->assertCreated();
@@ -587,7 +587,7 @@ class PageTest extends TestCase
      */
     public function testUpdate(string $user): void
     {
-        $this->$user->givePermissionTo('pages.edit');
+        $this->{$user}->givePermissionTo('pages.edit');
 
         Event::fake(PageUpdated::class);
 
@@ -600,7 +600,7 @@ class PageTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->patchJson(
                 '/pages/id:' . $this->page->getKey(),
                 $page,
@@ -618,9 +618,9 @@ class PageTest extends TestCase
      */
     public function testUpdateMissingFields(string $user): void
     {
-        $this->$user->givePermissionTo('pages.edit');
+        $this->{$user}->givePermissionTo('pages.edit');
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->patchJson('/pages/id:' . $this->page->getKey(), [
                 'public' => true,
             ])
@@ -632,14 +632,14 @@ class PageTest extends TestCase
      */
     public function testUpdateWithWebHook(string $user): void
     {
-        $this->$user->givePermissionTo('pages.edit');
+        $this->{$user}->givePermissionTo('pages.edit');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'PageUpdated',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => true,
             'with_hidden' => true,
         ]);
@@ -654,7 +654,7 @@ class PageTest extends TestCase
             'content_html' => $html,
         ];
 
-        $response = $this->actingAs($this->$user)->patchJson(
+        $response = $this->actingAs($this->{$user})->patchJson(
             '/pages/id:' . $this->page->getKey(),
             $page,
         );
@@ -699,7 +699,7 @@ class PageTest extends TestCase
      */
     public function testUpdateWithSeo($user, $boolean, $booleanValue): void
     {
-        $this->$user->givePermissionTo('pages.edit');
+        $this->{$user}->givePermissionTo('pages.edit');
 
         $html = '<h1>hello world 2</h1>';
         $page = [
@@ -717,7 +717,7 @@ class PageTest extends TestCase
         $seo = SeoMetadata::factory()->create();
         $this->page->seo()->save($seo);
 
-        $response = $this->actingAs($this->$user)->json(
+        $response = $this->actingAs($this->{$user})->json(
             'PATCH',
             '/pages/id:' . $this->page->getKey(),
             $page
@@ -769,14 +769,14 @@ class PageTest extends TestCase
      */
     public function testDelete($user): void
     {
-        $this->$user->givePermissionTo('pages.remove');
+        $this->{$user}->givePermissionTo('pages.remove');
 
         $seo = SeoMetadata::factory()->create();
         $this->page->seo()->save($seo);
 
         Event::fake([PageDeleted::class]);
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->deleteJson('/pages/id:' . $this->page->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($this->page);
@@ -793,7 +793,7 @@ class PageTest extends TestCase
         DB::table('pages')->delete();
         $page = Page::factory()->count(10)->create();
 
-        $this->actingAs($this->$user)->postJson('/pages/reorder', [
+        $this->actingAs($this->{$user})->postJson('/pages/reorder', [
             'pages' => $page->pluck('id')->toArray(),
         ])->assertForbidden();
     }
@@ -803,14 +803,14 @@ class PageTest extends TestCase
      */
     public function testReorder(string $user): void
     {
-        $this->$user->givePermissionTo('pages.edit');
+        $this->{$user}->givePermissionTo('pages.edit');
 
         DB::table('pages')->delete();
         $page = Page::factory()->count(3)->create();
 
         $ids = $page->pluck('id');
 
-        $response = $this->actingAs($this->$user)->postJson('/pages/reorder', [
+        $this->actingAs($this->{$user})->postJson('/pages/reorder', [
             'pages' => $ids->toArray(),
         ])->assertNoContent();
 

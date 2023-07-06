@@ -31,12 +31,12 @@ class AuditTest extends TestCase
      */
     public function testView($user): void
     {
-        $this->$user->givePermissionTo('audits.show');
+        $this->{$user}->givePermissionTo('audits.show');
 
         $product = $this->createProduct();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/audits/products/id:' . $product->getKey())
             ->assertOk()
             ->assertJsonFragment(['old_values' => ['name' => 'Old name']])
@@ -48,17 +48,17 @@ class AuditTest extends TestCase
      */
     public function testViewWrongId($user): void
     {
-        $this->$user->givePermissionTo('audits.show');
+        $this->{$user}->givePermissionTo('audits.show');
 
         $product = $this->createProduct();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/audits/products/id:its-not-id')
             ->assertNotFound();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/audits/products/id:' . $product->getKey() . $product->getKey())
             ->assertNotFound();
     }
@@ -68,13 +68,13 @@ class AuditTest extends TestCase
      */
     public function testViewNotAuditable($user): void
     {
-        $this->$user->givePermissionTo('audits.show');
+        $this->{$user}->givePermissionTo('audits.show');
 
         $tag = Tag::factory()->create();
         $tag->update(['name' => 'test']);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/audits/tags/id:' . $tag->getKey())
             ->assertStatus(400)
             ->assertJsonFragment([

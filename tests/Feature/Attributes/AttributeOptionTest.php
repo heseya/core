@@ -13,7 +13,7 @@ class AttributeOptionTest extends TestCase
      */
     public function testSearch($user): void
     {
-        $this->$user->givePermissionTo('attributes.show');
+        $this->{$user}->givePermissionTo('attributes.show');
 
         $attribute = Attribute::factory()->create();
         $target = AttributeOption::factory()->create([
@@ -29,7 +29,7 @@ class AttributeOptionTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', "/attributes/id:{$attribute->getKey()}/options", [
                 'search' => 'searchtarget',
             ])
@@ -43,7 +43,7 @@ class AttributeOptionTest extends TestCase
      */
     public function testSearchByIds($user): void
     {
-        $this->$user->givePermissionTo('attributes.show');
+        $this->{$user}->givePermissionTo('attributes.show');
 
         $attribute = Attribute::factory()->create();
         $target = AttributeOption::factory()->create([
@@ -59,7 +59,7 @@ class AttributeOptionTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', "/attributes/id:{$attribute->getKey()}/options", [
                 'ids' => [
                     $target->getKey(),
@@ -75,12 +75,12 @@ class AttributeOptionTest extends TestCase
      */
     public function testSearchNoString($user): void
     {
-        $this->$user->givePermissionTo('attributes.show');
+        $this->{$user}->givePermissionTo('attributes.show');
 
         $attribute = Attribute::factory()->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', "/attributes/id:{$attribute->getKey()}/options", [
                 'search' => null,
             ])

@@ -29,7 +29,7 @@ class PricesTest extends TestCase
      */
     public function testProducts($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $product1 = Product::factory()->create([
             'public' => true,
@@ -46,7 +46,7 @@ class PricesTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/prices/products', ['ids' => [
                 $product1->getKey(),
                 $product2->getKey(),
@@ -76,14 +76,14 @@ class PricesTest extends TestCase
      */
     public function testProductsHidden($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $product1 = Product::factory()->create([
             'public' => false,
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/prices/products', ['ids' => [
                 $product1->getKey(),
             ]])
@@ -97,10 +97,10 @@ class PricesTest extends TestCase
      */
     public function testProductsMissing($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/prices/products', ['ids' => [
                 Str::uuid(),
             ]])
@@ -114,7 +114,7 @@ class PricesTest extends TestCase
      */
     public function testProductsGeneralDiscount($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $product1 = Product::factory()->create([
             'public' => true,
@@ -148,7 +148,7 @@ class PricesTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/prices/products', ['ids' => [
                 $product1->getKey(),
                 $product2->getKey(),
@@ -178,7 +178,7 @@ class PricesTest extends TestCase
      */
     public function testProductsUserDiscount($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $product1 = Product::factory()->create([
             'public' => true,
@@ -216,7 +216,7 @@ class PricesTest extends TestCase
             'type' => ConditionType::USER_IN,
             'value' => [
                 'users' => [
-                    $this->$user->getKey(),
+                    $this->{$user}->getKey(),
                 ],
                 'is_allow_list' => true,
             ],
@@ -225,7 +225,7 @@ class PricesTest extends TestCase
         $sale->conditionGroups()->attach($conditionGroup);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/prices/products', ['ids' => [
                 $product1->getKey(),
                 $product2->getKey(),
@@ -255,7 +255,7 @@ class PricesTest extends TestCase
      */
     public function testProductsOtherUserDiscount($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $product1 = Product::factory()->create([
             'public' => true,
@@ -303,7 +303,7 @@ class PricesTest extends TestCase
         $sale->conditionGroups()->attach($conditionGroup);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/prices/products', ['ids' => [
                 $product1->getKey(),
                 $product2->getKey(),

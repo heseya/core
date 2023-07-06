@@ -44,10 +44,10 @@ class ProductAvailabilityTest extends TestCase
      */
     public function testAddDeposit($user): void
     {
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', "/items/id:{$this->item->getKey()}/deposits", [
                 'quantity' => 16,
                 'shipping_time' => 1,
@@ -67,10 +67,10 @@ class ProductAvailabilityTest extends TestCase
      */
     public function testRemovedItemFromDeposit($user): void
     {
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', "/items/id:{$this->item->getKey()}/deposits", [
                 'quantity' => -6,
                 'shipping_time' => 2,
@@ -89,10 +89,10 @@ class ProductAvailabilityTest extends TestCase
      */
     public function testRemovedAllItemsFromDeposit($user): void
     {
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', "/items/id:{$this->item->getKey()}/deposits", [
                 'quantity' => -10,
                 'shipping_time' => 2,
@@ -111,7 +111,7 @@ class ProductAvailabilityTest extends TestCase
      */
     public function testMultipleItemsDeposits($user): void
     {
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         $item2 = Item::factory()->create();
         $item2->deposits()->create([
@@ -144,7 +144,7 @@ class ProductAvailabilityTest extends TestCase
         );
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', "/items/id:{$this->item->getKey()}/deposits", [
                 'quantity' => 2,
                 'shipping_time' => 2,
@@ -163,7 +163,7 @@ class ProductAvailabilityTest extends TestCase
      */
     public function testMultipleItemsSameQuantityDeposits($user): void
     {
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         $product = Product::factory()->create([
             'public' => true,
@@ -243,7 +243,7 @@ class ProductAvailabilityTest extends TestCase
         //   4  |    7     |     2     |
         // Only 5 products can be sold in shipping_time = 3
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', "/items/id:{$item4->getKey()}/deposits", [
                 'quantity' => 7,
                 'shipping_time' => 3,
@@ -262,7 +262,7 @@ class ProductAvailabilityTest extends TestCase
      */
     public function testMultipleItemsDifferentRequiredQuantity($user): void
     {
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         $item = Item::factory()->create();
 
@@ -281,7 +281,7 @@ class ProductAvailabilityTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', "/items/id:{$item->getKey()}/deposits", [
                 'quantity' => 2,
                 'shipping_time' => 3,
@@ -300,7 +300,7 @@ class ProductAvailabilityTest extends TestCase
      */
     public function testItemRequiredBySchema($user): void
     {
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         $schema = Schema::factory()->create([
             'required' => true,
@@ -317,7 +317,7 @@ class ProductAvailabilityTest extends TestCase
         $product->schemas()->attach($schema->getKey());
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', "/items/id:{$item->getKey()}/deposits", [
                 'quantity' => 2,
                 'shipping_time' => 2,
@@ -336,7 +336,7 @@ class ProductAvailabilityTest extends TestCase
      */
     public function testItemRequiredBySchemaAndProduct($user): void
     {
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         $schema = Schema::factory()->create([
             'required' => true,
@@ -359,7 +359,7 @@ class ProductAvailabilityTest extends TestCase
         $option->items()->attach($this->item->getKey());
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', "/items/id:{$this->item->getKey()}/deposits", [
                 'quantity' => 2,
                 'shipping_time' => 3,
@@ -378,7 +378,7 @@ class ProductAvailabilityTest extends TestCase
      */
     public function testOneItemPerShippingTime($user): void
     {
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         $item = Item::factory()->create();
 
@@ -394,7 +394,7 @@ class ProductAvailabilityTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', "/items/id:{$item->getKey()}/deposits", [
                 'quantity' => 1,
                 'shipping_time' => 3,

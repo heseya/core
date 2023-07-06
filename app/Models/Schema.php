@@ -30,10 +30,10 @@ use Illuminate\Validation\ValidationException;
  */
 class Schema extends Model implements SortableContract
 {
-    use HasFactory;
     use HasCriteria;
-    use Sortable;
+    use HasFactory;
     use HasMetadata;
+    use Sortable;
 
     protected $fillable = [
         'type',

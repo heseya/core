@@ -22,7 +22,7 @@ class SchemaTest extends TestCase
     {
         Schema::factory()->count(5)->create();
 
-        $response = $this->actingAs($this->$user)->getJson('/schemas');
+        $response = $this->actingAs($this->{$user})->getJson('/schemas');
 
         $response->assertForbidden();
     }
@@ -32,11 +32,11 @@ class SchemaTest extends TestCase
      */
     public function testIndexProductsAdd($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
         Schema::factory()->count(5)->create();
 
-        $response = $this->actingAs($this->$user)->getJson('/schemas');
+        $response = $this->actingAs($this->{$user})->getJson('/schemas');
 
         $response
             ->assertOk()
@@ -48,12 +48,12 @@ class SchemaTest extends TestCase
      */
     public function testIndexWithPagination($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
         Schema::factory()->count(20)->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/schemas', ['limit' => 10])
             ->assertOk()
             ->assertJsonCount(10, 'data');
@@ -66,11 +66,11 @@ class SchemaTest extends TestCase
      */
     public function testIndexProductsEdit($user): void
     {
-        $this->$user->givePermissionTo('products.edit');
+        $this->{$user}->givePermissionTo('products.edit');
 
         Schema::factory()->count(5)->create();
 
-        $response = $this->actingAs($this->$user)->getJson('/schemas');
+        $response = $this->actingAs($this->{$user})->getJson('/schemas');
 
         $response
             ->assertOk()
@@ -82,7 +82,7 @@ class SchemaTest extends TestCase
      */
     public function testIndexSearchByHidden($user, $boolean, $booleanValue): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
         $hidden = Schema::factory()->create([
             'hidden' => true,
@@ -94,7 +94,7 @@ class SchemaTest extends TestCase
 
         $schemaId = $booleanValue ? $hidden->getKey() : $visible->getKey();
 
-        $response = $this->actingAs($this->$user)->json('GET', '/schemas', ['hidden' => $boolean]);
+        $response = $this->actingAs($this->{$user})->json('GET', '/schemas', ['hidden' => $boolean]);
 
         $response
             ->assertOk()
@@ -109,7 +109,7 @@ class SchemaTest extends TestCase
      */
     public function testIndexSearchByIds($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
         $schema1 = Schema::factory()->create([
             'hidden' => false,
@@ -119,7 +119,7 @@ class SchemaTest extends TestCase
             'hidden' => false,
         ]);
 
-        $this->actingAs($this->$user)->json('GET', '/schemas', ['ids' => [$schema1->getKey()]])
+        $this->actingAs($this->{$user})->json('GET', '/schemas', ['ids' => [$schema1->getKey()]])
             ->assertOk()
             ->assertJsonCount(1, 'data');
     }
@@ -129,7 +129,7 @@ class SchemaTest extends TestCase
      */
     public function testIndexSearchByRequired($user, $boolean, $booleanValue): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
         $hidden = Schema::factory()->create([
             'required' => true,
@@ -141,7 +141,7 @@ class SchemaTest extends TestCase
 
         $schemaId = $booleanValue ? $hidden->getKey() : $visible->getKey();
 
-        $response = $this->actingAs($this->$user)->json('GET', '/schemas', ['required' => $boolean]);
+        $response = $this->actingAs($this->{$user})->json('GET', '/schemas', ['required' => $boolean]);
 
         $response
             ->assertOk()
@@ -158,7 +158,7 @@ class SchemaTest extends TestCase
     {
         $schema = Schema::factory()->create();
 
-        $response = $this->actingAs($this->$user)->getJson('/schemas/id:' . $schema->getKey());
+        $response = $this->actingAs($this->{$user})->getJson('/schemas/id:' . $schema->getKey());
 
         $response->assertForbidden();
     }
@@ -168,7 +168,7 @@ class SchemaTest extends TestCase
      */
     public function testShowProductsAdd($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
         $schema = Schema::factory()->create();
 
@@ -194,7 +194,7 @@ class SchemaTest extends TestCase
             'schema_id' => $schema->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)->getJson('/schemas/id:' . $schema->getKey())
+        $response = $this->actingAs($this->{$user})->getJson('/schemas/id:' . $schema->getKey())
             ->assertOk()
             ->assertJsonFragment(['id' => $schema->getKey()]);
 
@@ -210,11 +210,11 @@ class SchemaTest extends TestCase
      */
     public function testShowProductsEdit($user): void
     {
-        $this->$user->givePermissionTo('products.edit');
+        $this->{$user}->givePermissionTo('products.edit');
 
         $schema = Schema::factory()->create();
 
-        $response = $this->actingAs($this->$user)->getJson('/schemas/id:' . $schema->getKey());
+        $response = $this->actingAs($this->{$user})->getJson('/schemas/id:' . $schema->getKey());
 
         $response
             ->assertOk()
@@ -226,17 +226,17 @@ class SchemaTest extends TestCase
      */
     public function testShowWrongId($user): void
     {
-        $this->$user->givePermissionTo('products.edit');
+        $this->{$user}->givePermissionTo('products.edit');
 
         $schema = Schema::factory()->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/schemas/id:its-not-uuid')
             ->assertNotFound();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/schemas/id:' . $schema->getKey() . $schema->getKey())
             ->assertNotFound();
     }
@@ -248,7 +248,7 @@ class SchemaTest extends TestCase
     {
         $item = Item::factory()->create();
 
-        $response = $this->actingAs($this->$user)->postJson('/schemas', [
+        $response = $this->actingAs($this->{$user})->postJson('/schemas', [
             'name' => 'Test',
             'type' => SchemaType::getKey(SchemaType::SELECT),
             'price' => 120,
@@ -276,7 +276,7 @@ class SchemaTest extends TestCase
      */
     public function testCreateProductsAdd($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
         $this->create($user);
     }
@@ -285,7 +285,7 @@ class SchemaTest extends TestCase
     {
         $item = Item::factory()->create();
 
-        $response = $this->actingAs($this->$user)->postJson('/schemas', [
+        $response = $this->actingAs($this->{$user})->postJson('/schemas', [
             'name' => 'Test',
             'type' => SchemaType::getKey(SchemaType::SELECT),
             'price' => 120,
@@ -368,10 +368,10 @@ class SchemaTest extends TestCase
      */
     public function testCreateWithMetadata($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/schemas', [
                 'name' => 'Test',
                 'type' => SchemaType::getKey(SchemaType::SELECT),
@@ -425,9 +425,9 @@ class SchemaTest extends TestCase
      */
     public function testCreateWithOptionMetadata($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
-        $response = $this->actingAs($this->$user)->json('POST', '/schemas', [
+        $response = $this->actingAs($this->{$user})->json('POST', '/schemas', [
             'name' => 'Test',
             'type' => SchemaType::getKey(SchemaType::SELECT),
             'price' => 120,
@@ -486,9 +486,9 @@ class SchemaTest extends TestCase
      */
     public function testCreateWithMetadataPrivate($user, $boolean, $booleanValue): void
     {
-        $this->$user->givePermissionTo(['products.add', 'schemas.show_metadata_private']);
+        $this->{$user}->givePermissionTo(['products.add', 'schemas.show_metadata_private']);
 
-        $response = $this->actingAs($this->$user)->json('POST', '/schemas', [
+        $response = $this->actingAs($this->{$user})->json('POST', '/schemas', [
             'name' => 'Test',
             'type' => SchemaType::getKey(SchemaType::SELECT),
             'price' => 120,
@@ -543,9 +543,9 @@ class SchemaTest extends TestCase
      */
     public function testCreateWithOptionMetadataPrivate($user, $boolean, $booleanValue): void
     {
-        $this->$user->givePermissionTo(['products.add', 'options.show_metadata_private']);
+        $this->{$user}->givePermissionTo(['products.add', 'options.show_metadata_private']);
 
-        $response = $this->actingAs($this->$user)->json('POST', '/schemas', [
+        $response = $this->actingAs($this->{$user})->json('POST', '/schemas', [
             'name' => 'Test',
             'type' => SchemaType::getKey(SchemaType::SELECT),
             'price' => 120,
@@ -604,9 +604,9 @@ class SchemaTest extends TestCase
      */
     public function testCreateAvailableSchemaNonSelect($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
-        $response = $this->actingAs($this->$user)->json('POST', '/schemas', [
+        $response = $this->actingAs($this->{$user})->json('POST', '/schemas', [
             'name' => 'Test',
             'type' => SchemaType::getKey(SchemaType::STRING),
             'price' => 120,
@@ -623,9 +623,9 @@ class SchemaTest extends TestCase
      */
     public function testCreateAvailableSchemaAndOptionWithoutItem($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
-        $response = $this->actingAs($this->$user)->json('POST', '/schemas', [
+        $response = $this->actingAs($this->{$user})->json('POST', '/schemas', [
             'name' => 'Test',
             'type' => SchemaType::getKey(SchemaType::SELECT),
             'price' => 120,
@@ -649,7 +649,7 @@ class SchemaTest extends TestCase
      */
     public function testCreateProductsEdit($user): void
     {
-        $this->$user->givePermissionTo('products.edit');
+        $this->{$user}->givePermissionTo('products.edit');
 
         $this->create($user);
     }
@@ -661,7 +661,7 @@ class SchemaTest extends TestCase
     {
         $usedSchema = Schema::factory()->create();
 
-        $response = $this->actingAs($this->$user)->postJson('/schemas', [
+        $response = $this->actingAs($this->{$user})->postJson('/schemas', [
             'name' => 'Multiplier',
             'type' => SchemaType::getKey(SchemaType::MULTIPLY_SCHEMA),
             'min' => 1,
@@ -680,7 +680,7 @@ class SchemaTest extends TestCase
      */
     public function testCreateRelationProductsAdd($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
         $this->createRelation($user);
     }
@@ -692,7 +692,7 @@ class SchemaTest extends TestCase
     {
         $usedSchema = Schema::factory()->create();
 
-        $response = $this->actingAs($this->$user)->postJson('/schemas', [
+        $response = $this->actingAs($this->{$user})->postJson('/schemas', [
             'name' => 'Multiplier',
             'type' => SchemaType::getKey(SchemaType::MULTIPLY_SCHEMA),
             'min' => 1,
@@ -717,7 +717,7 @@ class SchemaTest extends TestCase
      */
     public function testCreateRelationProductsEdit($user): void
     {
-        $this->$user->givePermissionTo('products.edit');
+        $this->{$user}->givePermissionTo('products.edit');
 
         $this->createRelation($user);
     }
@@ -738,7 +738,7 @@ class SchemaTest extends TestCase
             'schema_id' => $schema->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->patchJson('/schemas/id:' . $schema->getKey(), [
                 'name' => 'Test Updated',
                 'price' => 200,
@@ -767,7 +767,7 @@ class SchemaTest extends TestCase
      */
     public function testUpdateProductsAdd($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
         $this->update($user);
     }
@@ -800,7 +800,7 @@ class SchemaTest extends TestCase
             'schema_id' => $schema->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)->patchJson('/schemas/id:' . $schema->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/schemas/id:' . $schema->getKey(), [
             'name' => 'Test Updated',
             'price' => 200,
             'type' => SchemaType::getKey(SchemaType::SELECT),
@@ -857,7 +857,7 @@ class SchemaTest extends TestCase
      */
     public function testUpdateWithEmptyData($user): void
     {
-        $this->$user->givePermissionTo('products.edit');
+        $this->{$user}->givePermissionTo('products.edit');
 
         $schemaValues = [
             'name' => 'new schema',
@@ -884,7 +884,7 @@ class SchemaTest extends TestCase
             $item2->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)->patchJson('/schemas/id:' . $schema->getKey(), []);
+        $response = $this->actingAs($this->{$user})->patchJson('/schemas/id:' . $schema->getKey(), []);
 
         $response->assertOk();
 
@@ -896,7 +896,7 @@ class SchemaTest extends TestCase
      */
     public function testUpdateProductsEdit($user): void
     {
-        $this->$user->givePermissionTo('products.edit');
+        $this->{$user}->givePermissionTo('products.edit');
 
         $this->update($user);
     }
@@ -906,7 +906,7 @@ class SchemaTest extends TestCase
      */
     public function testUpdateWithMetadata($user): void
     {
-        $this->$user->givePermissionTo('products.edit');
+        $this->{$user}->givePermissionTo('products.edit');
 
         $schema = Schema::factory()->create();
 
@@ -917,7 +917,7 @@ class SchemaTest extends TestCase
             'public' => true,
         ]);
 
-        $this->actingAs($this->$user)->json('PATCH', '/schemas/id:' . $schema->getKey(), [
+        $this->actingAs($this->{$user})->json('PATCH', '/schemas/id:' . $schema->getKey(), [
             'metadata' => [
                 'first' => 'new value',
                 'second' => 'new metadata',
@@ -944,7 +944,7 @@ class SchemaTest extends TestCase
     {
         $schema = Schema::factory()->create();
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->deleteJson('/schemas/id:' . $schema->getKey());
 
         $response->assertForbidden();
@@ -955,11 +955,11 @@ class SchemaTest extends TestCase
      */
     public function testRemove($user): void
     {
-        $this->$user->givePermissionTo('schemas.remove');
+        $this->{$user}->givePermissionTo('schemas.remove');
 
         $schema = Schema::factory()->create();
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->deleteJson('/schemas/id:' . $schema->getKey());
 
         $response->assertNoContent();
@@ -1056,7 +1056,7 @@ class SchemaTest extends TestCase
      */
     public function testUpdateWithOptionPriceAndDisabledNull($user): void
     {
-        $this->$user->givePermissionTo('products.edit');
+        $this->{$user}->givePermissionTo('products.edit');
         $schema = Schema::factory()->create();
 
         $item = Item::factory()->create();
@@ -1073,7 +1073,7 @@ class SchemaTest extends TestCase
             $item2->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)->json('PATCH', '/schemas/id:' . $schema->getKey(), [
+        $response = $this->actingAs($this->{$user})->json('PATCH', '/schemas/id:' . $schema->getKey(), [
             'name' => 'Test Updated',
             'price' => 200,
             'type' => SchemaType::getKey(SchemaType::SELECT),
@@ -1102,10 +1102,10 @@ class SchemaTest extends TestCase
      */
     public function testCreateWithOptionPriceAndDisabledNull($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
         $item = Item::factory()->create();
 
-        $response = $this->actingAs($this->$user)->postJson('/schemas', [
+        $response = $this->actingAs($this->{$user})->postJson('/schemas', [
             'name' => 'Test',
             'type' => SchemaType::getKey(SchemaType::SELECT),
             'price' => 120,

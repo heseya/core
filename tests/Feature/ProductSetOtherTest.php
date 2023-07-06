@@ -35,7 +35,7 @@ class ProductSetOtherTest extends TestCase
      */
     public function testDelete($user): void
     {
-        $this->$user->givePermissionTo('product_sets.remove');
+        $this->{$user}->givePermissionTo('product_sets.remove');
 
         Event::fake([ProductSetDeleted::class]);
 
@@ -43,7 +43,7 @@ class ProductSetOtherTest extends TestCase
             'public' => true,
         ]);
 
-        $response = $this->actingAs($this->$user)->deleteJson(
+        $response = $this->actingAs($this->{$user})->deleteJson(
             '/product-sets/id:' . $newSet->getKey(),
         );
         $response->assertNoContent();
@@ -57,14 +57,14 @@ class ProductSetOtherTest extends TestCase
      */
     public function testDeleteWithWebHook($user): void
     {
-        $this->$user->givePermissionTo('product_sets.remove');
+        $this->{$user}->givePermissionTo('product_sets.remove');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ProductSetDeleted',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => true,
             'with_hidden' => false,
         ]);
@@ -75,7 +75,7 @@ class ProductSetOtherTest extends TestCase
             'public' => true,
         ]);
 
-        $response = $this->actingAs($this->$user)->deleteJson(
+        $response = $this->actingAs($this->{$user})->deleteJson(
             '/product-sets/id:' . $newSet->getKey(),
         );
         $response->assertNoContent();
@@ -106,7 +106,7 @@ class ProductSetOtherTest extends TestCase
      */
     public function testDeleteWithProducts($user): void
     {
-        $this->$user->givePermissionTo('product_sets.remove');
+        $this->{$user}->givePermissionTo('product_sets.remove');
 
         Event::fake([ProductSetDeleted::class]);
 
@@ -124,7 +124,7 @@ class ProductSetOtherTest extends TestCase
             $product3->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)->delete(
+        $response = $this->actingAs($this->{$user})->delete(
             '/product-sets/id:' . $newSet->getKey(),
         );
         $response->assertNoContent();
@@ -138,7 +138,7 @@ class ProductSetOtherTest extends TestCase
      */
     public function testDeleteWithSubsets($user): void
     {
-        $this->$user->givePermissionTo('product_sets.remove');
+        $this->{$user}->givePermissionTo('product_sets.remove');
 
         Event::fake([ProductSetDeleted::class]);
 
@@ -161,7 +161,7 @@ class ProductSetOtherTest extends TestCase
             'parent_id' => $newSet->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)->delete(
+        $response = $this->actingAs($this->{$user})->delete(
             '/product-sets/id:' . $newSet->getKey(),
         );
         $response->assertNoContent();
@@ -178,7 +178,7 @@ class ProductSetOtherTest extends TestCase
      */
     public function testDeleteWithSeo($user): void
     {
-        $this->$user->givePermissionTo('product_sets.remove');
+        $this->{$user}->givePermissionTo('product_sets.remove');
 
         $newSet = ProductSet::factory()->create([
             'public' => true,
@@ -186,7 +186,7 @@ class ProductSetOtherTest extends TestCase
         $seo = SeoMetadata::factory()->create();
         $newSet->seo()->save($seo);
 
-        $response = $this->actingAs($this->$user)->deleteJson(
+        $response = $this->actingAs($this->{$user})->deleteJson(
             '/product-sets/id:' . $newSet->getKey(),
         );
         $response->assertNoContent();
@@ -199,13 +199,13 @@ class ProductSetOtherTest extends TestCase
      */
     public function testReorderRoot($user): void
     {
-        $this->$user->givePermissionTo('product_sets.edit');
+        $this->{$user}->givePermissionTo('product_sets.edit');
 
         $set1 = ProductSet::factory()->create();
         $set2 = ProductSet::factory()->create();
         $set3 = ProductSet::factory()->create();
 
-        $response = $this->actingAs($this->$user)->postJson('/product-sets/reorder', [
+        $response = $this->actingAs($this->{$user})->postJson('/product-sets/reorder', [
             'product_sets' => [
                 $set3->getKey(),
                 $set2->getKey(),
@@ -235,7 +235,7 @@ class ProductSetOtherTest extends TestCase
      */
     public function testReorderChildren($user): void
     {
-        $this->$user->givePermissionTo('product_sets.edit');
+        $this->{$user}->givePermissionTo('product_sets.edit');
 
         $parent = ProductSet::factory()->create();
         $set1 = ProductSet::factory()->create([
@@ -248,7 +248,7 @@ class ProductSetOtherTest extends TestCase
             'parent_id' => $parent->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/product-sets/reorder/id:' . $parent->getKey(), [
+        $response = $this->actingAs($this->{$user})->postJson('/product-sets/reorder/id:' . $parent->getKey(), [
             'product_sets' => [
                 $set3->getKey(),
                 $set2->getKey(),
@@ -278,7 +278,7 @@ class ProductSetOtherTest extends TestCase
      */
     public function testAttachProducts($user): void
     {
-        $this->$user->givePermissionTo('product_sets.edit');
+        $this->{$user}->givePermissionTo('product_sets.edit');
 
         $set = ProductSet::factory()->create();
 
@@ -286,7 +286,7 @@ class ProductSetOtherTest extends TestCase
         $product2 = Product::factory()->create();
         $product3 = Product::factory()->create();
 
-        $response = $this->actingAs($this->$user)->postJson(
+        $response = $this->actingAs($this->{$user})->postJson(
             '/product-sets/id:' . $set->getKey() . '/products',
             [
                 'products' => [
@@ -322,7 +322,7 @@ class ProductSetOtherTest extends TestCase
      */
     public function testDetachProducts($user): void
     {
-        $this->$user->givePermissionTo('product_sets.edit');
+        $this->{$user}->givePermissionTo('product_sets.edit');
 
         $set = ProductSet::factory()->create();
 
@@ -336,7 +336,7 @@ class ProductSetOtherTest extends TestCase
             $product3->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson(
+        $response = $this->actingAs($this->{$user})->postJson(
             '/product-sets/id:' . $set->getKey() . '/products',
             [
                 'products' => [],
@@ -372,7 +372,7 @@ class ProductSetOtherTest extends TestCase
             'public' => true,
         ]);
 
-        $response = $this->actingAs($this->$user)->getJson(
+        $response = $this->actingAs($this->{$user})->getJson(
             '/product-sets/id:' . $set->getKey() . '/products',
         );
 
@@ -384,7 +384,7 @@ class ProductSetOtherTest extends TestCase
      */
     public function testShowProducts($user): void
     {
-        $this->$user->givePermissionTo('product_sets.show_details');
+        $this->{$user}->givePermissionTo('product_sets.show_details');
 
         $set = ProductSet::factory()->create([
             'public' => true,
@@ -405,7 +405,7 @@ class ProductSetOtherTest extends TestCase
             $product2->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/product-sets/id:' . $set->getKey() . '/products');
 
         $response
@@ -426,7 +426,7 @@ class ProductSetOtherTest extends TestCase
      */
     public function testShowProductsWrongId($user): void
     {
-        $this->$user->givePermissionTo('product_sets.show_details');
+        $this->{$user}->givePermissionTo('product_sets.show_details');
 
         $set = ProductSet::factory()->create([
             'public' => true,
@@ -447,11 +447,11 @@ class ProductSetOtherTest extends TestCase
             $product2->getKey(),
         ]);
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->getJson('/product-sets/id:its-not-uuid/products')
             ->assertNotFound();
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->getJson('/product-sets/id:' . $set->getKey() . $set->getKey() . '/products')
             ->assertNotFound();
     }
@@ -461,7 +461,7 @@ class ProductSetOtherTest extends TestCase
      */
     public function testShowProductsHidden($user): void
     {
-        $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
+        $this->{$user}->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
 
         $set = ProductSet::factory()->create([
             'public' => true,
@@ -479,7 +479,7 @@ class ProductSetOtherTest extends TestCase
             $product2->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)->getJson(
+        $response = $this->actingAs($this->{$user})->getJson(
             '/product-sets/id:' . $set->getKey() . '/products',
         );
 
@@ -503,14 +503,14 @@ class ProductSetOtherTest extends TestCase
      */
     public function testProductReorderInSetHigherOrder($user): void
     {
-        $this->$user->givePermissionTo(['product_sets.edit']);
+        $this->{$user}->givePermissionTo(['product_sets.edit']);
 
         $set = $this->prepareOrderData();
 
         /** @var Product $product */
         $product = $set->products->firstWhere('name', 'five');
 
-        $this->actingAs($this->$user)->json(
+        $this->actingAs($this->{$user})->json(
             'POST',
             '/product-sets/id:' . $set->getKey() . '/products/reorder',
             [
@@ -547,14 +547,14 @@ class ProductSetOtherTest extends TestCase
      */
     public function testProductReorderInSetLowerOrder($user): void
     {
-        $this->$user->givePermissionTo(['product_sets.edit']);
+        $this->{$user}->givePermissionTo(['product_sets.edit']);
 
         $set = $this->prepareOrderData();
 
         /** @var Product $product */
         $product = $set->products->firstWhere('name', 'one');
 
-        $this->actingAs($this->$user)->json(
+        $this->actingAs($this->{$user})->json(
             'POST',
             '/product-sets/id:' . $set->getKey() . '/products/reorder',
             [
@@ -591,14 +591,14 @@ class ProductSetOtherTest extends TestCase
      */
     public function testProductReorderInSetSameOrder($user): void
     {
-        $this->$user->givePermissionTo(['product_sets.edit']);
+        $this->{$user}->givePermissionTo(['product_sets.edit']);
 
         $set = $this->prepareOrderData();
 
         /** @var Product $product */
         $product = $set->products->firstWhere('name', 'three');
 
-        $this->actingAs($this->$user)->json(
+        $this->actingAs($this->{$user})->json(
             'POST',
             '/product-sets/id:' . $set->getKey() . '/products/reorder',
             [
@@ -635,14 +635,14 @@ class ProductSetOtherTest extends TestCase
      */
     public function testProductReorderInSetOrderOutOfSize($user): void
     {
-        $this->$user->givePermissionTo(['product_sets.edit']);
+        $this->{$user}->givePermissionTo(['product_sets.edit']);
 
         $set = $this->prepareOrderData();
 
         /** @var Product $product */
         $product = $set->products->where('name', 'three')->first();
 
-        $this->actingAs($this->$user)->json(
+        $this->actingAs($this->{$user})->json(
             'POST',
             '/product-sets/id:' . $set->getKey() . '/products/reorder',
             [
@@ -679,7 +679,7 @@ class ProductSetOtherTest extends TestCase
      */
     public function testProductReorderWhenWasNull($user): void
     {
-        $this->$user->givePermissionTo(['product_sets.edit']);
+        $this->{$user}->givePermissionTo(['product_sets.edit']);
 
         $set = ProductSet::factory()->create([
             'public' => true,
@@ -696,7 +696,7 @@ class ProductSetOtherTest extends TestCase
 
         $set->products()->attach($product1->getKey(), ['order' => null]);
         $set->products()->attach($product2->getKey(), ['order' => null]);
-        $this->actingAs($this->$user)->json(
+        $this->actingAs($this->{$user})->json(
             'POST',
             '/product-sets/id:' . $set->getKey() . '/products/reorder',
             [
@@ -721,7 +721,7 @@ class ProductSetOtherTest extends TestCase
      */
     public function testProductReorderHandleNulls($user): void
     {
-        $this->$user->givePermissionTo(['product_sets.edit']);
+        $this->{$user}->givePermissionTo(['product_sets.edit']);
 
         $set = ProductSet::factory()->create([
             'public' => true,
@@ -748,7 +748,7 @@ class ProductSetOtherTest extends TestCase
         $set->products()->attach($product2->getKey(), ['order' => 1]);
         $set->products()->attach($product3->getKey(), ['order' => null]);
         $set->products()->attach($product4->getKey(), ['order' => null]);
-        $this->actingAs($this->$user)->json(
+        $this->actingAs($this->{$user})->json(
             'POST',
             '/product-sets/id:' . $set->getKey() . '/products/reorder',
             [
