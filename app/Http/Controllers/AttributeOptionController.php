@@ -61,7 +61,7 @@ class AttributeOptionController extends Controller
         return AttributeOptionResource::make($attributeOption);
     }
 
-    public function destroy(AttributeOption $option): HttpResponse
+    public function destroy(Attribute $attribute, AttributeOption $option): HttpResponse
     {
         $this->attributeOptionService->delete($option);
 
