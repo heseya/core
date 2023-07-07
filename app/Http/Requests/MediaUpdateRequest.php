@@ -15,7 +15,7 @@ class MediaUpdateRequest extends FormRequest
         $media = $this->route('media');
 
         $return = [
-            'alt' => ['nullable', 'string', 'max:100'],
+            'alt' => ['nullable', 'string', 'max:255'],
         ];
 
         $return['slug'] = $this->input('slug') === null ? [new MediaSlug($media)] : [
