@@ -18,7 +18,7 @@ class MediaStoreRequest extends FormRequest
         return [
             'id' => ['uuid'],
 
-            'alt' => ['nullable', 'string', 'max:100'],
+            'alt' => ['nullable', 'string', 'max:255'],
             'file' => [
                 'required_without:url',
                 'prohibits:url',
