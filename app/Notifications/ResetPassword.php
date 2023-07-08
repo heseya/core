@@ -8,9 +8,7 @@ use Illuminate\Support\Facades\Lang;
 
 class ResetPassword extends Notification
 {
-    /**
-     * The password reset url.
-     */
+    /** The password reset url. */
     public string $token;
     public string $redirect_url;
 

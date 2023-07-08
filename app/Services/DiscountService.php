@@ -378,7 +378,9 @@ readonly class DiscountService implements DiscountServiceContract
         return $cartResource;
     }
 
-    /** @return ProductPriceDto[] */
+    /**
+     * @return ProductPriceDto[]
+     */
     public function calcProductsListDiscounts(Collection $products): array
     {
         $salesWithBlockList = $this->getSalesWithBlockList();
@@ -690,18 +692,14 @@ readonly class DiscountService implements DiscountServiceContract
             if ($discount->target_is_allow_list) {
                 /** @var CartItemDto $item */
                 foreach ($cart->getItems() as $item) {
-                    if ($discount->allProductsIds()->contains(function ($value) use ($item): bool {
-                        return $value === $item->getProductId();
-                    })) {
+                    if ($discount->allProductsIds()->contains(fn ($value): bool => $value === $item->getProductId())) {
                         return true;
                     }
                 }
             } else {
                 /** @var CartItemDto $item */
                 foreach ($cart->getItems() as $item) {
-                    if ($discount->allProductsIds()->doesntContain(function ($value) use ($item): bool {
-                        return $value === $item->getProductId();
-                    })) {
+                    if ($discount->allProductsIds()->doesntContain(fn ($value): bool => $value === $item->getProductId())) {
                         return true;
                     }
                 }
@@ -710,13 +708,9 @@ readonly class DiscountService implements DiscountServiceContract
 
         if ($discount->target_type->is(DiscountTargetType::SHIPPING_PRICE)) {
             if ($discount->target_is_allow_list) {
-                return $discount->shippingMethods->contains(function ($value) use ($cart): bool {
-                    return $value->getKey() === $cart->getShippingMethodId();
-                });
+                return $discount->shippingMethods->contains(fn ($value): bool => $value->getKey() === $cart->getShippingMethodId());
             } else {
-                return $discount->shippingMethods->doesntContain(function ($value) use ($cart): bool {
-                    return $value->getKey() === $cart->getShippingMethodId();
-                });
+                return $discount->shippingMethods->doesntContain(fn ($value): bool => $value->getKey() === $cart->getShippingMethodId());
             }
         }
 
@@ -1077,9 +1071,7 @@ readonly class DiscountService implements DiscountServiceContract
 
         /** @var CartItemDto $item */
         foreach ($cartDto->getItems() as $item) {
-            $cartItem = $cart->items->filter(function ($value, $key) use ($item) {
-                return $value->cartitem_id === $item->getCartItemId();
-            })->first();
+            $cartItem = $cart->items->filter(fn ($value, $key) => $value->cartitem_id === $item->getCartItemId())->first();
 
             if ($cartItem === null) {
                 continue;
@@ -1111,9 +1103,7 @@ readonly class DiscountService implements DiscountServiceContract
         $minimalProductPrice = $this->settingsService->getMinimalPrice('minimal_product_price');
 
         if ($cartItem->quantity > 1 && $cartItem->price_discounted !== $minimalProductPrice) {
-            $cart->items->first(function ($value) use ($cartItem): bool {
-                return $value->cartitem_id === $cartItem->cartitem_id && $value->quantity === $cartItem->quantity;
-            })->quantity = $cartItem->quantity - 1;
+            $cart->items->first(fn ($value): bool => $value->cartitem_id === $cartItem->cartitem_id && $value->quantity === $cartItem->quantity)->quantity = $cartItem->quantity - 1;
 
             $cartItem = new CartItemResponse(
                 $cartItem->cartitem_id,

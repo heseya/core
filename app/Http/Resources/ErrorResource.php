@@ -7,9 +7,7 @@ use Illuminate\Support\Facades\Config;
 
 final class ErrorResource extends Resource
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     public static $wrap = 'error';
 
     public function base(Request $request): array

@@ -25,14 +25,10 @@ class ShippingAddressRequired implements DataAwareRule, ImplicitRule
         /** @var ShippingMethod|null $shippingMethod */
         $shippingMethod = ShippingMethod::query()->find($this->data['shipping_method_id']);
 
-        if (
+        return !(
             ($shippingMethod?->shipping_type === ShippingType::POINT
                 || $shippingMethod?->shipping_type === ShippingType::ADDRESS) && $value === null
-        ) {
-            return false;
-        }
-
-        return true;
+        );
     }
 
     /**

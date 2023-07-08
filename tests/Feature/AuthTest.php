@@ -327,9 +327,7 @@ class AuthTest extends TestCase
 
         Log::shouldReceive('error')
             ->once()
-            ->withArgs(function ($message) {
-                return str_contains($message, $this->expectedLog);
-            });
+            ->withArgs(fn ($message) => str_contains($message, $this->expectedLog));
 
         $this
             ->actingAs($this->user)
@@ -352,9 +350,7 @@ class AuthTest extends TestCase
 
         Log::shouldReceive('error')
             ->once()
-            ->withArgs(function ($message) {
-                return str_contains($message, $this->expectedLog);
-            });
+            ->withArgs(fn ($message) => str_contains($message, $this->expectedLog));
 
         $this
             ->actingAs($this->user)
@@ -1133,9 +1129,7 @@ class AuthTest extends TestCase
 
         Log::shouldReceive('error')
             ->once()
-            ->withArgs(function ($message) {
-                return str_contains($message, 'App\Exceptions\ClientException(code: 422): Invalid password at');
-            });
+            ->withArgs(fn ($message) => str_contains($message, 'App\Exceptions\ClientException(code: 422): Invalid password at'));
 
         $response = $this->actingAs($user)->json('PUT', '/users/password', [
             'password' => 'tests',

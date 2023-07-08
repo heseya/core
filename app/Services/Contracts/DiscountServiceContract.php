@@ -65,7 +65,9 @@ interface DiscountServiceContract
 
     public function calcCartDiscounts(CartDto $cart, Collection $products): CartResource;
 
-    /** @return ProductPriceDto[] */
+    /**
+     * @return ProductPriceDto[]
+     */
     public function calcProductsListDiscounts(Collection $products): array;
 
     public function calcOrderShippingDiscounts(Order $order, OrderDto $orderDto): Order;

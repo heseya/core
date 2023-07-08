@@ -9,9 +9,7 @@ use Tests\TestCase;
 
 class StatusTest extends TestCase
 {
-    /**
-     * $status is used in TestCase.
-     */
+    /** $status is used in TestCase. */
     private Status $status_model;
 
     private array $expected;

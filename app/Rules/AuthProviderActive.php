@@ -20,14 +20,10 @@ class AuthProviderActive implements DataAwareRule, Rule
         /** @var AuthProvider $provider */
         $provider = AuthProvider::query()->where('key', request()->route('authProviderKey'))->first();
 
-        if (
+        return (bool) (
             array_key_exists('client_id', $this->data) && array_key_exists('client_secret', $this->data)
             || $provider->client_id !== null && $provider->client_secret !== null
-        ) {
-            return true;
-        }
-
-        return false;
+        );
     }
 
     public function message(): string

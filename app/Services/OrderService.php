@@ -479,11 +479,7 @@ class OrderService implements OrderServiceContract
             }
         }
 
-        if (!isset($exsistAddress)) {
-            return false;
-        }
-
-        return true;
+        return isset($exsistAddress);
     }
 
     private function modifyAddress(Order $order, string $attribute, AddressDto|Missing $addressDto): ?Address

@@ -1501,9 +1501,7 @@ class ProductTest extends TestCase
             'description_html' => '<h1>Description</h1>',
         ]);
 
-        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
-            return $job->class = WebHookEventListener::class;
-        });
+        Bus::assertDispatched(CallQueuedListener::class, fn ($job) => $job->class = WebHookEventListener::class);
 
         $product = Product::find($response->getData()->data->id);
         $event = new ProductCreated($product);
