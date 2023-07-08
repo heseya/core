@@ -61,8 +61,7 @@ class OrderService implements OrderServiceContract
         private NameServiceContract $nameService,
         private MetadataServiceContract $metadataService,
         private DepositServiceContract $depositService
-    ) {
-    }
+    ) {}
 
     public function calcSummary(Order $order): float
     {
@@ -434,7 +433,7 @@ class OrderService implements OrderServiceContract
     }
 
     private function getDeliveryMethods(
-        OrderDto|CartDto|OrderUpdateDto $dto,
+        CartDto|OrderDto|OrderUpdateDto $dto,
         Collection $products,
         bool $required,
     ): array {
@@ -541,7 +540,7 @@ class OrderService implements OrderServiceContract
     }
 
     private function resolveShippingAddress(
-        Address|string|null|Missing $shippingPlace,
+        Address|Missing|string|null $shippingPlace,
         string $shippingType,
         Order $order
     ): ?string {
@@ -572,7 +571,7 @@ class OrderService implements OrderServiceContract
     }
 
     private function resolveShippingPlace(
-        Address|string|null|Missing $shippingPlace,
+        Address|Missing|string|null $shippingPlace,
         string $shippingType,
         Order $order
     ): ?string {

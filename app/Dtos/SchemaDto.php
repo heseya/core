@@ -12,19 +12,19 @@ class SchemaDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    protected string|Missing $type;
-    protected string|Missing $name;
-    protected string|null|Missing $description;
-    protected float|null|Missing $price;
+    protected Missing|string $type;
+    protected Missing|string $name;
+    protected Missing|string|null $description;
+    protected float|Missing|null $price;
     protected bool|Missing $hidden;
     protected bool|Missing $required;
-    protected float|null|Missing $min;
-    protected float|null|Missing $max;
-    protected float|null|Missing $step;
-    protected string|null|Missing $default;
-    protected string|null|Missing $pattern;
-    protected string|null|Missing $validation;
-    protected array|null|Missing $used_schemas;
+    protected float|Missing|null $min;
+    protected float|Missing|null $max;
+    protected float|Missing|null $step;
+    protected Missing|string|null $default;
+    protected Missing|string|null $pattern;
+    protected Missing|string|null $validation;
+    protected array|Missing|null $used_schemas;
     protected array|Missing $options;
 
     protected array|Missing $metadata;
@@ -58,12 +58,12 @@ class SchemaDto extends Dto implements InstantiateFromRequest
         );
     }
 
-    public function getUsedSchemas(): Missing|null|array
+    public function getUsedSchemas(): array|Missing|null
     {
         return $this->used_schemas;
     }
 
-    public function getOptions(): Missing|array
+    public function getOptions(): array|Missing
     {
         return $this->options;
     }

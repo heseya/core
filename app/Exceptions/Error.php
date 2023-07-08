@@ -13,8 +13,7 @@ final class Error
         public string $key = 'INTERNAL_SERVER_ERROR',
         public array $errors = [],
         public array $stack = []
-    ) {
-    }
+    ) {}
 
     /**
      * Return http error response.

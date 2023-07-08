@@ -14,7 +14,6 @@ class AuthProviderActive implements DataAwareRule, Rule
      * Determine if the validation rule passes.
      *
      * @param string $attribute
-     * @param mixed $value
      */
     public function passes($attribute, $value): bool
     {
@@ -22,8 +21,8 @@ class AuthProviderActive implements DataAwareRule, Rule
         $provider = AuthProvider::query()->where('key', request()->route('authProviderKey'))->first();
 
         if (
-            array_key_exists('client_id', $this->data) && array_key_exists('client_secret', $this->data) ||
-            $provider->client_id !== null && $provider->client_secret !== null
+            array_key_exists('client_id', $this->data) && array_key_exists('client_secret', $this->data)
+            || $provider->client_id !== null && $provider->client_secret !== null
         ) {
             return true;
         }

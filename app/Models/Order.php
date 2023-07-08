@@ -146,10 +146,10 @@ class Order extends Model implements AuditableContract, SortableContract
             ?? $this->digitalShippingMethod?->paymentMethods->count()
             ?? 0;
 
-        return !$this->paid &&
-            $this->status !== null &&
-            !$this->status->cancel &&
-            $paymentMethodCount > 0;
+        return !$this->paid
+            && $this->status !== null
+            && !$this->status->cancel
+            && $paymentMethodCount > 0;
     }
 
     public function getShippingTypeAttribute(): string|null

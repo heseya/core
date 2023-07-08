@@ -17,8 +17,7 @@ class ProductSearchService implements ProductSearchServiceContract
 {
     public function __construct(
         private ProductSetServiceContract $productSetService,
-    ) {
-    }
+    ) {}
 
     public function mapSearchableArray(Product $product): array
     {

@@ -11,11 +11,11 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class ConsentDto extends Dto implements InstantiateFromRequest
 {
-    private string|Missing $name;
-    private string|Missing $description_html;
+    private Missing|string $name;
+    private Missing|string $description_html;
     private bool|Missing $required;
 
-    public static function instantiateFromRequest(FormRequest|ConsentStoreRequest|ConsentUpdateRequest $request): self
+    public static function instantiateFromRequest(ConsentStoreRequest|ConsentUpdateRequest|FormRequest $request): self
     {
         return new self(
             name: $request->input('name', new Missing()),
@@ -24,12 +24,12 @@ class ConsentDto extends Dto implements InstantiateFromRequest
         );
     }
 
-    public function getName(): string|Missing
+    public function getName(): Missing|string
     {
         return $this->name;
     }
 
-    public function getDescriptionHtml(): string|Missing
+    public function getDescriptionHtml(): Missing|string
     {
         return $this->description_html;
     }

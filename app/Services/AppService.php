@@ -32,8 +32,7 @@ class AppService implements AppServiceContract
         protected TokenServiceContract $tokenService,
         protected UrlServiceContract $urlService,
         protected MetadataServiceContract $metadataService,
-    ) {
-    }
+    ) {}
 
     public function install(AppInstallDto $dto): App
     {

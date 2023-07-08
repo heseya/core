@@ -2,6 +2,4 @@
 
 namespace App\Events;
 
-class SaleUpdated extends SaleEvent
-{
-}
+class SaleUpdated extends SaleEvent {}

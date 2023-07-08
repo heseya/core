@@ -2,6 +2,4 @@
 
 namespace App\Events;
 
-class ItemUpdatedQuantity extends ItemEvent
-{
-}
+class ItemUpdatedQuantity extends ItemEvent {}

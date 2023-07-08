@@ -29,8 +29,7 @@ class ProviderService implements ProviderServiceContract
 {
     public function __construct(
         private AuthServiceContract $authService,
-    ) {
-    }
+    ) {}
 
     public function getProvidersList(bool|null $active): JsonResource
     {

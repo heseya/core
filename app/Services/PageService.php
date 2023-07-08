@@ -22,8 +22,7 @@ class PageService implements PageServiceContract
     public function __construct(
         protected SeoMetadataServiceContract $seoMetadataService,
         protected MetadataServiceContract $metadataService,
-    ) {
-    }
+    ) {}
 
     public function authorize(Page $page): void
     {

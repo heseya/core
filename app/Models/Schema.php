@@ -105,9 +105,9 @@ class Schema extends Model implements SortableContract
         }
 
         if (
-            $this->type->is(SchemaType::NUMERIC) ||
-            $this->type->is(SchemaType::MULTIPLY) ||
-            $this->type->is(SchemaType::MULTIPLY_SCHEMA)
+            $this->type->is(SchemaType::NUMERIC)
+            || $this->type->is(SchemaType::MULTIPLY)
+            || $this->type->is(SchemaType::MULTIPLY_SCHEMA)
         ) {
             $validation->push('numeric');
         }
@@ -220,8 +220,8 @@ class Schema extends Model implements SortableContract
         }
 
         if (
-            ($this->type->is(SchemaType::STRING) || $this->type->is(SchemaType::NUMERIC)) &&
-            Str::length(trim($value)) === 0
+            ($this->type->is(SchemaType::STRING) || $this->type->is(SchemaType::NUMERIC))
+            && Str::length(trim($value)) === 0
         ) {
             return 0;
         }

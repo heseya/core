@@ -29,8 +29,7 @@ class ProductSetController extends Controller
 {
     public function __construct(
         private ProductSetServiceContract $productSetService,
-    ) {
-    }
+    ) {}
 
     public function index(ProductSetIndexRequest $request): JsonResource
     {

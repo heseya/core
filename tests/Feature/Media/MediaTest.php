@@ -592,36 +592,36 @@ class MediaTest extends TestCase
             ->assertStatus(500);
     }
 
-//    // Uncomment when Pages and media will be related
-//
-//    public function testDeleteFromPagUnauthorizede(): void
-//    {
-//        $this->user->givePermissionTo('pages.add');
-//
-//        $page = Page::factory()->create();
-//        $media = Media::factory()->create([
-//            'type' => Media::PHOTO,
-//            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
-//        ]);
-//        $page->media()->sync($media);
-//
-//        $this->actingAs($this->user)->deleteJson('/media/id:' . $media->getKey())
-//            ->assertForbidden();
-//    }
-//
-//    public function testDeleteFromPage(): void
-//    {
-//        $this->user->givePermissionTo('pages.edit');
-//
-//        $page = Page::factory()->create();
-//        $media = Media::factory()->create([
-//            'type' => Media::PHOTO,
-//            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
-//        ]);
-//        $page->media()->sync($media);
-//
-//        $this->actingAs($this->user)->deleteJson('/media/id:' . $media->getKey())
-//            ->assertNoContent();
-//        $this->assertDatabaseMissing('media', ['id' => $media->getKey()]);
-//    }
+    //    // Uncomment when Pages and media will be related
+    //
+    //    public function testDeleteFromPagUnauthorizede(): void
+    //    {
+    //        $this->user->givePermissionTo('pages.add');
+    //
+    //        $page = Page::factory()->create();
+    //        $media = Media::factory()->create([
+    //            'type' => Media::PHOTO,
+    //            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+    //        ]);
+    //        $page->media()->sync($media);
+    //
+    //        $this->actingAs($this->user)->deleteJson('/media/id:' . $media->getKey())
+    //            ->assertForbidden();
+    //    }
+    //
+    //    public function testDeleteFromPage(): void
+    //    {
+    //        $this->user->givePermissionTo('pages.edit');
+    //
+    //        $page = Page::factory()->create();
+    //        $media = Media::factory()->create([
+    //            'type' => Media::PHOTO,
+    //            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+    //        ]);
+    //        $page->media()->sync($media);
+    //
+    //        $this->actingAs($this->user)->deleteJson('/media/id:' . $media->getKey())
+    //            ->assertNoContent();
+    //        $this->assertDatabaseMissing('media', ['id' => $media->getKey()]);
+    //    }
 }

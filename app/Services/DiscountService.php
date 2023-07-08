@@ -78,10 +78,9 @@ readonly class DiscountService implements DiscountServiceContract
         private SettingsServiceContract $settingsService,
         private SeoMetadataServiceContract $seoMetadataService,
         private ShippingTimeDateServiceContract $shippingTimeDateService,
-    ) {
-    }
+    ) {}
 
-    public function index(SaleIndexDto|CouponIndexDto $dto): LengthAwarePaginator
+    public function index(CouponIndexDto|SaleIndexDto $dto): LengthAwarePaginator
     {
         return Discount::searchByCriteria($dto->toArray())
             ->orderBy('updated_at', 'DESC')
@@ -89,7 +88,7 @@ readonly class DiscountService implements DiscountServiceContract
             ->paginate(Config::get('pagination.per_page'));
     }
 
-    public function store(SaleDto|CouponDto $dto): Discount
+    public function store(CouponDto|SaleDto $dto): Discount
     {
         /** @var Discount $discount */
         $discount = Discount::query()->create($dto->toArray());
@@ -124,7 +123,7 @@ readonly class DiscountService implements DiscountServiceContract
         return $discount;
     }
 
-    public function update(Discount $discount, SaleDto|CouponDto $dto): Discount
+    public function update(Discount $discount, CouponDto|SaleDto $dto): Discount
     {
         $discount->update($dto->toArray());
 
@@ -744,8 +743,8 @@ readonly class DiscountService implements DiscountServiceContract
             if ($this->checkConditionGroups($discount, $orderDto, $order->cart_total)) {
                 $order = $this->applyDiscountOnOrder($discount, $order);
             } elseif (
-                ($discount->code === null && in_array($discount->getKey(), $sales)) ||
-                $discount->code !== null
+                ($discount->code === null && in_array($discount->getKey(), $sales))
+                || $discount->code !== null
             ) {
                 [$type, $id] = $discount->code !== null ? ['coupon', $discount->code] : ['sale', $discount->getKey()];
                 throw new ClientException(Exceptions::CLIENT_CANNOT_APPLY_SELECTED_DISCOUNT_TYPE, errorArray: ['type' => $type, 'id' => $id]);
@@ -1489,14 +1488,14 @@ readonly class DiscountService implements DiscountServiceContract
         return $conditionDto->getWeekday()[Carbon::now()->dayOfWeek];
     }
 
-    private function checkConditionCartLength(DiscountCondition $condition, int|float $cartLength): bool
+    private function checkConditionCartLength(DiscountCondition $condition, float|int $cartLength): bool
     {
         $conditionDto = CartLengthConditionDto::fromArray($condition->value + ['type' => $condition->type]);
 
         return $this->checkConditionLength($conditionDto, $cartLength);
     }
 
-    private function checkConditionCouponsCount(DiscountCondition $condition, int|float $couponsCount): bool
+    private function checkConditionCouponsCount(DiscountCondition $condition, float|int $couponsCount): bool
     {
         $conditionDto = CouponsCountConditionDto::fromArray($condition->value + ['type' => $condition->type]);
 
@@ -1505,7 +1504,7 @@ readonly class DiscountService implements DiscountServiceContract
 
     private function checkConditionLength(
         CartLengthConditionDto|CouponsCountConditionDto $conditionDto,
-        int|float $count,
+        float|int $count,
     ): bool {
         if (!$conditionDto->getMinValue() instanceof Missing && !$conditionDto->getMaxValue() instanceof Missing) {
             return $count >= $conditionDto->getMinValue() && $count <= $conditionDto->getMaxValue();

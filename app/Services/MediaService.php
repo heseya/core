@@ -20,8 +20,7 @@ final readonly class MediaService implements MediaServiceContract
         private ReorderServiceContract $reorderService,
         private MetadataServiceContract $metadataService,
         private SilverboxServiceContract $silverboxService,
-    ) {
-    }
+    ) {}
 
     public function sync(Product $product, array $media): void
     {

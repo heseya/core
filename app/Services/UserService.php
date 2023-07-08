@@ -27,12 +27,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-class UserService implements UserServiceContract
+readonly class UserService implements UserServiceContract
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
-    ) {
-    }
+    ) {}
 
     public function index(array $search, ?string $sort): LengthAwarePaginator
     {
@@ -42,6 +41,9 @@ class UserService implements UserServiceContract
             ->paginate(Config::get('pagination.per_page'));
     }
 
+    /**
+     * @throws ClientException
+     */
     public function create(UserCreateDto $dto): User
     {
         if (!$dto->getRoles() instanceof Missing) {
@@ -86,6 +88,9 @@ class UserService implements UserServiceContract
         return $user;
     }
 
+    /**
+     * @throws ClientException
+     */
     public function update(User $user, UserDto $dto): User
     {
         $authenticable = Auth::user();
@@ -150,6 +155,9 @@ class UserService implements UserServiceContract
         return $user;
     }
 
+    /**
+     * @throws ClientException
+     */
     public function destroy(User $user): void
     {
         $authenticable = Auth::user();

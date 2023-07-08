@@ -9,8 +9,7 @@ class ItemProductObserver
 {
     public function __construct(
         private AvailabilityServiceContract $availabilityService,
-    ) {
-    }
+    ) {}
 
     public function created(ItemProduct $itemProduct): void
     {

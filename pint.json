@@ -2,6 +2,7 @@
   "preset": "symfony",
   "rules": {
     "not_operator_with_space": false,
+    "nullable_type_declaration_for_default_null_value": false,
     "simplified_null_return": true,
     "assign_null_coalescing_to_coalesce_equal": true,
     "array_push": true,
@@ -39,6 +40,11 @@
     "self_accessor": true,
     "set_type_to_cast": true,
     "void_return": true,
+    "single_line_empty_body": true,
+    "ordered_types": {
+      "null_adjustment": "always_last",
+      "sort_algorithm": "alpha"
+    },
     "random_api_migration": {
       "replacements": {
         "getrandmax" : "mt_getrandmax",

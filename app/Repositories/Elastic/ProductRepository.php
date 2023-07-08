@@ -58,8 +58,7 @@ class ProductRepository implements ProductRepositoryContract
 
     public function __construct(
         private SortServiceContract $sortService,
-    ) {
-    }
+    ) {}
 
     public function search(ProductSearchDto $dto): LengthAwarePaginator
     {
@@ -217,12 +216,12 @@ class ProductRepository implements ProductRepositoryContract
         return $collection;
     }
 
-    private function must(Builder $query, string $key, string|int|float|bool $value): Builder
+    private function must(Builder $query, string $key, bool|float|int|string $value): Builder
     {
         return $query->must(new Matching($key, $value));
     }
 
-    private function filterName(Builder $query, string $key, string|int|float|bool $value): Builder
+    private function filterName(Builder $query, string $key, bool|float|int|string $value): Builder
     {
         $matching = new Matching($key, $value);
         $matching->setBoost(10);
@@ -230,7 +229,7 @@ class ProductRepository implements ProductRepositoryContract
         return $query->must($matching);
     }
 
-    private function filter(Builder $query, string $key, string|int|float|bool $value): Builder
+    private function filter(Builder $query, string $key, bool|float|int|string $value): Builder
     {
         return $query->filter(new Term($key, $value));
     }

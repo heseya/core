@@ -163,7 +163,7 @@ final class Handler extends ExceptionHandler
         return $validationErrors;
     }
 
-    private function getExceptionData(Throwable|Exception $exception): array
+    private function getExceptionData(Exception|Throwable $exception): array
     {
         if ($exception instanceof ServerException && Config::get('app.debug') === true) {
             return $exception->errors();

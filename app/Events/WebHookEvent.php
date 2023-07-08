@@ -52,7 +52,7 @@ abstract class WebHookEvent
 
     abstract public function getDataType(): string;
 
-    public function getIssuer(): Model|Authenticatable|Pivot|null
+    public function getIssuer(): Authenticatable|Model|Pivot|null
     {
         return $this->issuer;
     }
@@ -72,7 +72,7 @@ abstract class WebHookEvent
         return Str::remove('App\\Events\\', $this::class);
     }
 
-    protected function getModelClass(Model|Pivot|Authenticatable $model): string
+    protected function getModelClass(Authenticatable|Model|Pivot $model): string
     {
         return Str::remove('App\\Models\\', $model::class);
     }

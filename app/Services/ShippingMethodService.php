@@ -23,8 +23,7 @@ class ShippingMethodService implements ShippingMethodServiceContract
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
-    ) {
-    }
+    ) {}
 
     public function index(?array $search, ?string $country, float $cartValue): LengthAwarePaginator
     {

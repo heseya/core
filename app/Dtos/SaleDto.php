@@ -14,14 +14,14 @@ class SaleDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    protected string|Missing $name;
-    protected string|null|Missing $slug;
-    protected string|null|Missing $description;
-    protected string|null|Missing $description_html;
+    protected Missing|string $name;
+    protected Missing|string|null $slug;
+    protected Missing|string|null $description;
+    protected Missing|string|null $description_html;
     protected float|Missing $value;
-    protected string|Missing $type;
+    protected Missing|string $type;
     protected int|Missing $priority;
-    protected string|Missing $target_type;
+    protected Missing|string $target_type;
     protected bool|Missing $target_is_allow_list;
     protected array|Missing $condition_groups;
     protected array|Missing $target_products;
@@ -30,7 +30,7 @@ class SaleDto extends Dto implements InstantiateFromRequest
     protected bool|Missing $active;
 
     protected array|Missing $metadata;
-    protected SeoMetadataDto|Missing $seo;
+    protected Missing|SeoMetadataDto $seo;
 
     public static function instantiateFromRequest(FormRequest|SaleCreateRequest|StatusUpdateRequest $request): self
     {
@@ -74,7 +74,7 @@ class SaleDto extends Dto implements InstantiateFromRequest
         return $this->type;
     }
 
-    public function getPriority(): Missing|int
+    public function getPriority(): int|Missing
     {
         return $this->priority;
     }
@@ -84,37 +84,37 @@ class SaleDto extends Dto implements InstantiateFromRequest
         return $this->target_type;
     }
 
-    public function getTargetIsAllowList(): Missing|bool
+    public function getTargetIsAllowList(): bool|Missing
     {
         return $this->target_is_allow_list;
     }
 
-    public function getConditionGroups(): Missing|array
+    public function getConditionGroups(): array|Missing
     {
         return $this->condition_groups;
     }
 
-    public function getTargetProducts(): Missing|array
+    public function getTargetProducts(): array|Missing
     {
         return $this->target_products;
     }
 
-    public function getTargetSets(): Missing|array
+    public function getTargetSets(): array|Missing
     {
         return $this->target_sets;
     }
 
-    public function getTargetShippingMethods(): Missing|array
+    public function getTargetShippingMethods(): array|Missing
     {
         return $this->target_shipping_methods;
     }
 
-    public function getActive(): Missing|bool
+    public function getActive(): bool|Missing
     {
         return $this->active;
     }
 
-    public function getSeo(): SeoMetadataDto|Missing
+    public function getSeo(): Missing|SeoMetadataDto
     {
         return $this->seo;
     }

@@ -28,8 +28,7 @@ class ItemService implements ItemServiceContract
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
-    ) {
-    }
+    ) {}
 
     public function addItemArrays(array $items1, array $items2): array
     {
@@ -68,10 +67,10 @@ class ItemService implements ItemServiceContract
             }
 
             if (
-                $item->quantity < $count &&
-                $item->unlimited_stock_shipping_time === null &&
-                ($item->unlimited_stock_shipping_date === null ||
-                    $item->unlimited_stock_shipping_date < Carbon::now())
+                $item->quantity < $count
+                && $item->unlimited_stock_shipping_time === null
+                && ($item->unlimited_stock_shipping_date === null
+                    || $item->unlimited_stock_shipping_date < Carbon::now())
             ) {
                 return false;
             }
@@ -209,8 +208,8 @@ class ItemService implements ItemServiceContract
 
         ItemUpdated::dispatch($item);
         if (
-            !($dto->unlimited_stock_shipping_date instanceof Missing) ||
-            !($dto->unlimited_stock_shipping_time instanceof Missing)
+            !($dto->unlimited_stock_shipping_date instanceof Missing)
+            || !($dto->unlimited_stock_shipping_time instanceof Missing)
         ) {
             ItemUpdatedQuantity::dispatch($item);
         }

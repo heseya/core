@@ -16,9 +16,7 @@ use Illuminate\Support\Facades\Response;
 
 class AppController extends Controller
 {
-    public function __construct(private AppServiceContract $appService)
-    {
-    }
+    public function __construct(private AppServiceContract $appService) {}
 
     public function index(AppIndexRequest $request): JsonResource
     {

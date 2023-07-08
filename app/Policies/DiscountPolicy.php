@@ -13,7 +13,7 @@ class DiscountPolicy
 {
     use HandlesAuthorization;
 
-    public function coupon(User|App $user, Discount $discount): Response
+    public function coupon(App|User $user, Discount $discount): Response
     {
         if ($discount->code !== null) {
             return Response::allow();
@@ -21,7 +21,7 @@ class DiscountPolicy
         throw new NotFoundHttpException();
     }
 
-    public function sale(User|App $user, Discount $discount): Response
+    public function sale(App|User $user, Discount $discount): Response
     {
         if ($discount->code === null) {
             return Response::allow();

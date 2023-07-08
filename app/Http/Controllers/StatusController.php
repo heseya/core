@@ -19,9 +19,7 @@ use Illuminate\Support\Facades\Response;
 
 class StatusController extends Controller
 {
-    public function __construct(private StatusServiceContract $statusService)
-    {
-    }
+    public function __construct(private StatusServiceContract $statusService) {}
 
     public function index(StatusIndexRequest $request): JsonResource
     {

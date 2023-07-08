@@ -2,6 +2,4 @@
 
 namespace App\Events;
 
-class TfaSecurityCode extends TfaCode
-{
-}
+class TfaSecurityCode extends TfaCode {}

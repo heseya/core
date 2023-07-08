@@ -50,8 +50,7 @@ class OrderController extends Controller
     public function __construct(
         private readonly OrderServiceContract $orderService,
         private readonly DocumentServiceContract $documentService,
-    ) {
-    }
+    ) {}
 
     public function index(OrderIndexRequest $request): JsonResource
     {

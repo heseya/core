@@ -14,7 +14,7 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
     use MapMetadata;
 
     public function __construct(
-        readonly public string|Missing $id,
+        readonly public Missing|string $id,
         readonly public string $name,
         readonly public string $slug,
         readonly public float $price,
@@ -22,23 +22,22 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
         readonly public bool $shipping_digital,
         readonly public int|Missing $order,
         readonly public float|Missing $quantity_step,
-        readonly public int|null|Missing $google_product_category,
+        readonly public int|Missing|null $google_product_category,
         readonly public float|Missing $vat_rate,
         readonly public ?string $description_html,
         readonly public ?string $description_short,
-        readonly public float|null|Missing $purchase_limit_per_user,
+        readonly public float|Missing|null $purchase_limit_per_user,
         readonly public array|Missing $media,
         readonly public array|Missing $tags,
         readonly public array|Missing $schemas,
         readonly public array|Missing $sets,
         readonly public array|Missing $items,
-        readonly public SeoMetadataDto|Missing $seo,
+        readonly public Missing|SeoMetadataDto $seo,
         readonly public array|Missing $metadata,
         readonly public array|Missing $attributes,
         readonly public array|Missing $descriptions,
         readonly public array|Missing $relatedSets,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws DtoException
@@ -72,7 +71,7 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
         );
     }
 
-    public function getMetadata(): Missing|array
+    public function getMetadata(): array|Missing
     {
         return $this->metadata;
     }
