@@ -19,7 +19,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 
-class ShippingMethodService implements ShippingMethodServiceContract
+readonly class ShippingMethodService implements ShippingMethodServiceContract
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
