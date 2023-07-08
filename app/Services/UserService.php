@@ -257,9 +257,7 @@ readonly class UserService implements UserServiceContract
 
             // Delete audits related to the user
             // Must be done after the user is updated
-            // Not using relationship to avoid phpstan error
-            // @phpstan-ignore-next-line
-            $user->audits->each(fn ($audit) => $audit->delete());
+            $user->audits()->delete();
 
             // Delete user preferences
             $preferences?->delete();
