@@ -12,9 +12,9 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('user_preferences', function (Blueprint $table) {
+        Schema::create('user_preferences', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->boolean('successful_login_attempt_alert')->default(false);
             $table->boolean('failed_login_attempt_alert')->default(true);
@@ -23,7 +23,7 @@ return new class extends Migration {
             $table->timestamps();
         });
 
-        Schema::table('users', function (Blueprint $table) {
+        Schema::table('users', function (Blueprint $table): void {
             $table->foreignUuid('preferences_id')->nullable()->constrained('user_preferences');
         });
 
@@ -37,9 +37,9 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
+        Schema::table('users', function (Blueprint $table): void {
             $table->dropForeign(['preferences_id']);
             $table->dropColumn('preferences_id');
         });

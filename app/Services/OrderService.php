@@ -289,7 +289,7 @@ class OrderService implements OrderServiceContract
                     ) : $dto->getShippingPlace();
             } else {
                 if (!($dto->getShippingPlace() instanceof Missing)) {
-                    // @phpstan-ignore-next-line
+                    /** @phpstan-ignore-next-line */
                     $shippingPlace = Address::query()->find($dto->getShippingPlace())->getKey();
                 } else {
                     $shippingPlace = null;

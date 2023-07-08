@@ -13,9 +13,9 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('favourite_product_sets', function (Blueprint $table) {
+        Schema::create('favourite_product_sets', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->uuidMorphs('user');
             $table->foreignUuid('product_set_id')->references('id')->on('product_sets');
@@ -39,7 +39,7 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('favourite_product_set');
 

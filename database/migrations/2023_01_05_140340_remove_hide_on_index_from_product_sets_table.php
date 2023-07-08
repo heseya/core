@@ -10,9 +10,9 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::table('product_sets', function (Blueprint $table) {
+        Schema::table('product_sets', function (Blueprint $table): void {
             $table->dropColumn('hide_on_index');
         });
     }
@@ -22,9 +22,9 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
-        Schema::table('product_sets', function (Blueprint $table) {
+        Schema::table('product_sets', function (Blueprint $table): void {
             $table->boolean('hide_on_index')->default(false);
         });
     }

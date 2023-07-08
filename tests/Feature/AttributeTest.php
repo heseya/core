@@ -528,8 +528,8 @@ class AttributeTest extends TestCase
         $this->{$user}->givePermissionTo('attributes.add');
 
         $this->newAttribute['type'] = AttributeType::SINGLE_OPTION;
-        unset($this->newAttribute['options']);
-        unset($this->newOption['name']);
+        unset($this->newAttribute['options'], $this->newOption['name']);
+
         $this->newAttribute['options'] = [$this->newOption];
 
         $this

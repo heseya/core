@@ -20,7 +20,7 @@ class RoleFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->word . '-' . rand(1, 99999),
+            'name' => $this->faker->word . '-' . mt_rand(1, 99999),
             'description' => $this->faker->sentence(10),
         ];
     }

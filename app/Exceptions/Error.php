@@ -33,7 +33,7 @@ final class Error
             ->setStatusCode($error->code);
     }
 
-    public function setStack(array $stack): Error
+    public function setStack(array $stack): self
     {
         $this->stack = $stack;
 

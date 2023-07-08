@@ -10,9 +10,9 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::table('user_providers', function (Blueprint $table) {
+        Schema::table('user_providers', function (Blueprint $table): void {
             $table->string('merge_token')->nullable();
             $table->dateTime('merge_token_expires_at')->nullable();
         });
@@ -23,9 +23,9 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
-        Schema::table('user_providers', function (Blueprint $table) {
+        Schema::table('user_providers', function (Blueprint $table): void {
             $table->dropColumn('merge_token');
             $table->dropColumn('merge_token_expires_at');
         });

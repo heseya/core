@@ -2438,9 +2438,9 @@ class AuthTest extends TestCase
     {
         $decoded = base64_decode($data);
         $ivLen = openssl_cipher_iv_length($this->cipher);
-        $iv = substr($decoded, 0, $ivLen);
+        $iv = mb_substr($decoded, 0, $ivLen);
 
-        $ciphertext = substr($decoded, $ivLen);
+        $ciphertext = mb_substr($decoded, $ivLen);
         $decrypted = openssl_decrypt($ciphertext, $this->cipher, $this->webhookKey, OPENSSL_RAW_DATA, $iv);
 
         if ($decrypted) {

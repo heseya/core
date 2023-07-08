@@ -13,7 +13,7 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
         Permission::create([
             'name' => 'payment_methods.show_details',
@@ -24,7 +24,7 @@ return new class extends Migration {
             ->firstOrFail()
             ->givePermissionTo('payment_methods.show_details');
 
-        Schema::table('payment_methods', function (Blueprint $table) {
+        Schema::table('payment_methods', function (Blueprint $table): void {
             $table->string('icon');
             $table->string('url');
             $table->uuid('app_id')->nullable();
@@ -36,7 +36,7 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Role::where('type', RoleType::OWNER)
             ->firstOrFail()
@@ -44,7 +44,7 @@ return new class extends Migration {
 
         Permission::delete();
 
-        Schema::table('payment_methods', function (Blueprint $table) {
+        Schema::table('payment_methods', function (Blueprint $table): void {
             $table->dropColumn('icon');
             $table->dropColumn('url');
             $table->dropColumn('app_id');

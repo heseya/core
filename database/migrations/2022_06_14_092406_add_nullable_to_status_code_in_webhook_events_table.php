@@ -10,7 +10,7 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::table('web_hook_event_log_entries', function (Blueprint $table): void {
             $table->integer('status_code')->nullable()->change();
@@ -22,7 +22,7 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
     }
 };

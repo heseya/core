@@ -310,7 +310,7 @@ class ProductRepository implements ProductRepositoryContract
                 $range->put('lte', $values['max']);
             }
 
-            // @phpstan-ignore-next-line
+            /** @phpstan-ignore-next-line */
             $field = is_numeric($range->first()) ? 'attributes.values.value_number' : 'attributes.values.value_date';
             $query->filter(new Nested('attributes.values', new Range($field, $range->toArray())));
 
@@ -344,7 +344,7 @@ class ProductRepository implements ProductRepositoryContract
                 $range->put('lte', $values['max']);
             }
 
-            // @phpstan-ignore-next-line
+            /** @phpstan-ignore-next-line */
             $field = is_numeric($range->first()) ? 'attributes.values.value_number' : 'attributes.values.value_date';
             $query->filter(
                 Invert::query(

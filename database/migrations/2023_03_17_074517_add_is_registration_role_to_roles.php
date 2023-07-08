@@ -12,9 +12,9 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::table('roles', function (Blueprint $table) {
+        Schema::table('roles', function (Blueprint $table): void {
             $table->boolean('is_registration_role')->default(false);
         });
 
@@ -28,9 +28,9 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
-        Schema::table('roles', function (Blueprint $table) {
+        Schema::table('roles', function (Blueprint $table): void {
             $table->dropColumn('is_registration_role');
         });
     }

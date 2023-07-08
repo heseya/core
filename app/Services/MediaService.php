@@ -55,7 +55,7 @@ final readonly class MediaService implements MediaServiceContract
         };
 
         if (!($dto->slug instanceof Missing)) {
-            // @phpstan-ignore-next-line
+            /** @phpstan-ignore-next-line */
             $url = $this->silverboxService->updateSlug($url, $dto->slug);
         }
 

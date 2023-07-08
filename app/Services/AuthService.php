@@ -92,7 +92,7 @@ class AuthService implements AuthServiceContract
             'jti' => $uuid,
         ]);
         Auth::login($user);
-        // @phpstan-ignore-next-line
+        /** @phpstan-ignore-next-line */
         $token = Auth::fromUser($user);
 
         $this->userLoginAttemptService->store(true);

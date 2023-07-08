@@ -20,7 +20,7 @@ return new class extends Migration {
             ->where('paid', true)
             ->update(['status' => PaymentStatus::SUCCESSFUL]);
 
-        Schema::table('payments', function (Blueprint $table) {
+        Schema::table('payments', function (Blueprint $table): void {
             $table->dropColumn('paid');
             $table->string('status')->nullable(false)->change();
         });
@@ -35,7 +35,7 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('payments', function (Blueprint $table) {
+        Schema::table('payments', function (Blueprint $table): void {
             $table->boolean('paid')->default(false);
         });
 

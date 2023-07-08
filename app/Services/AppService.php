@@ -69,7 +69,7 @@ class AppService implements AppServiceContract
         $requiredPermissions = $appConfig['required_permissions'];
 
         $requiredPerm = Collection::make($requiredPermissions);
-        $optionalPerm = key_exists('optional_permissions', $appConfig) ?
+        $optionalPerm = array_key_exists('optional_permissions', $appConfig) ?
             $appConfig['optional_permissions'] : [];
         $advertisedPerm = $requiredPerm->concat($optionalPerm)->unique();
 

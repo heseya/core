@@ -10,9 +10,9 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::table('shipping_methods', function (Blueprint $table) {
+        Schema::table('shipping_methods', function (Blueprint $table): void {
             $table->renameColumn('black_list', 'block_list');
         });
     }
@@ -22,9 +22,9 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
-        Schema::table('shipping_methods', function (Blueprint $table) {
+        Schema::table('shipping_methods', function (Blueprint $table): void {
             $table->renameColumn('block_list', 'black_list');
         });
     }

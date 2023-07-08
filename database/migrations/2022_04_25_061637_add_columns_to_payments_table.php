@@ -13,7 +13,7 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
         Permission::create(['name' => 'payments.show', 'display_name' => 'Dostęp do listy transakcji']);
         Permission::create(['name' => 'payments.show_details', 'display_name' => 'Dostęp do szczegółów transakcji']);
@@ -26,7 +26,7 @@ return new class extends Migration {
         ]);
         $owner->save();
 
-        Schema::table('payments', function (Blueprint $table) {
+        Schema::table('payments', function (Blueprint $table): void {
             $table->string('status')->nullable();
             $table->foreignUuid('method_id')->nullable()->references('id')->on('payment_methods');
             $table->string('method')->nullable()->change();
@@ -38,7 +38,7 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         $owner = Role::where('type', RoleType::OWNER)->first();
         $owner->revokePermissionTo([
@@ -50,7 +50,7 @@ return new class extends Migration {
         Permission::findByName('payments.show')->delete();
         Permission::findByName('payments.show_details')->delete();
 
-        Schema::table('payments', function (Blueprint $table) {
+        Schema::table('payments', function (Blueprint $table): void {
             $table->dropColumn('status');
             $table->dropColumn('method_id');
         });

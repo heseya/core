@@ -10,7 +10,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('consents', function (Blueprint $table) {
+        Schema::table('consents', function (Blueprint $table): void {
             $table->text('description_html')->change();
         });
     }

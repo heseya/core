@@ -110,7 +110,7 @@ class ItemService implements ItemServiceContract
 
             // Checking purchased limit
             if ($product->purchase_limit_per_user !== null) {
-                if (key_exists($product->getKey(), $purchasedProducts)) {
+                if (array_key_exists($product->getKey(), $purchasedProducts)) {
                     $purchasedCount = $purchasedProducts[$product->getKey()];
                 } else {
                     $purchasedCount = OrderProduct::searchByCriteria([
@@ -288,7 +288,7 @@ class ItemService implements ItemServiceContract
         float $quantity
     ): array {
         $relation = Auth::user() instanceof User ? 'user' : 'app';
-        if (key_exists($productId, $purchasedProducts)) {
+        if (array_key_exists($productId, $purchasedProducts)) {
             $quantity += $purchasedProducts[$productId];
         } else {
             $quantity += OrderProduct::searchByCriteria([

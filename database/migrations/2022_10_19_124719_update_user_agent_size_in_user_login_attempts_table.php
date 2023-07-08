@@ -10,9 +10,9 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::table('user_login_attempts', function (Blueprint $table) {
+        Schema::table('user_login_attempts', function (Blueprint $table): void {
             $table->string('user_agent', 1024)->change();
         });
     }
@@ -22,9 +22,9 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
-        Schema::table('user_login_attempts', function (Blueprint $table) {
+        Schema::table('user_login_attempts', function (Blueprint $table): void {
             $table->string('user_agent', 255)->change();
         });
     }

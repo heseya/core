@@ -501,12 +501,12 @@ class PageTest extends TestCase
         $uuids = [];
 
         for ($i = 0; $i < 3; ++$i) {
-            $name = ' order test ' . $this->faker->sentence(rand(1, 3));
+            $name = ' order test ' . $this->faker->sentence(mt_rand(1, 3));
             $page = [
                 'name' => $name,
                 'slug' => Str::slug($name),
                 'public' => $this->faker->boolean,
-                'content_html' => '<p>' . $this->faker->sentence(rand(10, 30)) . '</p>',
+                'content_html' => '<p>' . $this->faker->sentence(mt_rand(10, 30)) . '</p>',
             ];
 
             $response = $this->actingAs($this->{$user})->postJson('/pages', $page);

@@ -25,7 +25,7 @@ class ProductSetChildrenResource extends Resource
             'public' => $this->resource->public,
             'visible' => $this->resource->public_parent && $this->resource->public,
             'parent_id' => $this->resource->parent_id,
-            'children' => ProductSetChildrenResource::collection($children),
+            'children' => self::collection($children),
             'cover' => MediaResource::make($this->resource->media),
         ], $this->metadataResource('product_sets.show_metadata_private'));
     }

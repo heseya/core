@@ -21,10 +21,10 @@ class PackageTemplateFactory extends Factory
     {
         return [
             'name' => $this->faker->name . ' package',
-            'weight' => rand(1, 100) / 10.0,
-            'width' => rand(1, 100),
-            'height' => rand(1, 100),
-            'depth' => rand(1, 100),
+            'weight' => mt_rand(1, 100) / 10.0,
+            'width' => mt_rand(1, 100),
+            'height' => mt_rand(1, 100),
+            'depth' => mt_rand(1, 100),
         ];
     }
 }

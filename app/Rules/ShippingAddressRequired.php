@@ -43,7 +43,7 @@ class ShippingAddressRequired implements DataAwareRule, ImplicitRule
         return 'Shipping address is required with this shipping method type.';
     }
 
-    public function setData($data): ShippingAddressRequired
+    public function setData($data): self
     {
         $this->data = $data;
 

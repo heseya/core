@@ -30,7 +30,7 @@ class PaymentMethodFactory extends Factory
             'name' => $name,
             'alias' => Str::slug($name),
             'public' => $this->faker->boolean,
-            'icon' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+            'icon' => 'https://picsum.photos/seed/' . mt_rand(0, 999999) . '/800',
             'url' => $this->faker->url,
         ];
     }

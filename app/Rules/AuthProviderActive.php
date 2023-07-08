@@ -36,7 +36,7 @@ class AuthProviderActive implements DataAwareRule, Rule
         return 'Active field value cannot be true if client_id and client_secret fields are missing.';
     }
 
-    public function setData($data): AuthProviderActive|static
+    public function setData($data): self|static
     {
         $this->data = $data;
 

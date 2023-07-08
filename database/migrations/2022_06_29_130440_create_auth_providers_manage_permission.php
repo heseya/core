@@ -11,7 +11,7 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
         Permission::create([
             'name' => 'auth.providers.manage',
@@ -29,7 +29,7 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         $owner = Role::where('type', '=', RoleType::OWNER)->firstOrFail();
         $owner->revokePermissionTo('auth.providers.manage');

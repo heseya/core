@@ -12,6 +12,6 @@ class PackageTemplateSeeder extends Seeder
      */
     public function run(): void
     {
-        PackageTemplate::factory()->count(rand(3, 6))->create();
+        PackageTemplate::factory()->count(mt_rand(3, 6))->create();
     }
 }

@@ -10,19 +10,19 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::table('apps', function (Blueprint $table) {
+        Schema::table('apps', function (Blueprint $table): void {
             $table->uuid('id')->primary()->change();
         });
 
-        Schema::table('shipping_methods', function (Blueprint $table) {
+        Schema::table('shipping_methods', function (Blueprint $table): void {
             $table->string('shipping_type')->default('address');
             $table->string('integration_key')->nullable();
             $table->foreignUuid('app_id')->nullable()->index()->references('id')->on('apps')->onDelete('cascade');
         });
 
-        Schema::create('address_shipping_method', function (Blueprint $table) {
+        Schema::create('address_shipping_method', function (Blueprint $table): void {
             $table->uuid('address_id')->index();
             $table->uuid('shipping_method_id')->index();
 
@@ -38,9 +38,9 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
-        Schema::table('shipping_methods', function (Blueprint $table) {
+        Schema::table('shipping_methods', function (Blueprint $table): void {
             $table->dropColumn('shipping_type');
             $table->dropColumn('integration_key');
             $table->dropColumn('app_id');

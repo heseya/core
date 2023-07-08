@@ -13,9 +13,9 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('wishlist_products', function (Blueprint $table) {
+        Schema::create('wishlist_products', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('user_type')->nullable();
             $table->uuid('user_id')->nullable();
@@ -40,7 +40,7 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('wishlist');
 

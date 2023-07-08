@@ -11,9 +11,9 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Role::all()->each(function (Role $role) {
+        Role::all()->each(function (Role $role): void {
             $role->revokePermissionTo('auth.sessions.revoke');
             $role->revokePermissionTo('auth.sessions.show');
         });
@@ -26,7 +26,7 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Permission::create([
             'name' => 'auth.sessions.revoke',

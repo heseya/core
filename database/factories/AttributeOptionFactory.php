@@ -21,7 +21,7 @@ class AttributeOptionFactory extends Factory
     {
         return [
             'name' => $this->faker->word,
-            'value_number' => rand(0, 1) === 1 ? $this->faker->randomNumber(5) : null,
+            'value_number' => mt_rand(0, 1) === 1 ? $this->faker->randomNumber(5) : null,
             'value_date' => $this->faker->date,
         ];
     }

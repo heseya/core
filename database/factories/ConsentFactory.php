@@ -20,8 +20,8 @@ class ConsentFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->unique()->sentence(rand(1, 3)),
-            'description_html' => $this->faker->unique()->sentence(rand(1, 3)),
+            'name' => $this->faker->unique()->sentence(mt_rand(1, 3)),
+            'description_html' => $this->faker->unique()->sentence(mt_rand(1, 3)),
             'required' => $this->faker->boolean(),
         ];
     }

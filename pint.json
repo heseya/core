@@ -24,6 +24,60 @@
     "ordered_traits": true,
     "explicit_indirect_variable": true,
     "return_assignment": true,
+    "combine_consecutive_issets": true,
+    "combine_consecutive_unsets": true,
+    "combine_nested_dirname": true,
+    "comment_to_phpdoc": true,
+    "get_class_to_class_keyword": true,
+    "logical_operators": true,
+    "modernize_strpos": true,
+    "mb_str_functions": true,
+    "modernize_types_casting": true,
+    "multiline_comment_opening_closing": true,
+    "no_useless_sprintf": true,
+    "php_unit_construct": true,
+    "self_accessor": true,
+    "set_type_to_cast": true,
+    "void_return": true,
+    "random_api_migration": {
+      "replacements": {
+        "getrandmax" : "mt_getrandmax",
+        "rand" : "mt_rand",
+        "srand" : "mt_srand"
+      }
+    },
+    "no_alias_functions": {
+      "sets": [
+        "@all",
+        "@exif",
+        "@ftp",
+        "@IMAP",
+        "@internal",
+        "@ldap",
+        "@mbreg",
+        "@mysqli",
+        "@oci",
+        "@odbc",
+        "@openssl",
+        "@pcntl",
+        "@pg",
+        "@posix",
+        "@snmp",
+        "@sodium",
+        "@time"
+      ]
+    },
+    "function_to_constant": {
+      "functions": [
+        "get_called_class",
+        "get_class",
+        "get_class_this",
+        "php_sapi_name",
+        "phpversion",
+        "pi"
+      ]
+    },
+    "self_static_accessor": true,
     "ordered_interfaces": {
       "direction": "ascend",
       "order": "alpha"

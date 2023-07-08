@@ -10,9 +10,9 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('order_product_urls', function (Blueprint $table) {
+        Schema::create('order_product_urls', function (Blueprint $table): void {
             $table->uuid('id')->primary();
 
             $table->string('name');
@@ -26,7 +26,7 @@ return new class extends Migration {
             $table->timestamps();
         });
 
-        Schema::table('order_products', function (Blueprint $table) {
+        Schema::table('order_products', function (Blueprint $table): void {
             $table->boolean('shipping_digital')->default(false);
             $table->boolean('is_delivered')->default(false);
         });
@@ -37,11 +37,11 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('order_product_urls');
 
-        Schema::table('order_products', function (Blueprint $table) {
+        Schema::table('order_products', function (Blueprint $table): void {
             $table->dropColumn('shipping_digital');
             $table->dropColumn('is_delivered');
         });
