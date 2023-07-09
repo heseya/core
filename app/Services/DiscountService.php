@@ -864,6 +864,8 @@ readonly class DiscountService implements DiscountServiceContract
      * This executes for price cache on products
      *
      * It should ignore current active user and calc general price for everyone
+     *
+     * @throws ServerException
      */
     private function checkConditionForProduct(DiscountCondition $condition, bool $checkForCurrentUser): bool
     {
@@ -1025,6 +1027,9 @@ readonly class DiscountService implements DiscountServiceContract
         return $order;
     }
 
+    /**
+     * @throws StoreException
+     */
     private function applyDiscountOnCart(Discount $discount, CartDto $cartDto, CartResource $cart): CartResource
     {
         return match ($discount->target_type->value) {
@@ -1232,7 +1237,8 @@ readonly class DiscountService implements DiscountServiceContract
         Collection $discountProductSets,
         bool $allowList
     ): bool {
-        $product = Product::where('id', $productId)->firstOrFail();
+        /** @var Product $product */
+        $product = Product::query()->where('id', $productId)->firstOrFail();
 
         $productSets = $product->sets()->with('parent')->get();
         $diffCount = $productSets->pluck('id')->diff($discountProductSets->pluck('id')->all())->count();
@@ -1281,7 +1287,7 @@ readonly class DiscountService implements DiscountServiceContract
     private function createConditionGroup(ConditionGroupDto $dto): ConditionGroup
     {
         /** @var ConditionGroup $conditionGroup */
-        $conditionGroup = ConditionGroup::create();
+        $conditionGroup = ConditionGroup::query()->create();
 
         /** @var ConditionDto $condition */
         foreach ($dto->getConditions() as $condition) {
