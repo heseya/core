@@ -11,29 +11,28 @@ use Illuminate\Foundation\Http\FormRequest;
 class ProductUpdateDto extends Dto implements InstantiateFromRequest
 {
     public function __construct(
-        readonly public string|Missing $name,
-        readonly public string|Missing $slug,
+        readonly public Missing|string $name,
+        readonly public Missing|string $slug,
         readonly public float|Missing $price,
         readonly public bool|Missing $public,
         readonly public bool|Missing $shipping_digital,
         readonly public int|Missing $order,
         readonly public float|Missing $quantity_step,
-        readonly public int|null|Missing $google_product_category,
+        readonly public int|Missing|null $google_product_category,
         readonly public float|Missing $vat_rate,
-        readonly public string|null|Missing $description_html,
-        readonly public string|null|Missing $description_short,
-        readonly public float|null|Missing $purchase_limit_per_user,
+        readonly public Missing|string|null $description_html,
+        readonly public Missing|string|null $description_short,
+        readonly public float|Missing|null $purchase_limit_per_user,
         readonly public array|Missing $media,
         readonly public array|Missing $tags,
         readonly public array|Missing $schemas,
         readonly public array|Missing $sets,
         readonly public array|Missing $items,
-        readonly public SeoMetadataDto|Missing $seo,
+        readonly public Missing|SeoMetadataDto $seo,
         readonly public array|Missing $attributes,
         readonly public array|Missing $descriptions,
         readonly public array|Missing $relatedSets,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws DtoException

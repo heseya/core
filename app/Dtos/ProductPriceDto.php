@@ -10,6 +10,5 @@ final class ProductPriceDto extends Dto
         public readonly string $id,
         public readonly float $price_min,
         public readonly float $price_max,
-    ) {
-    }
+    ) {}
 }

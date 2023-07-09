@@ -18,8 +18,7 @@ class WishlistController extends Controller
 {
     public function __construct(
         private readonly WishlistServiceContract $wishlistService,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): JsonResource
     {

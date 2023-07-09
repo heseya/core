@@ -13,13 +13,13 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
 {
     private array $items;
     private array|Missing $coupons;
-    private string|Missing $shipping_method_id;
-    private string|Missing $digital_shipping_method_id;
+    private Missing|string $shipping_method_id;
+    private Missing|string $digital_shipping_method_id;
 
     /**
      * @throws DtoException
      */
-    public static function instantiateFromRequest(FormRequest|CartRequest $request): self
+    public static function instantiateFromRequest(CartRequest|FormRequest $request): self
     {
         return new self(
             items: self::prepareItems($request->input('items', [])),
@@ -54,7 +54,7 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
         $this->items = $items;
     }
 
-    public function getCoupons(): Missing|array
+    public function getCoupons(): array|Missing
     {
         return $this->coupons;
     }
@@ -80,7 +80,7 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
         return $result;
     }
 
-    public function getCartLength(): int|float
+    public function getCartLength(): float|int
     {
         $length = 0;
         /** @var CartItemDto $item */

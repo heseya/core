@@ -10,11 +10,11 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class SaleIndexDto extends Dto implements InstantiateFromRequest
 {
-    protected string|Missing $search;
-    protected string|Missing $description;
+    protected Missing|string $search;
+    protected Missing|string $description;
     protected array|Missing $metadata;
     protected array|Missing $metadata_private;
-    protected string|Missing $for_role;
+    protected Missing|string $for_role;
     protected bool $coupon;
     protected array|Missing $ids;
 
@@ -46,17 +46,17 @@ class SaleIndexDto extends Dto implements InstantiateFromRequest
         return $this->coupon;
     }
 
-    public function getMetadata(): Missing|array
+    public function getMetadata(): array|Missing
     {
         return $this->metadata;
     }
 
-    public function getMetadataPrivate(): Missing|array
+    public function getMetadataPrivate(): array|Missing
     {
         return $this->metadata_private;
     }
 
-    public function getIds(): Missing|array
+    public function getIds(): array|Missing
     {
         return $this->ids;
     }

@@ -12,7 +12,7 @@ class BannerMediaDto extends Dto
     private ?string $subtitle;
     private Collection $media;
 
-    public static function fromDataArray(array $data): BannerMediaDto
+    public static function fromDataArray(array $data): self
     {
         /** @var Collection<int, mixed> $responsiveMedia */
         $responsiveMedia = $data['media'];

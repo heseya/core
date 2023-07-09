@@ -14,7 +14,7 @@ class DepositSeeder extends Seeder
         foreach (OrderProduct::query()->select('id')->limit(10)->cursor() as $product) {
             Deposit::factory()->create([
                 'order_product_id' => $product->getKey(),
-                'quantity' => -1 * rand(1, 5),
+                'quantity' => -1 * mt_rand(1, 5),
                 'item_id' => Item::query()->select('id')->inRandomOrder()->first()->getKey(),
                 'shipping_time' => 0,
             ]);

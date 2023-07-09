@@ -10,8 +10,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class PaymentMethodIndexDto extends Dto implements InstantiateFromRequest
 {
-    private string|Missing $shipping_method_id;
-    private string|Missing $order_code;
+    private Missing|string $shipping_method_id;
+    private Missing|string $order_code;
     private array|Missing $ids;
 
     public static function instantiateFromRequest(FormRequest|PaymentMethodIndexRequest $request): self
@@ -33,7 +33,7 @@ class PaymentMethodIndexDto extends Dto implements InstantiateFromRequest
         return $this->order_code;
     }
 
-    public function getIds(): Missing|array
+    public function getIds(): array|Missing
     {
         return $this->ids;
     }

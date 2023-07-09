@@ -6,8 +6,8 @@ use Heseya\Dto\Missing;
 
 class TimeBetweenConditionDto extends ConditionDto
 {
-    private string|Missing $start_at;
-    private string|Missing $end_at;
+    private Missing|string $start_at;
+    private Missing|string $end_at;
     private bool $is_in_range;
 
     public static function fromArray(array $array): self

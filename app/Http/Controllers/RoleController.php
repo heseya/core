@@ -19,8 +19,7 @@ class RoleController extends Controller
 {
     public function __construct(
         private RoleServiceContract $roleService,
-    ) {
-    }
+    ) {}
 
     public function index(RoleIndexRequest $request): JsonResource
     {

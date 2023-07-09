@@ -26,8 +26,7 @@ class DiscountController extends Controller
 {
     public function __construct(
         private DiscountServiceContract $discountService,
-    ) {
-    }
+    ) {}
 
     public function indexCoupons(CouponIndexRequest $request): JsonResource
     {

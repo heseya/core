@@ -40,7 +40,7 @@ abstract class WebHookEvent
             'event' => $this->getEvent(),
             'triggered_at' => $this->triggered_at,
             'issuer_type' => $this->issuer
-                ? IssuerType::getValue(strtoupper($this->getModelClass($this->issuer)))
+                ? IssuerType::getValue(mb_strtoupper($this->getModelClass($this->issuer)))
                 : IssuerType::UNAUTHENTICATED,
             'api_url' => Config::get('app.url'),
             'data_type' => $this->getDataType(),
@@ -52,7 +52,7 @@ abstract class WebHookEvent
 
     abstract public function getDataType(): string;
 
-    public function getIssuer(): Model|Authenticatable|Pivot|null
+    public function getIssuer(): Authenticatable|Model|Pivot|null
     {
         return $this->issuer;
     }
@@ -72,7 +72,7 @@ abstract class WebHookEvent
         return Str::remove('App\\Events\\', $this::class);
     }
 
-    protected function getModelClass(Model|Pivot|Authenticatable $model): string
+    protected function getModelClass(Authenticatable|Model|Pivot $model): string
     {
         return Str::remove('App\\Models\\', $model::class);
     }

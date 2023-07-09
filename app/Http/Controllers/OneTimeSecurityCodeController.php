@@ -2,6 +2,4 @@
 
 namespace App\Http\Controllers;
 
-class OneTimeSecurityCodeController extends Controller
-{
-}
+class OneTimeSecurityCodeController extends Controller {}

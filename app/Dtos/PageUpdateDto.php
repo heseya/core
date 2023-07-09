@@ -14,11 +14,11 @@ class PageUpdateDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    private string|Missing $name;
-    private string|Missing $slug;
+    private Missing|string $name;
+    private Missing|string $slug;
     private bool|Missing $public;
-    private string|Missing $content_html;
-    private SeoMetadataDto|Missing $seo;
+    private Missing|string $content_html;
+    private Missing|SeoMetadataDto $seo;
     private array|Missing $metadata;
 
     public static function instantiateFromRequest(FormRequest|PageStoreRequest|PageUpdateRequest $request): self
@@ -33,7 +33,7 @@ class PageUpdateDto extends Dto implements InstantiateFromRequest
         );
     }
 
-    public function getSeo(): SeoMetadataDto|Missing
+    public function getSeo(): Missing|SeoMetadataDto
     {
         return $this->seo;
     }

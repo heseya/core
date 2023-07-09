@@ -9,15 +9,12 @@ use Illuminate\Support\Facades\App;
 
 class UnlimitedShippingTime implements Rule
 {
-    public function __construct(private Item $item)
-    {
-    }
+    public function __construct(private Item $item) {}
 
     /**
      * Determine if the validation rule passes.
      *
      * @param string $attribute
-     * @param mixed $value
      */
     public function passes($attribute, $value): bool
     {
@@ -27,8 +24,8 @@ class UnlimitedShippingTime implements Rule
         $depositService = App::make(DepositServiceContract::class);
         $depositsTime = $depositService->getDepositsGroupByTimeForItem($this->item, 'DESC');
 
-        return !isset($depositsTime[0]) ||
-            $value >= $depositsTime[0]['shipping_time'];
+        return !isset($depositsTime[0])
+            || $value >= $depositsTime[0]['shipping_time'];
     }
 
     public function message(): string

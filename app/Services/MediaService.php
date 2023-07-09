@@ -20,8 +20,7 @@ final readonly class MediaService implements MediaServiceContract
         private ReorderServiceContract $reorderService,
         private MetadataServiceContract $metadataService,
         private SilverboxServiceContract $silverboxService,
-    ) {
-    }
+    ) {}
 
     public function sync(Product $product, array $media): void
     {
@@ -55,7 +54,7 @@ final readonly class MediaService implements MediaServiceContract
         };
 
         if (!($dto->slug instanceof Missing)) {
-            // @phpstan-ignore-next-line
+            /** @phpstan-ignore-next-line */
             $url = $this->silverboxService->updateSlug($url, $dto->slug);
         }
 

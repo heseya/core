@@ -258,7 +258,7 @@ class ProductSetCreateTest extends TestCase
 
         $media = Media::factory()->create([
             'type' => MediaType::PHOTO,
-            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+            'url' => 'https://picsum.photos/seed/' . mt_rand(0, 999999) . '/800',
         ]);
 
         $set = [
@@ -664,7 +664,7 @@ class ProductSetCreateTest extends TestCase
 
         $media = Media::factory()->create([
             'type' => MediaType::PHOTO,
-            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+            'url' => 'https://picsum.photos/seed/' . mt_rand(0, 999999) . '/800',
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/product-sets', $set + [

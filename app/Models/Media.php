@@ -56,7 +56,7 @@ class Media extends Model
     public function documents(): BelongsToMany
     {
         return $this
-            ->belongsToMany(Media::class, 'order_document')
+            ->belongsToMany(self::class, 'order_document')
             ->using(OrderDocument::class)
             ->withPivot('id', 'type', 'name');
     }

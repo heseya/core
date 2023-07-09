@@ -16,8 +16,8 @@ class PrecalculateProductVisibility extends Migration
 
         Product::chunk(100, fn (Collection $products) => $products->each(
             function (Product $product): void {
-                $isAnySetPublic = $product->sets->count() === 0 ||
-                    $product->sets->where('public', true)->where('public_parent', true);
+                $isAnySetPublic = $product->sets->count() === 0
+                    || $product->sets->where('public', true)->where('public_parent', true);
 
                 $newPublic = $product->public && $isAnySetPublic;
 

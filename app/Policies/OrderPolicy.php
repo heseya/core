@@ -13,7 +13,7 @@ class OrderPolicy
 {
     use HandlesAuthorization;
 
-    public function indexUserOrder(User|App $user): Response
+    public function indexUserOrder(App|User $user): Response
     {
         if ($user->getAuthIdentifier()) {
             return Response::allow();
@@ -21,7 +21,7 @@ class OrderPolicy
         throw new NotFoundHttpException();
     }
 
-    public function showUserOrder(User|App $user, Order $order): Response
+    public function showUserOrder(App|User $user, Order $order): Response
     {
         if ($order->buyer && $user->getAuthIdentifier() === $order->buyer->getKey()) {
             return Response::allow();

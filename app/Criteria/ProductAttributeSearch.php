@@ -43,7 +43,7 @@ class ProductAttributeSearch extends Criterion
                             } elseif (Arr::has($value, 'max')) {
                                 $query->where($key, '<=', $value['max']);
                             } else {
-                                $query->where(function ($query) use ($value) {
+                                $query->where(function ($query) use ($value): void {
                                     foreach ($value as $option) {
                                         $query->orWhere(
                                             'product_attribute_attribute_option.attribute_option_id',

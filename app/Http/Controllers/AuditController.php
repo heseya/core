@@ -10,8 +10,7 @@ class AuditController extends Controller
 {
     public function __construct(
         private AuditServiceContract $auditService,
-    ) {
-    }
+    ) {}
 
     public function index(string $class, string $id): JsonResource
     {

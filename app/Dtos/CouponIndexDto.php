@@ -10,9 +10,9 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class CouponIndexDto extends SaleIndexDto implements InstantiateFromRequest
 {
-    protected string|Missing $code;
+    protected Missing|string $code;
 
-    public static function instantiateFromRequest(FormRequest|CouponIndexRequest|SaleIndexRequest $request): self
+    public static function instantiateFromRequest(CouponIndexRequest|FormRequest|SaleIndexRequest $request): self
     {
         return new self(
             search: $request->input('search', new Missing()),

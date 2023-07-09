@@ -60,9 +60,7 @@ class SaleCreateRequest extends FormRequest
 
     public function withValidator(Validator $validator): void
     {
-        $validator->sometimes('value', ['max:100'], function ($input, $item) {
-            return $input->type === DiscountType::PERCENTAGE;
-        });
+        $validator->sometimes('value', ['max:100'], fn ($input, $item) => $input->type === DiscountType::PERCENTAGE);
 
         $validator->sometimes(
             'condition_groups.*.conditions.*.max_uses',

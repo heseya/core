@@ -30,7 +30,7 @@ class ProductSeeder extends Seeder
 
             $products = Product::factory()->count(100)
                 ->state(fn ($sequence) => [
-                    'shipping_digital' => rand(0, 1),
+                    'shipping_digital' => mt_rand(0, 1),
                 ])
                 ->create();
 
@@ -59,7 +59,7 @@ class ProductSeeder extends Seeder
             $categories->each(fn ($set) => $this->seo($set));
 
             $products->each(function ($product, $index) use ($sets, $brands, $categories, $productService): void {
-                if (rand(0, 1)) {
+                if (mt_rand(0, 1)) {
                     $this->schemas($product);
                 }
 
@@ -95,21 +95,21 @@ class ProductSeeder extends Seeder
     {
         /** @var Schema $schema */
         $schema = Schema::factory()->create([
-            'type' => rand(0, 6), // all types except multiply_schemas
+            'type' => mt_rand(0, 6), // all types except multiply_schemas
         ]);
         $product->schemas()->attach($schema->getKey());
 
         if ($schema->type->is(SchemaType::SELECT)) {
             /** @var Item $item */
             $item = Item::factory()->create();
-            $item->deposits()->saveMany(Deposit::factory()->count(rand(0, 2))->make());
-            $schema->options()->saveMany(Option::factory()->count(rand(0, 4))->make());
+            $item->deposits()->saveMany(Deposit::factory()->count(mt_rand(0, 2))->make());
+            $schema->options()->saveMany(Option::factory()->count(mt_rand(0, 4))->make());
         }
     }
 
     private function media(Product $product): void
     {
-        for ($i = 0; $i < rand(0, 5); ++$i) {
+        for ($i = 0; $i < mt_rand(0, 5); ++$i) {
             $media = Media::factory()->create();
             $product->media()->attach($media);
         }
@@ -117,7 +117,7 @@ class ProductSeeder extends Seeder
 
     private function sets(Product $product, Collection $sets): void
     {
-        for ($i = 0; $i < rand(0, 3); ++$i) {
+        for ($i = 0; $i < mt_rand(0, 3); ++$i) {
             $product->sets()->syncWithoutDetaching($sets->random());
         }
     }

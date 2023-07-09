@@ -18,8 +18,7 @@ class AttributeController extends Controller
 {
     public function __construct(
         private readonly AttributeServiceContract $attributeService
-    ) {
-    }
+    ) {}
 
     public function index(AttributeIndexRequest $request): JsonResource
     {

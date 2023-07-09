@@ -15,7 +15,7 @@ class WebHookPolicy
 {
     use HandlesAuthorization;
 
-    public function create(User|App $user, array $webHook): Response
+    public function create(App|User $user, array $webHook): Response
     {
         return $this->checkPermissions($webHook['events'], $webHook['with_issuer'], $webHook['with_hidden'], $user);
     }
@@ -23,7 +23,7 @@ class WebHookPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User|App $user, WebHook $webHook, array $newWebHook): Response
+    public function update(App|User $user, WebHook $webHook, array $newWebHook): Response
     {
         $this->canChange($user, $webHook, 'edit');
 
@@ -38,12 +38,12 @@ class WebHookPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User|App $user, WebHook $webHook): Response
+    public function delete(App|User $user, WebHook $webHook): Response
     {
         return $this->canChange($user, $webHook, 'delete');
     }
 
-    private function canChange(User|App $user, WebHook $webHook, string $method): Response
+    private function canChange(App|User $user, WebHook $webHook, string $method): Response
     {
         // Webhook stworzony przez aplikację
         if ($webHook->model_type === App::class) {
@@ -81,7 +81,7 @@ class WebHookPolicy
         return array_unique($result);
     }
 
-    private function checkPermissions(array $events, bool $with_issuer, bool $with_hidden, User|App $user): Response
+    private function checkPermissions(array $events, bool $with_issuer, bool $with_hidden, App|User $user): Response
     {
         $permissions = $this->getRequiredPermissions($events, $with_issuer, $with_hidden);
         if (!$user->can($permissions)) {

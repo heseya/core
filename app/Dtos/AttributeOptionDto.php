@@ -15,18 +15,17 @@ class AttributeOptionDto extends Dto implements InstantiateFromRequest
     use MapMetadata;
 
     public function __construct(
-        public readonly string|null|Missing $id,
-        public readonly string|null|Missing $name,
-        public readonly float|null|Missing $value_number,
-        public readonly string|null|Missing $value_date,
+        public readonly Missing|string|null $id,
+        public readonly Missing|string|null $name,
+        public readonly float|Missing|null $value_number,
+        public readonly Missing|string|null $value_date,
         public readonly array|Missing $metadata,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws DtoException
      */
-    public static function instantiateFromRequest(FormRequest|AttributeOptionRequest $request): self
+    public static function instantiateFromRequest(AttributeOptionRequest|FormRequest $request): self
     {
         return new self(
             id: $request->input('id', new Missing()),

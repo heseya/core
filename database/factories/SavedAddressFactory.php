@@ -26,7 +26,7 @@ class SavedAddressFactory extends Factory
             'name' => $this->faker->word,
             'address_id' => Address::all()->random()->id,
             'user_id' => User::all()->random()->id,
-            'type' => rand(0, 1),
+            'type' => mt_rand(0, 1),
         ];
     }
 }

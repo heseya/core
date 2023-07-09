@@ -107,7 +107,7 @@ class App extends Model implements AuthenticatableContract, AuthorizableContract
     }
 
     public function hasRole(
-        string|int|array|\Spatie\Permission\Contracts\Role|Collection $roles,
+        array|Collection|int|\Spatie\Permission\Contracts\Role|string $roles,
         ?string $guard = null
     ): bool {
         return false;

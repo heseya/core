@@ -10,9 +10,9 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class AuthProviderDto extends Dto implements InstantiateFromRequest
 {
-    private string|null|Missing $client_id;
-    private string|null|Missing $client_secret;
-    private bool|null|Missing $active;
+    private Missing|string|null $client_id;
+    private Missing|string|null $client_secret;
+    private bool|Missing|null $active;
 
     public static function instantiateFromRequest(FormRequest|MediaStoreRequest $request): self
     {
@@ -23,12 +23,12 @@ class AuthProviderDto extends Dto implements InstantiateFromRequest
         );
     }
 
-    public function getClientId(): string|Missing|null
+    public function getClientId(): Missing|string|null
     {
         return $this->client_id;
     }
 
-    public function getClientSecret(): string|Missing|null
+    public function getClientSecret(): Missing|string|null
     {
         return $this->client_secret;
     }

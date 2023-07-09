@@ -27,12 +27,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-class UserService implements UserServiceContract
+readonly class UserService implements UserServiceContract
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
-    ) {
-    }
+    ) {}
 
     public function index(array $search, ?string $sort): LengthAwarePaginator
     {
@@ -42,6 +41,9 @@ class UserService implements UserServiceContract
             ->paginate(Config::get('pagination.per_page'));
     }
 
+    /**
+     * @throws ClientException
+     */
     public function create(UserCreateDto $dto): User
     {
         if (!$dto->getRoles() instanceof Missing) {
@@ -86,6 +88,9 @@ class UserService implements UserServiceContract
         return $user;
     }
 
+    /**
+     * @throws ClientException
+     */
     public function update(User $user, UserDto $dto): User
     {
         $authenticable = Auth::user();
@@ -150,6 +155,9 @@ class UserService implements UserServiceContract
         return $user;
     }
 
+    /**
+     * @throws ClientException
+     */
     public function destroy(User $user): void
     {
         $authenticable = Auth::user();
@@ -171,15 +179,15 @@ class UserService implements UserServiceContract
             }
         }
 
-        DB::transaction(function () use ($user) {
+        DB::transaction(function () use ($user): void {
             // Delete user addresses not bound to orders
-            $user->shippingAddresses()->each(function (SavedAddress $address) {
+            $user->shippingAddresses()->each(function (SavedAddress $address): void {
                 if (!$address->address?->orders()->exists()) {
                     $address->address?->delete();
                 }
             });
             $user->shippingAddresses()->delete();
-            $user->billingAddresses()->each(function (SavedAddress $address) {
+            $user->billingAddresses()->each(function (SavedAddress $address): void {
                 if (!$address->address?->orders()->exists()) {
                     $address->address?->delete();
                 }
@@ -191,7 +199,7 @@ class UserService implements UserServiceContract
 
             // Delete user from discount conditions
             // Potentially need to delete user from value json field
-            $user->discountConditions()->each(function (DiscountCondition $condition) use ($user) {
+            $user->discountConditions()->each(function (DiscountCondition $condition) use ($user): void {
                 // Remove user id from the array
                 $value = $condition->value;
                 $value['users'] = array_diff($value['users'], [$user->id]);
@@ -249,9 +257,7 @@ class UserService implements UserServiceContract
 
             // Delete audits related to the user
             // Must be done after the user is updated
-            // Not using relationship to avoid phpstan error
-            // @phpstan-ignore-next-line
-            $user->audits->each(fn ($audit) => $audit->delete());
+            $user->audits()->delete();
 
             // Delete user preferences
             $preferences?->delete();

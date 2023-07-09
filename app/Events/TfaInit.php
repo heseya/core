@@ -2,6 +2,4 @@
 
 namespace App\Events;
 
-class TfaInit extends TfaCode
-{
-}
+class TfaInit extends TfaCode {}

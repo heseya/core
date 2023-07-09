@@ -19,8 +19,7 @@ class PaymentMethodController extends Controller
 {
     public function __construct(
         private PaymentMethodServiceContract $paymentMethodService,
-    ) {
-    }
+    ) {}
 
     public function index(PaymentMethodIndexRequest $request): JsonResource
     {

@@ -32,9 +32,7 @@ class SettingController extends Controller
         );
 
         if ($request->has('array')) {
-            return Response::json($settings->mapWithKeys(function ($setting) {
-                return [$setting->name => $setting->value];
-            }));
+            return Response::json($settings->mapWithKeys(fn ($setting) => [$setting->name => $setting->value]));
         }
 
         return SettingResource::collection($settings)->response();

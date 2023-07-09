@@ -632,7 +632,7 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         $media = Media::factory()->create([
-            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+            'url' => 'https://picsum.photos/seed/' . mt_rand(0, 999999) . '/800',
         ]);
 
         $productPhoto->media()->sync($media);

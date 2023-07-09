@@ -554,8 +554,6 @@ class WebHookTest extends TestCase
         $listener = new WebHookEventListener();
         $listener->handle($event);
 
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) {
-            return $job->payload['api_url'] === Config::get('app.url');
-        });
+        Bus::assertDispatched(CallWebhookJob::class, fn ($job) => $job->payload['api_url'] === Config::get('app.url'));
     }
 }

@@ -11,7 +11,5 @@ class RemoveOrderLogsAndNotesTables extends Migration
         Schema::dropIfExists('orders_notes');
     }
 
-    public function down(): void
-    {
-    }
+    public function down(): void {}
 }

@@ -15,9 +15,8 @@ class WebHookNotification extends Notification
 {
     public function __construct(
         private array $data,
-        private Model|Authenticatable|Pivot|null $issuer,
-    ) {
-    }
+        private Authenticatable|Model|Pivot|null $issuer,
+    ) {}
 
     public function via(mixed $notifiable): array
     {

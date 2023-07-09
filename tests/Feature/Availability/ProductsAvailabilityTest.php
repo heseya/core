@@ -63,7 +63,7 @@ class ProductsAvailabilityTest extends TestCase
         $availability = $this->availabilityService->getCalculateProductAvailability($product);
 
         $this->assertTrue($availability['available']);
-        $this->assertEquals(null, $availability['quantity']);
+        $this->assertNull($availability['quantity']);
         $this->assertNull($availability['shipping_time']);
         $this->assertNull($availability['shipping_date']);
     }
@@ -95,7 +95,7 @@ class ProductsAvailabilityTest extends TestCase
         $availability = $this->availabilityService->getCalculateProductAvailability($product);
 
         $this->assertTrue($availability['available']);
-        $this->assertEquals(null, $availability['quantity']);
+        $this->assertNull($availability['quantity']);
         $this->assertNull($availability['shipping_time']);
         $this->assertNull($availability['shipping_date']);
     }

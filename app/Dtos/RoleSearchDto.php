@@ -16,8 +16,7 @@ class RoleSearchDto implements DtoContract, InstantiateFromRequest
         private ?array $metadata,
         private ?array $metadata_private,
         private ?array $ids,
-    ) {
-    }
+    ) {}
 
     public function toArray(): array
     {

@@ -16,7 +16,7 @@ class WebHookEventLogEntry extends Model
     use HasCriteria;
     use HasFactory;
 
-    public $timestamps = null;
+    public $timestamps;
 
     protected $fillable = [
         'id',

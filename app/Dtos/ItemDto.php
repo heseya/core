@@ -13,14 +13,13 @@ class ItemDto extends Dto implements InstantiateFromRequest
     use MapMetadata;
 
     public function __construct(
-        public readonly string|Missing $id,
-        public readonly string|Missing $name,
-        public readonly string|Missing $sku,
-        public readonly int|null|Missing $unlimited_stock_shipping_time,
-        public readonly string|null|Missing $unlimited_stock_shipping_date,
+        public readonly Missing|string $id,
+        public readonly Missing|string $name,
+        public readonly Missing|string $sku,
+        public readonly int|Missing|null $unlimited_stock_shipping_time,
+        public readonly Missing|string|null $unlimited_stock_shipping_date,
         public readonly array|Missing $metadata,
-    ) {
-    }
+    ) {}
 
     public static function instantiateFromRequest(FormRequest $request): self
     {

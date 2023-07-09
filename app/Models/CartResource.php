@@ -17,6 +17,5 @@ class CartResource
         public ?float $shipping_time = null,
         public ?string $shipping_date = null,
         public float $summary = 0,
-    ) {
-    }
+    ) {}
 }

@@ -105,9 +105,9 @@ class Schema extends Model implements SortableContract
         }
 
         if (
-            $this->type->is(SchemaType::NUMERIC) ||
-            $this->type->is(SchemaType::MULTIPLY) ||
-            $this->type->is(SchemaType::MULTIPLY_SCHEMA)
+            $this->type->is(SchemaType::NUMERIC)
+            || $this->type->is(SchemaType::MULTIPLY)
+            || $this->type->is(SchemaType::MULTIPLY_SCHEMA)
         ) {
             $validation->push('numeric');
         }
@@ -168,7 +168,7 @@ class Schema extends Model implements SortableContract
      */
     public function setTypeAttribute(mixed $value): void
     {
-        if (!is_integer($value)) {
+        if (!is_int($value)) {
             $value = SchemaType::fromKey(Str::upper($value));
         }
 
@@ -194,7 +194,7 @@ class Schema extends Model implements SortableContract
     public function usedBySchemas(): BelongsToMany
     {
         return $this->belongsToMany(
-            Schema::class,
+            self::class,
             'schema_used_schemas',
             'used_schema_id',
             'schema_id',
@@ -204,7 +204,7 @@ class Schema extends Model implements SortableContract
     public function usedSchemas(): BelongsToMany
     {
         return $this->belongsToMany(
-            Schema::class,
+            self::class,
             'schema_used_schemas',
             'schema_id',
             'used_schema_id',
@@ -220,8 +220,8 @@ class Schema extends Model implements SortableContract
         }
 
         if (
-            ($this->type->is(SchemaType::STRING) || $this->type->is(SchemaType::NUMERIC)) &&
-            Str::length(trim($value)) === 0
+            ($this->type->is(SchemaType::STRING) || $this->type->is(SchemaType::NUMERIC))
+            && Str::length(trim($value)) === 0
         ) {
             return 0;
         }

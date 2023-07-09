@@ -9,9 +9,7 @@ class WhereIn implements Rule
 {
     private string $field;
 
-    public function __construct(private array $fields)
-    {
-    }
+    public function __construct(private array $fields) {}
 
     public function passes($attribute, $value): bool
     {

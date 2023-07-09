@@ -327,9 +327,7 @@ class AuthTest extends TestCase
 
         Log::shouldReceive('error')
             ->once()
-            ->withArgs(function ($message) {
-                return str_contains($message, $this->expectedLog);
-            });
+            ->withArgs(fn ($message) => str_contains($message, $this->expectedLog));
 
         $this
             ->actingAs($this->user)
@@ -352,9 +350,7 @@ class AuthTest extends TestCase
 
         Log::shouldReceive('error')
             ->once()
-            ->withArgs(function ($message) {
-                return str_contains($message, $this->expectedLog);
-            });
+            ->withArgs(fn ($message) => str_contains($message, $this->expectedLog));
 
         $this
             ->actingAs($this->user)
@@ -1133,9 +1129,7 @@ class AuthTest extends TestCase
 
         Log::shouldReceive('error')
             ->once()
-            ->withArgs(function ($message) {
-                return str_contains($message, 'App\Exceptions\ClientException(code: 422): Invalid password at');
-            });
+            ->withArgs(fn ($message) => str_contains($message, 'App\Exceptions\ClientException(code: 422): Invalid password at'));
 
         $response = $this->actingAs($user)->json('PUT', '/users/password', [
             'password' => 'tests',
@@ -2438,9 +2432,13 @@ class AuthTest extends TestCase
     {
         $decoded = base64_decode($data);
         $ivLen = openssl_cipher_iv_length($this->cipher);
-        $iv = substr($decoded, 0, $ivLen);
 
-        $ciphertext = substr($decoded, $ivLen);
+        if ($ivLen === false) {
+            return false;
+        }
+
+        $iv = mb_substr($decoded, 0, $ivLen, '8bit');
+        $ciphertext = mb_substr($decoded, $ivLen, null, '8bit');
         $decrypted = openssl_decrypt($ciphertext, $this->cipher, $this->webhookKey, OPENSSL_RAW_DATA, $iv);
 
         if ($decrypted) {

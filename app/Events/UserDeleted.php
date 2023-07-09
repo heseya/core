@@ -2,6 +2,4 @@
 
 namespace App\Events;
 
-class UserDeleted extends UserEvent
-{
-}
+class UserDeleted extends UserEvent {}
