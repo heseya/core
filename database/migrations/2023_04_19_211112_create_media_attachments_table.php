@@ -10,7 +10,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('media_attachments', function (Blueprint $table) {
+        Schema::create('media_attachments', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('type');
             $table->string('name');

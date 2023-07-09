@@ -2,6 +2,4 @@
 
 namespace App\Events;
 
-class OrderUpdated extends OrderEvent
-{
-}
+class OrderUpdated extends OrderEvent {}

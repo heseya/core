@@ -18,8 +18,7 @@ class PageController extends Controller
 {
     public function __construct(
         private readonly PageServiceContract $pageService,
-    ) {
-    }
+    ) {}
 
     public function index(PageIndexRequest $request): JsonResource
     {

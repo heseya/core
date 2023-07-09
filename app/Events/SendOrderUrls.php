@@ -2,6 +2,4 @@
 
 namespace App\Events;
 
-class SendOrderUrls extends OrderEvent
-{
-}
+class SendOrderUrls extends OrderEvent {}

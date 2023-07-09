@@ -23,8 +23,7 @@ trait PermissionUtility
 
     /**
      * Allows to change returned prefix to desired model if is different to table name.
-     *
-     * */
+     */
     protected function getPermissionPrefix(Model $model): string
     {
         $segments = Request::segments();

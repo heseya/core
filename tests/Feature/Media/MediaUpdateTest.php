@@ -111,8 +111,8 @@ class MediaUpdateTest extends TestCase
         ]);
 
         Http::assertSent(function (Request $request) {
-            return $request->url() === 'http://cdn.example.com/dev/photo.jpg' &&
-                $request['slug'] === 'test-slug';
+            return $request->url() === 'http://cdn.example.com/dev/photo.jpg'
+                && $request['slug'] === 'test-slug';
         });
     }
 

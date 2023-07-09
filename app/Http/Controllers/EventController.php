@@ -10,8 +10,7 @@ class EventController extends Controller
 {
     public function __construct(
         private EventServiceContract $eventService,
-    ) {
-    }
+    ) {}
 
     public function index(): JsonResource
     {

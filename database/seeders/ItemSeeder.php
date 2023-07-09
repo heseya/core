@@ -14,7 +14,7 @@ class ItemSeeder extends Seeder
     public function run(): void
     {
         Item::factory()
-            ->has(Deposit::factory()->count(rand(0, 2)))
+            ->has(Deposit::factory()->count(mt_rand(0, 2)))
             ->count(100)
             ->create();
     }

@@ -13,9 +13,9 @@ class BannerDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    private null|string|Missing $slug;
-    private null|string|Missing $name;
-    private null|bool|Missing $active;
+    private Missing|string|null $slug;
+    private Missing|string|null $name;
+    private bool|Missing|null $active;
     private Collection|Missing $banner_media;
     private array|Missing $metadata;
 

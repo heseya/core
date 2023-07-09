@@ -18,8 +18,7 @@ class ShippingTimeDateService implements ShippingTimeDateServiceContract
     public function __construct(
         private AvailabilityServiceContract $availabilityService,
         private DepositServiceContract $depositService
-    ) {
-    }
+    ) {}
 
     public function stopShippingUnlimitedStockDate(): void
     {
@@ -41,9 +40,7 @@ class ShippingTimeDateService implements ShippingTimeDateServiceContract
         $cartItemsAndQuantity = [];
         foreach ($products as $product) {
             /** @var CartItemDto $cartItem */
-            $cartItem = Arr::first($cart->getItems(), function ($value, $key) use ($product) {
-                return $value->getProductId() === $product->getKey();
-            });
+            $cartItem = Arr::first($cart->getItems(), fn ($value, $key) => $value->getProductId() === $product->getKey());
 
             $items = $product->items;
             foreach ($items as $item) {

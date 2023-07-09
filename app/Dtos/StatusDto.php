@@ -12,10 +12,10 @@ class StatusDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    private string|Missing $name;
-    private string|Missing $color;
+    private Missing|string $name;
+    private Missing|string $color;
     private bool|Missing $cancel;
-    private string|Missing $description;
+    private Missing|string $description;
     private bool|Missing $hidden;
     private bool|Missing $no_notifications;
 

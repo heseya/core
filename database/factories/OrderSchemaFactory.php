@@ -19,11 +19,11 @@ class OrderSchemaFactory extends Factory
      */
     public function definition(): array
     {
-        $price = rand(0, 1) ? 0 : $this->faker->numberBetween(0, 100);
+        $price = mt_rand(0, 1) ? 0 : $this->faker->numberBetween(0, 100);
 
         return [
             'name' => $this->faker->word,
-            'value' => rand(0, 1) ? $this->faker->sentence : (rand(0, 1) ? $this->faker->boolean : $this->faker->randomNumber),
+            'value' => mt_rand(0, 1) ? $this->faker->sentence : (mt_rand(0, 1) ? $this->faker->boolean : $this->faker->randomNumber),
             'price' => $price,
             'price_initial' => $price,
         ];

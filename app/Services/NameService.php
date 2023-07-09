@@ -78,7 +78,7 @@ class NameService implements NameServiceContract
             if (count($temp) > 1 && isset($params[$temp[0]])) {
                 $param = $params[$temp[0]];
                 if (is_numeric($temp[1])) {
-                    $param = substr($param, -(int) $temp[1]);
+                    $param = mb_substr($param, -(int) $temp[1]);
                 } else {
                     throw new ClientException(Exceptions::CLIENT_ORDER_CODE_LENGTH_MUST_BE_NUMERIC);
                 }

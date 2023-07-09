@@ -2,6 +2,4 @@
 
 namespace App\Events;
 
-class UserUpdated extends UserEvent
-{
-}
+class UserUpdated extends UserEvent {}

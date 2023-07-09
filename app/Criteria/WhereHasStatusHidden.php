@@ -10,9 +10,7 @@ class WhereHasStatusHidden extends Criterion
     public function query(Builder $query): Builder
     {
         return $query->where(function (Builder $query): void {
-            $query->whereHas('status', function (Builder $query) {
-                return $query->where('hidden', $this->value);
-            });
+            $query->whereHas('status', fn (Builder $query) => $query->where('hidden', $this->value));
 
             if (!$this->value) {
                 $query->orWhereDoesntHave('status');

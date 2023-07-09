@@ -15,9 +15,7 @@ use Illuminate\Support\Facades\Response;
 
 class PackageTemplateController extends Controller
 {
-    public function __construct(private PackageTemplateServiceContract $packageTemplateService)
-    {
-    }
+    public function __construct(private PackageTemplateServiceContract $packageTemplateService) {}
 
     public function index(PackageTemplateIndexRequest $request): JsonResource
     {

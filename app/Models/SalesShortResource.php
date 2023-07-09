@@ -8,6 +8,5 @@ class SalesShortResource
         public string $id,
         public string $name,
         public float $value,
-    ) {
-    }
+    ) {}
 }

@@ -21,8 +21,7 @@ class ProcessFailedLoginAttempts implements ShouldQueue
 
     public function __construct(
         private string $userId,
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the job.

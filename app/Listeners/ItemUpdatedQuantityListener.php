@@ -11,8 +11,7 @@ final readonly class ItemUpdatedQuantityListener
     public function __construct(
         private AvailabilityServiceContract $availabilityService,
         private ItemServiceContract $itemServiceContract,
-    ) {
-    }
+    ) {}
 
     public function handle(ItemUpdatedQuantity $event): void
     {

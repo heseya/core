@@ -10,8 +10,8 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('products', function (Blueprint $table): void {
-            $table->boolean('has_schemas')->nullable()->index();
+        Schema::table('media', function (Blueprint $table): void {
+            $table->string('alt', 255)->nullable()->change();
         });
     }
 
@@ -20,8 +20,8 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('product_set_product', function (Blueprint $table): void {
-            $table->dropColumn('has_schemas');
+        Schema::table('media', function (Blueprint $table): void {
+            $table->string('alt', 100)->nullable()->change();
         });
     }
 };

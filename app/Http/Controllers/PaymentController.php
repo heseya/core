@@ -25,8 +25,7 @@ class PaymentController extends Controller
 {
     public function __construct(
         private PaymentServiceContract $paymentService,
-    ) {
-    }
+    ) {}
 
     public function pay(Order $order, PaymentMethod $paymentMethod, PayRequest $request): JsonResource
     {

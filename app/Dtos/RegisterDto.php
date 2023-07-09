@@ -18,9 +18,9 @@ class RegisterDto extends Dto implements InstantiateFromRequest
     private string $password;
     private Collection $consents;
     protected array|Missing $roles;
-    private string|null|Missing $birthday_date;
-    private string|null|Missing $phone_country;
-    private string|null|Missing $phone_number;
+    private Missing|string|null $birthday_date;
+    private Missing|string|null $phone_country;
+    private Missing|string|null $phone_number;
 
     public static function instantiateFromRequest(FormRequest|RegisterRequest $request): self
     {
@@ -60,7 +60,7 @@ class RegisterDto extends Dto implements InstantiateFromRequest
         return $this->consents;
     }
 
-    public function getRoles(): Missing|array
+    public function getRoles(): array|Missing
     {
         return $this->roles;
     }
@@ -80,7 +80,7 @@ class RegisterDto extends Dto implements InstantiateFromRequest
         return $this->phone_number;
     }
 
-    public function getMetadataPersonal(): Missing|array
+    public function getMetadataPersonal(): array|Missing
     {
         return $this->metadata_personal;
     }

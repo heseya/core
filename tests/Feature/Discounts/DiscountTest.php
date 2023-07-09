@@ -1873,9 +1873,7 @@ class DiscountTest extends TestCase
         $this->assertDatabaseHas('discount_condition_groups', ['discount_id' => $discount->getKey()]);
         $this->assertDatabaseCount('discount_conditions', count($this->conditions));
 
-        Queue::assertPushed(CallQueuedListener::class, function ($job) {
-            return $job->class === WebHookEventListener::class;
-        });
+        Queue::assertPushed(CallQueuedListener::class, fn ($job) => $job->class === WebHookEventListener::class);
 
         $discount = Discount::find($discount->getKey());
         $event = $discountKind === 'coupons' ? new CouponCreated($discount) : new SaleCreated($discount);
@@ -1961,9 +1959,7 @@ class DiscountTest extends TestCase
                 'code' => $discount->code,
             ])->assertOk();
 
-        Queue::assertPushed(CallQueuedListener::class, function ($job) {
-            return $job->class === WebHookEventListener::class;
-        });
+        Queue::assertPushed(CallQueuedListener::class, fn ($job) => $job->class === WebHookEventListener::class);
 
         $discount = Discount::find($discount->getKey());
         $event = $discountKind === 'coupons' ? new CouponUpdated($discount) : new SaleUpdated($discount);
@@ -2018,9 +2014,7 @@ class DiscountTest extends TestCase
                 'code' => $discount->code,
             ])->assertOk();
 
-        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
-            return $job->class === WebHookEventListener::class;
-        });
+        Bus::assertDispatched(CallQueuedListener::class, fn ($job) => $job->class === WebHookEventListener::class);
 
         $discount = Discount::find($discount->getKey());
         $event = $discountKind === 'coupons' ? new CouponUpdated($discount) : new SaleUpdated($discount);

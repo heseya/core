@@ -11,7 +11,7 @@ class FavouriteProductSetDto extends Dto implements InstantiateFromRequest
 {
     private string $product_set_id;
 
-    public static function instantiateFromRequest(FormRequest|FavouriteProductSetStoreRequest $request): self
+    public static function instantiateFromRequest(FavouriteProductSetStoreRequest|FormRequest $request): self
     {
         return new self(
             product_set_id: $request->input('product_set_id'),

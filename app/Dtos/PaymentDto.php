@@ -9,10 +9,10 @@ use Illuminate\Http\Request;
 
 class PaymentDto extends Dto implements InstantiateFromRequest
 {
-    private string|Missing $external_id;
-    private string|Missing $method_id;
-    private string|Missing $order_id;
-    private string|Missing $status;
+    private Missing|string $external_id;
+    private Missing|string $method_id;
+    private Missing|string $order_id;
+    private Missing|string $status;
     private float|Missing $amount;
 
     public static function instantiateFromRequest(Request $request): InstantiateFromRequest
@@ -26,22 +26,22 @@ class PaymentDto extends Dto implements InstantiateFromRequest
         );
     }
 
-    public function getExternalId(): string|Missing
+    public function getExternalId(): Missing|string
     {
         return $this->external_id;
     }
 
-    public function getMethodId(): string|Missing
+    public function getMethodId(): Missing|string
     {
         return $this->method_id;
     }
 
-    public function getOrderId(): string|Missing
+    public function getOrderId(): Missing|string
     {
         return $this->order_id;
     }
 
-    public function getStatus(): string|Missing
+    public function getStatus(): Missing|string
     {
         return $this->status;
     }

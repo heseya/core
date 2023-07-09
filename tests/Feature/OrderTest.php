@@ -283,7 +283,7 @@ class OrderTest extends TestCase
 
         $this->{$user}->orders()->save($order);
 
-        // @var User $another_user
+        /** @var User $another_user */
         $another_user = User::factory()->create();
 
         $order_another_user = Order::factory()->create([

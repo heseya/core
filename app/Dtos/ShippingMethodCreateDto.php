@@ -85,12 +85,12 @@ class ShippingMethodCreateDto extends Dto implements InstantiateFromRequest
         return $this->price_ranges;
     }
 
-    public function getShippingTimeMin(): Missing|int
+    public function getShippingTimeMin(): int|Missing
     {
         return $this->shipping_time_min;
     }
 
-    public function getShippingTimeMax(): Missing|int
+    public function getShippingTimeMax(): int|Missing
     {
         return $this->shipping_time_max;
     }

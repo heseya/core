@@ -13,8 +13,7 @@ class GoogleCategoryController extends Controller
 {
     public function __construct(
         private readonly GoogleCategoryServiceContract $categoryService
-    ) {
-    }
+    ) {}
 
     public function index(string $lang): JsonResource
     {

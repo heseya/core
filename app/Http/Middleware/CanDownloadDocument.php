@@ -3,7 +3,6 @@
 namespace App\Http\Middleware;
 
 use App\Enums\ExceptionsEnums\Exceptions;
-use App\Exceptions\AuthException;
 use App\Exceptions\ClientException;
 use App\Models\Order;
 use Closure;
@@ -13,11 +12,9 @@ use Illuminate\Support\Facades\Auth;
 class CanDownloadDocument
 {
     /**
-     * @return mixed
-     *
-     * @throws AuthException
+     * @throws ClientException
      */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): mixed
     {
         /** @var Order $order */
         $order = $request->route('order');

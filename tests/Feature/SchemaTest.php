@@ -1010,7 +1010,7 @@ class SchemaTest extends TestCase
             'step' => 0.1,
         ]);
 
-        $value = rand(10, 100) / 10;
+        $value = mt_rand(10, 100) / 10;
         $this->assertEquals(10 * $value, $multiplier->getPrice($value, [
             $multiplier->getKey() => $value,
         ]));
@@ -1044,7 +1044,7 @@ class SchemaTest extends TestCase
             $multiplier->getKey() => 2,
         ]));
 
-        $value = rand(10, 100) / 10;
+        $value = mt_rand(10, 100) / 10;
         $this->assertEquals(10 * $value, $multiplier->getPrice($value, [
             $multiplier->getKey() => $value,
             $colors->getKey() => $red->getKey(),

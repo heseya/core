@@ -22,12 +22,12 @@ class OrderValueConditionDto extends ConditionDto
         );
     }
 
-    public function getMinValue(): Missing|float
+    public function getMinValue(): float|Missing
     {
         return $this->min_value;
     }
 
-    public function getMaxValue(): Missing|float
+    public function getMaxValue(): float|Missing
     {
         return $this->max_value;
     }

@@ -34,8 +34,7 @@ readonly class ProductService implements ProductServiceContract
         private MetadataServiceContract $metadataService,
         private AttributeServiceContract $attributeService,
         private DiscountServiceContract $discountService,
-    ) {
-    }
+    ) {}
 
     private function setup(Product $product, ProductCreateDto|ProductUpdateDto $dto): Product
     {

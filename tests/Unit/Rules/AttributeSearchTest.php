@@ -69,12 +69,12 @@ class AttributeSearchTest extends UnitTestCase
     }
 
     // TODO: mock model find
-//    public function testValidateOptionsPassUuid(): void
-//    {
-//        $this->assertTrue($this->callMethod($this->rule, 'validateOptions', [
-//            'value' => 'f9f96c73-1e19-4e66-a232-f473b29edd63,f9f96c73-1e19-4e66-a232-f473b29edd63',
-//        ]));
-//    }
+    //    public function testValidateOptionsPassUuid(): void
+    //    {
+    //        $this->assertTrue($this->callMethod($this->rule, 'validateOptions', [
+    //            'value' => 'f9f96c73-1e19-4e66-a232-f473b29edd63,f9f96c73-1e19-4e66-a232-f473b29edd63',
+    //        ]));
+    //    }
 
     public function testValidateOptionsDontPassNonUuid(): void
     {

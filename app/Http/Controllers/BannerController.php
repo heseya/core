@@ -16,9 +16,7 @@ use Illuminate\Support\Facades\Response;
 
 class BannerController extends Controller
 {
-    public function __construct(private BannerServiceContract $bannerService)
-    {
-    }
+    public function __construct(private BannerServiceContract $bannerService) {}
 
     public function index(BannerIndexRequest $request): JsonResource
     {

@@ -21,12 +21,12 @@ class OrderProductUpdateDto extends Dto implements InstantiateFromRequest
         );
     }
 
-    public function getIsDelivered(): Missing|bool
+    public function getIsDelivered(): bool|Missing
     {
         return $this->is_delivered;
     }
 
-    public function getUrls(): Missing|array
+    public function getUrls(): array|Missing
     {
         return $this->urls;
     }

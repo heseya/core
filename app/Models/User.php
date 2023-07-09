@@ -111,7 +111,7 @@ class User extends Model implements AuditableContract, AuthenticatableContract, 
      */
     public function getAvatarAttribute(): string
     {
-        return '//www.gravatar.com/avatar/' . md5(strtolower(trim($this->email))) . '?d=mp&s=50x50';
+        return '//www.gravatar.com/avatar/' . md5(mb_strtolower(trim($this->email))) . '?d=mp&s=50x50';
     }
 
     public function getPhoneAttribute(): ?string

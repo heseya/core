@@ -2,6 +2,4 @@
 
 namespace App\Events;
 
-class NewLocalizationLoginAttempt extends LocalizedLoginAttempt
-{
-}
+class NewLocalizationLoginAttempt extends LocalizedLoginAttempt {}

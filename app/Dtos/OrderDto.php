@@ -13,16 +13,16 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    private string|Missing $email;
-    private string|null|Missing $comment;
-    private string|Missing $shipping_method_id;
-    private string|Missing $digital_shipping_method_id;
+    private Missing|string $email;
+    private Missing|string|null $comment;
+    private Missing|string $shipping_method_id;
+    private Missing|string $digital_shipping_method_id;
     private array|Missing $items;
     private AddressDto|Missing $billing_address;
     private array|Missing $coupons;
     private array|Missing $sale_ids;
-    private string|null|Missing $shipping_number;
-    private string|AddressDto|Missing $shipping_place;
+    private Missing|string|null $shipping_number;
+    private AddressDto|Missing|string $shipping_place;
     private bool|Missing $invoice_requested;
 
     private array|Missing $metadata;
@@ -76,32 +76,32 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
         return $this->digital_shipping_method_id;
     }
 
-    public function getItems(): Missing|array
+    public function getItems(): array|Missing
     {
         return $this->items;
     }
 
-    public function getShippingPlace(): string|AddressDto|Missing
+    public function getShippingPlace(): AddressDto|Missing|string
     {
         return $this->shipping_place;
     }
 
-    public function getBillingAddress(): Missing|AddressDto
+    public function getBillingAddress(): AddressDto|Missing
     {
         return $this->billing_address;
     }
 
-    public function getInvoiceRequested(): Missing|bool
+    public function getInvoiceRequested(): bool|Missing
     {
         return $this->invoice_requested;
     }
 
-    public function getCoupons(): Missing|array
+    public function getCoupons(): array|Missing
     {
         return $this->coupons;
     }
 
-    public function getSaleIds(): Missing|array
+    public function getSaleIds(): array|Missing
     {
         return $this->sale_ids;
     }

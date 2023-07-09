@@ -10,13 +10,12 @@ class MakeSetProductsSearchable
 {
     public function __construct(
         private ProductSetServiceContract $productSetService,
-    ) {
-    }
+    ) {}
 
     /**
      * Handle the event.
      */
-    public function handle(ProductSetUpdated|ProductSetCreated $event): void
+    public function handle(ProductSetCreated|ProductSetUpdated $event): void
     {
         $this->productSetService->indexAllProducts($event->getProductSet());
     }

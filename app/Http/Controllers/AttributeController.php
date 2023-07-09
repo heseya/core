@@ -21,8 +21,7 @@ class AttributeController extends Controller
     public function __construct(
         private readonly AttributeServiceContract $attributeService,
         private readonly ReorderServiceContract $reorderService,
-    ) {
-    }
+    ) {}
 
     public function index(AttributeIndexRequest $request): JsonResource
     {

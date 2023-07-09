@@ -2,6 +2,4 @@
 
 namespace App\Events;
 
-class PageUpdated extends PageEvent
-{
-}
+class PageUpdated extends PageEvent {}

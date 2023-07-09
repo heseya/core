@@ -10,9 +10,7 @@ use Heseya\Dto\Missing;
 
 class BannerService implements BannerServiceContract
 {
-    public function __construct(private MetadataServiceContract $metadataService)
-    {
-    }
+    public function __construct(private MetadataServiceContract $metadataService) {}
 
     public function create(BannerDto $dto): Banner
     {

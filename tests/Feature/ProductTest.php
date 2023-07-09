@@ -567,12 +567,12 @@ class ProductTest extends TestCase
 
         $media1 = Media::factory()->create([
             'type' => MediaType::PHOTO,
-            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+            'url' => 'https://picsum.photos/seed/' . mt_rand(0, 999999) . '/800',
         ]);
 
         $media2 = Media::factory()->create([
             'type' => MediaType::PHOTO,
-            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+            'url' => 'https://picsum.photos/seed/' . mt_rand(0, 999999) . '/800',
         ]);
 
         $set1 = ProductSet::factory()->create([
@@ -1501,9 +1501,7 @@ class ProductTest extends TestCase
             'description_html' => '<h1>Description</h1>',
         ]);
 
-        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
-            return $job->class = WebHookEventListener::class;
-        });
+        Bus::assertDispatched(CallQueuedListener::class, fn ($job) => $job->class = WebHookEventListener::class);
 
         $product = Product::find($response->getData()->data->id);
         $event = new ProductCreated($product);
@@ -1772,7 +1770,7 @@ class ProductTest extends TestCase
 
         $media = Media::factory()->create([
             'type' => MediaType::PHOTO,
-            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+            'url' => 'https://picsum.photos/seed/' . mt_rand(0, 999999) . '/800',
         ]);
 
         $response = $this->actingAs($this->{$user})->json('POST', '/products', [
@@ -3085,7 +3083,7 @@ class ProductTest extends TestCase
 
         $media = Media::factory()->create([
             'type' => MediaType::PHOTO,
-            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+            'url' => 'https://picsum.photos/seed/' . mt_rand(0, 999999) . '/800',
         ]);
 
         $product = Product::factory([

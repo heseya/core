@@ -13,8 +13,7 @@ final class Error
         public string $key = 'INTERNAL_SERVER_ERROR',
         public array $errors = [],
         public array $stack = []
-    ) {
-    }
+    ) {}
 
     /**
      * Return http error response.
@@ -33,7 +32,7 @@ final class Error
             ->setStatusCode($error->code);
     }
 
-    public function setStack(array $stack): Error
+    public function setStack(array $stack): self
     {
         $this->stack = $stack;
 

@@ -22,8 +22,7 @@ class UserController extends Controller
     public function __construct(
         private UserServiceContract $userService,
         private AuthServiceContract $authService,
-    ) {
-    }
+    ) {}
 
     public function index(UserIndexRequest $request): JsonResource
     {

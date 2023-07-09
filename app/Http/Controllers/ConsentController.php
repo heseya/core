@@ -14,9 +14,7 @@ use Illuminate\Support\Facades\Response;
 
 class ConsentController extends Controller
 {
-    public function __construct(private ConsentServiceContract $consentService)
-    {
-    }
+    public function __construct(private ConsentServiceContract $consentService) {}
 
     public function show(Consent $consent): JsonResource
     {

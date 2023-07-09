@@ -13,7 +13,5 @@ class AddSoftDeleteToUsersTable extends Migration
         });
     }
 
-    public function down(): void
-    {
-    }
+    public function down(): void {}
 }

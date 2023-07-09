@@ -21,8 +21,7 @@ class AvailabilityService implements AvailabilityServiceContract
 {
     public function __construct(
         protected DepositServiceContract $depositService,
-    ) {
-    }
+    ) {}
 
     /**
      * Function used to calculate "available" field for Options, Schemas and Products related to Item step by step
@@ -301,8 +300,8 @@ class AvailabilityService implements AvailabilityServiceContract
 
             if ($requiredQuantity > $item->quantity_real) {
                 if (
-                    $item->unlimited_stock_shipping_time === null &&
-                    $item->unlimited_stock_shipping_date === null
+                    $item->unlimited_stock_shipping_time === null
+                    && $item->unlimited_stock_shipping_date === null
                 ) {
                     return $this->returnProductAvailability(false, 0.0);
                 }
@@ -429,9 +428,9 @@ class AvailabilityService implements AvailabilityServiceContract
             $shippingDate2 = Carbon::createFromTimeString($shippingDate2);
         }
 
-        if ($shippingDate1 === null || ($shippingDate1 instanceof Carbon &&
-                ((!$isAfter && $shippingDate1->isBefore($shippingDate2)) ||
-                    ($isAfter && $shippingDate1->isAfter($shippingDate2))))) {
+        if ($shippingDate1 === null || ($shippingDate1 instanceof Carbon
+                && ((!$isAfter && $shippingDate1->isBefore($shippingDate2))
+                    || ($isAfter && $shippingDate1->isAfter($shippingDate2))))) {
             return $shippingDate2;
         }
 
