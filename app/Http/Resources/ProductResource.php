@@ -44,12 +44,14 @@ class ProductResource extends Resource
             'quantity' => $this->resource->quantity,
             'shipping_digital' => $this->resource->shipping_digital,
             'purchase_limit_per_user' => $this->resource->purchase_limit_per_user,
-        ], $this->metadataResource('products.show_metadata_private'));
+            'published' => $this->resource->published,
+        ];
+
         return array_merge(
             $data,
-            $request->has('translations') ? $this->getAllTranslations('products.show_hidden') : []
+            $request->has('translations') ? $this->getAllTranslations('products.show_hidden') : [],
+            $this->metadataResource('products.show_metadata_private'),
         );
-            'published' => $this->published,
     }
 
     public function view(Request $request): array

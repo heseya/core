@@ -21,8 +21,7 @@ use Spatie\Translatable\HasTranslations;
 /**
  * @mixin IdeHelperPage
  */
-class Page extends Model implements AuditableContract, Translatable
-class Page extends Model implements AuditableContract, SortableContract
+class Page extends Model implements AuditableContract, SortableContract, Translatable
 {
     use HasFactory, Sortable, Auditable, SoftDeletes, HasSeoMetadata, HasTranslations;
     use Auditable;

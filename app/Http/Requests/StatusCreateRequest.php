@@ -22,9 +22,6 @@ class StatusCreateRequest extends FormRequest
             'translations.*.name' => ['string', 'max:60'],
             'translations.*.description' => ['string', 'max:255', 'nullable'],
 
-//            'name' => ['required', 'string', 'max:60'],
-//            'description' => ['string', 'max:255', 'nullable'],
-
             'published' => ['required', 'array', 'min:1'],
             'published.*' => ['uuid', 'exists:languages,id'],
 
@@ -32,7 +29,7 @@ class StatusCreateRequest extends FormRequest
             'cancel' => ['boolean'],
             'hidden' => ['boolean'],
             'no_notifications' => ['boolean'],
-        ];
-        );
+        ],
+    );
     }
 }

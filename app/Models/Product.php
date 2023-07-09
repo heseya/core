@@ -53,8 +53,7 @@ use Spatie\Translatable\HasTranslations;
  *
  * @mixin IdeHelperProduct
  */
-class Product extends Model implements AuditableContract, Explored, SearchableFields, SortableContract
-class Product extends Model implements AuditableContract, Translatable
+class Product extends Model implements AuditableContract, Translatable, Explored, SearchableFields, SortableContract
 {
     use HasFactory, SoftDeletes, Searchable, Sortable, Auditable, HasSeoMetadata, HasTranslations;
     use Auditable;
@@ -128,14 +127,6 @@ class Product extends Model implements AuditableContract, Translatable
         'purchase_limit_per_user' => 'float',
     ];
 
-    protected array $searchable = [
-        'name' => TranslatedLike::class,
-        'slug' => Like::class,
-        'public',
-        'search' => ProductSearch::class,
-        'tags' => WhereBelongsToManyById::class,
-    ];
-
     protected array $sortable = [
         'id',
         'price',
@@ -155,7 +146,7 @@ class Product extends Model implements AuditableContract, Translatable
         'search' => ProductSearch::class,
         'ids' => WhereInIds::class,
         'slug' => Like::class,
-        'name' => Like::class,
+        'name' => TranslatedLike::class,
         'public' => Equals::class,
         'available' => Equals::class,
         'sets' => WhereHasSlug::class,

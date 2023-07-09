@@ -35,8 +35,7 @@ use Spatie\Translatable\HasTranslations;
  *
  * @mixin IdeHelperSchema
  */
-class Schema extends Model implements Translatable
-class Schema extends Model implements SortableContract
+class Schema extends Model implements Translatable, SortableContract
 {
     use HasFactory, Searchable, Sortable, HasTranslations;
     use HasMetadata;

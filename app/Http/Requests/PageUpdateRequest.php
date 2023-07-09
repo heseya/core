@@ -15,9 +15,6 @@ class PageUpdateRequest extends FormRequest implements SeoRequestContract
 
     public function rules(): array
     {
-        /** @var Page $page */
-        $page = $this->route('page');
-
         return array_merge(
             $this->seoRules(),
             [
@@ -36,7 +33,6 @@ class PageUpdateRequest extends FormRequest implements SeoRequestContract
                 Rule::unique('pages')->ignore($this->route('page')->slug, 'slug'),
             ],
             'public' => ['boolean'],
-            'content_html' => ['string', 'min:1'],
         ]);
     }
 }

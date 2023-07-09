@@ -33,10 +33,12 @@ class SchemaResource extends Resource
             'shipping_date' => $this->resource->shipping_date,
             'options' => OptionResource::collection($this->resource->options),
             'used_schemas' => $this->resource->usedSchemas->map(fn ($schema) => $schema->getKey()),
-        ], $this->metadataResource('schemas.show_metadata_private'));
+        ];
+
         return array_merge(
             $data,
-            $request->has('translations') ? $this->getAllTranslations() : []
+            $request->has('translations') ? $this->getAllTranslations() : [],
+            $this->metadataResource('schemas.show_metadata_private'),
         );
     }
 

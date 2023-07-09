@@ -23,10 +23,12 @@ class OptionResource extends Resource
             'shipping_time' => $this->resource->shipping_time,
             'shipping_date' => $this->resource->shipping_date,
             'items' => ItemPublicResource::collection($this->resource->items),
-        ], $this->metadataResource('options.show_metadata_private'));
+        ];
+
         return array_merge(
             $data,
-            $request->has('translations') ? $this->getAllTranslations() : []
+            $request->has('translations') ? $this->getAllTranslations() : [],
+            $this->metadataResource('options.show_metadata_private'),
         );
     }
 }

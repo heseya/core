@@ -21,10 +21,10 @@ use Illuminate\Support\Facades\Response;
 class StatusController extends Controller
 {
     public function __construct(
-    public function __construct(private StatusServiceContract $statusService) {}
+        private readonly StatusServiceContract $statusService,
         private TranslationServiceContract $translationService,
-    ) {
-    }
+    ) {}
+
     public function index(StatusIndexRequest $request): JsonResource
     {
         $statuses = Status::searchByCriteria($request->validated())

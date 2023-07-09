@@ -33,19 +33,17 @@ class OptionService implements OptionServiceContract
             if (!$optionItem->getId() instanceof Missing) {
                 /** @var Option $option */
                 $option = Option::query()->findOrFail($optionItem->getId());
-                $option->fill($input);
-                $option->update($optionData);
+                $option->fill($optionData);
             } else {
                 $option = $schema->options()->create($optionData);
             }
 
-            foreach ($input['translations'] ?? [] as $lang => $translations) {
+            foreach ($optionItem['translations'] ?? [] as $lang => $translations) {
                 $option->setLocale($lang)->fill($translations);
             }
 
             $option->save();
 
-            $option->items()->sync($input['items'] ?? []);
             $option->items()->sync(
                 !$optionItem->getItems() instanceof Missing ?
                     $optionItem->getItems() ?? []

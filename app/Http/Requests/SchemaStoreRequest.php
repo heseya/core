@@ -25,9 +25,6 @@ class SchemaStoreRequest extends FormRequest
             'translations.*.name' => ['string', 'max:255'],
             'translations.*.description' => ['nullable', 'string', 'max:255'],
 
-//            'name' => ['required', 'string', 'max:255'],
-//            'description' => ['nullable', 'string', 'max:255'],
-
             'published' => ['required', 'array', 'min:1'],
             'published.*' => ['uuid', 'exists:languages,id'],
 
@@ -48,7 +45,6 @@ class SchemaStoreRequest extends FormRequest
                 new Translations(['name']),
             ],
             'options.*.translations.*.name' => ['string', 'max:255'],
-//            'options.*.name' => ['required', 'string', 'max:255'],
 
             'options.*.price' => ['sometimes', 'required', 'numeric'],
             'options.*.disabled' => ['sometimes', 'required', 'boolean'],
