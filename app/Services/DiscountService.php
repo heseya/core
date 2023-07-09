@@ -177,6 +177,9 @@ readonly class DiscountService implements DiscountServiceContract
         }
     }
 
+    /**
+     * @throws ClientException
+     */
     public function calc(float $value, Discount $discount): float
     {
         if (isset($discount->pivot) && $discount->pivot->type !== null) {
@@ -469,6 +472,9 @@ readonly class DiscountService implements DiscountServiceContract
         return $result;
     }
 
+    /**
+     * @throws StoreException
+     */
     public function applyDiscountOnOrder(Discount $discount, Order $order): Order
     {
         $refreshedOrder = $order->fresh();
@@ -497,9 +503,10 @@ readonly class DiscountService implements DiscountServiceContract
 
     public function activeSales(): Collection
     {
-        $sales = Discount::where('code', null)
-            ->active()
-            ->where('target_type', DiscountTargetType::PRODUCTS)
+        $sales = Discount::query()
+            ->whereNull('code')
+            ->where('active', '=', true)
+            ->where('target_type', '=', DiscountTargetType::PRODUCTS)
             ->where(
                 fn (Builder $query) => $query
                     ->whereHas('conditionGroups', function ($query): void {
@@ -709,9 +716,9 @@ readonly class DiscountService implements DiscountServiceContract
         if ($discount->target_type->is(DiscountTargetType::SHIPPING_PRICE)) {
             if ($discount->target_is_allow_list) {
                 return $discount->shippingMethods->contains(fn ($value): bool => $value->getKey() === $cart->getShippingMethodId());
-            } else {
-                return $discount->shippingMethods->doesntContain(fn ($value): bool => $value->getKey() === $cart->getShippingMethodId());
             }
+
+            return $discount->shippingMethods->doesntContain(fn ($value): bool => $value->getKey() === $cart->getShippingMethodId());
         }
 
         return in_array(
@@ -1133,8 +1140,9 @@ readonly class DiscountService implements DiscountServiceContract
     private function getActiveSalesAndCoupons(array|Missing $couponIds, array $targetTypes = []): Collection
     {
         // Get all active discounts
-        $salesQuery = Discount::active()
-            ->where('code', null)
+        $salesQuery = Discount::query()
+            ->where('active', '=', true)
+            ->whereNull('code')
             ->with([
                 'orders',
                 'products',
@@ -1155,7 +1163,8 @@ readonly class DiscountService implements DiscountServiceContract
         }
 
         // Get all active coupons
-        $couponsQuery = Discount::active()
+        $couponsQuery = Discount::query()
+            ->where('active', '=', true)
             ->whereIn('code', $couponIds)
             ->with([
                 'orders',
@@ -1353,7 +1362,7 @@ readonly class DiscountService implements DiscountServiceContract
     private function checkConditionProductInSet(DiscountCondition $condition, array $productIds): bool
     {
         $conditionDto = ProductInSetConditionDto::fromArray($condition->value + ['type' => $condition->type]);
-        $productSets = ProductSet::whereIn('id', $conditionDto->getProductSets())->get();
+        $productSets = ProductSet::query()->whereIn('id', $conditionDto->getProductSets())->get();
 
         foreach ($productIds as $productId) {
             $result = $this->checkIsProductInDiscountProductSets(
@@ -1513,10 +1522,13 @@ readonly class DiscountService implements DiscountServiceContract
 
     private function getSalesWithBlockList(): Collection
     {
-        return Discount::active()
-            ->where('code', null)
-            ->where('target_type', DiscountTargetType::PRODUCTS)
-            ->where('target_is_allow_list', false)->with(['products', 'productSets', 'productSets.products'])->get();
+        return Discount::query()
+            ->whereNull('code')
+            ->where('active', '=', true)
+            ->where('target_type', '=', DiscountTargetType::PRODUCTS)
+            ->where('target_is_allow_list', '=', false)
+            ->with(['products', 'productSets', 'productSets.products'])
+            ->get();
     }
 
     private function applyDiscountsOnProductsLazy(Collection $productIds, Collection $salesWithBlockList): void
