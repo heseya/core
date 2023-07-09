@@ -10,11 +10,11 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('attributes', function (Blueprint $table) {
+        Schema::table('attributes', function (Blueprint $table): void {
             $table->unsignedInteger('order')->default(0);
         });
 
-        Schema::table('attribute_options', function (Blueprint $table) {
+        Schema::table('attribute_options', function (Blueprint $table): void {
             $table->unsignedInteger('order')->default(0);
         });
     }
@@ -24,11 +24,11 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('attributes', function (Blueprint $table) {
+        Schema::table('attributes', function (Blueprint $table): void {
             $table->dropColumn('order');
         });
 
-        Schema::table('attribute_options', function (Blueprint $table) {
+        Schema::table('attribute_options', function (Blueprint $table): void {
             $table->dropColumn('order');
         });
     }

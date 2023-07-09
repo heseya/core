@@ -9,8 +9,7 @@ class ReorderDto extends Data
 {
     public function __construct(
         public array $ids,
-    ) {
-    }
+    ) {}
 
     public static function rules(ValidationContext $context): array
     {
