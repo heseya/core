@@ -11,8 +11,7 @@ class PriceController extends Controller
 {
     public function __construct(
         private readonly PriceServiceContract $priceService,
-    ) {
-    }
+    ) {}
 
     public function productPrices(ProductPricesRequest $request): JsonResource
     {

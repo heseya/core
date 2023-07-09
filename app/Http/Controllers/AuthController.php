@@ -47,8 +47,7 @@ class AuthController extends Controller
         private AuthServiceContract $authService,
         private AppServiceContract $appService,
         private SavedAddressServiceContract $savedAddresService,
-    ) {
-    }
+    ) {}
 
     public function login(LoginRequest $request): JsonResource
     {

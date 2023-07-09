@@ -17,7 +17,7 @@ class ShippingMethodUpdateDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    protected string|Missing $name;
+    protected Missing|string $name;
     protected bool|Missing $public;
     protected bool|Missing $block_list;
     protected ?array $payment_methods;
@@ -25,7 +25,7 @@ class ShippingMethodUpdateDto extends Dto implements InstantiateFromRequest
     protected ?array $price_ranges;
     protected int|Missing $shipping_time_min;
     protected int|Missing $shipping_time_max;
-    protected string|Missing $shipping_type;
+    protected Missing|string $shipping_type;
     protected string|null $integration_key;
     protected ?array $shipping_points;
     protected string|null $app_id;
@@ -55,7 +55,7 @@ class ShippingMethodUpdateDto extends Dto implements InstantiateFromRequest
         );
     }
 
-    public function getName(): string|Missing
+    public function getName(): Missing|string
     {
         return $this->name;
     }
@@ -85,12 +85,12 @@ class ShippingMethodUpdateDto extends Dto implements InstantiateFromRequest
         return $this->price_ranges;
     }
 
-    public function getShippingTimeMin(): Missing|int
+    public function getShippingTimeMin(): int|Missing
     {
         return $this->shipping_time_min;
     }
 
-    public function getShippingTimeMax(): Missing|int
+    public function getShippingTimeMax(): int|Missing
     {
         return $this->shipping_time_max;
     }

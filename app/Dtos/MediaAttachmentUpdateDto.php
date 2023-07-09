@@ -12,12 +12,11 @@ use Illuminate\Foundation\Http\FormRequest;
 class MediaAttachmentUpdateDto extends Dto implements InstantiateFromRequest
 {
     public function __construct(
-        public readonly string|Missing $name = new Missing(),
+        public readonly Missing|string $name = new Missing(),
         public readonly MediaAttachmentType|Missing $type = new Missing(),
-        public readonly string|null|Missing $description = new Missing(),
-        public readonly VisibilityType|Missing $visibility = new Missing(),
-    ) {
-    }
+        public readonly Missing|string|null $description = new Missing(),
+        public readonly Missing|VisibilityType $visibility = new Missing(),
+    ) {}
 
     public static function instantiateFromRequest(FormRequest $request): self
     {

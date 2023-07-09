@@ -23,7 +23,7 @@ class MediaFactory extends Factory
     {
         return [
             'type' => MediaType::PHOTO,
-            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+            'url' => 'https://picsum.photos/seed/' . mt_rand(0, 999999) . '/800',
             'source' => MediaSource::SILVERBOX,
         ];
     }

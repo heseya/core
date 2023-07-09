@@ -9,7 +9,7 @@ class ResponsiveMediaDto extends Dto
     private int $min_screen_width;
     private string $media;
 
-    public static function fromDataArray(array $data): ResponsiveMediaDto
+    public static function fromDataArray(array $data): self
     {
         return new self(
             min_screen_width: $data['min_screen_width'],

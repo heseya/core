@@ -2,6 +2,4 @@
 
 namespace App\Events;
 
-class OrderRequestedShipping extends ShippingRequest
-{
-}
+class OrderRequestedShipping extends ShippingRequest {}

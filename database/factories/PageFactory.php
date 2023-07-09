@@ -20,13 +20,13 @@ class PageFactory extends Factory
      */
     public function definition(): array
     {
-        $name = $this->faker->sentence(rand(2, 4));
+        $name = $this->faker->sentence(mt_rand(2, 4));
 
         return [
             'name' => $name,
-            'slug' => Str::slug($name) . '-' . rand(0, 1000),
+            'slug' => Str::slug($name) . '-' . mt_rand(0, 1000),
             'public' => $this->faker->boolean,
-            'content_html' => '<p>' . $this->faker->sentence(rand(20, 40)) . '</p>',
+            'content_html' => '<p>' . $this->faker->sentence(mt_rand(20, 40)) . '</p>',
         ];
     }
 }

@@ -18,8 +18,7 @@ class AttributeOptionController extends Controller
 {
     public function __construct(
         private AttributeOptionServiceContract $attributeOptionService
-    ) {
-    }
+    ) {}
 
     public function index(AttributeOptionIndexRequest $request, Attribute $attribute): JsonResource
     {

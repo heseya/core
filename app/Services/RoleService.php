@@ -20,8 +20,7 @@ class RoleService implements RoleServiceContract
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
-    ) {
-    }
+    ) {}
 
     public function search(RoleSearchDto $searchDto): LengthAwarePaginator
     {
@@ -66,8 +65,8 @@ class RoleService implements RoleServiceContract
 
         if (!$dto->getPermissions() instanceof Missing) {
             if (
-                $role->type->is(RoleType::OWNER) &&
-                $role->getPermissionNames()->diff($dto->getPermissions())->isNotEmpty()
+                $role->type->is(RoleType::OWNER)
+                && $role->getPermissionNames()->diff($dto->getPermissions())->isNotEmpty()
             ) {
                 throw new ClientException(Exceptions::CLIENT_UPDATE_OWNER_PERMISSION);
             }
@@ -91,9 +90,9 @@ class RoleService implements RoleServiceContract
     public function delete(Role $role): void
     {
         if (
-            $role->type->is(RoleType::OWNER) ||
-            $role->type->is(RoleType::UNAUTHENTICATED) ||
-            $role->type->is(RoleType::AUTHENTICATED)
+            $role->type->is(RoleType::OWNER)
+            || $role->type->is(RoleType::UNAUTHENTICATED)
+            || $role->type->is(RoleType::AUTHENTICATED)
         ) {
             throw new ClientException(Exceptions::CLIENT_DELETE_BUILT_IN_ROLE);
         }

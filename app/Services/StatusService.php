@@ -14,8 +14,7 @@ class StatusService implements StatusServiceContract
 {
     public function __construct(
         private MetadataServiceContract $metadataService
-    ) {
-    }
+    ) {}
 
     public function store(StatusDto $dto): Status
     {

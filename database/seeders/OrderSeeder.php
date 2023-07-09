@@ -36,13 +36,13 @@ class OrderSeeder extends Seeder
             ->create()
             ->each(
                 function ($order) use ($shipping_methods, $statuses, $orderService, $digital_methods): void {
-                    if (rand(0, 1)) {
+                    if (mt_rand(0, 1)) {
                         $digital_shipping_method = $digital_methods->random();
                     } else {
                         $digital_shipping_method = null;
                     }
 
-                    if (rand(0, 1) || !$digital_shipping_method) {
+                    if (mt_rand(0, 1) || !$digital_shipping_method) {
                         $shipping_method = $shipping_methods->random();
                     } else {
                         $shipping_method = null;
@@ -58,7 +58,7 @@ class OrderSeeder extends Seeder
                         $order->shipping_place = fake()->streetAddress();
                     }
 
-                    if (rand(0, 1)) {
+                    if (mt_rand(0, 1)) {
                         $order->billing_address_id = Address::factory()->create()->getKey();
                     } else {
                         $order->billing_address_id = $order->shipping_address_id ?? Address::factory()->create()->getKey();
@@ -84,7 +84,7 @@ class OrderSeeder extends Seeder
                         'cart_total_initial' => $cart_total,
                     ]);
 
-                    for ($i = 0; $i < rand(0, 5); ++$i) {
+                    for ($i = 0; $i < mt_rand(0, 5); ++$i) {
                         $order->payments()->save(Payment::factory()->make());
                     }
                 }
@@ -94,7 +94,7 @@ class OrderSeeder extends Seeder
     private function addProductsToOrder(Order $order, bool $digital): void
     {
         $products = OrderProduct::factory()
-            ->count(rand(1, 3))
+            ->count(mt_rand(1, 3))
             ->state(
                 fn ($sequence) => [
                     'product_id' => Product::where('shipping_digital', $digital)->inRandomOrder()->first()->getKey(),
@@ -105,8 +105,8 @@ class OrderSeeder extends Seeder
         $order->products()->saveMany($products);
 
         $products->each(function ($product) use ($digital): void {
-            if (rand(0, 3) === 0) {
-                $schemas = OrderSchema::factory()->count(rand(1, 3))->make();
+            if (mt_rand(0, 3) === 0) {
+                $schemas = OrderSchema::factory()->count(mt_rand(1, 3))->make();
                 $product->schemas()->saveMany($schemas);
 
                 $sum = $product->price_initial + $schemas->sum('price');
@@ -116,8 +116,8 @@ class OrderSeeder extends Seeder
                 ]);
             }
 
-            if ($digital && rand(0, 1)) {
-                $product->urls()->createMany(OrderProductUrl::factory()->count(rand(1, 3))->make()->toArray());
+            if ($digital && mt_rand(0, 1)) {
+                $product->urls()->createMany(OrderProductUrl::factory()->count(mt_rand(1, 3))->make()->toArray());
             }
         });
     }

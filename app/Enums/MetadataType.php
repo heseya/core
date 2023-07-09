@@ -10,7 +10,7 @@ final class MetadataType extends Enum
     public const NUMBER = 'number';
     public const BOOLEAN = 'boolean';
 
-    public static function matchType(bool|int|float|string|null $value): string
+    public static function matchType(bool|float|int|string|null $value): string
     {
         return match (gettype($value)) {
             'boolean' => self::BOOLEAN,

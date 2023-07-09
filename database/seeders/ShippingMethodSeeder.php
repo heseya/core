@@ -32,13 +32,13 @@ class ShippingMethodSeeder extends Seeder
 
     private function addPaymentMethods(ShippingMethod $shippingMethod): void
     {
-        $paymentMethods = PaymentMethod::factory()->count(rand(1, 3))->create();
+        $paymentMethods = PaymentMethod::factory()->count(mt_rand(1, 3))->create();
         $shippingMethod->paymentMethods()->sync($paymentMethods);
         $priceRange = $shippingMethod->priceRanges()->create([
             'start' => 0,
         ]);
         $priceRange->prices()->create([
-            'value' => rand(500, 2000) / 100.0,
+            'value' => mt_rand(500, 2000) / 100.0,
         ]);
     }
 }

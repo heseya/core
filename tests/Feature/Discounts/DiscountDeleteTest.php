@@ -77,9 +77,7 @@ class DiscountDeleteTest extends TestCase
         $response->assertNoContent();
         $this->assertSoftDeleted($discount);
 
-        Queue::assertPushed(CallQueuedListener::class, function ($job) {
-            return $job->class === WebHookEventListener::class;
-        });
+        Queue::assertPushed(CallQueuedListener::class, fn ($job) => $job->class === WebHookEventListener::class);
 
         $event = $discountKind === 'coupons' ? new CouponDeleted($discount) : new SaleDeleted($discount);
         $listener = new WebHookEventListener();
@@ -120,9 +118,7 @@ class DiscountDeleteTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->deleteJson("/{$discountKind}/id:" . $discount->getKey());
 
-        Queue::assertPushed(CallQueuedListener::class, function ($job) {
-            return $job->class === WebHookEventListener::class;
-        });
+        Queue::assertPushed(CallQueuedListener::class, fn ($job) => $job->class === WebHookEventListener::class);
 
         $response->assertNoContent();
         $this->assertSoftDeleted($discount);
@@ -174,9 +170,7 @@ class DiscountDeleteTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->deleteJson("/{$discountKind}/id:" . $discount->getKey());
 
-        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
-            return $job->class === WebHookEventListener::class;
-        });
+        Bus::assertDispatched(CallQueuedListener::class, fn ($job) => $job->class === WebHookEventListener::class);
 
         $response->assertNoContent();
         $this->assertSoftDeleted($discount);

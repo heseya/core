@@ -13,7 +13,7 @@ class UserPolicy
 {
     use HandlesAuthorization;
 
-    public function removeUserTFA(User|App $user, User $selected_user): Response
+    public function removeUserTFA(App|User $user, User $selected_user): Response
     {
         if ($user->getAuthIdentifier() === $selected_user->getAuthIdentifier()) {
             throw new ClientException(Exceptions::CLIENT_TFA_CANNOT_REMOVE);

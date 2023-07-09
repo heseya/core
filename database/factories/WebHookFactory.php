@@ -24,7 +24,7 @@ class WebHookFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $this->faker->sentence(rand(1, 3)),
+            'name' => $this->faker->sentence(mt_rand(1, 3)),
             'url' => $this->faker->url,
             'secret' => Str::random(25),
             'with_issuer' => $this->faker->boolean,

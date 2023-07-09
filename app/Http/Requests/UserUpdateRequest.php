@@ -27,9 +27,7 @@ class UserUpdateRequest extends FormRequest
             'roles' => ['array'],
             'roles.*' => [
                 'uuid',
-                Rule::exists('roles', 'id')->where(function ($query) {
-                    return $query->whereNotIn('type', [RoleType::AUTHENTICATED, RoleType::UNAUTHENTICATED]);
-                }),
+                Rule::exists('roles', 'id')->where(fn ($query) => $query->whereNotIn('type', [RoleType::AUTHENTICATED, RoleType::UNAUTHENTICATED])),
             ],
             'birthday_date' => ['nullable', 'date', 'before_or_equal:now'],
             'phone' => ['nullable', 'phone:AUTO'],

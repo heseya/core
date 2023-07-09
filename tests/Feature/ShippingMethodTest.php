@@ -35,7 +35,7 @@ class ShippingMethodTest extends TestCase
 
         $lowRange = PriceRange::query()->create(['start' => 0]);
         $lowRange->prices()->create([
-            'value' => rand(8, 15) + (rand(0, 99) / 100),
+            'value' => mt_rand(8, 15) + (mt_rand(0, 99) / 100),
         ]);
 
         $highRange = PriceRange::query()->create(['start' => 210]);
@@ -50,7 +50,7 @@ class ShippingMethodTest extends TestCase
 
         $lowRange = PriceRange::query()->create(['start' => 0]);
         $lowRange->prices()->create([
-            'value' => rand(8, 15) + (rand(0, 99) / 100),
+            'value' => mt_rand(8, 15) + (mt_rand(0, 99) / 100),
         ]);
 
         $highRange = PriceRange::query()->create(['start' => 210]);

@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Config;
 
 class WishlistService implements WishlistServiceContract
 {
-    public function index(User|App $user): LengthAwarePaginator
+    public function index(App|User $user): LengthAwarePaginator
     {
         $query = $user->hasPermissionTo('products.show_hidden') ?
             $user->wishlistProducts() :
@@ -23,7 +23,7 @@ class WishlistService implements WishlistServiceContract
         return $query->paginate(Config::get('pagination.per_page'));
     }
 
-    public function show(User|App $user, Product $product): WishlistProduct|null
+    public function show(App|User $user, Product $product): WishlistProduct|null
     {
         $query = $user->hasPermissionTo('products.show_hidden') ?
             $user->wishlistProducts() :
@@ -33,7 +33,7 @@ class WishlistService implements WishlistServiceContract
         return $query->where('product_id', $product->getKey())->firstOr(fn () => null);
     }
 
-    public function storeWishlistProduct(User|App $user, string $id): WishlistProduct
+    public function storeWishlistProduct(App|User $user, string $id): WishlistProduct
     {
         return $user->wishlistProducts()->create([
             'product_id' => $id,
@@ -43,14 +43,14 @@ class WishlistService implements WishlistServiceContract
     /**
      * @throws ClientException
      */
-    public function destroy(User|App $user, Product $product): void
+    public function destroy(App|User $user, Product $product): void
     {
         if (!$user->wishlistProducts()->where('product_id', $product->getKey())->delete()) {
             throw new ClientException(Exceptions::PRODUCT_IS_NOT_ON_WISHLIST);
         }
     }
 
-    public function destroyAll(User|App $user): void
+    public function destroyAll(App|User $user): void
     {
         $user->wishlistProducts()->delete();
     }

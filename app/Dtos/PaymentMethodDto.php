@@ -9,9 +9,9 @@ use Heseya\Dto\Missing;
 
 class PaymentMethodDto extends Dto
 {
-    private string|Missing $name;
-    private string|Missing $icon;
-    private string|Missing $url;
+    private Missing|string $name;
+    private Missing|string $icon;
+    private Missing|string $url;
     private bool|Missing $public;
 
     public static function instantiateFromRequest(PaymentMethodStoreRequest|PaymentMethodUpdateRequest $request): self
@@ -24,17 +24,17 @@ class PaymentMethodDto extends Dto
         );
     }
 
-    public function getName(): string|Missing
+    public function getName(): Missing|string
     {
         return $this->name;
     }
 
-    public function getIcon(): string|Missing
+    public function getIcon(): Missing|string
     {
         return $this->icon;
     }
 
-    public function getUrl(): string|Missing
+    public function getUrl(): Missing|string
     {
         return $this->url;
     }

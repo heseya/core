@@ -12,15 +12,15 @@ use Illuminate\Http\Request;
 
 class SeoMetadataDto extends Dto implements InstantiateFromRequest
 {
-    private string|null|Missing $title;
-    private string|null|Missing $description;
-    private array|null|Missing $keywords;
-    private string|null|Missing $twitter_card;
-    private string|null|Missing $og_image;
-    private string|null|Missing $model_id;
-    private string|null|Missing $model_type;
+    private Missing|string|null $title;
+    private Missing|string|null $description;
+    private array|Missing|null $keywords;
+    private Missing|string|null $twitter_card;
+    private Missing|string|null $og_image;
+    private Missing|string|null $model_id;
+    private Missing|string|null $model_type;
     private bool|Missing $no_index;
-    private array|null|Missing $header_tags;
+    private array|Missing|null $header_tags;
 
     /**
      * @throws DtoException
@@ -56,7 +56,7 @@ class SeoMetadataDto extends Dto implements InstantiateFromRequest
         return $this->description;
     }
 
-    public function getKeywords(): Missing|array|null
+    public function getKeywords(): array|Missing|null
     {
         return $this->keywords;
     }
@@ -81,7 +81,7 @@ class SeoMetadataDto extends Dto implements InstantiateFromRequest
         return $this->model_type;
     }
 
-    public function getNoIndex(): Missing|bool
+    public function getNoIndex(): bool|Missing
     {
         return $this->no_index;
     }

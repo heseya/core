@@ -20,8 +20,7 @@ class SchemaCrudService implements SchemaCrudServiceContract
         private MetadataServiceContract $metadataService,
         private OptionServiceContract $optionService,
         private ProductServiceContract $productService,
-    ) {
-    }
+    ) {}
 
     public function store(SchemaDto $dto): Schema
     {

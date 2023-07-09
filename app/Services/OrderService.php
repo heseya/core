@@ -61,8 +61,7 @@ class OrderService implements OrderServiceContract
         private NameServiceContract $nameService,
         private MetadataServiceContract $metadataService,
         private DepositServiceContract $depositService
-    ) {
-    }
+    ) {}
 
     public function calcSummary(Order $order): float
     {
@@ -289,7 +288,7 @@ class OrderService implements OrderServiceContract
                     ) : $dto->getShippingPlace();
             } else {
                 if (!($dto->getShippingPlace() instanceof Missing)) {
-                    // @phpstan-ignore-next-line
+                    /** @phpstan-ignore-next-line */
                     $shippingPlace = Address::query()->find($dto->getShippingPlace())->getKey();
                 } else {
                     $shippingPlace = null;
@@ -434,7 +433,7 @@ class OrderService implements OrderServiceContract
     }
 
     private function getDeliveryMethods(
-        OrderDto|CartDto|OrderUpdateDto $dto,
+        CartDto|OrderDto|OrderUpdateDto $dto,
         Collection $products,
         bool $required,
     ): array {
@@ -480,11 +479,7 @@ class OrderService implements OrderServiceContract
             }
         }
 
-        if (!isset($exsistAddress)) {
-            return false;
-        }
-
-        return true;
+        return isset($exsistAddress);
     }
 
     private function modifyAddress(Order $order, string $attribute, AddressDto|Missing $addressDto): ?Address
@@ -541,7 +536,7 @@ class OrderService implements OrderServiceContract
     }
 
     private function resolveShippingAddress(
-        Address|string|null|Missing $shippingPlace,
+        Address|Missing|string|null $shippingPlace,
         string $shippingType,
         Order $order
     ): ?string {
@@ -572,7 +567,7 @@ class OrderService implements OrderServiceContract
     }
 
     private function resolveShippingPlace(
-        Address|string|null|Missing $shippingPlace,
+        Address|Missing|string|null $shippingPlace,
         string $shippingType,
         Order $order
     ): ?string {

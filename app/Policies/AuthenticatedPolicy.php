@@ -10,7 +10,7 @@ class AuthenticatedPolicy
 {
     use HandlesAuthorization;
 
-    public function authenticated(User|App $user): bool
+    public function authenticated(App|User $user): bool
     {
         return $user->getAuthIdentifier() !== null;
     }

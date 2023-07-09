@@ -6,13 +6,11 @@ use Illuminate\Database\Migrations\Migration;
 return new class extends Migration {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
         SavedAddress::where('type', 0)
-            ->chunk(100, fn ($savedAddresses) => $savedAddresses->each(function ($savedAddress) {
+            ->chunk(100, fn ($savedAddresses) => $savedAddresses->each(function ($savedAddress): void {
                 if (
                     SavedAddress::where('type', 1)
                         ->where('address_id', $savedAddress->address_id)
@@ -34,13 +32,11 @@ return new class extends Migration {
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
         SavedAddress::where('type', 1)
-            ->chunk(100, fn ($savedAddresses) => $savedAddresses->each(function ($savedAddress) {
+            ->chunk(100, fn ($savedAddresses) => $savedAddresses->each(function ($savedAddress): void {
                 if (
                     SavedAddress::where('type', 0)
                         ->where('address_id', $savedAddress->address_id)

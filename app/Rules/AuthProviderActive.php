@@ -14,21 +14,16 @@ class AuthProviderActive implements DataAwareRule, Rule
      * Determine if the validation rule passes.
      *
      * @param string $attribute
-     * @param mixed $value
      */
     public function passes($attribute, $value): bool
     {
         /** @var AuthProvider $provider */
         $provider = AuthProvider::query()->where('key', request()->route('authProviderKey'))->first();
 
-        if (
-            array_key_exists('client_id', $this->data) && array_key_exists('client_secret', $this->data) ||
-            $provider->client_id !== null && $provider->client_secret !== null
-        ) {
-            return true;
-        }
-
-        return false;
+        return (bool) (
+            array_key_exists('client_id', $this->data) && array_key_exists('client_secret', $this->data)
+            || $provider->client_id !== null && $provider->client_secret !== null
+        );
     }
 
     public function message(): string
@@ -36,7 +31,7 @@ class AuthProviderActive implements DataAwareRule, Rule
         return 'Active field value cannot be true if client_id and client_secret fields are missing.';
     }
 
-    public function setData($data): AuthProviderActive|static
+    public function setData($data): self|static
     {
         $this->data = $data;
 

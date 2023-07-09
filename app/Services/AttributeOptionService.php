@@ -10,9 +10,7 @@ use Heseya\Dto\Missing;
 
 class AttributeOptionService implements AttributeOptionServiceContract
 {
-    public function __construct(private MetadataServiceContract $metadataService)
-    {
-    }
+    public function __construct(private MetadataServiceContract $metadataService) {}
 
     public function create(string $attributeId, AttributeOptionDto $dto): AttributeOption
     {

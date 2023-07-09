@@ -16,9 +16,7 @@ use Illuminate\Support\Facades\Response;
 
 class ItemController extends Controller
 {
-    public function __construct(private ItemServiceContract $itemService)
-    {
-    }
+    public function __construct(private ItemServiceContract $itemService) {}
 
     public function index(ItemIndexRequest $request): JsonResource
     {

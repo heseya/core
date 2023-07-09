@@ -290,15 +290,11 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
         );
 
         $salesBlockList = $salesWithBlockList->filter(function ($sale): bool {
-            if ($sale->products->contains(function ($value): bool {
-                return $value->getKey() === $this->getKey();
-            })) {
+            if ($sale->products->contains(fn ($value): bool => $value->getKey() === $this->getKey())) {
                 return false;
             }
             foreach ($sale->productSets as $set) {
-                if ($set->allProductsIds()->contains(function ($value): bool {
-                    return $value === $this->getKey();
-                })) {
+                if ($set->allProductsIds()->contains(fn ($value): bool => $value === $this->getKey())) {
                     return false;
                 }
             }
