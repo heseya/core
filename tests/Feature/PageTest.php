@@ -95,6 +95,29 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexWithTranslationsFlag($user): void
+    {
+        $this->$user->givePermissionTo('pages.show');
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->getJson('/pages?translations');
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
+
+        $firstElement = $response['data'][0];
+
+        $this->assertArrayHasKey('translations', $firstElement);
+        $this->assertIsArray($firstElement['translations']);
+
+        $this->assertQueryCountLessThan(11);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexByIds($user): void
     {
         $this->{$user}->givePermissionTo('pages.show');

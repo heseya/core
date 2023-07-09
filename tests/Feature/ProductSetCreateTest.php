@@ -671,9 +671,14 @@ class ProductSetCreateTest extends TestCase
             'slug_suffix' => 'test',
             'slug_override' => false,
             'seo' => [
-                'title' => 'seo title',
-                'description' => 'seo description',
                 'og_image_id' => $media->getKey(),
+                'translations' => [
+                    $this->lang => [
+                        'title' => 'seo title',
+                        'description' => 'seo description',
+                    ],
+                ],
+                'published' => [$this->lang],
             ],
         ]);
         $response
@@ -684,8 +689,8 @@ class ProductSetCreateTest extends TestCase
                 'parent' => null,
                 'slug' => 'test',
                 'seo' => [
-                    'title' => 'seo title',
-                    'description' => 'seo description',
+                    "title->{$this->lang}" => 'seo title',
+                    "description->{$this->lang}" => 'seo description',
                     'og_image' => [
                         'id' => $media->getKey(),
                     ],

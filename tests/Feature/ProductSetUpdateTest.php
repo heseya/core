@@ -392,18 +392,22 @@ class ProductSetUpdateTest extends TestCase
                 'slug_suffix' => 'test-edit',
                 'slug_override' => false,
                 'seo' => [
-                    'title' => 'seo title',
-                    'description' => 'seo description',
+                    'translations' => [
+                        $this->lang => [
+                            'title' => 'seo title',
+                            'description' => 'seo description',
+                        ],
+                    ],
+                    'published' => [$this->lang],
                 ],
-            ],
-            ]);
+            ]]);
 
         $this->assertDatabaseHas('product_sets', $set + $parentId + [
             'slug' => 'test-edit',
         ]);
         $this->assertDatabaseHas('seo_metadata', [
-            'title' => 'seo title',
-            'description' => 'seo description',
+            "title->{$this->lang}" => 'seo title',
+            "description->{$this->lang}" => 'seo description',
         ]);
     }
 
