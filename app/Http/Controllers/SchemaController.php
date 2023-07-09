@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Dtos\SchemaDto;
+use App\Exceptions\PublishingException;
 use App\Http\Requests\IndexSchemaRequest;
 use App\Http\Requests\SchemaStoreRequest;
 use App\Http\Requests\SchemaUpdateRequest;
 use App\Http\Resources\SchemaResource;
 use App\Models\Schema;
 use App\Services\Contracts\SchemaCrudServiceContract;
+use App\Services\Contracts\OptionServiceContract;
+use App\Services\Contracts\ProductServiceContract;
+use App\Services\Contracts\TranslationServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
@@ -19,6 +23,9 @@ class SchemaController extends Controller
 {
     public function __construct(
         private SchemaCrudServiceContract $schemaService,
+        protected OptionServiceContract $optionService,
+        protected ProductServiceContract $productService,
+        protected TranslationServiceContract $translationService,
     ) {}
 
     public function index(IndexSchemaRequest $request): JsonResource
@@ -30,6 +37,9 @@ class SchemaController extends Controller
         );
     }
 
+    /**
+     * @throws PublishingException
+     */
     public function store(SchemaStoreRequest $request): JsonResource
     {
         return SchemaResource::make($this->schemaService->store(
@@ -42,7 +52,10 @@ class SchemaController extends Controller
         return SchemaResource::make($schema);
     }
 
-    public function update(SchemaUpdateRequest $request, Schema $schema): JsonResource
+    /**
+     * @throws PublishingException
+     */
+    public function update(SchemaStoreRequest $request, Schema $schema): JsonResource
     {
         return SchemaResource::make($this->schemaService->update(
             $schema,

@@ -46,6 +46,27 @@ class SchemaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexProductsWithTranslationsFlag($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        Schema::factory()->count(5)->create();
+
+        $response = $this->actingAs($this->$user)->getJson('/schemas?translations');
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(5, 'data');
+
+        $firstElement = $response['data'][0];
+
+        $this->assertArrayHasKey('translations', $firstElement);
+        $this->assertIsArray($firstElement['translations']);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexWithPagination($user): void
     {
         $this->{$user}->givePermissionTo('products.add');
@@ -289,29 +310,39 @@ class SchemaTest extends TestCase
             'name' => 'Test',
             'type' => SchemaType::getKey(SchemaType::SELECT),
             'price' => 120,
-            'description' => 'test test',
             'hidden' => false,
             'required' => false,
             'options' => [
                 [
-                    'name' => 'L',
                     'price' => 100,
                     'disabled' => false,
                     'items' => [
                         $item->getKey(),
                     ],
+                    'translations' => [$this->lang => [
+                        'name' => 'L',
+                    ]],
                 ],
                 [
-                    'name' => 'A',
                     'price' => 1000,
                     'disabled' => false,
+                    'translations' => [$this->lang => [
+                        'name' => 'A',
+                    ]],
                 ],
                 [
-                    'name' => 'B',
                     'price' => 0,
                     'disabled' => false,
+                    'translations' => [$this->lang => [
+                        'name' => 'B',
+                    ]],
                 ],
             ],
+            'translations' => [$this->lang => [
+                'name' => 'Test',
+                'description' => 'test test',
+            ]],
+            'published' => [$this->lang],
         ]);
 
         $response->assertCreated();
@@ -319,10 +350,10 @@ class SchemaTest extends TestCase
         $option = $response->getData()->data->options[0];
 
         $this->assertDatabaseHas('schemas', [
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'type' => SchemaType::SELECT,
             'price' => 120,
-            'description' => 'test test',
+            "description->{$this->lang}" => 'test test',
             'hidden' => 0,
             'required' => 0,
             'default' => null,
@@ -331,7 +362,7 @@ class SchemaTest extends TestCase
 
         $this->assertDatabaseHas('options', [
             'id' => $option->id,
-            'name' => 'L',
+            "name->{$this->lang}" => 'L',
             'price' => 100,
             'disabled' => 0,
             'schema_id' => $schema->id,
@@ -340,7 +371,7 @@ class SchemaTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('options', [
-            'name' => 'A',
+            "name->{$this->lang}" => 'A',
             'price' => 1000,
             'disabled' => 0,
             'schema_id' => $schema->id,
@@ -349,7 +380,7 @@ class SchemaTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('options', [
-            'name' => 'B',
+            "name->{$this->lang}" => 'B',
             'price' => 0,
             'disabled' => 0,
             'schema_id' => $schema->id,
@@ -701,6 +732,12 @@ class SchemaTest extends TestCase
             'used_schemas' => [
                 $usedSchema->getKey(),
             ],
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Multiplier',
+                ],
+            ],
+            'published' => [$this->lang],
         ]);
 
         $response->assertCreated();
@@ -804,34 +841,42 @@ class SchemaTest extends TestCase
             'name' => 'Test Updated',
             'price' => 200,
             'type' => SchemaType::getKey(SchemaType::SELECT),
-            'description' => 'test test',
             'hidden' => false,
             'required' => false,
             'default' => 0,
             'options' => [
                 [
                     'id' => $option->getKey(),
-                    'name' => 'L',
                     'price' => 0,
                     'disabled' => true,
                     'items' => [
                         $item->getKey(),
                     ],
+                    'translations' => [$this->lang => [
+                        'name' => 'L',
+                    ]],
                 ],
             ],
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test Updated',
+                    'description' => 'test test',
+                ],
+            ],
+            'published' => [$this->lang],
         ]);
 
         $response->assertOk();
 
         $this->assertDatabaseHas('schemas', [
-            'name' => 'Test Updated',
+            "name->{$this->lang}" => 'Test Updated',
             'price' => 200,
             'default' => 0,
         ]);
 
         $this->assertDatabaseHas('options', [
             'id' => $option->getKey(),
-            'name' => 'L',
+            "name->{$this->lang}" => 'L',
             'price' => 0,
             'disabled' => 1,
             'schema_id' => $schema->getKey(),

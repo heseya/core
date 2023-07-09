@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Page;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 
 class PageFactory extends Factory
@@ -26,7 +27,8 @@ class PageFactory extends Factory
             'name' => $name,
             'slug' => Str::slug($name) . '-' . mt_rand(0, 1000),
             'public' => $this->faker->boolean,
-            'content_html' => '<p>' . $this->faker->sentence(mt_rand(20, 40)) . '</p>',
+            'content_html' => '<p>' . $this->faker->sentence(rand(20, 40)) . '</p>',
+            'published' => [App::getLocale()],
         ];
     }
 }

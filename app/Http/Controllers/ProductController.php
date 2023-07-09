@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\SeoMetadataDto;
+use App\Events\ProductCreated;
+use App\Events\ProductDeleted;
+use App\Events\ProductUpdated;
+use App\Exceptions\PublishingException;
 use App\Dtos\MediaAttachmentDto;
 use App\Dtos\MediaAttachmentUpdateDto;
 use App\Dtos\ProductCreateDto;
@@ -20,6 +25,11 @@ use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\MediaAttachmentServiceContract;
 use App\Services\Contracts\ProductServiceContract;
+use App\Services\Contracts\ProductSetServiceContract;
+use App\Services\Contracts\SchemaServiceContract;
+use App\Services\Contracts\SeoMetadataServiceContract;
+use App\Services\Contracts\TranslationServiceContract;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Gate;
@@ -32,7 +42,11 @@ class ProductController extends Controller
         private ProductServiceContract $productService,
         private ProductRepositoryContract $productRepository,
         private MediaAttachmentServiceContract $attachmentService,
-    ) {}
+        private ProductSetServiceContract $productSetService,
+        private SeoMetadataServiceContract $seoMetadataService,
+        private TranslationServiceContract $translationService,
+    ) {
+    }
 
     public function index(ProductIndexRequest $request): JsonResource
     {
@@ -55,6 +69,9 @@ class ProductController extends Controller
         return ProductResource::make($product);
     }
 
+    /**
+     * @throws PublishingException
+     */
     public function store(ProductCreateRequest $request): JsonResource
     {
         $product = $this->productService->create(

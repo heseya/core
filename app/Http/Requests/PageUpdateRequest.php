@@ -6,6 +6,7 @@ use App\Http\Requests\Contracts\SeoRequestContract;
 use App\Models\Page;
 use App\Traits\SeoRules;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\Translations;
 use Illuminate\Validation\Rule;
 
 class PageUpdateRequest extends FormRequest implements SeoRequestContract
@@ -20,15 +21,22 @@ class PageUpdateRequest extends FormRequest implements SeoRequestContract
         return array_merge(
             $this->seoRules(),
             [
-                'name' => ['string', 'max:255'],
-                'slug' => [
-                    'string',
-                    'max:255',
-                    Rule::unique('pages')->ignore($page->slug, 'slug'),
-                ],
-                'public' => ['boolean'],
-                'content_html' => ['string', 'min:1'],
+            'translations' => [
+                new Translations(['name', 'content_html']),
             ],
-        );
+            'translations.*.name' => ['string', 'max:255'],
+            'translations.*.content_html' => ['string', 'min:1'],
+
+            'published' => ['array', 'min:1'],
+            'published.*' => ['nullable', 'uuid', 'exists:languages,id'],
+
+            'slug' => [
+                'string',
+                'max:255',
+                Rule::unique('pages')->ignore($this->route('page')->slug, 'slug'),
+            ],
+            'public' => ['boolean'],
+            'content_html' => ['string', 'min:1'],
+        ]);
     }
 }

@@ -39,8 +39,8 @@ class AuditTest extends TestCase
             ->actingAs($this->{$user})
             ->json('GET', '/audits/products/id:' . $product->getKey())
             ->assertOk()
-            ->assertJsonFragment(['old_values' => ['name' => 'Old name']])
-            ->assertJsonFragment(['new_values' => ['name' => 'New name']]);
+            ->assertJsonFragment(['old_values' => ['name' => json_encode([$this->lang => 'Old name'])]])
+            ->assertJsonFragment(['new_values' => ['name' => json_encode([$this->lang => 'New name'])]]);
     }
 
     /**

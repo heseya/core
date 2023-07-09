@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Interfaces\Translatable;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\WhereInIds;
@@ -11,16 +12,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use Spatie\Translatable\HasTranslations;
 
 /**
  * @mixin IdeHelperStatus
  */
-class Status extends Model implements AuditableContract
+class Status extends Model implements AuditableContract, Translatable
 {
-    use Auditable;
-    use HasCriteria;
-    use HasFactory;
+    use HasFactory, Auditable, HasTranslations;
     use HasMetadata;
+    use HasCriteria;
 
     protected $fillable = [
         'name',
@@ -30,12 +31,19 @@ class Status extends Model implements AuditableContract
         'order',
         'hidden',
         'no_notifications',
+        'published',
     ];
 
     protected $casts = [
         'cancel' => 'boolean',
         'hidden' => 'boolean',
         'no_notifications' => 'boolean',
+        'published' => 'array',
+    ];
+
+    protected $translatable = [
+        'name',
+        'description',
     ];
 
     protected $attributes = [
@@ -48,6 +56,11 @@ class Status extends Model implements AuditableContract
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,
     ];
+
+    public function getPublishedAttribute($value): array
+    {
+        return json_decode($value, true) ?? [];
+    }
 
     public function orders(): HasMany
     {

@@ -11,14 +11,21 @@ use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\SeoMetadata;
 use App\Services\Contracts\SeoMetadataServiceContract;
+use App\Services\Contracts\TranslationServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class SeoMetadataService implements SeoMetadataServiceContract
 {
+    public function __construct(
+        protected TranslationServiceContract $translationService,
+    ) {
+    }
+
     public function show(): SeoMetadata
     {
         return $this->getGlobalSeo();
@@ -32,8 +39,41 @@ class SeoMetadataService implements SeoMetadataServiceContract
             $dto->toArray()
         );
 
+        if (!$seo) {
+            /** @var SeoMetadata $seo */
+            $seo = SeoMetadata::make($dto->toArray() + [
+                'global' => true,
+            ]);
+
+            foreach ($dto->getTranslations() as $lang => $translations) {
+                $translationArray = $translations->toArray() + [
+                    'no_index' => $translations->getNoIndex() instanceof Missing
+                        ? false
+                        : $translations->getNoIndex(),
+                ];
+
+                foreach ($translationArray as $key => $translation) {
+                    $seo->setTranslation($key, $lang, $translation);
+                }
+            }
+
+            $this->translationService->checkPublished($seo, []);
+
+            $seo->save();
+        }
+
         if (!$seo->wasRecentlyCreated) {
-            $seo->update($dto->toArray());
+            $seo->fill($dto->toArray());
+
+            foreach ($dto->getTranslations() as $lang => $translations) {
+                foreach ($translations->toArray() as $key => $translation) {
+                    $seo->setTranslation($key, $lang, $translation);
+                }
+            }
+
+            $this->translationService->checkPublished($seo, []);
+
+            $seo->save();
         }
 
         Cache::put('seo.global', $seo);
@@ -46,15 +86,43 @@ class SeoMetadataService implements SeoMetadataServiceContract
      */
     public function createOrUpdateFor(Model $model, SeoMetadataDto $dto): void
     {
-        SeoMetadata::query()->updateOrCreate([
-            'model_id' => $model->getKey(),
-            'model_type' => $model::class,
-        ], $dto->toArray());
+        /** @var SeoMetadata $seo */
+        $seo = SeoMetadata::make($dto->toArray());
+
+        $seo->setAttribute('no_index', '{}');
+
+        foreach ($dto->getTranslations() as $lang => $translations) {
+            $translationArray = $translations->toArray() + [
+                'no_index' => $translations->getNoIndex() instanceof Missing
+                        ? false
+                        : $translations->getNoIndex(),
+            ];
+
+            foreach ($translationArray as $key => $translation) {
+                $seo->setTranslation($key, $lang, $translation);
+            }
+        }
+
+        $this->translationService->checkPublished($seo, []);
+
+        $seo->save();
+
+        return $seo;
     }
 
     public function update(SeoMetadataDto $dto, SeoMetadata $seoMetadata): SeoMetadata
     {
-        $seoMetadata->update($dto->toArray());
+        $seoMetadata->fill($dto->toArray());
+
+        foreach ($dto->getTranslations() as $lang => $translations) {
+            foreach ($translations->toArray() as $key => $translation) {
+                $seoMetadata->setTranslation($key, $lang, $translation);
+            }
+        }
+
+        $this->translationService->checkPublished($seoMetadata, []);
+
+        $seoMetadata->save();
 
         return $seoMetadata;
     }
@@ -80,13 +148,19 @@ class SeoMetadataService implements SeoMetadataServiceContract
                 }
             };
 
-        return SeoMetadata::query()->whereHasMorph('modelSeo', [
-            Page::class,
-            Product::class,
-            ProductSet::class,
-        ], $morph_closure)
-            ->whereJsonLength('keywords', count($keywords))
-            ->whereJsonContains('keywords', $keywords)
+        $lang = App::getLocale();
+
+        return SeoMetadata::whereHasMorph(
+            'modelSeo',
+            [
+                Page::class,
+                Product::class,
+                ProductSet::class,
+            ],
+            $morph_closure
+        )
+            ->whereJsonLength("keywords->{$lang}", count($keywords))
+            ->whereJsonContains("keywords->{$lang}", $keywords)
             ->get();
     }
 

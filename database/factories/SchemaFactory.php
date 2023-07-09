@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Schema;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\App;
 
 class SchemaFactory extends Factory
 {
@@ -30,6 +31,7 @@ class SchemaFactory extends Factory
             'default' => null,
             'pattern' => null,
             'validation' => null,
+            'published' => [App::getLocale()],
         ];
     }
 }

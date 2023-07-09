@@ -2,17 +2,19 @@
 
 namespace App\Models;
 
+use App\Models\Interfaces\Translatable;
 use App\Traits\HasMetadata;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Spatie\Translatable\HasTranslations;
 
 /**
  * @mixin IdeHelperOption
  */
-class Option extends Model
+class Option extends Model implements Translatable
 {
-    use HasFactory;
+    use HasFactory, HasTranslations;
     use HasMetadata;
 
     protected $fillable = [
@@ -24,6 +26,10 @@ class Option extends Model
         'available',
         'shipping_time',
         'shipping_date',
+    ];
+
+    protected $translatable = [
+        'name',
     ];
 
     protected $casts = [

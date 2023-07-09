@@ -44,5 +44,11 @@ return [
         EventType::FAILED_LOGIN_ATTEMPT => 'Event triggered when a failed login attempt is made',
         EventType::ORDER_UPDATED_SHIPPING_NUMBER => 'Event triggered after shipping number is updated',
         EventType::SEND_ORDER_URLS => 'Event triggered after sending order products urls',
-    ],
+        EventType::DISCOUNT_CREATED => 'Event triggered when new discounts are created',
+        EventType::DISCOUNT_UPDATED => 'Event triggered after discount is updated',
+        EventType::DISCOUNT_DELETED => 'Event triggered after discount is deleted',
+        EventType::LANGUAGE_CREATED => 'Event triggered when new language are created',
+        EventType::LANGUAGE_UPDATED => 'Event triggered after language is updated',
+        EventType::LANGUAGE_DELETED => 'Event triggered after language is deleted',
+    ]
 ];

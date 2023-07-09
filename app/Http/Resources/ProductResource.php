@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\GetAllTranslations;
 use App\Enums\VisibilityType;
 use App\Models\MediaAttachment;
 use App\Models\Product;
@@ -15,11 +16,12 @@ use Illuminate\Support\Facades\Gate;
  */
 class ProductResource extends Resource
 {
-    use MetadataResource;
+    use GetAllTranslations;
 
+    use MetadataResource;
     public function base(Request $request): array
     {
-        return array_merge([
+        $data = [
             'id' => $this->resource->getKey(),
             'slug' => $this->resource->slug,
             'name' => $this->resource->name,
@@ -43,6 +45,11 @@ class ProductResource extends Resource
             'shipping_digital' => $this->resource->shipping_digital,
             'purchase_limit_per_user' => $this->resource->purchase_limit_per_user,
         ], $this->metadataResource('products.show_metadata_private'));
+        return array_merge(
+            $data,
+            $request->has('translations') ? $this->getAllTranslations('products.show_hidden') : []
+        );
+            'published' => $this->published,
     }
 
     public function view(Request $request): array

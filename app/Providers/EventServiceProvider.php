@@ -10,6 +10,9 @@ use App\Events\ItemCreated;
 use App\Events\ItemDeleted;
 use App\Events\ItemUpdated;
 use App\Events\ItemUpdatedQuantity;
+use App\Events\LanguageCreated;
+use App\Events\LanguageDeleted;
+use App\Events\LanguageUpdated;
 use App\Events\NewLocalizationLoginAttempt;
 use App\Events\OrderCreated;
 use App\Events\OrderDocumentEvent;
@@ -92,6 +95,21 @@ class EventServiceProvider extends ServiceProvider
         ],
         UserCreated::class => [
             UserCreatedListener::class,
+        ],
+        UserDeleted::class => [
+            WebHookEventListener::class,
+        ],
+        UserUpdated::class => [
+            WebHookEventListener::class,
+        ],
+        LanguageCreated::class => [
+            WebHookEventListener::class,
+        ],
+        LanguageUpdated::class => [
+            WebHookEventListener::class,
+        ],
+        LanguageDeleted::class => [
+            WebHookEventListener::class,
         ],
     ];
 

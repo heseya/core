@@ -2,6 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\Interfaces\Translatable;
+use App\SearchTypes\ProductSearch;
+use App\SearchTypes\TranslatedLike;
+use App\SearchTypes\WhereBelongsToManyById;
+use App\SortColumnTypes\TranslatedColumn;
 use App\Criteria\LessOrEquals;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
@@ -41,6 +46,7 @@ use JeroenG\Explorer\Domain\Analysis\Analyzer\StandardAnalyzer;
 use Laravel\Scout\Searchable;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use Spatie\Translatable\HasTranslations;
 
 /**
  * @property mixed $pivot
@@ -48,7 +54,9 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @mixin IdeHelperProduct
  */
 class Product extends Model implements AuditableContract, Explored, SearchableFields, SortableContract
+class Product extends Model implements AuditableContract, Translatable
 {
+    use HasFactory, SoftDeletes, Searchable, Sortable, Auditable, HasSeoMetadata, HasTranslations;
     use Auditable;
     use HasCriteria;
     use HasDiscountConditions;
@@ -84,9 +92,16 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
         'quantity',
         'shipping_digital',
         'purchase_limit_per_user',
+        'published',
     ];
 
-    protected array $auditInclude = [
+    protected $translatable = [
+        'name',
+        'description_html',
+        'description_short',
+    ];
+
+    protected $auditInclude = [
         'name',
         'slug',
         'description_html',
@@ -105,6 +120,7 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
         'public' => 'bool',
         'available' => 'bool',
         'quantity_step' => 'float',
+        'published' => 'array',
         'vat_rate' => 'float',
         'has_schemas' => 'bool',
         'quantity' => 'float',
@@ -112,10 +128,18 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
         'purchase_limit_per_user' => 'float',
     ];
 
+    protected array $searchable = [
+        'name' => TranslatedLike::class,
+        'slug' => Like::class,
+        'public',
+        'search' => ProductSearch::class,
+        'tags' => WhereBelongsToManyById::class,
+    ];
+
     protected array $sortable = [
         'id',
         'price',
-        'name',
+        'name' => TranslatedColumn::class,
         'created_at',
         'updated_at',
         'order',

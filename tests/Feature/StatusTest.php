@@ -52,6 +52,12 @@ class StatusTest extends TestCase
             ->assertJsonCount(4, 'data') // domyślne statusy z migracji + ten utworzony teraz
             ->assertJsonFragment([$this->expected]);
     }
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexWithTranslationsFlag($user): void
+    {
+        $this->$user->givePermissionTo('statuses.show');
 
     /**
      * @dataProvider authProvider
@@ -84,9 +90,7 @@ class StatusTest extends TestCase
         $this->{$user}->givePermissionTo('statuses.add');
 
         $status = [
-            'name' => 'Test Status',
             'color' => 'ffffff',
-            'description' => 'To jest status testowy.',
             'hidden' => true,
             'no_notifications' => true,
         ];
@@ -94,9 +98,18 @@ class StatusTest extends TestCase
         $response = $this->actingAs($this->{$user})->postJson('/statuses', $status);
         $response
             ->assertCreated()
-            ->assertJson(['data' => $status]);
+            ->assertJson(['data' => $status + [
+                    'name' => 'Test Status',
+                    'description' => 'To jest status testowy.',
+                ]]);
 
-        $this->assertDatabaseHas('statuses', $status);
+        $this->assertDatabaseHas('statuses', [
+            "name->{$this->lang}" => 'Test Status',
+            'color' => 'ffffff',
+            "description->{$this->lang}" => 'To jest status testowy.',
+            'hidden' => true,
+            'no_notifications' => true,
+        ]);
     }
 
     /**
@@ -171,7 +184,11 @@ class StatusTest extends TestCase
             ],
             ]);
 
-        $this->assertDatabaseHas('statuses', $status);
+        $this->assertDatabaseHas('statuses', [
+            "name->{$this->lang}" => 'Test Status',
+            'color' => 'ffffff',
+            "description->{$this->lang}" => 'To jest status testowy.',
+        ]);
     }
 
     public function testUpdateUnauthorized(): void
@@ -215,9 +232,17 @@ class StatusTest extends TestCase
                 $status,
             )
             ->assertOk()
-            ->assertJson(['data' => $status]);
+            ->assertJson(['data' => [
+                'name' => 'Test Status 2',
+                'color' => '444444',
+                'description' => 'Testowy opis testowego statusu 2.',
+            ]]);
 
-        $this->assertDatabaseHas('statuses', $status + ['id' => $this->status_model->getKey()]);
+        $this->assertDatabaseHas('statuses', [
+                "name->{$this->lang}" => 'Test Status 2',
+                'color' => '444444',
+                "description->{$this->lang}" => 'Testowy opis testowego statusu 2.',
+            ] + ['id' => $this->status_model->getKey()]);
     }
 
     /**

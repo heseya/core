@@ -12,6 +12,7 @@ use App\Http\Requests\StatusReorderRequest;
 use App\Http\Requests\StatusUpdateRequest;
 use App\Http\Resources\StatusResource;
 use App\Models\Status;
+use App\Services\Contracts\TranslationServiceContract;
 use App\Services\Contracts\StatusServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -19,8 +20,11 @@ use Illuminate\Support\Facades\Response;
 
 class StatusController extends Controller
 {
+    public function __construct(
     public function __construct(private StatusServiceContract $statusService) {}
-
+        private TranslationServiceContract $translationService,
+    ) {
+    }
     public function index(StatusIndexRequest $request): JsonResource
     {
         $statuses = Status::searchByCriteria($request->validated())

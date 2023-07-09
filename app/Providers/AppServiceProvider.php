@@ -28,6 +28,7 @@ use App\Services\Contracts\EventServiceContract;
 use App\Services\Contracts\FavouriteServiceContract;
 use App\Services\Contracts\GoogleCategoryServiceContract;
 use App\Services\Contracts\ItemServiceContract;
+use App\Services\Contracts\LanguageServiceContract;
 use App\Services\Contracts\MediaAttachmentServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
@@ -58,6 +59,7 @@ use App\Services\Contracts\SilverboxServiceContract;
 use App\Services\Contracts\SortServiceContract;
 use App\Services\Contracts\StatusServiceContract;
 use App\Services\Contracts\TokenServiceContract;
+use App\Services\Contracts\TranslationServiceContract;
 use App\Services\Contracts\UrlServiceContract;
 use App\Services\Contracts\UserLoginAttemptServiceContract;
 use App\Services\Contracts\UserServiceContract;
@@ -70,6 +72,7 @@ use App\Services\EventService;
 use App\Services\FavouriteService;
 use App\Services\GoogleCategoryService;
 use App\Services\ItemService;
+use App\Services\LanguageService;
 use App\Services\MediaAttachmentService;
 use App\Services\MediaService;
 use App\Services\MetadataService;
@@ -100,6 +103,7 @@ use App\Services\SilverboxService;
 use App\Services\SortService;
 use App\Services\StatusService;
 use App\Services\TokenService;
+use App\Services\TranslationService;
 use App\Services\UrlService;
 use App\Services\UserLoginAttemptService;
 use App\Services\UserService;
@@ -137,7 +141,9 @@ class AppServiceProvider extends ServiceProvider
         SeoMetadataServiceContract::class => SeoMetadataService::class,
         UrlServiceContract::class => UrlService::class,
         ItemServiceContract::class => ItemService::class,
+        LanguageServiceContract::class => LanguageService::class,
         OneTimeSecurityCodeContract::class => OneTimeSecurityCodeService::class,
+        TranslationServiceContract::class => TranslationService::class,
         SavedAddressServiceContract::class => SavedAddressService::class,
         AvailabilityServiceContract::class => AvailabilityService::class,
         DocumentServiceContract::class => DocumentService::class,

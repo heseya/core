@@ -19,10 +19,27 @@ class ProductCreateRequest extends FormRequest implements MetadataRequestContrac
     public function rules(): array
     {
         return array_merge(
-            $this->seoRules(),
             $this->metadataRules(),
             [
                 'id' => ['uuid'],
+            'translations' => [
+                'required',
+                new Translations(['name', 'description_html', 'description_short']),
+            ],
+            'translations.*.name' => ['string', 'max:255'],
+            'translations.*.description_html' => ['nullable', 'string'],
+            'translations.*.description_short' => ['nullable', 'string', 'between:30,5000'],
+//            'name' => ['required', 'string', 'max:255'],
+//            'description_html' => ['nullable', 'string'],
+//            'description_short' => ['nullable', 'string', 'between:30,5000'],
+
+            'published' => ['required', 'array', 'min:1'],
+            'published.*' => ['uuid', 'exists:languages,id'],
+
+            'slug' => ['required', 'string', 'max:255', 'unique:products', 'alpha_dash'],
+            'price' => ['required', 'numeric', 'min:0'],
+            'public' => ['required', 'boolean'],
+            'quantity_step' => ['numeric'],
 
                 'name' => ['required', 'string', 'max:255'],
                 'slug' => ['required', 'string', 'max:255', 'unique:products', 'alpha_dash'],

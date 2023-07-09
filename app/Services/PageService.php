@@ -12,6 +12,7 @@ use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\PageServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
 use Heseya\Dto\Missing;
+use App\Services\Contracts\TranslationServiceContract;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
@@ -22,6 +23,7 @@ class PageService implements PageServiceContract
     public function __construct(
         protected SeoMetadataServiceContract $seoMetadataService,
         protected MetadataServiceContract $metadataService,
+        protected TranslationServiceContract $translationService,
     ) {}
 
     public function authorize(Page $page): void
@@ -54,8 +56,15 @@ class PageService implements PageServiceContract
             $attributes = array_merge($attributes, ['order' => $pageCurrentOrder + 1]);
         }
 
-        /** @var Page $page */
-        $page = Page::query()->create($attributes);
+        $page = Page::make($attributes);
+
+        foreach ($dto->getTranslations() as $lang => $translations) {
+            $page->setLocale($lang)->fill($translations->toArray());
+        }
+
+        $this->translationService->checkPublished($page, ['name', 'content_html']);
+
+        $page->save();
 
         if (!($dto->getSeo() instanceof Missing)) {
             $this->seoMetadataService->createOrUpdateFor($page, $dto->getSeo());
@@ -72,7 +81,15 @@ class PageService implements PageServiceContract
 
     public function update(Page $page, PageUpdateDto $dto): Page
     {
-        $page->update($dto->toArray());
+        $page->fill($dto->toArray());
+
+        foreach ($dto->getTranslations() as $lang => $translations) {
+            $page->setLocale($lang)->fill($translations->toArray());
+        }
+
+        $this->translationService->checkPublished($page, ['name', 'content_html']);
+
+        $page->save();
 
         $seo = $page->seo;
         if ($seo !== null && !$dto->getSeo() instanceof Missing) {

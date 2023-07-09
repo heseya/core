@@ -3,10 +3,12 @@
 namespace App\Http\Resources;
 
 use App\Traits\MetadataResource;
+use App\Traits\GetAllTranslations;
 use Illuminate\Http\Request;
 
 class PageResource extends Resource
 {
+    use GetAllTranslations;
     use MetadataResource;
 
     public function base(Request $request): array
@@ -17,6 +19,8 @@ class PageResource extends Resource
             'name' => $this->resource->name,
             'public' => $this->resource->public,
             'order' => $this->resource->order,
+        ];
+            $request->has('translations') ? $this->getAllTranslations('pages.show_hidden') : []
         ], $this->metadataResource('pages.show_metadata_private'));
     }
 

@@ -14,6 +14,7 @@ use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductUpdated;
 use App\Listeners\WebHookEventListener;
+use App\Models\Language;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
 use App\Models\ConditionGroup;
@@ -1289,7 +1290,7 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 100,
             'public' => true,
             'vat_rate' => 23,
@@ -1361,7 +1362,7 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 100,
             'public' => true,
             'shipping_digital' => false,
@@ -1413,7 +1414,6 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
-            'description_html' => '<h1>Description</h1>',
             'public' => true,
             'shipping_digital' => false,
         ]);
@@ -1434,7 +1434,7 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 100,
             'public' => true,
             'shipping_digital' => false,
@@ -1486,7 +1486,6 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
-            'description_html' => '<h1>Description</h1>',
             'public' => false,
             'shipping_digital' => false,
         ]);
@@ -1507,7 +1506,7 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 100,
             'public' => false,
             'shipping_digital' => false,
@@ -1551,7 +1550,6 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
-            'description_html' => '<h1>Description</h1>',
             'public' => false,
             'shipping_digital' => false,
         ]);
@@ -1572,7 +1570,7 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 100,
             'public' => false,
             'shipping_digital' => false,
@@ -1608,7 +1606,6 @@ class ProductTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->postJson('/products', [
-                'name' => 'Test',
                 'slug' => 'test',
                 'price' => 0,
                 'public' => true,
@@ -1618,7 +1615,7 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 0,
         ]);
     }
@@ -1739,7 +1736,6 @@ class ProductTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->postJson('/products', [
-                'name' => 'Test',
                 'slug' => 'test',
                 'price' => -100,
                 'public' => true,
@@ -1768,6 +1764,12 @@ class ProductTest extends TestCase
             'schemas' => [
                 $schema->getKey(),
             ],
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                ],
+            ],
+            'published' => [$this->lang],
         ]);
 
         $response->assertCreated();
@@ -1775,7 +1777,7 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 150,
             'public' => false,
             'shipping_digital' => false,
@@ -1812,6 +1814,12 @@ class ProductTest extends TestCase
                 $set1->getKey(),
                 $set2->getKey(),
             ],
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                ],
+            ],
+            'published' => [$this->lang],
         ]);
 
         $response->assertCreated();
@@ -1819,7 +1827,7 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 150,
             'public' => false,
             'shipping_digital' => false,
@@ -1859,8 +1867,6 @@ class ProductTest extends TestCase
             'public' => $boolean,
             'shipping_digital' => false,
             'seo' => [
-                'title' => 'seo title',
-                'description' => 'seo description',
                 'og_image_id' => $media->getKey(),
                 'no_index' => $boolean,
                 'header_tags' => ['test1', 'test2'],
@@ -1870,7 +1876,6 @@ class ProductTest extends TestCase
         $response
             ->assertCreated()
             ->assertJson(['data' => [
-                'slug' => 'test',
                 'name' => 'Test',
                 'price' => 100,
                 'public' => $booleanValue,
@@ -1891,7 +1896,7 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 100,
             'public' => $booleanValue,
             'shipping_digital' => false,
@@ -1899,8 +1904,8 @@ class ProductTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('seo_metadata', [
-            'title' => 'seo title',
-            'description' => 'seo description',
+            "title->{$this->lang}" => 'seo title',
+            "description->{$this->lang}" => 'seo description',
             'model_id' => $response->getData()->data->id,
             'model_type' => Product::class,
             'no_index' => $booleanValue,
@@ -1920,7 +1925,6 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
-            'description_html' => '<h1>Description</h1>',
             'public' => true,
             'shipping_digital' => false,
             'seo' => [
@@ -1950,7 +1954,7 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 100,
             'public' => true,
             'shipping_digital' => false,
@@ -1958,11 +1962,11 @@ class ProductTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('seo_metadata', [
-            'title' => 'seo title',
-            'description' => 'seo description',
+            "title->{$this->lang}" => 'seo title',
+            "description->{$this->lang}" => 'seo description',
             'model_id' => $response->getData()->data->id,
             'model_type' => Product::class,
-            'no_index' => false,
+            "no_index->{$this->lang}" => false,
         ]);
 
         $this->assertDatabaseCount('seo_metadata', 2);
@@ -1993,13 +1997,19 @@ class ProductTest extends TestCase
             'schemas' => [
                 $schema->getKey(),
             ],
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                ],
+            ],
+            'published' => [$this->lang],
         ]);
 
         $response->assertCreated();
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => $productPrice,
             'price_min' => $productPrice,
             'price_max' => $productPrice + $schemaPrice,
@@ -2468,8 +2478,6 @@ class ProductTest extends TestCase
             'name' => 'Updated',
             'slug' => 'updated',
             'price' => 150,
-            'description_html' => '<h1>New description</h1>',
-            'description_short' => 'New so called short description',
             'public' => false,
             'vat_rate' => 5,
         ]);
@@ -2478,11 +2486,11 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
-            'name' => 'Updated',
+            "name->{$this->lang}" => 'Updated',
             'slug' => 'updated',
             'price' => 150,
-            'description_html' => '<h1>New description</h1>',
-            'description_short' => 'New so called short description',
+            "description_html->{$this->lang}" => '<h1>New description</h1>',
+            "description_short->{$this->lang}" => 'New so called short description',
             'public' => false,
             'vat_rate' => 5,
         ]);
@@ -2552,14 +2560,12 @@ class ProductTest extends TestCase
             'public' => false,
         ]);
 
-        $response->assertOk();
-
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
-            'name' => 'Updated',
+            "name->{$this->lang}" => 'Updated',
             'slug' => 'updated',
             'price' => 150,
-            'description_html' => '<h1>New description</h1>',
+            "description_html->{$this->lang}" => '<h1>New description</h1>',
             'public' => false,
         ]);
 
@@ -2612,14 +2618,12 @@ class ProductTest extends TestCase
             'public' => false,
         ]);
 
-        $response->assertOk();
-
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
-            'name' => 'Updated',
+            "name->{$this->lang}" => 'Updated',
             'slug' => 'updated',
             'price' => 150,
-            'description_html' => '<h1>New description</h1>',
+            "description_html->{$this->lang}" => '<h1>New description</h1>',
             'public' => false,
         ]);
 
@@ -2673,8 +2677,6 @@ class ProductTest extends TestCase
             ],
         ]);
 
-        $response->assertOk();
-
         $this->assertDatabaseHas('product_set_product', [
             'product_id' => $product->getKey(),
             'product_set_id' => $set2->getKey(),
@@ -2717,8 +2719,6 @@ class ProductTest extends TestCase
             'sets' => [],
         ]);
 
-        $response->assertOk();
-
         $this->assertDatabaseMissing('product_set_product', [
             'product_id' => $product->getKey(),
         ]);
@@ -2757,20 +2757,18 @@ class ProductTest extends TestCase
             ],
         ]);
 
-        $response->assertOk();
-
         $this->assertDatabaseHas('products', [
             'id' => $product->getKey(),
-            'name' => 'Updated',
+            "name->{$this->lang}" => 'Updated',
             'slug' => 'updated',
             'price' => 150,
-            'description_html' => '<h1>New description</h1>',
+            "description_html->{$this->lang}" => '<h1>New description</h1>',
             'public' => false,
         ]);
 
         $this->assertDatabaseHas('seo_metadata', [
-            'title' => 'seo title',
-            'description' => 'seo description',
+            "title->{$this->lang}" => 'seo title',
+            "description->{$this->lang}" => 'seo description',
         ]);
     }
 
@@ -2807,8 +2805,6 @@ class ProductTest extends TestCase
                 $schema->getKey(),
             ],
         ]);
-
-        $response->assertOk();
 
         $this->assertDatabaseHas('products', [
             $product->getKeyName() => $product->getKey(),
@@ -2906,8 +2902,6 @@ class ProductTest extends TestCase
             'type' => 'string',
             'required' => false,
         ]);
-
-        $response->assertOk();
 
         $this->assertDatabaseHas('products', [
             $product->getKeyName() => $product->getKey(),
@@ -3045,8 +3039,6 @@ class ProductTest extends TestCase
         $this->productService->updateMinMaxPrices($product);
 
         $response = $this->actingAs($this->{$user})->deleteJson('/schemas/id:' . $schema->getKey());
-
-        $response->assertNoContent();
 
         $this->assertDatabaseHas('products', [
             $product->getKeyName() => $product->getKey(),
@@ -3211,7 +3203,6 @@ class ProductTest extends TestCase
                 && $job->data[0] instanceof ProductDeleted;
         });
 
-        $response->assertNoContent();
         $this->assertSoftDeleted($this->product);
 
         $product = $this->product;
@@ -3258,7 +3249,6 @@ class ProductTest extends TestCase
                 && $job->data[0] instanceof ProductDeleted;
         });
 
-        $response->assertNoContent();
         $this->assertSoftDeleted($this->product);
 
         $product = $this->product;

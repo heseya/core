@@ -1,0 +1,36 @@
+LanguageStore:
+  content:
+    application/json:
+      schema:
+        properties:
+          name:
+            type: string
+            example: English
+          iso:
+            type: string
+            example: eng
+          default:
+            type: boolean
+            example: 'false'
+          hidden:
+            type: boolean
+            example: 'false'
+        type: object
+LanguageUpdate:
+  content:
+    application/json:
+      schema:
+        properties:
+          name:
+            type: string
+            example: Polski
+          iso:
+            type: string
+            example: pl
+          default:
+            type: boolean
+            example: 'true'
+          hidden:
+            type: boolean
+            example: 'false'
+        type: object

@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Option;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\App;
 
 class OptionFactory extends Factory
 {
