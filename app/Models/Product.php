@@ -3,9 +3,8 @@
 namespace App\Models;
 
 use App\Models\Interfaces\Translatable;
-use App\SearchTypes\ProductSearch;
 use App\SearchTypes\TranslatedLike;
-use App\SearchTypes\WhereBelongsToManyById;
+use App\Criteria\WhereBelongsToManyById;
 use App\SortColumnTypes\TranslatedColumn;
 use App\Criteria\LessOrEquals;
 use App\Criteria\MetadataPrivateSearch;

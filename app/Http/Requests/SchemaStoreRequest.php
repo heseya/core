@@ -4,7 +4,6 @@ namespace App\Http\Requests;
 
 use App\Enums\SchemaType;
 use App\Rules\Translations;
-use BenSampo\Enum\Rules\EnumKey;
 use App\Rules\EnumKey;
 use App\Traits\MetadataRules;
 use Illuminate\Foundation\Http\FormRequest;

@@ -12,14 +12,10 @@ use App\Models\Interfaces\Translatable;
 use App\Rules\OptionAvailable;
 use App\Traits\HasMetadata;
 use App\Traits\Sortable;
-use App\SearchTypes\SchemaSearch;
 use App\SearchTypes\TranslatedLike;
 use App\SortColumnTypes\TranslatedColumn;
 use BenSampo\Enum\Exceptions\InvalidEnumKeyException;
-use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
-use Heseya\Searchable\Traits\Searchable;
-use Heseya\Sortable\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -37,7 +33,7 @@ use Spatie\Translatable\HasTranslations;
  */
 class Schema extends Model implements Translatable, SortableContract
 {
-    use HasFactory, Searchable, Sortable, HasTranslations;
+    use HasFactory, Sortable, HasTranslations;
     use HasMetadata;
     use HasCriteria;
 
