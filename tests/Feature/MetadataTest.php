@@ -199,7 +199,7 @@ class MetadataTest extends TestCase
      */
     public function testAddMetadata($user, $data): void
     {
-        $this->$user->givePermissionTo($data['role']);
+        $this->{$user}->givePermissionTo($data['role']);
 
         $related = [];
         $code = [];
@@ -222,7 +222,7 @@ class MetadataTest extends TestCase
             'sample bool metadata' => true,
         ];
 
-        $response = $this->actingAs($this->$user)->patchJson(
+        $response = $this->actingAs($this->{$user})->patchJson(
             "/{$data['prefix_url']}/id:{$object->getKey()}/metadata",
             $metadata
         );
@@ -237,7 +237,7 @@ class MetadataTest extends TestCase
      */
     public function testAddMetadataPrivate($user, $data): void
     {
-        $this->$user->givePermissionTo($data['role']);
+        $this->{$user}->givePermissionTo($data['role']);
 
         $related = [];
         $code = [];
@@ -260,7 +260,7 @@ class MetadataTest extends TestCase
             'sample bool metadata private' => true,
         ];
 
-        $this->actingAs($this->$user)->patchJson(
+        $this->actingAs($this->{$user})->patchJson(
             "/{$data['prefix_url']}/id:{$object->getKey()}/metadata-private",
             $metadata
         )
@@ -273,7 +273,7 @@ class MetadataTest extends TestCase
      */
     public function testUpdateMetadata($user, $data): void
     {
-        $this->$user->givePermissionTo($data['role']);
+        $this->{$user}->givePermissionTo($data['role']);
 
         $related = [];
         $code = [];
@@ -297,7 +297,7 @@ class MetadataTest extends TestCase
             'public' => true,
         ]);
 
-        $this->actingAs($this->$user)->patchJson(
+        $this->actingAs($this->{$user})->patchJson(
             "/{$data['prefix_url']}/id:{$object->getKey()}/metadata",
             [
                 $metadata->name => 'new super value',
@@ -315,7 +315,7 @@ class MetadataTest extends TestCase
      */
     public function testUpdateMetadataSameKeys($user): void
     {
-        $this->$user->givePermissionTo('products.edit');
+        $this->{$user}->givePermissionTo('products.edit');
 
         $product = Product::factory()->create();
 
@@ -335,7 +335,7 @@ class MetadataTest extends TestCase
             'public' => true,
         ]);
 
-        $this->actingAs($this->$user)->patchJson(
+        $this->actingAs($this->{$user})->patchJson(
             "/products/id:{$product->getKey()}/metadata",
             [
                 $metadata->name => 'new super value',
@@ -358,7 +358,7 @@ class MetadataTest extends TestCase
      */
     public function testUpdateMetadataPrivate($user, $data): void
     {
-        $this->$user->givePermissionTo($data['role']);
+        $this->{$user}->givePermissionTo($data['role']);
 
         $related = [];
         $code = [];
@@ -382,7 +382,7 @@ class MetadataTest extends TestCase
             'public' => false,
         ]);
 
-        $this->actingAs($this->$user)->patchJson(
+        $this->actingAs($this->{$user})->patchJson(
             "/{$data['prefix_url']}/id:{$object->getKey()}/metadata-private",
             [
                 $metadata->name => 'new super value',
@@ -400,7 +400,7 @@ class MetadataTest extends TestCase
      */
     public function testDeleteMetadata($user, $data): void
     {
-        $this->$user->givePermissionTo($data['role']);
+        $this->{$user}->givePermissionTo($data['role']);
 
         $related = [];
         $code = [];
@@ -431,7 +431,7 @@ class MetadataTest extends TestCase
             'public' => true,
         ]);
 
-        $this->actingAs($this->$user)->patchJson(
+        $this->actingAs($this->{$user})->patchJson(
             "/{$data['prefix_url']}/id:{$object->getKey()}/metadata",
             [
                 $metadata1->name => $metadata1->value,
@@ -453,7 +453,7 @@ class MetadataTest extends TestCase
      */
     public function testDeleteMetadataPrivate($user, $data): void
     {
-        $this->$user->givePermissionTo($data['role']);
+        $this->{$user}->givePermissionTo($data['role']);
 
         $related = [];
         $code = [];
@@ -484,7 +484,7 @@ class MetadataTest extends TestCase
             'public' => false,
         ]);
 
-        $this->actingAs($this->$user)->patchJson(
+        $this->actingAs($this->{$user})->patchJson(
             "/{$data['prefix_url']}/id:{$object->getKey()}/metadata-private",
             [
                 $metadata1->name => $metadata1->value,
@@ -506,14 +506,14 @@ class MetadataTest extends TestCase
      */
     public function testIndexEmptyObject($user): void
     {
-        $this->$user->givePermissionTo('products.show_details');
+        $this->{$user}->givePermissionTo('products.show_details');
 
         $product = Product::factory()->create([
             'public' => true,
         ]);
 
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 "/products/id:{$product->getKey()}",
@@ -626,7 +626,7 @@ class MetadataTest extends TestCase
      */
     public function testAddUserMetadataPersonal($user): void
     {
-        $this->$user->givePermissionTo('users.edit');
+        $this->{$user}->givePermissionTo('users.edit');
         $model = User::factory()->create();
         $metadata = [
             'sample text metadata' => 'Lorem ipsum dolor sit amet',
@@ -635,7 +635,7 @@ class MetadataTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'PATCH',
                 "/users/id:{$model->getKey()}/metadata-personal",
@@ -669,7 +669,7 @@ class MetadataTest extends TestCase
      */
     public function testUpdateUserMetadataPersonal($user): void
     {
-        $this->$user->givePermissionTo('users.edit');
+        $this->{$user}->givePermissionTo('users.edit');
         $model = User::factory()->create();
 
         $this->user->metadataPersonal()->create([
@@ -682,7 +682,7 @@ class MetadataTest extends TestCase
             'sample text metadata' => 'Lorem ipsum dolor sit amet',
         ];
 
-        $this->actingAs($this->$user)->json(
+        $this->actingAs($this->{$user})->json(
             'PATCH',
             "/users/id:{$model->getKey()}/metadata-personal",
             $metadata
@@ -709,7 +709,7 @@ class MetadataTest extends TestCase
      */
     public function testDeleteUserMetadataPersonal($user): void
     {
-        $this->$user->givePermissionTo('users.edit');
+        $this->{$user}->givePermissionTo('users.edit');
         $model = User::factory()->create();
 
         $model->metadataPersonal()->create([
@@ -722,7 +722,7 @@ class MetadataTest extends TestCase
             'sample text metadata' => null,
         ];
 
-        $this->actingAs($this->$user)->json(
+        $this->actingAs($this->{$user})->json(
             'PATCH',
             "/users/id:{$model->getKey()}/metadata-personal",
             $metadata

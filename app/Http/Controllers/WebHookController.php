@@ -17,8 +17,7 @@ class WebHookController extends Controller
 {
     public function __construct(
         private WebHookServiceContract $webHookService,
-    ) {
-    }
+    ) {}
 
     public function index(WebHookIndexRequest $request): JsonResource
     {

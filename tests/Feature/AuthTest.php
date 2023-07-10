@@ -327,9 +327,7 @@ class AuthTest extends TestCase
 
         Log::shouldReceive('error')
             ->once()
-            ->withArgs(function ($message) {
-                return str_contains($message, $this->expectedLog);
-            });
+            ->withArgs(fn ($message) => str_contains($message, $this->expectedLog));
 
         $this
             ->actingAs($this->user)
@@ -352,9 +350,7 @@ class AuthTest extends TestCase
 
         Log::shouldReceive('error')
             ->once()
-            ->withArgs(function ($message) {
-                return str_contains($message, $this->expectedLog);
-            });
+            ->withArgs(fn ($message) => str_contains($message, $this->expectedLog));
 
         $this
             ->actingAs($this->user)
@@ -676,7 +672,7 @@ class AuthTest extends TestCase
      */
     public function testRefreshTokenMissing($user): void
     {
-        $response = $this->actingAs($this->$user)->postJson('/auth/refresh', [
+        $response = $this->actingAs($this->{$user})->postJson('/auth/refresh', [
             'refresh_token' => null,
         ]);
 
@@ -772,12 +768,12 @@ class AuthTest extends TestCase
     public function testRefreshTokenInvalidated($user): void
     {
         $token = $this->tokenService->createToken(
-            $this->$user,
+            $this->{$user},
             new TokenType(TokenType::REFRESH),
         );
         $this->tokenService->invalidateToken($token);
 
-        $response = $this->actingAs($this->$user)->postJson('/auth/refresh', [
+        $response = $this->actingAs($this->{$user})->postJson('/auth/refresh', [
             'refresh_token' => $token,
         ]);
 
@@ -1133,9 +1129,7 @@ class AuthTest extends TestCase
 
         Log::shouldReceive('error')
             ->once()
-            ->withArgs(function ($message) {
-                return str_contains($message, 'App\Exceptions\ClientException(code: 422): Invalid password at');
-            });
+            ->withArgs(fn ($message) => str_contains($message, 'App\Exceptions\ClientException(code: 422): Invalid password at'));
 
         $response = $this->actingAs($user)->json('PUT', '/users/password', [
             'password' => 'tests',
@@ -1289,7 +1283,7 @@ class AuthTest extends TestCase
      */
     public function testCheckIdentityInvalidToken($user): void
     {
-        $this->$user->givePermissionTo('auth.check_identity');
+        $this->{$user}->givePermissionTo('auth.check_identity');
 
         $token = $this->tokenService->createToken(
             User::factory()->create(),
@@ -1297,11 +1291,11 @@ class AuthTest extends TestCase
         ) . 'invalid_hash';
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', "/auth/check/{$token}")
             ->assertStatus(422);
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->json('GET', '/auth/check/its-not-real-token')
             ->assertNotFound();
     }
@@ -1311,9 +1305,9 @@ class AuthTest extends TestCase
      */
     public function testCheckIdentityNoToken($user): void
     {
-        $this->$user->givePermissionTo('auth.check_identity');
+        $this->{$user}->givePermissionTo('auth.check_identity');
 
-        $this->actingAs($this->$user)->getJson('/auth/check')
+        $this->actingAs($this->{$user})->getJson('/auth/check')
             ->assertOk()
             ->assertJsonFragment([
                 'id' => null,
@@ -1326,7 +1320,7 @@ class AuthTest extends TestCase
      */
     public function testCheckIdentity($user): void
     {
-        $this->$user->givePermissionTo('auth.check_identity');
+        $this->{$user}->givePermissionTo('auth.check_identity');
 
         $otherUser = User::factory()->create();
         $role1 = Role::create(['name' => 'Role 1']);
@@ -1342,7 +1336,7 @@ class AuthTest extends TestCase
             new TokenType(TokenType::IDENTITY),
         );
 
-        $this->actingAs($this->$user)->getJson("/auth/check/{$token}")
+        $this->actingAs($this->{$user})->getJson("/auth/check/{$token}")
             ->assertOk()
             ->assertJson(['data' => [
                 'id' => $otherUser->getKey(),
@@ -1365,7 +1359,7 @@ class AuthTest extends TestCase
             'slug' => 'app_slug',
         ]);
 
-        $this->$user->givePermissionTo('auth.check_identity');
+        $this->{$user}->givePermissionTo('auth.check_identity');
 
         $otherUser = User::factory()->create();
         $role1 = Role::create(['name' => 'Role 1']);
@@ -1382,7 +1376,7 @@ class AuthTest extends TestCase
             new TokenType(TokenType::IDENTITY),
         );
 
-        $this->actingAs($this->$user)->getJson("/auth/check/{$token}")
+        $this->actingAs($this->{$user})->getJson("/auth/check/{$token}")
             ->assertOk()
             ->assertJson(['data' => [
                 'id' => $otherUser->getKey(),
@@ -2438,9 +2432,13 @@ class AuthTest extends TestCase
     {
         $decoded = base64_decode($data);
         $ivLen = openssl_cipher_iv_length($this->cipher);
-        $iv = substr($decoded, 0, $ivLen);
 
-        $ciphertext = substr($decoded, $ivLen);
+        if ($ivLen === false) {
+            return false;
+        }
+
+        $iv = mb_substr($decoded, 0, $ivLen, '8bit');
+        $ciphertext = mb_substr($decoded, $ivLen, null, '8bit');
         $decrypted = openssl_decrypt($ciphertext, $this->cipher, $this->webhookKey, OPENSSL_RAW_DATA, $iv);
 
         if ($decrypted) {

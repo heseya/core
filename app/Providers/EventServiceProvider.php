@@ -95,9 +95,7 @@ class EventServiceProvider extends ServiceProvider
         ],
     ];
 
-    /**
-     * @var array<class-string>
-     */
+    /** @var array<class-string> */
     private array $webhookEvents = [
         CouponCreated::class,
         CouponDeleted::class,

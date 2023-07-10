@@ -32,8 +32,7 @@ class ProductController extends Controller
         private ProductServiceContract $productService,
         private ProductRepositoryContract $productRepository,
         private MediaAttachmentServiceContract $attachmentService,
-    ) {
-    }
+    ) {}
 
     public function index(ProductIndexRequest $request): JsonResource
     {

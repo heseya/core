@@ -10,7 +10,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('media_attachments', function (Blueprint $table) {
+        Schema::table('media_attachments', function (Blueprint $table): void {
             $table->string('description', 1000)->nullable();
         });
     }
@@ -20,7 +20,7 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('media_attachments', function (Blueprint $table) {
+        Schema::table('media_attachments', function (Blueprint $table): void {
             $table->dropColumn('description');
         });
     }

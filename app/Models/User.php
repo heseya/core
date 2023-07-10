@@ -44,24 +44,24 @@ use Spatie\Permission\Traits\HasRoles;
  *
  * @mixin IdeHelperUser
  */
-class User extends Model implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, AuditableContract, JWTSubject, SortableContract
+class User extends Model implements AuditableContract, AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, JWTSubject, SortableContract
 {
-    use Notifiable;
+    use Auditable;
     use Authenticatable;
     use Authorizable;
     use CanResetPassword;
-    use MustVerifyEmail;
-    use HasFactory;
-    use HasRoles;
-    use SoftDeletes;
     use HasCriteria;
-    use Sortable;
-    use Auditable;
-    use HasWebHooks;
-    use HasMetadata;
     use HasDiscountConditions;
+    use HasFactory;
+    use HasMetadata;
     use HasMetadataPersonal;
+    use HasRoles;
+    use HasWebHooks;
     use HasWishlist;
+    use MustVerifyEmail;
+    use Notifiable;
+    use SoftDeletes;
+    use Sortable;
 
     // Bez tego nie działały testy, w których jako aplikacja tworzy się użytkownika z określoną rolą
     protected string $guard_name = 'api';
@@ -111,7 +111,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      */
     public function getAvatarAttribute(): string
     {
-        return '//www.gravatar.com/avatar/' . md5(strtolower(trim($this->email))) . '?d=mp&s=50x50';
+        return '//www.gravatar.com/avatar/' . md5(mb_strtolower(trim($this->email))) . '?d=mp&s=50x50';
     }
 
     public function getPhoneAttribute(): ?string

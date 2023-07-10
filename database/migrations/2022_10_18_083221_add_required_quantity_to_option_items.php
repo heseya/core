@@ -7,24 +7,20 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::table('option_items', function (Blueprint $table) {
+        Schema::table('option_items', function (Blueprint $table): void {
             $table->decimal('required_quantity', 16, 4)->default(1);
         });
     }
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
-        Schema::table('option_items', function (Blueprint $table) {
+        Schema::table('option_items', function (Blueprint $table): void {
             $table->removeColumn('required_quantity');
         });
     }

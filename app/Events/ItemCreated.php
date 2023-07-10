@@ -2,6 +2,4 @@
 
 namespace App\Events;
 
-class ItemCreated extends ItemEvent
-{
-}
+class ItemCreated extends ItemEvent {}

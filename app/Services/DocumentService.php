@@ -18,8 +18,7 @@ class DocumentService implements DocumentServiceContract
 {
     public function __construct(
         private MediaServiceContract $mediaService,
-    ) {
-    }
+    ) {}
 
     public function storeDocument(Order $order, ?string $name, string $type, UploadedFile $file): OrderDocument
     {

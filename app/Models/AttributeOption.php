@@ -19,10 +19,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class AttributeOption extends Model
 {
-    use HasFactory;
-    use SoftDeletes;
     use HasCriteria;
+    use HasFactory;
     use HasMetadata;
+    use SoftDeletes;
 
     protected $fillable = [
         'id',

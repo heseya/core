@@ -10,7 +10,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('product_page', function (Blueprint $table) {
+        Schema::create('product_page', function (Blueprint $table): void {
             $table->uuid('product_id')->index();
             $table->uuid('page_id')->index();
 

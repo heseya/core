@@ -1,8 +1,10 @@
 # Heseya Store API
 
 ## Easy start with Docker
+First go get [TaskFile](https://taskfile.dev/installation/).
+
 ```
-make build
+task init
 ```
 
 Api should be available at `localhost`
@@ -13,32 +15,16 @@ Seeder creates user `admin@example.com` with password `secret`.
 
 If you have already built the application you can restart it with:
 ```
-make up
+task up
 ```
 
 Entry to the container (or from the application)
 ```
-make bash
+task bash
 ```
 
 If port is taken you can change DOCKER_PORT in .env to your liking
 Easy start only works with default dirname `store-api` for now.
-
-## Git hooks
-Project uses git pre-commit hook to automatically generate IDE Helper docs and fix style issues
-
->### Attention
->Hook scripts assume the project catalogue uses the default repository name: store-api.
->The copied hooks will need to be modified with correct catalogue name.
-
-Enable pre-commit scripts by copying git hooks
-```
-make hooks
-```
-or if you commit directly from inside the container
-```
-cp ./git_hooks/host/* ./.git/hooks/
-```
 
 ## Code style
 Set your IDE to use the .editorconfig file. There is an extension for this in VS Code.

@@ -158,7 +158,7 @@ class ProductSeeder extends Seeder
     {
         /** @var Schema $schema */
         $schema = Schema::factory()->create([
-            'type' => rand(0, 6), // all types except multiply_schemas
+            'type' => mt_rand(0, 6), // all types except multiply_schemas
         ]);
         $product->schemas()->attach($schema->getKey());
 
@@ -175,7 +175,7 @@ class ProductSeeder extends Seeder
 
     private function attachNewMedia(Product $product): void
     {
-        for ($i = 0; $i < rand(0, 5); ++$i) {
+        for ($i = 0; $i < mt_rand(0, 5); ++$i) {
             $media = Media::factory()->create();
             $product->media()->attach($media);
         }

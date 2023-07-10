@@ -11,6 +11,5 @@ class CartItemResponse
         public Money $price,
         public Money $price_discounted,
         public float $quantity,
-    ) {
-    }
+    ) {}
 }

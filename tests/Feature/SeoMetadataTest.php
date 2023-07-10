@@ -59,7 +59,7 @@ class SeoMetadataTest extends TestCase
         $seo = SeoMetadata::query()->where('global', true)->first();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/seo')
             ->assertOk()
             ->assertJson(function (AssertableJson $json) use ($seo): void {
@@ -85,7 +85,7 @@ class SeoMetadataTest extends TestCase
         SeoMetadata::query()->delete();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/seo')
             ->assertOk()
             ->assertJsonFragment(['title' => null]);
@@ -106,7 +106,7 @@ class SeoMetadataTest extends TestCase
      */
     public function testCreateGlobal($user): void
     {
-        $this->$user->givePermissionTo('seo.edit');
+        $this->{$user}->givePermissionTo('seo.edit');
 
         SeoMetadata::where('global', 1)->delete();
 
@@ -116,7 +116,7 @@ class SeoMetadataTest extends TestCase
             'keywords' => ['key', 'words'],
         ];
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('PATCH', '/seo', $seo)
             ->assertCreated()
             ->assertJson(function (AssertableJson $json) use ($seo): void {
@@ -152,14 +152,14 @@ class SeoMetadataTest extends TestCase
      */
     public function testUpdateGlobal($user): void
     {
-        $this->$user->givePermissionTo('seo.edit');
+        $this->{$user}->givePermissionTo('seo.edit');
 
         $seo2 = [
             'title' => 'title',
             'description' => 'description',
             'keywords' => ['key', 'words'],
         ];
-        $response = $this->actingAs($this->$user)->json('PATCH', '/seo', $seo2);
+        $response = $this->actingAs($this->{$user})->json('PATCH', '/seo', $seo2);
 
         $response->assertOk()
             ->assertJsonFragment([
@@ -196,7 +196,7 @@ class SeoMetadataTest extends TestCase
             ],
         ])->create();
 
-        $this->actingAs($this->$user)->json('POST', '/seo/check', [
+        $this->actingAs($this->{$user})->json('POST', '/seo/check', [
             'keywords' => array_merge($seo->keywords, ['Spring Boot']),
         ])->assertForbidden();
     }
@@ -206,7 +206,7 @@ class SeoMetadataTest extends TestCase
      */
     public function testCheckKeywordsGlobalSeo($user): void
     {
-        $this->$user->givePermissionTo('seo.edit');
+        $this->{$user}->givePermissionTo('seo.edit');
 
         $seo = SeoMetadata::query()->where('global', true)->first();
 
@@ -218,7 +218,7 @@ class SeoMetadataTest extends TestCase
             ],
         ]);
 
-        $this->actingAs($this->$user)->json('POST', '/seo/check', [
+        $this->actingAs($this->{$user})->json('POST', '/seo/check', [
             'keywords' => [
                 'Global PHP',
                 'Global Laravel',
@@ -251,7 +251,7 @@ class SeoMetadataTest extends TestCase
      */
     public function testCheckKeywordsNoDuplicates($user, $keywords): void
     {
-        $this->$user->givePermissionTo('seo.edit');
+        $this->{$user}->givePermissionTo('seo.edit');
 
         $product = Product::factory([
             'public' => true,
@@ -265,7 +265,7 @@ class SeoMetadataTest extends TestCase
             ],
         ])->create());
 
-        $this->actingAs($this->$user)->json('POST', '/seo/check', [
+        $this->actingAs($this->{$user})->json('POST', '/seo/check', [
             'keywords' => $keywords,
         ])->assertOk()->assertJsonFragment(['data' => [
             'duplicated' => false,
@@ -292,7 +292,7 @@ class SeoMetadataTest extends TestCase
      */
     public function testCheckKeywordsDuplicates($user, $keywords): void
     {
-        $this->$user->givePermissionTo('seo.edit');
+        $this->{$user}->givePermissionTo('seo.edit');
 
         $product = Product::factory([
             'public' => true,
@@ -306,7 +306,7 @@ class SeoMetadataTest extends TestCase
             ],
         ])->create());
 
-        $this->actingAs($this->$user)->json('POST', '/seo/check', [
+        $this->actingAs($this->{$user})->json('POST', '/seo/check', [
             'keywords' => $keywords,
         ])->assertOk()->assertJsonFragment(['data' => [
             'duplicated' => true,
@@ -325,7 +325,7 @@ class SeoMetadataTest extends TestCase
      */
     public function testCheckKeywordsNoDuplicatesExisting($user, $keywords): void
     {
-        $this->$user->givePermissionTo('seo.edit');
+        $this->{$user}->givePermissionTo('seo.edit');
 
         $product = Product::factory([
             'public' => true,
@@ -339,7 +339,7 @@ class SeoMetadataTest extends TestCase
             ],
         ])->create());
 
-        $this->actingAs($this->$user)->json('POST', '/seo/check', [
+        $this->actingAs($this->{$user})->json('POST', '/seo/check', [
             'keywords' => $keywords,
             'excluded' => [
                 'id' => $product->getKey(),
@@ -357,7 +357,7 @@ class SeoMetadataTest extends TestCase
      */
     public function testCheckKeywordsDuplicatesExisting($user, $keywords): void
     {
-        $this->$user->givePermissionTo('seo.edit');
+        $this->{$user}->givePermissionTo('seo.edit');
 
         $product = Product::factory([
             'public' => true,
@@ -384,7 +384,7 @@ class SeoMetadataTest extends TestCase
         ])->create());
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/seo/check', [
                 'keywords' => $keywords,
                 'excluded' => [
@@ -411,7 +411,7 @@ class SeoMetadataTest extends TestCase
      */
     public function testUpdateProduct(string $user): void
     {
-        $this->$user->givePermissionTo('products.edit');
+        $this->{$user}->givePermissionTo('products.edit');
 
         $product = Product::factory()->create();
 
@@ -423,7 +423,7 @@ class SeoMetadataTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('PATCH', "/products/id:{$product->getKey()}", [
                 'seo' => $seo,
             ])

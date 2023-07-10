@@ -21,9 +21,9 @@ use Tests\Traits\JsonQueryCounter;
 abstract class TestCase extends BaseTestCase
 {
     use CreatesApplication;
-    use RefreshDatabase;
-    use JsonQueryCounter;
     use ElasticTest;
+    use JsonQueryCounter;
+    use RefreshDatabase;
 
     public User $user;
     public Application $application;

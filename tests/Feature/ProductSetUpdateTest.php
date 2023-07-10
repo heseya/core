@@ -39,7 +39,7 @@ class ProductSetUpdateTest extends TestCase
      */
     public function testUpdate($user): void
     {
-        $this->$user->givePermissionTo('product_sets.edit');
+        $this->{$user}->givePermissionTo('product_sets.edit');
 
         Event::fake([ProductSetUpdated::class]);
 
@@ -57,7 +57,7 @@ class ProductSetUpdateTest extends TestCase
             'parent_id' => null,
         ];
 
-        $response = $this->actingAs($this->$user)->patchJson(
+        $response = $this->actingAs($this->{$user})->patchJson(
             '/product-sets/id:' . $newSet->getKey(),
             $set + $parentId + [
                 'children_ids' => [],
@@ -88,7 +88,7 @@ class ProductSetUpdateTest extends TestCase
      */
     public function testUpdateTreeFalse($user): void
     {
-        $this->$user->givePermissionTo('product_sets.edit');
+        $this->{$user}->givePermissionTo('product_sets.edit');
 
         Event::fake([ProductSetUpdated::class]);
 
@@ -107,7 +107,7 @@ class ProductSetUpdateTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->patchJson(
                 '/product-sets/id:' . $newSet->getKey() . '?tree=0',
                 $set + $parentId + [
@@ -143,7 +143,7 @@ class ProductSetUpdateTest extends TestCase
      */
     public function testUpdateWithPartialData($user): void
     {
-        $this->$user->givePermissionTo('product_sets.edit');
+        $this->{$user}->givePermissionTo('product_sets.edit');
 
         Event::fake([ProductSetUpdated::class]);
 
@@ -160,7 +160,7 @@ class ProductSetUpdateTest extends TestCase
             'parent_id' => null,
         ];
 
-        $response = $this->actingAs($this->$user)->patchJson(
+        $response = $this->actingAs($this->{$user})->patchJson(
             '/product-sets/id:' . $newSet->getKey(),
             $set + $parentId + [
                 'children_ids' => [],
@@ -193,7 +193,7 @@ class ProductSetUpdateTest extends TestCase
      */
     public function testUpdateParentSlug($user): void
     {
-        $this->$user->givePermissionTo('product_sets.edit');
+        $this->{$user}->givePermissionTo('product_sets.edit');
 
         Event::fake([ProductSetUpdated::class]);
 
@@ -220,7 +220,7 @@ class ProductSetUpdateTest extends TestCase
             'public_parent' => false,
         ]);
 
-        $response = $this->actingAs($this->$user)->patchJson(
+        $response = $this->actingAs($this->{$user})->patchJson(
             '/product-sets/id:' . $parent->getKey(),
             [
                 'name' => 'New',
@@ -269,7 +269,7 @@ class ProductSetUpdateTest extends TestCase
      */
     public function testUpdateParentSlugTree($user): void
     {
-        $this->$user->givePermissionTo('product_sets.edit');
+        $this->{$user}->givePermissionTo('product_sets.edit');
 
         Event::fake([ProductSetUpdated::class]);
 
@@ -296,7 +296,7 @@ class ProductSetUpdateTest extends TestCase
             'public_parent' => false,
         ]);
 
-        $response = $this->actingAs($this->$user)->patchJson(
+        $response = $this->actingAs($this->{$user})->patchJson(
             '/product-sets/id:' . $parent->getKey() . '?tree=1',
             [
                 'name' => 'New',
@@ -352,7 +352,7 @@ class ProductSetUpdateTest extends TestCase
      */
     public function testUpdateWithSeo($user): void
     {
-        $this->$user->givePermissionTo('product_sets.edit');
+        $this->{$user}->givePermissionTo('product_sets.edit');
 
         $newSet = ProductSet::factory()->create([
             'public' => false,
@@ -371,7 +371,7 @@ class ProductSetUpdateTest extends TestCase
             'parent_id' => null,
         ];
 
-        $response = $this->actingAs($this->$user)->patchJson(
+        $response = $this->actingAs($this->{$user})->patchJson(
             '/product-sets/id:' . $newSet->getKey(),
             $set + $parentId + [
                 'children_ids' => [],
@@ -412,7 +412,7 @@ class ProductSetUpdateTest extends TestCase
      */
     public function testUpdateWithAttributes($user): void
     {
-        $this->$user->givePermissionTo('product_sets.edit');
+        $this->{$user}->givePermissionTo('product_sets.edit');
 
         Event::fake([ProductSetUpdated::class]);
 
@@ -436,7 +436,7 @@ class ProductSetUpdateTest extends TestCase
             'parent_id' => null,
         ];
 
-        $response = $this->actingAs($this->$user)->patchJson(
+        $response = $this->actingAs($this->{$user})->patchJson(
             '/product-sets/id:' . $newSet->getKey(),
             $set + $parentId + [
                 'children_ids' => [],
@@ -476,7 +476,7 @@ class ProductSetUpdateTest extends TestCase
      */
     public function testUpdateWithEmptyAttributes($user): void
     {
-        $this->$user->givePermissionTo('product_sets.edit');
+        $this->{$user}->givePermissionTo('product_sets.edit');
 
         Event::fake([ProductSetUpdated::class]);
 
@@ -498,7 +498,7 @@ class ProductSetUpdateTest extends TestCase
             'parent_id' => null,
         ];
 
-        $response = $this->actingAs($this->$user)->patchJson(
+        $response = $this->actingAs($this->{$user})->patchJson(
             '/product-sets/id:' . $newSet->getKey(),
             $set + $parentId + [
                 'children_ids' => [],
@@ -533,7 +533,7 @@ class ProductSetUpdateTest extends TestCase
      */
     public function testUpdateWithoutAttributes($user): void
     {
-        $this->$user->givePermissionTo('product_sets.edit');
+        $this->{$user}->givePermissionTo('product_sets.edit');
 
         Event::fake([ProductSetUpdated::class]);
 
@@ -555,7 +555,7 @@ class ProductSetUpdateTest extends TestCase
             'parent_id' => null,
         ];
 
-        $response = $this->actingAs($this->$user)->patchJson(
+        $response = $this->actingAs($this->{$user})->patchJson(
             '/product-sets/id:' . $newSet->getKey(),
             $set + $parentId + [
                 'children_ids' => [],

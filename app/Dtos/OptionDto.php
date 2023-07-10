@@ -10,8 +10,8 @@ class OptionDto extends Dto
 {
     use MapMetadata;
 
-    protected string|Missing $id;
-    protected string|Missing $name;
+    protected Missing|string $id;
+    protected Missing|string $name;
     protected float|Missing $price;
     protected bool|Missing $disabled;
     protected array|Missing $items;
@@ -40,17 +40,17 @@ class OptionDto extends Dto
         return $this->name;
     }
 
-    public function getPrice(): Missing|float
+    public function getPrice(): float|Missing
     {
         return $this->price;
     }
 
-    public function isDisabled(): Missing|bool
+    public function isDisabled(): bool|Missing
     {
         return $this->disabled;
     }
 
-    public function getItems(): Missing|array
+    public function getItems(): array|Missing
     {
         return $this->items;
     }

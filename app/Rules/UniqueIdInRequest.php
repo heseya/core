@@ -12,9 +12,7 @@ class UniqueIdInRequest implements Rule
      *
      * @return void
      */
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     public function passes($attribute, $value): bool
     {

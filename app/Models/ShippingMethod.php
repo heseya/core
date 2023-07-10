@@ -24,11 +24,11 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class ShippingMethod extends Model implements AuditableContract
 {
-    use HasFactory;
     use Auditable;
     use HasCriteria;
-    use HasMetadata;
     use HasDiscounts;
+    use HasFactory;
+    use HasMetadata;
 
     /**
      * @var array<string>
@@ -54,9 +54,7 @@ class ShippingMethod extends Model implements AuditableContract
         'block_list' => 'boolean',
     ];
 
-    /**
-     * @var array<string, class-string>
-     */
+    /** @var array<string, class-string> */
     protected array $criteria = [
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,

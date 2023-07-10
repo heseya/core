@@ -13,8 +13,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class SaleCreateRequest extends FormRequest
 {
-    use SeoRules;
     use MetadataRules;
+    use SeoRules;
 
     /**
      * Get the validation rules that apply to the request.
@@ -60,9 +60,7 @@ class SaleCreateRequest extends FormRequest
 
     public function withValidator(Validator $validator): void
     {
-        $validator->sometimes('value', ['max:100'], function ($input, $item) {
-            return $input->type === DiscountType::PERCENTAGE;
-        });
+        $validator->sometimes('value', ['max:100'], fn ($input, $item) => $input->type === DiscountType::PERCENTAGE);
 
         $validator->sometimes(
             'condition_groups.*.conditions.*.max_uses',

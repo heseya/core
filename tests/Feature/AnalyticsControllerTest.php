@@ -30,7 +30,7 @@ class AnalyticsControllerTest extends TestCase
      */
     public function testPayments($auth): void
     {
-        $this->$auth->givePermissionTo('analytics.payments');
+        $this->{$auth}->givePermissionTo('analytics.payments');
 
         $to = Carbon::today();
         $from = $to->copy()->subDays(30);
@@ -45,7 +45,7 @@ class AnalyticsControllerTest extends TestCase
                 ]);
         });
 
-        $response = $this->actingAs($this->$auth)->getJson('/analytics/payments', [
+        $response = $this->actingAs($this->{$auth})->getJson('/analytics/payments', [
             'from' => $from->toDateString(),
             'to' => $to->toDateString(),
             'group' => 'total',

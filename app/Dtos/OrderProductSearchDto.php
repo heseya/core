@@ -20,7 +20,7 @@ class OrderProductSearchDto extends Dto implements InstantiateFromRequest
         );
     }
 
-    public function getShippingDigital(): bool|null|Missing
+    public function getShippingDigital(): bool|Missing|null
     {
         return $this->shipping_digital;
     }

@@ -159,10 +159,10 @@ class OrderTest extends TestCase
      */
     public function testIndex($user): void
     {
-        $this->$user->givePermissionTo('orders.show');
+        $this->{$user}->givePermissionTo('orders.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/orders')
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -183,12 +183,12 @@ class OrderTest extends TestCase
      */
     public function testIndexByIds($user): void
     {
-        $this->$user->givePermissionTo('orders.show');
+        $this->{$user}->givePermissionTo('orders.show');
 
         Order::factory()->count(10)->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/orders', [
                 'ids' => [
                     $this->order->getKey(),
@@ -213,7 +213,7 @@ class OrderTest extends TestCase
      */
     public function testIndexPerformance($user): void
     {
-        $this->$user->givePermissionTo('orders.show');
+        $this->{$user}->givePermissionTo('orders.show');
         $status = Status::factory()->create();
 
         Order::factory()->count(499)->create([
@@ -222,7 +222,7 @@ class OrderTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/orders?limit=500')
             ->assertOk()
             ->assertJsonCount(500, 'data');
@@ -235,7 +235,7 @@ class OrderTest extends TestCase
      */
     public function testIndexSorted($user): void
     {
-        $this->$user->givePermissionTo('orders.show');
+        $this->{$user}->givePermissionTo('orders.show');
 
         $status = Status::factory()->create();
 
@@ -245,7 +245,7 @@ class OrderTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/orders?limit=30&sort=created_at:desc')
             ->assertOk()
             ->assertJsonCount(30, 'data');
@@ -256,12 +256,12 @@ class OrderTest extends TestCase
      */
     public function testIndexSortedInvalid($user): void
     {
-        $this->$user->givePermissionTo('orders.show');
+        $this->{$user}->givePermissionTo('orders.show');
 
         Order::factory()->count(30)->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/orders?limit=30&sort=currency:desssc')
             ->assertStatus(422)
             ->assertJsonFragment(['key' => ValidationError::IN]);
@@ -272,7 +272,7 @@ class OrderTest extends TestCase
      */
     public function testIndexUser($user): void
     {
-        $this->$user->givePermissionTo('orders.show_own');
+        $this->{$user}->givePermissionTo('orders.show_own');
 
         $status = Status::factory()->create();
 
@@ -281,9 +281,9 @@ class OrderTest extends TestCase
             'status_id' => $status->getKey(),
         ]);
 
-        $this->$user->orders()->save($order);
+        $this->{$user}->orders()->save($order);
 
-        // @var User $another_user
+        /** @var User $another_user */
         $another_user = User::factory()->create();
 
         $order_another_user = Order::factory()->create([
@@ -299,7 +299,7 @@ class OrderTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/orders/my')
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -328,7 +328,7 @@ class OrderTest extends TestCase
      */
     public function testIndexUserPerformance($user): void
     {
-        $this->$user->givePermissionTo('orders.show_own');
+        $this->{$user}->givePermissionTo('orders.show_own');
 
         $status = Status::factory()->create();
 
@@ -337,10 +337,10 @@ class OrderTest extends TestCase
             'status_id' => $status->getKey(),
         ]);
 
-        $this->$user->orders()->saveMany($orders);
+        $this->{$user}->orders()->saveMany($orders);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/orders/my', ['limit' => '500'])
             ->assertOk()
             ->assertJsonCount(500, 'data');
@@ -353,7 +353,7 @@ class OrderTest extends TestCase
      */
     public function testIndexWithHiddenStatus($user): void
     {
-        $this->$user->givePermissionTo('orders.show');
+        $this->{$user}->givePermissionTo('orders.show');
 
         $status = Status::factory([
             'hidden' => true,
@@ -364,7 +364,7 @@ class OrderTest extends TestCase
         ])->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/orders')
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -385,7 +385,7 @@ class OrderTest extends TestCase
      */
     public function testIndexFilterByHiddenStatus($user): void
     {
-        $this->$user->givePermissionTo('orders.show');
+        $this->{$user}->givePermissionTo('orders.show');
 
         $status = Status::factory([
             'hidden' => true,
@@ -397,7 +397,7 @@ class OrderTest extends TestCase
         ])->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/orders', ['status_id' => $status->getKey()])
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -439,7 +439,7 @@ class OrderTest extends TestCase
      */
     public function testIndexSearchByPaid($user, $boolean, $booleanValue): void
     {
-        $this->$user->givePermissionTo('orders.show');
+        $this->{$user}->givePermissionTo('orders.show');
 
         $product = Product::factory()->create([
             'public' => true,
@@ -469,7 +469,7 @@ class OrderTest extends TestCase
         $orderId = $booleanValue ? $order1->getKey() : $this->order->getKey();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/orders', ['paid' => $boolean])
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -483,7 +483,7 @@ class OrderTest extends TestCase
      */
     public function testIndexSearchByFrom($user): void
     {
-        $this->$user->givePermissionTo('orders.show');
+        $this->{$user}->givePermissionTo('orders.show');
 
         $status = Status::factory()->create();
 
@@ -502,7 +502,7 @@ class OrderTest extends TestCase
         ])->create();
 
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/orders', [
                 'from' => $from,
             ]);
@@ -519,7 +519,7 @@ class OrderTest extends TestCase
      */
     public function testIndexSearchByTo($user): void
     {
-        $this->$user->givePermissionTo('orders.show');
+        $this->{$user}->givePermissionTo('orders.show');
 
         $status = Status::factory()->create();
 
@@ -538,7 +538,7 @@ class OrderTest extends TestCase
         ])->create();
 
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/orders', [
                 'to' => $to,
             ]);
@@ -555,7 +555,7 @@ class OrderTest extends TestCase
      */
     public function testIndexSearchByFromTo($user): void
     {
-        $this->$user->givePermissionTo('orders.show');
+        $this->{$user}->givePermissionTo('orders.show');
 
         $status = Status::factory()->create();
 
@@ -575,7 +575,7 @@ class OrderTest extends TestCase
         ])->create();
 
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/orders', [
                 'from' => $from,
                 'to' => $to,
@@ -592,7 +592,7 @@ class OrderTest extends TestCase
      */
     public function testIndexSearchByShippingMethod($user): void
     {
-        $this->$user->givePermissionTo('orders.show');
+        $this->{$user}->givePermissionTo('orders.show');
 
         $shippingMethod = ShippingMethod::factory()->create([
             'shipping_type' => ShippingType::ADDRESS,
@@ -608,7 +608,7 @@ class OrderTest extends TestCase
         ])->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/orders', ['shipping_method_id' => $shippingMethod->getKey()])
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -632,7 +632,7 @@ class OrderTest extends TestCase
      */
     public function testIndexSearchByDigitalShippingMethod($user): void
     {
-        $this->$user->givePermissionTo('orders.show');
+        $this->{$user}->givePermissionTo('orders.show');
 
         $digitalShippingMethod = ShippingMethod::factory()->create([
             'shipping_type' => ShippingType::DIGITAL,
@@ -648,7 +648,7 @@ class OrderTest extends TestCase
         ])->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/orders', ['digital_shipping_method_id' => $digitalShippingMethod->getKey()])
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -673,7 +673,7 @@ class OrderTest extends TestCase
      */
     public function testIndexSearchByShippingMethodAndDigitalShippingMethod($user): void
     {
-        $this->$user->givePermissionTo('orders.show');
+        $this->{$user}->givePermissionTo('orders.show');
 
         $digitalShippingMethod = ShippingMethod::factory()->create([
             'shipping_type' => ShippingType::DIGITAL,
@@ -704,7 +704,7 @@ class OrderTest extends TestCase
         ])->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/orders', [
                 'digital_shipping_method_id' => $digitalShippingMethod->getKey(),
                 'shipping_method_id' => $shippingMethod->getKey(),
@@ -746,9 +746,9 @@ class OrderTest extends TestCase
      */
     public function testView($user): void
     {
-        $this->$user->givePermissionTo('orders.show_details');
+        $this->{$user}->givePermissionTo('orders.show_details');
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/orders/id:' . $this->order->getKey());
         $response
             ->assertOk()
@@ -763,22 +763,22 @@ class OrderTest extends TestCase
      */
     public function testViewWrongId($user): void
     {
-        $this->$user->givePermissionTo('orders.show_details');
+        $this->{$user}->givePermissionTo('orders.show_details');
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/orders/id:its-not-uuid')
             ->assertNotFound();
 
         $this->assertEquals(404, $response->getData()->error->code); // get error code from our error handle structure
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/orders/id:' . $this->order->getKey() . $this->order->getKey())
             ->assertNotFound();
 
         $this->assertEquals(404, $response->getData()->error->code);
         $this->order->delete();
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/orders/id:' . $this->order->getKey())
             ->assertNotFound();
 
@@ -790,7 +790,7 @@ class OrderTest extends TestCase
      */
     public function testViewPrivateMetadata($user): void
     {
-        $this->$user->givePermissionTo(['orders.show_details', 'orders.show_metadata_private']);
+        $this->{$user}->givePermissionTo(['orders.show_details', 'orders.show_metadata_private']);
 
         $privateMetadata = $this->order->metadataPrivate()->create([
             'name' => 'hiddenMetadata',
@@ -800,7 +800,7 @@ class OrderTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/orders/id:' . $this->order->getKey())
             ->assertOk()
             ->assertJsonFragment(['code' => $this->order->code])
@@ -824,10 +824,10 @@ class OrderTest extends TestCase
      */
     public function testViewSummary($user): void
     {
-        $this->$user->givePermissionTo('orders.show_summary');
+        $this->{$user}->givePermissionTo('orders.show_summary');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/orders/' . $this->order->code)
             ->assertOk()
             ->assertJsonStructure(['data' => $this->expected_summary_structure])
@@ -839,15 +839,15 @@ class OrderTest extends TestCase
      */
     public function testViewSummaryWrongCode($user): void
     {
-        $this->$user->givePermissionTo('orders.show_summary');
+        $this->{$user}->givePermissionTo('orders.show_summary');
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/orders/its_wrong_code')
             ->assertNotFound();
 
         $this->assertEquals(404, $response->getData()->error->code); // get error code from our error handle structure
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/orders/' . $this->order->code . '_' . $this->order->code)
             ->assertNotFound();
 
@@ -859,7 +859,7 @@ class OrderTest extends TestCase
      */
     public function testViewOverpaid($user): void
     {
-        $this->$user->givePermissionTo('orders.show_details');
+        $this->{$user}->givePermissionTo('orders.show_details');
 
         $summaryPaid = $this->order->summary * 2;
 
@@ -869,7 +869,7 @@ class OrderTest extends TestCase
         ]));
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/orders/id:' . $this->order->getKey())
             ->assertOk()
             ->assertJsonFragment([
@@ -885,7 +885,7 @@ class OrderTest extends TestCase
      */
     public function testViewOverpaidSummary($user): void
     {
-        $this->$user->givePermissionTo('orders.show_summary');
+        $this->{$user}->givePermissionTo('orders.show_summary');
 
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $this->order->summary * 2,
@@ -893,7 +893,7 @@ class OrderTest extends TestCase
         ]));
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/orders/' . $this->order->code)
             ->assertOk()
             ->assertJsonFragment(['paid' => true]);
@@ -904,7 +904,7 @@ class OrderTest extends TestCase
      */
     public function testViewUser($user): void
     {
-        $this->$user->givePermissionTo('orders.show_own');
+        $this->{$user}->givePermissionTo('orders.show_own');
 
         $status = Status::factory()->create();
 
@@ -913,9 +913,9 @@ class OrderTest extends TestCase
             'status_id' => $status->getKey(),
         ]);
 
-        $this->$user->orders()->save($order);
+        $this->{$user}->orders()->save($order);
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->json('GET', '/orders/my/' . $order->code)
             ->assertOk()
             ->assertJsonFragment([
@@ -932,7 +932,7 @@ class OrderTest extends TestCase
      */
     public function testViewUserWrongCode($user): void
     {
-        $this->$user->givePermissionTo('orders.show_own');
+        $this->{$user}->givePermissionTo('orders.show_own');
 
         $shipping_method = ShippingMethod::factory()->create();
         $status = Status::factory()->create();
@@ -942,13 +942,13 @@ class OrderTest extends TestCase
             'status_id' => $status->getKey(),
         ]);
 
-        $this->$user->orders()->save($order);
+        $this->{$user}->orders()->save($order);
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->json('GET', '/orders/my/its_wrong_code')
             ->assertNotFound();
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->json('GET', '/orders/my/' . $order->code . '_' . $order->code)
             ->assertNotFound();
     }
@@ -958,11 +958,11 @@ class OrderTest extends TestCase
      */
     public function testViewUserOrderNoUser($user): void
     {
-        $this->$user->givePermissionTo('orders.show_own');
+        $this->{$user}->givePermissionTo('orders.show_own');
 
         $order = Order::factory()->create();
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->json('GET', '/orders/my/' . $order->code)
             ->assertStatus(404);
     }
@@ -972,7 +972,7 @@ class OrderTest extends TestCase
      */
     public function testViewUserOrderAnotherUser($user): void
     {
-        $this->$user->givePermissionTo('orders.show_own');
+        $this->{$user}->givePermissionTo('orders.show_own');
 
         /** @var User $another_user */
         $another_user = User::factory()->create();
@@ -981,7 +981,7 @@ class OrderTest extends TestCase
 
         $another_user->orders()->save($order);
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->json('GET', '/orders/my/' . $order->code)
             ->assertStatus(404);
     }
@@ -1002,7 +1002,7 @@ class OrderTest extends TestCase
      */
     public function testViewOrderDiscounts($user): void
     {
-        $this->$user->givePermissionTo('orders.show_details');
+        $this->{$user}->givePermissionTo('orders.show_details');
 
         $status = Status::factory()->create();
         $product = Product::factory()->create();
@@ -1090,7 +1090,7 @@ class OrderTest extends TestCase
             ],
         );
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->json('GET', '/orders/id:' . $order->getKey())
             ->assertJson(function (AssertableJson $json) use ($discountShipping, $discountProduct): void {
                 $json
@@ -1150,14 +1150,14 @@ class OrderTest extends TestCase
      */
     public function testUpdateOrderStatus($user): void
     {
-        $this->$user->givePermissionTo('orders.edit.status');
+        $this->{$user}->givePermissionTo('orders.edit.status');
 
         Event::fake([OrderUpdatedStatus::class]);
 
         $status = Status::factory()->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
                 'status_id' => $status->getKey(),
             ])
@@ -1176,7 +1176,7 @@ class OrderTest extends TestCase
      */
     public function testUpdateOrderStatusNoNotifications($user): void
     {
-        $this->$user->givePermissionTo('orders.edit.status');
+        $this->{$user}->givePermissionTo('orders.edit.status');
 
         Notification::fake();
 
@@ -1185,7 +1185,7 @@ class OrderTest extends TestCase
         ])->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
                 'status_id' => $status->getKey(),
             ])
@@ -1204,14 +1204,14 @@ class OrderTest extends TestCase
      */
     public function testUpdateOrderStatusCancel($user): void
     {
-        $this->$user->givePermissionTo('orders.edit.status');
+        $this->{$user}->givePermissionTo('orders.edit.status');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ItemUpdatedQuantity',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
@@ -1231,7 +1231,7 @@ class OrderTest extends TestCase
             'cancel' => true,
         ]);
 
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
+        $response = $this->actingAs($this->{$user})->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
             'status_id' => $status->getKey(),
         ]);
 
@@ -1268,14 +1268,14 @@ class OrderTest extends TestCase
      */
     public function testUpdateOrderStatusWithWebHookQueue($user): void
     {
-        $this->$user->givePermissionTo('orders.edit.status');
+        $this->{$user}->givePermissionTo('orders.edit.status');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'OrderUpdatedStatus',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
@@ -1284,7 +1284,7 @@ class OrderTest extends TestCase
 
         $status = Status::factory()->create();
 
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
+        $response = $this->actingAs($this->{$user})->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
             'status_id' => $status->getKey(),
         ]);
 
@@ -1319,14 +1319,14 @@ class OrderTest extends TestCase
      */
     public function testUpdateOrderStatusWithWebHookDispatched($user): void
     {
-        $this->$user->givePermissionTo('orders.edit.status');
+        $this->{$user}->givePermissionTo('orders.edit.status');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'OrderUpdatedStatus',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
@@ -1335,7 +1335,7 @@ class OrderTest extends TestCase
 
         $status = Status::factory()->create();
 
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
+        $response = $this->actingAs($this->{$user})->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
             'status_id' => $status->getKey(),
         ]);
 
@@ -1371,7 +1371,7 @@ class OrderTest extends TestCase
      */
     public function testViewUnderpaid($user): void
     {
-        $this->$user->givePermissionTo('orders.show_details');
+        $this->{$user}->givePermissionTo('orders.show_details');
 
         $summaryPaid = $this->order->summary / 2;
 
@@ -1380,7 +1380,7 @@ class OrderTest extends TestCase
             'status' => PaymentStatus::SUCCESSFUL,
         ]));
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/orders/id:' . $this->order->getKey());
         $response
             ->assertOk()
@@ -1395,14 +1395,14 @@ class OrderTest extends TestCase
      */
     public function testViewUnderpaidSummary($user): void
     {
-        $this->$user->givePermissionTo('orders.show_summary');
+        $this->{$user}->givePermissionTo('orders.show_summary');
 
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $this->order->summary / 2,
             'status' => PaymentStatus::SUCCESSFUL,
         ]));
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/orders/' . $this->order->code);
         $response
             ->assertOk()
@@ -1466,7 +1466,7 @@ class OrderTest extends TestCase
      */
     public function testOrderHasUser($user): void
     {
-        $this->$user->givePermissionTo(['orders.add']);
+        $this->{$user}->givePermissionTo(['orders.add']);
 
         $product = Product::factory()->create([
             'public' => true,
@@ -1474,7 +1474,7 @@ class OrderTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $this->actingAs($this->$user)->json('POST', '/orders', [
+        $this->actingAs($this->{$user})->json('POST', '/orders', [
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => [
@@ -1503,7 +1503,7 @@ class OrderTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('orders', [
-            'buyer_id' => $this->$user->getKey(),
+            'buyer_id' => $this->{$user}->getKey(),
         ]);
     }
 }

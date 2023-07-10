@@ -13,7 +13,7 @@ class ShippingMethodPriceRangesTest extends TestCase
      */
     public function testIndexByPrice($user): void
     {
-        $this->$user->givePermissionTo('shipping_methods.show');
+        $this->{$user}->givePermissionTo('shipping_methods.show');
 
         $shippingMethod = ShippingMethod::factory()->create([
             'public' => true,
@@ -30,7 +30,7 @@ class ShippingMethodPriceRangesTest extends TestCase
         $priceRange2->prices()->create(['value' => 10]);
         $priceRange3->prices()->create(['value' => 0]);
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->json('GET', '/shipping-methods', ['cart_value' => 1200])
             ->assertOk()
             ->assertJsonCount(1, 'data')

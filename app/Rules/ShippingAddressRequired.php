@@ -7,7 +7,7 @@ use App\Models\ShippingMethod;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ImplicitRule;
 
-class ShippingAddressRequired implements ImplicitRule, DataAwareRule
+class ShippingAddressRequired implements DataAwareRule, ImplicitRule
 {
     protected array $data = [];
 
@@ -25,14 +25,10 @@ class ShippingAddressRequired implements ImplicitRule, DataAwareRule
         /** @var ShippingMethod|null $shippingMethod */
         $shippingMethod = ShippingMethod::query()->find($this->data['shipping_method_id']);
 
-        if (
-            ($shippingMethod?->shipping_type === ShippingType::POINT ||
-                $shippingMethod?->shipping_type === ShippingType::ADDRESS) && $value === null
-        ) {
-            return false;
-        }
-
-        return true;
+        return !(
+            ($shippingMethod?->shipping_type === ShippingType::POINT
+                || $shippingMethod?->shipping_type === ShippingType::ADDRESS) && $value === null
+        );
     }
 
     /**
@@ -43,7 +39,7 @@ class ShippingAddressRequired implements ImplicitRule, DataAwareRule
         return 'Shipping address is required with this shipping method type.';
     }
 
-    public function setData($data): ShippingAddressRequired
+    public function setData($data): self
     {
         $this->data = $data;
 

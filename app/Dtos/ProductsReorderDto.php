@@ -19,7 +19,7 @@ final class ProductsReorderDto extends Dto
         );
     }
 
-    public function getProducts(): Missing|array
+    public function getProducts(): array|Missing
     {
         return $this->products;
     }

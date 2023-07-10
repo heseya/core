@@ -104,9 +104,9 @@ class ProviderTest extends TestCase
      */
     public function testGetProvider($user): void
     {
-        $this->$user->givePermissionTo('auth.providers.manage');
+        $this->{$user}->givePermissionTo('auth.providers.manage');
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/auth/providers/facebook')
             ->assertJsonFragment([
                 'key' => 'facebook',
@@ -146,10 +146,10 @@ class ProviderTest extends TestCase
      */
     public function testUpdate($user): void
     {
-        $this->$user->givePermissionTo('auth.providers.manage');
+        $this->{$user}->givePermissionTo('auth.providers.manage');
 
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('PATCH', '/auth/providers/facebook', [
                 'active' => true,
                 'client_id' => 'test_id',
@@ -177,10 +177,10 @@ class ProviderTest extends TestCase
      */
     public function testUpdateActiveWithoutConfig($user): void
     {
-        $this->$user->givePermissionTo('auth.providers.manage');
+        $this->{$user}->givePermissionTo('auth.providers.manage');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('PATCH', '/auth/providers/facebook', [
                 'active' => true,
             ])

@@ -58,7 +58,7 @@ trait MapMetadata
         return $metadata->isEmpty() ? new Missing() : $metadata->toArray();
     }
 
-    public function getMetadata(): Missing|array
+    public function getMetadata(): array|Missing
     {
         return $this->metadata;
     }

@@ -14,7 +14,6 @@ use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
@@ -32,12 +31,12 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Discount extends Model implements AuditableContract
 {
-    use HasFactory;
-    use HasCriteria;
-    use SoftDeletes;
     use Auditable;
+    use HasCriteria;
+    use HasFactory;
     use HasMetadata;
     use HasSeoMetadata;
+    use SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -121,11 +120,6 @@ class Discount extends Model implements AuditableContract
         }
 
         return $products->unique();
-    }
-
-    public function scopeActive(Builder $query): Builder
-    {
-        return $query->where('active', true);
     }
 
     public function amount(): MorphOneWithIdentifier

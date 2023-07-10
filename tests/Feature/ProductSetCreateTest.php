@@ -75,7 +75,7 @@ class ProductSetCreateTest extends TestCase
      */
     public function testCreateMinimal($user): void
     {
-        $this->$user->givePermissionTo('product_sets.add');
+        $this->{$user}->givePermissionTo('product_sets.add');
 
         Event::fake([ProductSetCreated::class]);
 
@@ -88,7 +88,7 @@ class ProductSetCreateTest extends TestCase
             'slug' => 'test',
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + [
+        $response = $this->actingAs($this->{$user})->postJson('/product-sets', $set + [
             'slug_suffix' => 'test',
             'slug_override' => false,
         ]);
@@ -113,7 +113,7 @@ class ProductSetCreateTest extends TestCase
      */
     public function testCreateWithUuid($user): void
     {
-        $this->$user->givePermissionTo('product_sets.add');
+        $this->{$user}->givePermissionTo('product_sets.add');
 
         Event::fake([ProductSetCreated::class]);
 
@@ -122,7 +122,7 @@ class ProductSetCreateTest extends TestCase
             'id' => Uuid::uuid4()->toString(),
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + [
+        $response = $this->actingAs($this->{$user})->postJson('/product-sets', $set + [
             'slug_suffix' => 'test',
             'slug_override' => false,
         ]);
@@ -140,7 +140,7 @@ class ProductSetCreateTest extends TestCase
      */
     public function testCreateTreeViewFalse($user): void
     {
-        $this->$user->givePermissionTo('product_sets.add');
+        $this->{$user}->givePermissionTo('product_sets.add');
 
         Event::fake([ProductSetCreated::class]);
 
@@ -154,7 +154,7 @@ class ProductSetCreateTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/product-sets?tree=0', $set + [
                 'slug_suffix' => 'test',
                 'slug_override' => false,
@@ -185,14 +185,14 @@ class ProductSetCreateTest extends TestCase
      */
     public function testCreateMinimalWithWebHook($user): void
     {
-        $this->$user->givePermissionTo('product_sets.add');
+        $this->{$user}->givePermissionTo('product_sets.add');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ProductSetCreated',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => true,
             'with_hidden' => false,
         ]);
@@ -208,7 +208,7 @@ class ProductSetCreateTest extends TestCase
             'slug' => 'test',
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + [
+        $response = $this->actingAs($this->{$user})->postJson('/product-sets', $set + [
             'slug_suffix' => 'test',
             'slug_override' => false,
         ]);
@@ -252,13 +252,13 @@ class ProductSetCreateTest extends TestCase
      */
     public function testCreateFull($user): void
     {
-        $this->$user->givePermissionTo('product_sets.add');
+        $this->{$user}->givePermissionTo('product_sets.add');
 
         Event::fake([ProductSetCreated::class]);
 
         $media = Media::factory()->create([
             'type' => MediaType::PHOTO,
-            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+            'url' => 'https://picsum.photos/seed/' . mt_rand(0, 999999) . '/800',
         ]);
 
         $set = [
@@ -266,7 +266,7 @@ class ProductSetCreateTest extends TestCase
             'public' => false,
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + [
+        $response = $this->actingAs($this->{$user})->postJson('/product-sets', $set + [
             'slug_suffix' => 'test',
             'slug_override' => false,
             'cover_id' => $media->getKey(),
@@ -299,14 +299,14 @@ class ProductSetCreateTest extends TestCase
      */
     public function testCreateFullWithWebHook($user): void
     {
-        $this->$user->givePermissionTo('product_sets.add');
+        $this->{$user}->givePermissionTo('product_sets.add');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ProductSetCreated',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => true,
             'with_hidden' => true,
         ]);
@@ -318,7 +318,7 @@ class ProductSetCreateTest extends TestCase
             'public' => false,
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + [
+        $response = $this->actingAs($this->{$user})->postJson('/product-sets', $set + [
             'slug_suffix' => 'test',
             'slug_override' => false,
         ]);
@@ -364,7 +364,7 @@ class ProductSetCreateTest extends TestCase
      */
     public function testCreateParent($user): void
     {
-        $this->$user->givePermissionTo('product_sets.add');
+        $this->{$user}->givePermissionTo('product_sets.add');
 
         Event::fake([ProductSetCreated::class]);
 
@@ -372,7 +372,7 @@ class ProductSetCreateTest extends TestCase
             'name' => 'Test Parent',
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + [
+        $response = $this->actingAs($this->{$user})->postJson('/product-sets', $set + [
             'slug_override' => false,
             'slug_suffix' => 'test-parent',
             'children_ids' => [
@@ -420,7 +420,7 @@ class ProductSetCreateTest extends TestCase
      */
     public function testCreateChild($user): void
     {
-        $this->$user->givePermissionTo('product_sets.add');
+        $this->{$user}->givePermissionTo('product_sets.add');
 
         Event::fake([ProductSetCreated::class]);
 
@@ -438,7 +438,7 @@ class ProductSetCreateTest extends TestCase
             'parent_id' => $parent->getKey(),
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + $parentId + [
+        $response = $this->actingAs($this->{$user})->postJson('/product-sets', $set + $parentId + [
             'slug_suffix' => 'test-child',
             'slug_override' => false,
         ]);
@@ -472,7 +472,7 @@ class ProductSetCreateTest extends TestCase
      */
     public function testCreateOrder($user): void
     {
-        $this->$user->givePermissionTo('product_sets.add');
+        $this->{$user}->givePermissionTo('product_sets.add');
 
         Event::fake([ProductSetCreated::class]);
 
@@ -489,7 +489,7 @@ class ProductSetCreateTest extends TestCase
             'order' => 21,
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + [
+        $response = $this->actingAs($this->{$user})->postJson('/product-sets', $set + [
             'slug_suffix' => 'test-order',
             'slug_override' => false,
         ]);
@@ -514,7 +514,7 @@ class ProductSetCreateTest extends TestCase
      */
     public function testCreateChildVisibility($user): void
     {
-        $this->$user->givePermissionTo('product_sets.add');
+        $this->{$user}->givePermissionTo('product_sets.add');
 
         Event::fake([ProductSetCreated::class]);
 
@@ -533,7 +533,7 @@ class ProductSetCreateTest extends TestCase
             'parent_id' => $parent->getKey(),
         ];
 
-        $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + $parentId + [
+        $response = $this->actingAs($this->{$user})->postJson('/product-sets', $set + $parentId + [
             'slug_suffix' => 'test-child',
             'slug_override' => true,
         ]);
@@ -559,7 +559,7 @@ class ProductSetCreateTest extends TestCase
      */
     public function testCreateDuplicateSlug($user): void
     {
-        $this->$user->givePermissionTo('product_sets.add');
+        $this->{$user}->givePermissionTo('product_sets.add');
 
         Event::fake([ProductSetCreated::class]);
 
@@ -568,7 +568,7 @@ class ProductSetCreateTest extends TestCase
             'slug' => 'test-duplicate',
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/product-sets', [
+        $response = $this->actingAs($this->{$user})->postJson('/product-sets', [
             'name' => 'New set',
             'slug_suffix' => 'test-duplicate',
             'slug_override' => false,
@@ -583,7 +583,7 @@ class ProductSetCreateTest extends TestCase
      */
     public function testCreateTreeView($user): void
     {
-        $this->$user->givePermissionTo('product_sets.add');
+        $this->{$user}->givePermissionTo('product_sets.add');
 
         Event::fake([ProductSetCreated::class]);
 
@@ -603,7 +603,7 @@ class ProductSetCreateTest extends TestCase
             'public_parent' => false,
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/product-sets?tree=1', [
+        $response = $this->actingAs($this->{$user})->postJson('/product-sets?tree=1', [
             'name' => 'New',
             'slug_override' => false,
             'slug_suffix' => 'new',
@@ -655,7 +655,7 @@ class ProductSetCreateTest extends TestCase
      */
     public function testCreateWithSeo($user): void
     {
-        $this->$user->givePermissionTo('product_sets.add');
+        $this->{$user}->givePermissionTo('product_sets.add');
 
         $set = [
             'name' => 'Test',
@@ -664,10 +664,10 @@ class ProductSetCreateTest extends TestCase
 
         $media = Media::factory()->create([
             'type' => MediaType::PHOTO,
-            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+            'url' => 'https://picsum.photos/seed/' . mt_rand(0, 999999) . '/800',
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + [
+        $response = $this->actingAs($this->{$user})->postJson('/product-sets', $set + [
             'slug_suffix' => 'test',
             'slug_override' => false,
             'seo' => [
@@ -711,7 +711,7 @@ class ProductSetCreateTest extends TestCase
      */
     public function testCreateWithAttributes($user): void
     {
-        $this->$user->givePermissionTo('product_sets.add');
+        $this->{$user}->givePermissionTo('product_sets.add');
 
         Event::fake([ProductSetCreated::class]);
 
@@ -727,7 +727,7 @@ class ProductSetCreateTest extends TestCase
         $attrOne = Attribute::factory()->create();
         $attrTwo = Attribute::factory()->create();
 
-        $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + [
+        $response = $this->actingAs($this->{$user})->postJson('/product-sets', $set + [
             'slug_suffix' => 'test',
             'slug_override' => false,
             'attributes' => [

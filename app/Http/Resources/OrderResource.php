@@ -46,9 +46,7 @@ class OrderResource extends Resource
     public function view(Request $request): array
     {
         $orderDiscounts = OrderDiscountResource::collection($this->resource->discounts);
-        $productsDiscounts = $this->resource->products->map(function ($product) {
-            return OrderDiscountResource::collection($product->discounts);
-        });
+        $productsDiscounts = $this->resource->products->map(fn ($product) => OrderDiscountResource::collection($product->discounts));
         $productsDiscountMerged = new Collection();
 
         $productsDiscounts->each(function ($productDiscounts) use ($productsDiscountMerged): void {

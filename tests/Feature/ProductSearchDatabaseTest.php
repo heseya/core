@@ -20,7 +20,7 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testIndex($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $product = Product::factory()->create([
             'public' => true,
@@ -35,7 +35,7 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['limit' => 100])
             ->assertOk()
             ->assertJsonCount(2, 'data')
@@ -51,14 +51,14 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearch($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $product = Product::factory()->create([
             'public' => true,
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['search' => $product->name])
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -70,7 +70,7 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testIndexIdsSearch($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $firstProduct = Product::factory()->create([
             'public' => true,
@@ -88,7 +88,7 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', [
                 'ids' => [
                     $firstProduct->getKey(),
@@ -104,14 +104,14 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchByPublic($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $product = Product::factory()->create([
             'public' => true,
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['public' => true])
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -123,7 +123,7 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchBySet($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $set = ProductSet::factory()->create([
             'public' => true,
@@ -141,7 +141,7 @@ class ProductSearchDatabaseTest extends TestCase
         $set->products()->attach($product);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['sets' => [$set->slug]])
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -153,7 +153,7 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchBySetNegation($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $set = ProductSet::factory()->create([
             'public' => true,
@@ -171,7 +171,7 @@ class ProductSearchDatabaseTest extends TestCase
         $set->products()->attach($product);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['sets_not' => [$set->slug]])
             ->assertOk()
             ->assertJsonMissing(['id' => $product->getKey()]);
@@ -182,7 +182,7 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchBySets($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $set = ProductSet::factory()->create([
             'public' => true,
@@ -209,7 +209,7 @@ class ProductSearchDatabaseTest extends TestCase
         $set2->products()->attach($product2);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', [
                 'sets' => [$set->slug, $set2->slug],
             ])
@@ -224,7 +224,7 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchBySetsNegation($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $set = ProductSet::factory()->create([
             'public' => true,
@@ -251,7 +251,7 @@ class ProductSearchDatabaseTest extends TestCase
         $set2->products()->attach($product2);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', [
                 'sets_not' => [$set->slug, $set2->slug],
             ])
@@ -265,14 +265,14 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchBySetHiddenUnauthorized($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $set = ProductSet::factory()->create([
             'public' => false,
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['sets' => [$set->slug]])
             ->assertUnprocessable();
     }
@@ -282,7 +282,7 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchBySetHidden($user): void
     {
-        $this->$user->givePermissionTo(['products.show', 'product_sets.show_hidden']);
+        $this->{$user}->givePermissionTo(['products.show', 'product_sets.show_hidden']);
 
         $set = ProductSet::factory()->create([
             'public' => true,
@@ -305,7 +305,7 @@ class ProductSearchDatabaseTest extends TestCase
         $set->products()->attach($product);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['sets' => [$set->slug]])
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -317,10 +317,10 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchByParentSet($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->getProductsByParentSet($this->$user, true, $product)
+            ->getProductsByParentSet($this->{$user}, true, $product)
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $product->getKey()]);
@@ -331,7 +331,7 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchByGrandParentSet($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $grandParentSet = ProductSet::factory()->create([
             'public' => true,
@@ -358,7 +358,7 @@ class ProductSearchDatabaseTest extends TestCase
 
         $childSet->products()->attach($productRef);
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->json('GET', '/products', ['sets' => [$grandParentSet->slug]])
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -372,10 +372,10 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchByParentSetWithPrivateChildUnauthorized($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->getProductsByParentSet($this->$user, false)
+            ->getProductsByParentSet($this->{$user}, false)
             ->assertOk()
             ->assertJsonCount(0, 'data');
     }
@@ -385,13 +385,13 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchByParentSetWithPrivateChild($user): void
     {
-        $this->$user->givePermissionTo([
+        $this->{$user}->givePermissionTo([
             'products.show',
             'product_sets.show_hidden',
         ]);
 
         $this
-            ->getProductsByParentSet($this->$user, false, $product)
+            ->getProductsByParentSet($this->{$user}, false, $product)
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $product->getKey()]);
@@ -402,7 +402,7 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchByTag($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $tag = Tag::factory()->create();
 
@@ -418,7 +418,7 @@ class ProductSearchDatabaseTest extends TestCase
         $tag->products()->attach($product);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['tags' => [$tag->getKey()]])
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -430,7 +430,7 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchByTagNegation($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $tag = Tag::factory()->create();
 
@@ -446,7 +446,7 @@ class ProductSearchDatabaseTest extends TestCase
         $tag->products()->attach($product);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['tags_not' => [$tag->getKey()]])
             ->assertOk()
             ->assertJsonMissing(['id' => $product->getKey()]);
@@ -457,7 +457,7 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchByTags($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $tag1 = Tag::factory()->create();
 
@@ -479,7 +479,7 @@ class ProductSearchDatabaseTest extends TestCase
         $tag1->products()->attach($product1);
         $tag2->products()->attach($product2);
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->json('GET', '/products', [
                 'tags' => [
                     $tag1->getKey(),
@@ -497,7 +497,7 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchByTagsNot($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $tag1 = Tag::factory()->create();
 
@@ -519,7 +519,7 @@ class ProductSearchDatabaseTest extends TestCase
         $tag1->products()->attach($product1);
         $tag2->products()->attach($product2);
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->json('GET', '/products', [
                 'tags_not' => [
                     $tag1->getKey(),
@@ -536,10 +536,10 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchByMetadata($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products?metadata.erp_id=1000&metadata.sku=S001')
             ->assertOk();
     }
@@ -549,10 +549,10 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchByMetadataClassicArray($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products?metadata[erp_id]=1000&metadata[sku]=S001')
             ->assertOk();
     }
@@ -562,10 +562,10 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchByMetadataPrivate($user): void
     {
-        $this->$user->givePermissionTo(['products.show', 'products.show_metadata_private']);
+        $this->{$user}->givePermissionTo(['products.show', 'products.show_metadata_private']);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products?metadata_private.sku=S001')
             ->assertOk();
     }
@@ -575,10 +575,10 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchByMetadataPrivateUnauthorized($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products?metadata_private.sku=S001')
             ->assertUnprocessable();
     }
@@ -588,7 +588,7 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchByPrice($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $product = Product::factory()->create([
             'public' => true,
@@ -609,7 +609,7 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['price' => ['min' => 100, 'max' => 200]])
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -621,7 +621,7 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchByPhoto($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $productNoPhoto = Product::factory()->create([
             'public' => true,
@@ -632,20 +632,20 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         $media = Media::factory()->create([
-            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+            'url' => 'https://picsum.photos/seed/' . mt_rand(0, 999999) . '/800',
         ]);
 
         $productPhoto->media()->sync($media);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['has_cover' => false])
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $productNoPhoto->getKey()]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['has_cover' => true])
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -657,7 +657,7 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchByAttributeId($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $products = Product::factory()->count(2)->create([
             'public' => true,
@@ -682,7 +682,7 @@ class ProductSearchDatabaseTest extends TestCase
         $products[1]->attributes->first()->pivot->options()->attach($options[1]->getKey());
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -712,7 +712,7 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchByAttributeMultippleId($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $products = Product::factory()->count(2)->create([
             'public' => true,
@@ -745,7 +745,7 @@ class ProductSearchDatabaseTest extends TestCase
         $products[1]->attributes->first()->pivot->options()->attach($option2->getKey());
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -778,7 +778,7 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchByAttributeNumber($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $products = Product::factory()->count(2)->create([
             'public' => true,
@@ -810,7 +810,7 @@ class ProductSearchDatabaseTest extends TestCase
         $products[1]->attributes->first()->pivot->options()->attach($option2->getKey());
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -838,7 +838,7 @@ class ProductSearchDatabaseTest extends TestCase
             ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -865,7 +865,7 @@ class ProductSearchDatabaseTest extends TestCase
             ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -881,7 +881,7 @@ class ProductSearchDatabaseTest extends TestCase
             ->assertJsonCount(0, 'data');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -902,7 +902,7 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchByAttributeDate($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $products = Product::factory()->count(2)->create([
             'public' => true,
@@ -934,7 +934,7 @@ class ProductSearchDatabaseTest extends TestCase
         $products[1]->attributes->first()->pivot->options()->attach($option2->getKey());
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -962,7 +962,7 @@ class ProductSearchDatabaseTest extends TestCase
             ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -990,7 +990,7 @@ class ProductSearchDatabaseTest extends TestCase
             ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -1006,7 +1006,7 @@ class ProductSearchDatabaseTest extends TestCase
             ->assertJsonCount(0, 'data');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -1027,7 +1027,7 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchByAttributeNotId($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $products = Product::factory()->count(2)->create([
             'public' => true,
@@ -1052,7 +1052,7 @@ class ProductSearchDatabaseTest extends TestCase
         $products[1]->attributes->first()->pivot->options()->attach($options[1]->getKey());
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -1077,7 +1077,7 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchByAttributeNotNumber($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $products = Product::factory()->count(2)->create([
             'public' => true,
@@ -1109,7 +1109,7 @@ class ProductSearchDatabaseTest extends TestCase
         $products[1]->attributes->first()->pivot->options()->attach($option2->getKey());
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -1132,7 +1132,7 @@ class ProductSearchDatabaseTest extends TestCase
             ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -1148,7 +1148,7 @@ class ProductSearchDatabaseTest extends TestCase
             ->assertJsonCount(0, 'data');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -1170,7 +1170,7 @@ class ProductSearchDatabaseTest extends TestCase
             ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -1197,7 +1197,7 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSearchByAttributeNotDate($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $products = Product::factory()->count(2)->create([
             'public' => true,
@@ -1229,7 +1229,7 @@ class ProductSearchDatabaseTest extends TestCase
         $products[1]->attributes->first()->pivot->options()->attach($option2->getKey());
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -1252,7 +1252,7 @@ class ProductSearchDatabaseTest extends TestCase
             ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -1269,7 +1269,7 @@ class ProductSearchDatabaseTest extends TestCase
             ->assertJsonCount(0, 'data');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -1291,7 +1291,7 @@ class ProductSearchDatabaseTest extends TestCase
             ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 '/products',
@@ -1318,7 +1318,7 @@ class ProductSearchDatabaseTest extends TestCase
      */
     public function testSortBySetOrder($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $product1 = Product::factory()->create([
             'public' => true,
@@ -1340,7 +1340,7 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['sort' => 'set.test', 'sets[]' => 'test']);
         $response
             ->assertOk()
@@ -1355,7 +1355,7 @@ class ProductSearchDatabaseTest extends TestCase
 
         // desc
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['sort' => 'set.test:desc', 'sets[]' => 'test']);
 
         $data = $response->getData()->data;

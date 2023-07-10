@@ -2,6 +2,4 @@
 
 namespace App\Events;
 
-class ProductSetUpdated extends ProductSetEvent
-{
-}
+class ProductSetUpdated extends ProductSetEvent {}

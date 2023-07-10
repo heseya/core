@@ -11,10 +11,10 @@ use App\Traits\MetadataRules;
 use App\Traits\SeoRules;
 use Illuminate\Foundation\Http\FormRequest;
 
-class ProductCreateRequest extends FormRequest implements SeoRequestContract, MetadataRequestContract
+class ProductCreateRequest extends FormRequest implements MetadataRequestContract, SeoRequestContract
 {
-    use SeoRules;
     use MetadataRules;
+    use SeoRules;
 
     public function rules(): array
     {

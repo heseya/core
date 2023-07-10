@@ -18,16 +18,15 @@ class MediaDto extends Dto implements InstantiateFromRequest
     use MapMetadata;
 
     public function __construct(
-        public readonly UploadedFile|Missing|null $file,
-        public readonly string|Missing $id = new Missing(),
-        public readonly string|Missing $url = new Missing(),
+        public readonly Missing|UploadedFile|null $file,
+        public readonly Missing|string $id = new Missing(),
+        public readonly Missing|string $url = new Missing(),
         public readonly MediaType|Missing $type = new Missing(),
-        public readonly string|null|Missing $alt = new Missing(),
-        public readonly string|null|Missing $slug = new Missing(),
+        public readonly Missing|string|null $alt = new Missing(),
+        public readonly Missing|string|null $slug = new Missing(),
         public readonly MediaSource $source = MediaSource::SILVERBOX,
         public readonly array|Missing $metadata = new Missing(),
-    ) {
-    }
+    ) {}
 
     /**
      * @throws DtoException

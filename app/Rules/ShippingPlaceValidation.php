@@ -12,7 +12,7 @@ use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Facades\Validator;
 
-final class ShippingPlaceValidation implements ValidationRule, DataAwareRule
+final class ShippingPlaceValidation implements DataAwareRule, ValidationRule
 {
     /**
      * All the data under validation.

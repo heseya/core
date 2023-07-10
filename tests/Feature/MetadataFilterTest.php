@@ -288,7 +288,7 @@ class MetadataFilterTest extends TestCase
      */
     public function testQuery($user, $data): void
     {
-        $this->$user->givePermissionTo($data['public_role']);
+        $this->{$user}->givePermissionTo($data['public_role']);
 
         $object = $this->createObjects($data['model'], $data['prefix_url'] === 'sales');
 
@@ -300,7 +300,7 @@ class MetadataFilterTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson("/{$data['prefix_url']}?metadata[{$metadata->name}]={$metadata->value}")
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -356,7 +356,7 @@ class MetadataFilterTest extends TestCase
      */
     public function testQueryByMorePropertiesUsingDots($user): void
     {
-        $this->$user->givePermissionTo('orders.show');
+        $this->{$user}->givePermissionTo('orders.show');
 
         $objects = $this->createObjects(Order::class);
 
@@ -385,7 +385,7 @@ class MetadataFilterTest extends TestCase
         $value = $metadata->value;
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 "/orders?metadata.{$name}={$value}&metadata.{$metadata2->name}={$metadata2->value}",
@@ -408,7 +408,7 @@ class MetadataFilterTest extends TestCase
      */
     public function testQueryCase1($user): void
     {
-        $this->$user->givePermissionTo('orders.show');
+        $this->{$user}->givePermissionTo('orders.show');
 
         $objects = $this->createObjects(Order::class);
 
@@ -434,7 +434,7 @@ class MetadataFilterTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/orders?metadata.test1=0&metadata.test2=0')
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -454,7 +454,7 @@ class MetadataFilterTest extends TestCase
      */
     public function testQueryCase2($user): void
     {
-        $this->$user->givePermissionTo('orders.show');
+        $this->{$user}->givePermissionTo('orders.show');
 
         $objects = $this->createObjects(Order::class);
 
@@ -473,7 +473,7 @@ class MetadataFilterTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/orders?metadata.test1=0')
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -490,7 +490,7 @@ class MetadataFilterTest extends TestCase
      */
     public function testQueryCase3($user): void
     {
-        $this->$user->givePermissionTo('orders.show');
+        $this->{$user}->givePermissionTo('orders.show');
 
         $objects = $this->createObjects(Order::class);
 
@@ -523,7 +523,7 @@ class MetadataFilterTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/orders?metadata.test1=0')
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -538,7 +538,7 @@ class MetadataFilterTest extends TestCase
             ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/orders?metadata.test1=1')
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -558,7 +558,7 @@ class MetadataFilterTest extends TestCase
      */
     public function testQueryWithoutValue($user): void
     {
-        $this->$user->givePermissionTo('orders.show');
+        $this->{$user}->givePermissionTo('orders.show');
 
         $objects = $this->createObjects(Order::class);
 
@@ -570,7 +570,7 @@ class MetadataFilterTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/orders?metadata[test1]')
             ->assertOk()
             ->assertJsonCount(0, 'data');
@@ -581,7 +581,7 @@ class MetadataFilterTest extends TestCase
      */
     public function testQueryPrivateWithoutValue($user): void
     {
-        $this->$user->givePermissionTo(['orders.show', 'orders.show_metadata_private']);
+        $this->{$user}->givePermissionTo(['orders.show', 'orders.show_metadata_private']);
 
         $objects = $this->createObjects(Order::class);
 
@@ -593,7 +593,7 @@ class MetadataFilterTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/orders?metadata_private[test1]')
             ->assertOk()
             ->assertJsonCount(0, 'data');
@@ -604,7 +604,7 @@ class MetadataFilterTest extends TestCase
      */
     public function testQueryPrivate2($user, $data): void
     {
-        $this->$user->givePermissionTo([$data['public_role'], $data['private_role']]);
+        $this->{$user}->givePermissionTo([$data['public_role'], $data['private_role']]);
 
         $object = $this->createObjects($data['model'], $data['prefix_url'] === 'sales');
 
@@ -616,7 +616,7 @@ class MetadataFilterTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson("/{$data['prefix_url']}?metadata_private[{$metadata->name}]={$metadata->value}")
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -633,7 +633,7 @@ class MetadataFilterTest extends TestCase
      */
     public function testQueryPrivateWithoutPermission($user, $data): void
     {
-        $this->$user->givePermissionTo($data['public_role']);
+        $this->{$user}->givePermissionTo($data['public_role']);
 
         $object = $this->createObjects($data['model']);
 
@@ -645,7 +645,7 @@ class MetadataFilterTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson("/{$data['prefix_url']}?metadata_private[{$metadata->name}]={$metadata->value}")
             ->assertOk()
             ->assertJsonMissing([

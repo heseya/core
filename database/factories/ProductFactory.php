@@ -21,11 +21,11 @@ class ProductFactory extends Factory
      */
     public function definition(): array
     {
-        $name = $this->faker->sentence(rand(1, 3));
+        $name = $this->faker->sentence(mt_rand(1, 3));
 
         return [
             'name' => $name,
-            'slug' => Str::slug($name) . '-' . rand(1, 99999),
+            'slug' => Str::slug($name) . '-' . mt_rand(1, 99999),
             'description_html' => '<p>' . $this->faker->sentence(10) . '</p>',
             'description_short' => $this->faker->sentence(10),
             'public' => $this->faker->boolean,

@@ -29,14 +29,13 @@ class ProductSetService implements ProductSetServiceContract
     public function __construct(
         private SeoMetadataServiceContract $seoMetadataService,
         private MetadataServiceContract $metadataService,
-    ) {
-    }
+    ) {}
 
     public function authorize(ProductSet $set): void
     {
         if (
-            Gate::denies('product_sets.show_hidden') &&
-            !ProductSet::public()->where('id', $set->getKey())->exists()
+            Gate::denies('product_sets.show_hidden')
+            && !ProductSet::public()->where('id', $set->getKey())->exists()
         ) {
             throw new NotFoundHttpException();
         }
@@ -276,7 +275,7 @@ class ProductSetService implements ProductSetServiceContract
     public function flattenSetsTree(Collection $sets, string $relation): Collection
     {
         $subsets = $sets->map(
-            fn ($set) => $this->flattenSetsTree($set->$relation, $relation),
+            fn ($set) => $this->flattenSetsTree($set->{$relation}, $relation),
         );
 
         return $subsets->flatten()->concat($sets->toArray());
@@ -374,7 +373,7 @@ class ProductSetService implements ProductSetServiceContract
 
     private function prepareSlug(
         bool|Missing $isOverridden,
-        string|Missing|null $slugSuffix,
+        Missing|string|null $slugSuffix,
         string $parentSlug
     ): ?string {
         $slug = $slugSuffix instanceof Missing ? null : $slugSuffix;

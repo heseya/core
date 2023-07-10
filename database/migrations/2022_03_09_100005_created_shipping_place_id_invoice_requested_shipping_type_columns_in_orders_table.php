@@ -8,12 +8,10 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
+        Schema::table('orders', function (Blueprint $table): void {
             $table->string('shipping_place')->nullable();
             $table->boolean('invoice_requested')->nullable()->default(0);
             $table->string('shipping_type')->default('address');
@@ -28,12 +26,10 @@ return new class extends Migration {
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
+        Schema::table('orders', function (Blueprint $table): void {
             $table->dropColumn('shipping_place');
             $table->dropColumn('invoice_requested');
             $table->dropColumn('shipping_type');

@@ -14,12 +14,12 @@ class ProductSetSeeder extends Seeder
     public function run(): void
     {
         ProductSet::factory()->count(20)->create()->each(function ($set): void {
-            $rand = rand(0, 4);
+            $rand = mt_rand(0, 4);
             $this->seo($set);
             if ($rand === 0) {
                 $sets = ProductSet::factory([
                     'parent_id' => $set->getKey(),
-                ])->count(rand(1, 2))->create();
+                ])->count(mt_rand(1, 2))->create();
                 $sets->each(fn ($newSet) => $this->seo($newSet));
             } elseif ($rand === 1) {
                 $raw = ProductSet::factory()->raw();

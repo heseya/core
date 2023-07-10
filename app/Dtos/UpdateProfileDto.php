@@ -10,12 +10,12 @@ use Propaganistas\LaravelPhone\PhoneNumber;
 
 class UpdateProfileDto extends Dto implements InstantiateFromRequest
 {
-    private string|Missing $name;
+    private Missing|string $name;
     private UserPreferencesDto $preferences;
     private array $consents;
-    private string|null|Missing $birthday_date;
-    private string|null|Missing $phone_country;
-    private string|null|Missing $phone_number;
+    private Missing|string|null $birthday_date;
+    private Missing|string|null $phone_country;
+    private Missing|string|null $phone_number;
 
     public static function instantiateFromRequest(Request $request): self
     {

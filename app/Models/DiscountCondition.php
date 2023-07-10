@@ -30,8 +30,8 @@ class DiscountCondition extends Model
 
         if ($this->type->is(ConditionType::WEEKDAY_IN)) {
             $value['weekday'] = array_map(
-                fn (string $key) => boolval($key),
-                str_split(sprintf('%07d', decbin($value['weekday'])))
+                fn (string $key) => (bool) $key,
+                mb_str_split(sprintf('%07d', decbin($value['weekday'])))
             );
         }
 

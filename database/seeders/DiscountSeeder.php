@@ -18,7 +18,7 @@ class DiscountSeeder extends Seeder
      */
     public function run(): void
     {
-        $amount = rand(10, 15);
+        $amount = mt_rand(10, 15);
         $discounts = Discount::factory()->count($amount)->create();
         $discounts = $discounts->merge(Discount::factory(['code' => null])->count(25 - $amount)->create());
 

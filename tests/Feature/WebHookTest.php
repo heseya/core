@@ -60,10 +60,10 @@ class WebHookTest extends TestCase
      */
     public function testIndex($user): void
     {
-        $this->$user->givePermissionTo('webhooks.show');
+        $this->{$user}->givePermissionTo('webhooks.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/webhooks')
             ->assertOk()
             ->assertJsonStructure(['data' => [
@@ -81,16 +81,16 @@ class WebHookTest extends TestCase
      */
     public function testIndexSearch($user): void
     {
-        $this->$user->givePermissionTo('webhooks.show');
+        $this->{$user}->givePermissionTo('webhooks.show');
 
         $webHook = WebHook::factory()->create([
             'name' => 'test webhook',
-            'creator_id' => $this->$user->getKey(),
-            'model_type' => $this->$user::class,
+            'creator_id' => $this->{$user}->getKey(),
+            'model_type' => $this->{$user}::class,
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/webhooks', [
                 'search' => 'test webhook',
             ])
@@ -104,16 +104,16 @@ class WebHookTest extends TestCase
      */
     public function testIndexSearchByIds($user): void
     {
-        $this->$user->givePermissionTo('webhooks.show');
+        $this->{$user}->givePermissionTo('webhooks.show');
 
         WebHook::factory()->create([
             'name' => 'test webhook',
-            'creator_id' => $this->$user->getKey(),
-            'model_type' => $this->$user::class,
+            'creator_id' => $this->{$user}->getKey(),
+            'model_type' => $this->{$user}::class,
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/webhooks', [
                 'ids' => [
                     $this->webHook->getKey(),
@@ -135,14 +135,14 @@ class WebHookTest extends TestCase
      */
     public function testCreate($user): void
     {
-        $this->$user->givePermissionTo(
+        $this->{$user}->givePermissionTo(
             'webhooks.add',
             'products.show',
             'products.show_details',
             'products.show_hidden',
         );
 
-        $response = $this->actingAs($this->$user)->json('POST', '/webhooks', [
+        $response = $this->actingAs($this->{$user})->json('POST', '/webhooks', [
             'name' => 'WebHook test',
             'url' => 'https://www.www.www',
             'secret' => 'secret',
@@ -176,11 +176,11 @@ class WebHookTest extends TestCase
             'secret' => $webHook->secret,
             'with_issuer' => $webHook->with_issuer,
             'with_hidden' => $webHook->with_hidden,
-            'creator_id' => $this->$user->getKey(),
-            'model_type' => $this->$user::class,
+            'creator_id' => $this->{$user}->getKey(),
+            'model_type' => $this->{$user}::class,
         ]);
 
-        $this->assertTrue($this->$user->webhooks->isNotEmpty());
+        $this->assertTrue($this->{$user}->webhooks->isNotEmpty());
     }
 
     /**
@@ -188,17 +188,17 @@ class WebHookTest extends TestCase
      */
     public function testCreateNoPermissionToEvent($user): void
     {
-        $this->$user->givePermissionTo('webhooks.add');
+        $this->{$user}->givePermissionTo('webhooks.add');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'OrderCreated',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)->json('POST', '/webhooks', [
+        $response = $this->actingAs($this->{$user})->json('POST', '/webhooks', [
             'name' => $webHook->name,
             'url' => $webHook->url,
             'secret' => $webHook->secret,
@@ -215,17 +215,17 @@ class WebHookTest extends TestCase
      */
     public function testCreateEventNotExist($user): void
     {
-        $this->$user->givePermissionTo('webhooks.add');
+        $this->{$user}->givePermissionTo('webhooks.add');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'TestEvent',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)->json('POST', '/webhooks', [
+        $response = $this->actingAs($this->{$user})->json('POST', '/webhooks', [
             'name' => $webHook->name,
             'url' => $webHook->url,
             'secret' => $webHook->secret,
@@ -242,9 +242,9 @@ class WebHookTest extends TestCase
      */
     public function testCreateSecureEventNoSecret($user): void
     {
-        $this->$user->givePermissionTo('webhooks.add');
+        $this->{$user}->givePermissionTo('webhooks.add');
 
-        $response = $this->actingAs($this->$user)->json('POST', '/webhooks', [
+        $response = $this->actingAs($this->{$user})->json('POST', '/webhooks', [
             'name' => 'webhook',
             'url' => 'https://example.com',
             'events' => [
@@ -262,9 +262,9 @@ class WebHookTest extends TestCase
      */
     public function testCreateSecureEventNoSecureUrl($user): void
     {
-        $this->$user->givePermissionTo('webhooks.add');
+        $this->{$user}->givePermissionTo('webhooks.add');
 
-        $response = $this->actingAs($this->$user)->json('POST', '/webhooks', [
+        $response = $this->actingAs($this->{$user})->json('POST', '/webhooks', [
             'name' => 'webhook',
             'url' => 'http://example.com',
             'events' => [
@@ -289,9 +289,9 @@ class WebHookTest extends TestCase
      */
     public function testUpdate($user): void
     {
-        $this->$user->givePermissionTo('webhooks.edit', 'products.show', 'products.show_details');
+        $this->{$user}->givePermissionTo('webhooks.edit', 'products.show', 'products.show_details');
 
-        $webHook = WebHook::factory()->for($this->$user, 'hasWebHooks')->create([
+        $webHook = WebHook::factory()->for($this->{$user}, 'hasWebHooks')->create([
             'events' => [
                 'OrderCreated',
             ],
@@ -299,7 +299,7 @@ class WebHookTest extends TestCase
             'with_hidden' => true,
         ]);
 
-        $response = $this->actingAs($this->$user)->json('PATCH', '/webhooks/id:' . $webHook->getKey(), [
+        $response = $this->actingAs($this->{$user})->json('PATCH', '/webhooks/id:' . $webHook->getKey(), [
             'name' => 'Update test',
             'events' => [
                 'ProductCreated',
@@ -329,8 +329,8 @@ class WebHookTest extends TestCase
             'name' => 'Update test',
             'url' => $webHook->url,
             'secret' => $webHook->secret,
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => $webHook->with_issuer,
             'with_hidden' => false,
         ]);
@@ -341,17 +341,17 @@ class WebHookTest extends TestCase
      */
     public function testUpdateNoPermissionToEvent($user): void
     {
-        $this->$user->givePermissionTo('webhooks.edit');
+        $this->{$user}->givePermissionTo('webhooks.edit');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'OrderCreated',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)->json('PATCH', '/webhooks/id:' . $webHook->getKey(), [
+        $response = $this->actingAs($this->{$user})->json('PATCH', '/webhooks/id:' . $webHook->getKey(), [
             'name' => $webHook->name,
             'url' => $webHook->url,
             'secret' => $webHook->secret,
@@ -426,19 +426,19 @@ class WebHookTest extends TestCase
      */
     public function testDelete($user): void
     {
-        $this->$user->givePermissionTo('webhooks.remove');
+        $this->{$user}->givePermissionTo('webhooks.remove');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'OrderCreated',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
 
-        $response = $this->actingAs($this->$user)->json('DELETE', '/webhooks/id:' . $webHook->getKey());
+        $response = $this->actingAs($this->{$user})->json('DELETE', '/webhooks/id:' . $webHook->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($webHook);
     }
@@ -494,9 +494,9 @@ class WebHookTest extends TestCase
      */
     public function testShow($user): void
     {
-        $this->$user->givePermissionTo('webhooks.show_details');
+        $this->{$user}->givePermissionTo('webhooks.show_details');
 
-        $response = $this->actingAs($this->$user)->json('GET', '/webhooks/id:' . $this->webHook->getKey());
+        $response = $this->actingAs($this->{$user})->json('GET', '/webhooks/id:' . $this->webHook->getKey());
         $response
             ->assertOk()
             ->assertJsonFragment($this->expected);
@@ -507,15 +507,15 @@ class WebHookTest extends TestCase
      */
     public function testShowWrongId($user): void
     {
-        $this->$user->givePermissionTo('webhooks.show_details');
+        $this->{$user}->givePermissionTo('webhooks.show_details');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/webhooks/id:its-not-uuid')
             ->assertNotFound();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/webhooks/id:' . $this->webHook->getKey() . $this->webHook->getKey())
             ->assertNotFound();
     }
@@ -525,7 +525,7 @@ class WebHookTest extends TestCase
      */
     public function testWebHookHasApiUrl($user): void
     {
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         $item = Item::factory()->create();
 
@@ -543,7 +543,7 @@ class WebHookTest extends TestCase
             'quantity' => 1200000.50,
         ];
 
-        $this->actingAs($this->$user)->postJson(
+        $this->actingAs($this->{$user})->postJson(
             "/items/id:{$item->getKey()}/deposits",
             $deposit,
         );
@@ -554,8 +554,6 @@ class WebHookTest extends TestCase
         $listener = new WebHookEventListener();
         $listener->handle($event);
 
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) {
-            return $job->payload['api_url'] === Config::get('app.url');
-        });
+        Bus::assertDispatched(CallWebhookJob::class, fn ($job) => $job->payload['api_url'] === Config::get('app.url'));
     }
 }

@@ -47,19 +47,19 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  *
  * @mixin IdeHelperProduct
  */
-class Product extends Model implements AuditableContract, Explored, SortableContract, SearchableFields
+class Product extends Model implements AuditableContract, Explored, SearchableFields, SortableContract
 {
-    use HasFactory;
-    use SoftDeletes;
-    use Searchable;
-    use Sortable;
     use Auditable;
-    use HasSeoMetadata;
-    use HasMetadata;
     use HasCriteria;
     use HasDiscountConditions;
     use HasDiscounts;
+    use HasFactory;
     use HasMediaAttachments;
+    use HasMetadata;
+    use HasSeoMetadata;
+    use Searchable;
+    use SoftDeletes;
+    use Sortable;
 
     protected $fillable = [
         'id',
@@ -295,15 +295,11 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         );
 
         $salesBlockList = $salesWithBlockList->filter(function ($sale): bool {
-            if ($sale->products->contains(function ($value): bool {
-                return $value->getKey() === $this->getKey();
-            })) {
+            if ($sale->products->contains(fn ($value): bool => $value->getKey() === $this->getKey())) {
                 return false;
             }
             foreach ($sale->productSets as $set) {
-                if ($set->allProductsIds()->contains(function ($value): bool {
-                    return $value === $this->getKey();
-                })) {
+                if ($set->allProductsIds()->contains(fn ($value): bool => $value === $this->getKey())) {
                     return false;
                 }
             }

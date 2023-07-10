@@ -8,15 +8,12 @@ use Illuminate\Support\Carbon;
 
 class ShippingDate implements Rule
 {
-    public function __construct(private Item $item)
-    {
-    }
+    public function __construct(private Item $item) {}
 
     /**
      * Determine if the validation rule passes.
      *
      * @param string $attribute
-     * @param mixed $value
      */
     public function passes($attribute, $value): bool
     {

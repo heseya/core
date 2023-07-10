@@ -24,8 +24,7 @@ class ProviderController extends Controller
 {
     public function __construct(
         private ProviderServiceContract $providerService,
-    ) {
-    }
+    ) {}
 
     public function getProvidersList(AuthProviderIndexRequest $request): JsonResource
     {

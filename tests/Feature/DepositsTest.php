@@ -50,9 +50,9 @@ class DepositsTest extends TestCase
      */
     public function testIndex($user): void
     {
-        $this->$user->givePermissionTo('deposits.show');
+        $this->{$user}->givePermissionTo('deposits.show');
 
-        $response = $this->actingAs($this->$user)->getJson('/deposits');
+        $response = $this->actingAs($this->{$user})->getJson('/deposits');
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -68,7 +68,7 @@ class DepositsTest extends TestCase
      */
     public function testIndexSearchBySKU($user): void
     {
-        $this->$user->givePermissionTo('deposits.show');
+        $this->{$user}->givePermissionTo('deposits.show');
 
         $item1 = Item::factory()->create();
         Deposit::factory()->count(5)->create(['item_id' => $item1->getKey()]);
@@ -77,7 +77,7 @@ class DepositsTest extends TestCase
         Deposit::factory()->count(5)->create(['item_id' => $item2->getKey()]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/deposits', ['sku' => $item1->sku])
             ->assertOk()
             ->assertJsonCount(5, 'data')
@@ -90,7 +90,7 @@ class DepositsTest extends TestCase
      */
     public function testIndexSearchByIds($user): void
     {
-        $this->$user->givePermissionTo('deposits.show');
+        $this->{$user}->givePermissionTo('deposits.show');
 
         $item1 = Item::factory()->create();
         Deposit::factory()->count(4)->create(['item_id' => $item1->getKey()]);
@@ -98,7 +98,7 @@ class DepositsTest extends TestCase
         $deposit = Deposit::factory()->create(['item_id' => $item1->getKey()]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/deposits', [
                 'ids' => [
                     $deposit->getKey(),
@@ -113,13 +113,13 @@ class DepositsTest extends TestCase
      */
     public function testIndexSearch($user): void
     {
-        $this->$user->givePermissionTo('deposits.show');
+        $this->{$user}->givePermissionTo('deposits.show');
 
         $item1 = Item::factory()->create();
         Deposit::factory()->count(5)->create(['item_id' => $item1->getKey()]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/deposits', ['search' => $item1->name])
             ->assertOk()
             ->assertJsonCount(5, 'data')
@@ -155,7 +155,7 @@ class DepositsTest extends TestCase
      */
     public function testViewWrongId($user): void
     {
-        $this->$user->givePermissionTo('deposits.show');
+        $this->{$user}->givePermissionTo('deposits.show');
 
         $this
             ->getJson('/items/id:its-not-id/deposits')
@@ -171,9 +171,9 @@ class DepositsTest extends TestCase
      */
     public function testView($user): void
     {
-        $this->$user->givePermissionTo('deposits.show');
+        $this->{$user}->givePermissionTo('deposits.show');
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/items/id:' . $this->item->getKey() . '/deposits');
         $response
             ->assertOk()
@@ -208,7 +208,7 @@ class DepositsTest extends TestCase
      */
     public function testCreate($user): void
     {
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         Event::fake(ItemUpdatedQuantity::class);
 
@@ -219,7 +219,7 @@ class DepositsTest extends TestCase
             'shipping_time' => 0,
         ];
 
-        $response = $this->actingAs($this->$user)->postJson(
+        $response = $this->actingAs($this->{$user})->postJson(
             "/items/id:{$this->item->getKey()}/deposits",
             $deposit,
         );
@@ -247,7 +247,7 @@ class DepositsTest extends TestCase
      */
     public function testCreateWithWebHook($user): void
     {
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         $webHook = WebHook::factory()->create([
             'events' => [
@@ -266,7 +266,7 @@ class DepositsTest extends TestCase
             'shipping_time' => 0,
         ];
 
-        $response = $this->actingAs($this->$user)->postJson(
+        $response = $this->actingAs($this->{$user})->postJson(
             "/items/id:{$this->item->getKey()}/deposits",
             $deposit,
         );
@@ -307,7 +307,7 @@ class DepositsTest extends TestCase
      */
     public function testCreateValidation($user): void
     {
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         Event::fake(ItemUpdatedQuantity::class);
 
@@ -315,7 +315,7 @@ class DepositsTest extends TestCase
             'quantity' => 'test',
         ];
 
-        $response = $this->actingAs($this->$user)->postJson(
+        $response = $this->actingAs($this->{$user})->postJson(
             "/items/id:{$this->item->getKey()}/deposits",
             $deposit,
         );
@@ -330,7 +330,7 @@ class DepositsTest extends TestCase
      */
     public function testCreateValidation2($user): void
     {
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         Event::fake(ItemUpdatedQuantity::class);
 
@@ -338,7 +338,7 @@ class DepositsTest extends TestCase
             'quantity' => 1000000000000,
         ];
 
-        $response = $this->actingAs($this->$user)->postJson(
+        $response = $this->actingAs($this->{$user})->postJson(
             "/items/id:{$this->item->getKey()}/deposits",
             $deposit,
         );
@@ -353,7 +353,7 @@ class DepositsTest extends TestCase
      */
     public function testCreateValidationInvalidBothShippingTimeAndDate($user): void
     {
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         Event::fake(ItemUpdatedQuantity::class);
 
@@ -363,7 +363,7 @@ class DepositsTest extends TestCase
             'shipping_date' => '1999-02-01',
         ];
 
-        $response = $this->actingAs($this->$user)->postJson(
+        $response = $this->actingAs($this->{$user})->postJson(
             "/items/id:{$this->item->getKey()}/deposits",
             $deposit,
         );
@@ -378,7 +378,7 @@ class DepositsTest extends TestCase
      */
     public function testCreateValidationShippingDateGraterThenItemUnlimitedShippingDate($user): void
     {
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         Event::fake(ItemUpdatedQuantity::class);
         $date = Carbon::tomorrow()->startOfDay();
@@ -390,7 +390,7 @@ class DepositsTest extends TestCase
             'shipping_date' => $date->addDays(4)->toDateTimeString(),
         ];
 
-        $response = $this->actingAs($this->$user)->postJson(
+        $response = $this->actingAs($this->{$user})->postJson(
             "/items/id:{$this->item->getKey()}/deposits",
             $deposit,
         );
@@ -405,7 +405,7 @@ class DepositsTest extends TestCase
      */
     public function testCreateValidationShippingDateEqualToItemUnlimitedShippingDate($user): void
     {
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         Event::fake(ItemUpdatedQuantity::class);
         $date = Carbon::tomorrow()->startOfDay();
@@ -419,7 +419,7 @@ class DepositsTest extends TestCase
             'from_unlimited' => false,
         ];
 
-        $response = $this->actingAs($this->$user)->postJson(
+        $response = $this->actingAs($this->{$user})->postJson(
             "/items/id:{$this->item->getKey()}/deposits",
             $deposit,
         );
@@ -435,7 +435,7 @@ class DepositsTest extends TestCase
      */
     public function testCreateShippingDateGraterThenItemUnlimitedShippingDateOlderThenNow($user): void
     {
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         Event::fake(ItemUpdatedQuantity::class);
         $date = Carbon::now()->startOfDay();
@@ -447,7 +447,7 @@ class DepositsTest extends TestCase
             'shipping_date' => $date->addDays(8)->toDateTimeString(),
         ];
 
-        $response = $this->actingAs($this->$user)->postJson(
+        $response = $this->actingAs($this->{$user})->postJson(
             "/items/id:{$this->item->getKey()}/deposits",
             $deposit,
         );
@@ -463,7 +463,7 @@ class DepositsTest extends TestCase
      */
     public function testCreateValidationShippingTimeGraterThenItemUnlimitedShippingTime($user): void
     {
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         Event::fake(ItemUpdatedQuantity::class);
         $time = 5;
@@ -475,7 +475,7 @@ class DepositsTest extends TestCase
             'shipping_time' => $time + 5,
         ];
 
-        $response = $this->actingAs($this->$user)->postJson(
+        $response = $this->actingAs($this->{$user})->postJson(
             "/items/id:{$this->item->getKey()}/deposits",
             $deposit,
         );
@@ -490,7 +490,7 @@ class DepositsTest extends TestCase
      */
     public function testCreateWithShippingTime($user): void
     {
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         Event::fake(ItemUpdatedQuantity::class);
 
@@ -499,7 +499,7 @@ class DepositsTest extends TestCase
             'shipping_time' => 10,
         ];
 
-        $response = $this->actingAs($this->$user)->postJson(
+        $response = $this->actingAs($this->{$user})->postJson(
             "/items/id:{$this->item->getKey()}/deposits",
             $deposit,
         );
@@ -515,7 +515,7 @@ class DepositsTest extends TestCase
      */
     public function testCreateWithShippingDate($user): void
     {
-        $this->$user->givePermissionTo('deposits.add');
+        $this->{$user}->givePermissionTo('deposits.add');
 
         Event::fake(ItemUpdatedQuantity::class);
 
@@ -524,7 +524,7 @@ class DepositsTest extends TestCase
             'shipping_date' => '1999-02-01',
         ];
 
-        $response = $this->actingAs($this->$user)->postJson(
+        $response = $this->actingAs($this->{$user})->postJson(
             "/items/id:{$this->item->getKey()}/deposits",
             $deposit,
         );

@@ -10,13 +10,13 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface WishlistServiceContract
 {
-    public function index(User|App $user): LengthAwarePaginator;
+    public function index(App|User $user): LengthAwarePaginator;
 
-    public function show(User|App $user, Product $product): WishlistProduct|null;
+    public function show(App|User $user, Product $product): WishlistProduct|null;
 
-    public function storeWishlistProduct(User|App $user, string $id): WishlistProduct;
+    public function storeWishlistProduct(App|User $user, string $id): WishlistProduct;
 
-    public function destroy(User|App $user, Product $product): void;
+    public function destroy(App|User $user, Product $product): void;
 
-    public function destroyAll(User|App $user): void;
+    public function destroyAll(App|User $user): void;
 }

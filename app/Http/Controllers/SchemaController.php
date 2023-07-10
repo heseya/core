@@ -19,8 +19,7 @@ class SchemaController extends Controller
 {
     public function __construct(
         private SchemaCrudServiceContract $schemaService,
-    ) {
-    }
+    ) {}
 
     public function index(IndexSchemaRequest $request): JsonResource
     {

@@ -23,7 +23,7 @@ class SchemaFactory extends Factory
         return [
             'name' => $this->faker->word,
             'description' => $this->faker->sentence(10),
-            'hidden' => rand(0, 10) === 0,
+            'hidden' => mt_rand(0, 10) === 0,
             'required' => $this->faker->boolean,
             'max' => null,
             'min' => null,

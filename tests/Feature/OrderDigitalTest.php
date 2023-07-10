@@ -50,10 +50,10 @@ class OrderDigitalTest extends TestCase
      */
     public function testOrderOnlyDigitalProducts($user): void
     {
-        $this->$user->givePermissionTo(['orders.add']);
+        $this->{$user}->givePermissionTo(['orders.add']);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/orders', [
                 'email' => 'test@example.com',
                 'digital_shipping_method_id' => $this->digitalShippingMethod->getKey(),
@@ -80,10 +80,10 @@ class OrderDigitalTest extends TestCase
      */
     public function testOrderDigitalAndPhysicalProducts($user): void
     {
-        $this->$user->givePermissionTo(['orders.add']);
+        $this->{$user}->givePermissionTo(['orders.add']);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/orders', [
                 'email' => 'test@example.com',
                 'shipping_method_id' => $this->physicalShippingMethod->getKey(),
@@ -116,10 +116,10 @@ class OrderDigitalTest extends TestCase
      */
     public function testOrderDigitalMethodWithPhysicalProduct($user): void
     {
-        $this->$user->givePermissionTo(['orders.add']);
+        $this->{$user}->givePermissionTo(['orders.add']);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/orders', [
                 'email' => 'test@example.com',
                 'digital_shipping_method_id' => $this->digitalShippingMethod->getKey(),
@@ -144,10 +144,10 @@ class OrderDigitalTest extends TestCase
      */
     public function testOrderPhysicalMethodWithDigitalProduct($user): void
     {
-        $this->$user->givePermissionTo(['orders.add']);
+        $this->{$user}->givePermissionTo(['orders.add']);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/orders', [
                 'email' => 'test@example.com',
                 'shipping_method_id' => $this->physicalShippingMethod->getKey(),
@@ -173,10 +173,10 @@ class OrderDigitalTest extends TestCase
      */
     public function testOrderPhysicalProductWithBothMethodes($user): void
     {
-        $this->$user->givePermissionTo(['orders.add']);
+        $this->{$user}->givePermissionTo(['orders.add']);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/orders', [
                 'email' => 'test@example.com',
                 'shipping_method_id' => $this->physicalShippingMethod->getKey(),
@@ -203,10 +203,10 @@ class OrderDigitalTest extends TestCase
      */
     public function testOrderDigitalProductWithBothMethodes($user): void
     {
-        $this->$user->givePermissionTo(['orders.add']);
+        $this->{$user}->givePermissionTo(['orders.add']);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/orders', [
                 'email' => 'test@example.com',
                 'shipping_method_id' => $this->physicalShippingMethod->getKey(),

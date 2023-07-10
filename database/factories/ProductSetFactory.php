@@ -20,11 +20,11 @@ class ProductSetFactory extends Factory
      */
     public function definition(): array
     {
-        $name = $this->faker->words(rand(1, 4), true);
+        $name = $this->faker->words(mt_rand(1, 4), true);
 
         return [
             'name' => $name,
-            'slug' => Str::of($name)->slug() . '-' . rand(1, 99999),
+            'slug' => Str::of($name)->slug() . '-' . mt_rand(1, 99999),
             'public' => $this->faker->boolean,
             'public_parent' => true,
             'description_html' => '<p>' . $this->faker->sentence(10) . '</p>',

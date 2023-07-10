@@ -14,8 +14,7 @@ readonly class MediaAttachmentService implements MediaAttachmentServiceContract
 {
     public function __construct(
         private MediaServiceContract $mediaService,
-    ) {
-    }
+    ) {}
 
     public function addAttachment(Model $model, MediaAttachmentDto $dto, ?string $label = null): MediaAttachment
     {

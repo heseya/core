@@ -16,8 +16,7 @@ class FavouriteController extends Controller
 {
     public function __construct(
         private FavouriteServiceContract $favouriteService,
-    ) {
-    }
+    ) {}
 
     public function store(FavouriteProductSetStoreRequest $request): JsonResource
     {

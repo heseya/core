@@ -17,9 +17,8 @@ class MediaAttachmentDto extends Dto implements InstantiateFromRequest
         public readonly string $name,
         public readonly MediaAttachmentType $type,
         public readonly VisibilityType $visibility,
-        public readonly string|Missing $description = new Missing(),
-    ) {
-    }
+        public readonly Missing|string $description = new Missing(),
+    ) {}
 
     /**
      * @throws DtoException

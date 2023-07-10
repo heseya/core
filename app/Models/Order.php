@@ -36,13 +36,13 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Order extends Model implements AuditableContract, SortableContract
 {
-    use HasFactory;
-    use HasCriteria;
-    use Sortable;
-    use Notifiable;
     use Auditable;
+    use HasCriteria;
+    use HasFactory;
     use HasMetadata;
     use HasOrderDiscount;
+    use Notifiable;
+    use Sortable;
 
     protected $fillable = [
         'code',
@@ -153,10 +153,10 @@ class Order extends Model implements AuditableContract, SortableContract
             ?? $this->digitalShippingMethod?->paymentMethods->count()
             ?? 0;
 
-        return !$this->paid &&
-            $this->status !== null &&
-            !$this->status->cancel &&
-            $paymentMethodCount > 0;
+        return !$this->paid
+            && $this->status !== null
+            && !$this->status->cancel
+            && $paymentMethodCount > 0;
     }
 
     public function getShippingTypeAttribute(): string|null
@@ -229,7 +229,7 @@ class Order extends Model implements AuditableContract, SortableContract
     {
         do {
             $code = Str::upper(Str::random(6));
-        } while (Order::query()->where('code', $code)->exists());
+        } while (self::query()->where('code', $code)->exists());
 
         return $code;
     }
