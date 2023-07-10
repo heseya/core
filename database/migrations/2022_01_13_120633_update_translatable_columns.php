@@ -20,7 +20,7 @@ class UpdateTranslatableColumns extends Migration
      */
     public function up(): void
     {
-        $language = Language::where('default', true)->firstOrFail();
+        $language = Language::query()->where('default', true)->firstOrFail();
         $lang = $language->getKey();
 
         DbSchema::table('products', function (Blueprint $table): void {
@@ -110,7 +110,7 @@ class UpdateTranslatableColumns extends Migration
             $table->text('title')->nullable()->change();
             $table->text('description')->nullable()->change();
             $table->text('keywords')->nullable()->change();
-            $table->text('no_index')->change();
+            $table->text('no_index')->nullable()->change();
             $table->text('published')->nullable();
         });
 
