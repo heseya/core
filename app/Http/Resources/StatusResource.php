@@ -8,8 +8,8 @@ use Illuminate\Http\Request;
 
 class StatusResource extends Resource
 {
-    use MetadataResource;
     use GetAllTranslations;
+    use MetadataResource;
 
     public function base(Request $request): array
     {

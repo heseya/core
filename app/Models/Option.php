@@ -14,8 +14,9 @@ use Spatie\Translatable\HasTranslations;
  */
 class Option extends Model implements Translatable
 {
-    use HasFactory, HasTranslations;
+    use HasFactory;
     use HasMetadata;
+    use HasTranslations;
 
     protected $fillable = [
         'name',

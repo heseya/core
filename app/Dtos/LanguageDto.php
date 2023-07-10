@@ -9,8 +9,8 @@ use Heseya\Dto\Missing;
 
 class LanguageDto extends Dto
 {
-    private string|Missing $iso;
-    private string|Missing $name;
+    private Missing|string $iso;
+    private Missing|string $name;
     private bool|Missing $default;
     private bool|Missing $hidden;
 
@@ -34,12 +34,12 @@ class LanguageDto extends Dto
         return $this->name;
     }
 
-    public function getDefault(): Missing|bool
+    public function getDefault(): bool|Missing
     {
         return $this->default;
     }
 
-    public function getHidden(): Missing|bool
+    public function getHidden(): bool|Missing
     {
         return $this->hidden;
     }

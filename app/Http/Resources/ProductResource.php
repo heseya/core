@@ -2,11 +2,11 @@
 
 namespace App\Http\Resources;
 
-use App\Traits\GetAllTranslations;
 use App\Enums\VisibilityType;
 use App\Models\MediaAttachment;
 use App\Models\Product;
 use App\Models\ProductSet;
+use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -19,6 +19,7 @@ class ProductResource extends Resource
     use GetAllTranslations;
 
     use MetadataResource;
+
     public function base(Request $request): array
     {
         $data = [

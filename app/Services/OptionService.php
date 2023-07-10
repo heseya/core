@@ -17,6 +17,7 @@ class OptionService implements OptionServiceContract
         private MetadataServiceContract $metadataService,
         protected TranslationServiceContract $translationService,
     ) {}
+
     /**
      * @throws PublishingException
      */

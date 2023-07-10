@@ -530,9 +530,10 @@ class ProductSetUpdateTest extends TestCase
 
         $this->assertDatabaseHas('product_sets', $set + $parentId + [
             'slug' => 'test-edit',
+        ]);
         $this->assertDatabaseHas('seo_metadata', [
-           "title->{$this->lang}" => 'seo title',
-           "description->{$this->lang}" => 'seo description',
+            "title->{$this->lang}" => 'seo title',
+            "description->{$this->lang}" => 'seo description',
         ]);
 
         $this->assertTrue(!$newSet->attributes->contains($attrOne));

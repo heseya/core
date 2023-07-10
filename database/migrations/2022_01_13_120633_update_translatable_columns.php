@@ -18,12 +18,12 @@ class UpdateTranslatableColumns extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
         $language = Language::where('default', true)->firstOrFail();
         $lang = $language->getKey();
 
-        DbSchema::table('products', function (Blueprint $table) {
+        DbSchema::table('products', function (Blueprint $table): void {
             $table->text('name')->change();
             $table->text('description_html')->nullable()->change();
             $table->text('description_short')->nullable()->change();
@@ -31,7 +31,7 @@ class UpdateTranslatableColumns extends Migration
         });
 
         Product::chunk(100, fn ($products) => $products->each(
-            function (Product $product) use ($lang) {
+            function (Product $product) use ($lang): void {
                 $attr = $product->getAttributes();
                 $product
                     ->setAttribute('published', [$lang])
@@ -42,14 +42,14 @@ class UpdateTranslatableColumns extends Migration
             },
         ));
 
-        DbSchema::table('schemas', function (Blueprint $table) {
+        DbSchema::table('schemas', function (Blueprint $table): void {
             $table->text('name')->change();
             $table->text('description')->nullable()->change();
             $table->text('published')->nullable();
         });
 
         Schema::chunk(100, fn ($schemas) => $schemas->each(
-            function (Schema $schema) use ($lang) {
+            function (Schema $schema) use ($lang): void {
                 $attr = $schema->getAttributes();
                 $schema
                     ->setAttribute('published', [$lang])
@@ -59,12 +59,12 @@ class UpdateTranslatableColumns extends Migration
             },
         ));
 
-        DbSchema::table('options', function (Blueprint $table) {
+        DbSchema::table('options', function (Blueprint $table): void {
             $table->text('name')->change();
         });
 
         Option::chunk(100, fn ($options) => $options->each(
-            function (Option $option) use ($lang) {
+            function (Option $option) use ($lang): void {
                 $attr = $option->getAttributes();
                 $option
                     ->setTranslation('name', $lang, $attr['name'])
@@ -72,14 +72,14 @@ class UpdateTranslatableColumns extends Migration
             },
         ));
 
-        DbSchema::table('pages', function (Blueprint $table) {
+        DbSchema::table('pages', function (Blueprint $table): void {
             $table->text('name')->change();
             $table->text('content_html')->nullable()->change();
             $table->text('published')->nullable();
         });
 
         Page::chunk(100, fn ($pages) => $pages->each(
-            function (Page $page) use ($lang) {
+            function (Page $page) use ($lang): void {
                 $attr = $page->getAttributes();
                 $page
                     ->setAttribute('published', [$lang])
@@ -89,14 +89,14 @@ class UpdateTranslatableColumns extends Migration
             },
         ));
 
-        DbSchema::table('statuses', function (Blueprint $table) {
+        DbSchema::table('statuses', function (Blueprint $table): void {
             $table->text('name')->change();
             $table->text('description')->nullable()->change();
             $table->text('published')->nullable();
         });
 
         Status::chunk(100, fn ($statuses) => $statuses->each(
-            function (Status $status) use ($lang) {
+            function (Status $status) use ($lang): void {
                 $attr = $status->getAttributes();
                 $status
                     ->setAttribute('published', [$lang])
@@ -106,7 +106,7 @@ class UpdateTranslatableColumns extends Migration
             },
         ));
 
-        DbSchema::table('seo_metadata', function (Blueprint $table) {
+        DbSchema::table('seo_metadata', function (Blueprint $table): void {
             $table->text('title')->nullable()->change();
             $table->text('description')->nullable()->change();
             $table->text('keywords')->nullable()->change();
@@ -115,12 +115,12 @@ class UpdateTranslatableColumns extends Migration
         });
 
         SeoMetadata::chunk(100, fn ($seo) => $seo->each(
-            function (SeoMetadata $seo) use ($lang) {
+            function (SeoMetadata $seo) use ($lang): void {
                 $attr = $seo->getAttributes();
 
                 $seo
                     ->setRawAttributes([
-                        'no_index' => json_encode([$lang => (boolean) $attr['no_index']]),
+                        'no_index' => json_encode([$lang => (bool) $attr['no_index']]),
                     ])
                     ->setAttribute('published', [$lang])
                     ->setTranslation('title', $lang, $attr['title'])
@@ -136,29 +136,29 @@ class UpdateTranslatableColumns extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
-        DbSchema::table('products', function (Blueprint $table) {
+        DbSchema::table('products', function (Blueprint $table): void {
             $table->dropColumn('published');
         });
 
-        DbSchema::table('schemas', function (Blueprint $table) {
+        DbSchema::table('schemas', function (Blueprint $table): void {
             $table->dropColumn('published');
         });
 
-        DbSchema::table('options', function (Blueprint $table) {
+        DbSchema::table('options', function (Blueprint $table): void {
             $table->dropColumn('published');
         });
 
-        DbSchema::table('pages', function (Blueprint $table) {
+        DbSchema::table('pages', function (Blueprint $table): void {
             $table->dropColumn('published');
         });
 
-        DbSchema::table('statuses', function (Blueprint $table) {
+        DbSchema::table('statuses', function (Blueprint $table): void {
             $table->dropColumn('published');
         });
 
-        DbSchema::table('seo_metadata', function (Blueprint $table) {
+        DbSchema::table('seo_metadata', function (Blueprint $table): void {
             $table->dropColumn('published');
         });
     }

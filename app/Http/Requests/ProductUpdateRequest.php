@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\Translations;
 use App\Models\Product;
+use App\Rules\Translations;
 use Illuminate\Validation\Rule;
 
 class ProductUpdateRequest extends ProductCreateRequest

@@ -10,10 +10,10 @@ use App\Enums\SchemaType;
 use App\Models\Contracts\SortableContract;
 use App\Models\Interfaces\Translatable;
 use App\Rules\OptionAvailable;
-use App\Traits\HasMetadata;
-use App\Traits\Sortable;
 use App\SearchTypes\TranslatedLike;
 use App\SortColumnTypes\TranslatedColumn;
+use App\Traits\HasMetadata;
+use App\Traits\Sortable;
 use BenSampo\Enum\Exceptions\InvalidEnumKeyException;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -31,11 +31,13 @@ use Spatie\Translatable\HasTranslations;
  *
  * @mixin IdeHelperSchema
  */
-class Schema extends Model implements Translatable, SortableContract
+class Schema extends Model implements SortableContract, Translatable
 {
-    use HasFactory, Sortable, HasTranslations;
-    use HasMetadata;
     use HasCriteria;
+    use HasFactory;
+    use HasMetadata;
+    use HasTranslations;
+    use Sortable;
 
     protected $fillable = [
         'type',

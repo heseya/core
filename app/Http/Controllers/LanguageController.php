@@ -18,8 +18,7 @@ class LanguageController extends Controller
 {
     public function __construct(
         private LanguageServiceContract $languageService,
-    ) {
-    }
+    ) {}
 
     public function index(): JsonResource
     {

@@ -52,12 +52,13 @@ final class StatusTest extends TestCase
             ->assertJsonCount(4, 'data') // domyślne statusy z migracji + ten utworzony teraz
             ->assertJsonFragment([$this->expected]);
     }
+
     /**
      * @dataProvider authProvider
      */
     public function testIndexWithTranslationsFlag(string $user): void
     {
-        $this->$user->givePermissionTo('statuses.show');
+        $this->{$user}->givePermissionTo('statuses.show');
     }
 
     /**
@@ -100,9 +101,9 @@ final class StatusTest extends TestCase
         $response
             ->assertCreated()
             ->assertJson(['data' => $status + [
-                    'name' => 'Test Status',
-                    'description' => 'To jest status testowy.',
-                ]]);
+                'name' => 'Test Status',
+                'description' => 'To jest status testowy.',
+            ]]);
 
         $this->assertDatabaseHas('statuses', [
             "name->{$this->lang}" => 'Test Status',
@@ -240,10 +241,10 @@ final class StatusTest extends TestCase
             ]]);
 
         $this->assertDatabaseHas('statuses', [
-                "name->{$this->lang}" => 'Test Status 2',
-                'color' => '444444',
-                "description->{$this->lang}" => 'Testowy opis testowego statusu 2.',
-            ] + ['id' => $this->status_model->getKey()]);
+            "name->{$this->lang}" => 'Test Status 2',
+            'color' => '444444',
+            "description->{$this->lang}" => 'Testowy opis testowego statusu 2.',
+        ] + ['id' => $this->status_model->getKey()]);
     }
 
     /**

@@ -50,5 +50,5 @@ return [
         EventType::LANGUAGE_CREATED => 'Zdarzenie wyzwalane po utworzeniu nowego języka',
         EventType::LANGUAGE_UPDATED => 'Zdarzenie wyzwalane po aktualizacji języka',
         EventType::LANGUAGE_DELETED => 'Zdarzenie wyzwalane po usunięciu języka',
-    ]
+    ],
 ];

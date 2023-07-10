@@ -16,8 +16,7 @@ trait Metadata
         array|Optional $metadata = new Optional(),
         array|Optional $metadata_private = new Optional(),
         array|Optional $metadata_personal = new Optional(),
-    ): void
-    {
+    ): void {
         $this->metadata = new Collection();
 
         if (is_array($metadata)) {

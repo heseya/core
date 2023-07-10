@@ -26,7 +26,7 @@ use Heseya\Dto\Missing;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-readonly final class ProductService implements ProductServiceContract
+final readonly class ProductService implements ProductServiceContract
 {
     public function __construct(
         private MediaServiceContract $mediaService,

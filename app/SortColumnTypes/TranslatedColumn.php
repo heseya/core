@@ -2,10 +2,9 @@
 
 namespace App\SortColumnTypes;
 
-use Heseya\Sortable\SortableColumn;
 use Illuminate\Support\Facades\App;
 
-class TranslatedColumn implements SortableColumn
+final class TranslatedColumn implements SortableColumn
 {
     public static function getColumnName(string $fieldName): string
     {

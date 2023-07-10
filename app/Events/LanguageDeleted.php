@@ -2,6 +2,4 @@
 
 namespace App\Events;
 
-class LanguageDeleted extends LanguageEvent
-{
-}
+class LanguageDeleted extends LanguageEvent {}

@@ -16,9 +16,7 @@ class TranslationService implements TranslationServiceContract
         foreach ($model->published as $lang) {
             foreach ($requiredKeys as $key) {
                 if (!$model->hasTranslation($key, $lang)) {
-                    throw new PublishingException(
-                        "Model doesn't have all required translations to be published in {$lang}",
-                    );
+                    throw new PublishingException("Model doesn't have all required translations to be published in {$lang}");
                 }
             }
         }
@@ -38,9 +36,7 @@ class TranslationService implements TranslationServiceContract
                             continue;
                         }
 
-                        throw new PublishingException(
-                            "Relation {$relation} doesn't have all required translations to be published in {$lang}",
-                        );
+                        throw new PublishingException("Relation {$relation} doesn't have all required translations to be published in {$lang}");
                     }
                 }
             }

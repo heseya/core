@@ -48,11 +48,11 @@ class SchemaTest extends TestCase
      */
     public function testIndexProductsWithTranslationsFlag($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
         Schema::factory()->count(5)->create();
 
-        $response = $this->actingAs($this->$user)->getJson('/schemas?translations');
+        $response = $this->actingAs($this->{$user})->getJson('/schemas?translations');
 
         $response
             ->assertOk()

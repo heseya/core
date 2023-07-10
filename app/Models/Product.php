@@ -2,10 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Interfaces\Translatable;
-use App\SearchTypes\TranslatedLike;
-use App\Criteria\WhereBelongsToManyById;
-use App\SortColumnTypes\TranslatedColumn;
 use App\Criteria\LessOrEquals;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
@@ -23,7 +19,10 @@ use App\Criteria\WhereNotId;
 use App\Criteria\WhereNotSlug;
 use App\Enums\DiscountTargetType;
 use App\Models\Contracts\SortableContract;
+use App\Models\Interfaces\Translatable;
+use App\SearchTypes\TranslatedLike;
 use App\Services\Contracts\ProductSearchServiceContract;
+use App\SortColumnTypes\TranslatedColumn;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasDiscounts;
 use App\Traits\HasMediaAttachments;
@@ -52,19 +51,25 @@ use Spatie\Translatable\HasTranslations;
  *
  * @mixin IdeHelperProduct
  */
-class Product extends Model implements AuditableContract, Translatable, Explored, SearchableFields, SortableContract
+class Product extends Model implements AuditableContract, Explored, SearchableFields, SortableContract, Translatable
 {
-    use HasFactory, SoftDeletes, Searchable, Sortable, Auditable, HasSeoMetadata, HasTranslations;
+    use Auditable;
     use Auditable;
     use HasCriteria;
     use HasDiscountConditions;
     use HasDiscounts;
     use HasFactory;
+    use HasFactory;
     use HasMediaAttachments;
     use HasMetadata;
     use HasSeoMetadata;
+    use HasSeoMetadata;
+    use HasTranslations;
+    use Searchable;
     use Searchable;
     use SoftDeletes;
+    use SoftDeletes;
+    use Sortable;
     use Sortable;
 
     protected $fillable = [
@@ -100,10 +105,7 @@ class Product extends Model implements AuditableContract, Translatable, Explored
     ];
 
     protected $auditInclude = [
-        'name',
         'slug',
-        'description_html',
-        'description_short',
         'public',
         'quantity_step',
         'price_min',

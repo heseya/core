@@ -23,8 +23,7 @@ class SeoMetadataService implements SeoMetadataServiceContract
 {
     public function __construct(
         protected TranslationServiceContract $translationService,
-    ) {
-    }
+    ) {}
 
     public function show(): SeoMetadata
     {
@@ -86,8 +85,7 @@ class SeoMetadataService implements SeoMetadataServiceContract
      */
     public function createOrUpdateFor(Model $model, SeoMetadataDto $dto): void
     {
-        /** @var SeoMetadata $seo */
-        $seo = SeoMetadata::make($dto->toArray());
+        $seo = new SeoMetadata($dto->toArray());
 
         $seo->setAttribute('no_index', '{}');
 
@@ -106,8 +104,6 @@ class SeoMetadataService implements SeoMetadataServiceContract
         $this->translationService->checkPublished($seo, []);
 
         $seo->save();
-
-        return $seo;
     }
 
     public function update(SeoMetadataDto $dto, SeoMetadata $seoMetadata): SeoMetadata

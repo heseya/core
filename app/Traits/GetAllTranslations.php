@@ -7,9 +7,8 @@ use Illuminate\Support\Facades\Gate;
 trait GetAllTranslations
 {
     /**
-     * Returns all available translations for user
+     * Returns all available translations for user.
      *
-     * @return array
      * */
     protected function getAllTranslations(?string $permissions = null): array
     {

@@ -9,8 +9,8 @@ use Illuminate\Support\Str;
 
 class SchemaResource extends Resource
 {
-    use MetadataResource;
     use GetAllTranslations;
+    use MetadataResource;
 
     public function base(Request $request): array
     {

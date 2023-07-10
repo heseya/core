@@ -8,9 +8,9 @@ use Illuminate\Http\Request;
 
 class OptionResource extends Resource
 {
-    use MetadataResource;
-
     use GetAllTranslations;
+
+    use MetadataResource;
 
     public function base(Request $request): array
     {

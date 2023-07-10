@@ -50,5 +50,5 @@ return [
         EventType::LANGUAGE_CREATED => 'Event triggered when new language are created',
         EventType::LANGUAGE_UPDATED => 'Event triggered after language is updated',
         EventType::LANGUAGE_DELETED => 'Event triggered after language is deleted',
-    ]
+    ],
 ];

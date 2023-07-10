@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use App\Models\Interfaces\Translatable;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\WhereInIds;
+use App\Models\Interfaces\Translatable;
 use App\Traits\HasMetadata;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,9 +19,11 @@ use Spatie\Translatable\HasTranslations;
  */
 class Status extends Model implements AuditableContract, Translatable
 {
-    use HasFactory, Auditable, HasTranslations;
-    use HasMetadata;
+    use Auditable;
     use HasCriteria;
+    use HasFactory;
+    use HasMetadata;
+    use HasTranslations;
 
     protected $fillable = [
         'name',

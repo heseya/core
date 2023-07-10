@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\Language;
 use App\Enums\AttributeType;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
@@ -13,12 +12,11 @@ use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductUpdated;
-use App\Listeners\WebHookEventListener;
-use App\Models\Language;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
+use App\Models\Language;
 use App\Models\Media;
 use App\Models\Product;
 use App\Models\ProductAttribute;
@@ -217,7 +215,7 @@ class ProductTest extends TestCase
      */
     public function testIndexWithTranslationsFlag($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show');
 
         $product = Product::factory()->create([
             'public' => true,
@@ -228,7 +226,7 @@ class ProductTest extends TestCase
         ]);
         $product->sets()->sync([$set->getKey()]);
 
-        $response = $this->actingAs($this->$user)->getJson('/products?limit=100&translations');
+        $response = $this->actingAs($this->{$user})->getJson('/products?limit=100&translations');
 
         $response
             ->assertOk()
@@ -287,7 +285,7 @@ class ProductTest extends TestCase
      */
     public function testShowWithTranslationsFlagHidden($user): void
     {
-        $this->$user->givePermissionTo(['products.show_details', 'products.show_hidden']);
+        $this->{$user}->givePermissionTo(['products.show_details', 'products.show_hidden']);
 
         $product = Product::factory()->create([
             'name' => 'Test product with translations',
@@ -302,10 +300,10 @@ class ProductTest extends TestCase
         ]);
 
         $product->setLocale($language->getKey())->update([
-            'name' => 'Test FR translation'
+            'name' => 'Test FR translation',
         ]);
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/products/' . $product->slug . '?translations');
 
         $response
@@ -1269,7 +1267,6 @@ class ProductTest extends TestCase
                 ],
             ],
             'published' => [$this->lang],
-
         ]);
 
         $response
@@ -1344,7 +1341,6 @@ class ProductTest extends TestCase
                 ],
             ],
             'published' => [$this->lang],
-
         ]);
 
         $response

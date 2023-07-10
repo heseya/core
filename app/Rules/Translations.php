@@ -11,14 +11,12 @@ class Translations implements Rule
 
     public function __construct(
         private readonly array $fields,
-    ) {
-    }
+    ) {}
 
     /**
      * Determine if the validation rule passes.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
+     * @param string $attribute
      */
     public function passes($attribute, $value): bool
     {

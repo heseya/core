@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Laravel\Scout\Builder as ScoutBuilder;
 
 class SortService implements SortServiceContract
@@ -27,6 +28,9 @@ class SortService implements SortServiceContract
         throw new ClientException(Exceptions::CLIENT_MODEL_NOT_SORTABLE);
     }
 
+    /**
+     * @throws ValidationException
+     */
     public function sort(Builder|ScoutBuilder $query, string $sortString, array $sortable): Builder|ScoutBuilder
     {
         $sort = explode(',', $sortString);
@@ -44,6 +48,9 @@ class SortService implements SortServiceContract
         return $query;
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function validate(array $field, array $sortable): void
     {
         Validator::make(

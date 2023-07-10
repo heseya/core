@@ -14,11 +14,6 @@ class ContentLanguage
 
     /**
      * Handle an incoming request.
-     *
-     * @param Request $request
-     * @param Closure $next
-     *
-     * @return mixed
      */
     public function handle(Request $request, Closure $next): mixed
     {

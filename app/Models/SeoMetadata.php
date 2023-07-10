@@ -15,7 +15,9 @@ use Spatie\Translatable\HasTranslations;
  */
 class SeoMetadata extends Model implements Translatable
 {
-    use HasFactory, SoftDeletes, HasTranslations;
+    use HasFactory;
+    use HasTranslations;
+    use SoftDeletes;
 
     protected $fillable = [
         'global',

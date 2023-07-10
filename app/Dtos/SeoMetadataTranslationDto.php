@@ -7,12 +7,12 @@ use Heseya\Dto\Missing;
 
 class SeoMetadataTranslationDto extends Dto
 {
-    private string|null|Missing $title;
-    private string|null|Missing $description;
-    private array|null|Missing $keywords;
+    private Missing|string|null $title;
+    private Missing|string|null $description;
+    private array|Missing|null $keywords;
     private bool|Missing $no_index;
 
-    public static function fromDataArray(array $data): SeoMetadataTranslationDto
+    public static function fromDataArray(array $data): self
     {
         return new self(
             title: array_key_exists('title', $data) ? $data['title'] : new Missing(),
@@ -32,12 +32,12 @@ class SeoMetadataTranslationDto extends Dto
         return $this->description;
     }
 
-    public function getKeywords(): Missing|array|null
+    public function getKeywords(): array|Missing|null
     {
         return $this->keywords;
     }
 
-    public function getNoIndex(): Missing|bool
+    public function getNoIndex(): bool|Missing
     {
         return $this->no_index;
     }

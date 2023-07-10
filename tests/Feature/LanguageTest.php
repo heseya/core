@@ -55,10 +55,10 @@ class LanguageTest extends TestCase
      */
     public function testIndexHidden($user): void
     {
-        $this->$user->givePermissionTo('languages.show_hidden');
+        $this->{$user}->givePermissionTo('languages.show_hidden');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/languages')
             ->assertOk()
             ->assertJsonCount(2, 'data')
@@ -72,7 +72,7 @@ class LanguageTest extends TestCase
     public function testCreateWithoutPermissions($user): void
     {
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/languages', [
                 'iso' => 'es',
                 'name' => 'Spain',
@@ -87,10 +87,10 @@ class LanguageTest extends TestCase
      */
     public function testCreate($user): void
     {
-        $this->$user->givePermissionTo('languages.add');
+        $this->{$user}->givePermissionTo('languages.add');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/languages', [
                 'iso' => 'es',
                 'name' => 'Spain',
@@ -120,14 +120,14 @@ class LanguageTest extends TestCase
      */
     public function testCreateWithWebHookDispatched($user): void
     {
-        $this->$user->givePermissionTo('languages.add');
+        $this->{$user}->givePermissionTo('languages.add');
 
         WebHook::factory()->create([
             'events' => [
                 'LanguageCreated',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => true,
             'with_hidden' => false,
         ]);
@@ -135,7 +135,7 @@ class LanguageTest extends TestCase
         Event::fake(LanguageCreated::class);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/languages', [
                 'iso' => 'nl',
                 'name' => 'Netherland',
@@ -153,7 +153,7 @@ class LanguageTest extends TestCase
     public function testUpdateWithoutPermissions($user): void
     {
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('PATCH', "/languages/id:{$this->language->getKey()}", [
                 'iso' => 'es',
                 'name' => 'Spain',
@@ -168,10 +168,10 @@ class LanguageTest extends TestCase
      */
     public function testUpdate($user): void
     {
-        $this->$user->givePermissionTo('languages.edit');
+        $this->{$user}->givePermissionTo('languages.edit');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('PATCH', "/languages/id:{$this->languageHidden->getKey()}", [
                 'iso' => 'es',
                 'name' => 'Spain',
@@ -201,14 +201,14 @@ class LanguageTest extends TestCase
      */
     public function testUpdateWithWebHookDispatched($user): void
     {
-        $this->$user->givePermissionTo('languages.edit');
+        $this->{$user}->givePermissionTo('languages.edit');
 
         WebHook::factory()->create([
             'events' => [
-                'LanguageUpdated'
+                'LanguageUpdated',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
@@ -216,7 +216,7 @@ class LanguageTest extends TestCase
         Event::fake(LanguageUpdated::class);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('PATCH', "/languages/id:{$this->language->getKey()}", [
                 'iso' => 'nl',
                 'name' => 'Netherland',
@@ -255,7 +255,7 @@ class LanguageTest extends TestCase
      */
     public function testDelete($user): void
     {
-        $this->$user->givePermissionTo('languages.remove');
+        $this->{$user}->givePermissionTo('languages.remove');
 
         $language = Language::create([
             'iso' => 'nl',
@@ -265,7 +265,7 @@ class LanguageTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('DELETE', "/languages/id:{$language->getKey()}")
             ->assertNoContent();
     }
@@ -275,21 +275,21 @@ class LanguageTest extends TestCase
      */
     public function testDeleteWithWebHookDispatched($user): void
     {
-        $this->$user->givePermissionTo('languages.remove');
+        $this->{$user}->givePermissionTo('languages.remove');
 
         $language = Language::create([
             'iso' => 'nl',
             'name' => 'Netherland',
             'hidden' => false,
             'default' => false,
-            ]);
+        ]);
 
         WebHook::factory()->create([
             'events' => [
-                'LanguageDeleted'
+                'LanguageDeleted',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
@@ -297,7 +297,7 @@ class LanguageTest extends TestCase
         Event::fake(LanguageDeleted::class);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('DELETE', "/languages/id:{$language->getKey()}")
             ->assertNoContent();
 
@@ -309,10 +309,10 @@ class LanguageTest extends TestCase
      */
     public function testDeleteDefaultLanguage($user): void
     {
-        $this->$user->givePermissionTo('languages.remove');
+        $this->{$user}->givePermissionTo('languages.remove');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('DELETE', "/languages/id:{$this->language->getKey()}")
             ->assertStatus(400);
     }
@@ -322,7 +322,7 @@ class LanguageTest extends TestCase
      */
     public function testGetDefaultTranslation($user): void
     {
-        $this->$user->givePermissionTo('products.show_details');
+        $this->{$user}->givePermissionTo('products.show_details');
 
         $product = Product::factory()->create([
             'name' => 'Nazwa',
@@ -332,7 +332,7 @@ class LanguageTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products/id:' . $product->getKey())
             ->assertOk()
             ->assertJsonFragment([
@@ -349,7 +349,7 @@ class LanguageTest extends TestCase
      */
     public function testGetRequestedTranslation($user): void
     {
-        $this->$user->givePermissionTo('products.show_details');
+        $this->{$user}->givePermissionTo('products.show_details');
 
         $newLanguage = Language::create([
             'iso' => 'de',
@@ -368,7 +368,7 @@ class LanguageTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products/id:' . $product->getKey(), [], [
                 'Accept-Language' => $newLanguage->iso,
             ])
@@ -387,7 +387,7 @@ class LanguageTest extends TestCase
      */
     public function testGetHiddenTranslation($user): void
     {
-        $this->$user->givePermissionTo('products.show_details');
+        $this->{$user}->givePermissionTo('products.show_details');
 
         /** @var Product $product */
         $product = Product::factory()->create([
@@ -405,7 +405,7 @@ class LanguageTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products/id:' . $product->getKey(), [
                 'Accept-Language' => $this->languageHidden->iso,
             ])
@@ -424,10 +424,10 @@ class LanguageTest extends TestCase
      */
     public function testUncheckCurrentDefaultLanguage($user): void
     {
-        $this->$user->givePermissionTo('languages.edit');
+        $this->{$user}->givePermissionTo('languages.edit');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('PATCH', "/languages/id:{$this->language->getKey()}", [
                 'iso' => 'pl',
                 'name' => 'Polski',

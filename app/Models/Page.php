@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use App\Models\Interfaces\Translatable;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\WhereInIds;
 use App\Models\Contracts\SortableContract;
+use App\Models\Interfaces\Translatable;
 use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
 use App\Traits\Sortable;
@@ -23,13 +23,18 @@ use Spatie\Translatable\HasTranslations;
  */
 class Page extends Model implements AuditableContract, SortableContract, Translatable
 {
-    use HasFactory, Sortable, Auditable, SoftDeletes, HasSeoMetadata, HasTranslations;
+    use Auditable;
     use Auditable;
     use HasCriteria;
     use HasFactory;
+    use HasFactory;
     use HasMetadata;
     use HasSeoMetadata;
+    use HasSeoMetadata;
+    use HasTranslations;
     use SoftDeletes;
+    use SoftDeletes;
+    use Sortable;
     use Sortable;
 
     protected $fillable = [

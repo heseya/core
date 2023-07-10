@@ -15,7 +15,7 @@ use App\Services\Contracts\SchemaCrudServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
 use Heseya\Dto\Missing;
 
-readonly final class SchemaCrudService implements SchemaCrudServiceContract
+final readonly class SchemaCrudService implements SchemaCrudServiceContract
 {
     public function __construct(
         private AvailabilityServiceContract $availabilityService,
@@ -81,7 +81,6 @@ readonly final class SchemaCrudService implements SchemaCrudServiceContract
         }
 
         $schema->save();
-
 
         if (!$dto->getOptions() instanceof Missing) {
             $this->optionService->sync($schema, $dto->getOptions());

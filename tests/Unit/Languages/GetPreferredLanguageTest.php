@@ -10,7 +10,8 @@ use Tests\TestCase;
 
 class GetPreferredLanguageTest extends TestCase
 {
-    use RefreshDatabase, GetPreferredLanguage;
+    use GetPreferredLanguage;
+    use RefreshDatabase;
 
     public function testDefaultNoHeader(): void
     {
