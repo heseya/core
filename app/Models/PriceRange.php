@@ -2,33 +2,33 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Brick\Math\BigDecimal;
+use Brick\Money\Money;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 /**
  * @mixin IdeHelperPriceRange
  */
 class PriceRange extends Model
 {
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<string>
-     */
     protected $fillable = [
         'start',
+        'value',
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'start' => 'float',
-    ];
-
-    public function prices(): MorphMany
+    public function start(): Attribute
     {
-        return $this->morphMany(Price::class, 'model');
+        return Attribute::make(
+            get: fn (BigDecimal|string $value): Money => Money::ofMinor($value, 'PLN'),
+            set: fn (Money $value): BigDecimal => $value->getMinorAmount(),
+        );
+    }
+
+    public function value(): Attribute
+    {
+        return Attribute::make(
+            get: fn (BigDecimal|string $value): Money => Money::ofMinor($value, 'PLN'),
+            set: fn (Money $value): BigDecimal => $value->getMinorAmount(),
+        );
     }
 }

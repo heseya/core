@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\ConditionType;
+use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\RoleType;
@@ -20,6 +21,10 @@ use App\Models\Role;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Carbon;
@@ -43,6 +48,11 @@ class CartTest extends TestCase
     private Option $option2;
     private Item $item;
 
+    /**
+     * @throws UnknownCurrencyException
+     * @throws RoundingNecessaryException
+     * @throws NumberFormatException
+     */
     public function setUp(): void
     {
         parent::setUp();
@@ -55,12 +65,16 @@ class CartTest extends TestCase
         ]);
 
         /** @var PriceRange $lowRange */
-        $lowRange = PriceRange::query()->create(['start' => 0]);
-        $lowRange->prices()->create(['value' => 8.11]);
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero(Currency::DEFAULT->value),
+            'value' => Money::of(8.11, Currency::DEFAULT->value),
+        ]);
 
         /** @var PriceRange $highRange */
-        $highRange = PriceRange::query()->create(['start' => 210]);
-        $highRange->prices()->create(['value' => 0.0]);
+        $highRange = PriceRange::query()->create([
+            'start' => Money::of(210, Currency::DEFAULT->value),
+            'value' => Money::of(0.0, Currency::DEFAULT->value),
+        ]);
 
         $this->shippingMethod->priceRanges()->saveMany([$lowRange, $highRange]);
 

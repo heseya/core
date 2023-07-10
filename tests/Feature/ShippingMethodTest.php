@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Currency;
 use App\Enums\ShippingType;
 use App\Models\Address;
 use App\Models\App;
@@ -9,6 +10,10 @@ use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\PriceRange;
 use App\Models\ShippingMethod;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
@@ -22,6 +27,11 @@ class ShippingMethodTest extends TestCase
     public array $expected;
     public array $priceRangesWithNoInitialStart;
 
+    /**
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     */
     public function setUp(): void
     {
         parent::setUp();
@@ -33,13 +43,16 @@ class ShippingMethodTest extends TestCase
             'shipping_time_max' => 2,
         ]);
 
-        $lowRange = PriceRange::query()->create(['start' => 0]);
-        $lowRange->prices()->create([
-            'value' => mt_rand(8, 15) + (mt_rand(0, 99) / 100),
+        $currency = Currency::DEFAULT->value;
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero($currency),
+            'value' => Money::of(mt_rand(8, 15) + (mt_rand(0, 99) / 100), $currency),
         ]);
 
-        $highRange = PriceRange::query()->create(['start' => 210]);
-        $highRange->prices()->create(['value' => 0.0]);
+        $highRange = PriceRange::query()->create([
+            'start' => Money::of(210, $currency),
+            'value' => Money::zero($currency),
+        ]);
 
         $this->shipping_method->priceRanges()->saveMany([$lowRange, $highRange]);
 
@@ -48,13 +61,15 @@ class ShippingMethodTest extends TestCase
             'block_list' => true,
         ]);
 
-        $lowRange = PriceRange::query()->create(['start' => 0]);
-        $lowRange->prices()->create([
-            'value' => mt_rand(8, 15) + (mt_rand(0, 99) / 100),
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero($currency),
+            'value' => Money::of(mt_rand(8, 15) + (mt_rand(0, 99) / 100), $currency),
         ]);
 
-        $highRange = PriceRange::query()->create(['start' => 210]);
-        $highRange->prices()->create(['value' => 0.0]);
+        $highRange = PriceRange::query()->create([
+            'start' => Money::of(210, $currency),
+            'value' => Money::zero($currency),
+        ]);
 
         $this->shipping_method_hidden->priceRanges()->saveMany([$lowRange, $highRange]);
 
@@ -115,17 +130,17 @@ class ShippingMethodTest extends TestCase
 
         ShippingMethod::factory()->count(10)->create();
 
-        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
-            'ids' => [
-                $this->shipping_method->getKey(),
-            ],
-        ])
+        $this->actingAs($this->{$user})
+            ->json('GET', '/shipping-methods', [
+                'ids' => [
+                    $this->shipping_method->getKey(),
+                ],
+            ])
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ],
-            ]);
+            ]]);
     }
 
     /**
@@ -379,10 +394,10 @@ class ShippingMethodTest extends TestCase
             ->assertCreated()
             ->assertJson(['data' => $shipping_method])
             ->assertJsonCount(2, 'data.price_ranges')
-            ->assertJsonFragment(['start' => 0])
-            ->assertJsonFragment(['value' => 10.37])
-            ->assertJsonFragment(['start' => 200])
-            ->assertJsonFragment(['value' => 0]);
+            ->assertJsonFragment(['start' => "0"])
+            ->assertJsonFragment(['value' => "10.37"])
+            ->assertJsonFragment(['start' => "200"])
+            ->assertJsonFragment(['value' => "0"]);
 
         $this->assertDatabaseHas('shipping_methods', $shipping_method);
     }
@@ -622,10 +637,10 @@ class ShippingMethodTest extends TestCase
             ->assertJson(['data' => $shipping_method])
             ->assertJsonCount(2, 'data.shipping_points')
             ->assertJsonCount(2, 'data.price_ranges')
-            ->assertJsonFragment(['start' => 0])
-            ->assertJsonFragment(['value' => 10.37])
-            ->assertJsonFragment(['start' => 200])
-            ->assertJsonFragment(['value' => 0])
+            ->assertJsonFragment(['start' => "0"])
+            ->assertJsonFragment(['value' => "10.37"])
+            ->assertJsonFragment(['start' => "200"])
+            ->assertJsonFragment(['value' => "0"])
             ->assertJsonFragment(['shipping_type' => ShippingType::POINT]);
 
         $this->assertDatabaseHas('shipping_methods', $shipping_method + [
@@ -789,10 +804,10 @@ class ShippingMethodTest extends TestCase
             ->assertOk()
             ->assertJson(['data' => $shipping_method])
             ->assertJsonCount(2, 'data.price_ranges')
-            ->assertJsonFragment(['start' => 0])
-            ->assertJsonFragment(['value' => 10.37])
-            ->assertJsonFragment(['start' => 200])
-            ->assertJsonFragment(['value' => 0]);
+            ->assertJsonFragment(['start' => "0"])
+            ->assertJsonFragment(['value' => "10.37"])
+            ->assertJsonFragment(['start' => "200"])
+            ->assertJsonFragment(['value' => "0"]);
 
         $this->assertDatabaseHas(
             'shipping_methods',
@@ -824,10 +839,10 @@ class ShippingMethodTest extends TestCase
             ],
             ])
             ->assertJsonCount(2, 'data.price_ranges')
-            ->assertJsonFragment(['start' => $this->shipping_method->priceRanges->first()->start])
-            ->assertJsonFragment(['value' => $this->shipping_method->priceRanges->first()->prices()->first()->value])
-            ->assertJsonFragment(['start' => $this->shipping_method->priceRanges->last()->start])
-            ->assertJsonFragment(['value' => $this->shipping_method->priceRanges->last()->prices()->first()->value]);
+            ->assertJsonFragment(['start' => $this->shipping_method->priceRanges->first()->start->getAmount()])
+            ->assertJsonFragment(['value' => $this->shipping_method->priceRanges->first()->value->getAmount()])
+            ->assertJsonFragment(['start' => $this->shipping_method->priceRanges->last()->start->getAmount()])
+            ->assertJsonFragment(['value' => $this->shipping_method->priceRanges->last()->value->getAmount()]);
 
         $this->assertDatabaseHas('shipping_methods', [
             'id' => $this->shipping_method->getKey(),

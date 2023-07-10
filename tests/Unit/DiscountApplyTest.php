@@ -5,6 +5,7 @@ namespace Unit;
 use App\Dtos\CartDto;
 use App\Dtos\CartItemDto;
 use App\Dtos\OrderProductDto;
+use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Models\CartItemResponse;
@@ -18,6 +19,10 @@ use App\Models\ProductSet;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Services\Contracts\DiscountServiceContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
@@ -41,6 +46,11 @@ class DiscountApplyTest extends TestCase
     private OrderProductDto $orderProductDtoWithSchemas;
     private $orderProduct;
 
+    /**
+     * @throws UnknownCurrencyException
+     * @throws RoundingNecessaryException
+     * @throws NumberFormatException
+     */
     public function setUp(): void
     {
         parent::setUp();
@@ -105,8 +115,10 @@ class DiscountApplyTest extends TestCase
         ]);
 
         $this->shippingMethod = ShippingMethod::factory()->create(['public' => true]);
-        $lowRange = PriceRange::create(['start' => 0]);
-        $lowRange->prices()->create(['value' => 20.0]);
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero(Currency::DEFAULT->value),
+            'value' => Money::of(20.0, Currency::DEFAULT->value),
+        ]);
 
         $this->shippingMethod->priceRanges()->save($lowRange);
 

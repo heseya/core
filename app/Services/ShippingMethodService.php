@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Dtos\ShippingMethodCreateDto;
 use App\Dtos\ShippingMethodUpdateDto;
+use App\Enums\Currency;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
 use App\Exceptions\StoreException;
@@ -12,6 +13,10 @@ use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\ShippingMethodServiceContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -19,13 +24,13 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 
-class ShippingMethodService implements ShippingMethodServiceContract
+readonly class ShippingMethodService implements ShippingMethodServiceContract
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
     ) {}
 
-    public function index(?array $search, ?string $country, float $cartValue): LengthAwarePaginator
+    public function index(?array $search, ?string $country, Money $cartValue): LengthAwarePaginator
     {
         $query = ShippingMethod::query()
             ->searchByCriteria($search ?? [])
@@ -73,6 +78,11 @@ class ShippingMethodService implements ShippingMethodServiceContract
         return $shippingMethods;
     }
 
+    /**
+     * @throws UnknownCurrencyException
+     * @throws RoundingNecessaryException
+     * @throws NumberFormatException
+     */
     public function store(ShippingMethodCreateDto $shippingMethodDto): ShippingMethod
     {
         $attributes = array_merge(
@@ -101,17 +111,20 @@ class ShippingMethodService implements ShippingMethodServiceContract
 
         $priceRanges = $shippingMethodDto->getPriceRanges() !== null ? $shippingMethodDto->getPriceRanges() : [];
         foreach ($priceRanges as $range) {
-            $priceRange = $shippingMethod->priceRanges()->firstOrCreate([
-                'start' => $range['start'],
-            ]);
-            $priceRange->prices()->create([
-                'value' => $range['value'],
+            $shippingMethod->priceRanges()->firstOrCreate([
+                'start' => Money::of($range['start'], Currency::DEFAULT->value),
+                'value' => Money::of($range['value'], Currency::DEFAULT->value),
             ]);
         }
 
         return $shippingMethod;
     }
 
+    /**
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
     public function update(ShippingMethod $shippingMethod, ShippingMethodUpdateDto $shippingMethodDto): ShippingMethod
     {
         $shippingMethod->update(
@@ -134,11 +147,9 @@ class ShippingMethodService implements ShippingMethodServiceContract
             $shippingMethod->priceRanges()->delete();
 
             foreach ($shippingMethodDto->getPriceRanges() as $range) {
-                $priceRange = $shippingMethod->priceRanges()->firstOrCreate([
-                    'start' => $range['start'],
-                ]);
-                $priceRange->prices()->create([
-                    'value' => $range['value'],
+                $shippingMethod->priceRanges()->firstOrCreate([
+                    'start' => Money::of($range['start'], Currency::DEFAULT->value),
+                    'value' => Money::of($range['value'], Currency::DEFAULT->value),
                 ]);
             }
         }

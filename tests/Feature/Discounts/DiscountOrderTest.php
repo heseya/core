@@ -3,6 +3,7 @@
 namespace Tests\Feature\Discounts;
 
 use App\Enums\ConditionType;
+use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\SchemaType;
@@ -16,6 +17,7 @@ use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
+use Brick\Money\Money;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 use Tests\Traits\CreateShippingMethod;
@@ -945,11 +947,15 @@ class DiscountOrderTest extends TestCase
         $shippingMethod = ShippingMethod::factory()
             ->create(['public' => true, 'shipping_type' => ShippingType::ADDRESS]);
         $shippingPriceNonDiscounted = 8.11;
-        $baseRange = PriceRange::create(['start' => 0]);
-        $baseRange->prices()->create(['value' => $shippingPriceNonDiscounted]);
+        $baseRange = PriceRange::create([
+            'start' => Money::zero(Currency::DEFAULT->value),
+            'value' => Money::of($shippingPriceNonDiscounted, Currency::DEFAULT->value),
+        ]);
         $shippingPriceDiscounted = 0;
-        $discountedRange = PriceRange::create(['start' => $productPrice]);
-        $discountedRange->prices()->create(['value' => $shippingPriceDiscounted]);
+        $discountedRange = PriceRange::create([
+            'start' => Money::of($productPrice, Currency::DEFAULT->value),
+            'value' => Money::of($shippingPriceDiscounted, Currency::DEFAULT->value),
+        ]);
         $shippingMethod->priceRanges()->saveMany([$baseRange, $discountedRange]);
 
         $discount = Discount::factory()->create([
