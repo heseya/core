@@ -11,7 +11,8 @@ use Illuminate\Foundation\Http\FormRequest;
 class ProductUpdateDto extends Dto implements InstantiateFromRequest
 {
     public function __construct(
-        readonly public Missing|string $name,
+        readonly public array $translations,
+        readonly public array $published,
         readonly public Missing|string $slug,
         readonly public float|Missing $price,
         readonly public bool|Missing $public,
@@ -20,8 +21,6 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
         readonly public float|Missing $quantity_step,
         readonly public int|Missing|null $google_product_category,
         readonly public float|Missing $vat_rate,
-        readonly public Missing|string|null $description_html,
-        readonly public Missing|string|null $description_short,
         readonly public float|Missing|null $purchase_limit_per_user,
         readonly public array|Missing $media,
         readonly public array|Missing $tags,
@@ -40,7 +39,8 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
     public static function instantiateFromRequest(FormRequest $request): self
     {
         return new self(
-            name: $request->input('name') ?? new Missing(),
+            translations: $request->input('translations', []),
+            published: $request->input('published', []),
             slug: $request->input('slug') ?? new Missing(),
             price: $request->input('price') ?? new Missing(),
             public: $request->input('public') ?? new Missing(),
@@ -49,8 +49,6 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
             quantity_step: $request->input('quantity_step') ?? new Missing(),
             google_product_category: $request->input('google_product_category', new Missing()),
             vat_rate: $request->input('vat_rate') ?? new Missing(),
-            description_html: $request->input('description_html', new Missing()),
-            description_short: $request->input('description_short', new Missing()),
             purchase_limit_per_user: $request->input('purchase_limit_per_user', new Missing()),
             media: $request->input('media') ?? new Missing(),
             tags: $request->input('tags') ?? new Missing(),

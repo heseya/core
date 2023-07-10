@@ -8,13 +8,13 @@ use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 
-class SchemaDto extends Dto implements InstantiateFromRequest
+final class SchemaDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
+    public array $translations;
+
     protected Missing|string $type;
-    protected Missing|string $name;
-    protected Missing|string|null $description;
     protected float|Missing|null $price;
     protected bool|Missing $hidden;
     protected bool|Missing $required;
@@ -40,9 +40,8 @@ class SchemaDto extends Dto implements InstantiateFromRequest
         }
 
         return new self(
+            translations: $request->input('translations', []),
             type: $request->input('type', new Missing()),
-            name: $request->input('name', new Missing()),
-            description: $request->input('description', new Missing()),
             price: $request->input('price', new Missing()),
             hidden: $request->has('hidden') ? $request->boolean('hidden') : new Missing(),
             required: $request->has('required') ? $request->boolean('required') : new Missing(),

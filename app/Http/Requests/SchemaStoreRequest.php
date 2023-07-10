@@ -8,7 +8,7 @@ use App\Rules\EnumKey;
 use App\Traits\MetadataRules;
 use Illuminate\Foundation\Http\FormRequest;
 
-class SchemaStoreRequest extends FormRequest
+final class SchemaStoreRequest extends FormRequest
 {
     use MetadataRules;
 

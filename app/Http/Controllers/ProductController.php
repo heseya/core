@@ -32,21 +32,18 @@ use App\Services\Contracts\TranslationServiceContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class ProductController extends Controller
+final class ProductController extends Controller
 {
     public function __construct(
-        private ProductServiceContract $productService,
-        private ProductRepositoryContract $productRepository,
-        private MediaAttachmentServiceContract $attachmentService,
-        private ProductSetServiceContract $productSetService,
-        private SeoMetadataServiceContract $seoMetadataService,
-        private TranslationServiceContract $translationService,
-    ) {
-    }
+        private readonly ProductServiceContract $productService,
+        private readonly ProductRepositoryContract $productRepository,
+        private readonly MediaAttachmentServiceContract $attachmentService,
+    ) {}
 
     public function index(ProductIndexRequest $request): JsonResource
     {
@@ -69,9 +66,6 @@ class ProductController extends Controller
         return ProductResource::make($product);
     }
 
-    /**
-     * @throws PublishingException
-     */
     public function store(ProductCreateRequest $request): JsonResource
     {
         $product = $this->productService->create(
@@ -91,11 +85,11 @@ class ProductController extends Controller
         return ProductResource::make($product);
     }
 
-    public function destroy(Product $product): JsonResponse
+    public function destroy(Product $product): HttpResponse
     {
         $this->productService->delete($product);
 
-        return Response::json(null, 204);
+        return Response::noContent();
     }
 
     public function addAttachment(MediaAttachmentCreateRequest $request, Product $product): JsonResource
@@ -108,6 +102,7 @@ class ProductController extends Controller
         return MediaAttachmentResource::make($attachment);
     }
 
+    // TODO: add auth check
     public function editAttachment(MediaAttachmentUpdateRequest $request, Product $product, MediaAttachment $attachment): JsonResource
     {
         $attachment = $this->attachmentService->editAttachment(
@@ -118,10 +113,11 @@ class ProductController extends Controller
         return MediaAttachmentResource::make($attachment);
     }
 
-    public function deleteAttachment(Product $product, MediaAttachment $attachment): JsonResponse
+    // TODO: add auth check
+    public function deleteAttachment(Product $product, MediaAttachment $attachment): HttpResponse
     {
         $this->attachmentService->removeAttachment($attachment);
 
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::noContent();
     }
 }

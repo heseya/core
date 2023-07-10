@@ -6,7 +6,7 @@ use App\Models\Product;
 use App\Services\Contracts\ReorderServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 
-class SchemaService implements SchemaServiceContract
+readonly final class SchemaService implements SchemaServiceContract
 {
     public function __construct(
         private ReorderServiceContract $reorderService,

@@ -7,7 +7,7 @@ use App\Models\Order;
 use App\Models\Status;
 use Tests\TestCase;
 
-class StatusTest extends TestCase
+final class StatusTest extends TestCase
 {
     /** $status is used in TestCase. */
     private Status $status_model;
@@ -42,7 +42,7 @@ class StatusTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndex($user): void
+    public function testIndex(string $user): void
     {
         $this->{$user}->givePermissionTo('statuses.show');
 
@@ -55,14 +55,15 @@ class StatusTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexWithTranslationsFlag($user): void
+    public function testIndexWithTranslationsFlag(string $user): void
     {
         $this->$user->givePermissionTo('statuses.show');
+    }
 
     /**
      * @dataProvider authProvider
      */
-    public function testIndexByIds($user): void
+    public function testIndexByIds(string $user): void
     {
         $this->{$user}->givePermissionTo('statuses.show');
 

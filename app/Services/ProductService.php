@@ -9,6 +9,7 @@ use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductPriceUpdated;
 use App\Events\ProductUpdated;
+use App\Exceptions\PublishingException;
 use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
@@ -20,11 +21,12 @@ use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
+use App\Services\Contracts\TranslationServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-readonly class ProductService implements ProductServiceContract
+readonly final class ProductService implements ProductServiceContract
 {
     public function __construct(
         private MediaServiceContract $mediaService,
@@ -34,6 +36,7 @@ readonly class ProductService implements ProductServiceContract
         private MetadataServiceContract $metadataService,
         private AttributeServiceContract $attributeService,
         private DiscountServiceContract $discountService,
+        private TranslationServiceContract $translationService,
     ) {}
 
     private function setup(Product $product, ProductCreateDto|ProductUpdateDto $dto): Product
@@ -91,6 +94,9 @@ readonly class ProductService implements ProductServiceContract
         return $product;
     }
 
+    /**
+     * @throws PublishingException
+     */
     public function create(ProductCreateDto $dto): Product
     {
         DB::beginTransaction();
@@ -98,6 +104,12 @@ readonly class ProductService implements ProductServiceContract
         /** @var Product $product */
         $product = Product::query()->create($dto->toArray());
         $product = $this->setup($product, $dto);
+
+        foreach ($dto->translations as $lang => $translations) {
+            $product->setLocale($lang)->fill($translations);
+        }
+        $this->translationService->checkPublished($product, ['name']);
+
         $product->save();
 
         DB::commit();
@@ -115,6 +127,9 @@ readonly class ProductService implements ProductServiceContract
         return $product->refresh();
     }
 
+    /**
+     * @throws PublishingException
+     */
     public function update(Product $product, ProductUpdateDto $dto): Product
     {
         $oldMinPrice = $product->price_min;
@@ -124,6 +139,12 @@ readonly class ProductService implements ProductServiceContract
 
         $product->fill($dto->toArray());
         $product = $this->setup($product, $dto);
+
+        foreach ($dto->translations as $lang => $translations) {
+            $product->setLocale($lang)->fill($translations);
+        }
+        $this->translationService->checkPublished($product, ['name']);
+
         $product->save();
 
         DB::commit();

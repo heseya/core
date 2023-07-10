@@ -19,13 +19,10 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
-class SchemaController extends Controller
+final class SchemaController extends Controller
 {
     public function __construct(
-        private SchemaCrudServiceContract $schemaService,
-        protected OptionServiceContract $optionService,
-        protected ProductServiceContract $productService,
-        protected TranslationServiceContract $translationService,
+        private readonly SchemaCrudServiceContract $schemaService,
     ) {}
 
     public function index(IndexSchemaRequest $request): JsonResource
@@ -37,9 +34,6 @@ class SchemaController extends Controller
         );
     }
 
-    /**
-     * @throws PublishingException
-     */
     public function store(SchemaStoreRequest $request): JsonResource
     {
         return SchemaResource::make($this->schemaService->store(
@@ -52,9 +46,6 @@ class SchemaController extends Controller
         return SchemaResource::make($schema);
     }
 
-    /**
-     * @throws PublishingException
-     */
     public function update(SchemaStoreRequest $request, Schema $schema): JsonResource
     {
         return SchemaResource::make($this->schemaService->update(
