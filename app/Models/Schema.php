@@ -5,12 +5,12 @@ namespace App\Models;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\SchemaSearch;
+use App\Criteria\TranslatedLike;
 use App\Criteria\WhereInIds;
 use App\Enums\SchemaType;
 use App\Models\Contracts\SortableContract;
 use App\Models\Interfaces\Translatable;
 use App\Rules\OptionAvailable;
-use App\SearchTypes\TranslatedLike;
 use App\SortColumnTypes\TranslatedColumn;
 use App\Traits\HasMetadata;
 use App\Traits\Sortable;
@@ -58,7 +58,7 @@ class Schema extends Model implements SortableContract, Translatable
         'published',
     ];
 
-    protected $translatable = [
+    protected array $translatable = [
         'name',
         'description',
     ];

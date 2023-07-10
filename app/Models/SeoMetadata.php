@@ -33,7 +33,7 @@ class SeoMetadata extends Model implements Translatable
         'header_tags',
     ];
 
-    protected $translatable = [
+    protected array $translatable = [
         'title',
         'description',
         'keywords',

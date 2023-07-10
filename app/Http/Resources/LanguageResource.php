@@ -9,11 +9,11 @@ class LanguageResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'iso' => $this->iso,
-            'name' => $this->name,
-            'default' => $this->default,
-            'hidden' => $this->hidden,
+            'id' => $this->resource->getKey(),
+            'iso' => $this->resource->iso,
+            'name' => $this->resource->name,
+            'default' => $this->resource->default,
+            'hidden' => $this->resource->hidden,
         ];
     }
 }

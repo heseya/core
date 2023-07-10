@@ -58,42 +58,4 @@ class SeoMetadataDto extends Dto implements InstantiateFromRequest
     {
         return $this->translations;
     }
-
-    /**
-     * @return array<string>
-     */
-    public function getPublished(): array
-    {
-        return $this->published;
-    }
-
-    public function getKeywords(): array|Missing|null
-    {
-        return $this->keywords;
-    }
-
-    public function getTwitterCard(): Missing|TwitterCardType|null
-    {
-        return $this->twitter_card;
-    }
-
-    public function getOgImage(): Missing|string|null
-    {
-        return $this->og_image;
-    }
-
-    public function getModelId(): Missing|string|null
-    {
-        return $this->model_id;
-    }
-
-    public function getModelType(): Missing|string|null
-    {
-        return $this->model_type;
-    }
-
-    public function getNoIndex(): bool|Missing
-    {
-        return $this->no_index;
-    }
 }

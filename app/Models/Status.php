@@ -43,7 +43,7 @@ class Status extends Model implements AuditableContract, Translatable
         'published' => 'array',
     ];
 
-    protected $translatable = [
+    protected array $translatable = [
         'name',
         'description',
     ];
@@ -58,11 +58,6 @@ class Status extends Model implements AuditableContract, Translatable
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,
     ];
-
-    public function getPublishedAttribute($value): array
-    {
-        return json_decode($value, true) ?? [];
-    }
 
     public function orders(): HasMany
     {

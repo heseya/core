@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Query\Builder;
 
 /**
  * @mixin IdeHelperLanguage
@@ -23,8 +24,9 @@ class Language extends Model
         'hidden' => 'boolean',
     ];
 
-    public function scopeDefault($query)
+    public function scopeDefault(Builder $query): self|null
     {
+        // @phpstan-ignore-next-line
         return $query->where('default', true)->first();
     }
 }

@@ -13,8 +13,8 @@ trait GetAllTranslations
     protected function getAllTranslations(?string $permissions = null): array
     {
         $allTranslations = [];
-        $languages = $this->published;
-        $dataTranslations = $this->getTranslations(
+        $languages = $this->resource->published;
+        $dataTranslations = $this->resource->getTranslations(
             allowedLocales: $permissions !== null && Gate::allows($permissions) ? null : $languages
         );
 

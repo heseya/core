@@ -29,7 +29,7 @@ class Option extends Model implements Translatable
         'shipping_date',
     ];
 
-    protected $translatable = [
+    protected array $translatable = [
         'name',
     ];
 

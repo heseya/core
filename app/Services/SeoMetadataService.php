@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Dtos\SeoKeywordsDto;
 use App\Dtos\SeoMetadataDto;
 use App\Enums\SeoModelType;
+use App\Exceptions\PublishingException;
 use App\Models\Model;
 use App\Models\Page;
 use App\Models\Product;
@@ -30,17 +31,16 @@ class SeoMetadataService implements SeoMetadataServiceContract
         return $this->getGlobalSeo();
     }
 
+    /**
+     * @throws PublishingException
+     */
     public function createOrUpdate(SeoMetadataDto $dto): SeoMetadata
     {
-        /** @var SeoMetadata $seo */
-        $seo = SeoMetadata::query()->firstOrCreate(
-            ['global' => true],
-            $dto->toArray()
-        );
+        /** @var SeoMetadata|null $seo */
+        $seo = SeoMetadata::query()->where('global', '=', true)->first();
 
-        if (!$seo) {
-            /** @var SeoMetadata $seo */
-            $seo = SeoMetadata::make($dto->toArray() + [
+        if ($seo === null) {
+            $seo = new SeoMetadata($dto->toArray() + [
                 'global' => true,
             ]);
 
@@ -82,6 +82,8 @@ class SeoMetadataService implements SeoMetadataServiceContract
 
     /**
      * Create or update seo for given model.
+     *
+     * @throws PublishingException
      */
     public function createOrUpdateFor(Model $model, SeoMetadataDto $dto): void
     {
@@ -106,6 +108,9 @@ class SeoMetadataService implements SeoMetadataServiceContract
         $seo->save();
     }
 
+    /**
+     * @throws PublishingException
+     */
     public function update(SeoMetadataDto $dto, SeoMetadata $seoMetadata): SeoMetadata
     {
         $seoMetadata->fill($dto->toArray());
@@ -146,7 +151,7 @@ class SeoMetadataService implements SeoMetadataServiceContract
 
         $lang = App::getLocale();
 
-        return SeoMetadata::whereHasMorph(
+        return SeoMetadata::query()->whereHasMorph(
             'modelSeo',
             [
                 Page::class,

@@ -9,6 +9,7 @@ use App\Criteria\MoreOrEquals;
 use App\Criteria\ProductAttributeSearch;
 use App\Criteria\ProductNotAttributeSearch;
 use App\Criteria\ProductSearch;
+use App\Criteria\TranslatedLike;
 use App\Criteria\WhereHasId;
 use App\Criteria\WhereHasItems;
 use App\Criteria\WhereHasPhoto;
@@ -20,7 +21,6 @@ use App\Criteria\WhereNotSlug;
 use App\Enums\DiscountTargetType;
 use App\Models\Contracts\SortableContract;
 use App\Models\Interfaces\Translatable;
-use App\SearchTypes\TranslatedLike;
 use App\Services\Contracts\ProductSearchServiceContract;
 use App\SortColumnTypes\TranslatedColumn;
 use App\Traits\HasDiscountConditions;
@@ -98,13 +98,13 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
         'published',
     ];
 
-    protected $translatable = [
+    protected array $translatable = [
         'name',
         'description_html',
         'description_short',
     ];
 
-    protected $auditInclude = [
+    protected array $auditInclude = [
         'slug',
         'public',
         'quantity_step',

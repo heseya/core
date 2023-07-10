@@ -8,7 +8,7 @@ interface Translatable
 
     public function getTranslations(?string $key = null, ?array $allowedLocales = null): array;
 
-    public function setTranslation(string $key, string $locale, $value): self;
+    public function setTranslation(string $key, string $locale, mixed $value): self;
 
     public function setTranslations(string $key, array $translations): self;
 

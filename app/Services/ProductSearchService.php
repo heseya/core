@@ -13,7 +13,7 @@ use App\Models\Tag;
 use App\Services\Contracts\ProductSearchServiceContract;
 use App\Services\Contracts\ProductSetServiceContract;
 
-class ProductSearchService implements ProductSearchServiceContract
+readonly class ProductSearchService implements ProductSearchServiceContract
 {
     public function __construct(
         private ProductSetServiceContract $productSetService,
@@ -35,7 +35,7 @@ class ProductSearchService implements ProductSearchServiceContract
                 'price_max' => $product->price_max,
                 'price_min_initial' => $product->price_min_initial,
                 'price_max_initial' => $product->price_max_initial,
-                'description' => $product->description_html ? strip_tags($product->description_html) : null,
+                'description' => $product->description_html,
                 'description_short' => $product->description_short,
                 'created_at' => $product->created_at?->toIso8601String(),
                 'updated_at' => $product->updated_at?->toIso8601String(),

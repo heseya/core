@@ -46,7 +46,7 @@ class Page extends Model implements AuditableContract, SortableContract, Transla
         'published',
     ];
 
-    protected $translatable = [
+    protected array $translatable = [
         'name',
         'content_html',
     ];

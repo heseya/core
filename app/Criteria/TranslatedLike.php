@@ -1,12 +1,12 @@
 <?php
 
-namespace App\SearchTypes;
+namespace App\Criteria;
 
-use Heseya\Searchable\Searches\Search;
+use Heseya\Searchable\Criteria\Criterion;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\App;
 
-class TranslatedLike extends Search
+class TranslatedLike extends Criterion
 {
     public function query(Builder $query): Builder
     {

@@ -56,7 +56,7 @@ class PageService implements PageServiceContract
             $attributes = array_merge($attributes, ['order' => $pageCurrentOrder + 1]);
         }
 
-        $page = Page::make($attributes);
+        $page = new Page($attributes);
 
         foreach ($dto->getTranslations() as $lang => $translations) {
             $page->setLocale($lang)->fill($translations->toArray());

@@ -9,11 +9,10 @@ class StatusRedactor implements AttributeRedactor
 {
     public static function redact(mixed $value): string
     {
-        /** @var Status $status */
-        $status = Status::find($value);
+        $status = Status::query()->find($value);
 
         if ($status instanceof Status) {
-            $value = $status->name;
+            return $status->name;
         }
 
         return $value;

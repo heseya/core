@@ -6,6 +6,7 @@ use App\Http\Requests\Contracts\MetadataRequestContract;
 use App\Http\Requests\Contracts\SeoRequestContract;
 use App\Rules\AttributeOptionExist;
 use App\Rules\ProductAttributeOptions;
+use App\Rules\Translations;
 use App\Rules\UniqueIdInRequest;
 use App\Traits\MetadataRules;
 use App\Traits\SeoRules;
