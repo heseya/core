@@ -18,7 +18,7 @@ use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
- * @property Money $price
+ * @property ?Money $price
  *
  * @mixin IdeHelperShippingMethod
  */

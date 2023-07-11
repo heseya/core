@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('prices', function (Blueprint $table) {
+        Schema::create('prices', function (Blueprint $table): void {
             $table->uuid('id');
             $table->uuid('model_id');
             $table->string('model_type');

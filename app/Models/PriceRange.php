@@ -7,6 +7,9 @@ use Brick\Money\Money;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 /**
+ * @property Money $start
+ * @property Money $value
+ *
  * @mixin IdeHelperPriceRange
  */
 class PriceRange extends Model

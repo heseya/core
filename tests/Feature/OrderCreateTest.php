@@ -116,6 +116,7 @@ class OrderCreateTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
      * @throws MathException
      * @throws UnknownCurrencyException
      * @throws MoneyMismatchException
@@ -521,6 +522,7 @@ class OrderCreateTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
      * @throws MathException
      * @throws UnknownCurrencyException
      * @throws MoneyMismatchException

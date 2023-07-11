@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Price;
 use App\Models\ShippingMethod;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
