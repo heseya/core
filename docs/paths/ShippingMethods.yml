@@ -15,8 +15,8 @@ ShippingMethods:
         in: query
         required: false
         schema:
-          type: number
-          example: 1200
+          type: string
+          example: '1200.00'
       - name: metadata
         in: query
         description: search by metadata
