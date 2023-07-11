@@ -22,7 +22,7 @@ Route::prefix('attributes')->group(function (): void {
         ->middleware('can:attributes.show');
     Route::post('id:{attribute:id}/options', [AttributeOptionController::class, 'store'])
         ->middleware('can:attributes.edit');
-    Route::post('/id:{attribute:id}/reorder', [AttributeOptionController::class, 'reorder'])
+    Route::post('/id:{attribute:id}/options/reorder', [AttributeOptionController::class, 'reorder'])
         ->middleware('can:attributes.edit');
     Route::patch('id:{attribute:id}/metadata', [MetadataController::class, 'updateOrCreate'])
         ->middleware('can:attributes.edit');

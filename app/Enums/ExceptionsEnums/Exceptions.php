@@ -98,6 +98,8 @@ final class Exceptions extends Enum
     public const CLIENT_PROVIDER_HAS_NO_CONFIG = 'Chosen auth provider is not active';
     public const CLIENT_PROVIDER_NOT_FOUND = 'Provider cannot be found';
 
+    public const CLIENT_OPTION_NOT_RELATED_TO_ATTRIBUTE = 'Option is not related to provided attribute';
+
     public const SERVER_CDN_ERROR = 'CDN responded with an error';
     public const SERVER_ERROR = 'Server responded with an error';
     public const SERVER_ORDER_STATUSES_NOT_CONFIGURED = 'Order statuses are not configured';

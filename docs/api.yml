@@ -310,7 +310,7 @@ paths:
     $ref: './paths/Attributes.yml#/AttributesParams'
   '/attributes/id:{id}/options':
     $ref: './paths/Attributes.yml#/AttributeOption'
-  '/attributes/id:{id}/reorder':
+  '/attributes/id:{id}/options/reorder':
     $ref: './paths/Attributes.yml#/AttributeOptionReorder'
   '/attributes/id:{attribute_id}/options/id:{option_id}':
     $ref: './paths/Attributes.yml#/AttributeOptionParams'

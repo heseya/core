@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\DTO\ReorderDto;
 use App\Dtos\AttributeOptionDto;
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Exceptions\ClientException;
 use App\Http\Requests\AttributeOptionIndexRequest;
 use App\Http\Requests\AttributeOptionRequest;
 use App\Http\Resources\AttributeOptionResource;
@@ -60,15 +62,29 @@ class AttributeOptionController extends Controller
         return AttributeOptionResource::make($attributeOption);
     }
 
+    /**
+     * @throws ClientException
+     */
     public function destroy(Attribute $attribute, AttributeOption $option): HttpResponse
     {
+        if (!$attribute->options()->where('id', '=', $option->getKey())->exists()) {
+            throw new ClientException(Exceptions::CLIENT_OPTION_NOT_RELATED_TO_ATTRIBUTE);
+        }
+
         $this->attributeOptionService->delete($option);
 
         return Response::noContent();
     }
 
-    public function reorder(ReorderDto $dto): HttpResponse
+    /**
+     * @throws ClientException
+     */
+    public function reorder(Attribute $attribute, ReorderDto $dto): HttpResponse
     {
+        if (!$attribute->options()->whereIn('id', $dto->ids)->exists()) {
+            throw new ClientException(Exceptions::CLIENT_OPTION_NOT_RELATED_TO_ATTRIBUTE);
+        }
+
         $this->reorderService->reorderAndSave(AttributeOption::class, $dto);
 
         return Response::noContent();
