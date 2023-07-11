@@ -10,6 +10,7 @@ use App\Dtos\OrderProductSearchDto;
 use App\Dtos\OrderProductUpdateDto;
 use App\Dtos\OrderProductUrlDto;
 use App\Dtos\OrderUpdateDto;
+use App\Enums\Currency;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\SchemaType;
 use App\Enums\ShippingType;
@@ -42,6 +43,7 @@ use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
+use Brick\Money\Money;
 use Exception;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -88,6 +90,8 @@ class OrderService implements OrderServiceContract
     public function store(OrderDto $dto): Order
     {
         DB::beginTransaction();
+
+        $currency = Currency::DEFAULT->value;
 
         try {
             $items = $dto->getItems();
@@ -227,11 +231,14 @@ class OrderService implements OrderServiceContract
                 // Apply discounts to order/products
                 $order = $this->discountService->calcOrderProductsAndTotalDiscounts($order, $dto);
 
-                $shippingPrice = $shippingMethod?->getPrice($order->cart_total) ?? 0;
-                $shippingPrice += $digitalShippingMethod?->getPrice($order->cart_total) ?? 0;
+                $cartTotal = Money::of($order->cart_total, $currency);
+                $shippingPrice = $shippingMethod?->getPrice($cartTotal) ?? Money::zero($currency);
+                $shippingPrice = $shippingPrice->plus(
+                    $digitalShippingMethod?->getPrice($cartTotal) ?? Money::zero($currency),
+                );
 
-                $order->shipping_price_initial = $shippingPrice;
-                $order->shipping_price = $shippingPrice;
+                $order->shipping_price_initial = $shippingPrice->getAmount()->toFloat();
+                $order->shipping_price = $shippingPrice->getAmount()->toFloat();
 
                 // Apply discounts to order
                 $order = $this->discountService->calcOrderShippingDiscounts($order, $dto);

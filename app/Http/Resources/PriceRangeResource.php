@@ -14,8 +14,12 @@ class PriceRangeResource extends Resource
     {
         return [
             'id' => $this->resource->getKey(),
-            'start' => $this->resource->start->getAmount(),
-            'value' => $this->resource->value->getAmount(),
+            'start' => [
+                'gross' => $this->resource->start->getAmount(),
+            ],
+            'value' => [
+                'gross' => $this->resource->value->getAmount(),
+            ],
         ];
     }
 }

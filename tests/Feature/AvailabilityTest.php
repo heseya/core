@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Currency;
 use App\Enums\SchemaType;
 use App\Enums\ShippingType;
 use App\Events\ItemUpdatedQuantity;
@@ -19,6 +20,7 @@ use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Services\AvailabilityService;
 use App\Services\Contracts\AvailabilityServiceContract;
+use Brick\Money\Money;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Collection;
@@ -572,12 +574,17 @@ class AvailabilityTest extends TestCase
             'public' => true,
         ]);
 
+        $currency = Currency::DEFAULT->value;
         $shippingMethod = ShippingMethod::factory()->create(['public' => true]);
-        $lowRange = PriceRange::create(['start' => 0]);
-        $lowRange->prices()->create(['value' => 8.11]);
+        $lowRange = PriceRange::create([
+            'start' => Money::zero($currency),
+            'value' => Money::of(8.11, $currency),
+        ]);
 
-        $highRange = PriceRange::create(['start' => 210]);
-        $highRange->prices()->create(['value' => 0.0]);
+        $highRange = PriceRange::create([
+            'start' => Money::of(210, $currency),
+            'value' => Money::zero($currency),
+        ]);
 
         $shippingMethod->priceRanges()->saveMany([$lowRange, $highRange]);
 

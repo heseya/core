@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\MetadataType;
@@ -23,6 +24,10 @@ use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\Tag;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -318,6 +323,11 @@ class PerformanceTest extends TestCase
         $this->assertQueryCountLessThan(3200);
     }
 
+    /**
+     * @throws UnknownCurrencyException
+     * @throws RoundingNecessaryException
+     * @throws NumberFormatException
+     */
     public function testViewOrderPerformanceWithDiscounts(): void
     {
         $this->user->givePermissionTo('orders.show_details');
@@ -432,13 +442,16 @@ class PerformanceTest extends TestCase
         ],
         ]);
 
-        $lowRange = PriceRange::create(['start' => 0]);
-        $lowRange->prices()->create([
-            'value' => mt_rand(8, 15) + (mt_rand(0, 99) / 100),
+        $currency = Currency::DEFAULT->value;
+        $lowRange = PriceRange::create([
+            'start' => Money::zero($currency),
+            'value' => Money::of(mt_rand(8, 15) + (mt_rand(0, 99) / 100), $currency),
         ]);
 
-        $highRange = PriceRange::create(['start' => 210]);
-        $highRange->prices()->create(['value' => 0.0]);
+        $highRange = PriceRange::create([
+            'start' => Money::of(210, $currency),
+            'value' => Money::zero($currency),
+        ]);
 
         $shippingMethod->priceRanges()->saveMany([$lowRange, $highRange]);
 

@@ -43,6 +43,6 @@ class ShippingMethodPriceRangesTest extends TestCase
             ->json('GET', '/shipping-methods', ['cart_value' => '1200.00'])
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonFragment(['price' => ['value' => '10.00']]);
+            ->assertJsonFragment(['price' => ['gross' => '10.00']]);
     }
 }

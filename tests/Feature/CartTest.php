@@ -604,12 +604,15 @@ class CartTest extends TestCase
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
+        $currency = Currency::DEFAULT->value;
         $shippingMethod = ShippingMethod::factory()->create([
             'public' => true,
             'shipping_type' => ShippingType::ADDRESS,
         ]);
-        $lowRange = PriceRange::create(['start' => 0]);
-        $lowRange->prices()->create(['value' => 10]);
+        $lowRange = PriceRange::create([
+            'start' => Money::zero($currency),
+            'value' => Money::of(10, $currency),
+        ]);
 
         $shippingMethod->priceRanges()->saveMany([$lowRange]);
 

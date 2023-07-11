@@ -14,11 +14,11 @@ class Money implements ValidationRule
 {
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-//        if (!is_string($value)) {
-//            $fail('The :attribute needs to be a decimal string');
-//
-//            return;
-//        }
+        if (!is_string($value)) {
+            $fail('The :attribute needs to be a decimal string');
+
+            return;
+        }
 
         $defaultCurrency = Currency::DEFAULT->value;
         try {

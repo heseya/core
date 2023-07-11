@@ -15,6 +15,7 @@ class Price extends Model
         'value',
         'model_id',
         'model_type',
+        'price_type',
     ];
 
     public function value(): Attribute

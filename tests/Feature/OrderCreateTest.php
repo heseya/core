@@ -149,16 +149,19 @@ class OrderCreateTest extends TestCase
         $response->assertCreated();
         $order = $response->getData()->data;
 
+        $currency = Currency::DEFAULT->value;
         $shippingPrice = $this->shippingMethod->getPrice(
-            Money::of($this->product->price, Currency::DEFAULT->value)->multipliedBy($productQuantity),
+            Money::of($this->product->price, $currency)->multipliedBy($productQuantity),
         );
+        $summary = Money::of($this->product->price, $currency)
+            ->multipliedBy($productQuantity)
+            ->plus($shippingPrice);
+
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
             'email' => $this->email,
-            'shipping_price' => $shippingPrice,
-            'summary' => Money::of($this->product->price, Currency::DEFAULT->value)
-                ->multipliedBy($productQuantity)
-                ->plus($shippingPrice),
+            'shipping_price' => $shippingPrice->getAmount(),
+            'summary' => $summary->getAmount(),
         ]);
         $this->assertDatabaseHas('addresses', $this->address->toArray());
         $this->assertDatabaseHas('order_products', [
@@ -362,12 +365,13 @@ class OrderCreateTest extends TestCase
         $response->assertCreated();
         $order = $response->getData()->data;
 
+        $orderTotal = Money::of($this->product->price, Currency::DEFAULT->value)
+            ->multipliedBy($productQuantity);
+
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
             'email' => $this->email,
-            'shipping_price' => $this->shippingMethod->getPrice(
-                $this->product->price * $productQuantity,
-            ),
+            'shipping_price' => $this->shippingMethod->getPrice($orderTotal)->getAmount(),
         ]);
         $this->assertDatabaseHas('addresses', $this->address->toArray());
         $this->assertDatabaseHas('order_products', [
@@ -517,6 +521,9 @@ class OrderCreateTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws MoneyMismatchException
      */
     public function testCreateOrderWithWebHook($user): void
     {
@@ -589,12 +596,14 @@ class OrderCreateTest extends TestCase
             $schema->getKey() => $option->getKey(),
         ]);
 
+        $orderTotal = Money::of($this->product->price, Currency::DEFAULT->value)
+            ->plus($schemaPrice)
+            ->multipliedBy($productQuantity);
+
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
             'email' => $this->email,
-            'shipping_price' => $this->shippingMethod->getPrice(
-                ($this->product->price + $schemaPrice) * $productQuantity,
-            ),
+            'shipping_price' => $this->shippingMethod->getPrice($orderTotal)->getAmount(),
         ]);
         $this->assertDatabaseHas('addresses', $this->address->toArray());
         $this->assertDatabaseHas('order_products', [
@@ -675,12 +684,14 @@ class OrderCreateTest extends TestCase
             $schema->getKey() => 'Test',
         ]);
 
+        $orderTotal = Money::of($this->product->price, Currency::DEFAULT->value)
+            ->plus($schemaPrice)
+            ->multipliedBy($productQuantity);
+
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
             'email' => $this->email,
-            'shipping_price' => $this->shippingMethod->getPrice(
-                ($this->product->price + $schemaPrice) * $productQuantity,
-            ),
+            'shipping_price' => $this->shippingMethod->getPrice($orderTotal)->getAmount(),
         ]);
         $this->assertDatabaseHas('addresses', $this->address->toArray());
         $this->assertDatabaseHas('order_products', [
@@ -716,7 +727,7 @@ class OrderCreateTest extends TestCase
         $productPrice = Money::of(100, Currency::DEFAULT->value);
         $this->product->schemas()->sync([$schema->getKey()]);
         $this->product->update([
-            'price' => $productPrice->getAmount(),
+            'price' => $productPrice->getAmount()->toFloat(),
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
@@ -746,7 +757,7 @@ class OrderCreateTest extends TestCase
         $expectedOrderPrice = $productPrice->plus(
             $this->shippingMethod->getPrice($productPrice),
         );
-        $this->assertEquals($expectedOrderPrice, $order->summary);
+        $this->assertEquals($expectedOrderPrice->getAmount()->toFloat(), $order->summary);
     }
 
     /**
@@ -842,12 +853,11 @@ class OrderCreateTest extends TestCase
         $response->assertCreated();
         $order = Order::find($response->getData()->data->id);
 
+        $orderTotal = Money::of($this->product->price, Currency::DEFAULT->value);
         $this->assertDatabaseHas('orders', [
             'id' => $order->getKey(),
             'email' => $this->email,
-            'shipping_price' => $shippingMethod->getPrice(
-                $this->product->price * 1,
-            ),
+            'shipping_price' => $shippingMethod->getPrice($orderTotal)->getAmount(),
         ]);
 
         Event::assertDispatched(OrderCreated::class);
