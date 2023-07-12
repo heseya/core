@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Utils;
 
 use App\DTO\Metadata\MetadataDto;
-use App\DTO\Metadata\MetadataPersonalDto;
 use App\Enums\MetadataType;
 use Spatie\LaravelData\Optional;
 
