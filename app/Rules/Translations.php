@@ -25,7 +25,7 @@ class Translations implements Rule
         }
 
         foreach ($value as $language => $translations) {
-            if (Language::find($language) === null) {
+            if (!Language::query()->where('id', '=', $language)->exists()) {
                 return $this->failWithError("Language {$language} in :attribute doesn't exist");
             }
 

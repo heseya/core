@@ -47,6 +47,9 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use Spatie\Translatable\HasTranslations;
 
 /**
+ * @property string $name
+ * @property string $description_html
+ * @property string $description_short
  * @property mixed $pivot
  *
  * @mixin IdeHelperProduct

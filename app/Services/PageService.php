@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Dtos\PageCreateDto;
-use App\Dtos\PageUpdateDto;
+use App\DTO\Page\PageCreateDto;
+use App\DTO\Page\PageUpdateDto;
 use App\Events\PageCreated;
 use App\Events\PageDeleted;
 use App\Events\PageUpdated;
@@ -12,10 +12,10 @@ use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\PageServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
-use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Spatie\LaravelData\Optional;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PageService implements PageServiceContract
@@ -58,7 +58,7 @@ class PageService implements PageServiceContract
 
         $page = new Page($attributes);
 
-        foreach ($dto->getTranslations() as $lang => $translations) {
+        foreach ($dto->translations as $lang => $translations) {
             $page->setLocale($lang)->fill($translations->toArray());
         }
 
@@ -66,12 +66,12 @@ class PageService implements PageServiceContract
 
         $page->save();
 
-        if (!($dto->getSeo() instanceof Missing)) {
-            $this->seoMetadataService->createOrUpdateFor($page, $dto->getSeo());
+        if (!($dto->seo instanceof Optional)) {
+            $this->seoMetadataService->createOrUpdateFor($page, $dto->seo);
         }
 
-        if (!($dto->getMetadata() instanceof Missing)) {
-            $this->metadataService->sync($page, $dto->getMetadata());
+        if (!($dto->metadata instanceof Optional)) {
+            $this->metadataService->sync($page, $dto->metadata->toArray());
         }
 
         PageCreated::dispatch($page);
@@ -83,17 +83,18 @@ class PageService implements PageServiceContract
     {
         $page->fill($dto->toArray());
 
-        foreach ($dto->getTranslations() as $lang => $translations) {
-            $page->setLocale($lang)->fill($translations->toArray());
+        if (!$dto->translations instanceof Optional) {
+            foreach ($dto->translations as $lang => $translations) {
+                $page->setLocale($lang)->fill($translations->toArray());
+            }
+            $this->translationService->checkPublished($page, ['name', 'content_html']);
         }
-
-        $this->translationService->checkPublished($page, ['name', 'content_html']);
 
         $page->save();
 
         $seo = $page->seo;
-        if ($seo !== null && !$dto->getSeo() instanceof Missing) {
-            $this->seoMetadataService->update($dto->getSeo(), $seo);
+        if ($seo !== null && !$dto->seo instanceof Optional) {
+            $this->seoMetadataService->update($dto->seo, $seo);
         }
 
         PageUpdated::dispatch($page);

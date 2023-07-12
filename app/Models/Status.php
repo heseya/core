@@ -15,6 +15,9 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use Spatie\Translatable\HasTranslations;
 
 /**
+ * @property string $name
+ * @property string $description
+ *
  * @mixin IdeHelperStatus
  */
 class Status extends Model implements AuditableContract, Translatable

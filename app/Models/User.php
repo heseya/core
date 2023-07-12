@@ -13,7 +13,6 @@ use App\Enums\SavedAddressType;
 use App\Models\Contracts\SortableContract;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasMetadata;
-use App\Traits\HasMetadataPersonal;
 use App\Traits\HasWebHooks;
 use App\Traits\HasWishlist;
 use App\Traits\Sortable;
@@ -54,7 +53,6 @@ class User extends Model implements AuditableContract, AuthenticatableContract, 
     use HasDiscountConditions;
     use HasFactory;
     use HasMetadata;
-    use HasMetadataPersonal;
     use HasRoles;
     use HasWebHooks;
     use HasWishlist;
@@ -177,5 +175,10 @@ class User extends Model implements AuditableContract, AuthenticatableContract, 
     public function providers(): HasMany
     {
         return $this->hasMany(UserProvider::class, 'user_id', 'id');
+    }
+
+    public function metadataPersonal(): MorphMany
+    {
+        return $this->morphMany(MetadataPersonal::class, 'model', 'model_type', 'model_id');
     }
 }

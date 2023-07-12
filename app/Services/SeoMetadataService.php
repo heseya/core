@@ -2,8 +2,9 @@
 
 namespace App\Services;
 
+use App\DTO\SeoMetadata\SeoMetadataDto;
 use App\Dtos\SeoKeywordsDto;
-use App\Dtos\SeoMetadataDto;
+use App\Dtos\SeoMetadataDto as SeoMetadataDtoOld;
 use App\Enums\SeoModelType;
 use App\Exceptions\PublishingException;
 use App\Models\Model;
@@ -44,7 +45,7 @@ class SeoMetadataService implements SeoMetadataServiceContract
                 'global' => true,
             ]);
 
-            foreach ($dto->getTranslations() as $lang => $translations) {
+            foreach ($dto->translations as $lang => $translations) {
                 $translationArray = $translations->toArray() + [
                     'no_index' => $translations->getNoIndex() instanceof Missing
                         ? false
@@ -64,7 +65,7 @@ class SeoMetadataService implements SeoMetadataServiceContract
         if (!$seo->wasRecentlyCreated) {
             $seo->fill($dto->toArray());
 
-            foreach ($dto->getTranslations() as $lang => $translations) {
+            foreach ($dto->translations as $lang => $translations) {
                 foreach ($translations->toArray() as $key => $translation) {
                     $seo->setTranslation($key, $lang, $translation);
                 }
@@ -85,13 +86,13 @@ class SeoMetadataService implements SeoMetadataServiceContract
      *
      * @throws PublishingException
      */
-    public function createOrUpdateFor(Model $model, SeoMetadataDto $dto): void
+    public function createOrUpdateFor(Model $model, SeoMetadataDto|SeoMetadataDtoOld $dto): void
     {
         $seo = new SeoMetadata($dto->toArray());
 
         $seo->setAttribute('no_index', '{}');
 
-        foreach ($dto->getTranslations() as $lang => $translations) {
+        foreach ($dto->translations as $lang => $translations) {
             $translationArray = $translations->toArray() + [
                 'no_index' => $translations->getNoIndex() instanceof Missing
                         ? false
@@ -111,11 +112,11 @@ class SeoMetadataService implements SeoMetadataServiceContract
     /**
      * @throws PublishingException
      */
-    public function update(SeoMetadataDto $dto, SeoMetadata $seoMetadata): SeoMetadata
+    public function update(SeoMetadataDto|SeoMetadataDtoOld $dto, SeoMetadata $seoMetadata): SeoMetadata
     {
         $seoMetadata->fill($dto->toArray());
 
-        foreach ($dto->getTranslations() as $lang => $translations) {
+        foreach ($dto->translations as $lang => $translations) {
             foreach ($translations->toArray() as $key => $translation) {
                 $seoMetadata->setTranslation($key, $lang, $translation);
             }

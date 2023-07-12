@@ -27,7 +27,9 @@ use Illuminate\Validation\ValidationException;
 use Spatie\Translatable\HasTranslations;
 
 /**
- * @property SchemaType $type;
+ * @property string $name
+ * @property string $description
+ * @property SchemaType $type
  *
  * @mixin IdeHelperSchema
  */

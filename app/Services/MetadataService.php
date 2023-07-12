@@ -67,7 +67,8 @@ class MetadataService implements MetadataServiceContract
     public function updateOrCreateMyPersonal(MetadataPersonalListDto $dto): Collection
     {
         $user = Auth::user();
-        if ($user !== null) {
+
+        if ($user instanceof User) {
             foreach ($dto->getMetadata() as $metadata) {
                 $this->processMetadata($user, $metadata, 'metadataPersonal');
             }
@@ -80,7 +81,9 @@ class MetadataService implements MetadataServiceContract
 
     public function updateOrCreateUserPersonal(MetadataPersonalListDto $dto, string $userId): Collection
     {
-        $user = User::findOrFail($userId);
+        /** @var User $user */
+        $user = User::query()->findOrFail($userId);
+
         foreach ($dto->getMetadata() as $metadata) {
             $this->processMetadata($user, $metadata, 'metadataPersonal');
         }

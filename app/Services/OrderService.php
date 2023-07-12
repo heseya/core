@@ -195,7 +195,7 @@ readonly class OrderService implements OrderServiceContract
                         if ($schema->type->is(SchemaType::SELECT)) {
                             /** @var Option $option */
                             $option = $schema->options()->findOrFail($value);
-                            $tempSchemaOrderProduct[((string) $schema->name) . '_' . $item->getProductId()] = [$schemaId, $value];
+                            $tempSchemaOrderProduct[$schema->name . '_' . $item->getProductId()] = [$schemaId, $value];
                             $value = $option->name;
                         }
 

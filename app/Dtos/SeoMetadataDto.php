@@ -19,7 +19,7 @@ class SeoMetadataDto extends Dto implements InstantiateFromRequest
     private bool|Missing $no_index;
     private array|Missing|null $header_tags;
     /** @var array<string, SeoMetadataTranslationDto> */
-    private array $translations;
+    public array $translations;
     /** @var array<string> */
     private array $published;
 
@@ -49,13 +49,5 @@ class SeoMetadataDto extends Dto implements InstantiateFromRequest
             no_index: $request->input($seo . 'no_index', new Missing()),
             header_tags: $request->input($seo . 'header_tags', new Missing()),
         );
-    }
-
-    /**
-     * @return array<SeoMetadataTranslationDto>
-     */
-    public function getTranslations(): array
-    {
-        return $this->translations;
     }
 }
