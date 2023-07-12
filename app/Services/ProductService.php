@@ -101,15 +101,16 @@ final readonly class ProductService implements ProductServiceContract
     {
         DB::beginTransaction();
 
-        /** @var Product $product */
-        $product = Product::query()->create($dto->toArray());
-        $product = $this->setup($product, $dto);
+        $product = new Product($dto->toArray());
 
         foreach ($dto->translations as $lang => $translations) {
             $product->setLocale($lang)->fill($translations);
         }
+
         $this->translationService->checkPublished($product, ['name']);
 
+        $product->save();
+        $product = $this->setup($product, $dto);
         $product->save();
 
         DB::commit();
@@ -138,13 +139,12 @@ final readonly class ProductService implements ProductServiceContract
         DB::beginTransaction();
 
         $product->fill($dto->toArray());
-        $product = $this->setup($product, $dto);
-
         foreach ($dto->translations as $lang => $translations) {
             $product->setLocale($lang)->fill($translations);
         }
         $this->translationService->checkPublished($product, ['name']);
 
+        $product = $this->setup($product, $dto);
         $product->save();
 
         DB::commit();

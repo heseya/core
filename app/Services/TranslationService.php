@@ -13,8 +13,7 @@ class TranslationService implements TranslationServiceContract
      */
     public function checkPublished(Translatable $model, array $requiredKeys): void
     {
-        // @phpstan-ignore-next-line
-        foreach ($model->published as $lang) {
+        foreach ($model->published ?? [] as $lang) {
             foreach ($requiredKeys as $key) {
                 if (!$model->hasTranslation($key, $lang)) {
                     throw new PublishingException("Model doesn't have all required translations to be published in {$lang}");
@@ -28,8 +27,7 @@ class TranslationService implements TranslationServiceContract
      */
     public function checkPublishedRelations(Translatable $model, array $requiredRelationKeys): void
     {
-        // @phpstan-ignore-next-line
-        foreach ($model->published as $lang) {
+        foreach ($model->published ?? [] as $lang) {
             foreach ($requiredRelationKeys as $relation => $keys) {
                 // @phpstan-ignore-next-line
                 $model->loadMissing($relation);

@@ -27,9 +27,9 @@ class ProductCreateRequest extends FormRequest implements MetadataRequestContrac
                     'required',
                     new Translations(['name', 'description_html', 'description_short']),
                 ],
-                'translations.*.name' => ['string', 'max:255'],
+                'translations.*.name' => ['required', 'string', 'max:255'],
                 'translations.*.description_html' => ['nullable', 'string'],
-                'translations.*.description_short' => ['nullable', 'string', 'between:30,5000'],
+                'translations.*.description_short' => ['nullable', 'string', 'max:5000'],
 
                 'published' => ['required', 'array', 'min:1'],
                 'published.*' => ['uuid', 'exists:languages,id'],

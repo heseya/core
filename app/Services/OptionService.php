@@ -2,24 +2,22 @@
 
 namespace App\Services;
 
-use App\Exceptions\PublishingException;
+use App\Dtos\OptionDto;
 use App\Models\Option;
 use App\Models\Schema;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\OptionServiceContract;
-use App\Services\Contracts\TranslationServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Support\Collection;
 
-class OptionService implements OptionServiceContract
+readonly class OptionService implements OptionServiceContract
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
-        protected TranslationServiceContract $translationService,
     ) {}
 
     /**
-     * @throws PublishingException
+     * @param OptionDto[] $options
      */
     public function sync(Schema $schema, array $options = []): void
     {
@@ -39,16 +37,14 @@ class OptionService implements OptionServiceContract
                 $option = $schema->options()->create($optionData);
             }
 
-            foreach ($optionItem['translations'] ?? [] as $lang => $translations) {
+            foreach ($optionItem->translations ?? [] as $lang => $translations) {
                 $option->setLocale($lang)->fill($translations);
             }
 
             $option->save();
 
             $option->items()->sync(
-                !$optionItem->getItems() instanceof Missing ?
-                    $optionItem->getItems() ?? []
-                    : [],
+                !$optionItem->getItems() instanceof Missing ? $optionItem->getItems() : [],
             );
 
             if (!($optionItem->getMetadata() instanceof Missing)) {
