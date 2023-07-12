@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Dtos\MetadataDto;
-use App\Dtos\MetadataPersonalDto;
+use App\DTO\Metadata\MetadataDto;
+use App\DTO\Metadata\MetadataPersonalDto;
 use App\Dtos\MetadataPersonalListDto;
 use App\Models\Model;
 use App\Models\Product;
@@ -29,7 +29,7 @@ class MetadataService implements MetadataServiceContract
 
     public function updateOrCreate(Model|Role $model, MetadataDto $dto): void
     {
-        $this->processMetadata($model, $dto, $dto->isPublic() ? 'metadata' : 'metadataPrivate');
+        $this->processMetadata($model, $dto, $dto->public ? 'metadata' : 'metadataPrivate');
 
         if ($model instanceof Product) {
             $model->searchable();
@@ -69,7 +69,7 @@ class MetadataService implements MetadataServiceContract
         $user = Auth::user();
 
         if ($user instanceof User) {
-            foreach ($dto->getMetadata() as $metadata) {
+            foreach ($dto->metadata as $metadata) {
                 $this->processMetadata($user, $metadata, 'metadataPersonal');
             }
 
@@ -84,7 +84,7 @@ class MetadataService implements MetadataServiceContract
         /** @var User $user */
         $user = User::query()->findOrFail($userId);
 
-        foreach ($dto->getMetadata() as $metadata) {
+        foreach ($dto->metadata as $metadata) {
             $this->processMetadata($user, $metadata, 'metadataPersonal');
         }
 
@@ -96,18 +96,21 @@ class MetadataService implements MetadataServiceContract
         return $segments[2] === 'options';
     }
 
-    private function processMetadata(Model|Role $model, MetadataDto|MetadataPersonalDto $dto, string $relation): void
-    {
+    private function processMetadata(
+        Model|Role $model,
+        MetadataDto|MetadataPersonalDto $dto,
+        string $relation,
+    ): void {
         $query = $model->{$relation}();
 
-        if ($dto->getValue() === null) {
-            $query->where('name', $dto->getName())->delete();
+        if ($dto->value === null) {
+            $query->where('name', $dto->name)->delete();
 
             return;
         }
 
         $query->updateOrCreate(
-            ['name' => $dto->getName()],
+            ['name' => $dto->name],
             $dto->toArray(),
         );
     }

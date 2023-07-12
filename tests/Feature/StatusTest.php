@@ -49,7 +49,7 @@ final class StatusTest extends TestCase
         $response = $this->actingAs($this->{$user})->getJson('/statuses');
         $response
             ->assertOk()
-            ->assertJsonCount(4, 'data') // domyślne statusy z migracji + ten utworzony teraz
+            ->assertJsonCount(4, 'data') // default statuses from migration + the one created now
             ->assertJsonFragment([$this->expected]);
     }
 
@@ -87,109 +87,55 @@ final class StatusTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreate($user): void
+    public function testCreate(string $user): void
     {
-        $this->{$user}->givePermissionTo('statuses.add');
+        $this->{$user}->givePermissionTo('statuses.add', 'statuses.show_metadata_private');
 
         $status = [
             'color' => 'ffffff',
             'hidden' => true,
             'no_notifications' => true,
+            'cancel' => false,
+            'metadata' => [
+                'attributeMeta' => 'attributeValue',
+            ],
+            'metadata_private' => [
+                'attributeMetaPrivate' => 'attributeValue',
+            ],
         ];
 
-        $response = $this->actingAs($this->{$user})->postJson('/statuses', $status);
-        $response
+        $this
+            ->actingAs($this->{$user})
+            ->postJson('/statuses', $status + [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test Status',
+                        'description' => 'Test description.',
+                    ],
+                ],
+                'published' => [$this->lang],
+            ])
             ->assertCreated()
             ->assertJson(['data' => $status + [
                 'name' => 'Test Status',
-                'description' => 'To jest status testowy.',
+                'description' => 'Test description.',
             ]]);
 
         $this->assertDatabaseHas('statuses', [
             "name->{$this->lang}" => 'Test Status',
             'color' => 'ffffff',
-            "description->{$this->lang}" => 'To jest status testowy.',
+            "description->{$this->lang}" => 'Test description.',
             'hidden' => true,
+            'cancel' => false,
             'no_notifications' => true,
         ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateWithMetadata($user): void
-    {
-        $this->{$user}->givePermissionTo('statuses.add');
-
-        $status = [
-            'name' => 'Test Status',
-            'color' => 'ffffff',
-            'description' => 'To jest status testowy.',
-            'hidden' => true,
-            'no_notifications' => true,
-            'metadata' => [
-                'attributeMeta' => 'attributeValue',
-            ],
-        ];
-
-        $this
-            ->actingAs($this->{$user})
-            ->postJson('/statuses', $status)
-            ->assertCreated()
-            ->assertJson(['data' => $status]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateWithMetadataPrivate($user): void
-    {
-        $this->{$user}->givePermissionTo(['statuses.add', 'statuses.show_metadata_private']);
-
-        $status = [
-            'name' => 'Test Status',
-            'color' => 'ffffff',
-            'description' => 'To jest status testowy.',
-            'hidden' => true,
-            'no_notifications' => true,
-            'metadata_private' => [
-                'attributeMetaPriv' => 'attributeValue',
-            ],
-        ];
-
-        $this
-            ->actingAs($this->{$user})
-            ->postJson('/statuses', $status)
-            ->assertCreated()
-            ->assertJson(['data' => $status]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateDefault($user): void
-    {
-        $this->{$user}->givePermissionTo('statuses.add');
-
-        $status = [
-            'name' => 'Test Status',
-            'color' => 'ffffff',
-            'description' => 'To jest status testowy.',
-        ];
-
-        $response = $this->actingAs($this->{$user})->postJson('/statuses', $status);
-        $response
-            ->assertCreated()
-            ->assertJson(['data' => $status + [
-                'hidden' => false,
-                'no_notifications' => false,
-            ],
-            ]);
-
-        $this->assertDatabaseHas('statuses', [
-            "name->{$this->lang}" => 'Test Status',
-            'color' => 'ffffff',
-            "description->{$this->lang}" => 'To jest status testowy.',
+        $this->assertDatabaseHas('metadata', [
+            'name' => 'attributeMeta',
+            'value' => 'attributeValue',
+        ]);
+        $this->assertDatabaseHas('metadata', [
+            'name' => 'attributeMetaPrivate',
+            'value' => 'attributeValue',
         ]);
     }
 
@@ -212,7 +158,7 @@ final class StatusTest extends TestCase
     /**
      * @dataProvider statusUpdateProvider
      */
-    public function testUpdate($user, bool $cancel): void
+    public function testUpdate(string $user, bool $cancel): void
     {
         $this->{$user}->givePermissionTo('statuses.edit');
 

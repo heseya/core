@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Dtos\MetadataDto;
+use App\DTO\Metadata\MetadataDto;
 use App\Dtos\MetadataPersonalListDto;
+use App\Enums\MetadataType;
 use App\Http\Resources\MetadataResource;
 use App\Models\AttributeOption;
 use App\Services\Contracts\MetadataServiceContract;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\Response;
 
 class MetadataController extends Controller
 {
-    public function __construct(private MetadataServiceContract $metadataService) {}
+    public function __construct(private readonly MetadataServiceContract $metadataService) {}
 
     public function updateOrCreate(int|string $modelId, Request $request): JsonResource|JsonResponse
     {
@@ -31,12 +32,8 @@ class MetadataController extends Controller
 
         $public = Collection::make($request->segments())->last() === 'metadata';
         foreach ($request->all() as $key => $value) {
-            $dto = MetadataDto::manualInit(name: $key, value: $value, public: $public);
-
-            $this->metadataService->updateOrCreate(
-                $model,
-                $dto
-            );
+            $dto = new MetadataDto($key, $value, $public, MetadataType::matchType($value));
+            $this->metadataService->updateOrCreate($model, $dto);
         }
 
         $model->refresh();

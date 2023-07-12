@@ -32,11 +32,11 @@ readonly class StatusService implements StatusServiceContract
 
         $this->translationService->checkPublished($status, ['name']);
 
+        $status->save();
+
         if (!($dto->metadata instanceof Optional)) {
             $this->metadataService->sync($status, $dto->metadata);
         }
-
-        $status->save();
 
         return $status;
     }

@@ -2,7 +2,9 @@
 
 namespace App\Dtos;
 
+use App\DTO\Metadata\MetadataPersonalDto;
 use App\Dtos\Contracts\InstantiateFromRequest;
+use App\Enums\MetadataType;
 use App\Http\Requests\RegisterRequest;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
@@ -90,7 +92,7 @@ class RegisterDto extends Dto implements InstantiateFromRequest
         $metadata = Collection::make();
         if ($request->has('metadata_personal')) {
             foreach ($request->input('metadata_personal') as $key => $value) {
-                $metadata->push(MetadataPersonalDto::manualInit($key, $value));
+                $metadata->push(new MetadataPersonalDto($key, $value, MetadataType::matchType($value)));
             }
         }
 

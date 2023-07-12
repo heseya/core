@@ -26,11 +26,11 @@ final class OrderStatusDto extends Data
         public readonly bool $hidden,
         public readonly bool $no_notifications,
         #[Min(1)]
-        public array $published,
+        public readonly array $published,
 
         #[MapInputName('metadata')]
-        private readonly array|Optional $metadata_public,
-        private readonly array|Optional $metadata_private,
+        public readonly array|Optional $metadata_public,
+        public readonly array|Optional $metadata_private,
     ) {
         $this->metadata = Map::toMetadata(
             $this->metadata_public,
@@ -41,8 +41,8 @@ final class OrderStatusDto extends Data
     public static function rules(): array
     {
         return [
-            'translations.*.name' => ['string', 'max:60'],
-            'translations.*.description' => ['string', 'max:255', 'nullable'],
+            'translations.*.name' => ['required', 'string', 'max:60'],
+            'translations.*.description' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

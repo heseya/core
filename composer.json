@@ -15,6 +15,7 @@
     "guzzlehttp/guzzle": "^7.4",
     "guzzlehttp/psr7": "^2.2",
     "heseya/2fa": "^2.0",
+    "heseya/data": "^1.0",
     "heseya/dto": "^1.0.1",
     "heseya/laravel-searchable": "^2.0",
     "heseya/pagination": "^1.0.3",
@@ -59,6 +60,10 @@
     {
       "type": "path",
       "url": "./heseya/resource"
+    },
+    {
+      "type": "path",
+      "url": "./heseya/data"
     }
   ],
   "minimum-stability": "stable",

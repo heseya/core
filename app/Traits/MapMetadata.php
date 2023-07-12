@@ -2,8 +2,9 @@
 
 namespace App\Traits;
 
-use App\Dtos\MetadataDto;
-use App\Dtos\MetadataPersonalDto;
+use App\DTO\Metadata\MetadataDto;
+use App\DTO\Metadata\MetadataPersonalDto;
+use App\Enums\MetadataType;
 use Heseya\Dto\Missing;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -21,19 +22,19 @@ trait MapMetadata
         $metadata = Collection::make();
         if (array_key_exists('metadata', $data)) {
             foreach ($data['metadata'] as $key => $value) {
-                $metadata->push(MetadataDto::manualInit($key, $value, true));
+                $metadata->push(new MetadataDto($key, $value, true, MetadataType::matchType($value)));
             }
         }
 
         if ($request->has('metadata_private')) {
             foreach ($request->input('metadata_private') as $key => $value) {
-                $metadata->push(MetadataDto::manualInit($key, $value, false));
+                $metadata->push(new MetadataDto($key, $value, false, MetadataType::matchType($value)));
             }
         }
 
         if ($request->has('metadata_personal')) {
             foreach ($request->input('metadata_personal') as $key => $value) {
-                $metadata->push(MetadataPersonalDto::manualInit($key, $value));
+                $metadata->push(new MetadataPersonalDto($key, $value, MetadataType::matchType($value)));
             }
         }
 
@@ -45,13 +46,13 @@ trait MapMetadata
         $metadata = Collection::make();
         if (array_key_exists('metadata', $data)) {
             foreach ($data['metadata'] as $key => $value) {
-                $metadata->push(MetadataDto::manualInit($key, $value, true));
+                $metadata->push(new MetadataDto($key, $value, true, MetadataType::matchType($value)));
             }
         }
 
         if (array_key_exists('metadata_private', $data)) {
             foreach ($data['metadata_private'] as $key => $value) {
-                $metadata->push(MetadataDto::manualInit($key, $value, false));
+                $metadata->push(new MetadataDto($key, $value, false, MetadataType::matchType($value)));
             }
         }
 
