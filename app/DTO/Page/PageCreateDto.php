@@ -1,32 +1,36 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DTO\Page;
 
-use App\DTO\Metadata\Metadata;
 use App\DTO\SeoMetadata\SeoMetadataDto;
 use App\Rules\Translations;
+use App\Utils\Map;
+use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 
-class PageCreateDto extends Data
+final class PageCreateDto extends Data
 {
-    use Metadata;
+    #[Computed]
+    public readonly array|Optional $metadata;
 
     public function __construct(
         #[Rule(new Translations(['name', 'content_html']))]
-        public array $translations,
-        public string $slug,
-        public bool $public,
+        public readonly array $translations,
+        public readonly string $slug,
+        public readonly bool $public,
 
-        public Optional|SeoMetadataDto $seo,
+        public readonly Optional|SeoMetadataDto $seo,
 
         #[MapInputName('metadata')]
-        public array|Optional $metadata_public,
-        public array|Optional $metadata_private,
+        private readonly array|Optional $metadata_public,
+        private readonly array|Optional $metadata_private,
     ) {
-        $this->mapMetadata(
+        $this->metadata = Map::toMetadata(
             $this->metadata_public,
             $this->metadata_private,
         );

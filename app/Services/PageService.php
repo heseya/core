@@ -71,7 +71,7 @@ class PageService implements PageServiceContract
         }
 
         if (!($dto->metadata instanceof Optional)) {
-            $this->metadataService->sync($page, $dto->metadata->toArray());
+            $this->metadataService->sync($page, $dto->metadata);
         }
 
         PageCreated::dispatch($page);

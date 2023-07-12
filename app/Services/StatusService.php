@@ -33,7 +33,7 @@ readonly class StatusService implements StatusServiceContract
         $this->translationService->checkPublished($status, ['name']);
 
         if (!($dto->metadata instanceof Optional)) {
-            $this->metadataService->sync($status, $dto->metadata->toArray());
+            $this->metadataService->sync($status, $dto->metadata);
         }
 
         $status->save();
@@ -54,7 +54,7 @@ readonly class StatusService implements StatusServiceContract
         $status->update($dto->toArray());
 
         if (!($dto->metadata instanceof Optional)) {
-            $this->metadataService->sync($status, $dto->metadata->toArray());
+            $this->metadataService->sync($status, $dto->metadata);
         }
 
         return $status;

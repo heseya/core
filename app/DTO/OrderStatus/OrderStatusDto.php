@@ -2,8 +2,9 @@
 
 namespace App\DTO\OrderStatus;
 
-use App\DTO\Metadata\Metadata;
 use App\Rules\Translations;
+use App\Utils\Map;
+use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;
@@ -13,24 +14,25 @@ use Spatie\LaravelData\Optional;
 
 final class OrderStatusDto extends Data
 {
-    use Metadata;
+    #[Computed]
+    public readonly array|Optional $metadata;
 
     public function __construct(
         #[Rule(new Translations(['name', 'description']))]
-        public array $translations,
+        public readonly array $translations,
         #[Max(6)]
-        public string $color,
-        public bool $cancel,
-        public bool $hidden,
-        public bool $no_notifications,
-        #[MapInputName('metadata')]
-        public array|Optional $metadata_public,
-        public array|Optional $metadata_private,
-
+        public readonly string $color,
+        public readonly bool $cancel,
+        public readonly bool $hidden,
+        public readonly bool $no_notifications,
         #[Min(1)]
-        public array $published
+        public array $published,
+
+        #[MapInputName('metadata')]
+        private readonly array|Optional $metadata_public,
+        private readonly array|Optional $metadata_private,
     ) {
-        $this->mapMetadata(
+        $this->metadata = Map::toMetadata(
             $this->metadata_public,
             $this->metadata_private,
         );
