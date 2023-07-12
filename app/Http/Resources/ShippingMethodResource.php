@@ -2,9 +2,13 @@
 
 namespace App\Http\Resources;
 
+use App\Models\ShippingMethod;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
+/**
+ * @property ShippingMethod $resource
+ */
 class ShippingMethodResource extends Resource
 {
     use MetadataResource;
@@ -14,7 +18,7 @@ class ShippingMethodResource extends Resource
         return array_merge([
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
-            'price' => $this->resource->price,
+            'price' => $this->resource->price ? ['gross' => $this->resource->price->getAmount()] : null,
             'public' => $this->resource->public,
             'block_list' => $this->resource->block_list,
             'payment_methods' => PaymentMethodResource::collection($this->resource->paymentMethods),

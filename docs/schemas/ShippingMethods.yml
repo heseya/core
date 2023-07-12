@@ -9,8 +9,11 @@ ShippingMethod:
       example: 'Next Day Courier'
     price:
       description: 'on index shows shipping price for provided "cart_value" (for 0 by default)'
-      type: number
-      example: 2
+      type: object
+      properties:
+        gross:
+          type: string
+          example: '9.99'
     public:
       type: boolean
     block_list:

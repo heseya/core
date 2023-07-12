@@ -2,9 +2,14 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Currency;
 use App\Enums\ShippingType;
 use App\Models\PaymentMethod;
 use App\Models\ShippingMethod;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
 use Illuminate\Database\Seeder;
 
 class ShippingMethodSeeder extends Seeder
@@ -30,15 +35,19 @@ class ShippingMethodSeeder extends Seeder
         }
     }
 
+    /**
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     */
     private function addPaymentMethods(ShippingMethod $shippingMethod): void
     {
+        $currency = Currency::DEFAULT->value;
         $paymentMethods = PaymentMethod::factory()->count(mt_rand(1, 3))->create();
         $shippingMethod->paymentMethods()->sync($paymentMethods);
         $priceRange = $shippingMethod->priceRanges()->create([
-            'start' => 0,
-        ]);
-        $priceRange->prices()->create([
-            'value' => mt_rand(500, 2000) / 100.0,
+            'start' => Money::zero($currency),
+            'value' => Money::of(mt_rand(500, 2000) / 100.0, $currency),
         ]);
     }
 }

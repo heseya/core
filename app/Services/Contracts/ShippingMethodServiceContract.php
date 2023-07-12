@@ -5,11 +5,12 @@ namespace App\Services\Contracts;
 use App\Dtos\ShippingMethodCreateDto;
 use App\Dtos\ShippingMethodUpdateDto;
 use App\Models\ShippingMethod;
+use Brick\Money\Money;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface ShippingMethodServiceContract
 {
-    public function index(?array $search, ?string $country, float $cartValue): LengthAwarePaginator;
+    public function index(?array $search, ?string $country, Money $cartValue): LengthAwarePaginator;
 
     public function store(ShippingMethodCreateDto $shippingMethodDto): ShippingMethod;
 

@@ -20,10 +20,15 @@ PriceRange:
       type: string
       format: uuid
     start:
-      type: number
-      example: 0
-    prices:
-      type: array
-      items:
-        $ref: '#/Price'
+      type: object
+      properties:
+        gross:
+          type: string
+          example: '0.00'
+    value:
+      type: object
+      properties:
+        gross:
+          type: string
+          example: '9.99'
   type: object

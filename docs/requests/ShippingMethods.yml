@@ -24,13 +24,12 @@ ShippingMethod:
         properties:
           start:
             description: 'Start of the range. The range goes to the start of the next range or infinity'
-            type: number
-            minimum: 0
-            example: 0
+            type: string
+            example: '0.00'
           value:
             description: 'price in this range'
-            type: number
-            example: 18.7
+            type: string
+            example: '18.70'
         type: object
     shipping_time_min:
       type: number

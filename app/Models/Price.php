@@ -2,28 +2,27 @@
 
 namespace App\Models;
 
+use Brick\Math\BigDecimal;
+use Brick\Money\Money;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+
 /**
  * @mixin IdeHelperPrice
  */
 class Price extends Model
 {
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<string>
-     */
     protected $fillable = [
         'value',
         'model_id',
         'model_type',
+        'price_type',
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'value' => 'float',
-    ];
+    public function value(): Attribute
+    {
+        return Attribute::make(
+            get: fn (BigDecimal|string $value): Money => Money::ofMinor($value, 'PLN'),
+            set: fn (Money $value): BigDecimal => $value->getMinorAmount(),
+        );
+    }
 }
