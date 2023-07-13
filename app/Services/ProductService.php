@@ -10,6 +10,7 @@ use App\Events\ProductDeleted;
 use App\Events\ProductPriceUpdated;
 use App\Events\ProductUpdated;
 use App\Models\Option;
+use App\Models\Price;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Services\Contracts\AttributeServiceContract;
@@ -20,6 +21,9 @@ use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
+use Brick\Math\Exception\MathException;
+use Brick\Money\Exception\MoneyMismatchException;
+use Brick\Money\Money;
 use Heseya\Dto\Missing;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -36,6 +40,10 @@ readonly class ProductService implements ProductServiceContract
         private DiscountServiceContract $discountService,
     ) {}
 
+    /**
+     * @throws MathException
+     * @throws MoneyMismatchException
+     */
     private function setup(Product $product, ProductCreateDto|ProductUpdateDto $dto): Product
     {
         if (!($dto->schemas instanceof Missing)) {
@@ -78,19 +86,48 @@ readonly class ProductService implements ProductServiceContract
             $product->relatedSets()->sync($dto->relatedSets);
         }
 
+        foreach ($dto->price_base as $base_price) {
+            $product->pricesBase()->updateOrCreate($base_price->toArray());
+        }
+
         [$priceMin, $priceMax] = $this->getMinMaxPrices($product);
-        $product->price_min_initial = $priceMin;
-        $product->price_max_initial = $priceMax;
+
+        //        $product->price_min_initial = $priceMin;
+        //        $product->price_max_initial = $priceMax;
+
+        //        $product->prices()
+        //            ->where('price_type', 'price_min_initial')
+        //            ->updateOrCreate([
+        //                'price_type' => 'price_min_initial',
+        //                'value' => $priceMin,
+        //            ]);
+        //
+        //        $product->prices()
+        //            ->where('price_type', 'price_max_initial')
+        //            ->updateOrCreate([
+        //                'price_type' => 'price_max_initial',
+        //                'value' => $priceMax,
+        //            ]);
+
+        $product->pricesMinInitial()->updateOrCreate(['value' => $priceMin]);
+        $product->pricesMaxInitial()->updateOrCreate(['value' => $priceMax]);
+
         $availability = $this->availabilityService->getCalculateProductAvailability($product);
         $product->quantity = $availability['quantity'];
         $product->available = $availability['available'];
         $product->shipping_time = $availability['shipping_time'];
         $product->shipping_date = $availability['shipping_date'];
+
+        // TODO: BROKEN!!!!
         $this->discountService->applyDiscountsOnProduct($product, false);
 
         return $product;
     }
 
+    /**
+     * @throws MathException
+     * @throws MoneyMismatchException
+     */
     public function create(ProductCreateDto $dto): Product
     {
         DB::beginTransaction();
@@ -105,8 +142,8 @@ readonly class ProductService implements ProductServiceContract
             $product->getKey(),
             null,
             null,
-            $product->price_min, // @phpstan-ignore-line
-            $product->price_max, // @phpstan-ignore-line
+            $product->pricesMin()->first()->value, // @phpstan-ignore-line
+            $product->pricesMin()->first()->value, // @phpstan-ignore-line
         );
         ProductCreated::dispatch($product);
         // @phpstan-ignore-next-line
@@ -168,6 +205,12 @@ readonly class ProductService implements ProductServiceContract
         Product::query()->where('id', $productId)->withTrashed()->first()?->unsearchable();
     }
 
+    /**
+     * @return Money[]
+     *
+     * @throws MathException
+     * @throws MoneyMismatchException
+     */
     public function getMinMaxPrices(Product $product): array
     {
         [$schemaMin, $schemaMax] = $this->getSchemasPrices(
@@ -175,18 +218,25 @@ readonly class ProductService implements ProductServiceContract
             clone $product->schemas,
         );
 
+        /** @var Price $price */
+        $price = $product->pricesBase()->first();
+
         return [
-            $product->price + $schemaMin,
-            $product->price + $schemaMax,
+            $price->value->plus($schemaMin),
+            $price->value->plus($schemaMax),
         ];
     }
 
+    /**
+     * @throws MathException
+     * @throws MoneyMismatchException
+     */
     public function updateMinMaxPrices(Product $product): void
     {
-        $productMinMaxPrices = $this->getMinMaxPrices($product);
+        [$priceMin, $priceMax] = $this->getMinMaxPrices($product);
         $product->update([
-            'price_min_initial' => $productMinMaxPrices[0],
-            'price_max_initial' => $productMinMaxPrices[1],
+            'price_min_initial' => $priceMin,
+            'price_max_initial' => $priceMax,
         ]);
         $this->discountService->applyDiscountsOnProduct($product);
     }
@@ -202,6 +252,9 @@ readonly class ProductService implements ProductServiceContract
         $product->items()->sync($items);
     }
 
+    /**
+     * @return float[]
+     */
     private function getSchemasPrices(
         Collection $allSchemas,
         Collection $remainingSchemas,

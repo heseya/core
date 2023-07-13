@@ -38,7 +38,7 @@ services:
     environment:
       - ADMINER_DEFAULT_SERVER=mysql_service
     ports:
-      - ${ADMINER_PORT:-8080}:80
+      - ${ADMINER_PORT:-8080}:8080
   redis:
     image: redis:5.0
     restart: unless-stopped

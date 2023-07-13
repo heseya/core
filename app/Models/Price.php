@@ -5,6 +5,7 @@ namespace App\Models;
 use Brick\Math\BigDecimal;
 use Brick\Money\Money;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
  * @mixin IdeHelperPrice
@@ -24,5 +25,10 @@ class Price extends Model
             get: fn (BigDecimal|string $value): Money => Money::ofMinor($value, 'PLN'),
             set: fn (Money $value): BigDecimal => $value->getMinorAmount(),
         );
+    }
+
+    public function model(): MorphTo
+    {
+        return $this->morphTo();
     }
 }

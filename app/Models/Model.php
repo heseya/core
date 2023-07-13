@@ -42,4 +42,32 @@ abstract class Model extends LaravelModel
         // 2019-02-01T03:45:27+00:00
         return Carbon::instance($date)->toIso8601String();
     }
+
+    public function morphManyWithIdentifier(
+        string $related,
+        string $name,
+        string $identifierName,
+        string $identifier,
+        ?string $type = null,
+        ?string $id = null,
+        ?string $localKey = null,
+    ): MorphManyWithIdentifier {
+        $instance = $this->newRelatedInstance($related);
+
+        [$type, $id] = $this->getMorphs($name, $type, $id);
+
+        $table = $instance->getTable();
+
+        $localKey = $localKey ?: $this->getKeyName();
+
+        return new MorphManyWithIdentifier(
+            $instance->newQuery(),
+            $this,
+            $table . '.' . $type,
+            $table . '.' . $id,
+            $localKey,
+            $identifierName,
+            $identifier,
+        );
+    }
 }
