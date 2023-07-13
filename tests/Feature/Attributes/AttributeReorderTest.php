@@ -84,12 +84,21 @@ class AttributeReorderTest extends TestCase
     {
         $this->{$user}->givePermissionTo('attributes.edit');
 
+        /** @var Attribute $attribute */
         $attribute = Attribute::factory()->create();
+
+        $option = $attribute->options()->create([
+            'name' => 'test',
+            'index' => 0,
+        ]);
 
         $this
             ->actingAs($this->{$user})
             ->json('POST', "/attributes/id:{$attribute->getKey()}/options/reorder", [
-                'ids' => [Str::uuid()],
+                'ids' => [
+                    $option->getKey(),
+                    Str::uuid(),
+                ],
             ])
             ->assertStatus(422);
     }

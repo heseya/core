@@ -81,7 +81,7 @@ class AttributeOptionController extends Controller
      */
     public function reorder(Attribute $attribute, ReorderDto $dto): HttpResponse
     {
-        if (!$attribute->options()->whereIn('id', $dto->ids)->exists()) {
+        if ($attribute->options()->whereIn('id', $dto->ids)->count() !== count($dto->ids)) {
             throw new ClientException(Exceptions::CLIENT_OPTION_NOT_RELATED_TO_ATTRIBUTE);
         }
 
