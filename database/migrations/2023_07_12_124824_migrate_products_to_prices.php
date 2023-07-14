@@ -84,12 +84,15 @@ return new class extends Migration {
             return;
         }
 
+        $currency = 'PLN';
+
         DB::table('prices')->insert([
             'id' => Str::uuid(),
             'model_id' => $modelId,
             'model_type' => Product::class,
             'price_type' => $type,
-            'value' => Money::of($value, 'PLN', roundingMode: RoundingMode::HALF_UP)->getMinorAmount(),
+            'value' => Money::of($value, $currency, roundingMode: RoundingMode::HALF_UP)->getMinorAmount(),
+            'currency' => $currency,
         ]);
     }
 };

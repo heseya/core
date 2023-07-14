@@ -17,6 +17,7 @@ use App\Dtos\MaxUsesPerUserConditionDto;
 use App\Dtos\OrderDto;
 use App\Dtos\OrderProductDto;
 use App\Dtos\OrderValueConditionDto;
+use App\Dtos\PriceDto;
 use App\Dtos\ProductInConditionDto;
 use App\Dtos\ProductInSetConditionDto;
 use App\Dtos\ProductPriceDto;
@@ -31,6 +32,7 @@ use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\Product\ProductPriceType;
 use App\Events\CouponCreated;
 use App\Events\CouponDeleted;
 use App\Events\CouponUpdated;
@@ -58,6 +60,7 @@ use App\Models\SalesShortResource;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\User;
+use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
@@ -69,6 +72,7 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
+use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -86,6 +90,7 @@ readonly class DiscountService implements DiscountServiceContract
         private SettingsServiceContract $settingsService,
         private SeoMetadataServiceContract $seoMetadataService,
         private ShippingTimeDateServiceContract $shippingTimeDateService,
+        private ProductRepositoryContract $productRepository,
     ) {}
 
     public function index(CouponIndexDto|SaleIndexDto $dto): LengthAwarePaginator
@@ -419,8 +424,8 @@ readonly class DiscountService implements DiscountServiceContract
 
         return $products->map(function (Product $product) use ($salesWithBlockList) {
             /**
-             * @var Money $minPriceDiscounted
-             * @var Money $maxPriceDiscounted
+             * @var PriceDto[] $minPriceDiscounted
+             * @var PriceDto[] $maxPriceDiscounted
              */
             [$minPriceDiscounted, $maxPriceDiscounted] = $this->calcAllDiscountsOnProduct(
                 $product,
@@ -428,10 +433,11 @@ readonly class DiscountService implements DiscountServiceContract
                 true,
             );
 
+            // TODO: Fix this with multiple currencies
             return new ProductPriceDto(
                 $product->getKey(),
-                $minPriceDiscounted->getAmount()->toFloat(),
-                $maxPriceDiscounted->getAmount()->toFloat(),
+                $minPriceDiscounted[0]?->value->getAmount()->toFloat(),
+                $maxPriceDiscounted[0]?->value->getAmount()->toFloat(),
             );
         })->toArray();
     }
@@ -475,6 +481,7 @@ readonly class DiscountService implements DiscountServiceContract
      * @throws MathException
      * @throws ClientException
      * @throws NumberFormatException
+     * @throws DtoException
      */
     public function applyDiscountsOnProducts(Collection $products): void
     {
@@ -492,6 +499,7 @@ readonly class DiscountService implements DiscountServiceContract
      * @throws MathException
      * @throws ClientException
      * @throws NumberFormatException
+     * @throws DtoException
      */
     public function applyDiscountsOnProduct(Product $product, bool $reindex = true): void
     {
@@ -719,6 +727,7 @@ readonly class DiscountService implements DiscountServiceContract
      * @throws MathException
      * @throws ClientException
      * @throws NumberFormatException
+     * @throws DtoException
      */
     private function calcAllDiscountsOnProduct(
         Product $product,
@@ -727,29 +736,49 @@ readonly class DiscountService implements DiscountServiceContract
     ): array {
         $sales = $this->sortDiscounts($product->allProductSales($salesWithBlockList));
 
-        // prevent error when price_min or price_max is null
-        /** @var Money $minPriceDiscounted */
-        $minPriceDiscounted = ($product->pricesMinInitial->first() ?? $product->pricesBase->first())->value;
-        /** @var Money $maxPriceDiscounted */
-        $maxPriceDiscounted = ($product->pricesMaxInitial->first() ?? $product->pricesBase->first())->value;
+        $priceMatrix = $this->productRepository->getProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_MIN,
+            ProductPriceType::PRICE_MAX,
+            ProductPriceType::PRICE_BASE,
+        ]);
 
-        $minimalProductPrice = Money::of(
-            $this->settingsService->getMinimalPrice('minimal_product_price'),
-            $minPriceDiscounted->getCurrency(),
-        );
+        // prevent error when price_min or price_max is null
+        $minPricesDiscounted = $priceMatrix[ProductPriceType::PRICE_MIN->value]
+            ?? $priceMatrix[ProductPriceType::PRICE_BASE->value];
+        $maxPricesDiscounted = $priceMatrix[ProductPriceType::PRICE_MAX->value]
+            ?? $priceMatrix[ProductPriceType::PRICE_BASE->value];
+
+        // TODO: Should have a minimum price for each currency
+        $minimalProductPriceSetting = $this->settingsService->getMinimalPrice('minimal_product_price');
 
         $productSales = Collection::make();
 
         foreach ($sales as $sale) {
             if ($this->checkConditionGroupsForProduct($sale, $calcForCurrentUser)) {
-                if (!$minPriceDiscounted->isEqualTo($minimalProductPrice)) {
-                    $minPriceDiscounted = $this
-                        ->calcProductPriceDiscount($sale, $minPriceDiscounted, $minimalProductPrice);
+                foreach ($minPricesDiscounted as $key => $minPrice) {
+                    $minimalProductPrice = Money::of(
+                        $minimalProductPriceSetting,
+                        $minPrice->value->getCurrency(),
+                    );
+
+                    if (!$minPrice->value->isEqualTo($minimalProductPrice)) {
+                        $minPricesDiscounted[$key] = new PriceDto(
+                            $this->calcProductPriceDiscount($sale, $minPrice->value, $minimalProductPrice),
+                        );
+                    }
                 }
 
-                if (!$maxPriceDiscounted->isEqualTo($minimalProductPrice)) {
-                    $maxPriceDiscounted = $this
-                        ->calcProductPriceDiscount($sale, $maxPriceDiscounted, $minimalProductPrice);
+                foreach ($maxPricesDiscounted as $key => $maxPrice) {
+                    $minimalProductPrice = Money::of(
+                        $minimalProductPriceSetting,
+                        $maxPrice->value->getCurrency(),
+                    );
+
+                    if (!$maxPrice->value->isEqualTo($minimalProductPrice)) {
+                        $maxPricesDiscounted[$key] = new PriceDto(
+                            $this->calcProductPriceDiscount($sale, $maxPrice->value, $minimalProductPrice),
+                        );
+                    }
                 }
 
                 $productSales->push($sale);
@@ -757,8 +786,8 @@ readonly class DiscountService implements DiscountServiceContract
         }
 
         return [
-            $minPriceDiscounted,
-            $maxPriceDiscounted,
+            $minPricesDiscounted,
+            $maxPricesDiscounted,
             $productSales,
         ];
     }
@@ -771,6 +800,7 @@ readonly class DiscountService implements DiscountServiceContract
      * @throws MathException
      * @throws ClientException
      * @throws NumberFormatException
+     * @throws DtoException
      */
     public function applyAllDiscountsOnProduct(
         Product $product,
@@ -778,15 +808,17 @@ readonly class DiscountService implements DiscountServiceContract
         bool $reindex = true,
     ): void {
         [
-            // @var Money $minPriceDiscounted
-            $minPriceDiscounted,
-            // @var Money $maxPriceDiscounted
-            $maxPriceDiscounted,
+            /** @var PriceDto[] $minPricesDiscounted */
+            $minPricesDiscounted,
+            /** @var PriceDto[] $maxPricesDiscounted */
+            $maxPricesDiscounted,
             $productSales,
         ] = $this->calcAllDiscountsOnProduct($product, $salesWithBlockList, false);
 
-        $product->pricesMin()->updateOrCreate(['value' => $minPriceDiscounted]);
-        $product->pricesMax()->updateOrCreate(['value' => $maxPriceDiscounted]);
+        $this->productRepository->setProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_MIN->value => $minPricesDiscounted,
+            ProductPriceType::PRICE_MAX->value => $maxPricesDiscounted,
+        ]);
 
         // detach and attach only add 2 queries to database, sync add 1 query for every element in given array,
         $product->sales()->detach();
@@ -1736,6 +1768,16 @@ readonly class DiscountService implements DiscountServiceContract
             ->get();
     }
 
+    /**
+     * @throws MoneyMismatchException
+     * @throws ServerException
+     * @throws UnknownCurrencyException
+     * @throws RoundingNecessaryException
+     * @throws DtoException
+     * @throws MathException
+     * @throws ClientException
+     * @throws NumberFormatException
+     */
     private function applyDiscountsOnProductsLazy(Collection $productIds, Collection $salesWithBlockList): void
     {
         $productQuery = Product::with([

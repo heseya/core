@@ -17,7 +17,7 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
         readonly public Missing|string $name,
         readonly public Missing|string $slug,
         /** @var PriceDto[] */
-        readonly public array $price_base,
+        readonly public array $prices_base,
         readonly public bool|Missing $public,
         readonly public bool|Missing $shipping_digital,
         readonly public int|Missing $order,
@@ -46,15 +46,15 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
      */
     public static function instantiateFromRequest(FormRequest $request): self
     {
-        $price_base = array_map(
-            fn ($data) => new PriceDto(...$data),
-            $request->input('price_base'),
+        $prices_base = array_map(
+            fn ($data) => PriceDto::fromData(...$data),
+            $request->input('prices_base'),
         );
 
         return new self(
             name: $request->input('name') ?? new Missing(),
             slug: $request->input('slug') ?? new Missing(),
-            price_base: $price_base,
+            prices_base: $prices_base,
             public: $request->input('public') ?? new Missing(),
             shipping_digital: $request->input('shipping_digital') ?? new Missing(),
             order: $request->input('order') ?? new Missing(),

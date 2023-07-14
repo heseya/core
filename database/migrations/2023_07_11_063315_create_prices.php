@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->string('model_type');
             $table->string('price_type');
             $table->decimal('value', 27, 0);
+            $table->string('currency', 3);
             $table->boolean('is_net')->default(false);
 
             $table->timestamps();

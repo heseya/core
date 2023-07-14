@@ -8,19 +8,26 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Heseya\Dto\Dto;
+use Heseya\Dto\DtoException;
 
 class PriceDto extends Dto
 {
-    public readonly Money $value;
+    public function __construct(
+        public readonly Money $value,
+    ) {}
 
     /**
      * @throws UnknownCurrencyException
      * @throws NumberFormatException
      * @throws RoundingNecessaryException
+     * @throws DtoException
      */
-    public function __construct(
-        string $value,
-    ) {
-        $this->value = Money::of($value, Currency::DEFAULT->value);
+    public static function fromData(string $value, string $currency): self
+    {
+        $currency = Currency::from($currency);
+
+        return new self(
+            value: Money::of($value, $currency->value),
+        );
     }
 }

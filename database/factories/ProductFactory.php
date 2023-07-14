@@ -2,8 +2,14 @@
 
 namespace Database\Factories;
 
+use App\Dtos\PriceDto;
+use App\Enums\Currency;
+use App\Enums\Product\ProductPriceType;
 use App\Models\Product;
+use App\Repositories\Contracts\ProductRepositoryContract;
+use Brick\Money\Money;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 
 class ProductFactory extends Factory
@@ -25,10 +31,26 @@ class ProductFactory extends Factory
         return [
             'name' => $name,
             'slug' => Str::slug($name) . '-' . mt_rand(1, 99999),
-            'price' => round(mt_rand(500, 6000), -2),
             'description_html' => '<p>' . $this->faker->sentence(10) . '</p>',
             'description_short' => $this->faker->sentence(10),
             'public' => $this->faker->boolean,
         ];
+    }
+
+    public function configure(): ProductFactory
+    {
+        return $this->afterCreating(function (Product $product) {
+            /** @var ProductRepositoryContract $productRepository */
+            $productRepository = App::make(ProductRepositoryContract::class);
+
+            $price = new PriceDto(Money::of(
+                round(mt_rand(500, 6000), -2),
+                Currency::DEFAULT->value,
+            ));
+
+            $productRepository->setProductPrices($product->getKey(), [
+                ProductPriceType::PRICE_BASE->value => [$price],
+            ]);
+        });
     }
 }

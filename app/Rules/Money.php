@@ -3,32 +3,68 @@
 namespace App\Rules;
 
 use App\Enums\Currency;
+use Brick\Math\BigDecimal;
+use Brick\Math\Exception\MathException;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money as BrickMoney;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
-class Money implements ValidationRule
+readonly class Money implements ValidationRule
 {
+    public function __construct(
+        private ?BigDecimal $min = null,
+    ) {}
+
+    /**
+     * @throws MathException
+     * @throws MoneyMismatchException
+     */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (!is_string($value)) {
-            $fail('The :attribute needs to be a decimal string');
+        if (!is_array($value)) {
+            $fail('The :attribute is not an object');
 
             return;
         }
 
-        $defaultCurrency = Currency::DEFAULT->value;
+        if (!array_key_exists('value', $value)) {
+            $fail("The :attribute is missing key 'value'");
+
+            return;
+        }
+
+        if (!array_key_exists('currency', $value)) {
+            $fail("The :attribute is missing key 'currency'");
+
+            return;
+        }
+
+        $currency = Currency::tryFrom($value['currency']);
+
+        if ($currency === null) {
+            $fail("The :attribute currency {$value['currency']} is invalid");
+
+            return;
+        }
+
+        $amount = $value['value'];
+        $money = null;
         try {
-            BrickMoney::of($value, $defaultCurrency);
+            $money = BrickMoney::of($amount, $currency->value);
         } catch (NumberFormatException) {
-            $fail('The :attribute needs to be a decimal string');
+            $fail('The :attribute value must be decimal string');
         } catch (RoundingNecessaryException) {
-            $fail("The :attribute has too many decimal places for currency {$defaultCurrency}");
+            $fail("The :attribute value has too many decimal places for currency {$currency->value}");
         } catch (UnknownCurrencyException) {
-            $fail("The {$defaultCurrency} currency is invalid");
+            $fail("The :attribute currency {$currency->value} is invalid");
+        }
+
+        if ($this->min !== null && $money?->isLessThan($this->min)) {
+            $fail("The :attribute value is less than defined minimum: {$this->min}");
         }
     }
 }

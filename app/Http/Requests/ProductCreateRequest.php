@@ -10,6 +10,7 @@ use App\Rules\ProductAttributeOptions;
 use App\Rules\UniqueIdInRequest;
 use App\Traits\MetadataRules;
 use App\Traits\SeoRules;
+use Brick\Math\BigDecimal;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProductCreateRequest extends FormRequest implements MetadataRequestContract, SeoRequestContract
@@ -28,9 +29,8 @@ class ProductCreateRequest extends FormRequest implements MetadataRequestContrac
                 'name' => ['required', 'string', 'max:255'],
                 'slug' => ['required', 'string', 'max:255', 'unique:products', 'alpha_dash'],
 
-                'price_base' => ['required', 'array', 'size:1'],
-                'price_base.*' => ['array'],
-                'price_base.*.value' => ['required', new Money(), 'numeric', 'min:0'],
+                'prices_base' => ['required', 'array', 'size:1'],
+                'prices_base.*' => [new Money(min: BigDecimal::zero())],
 
                 'public' => ['required', 'boolean'],
                 'shipping_digital' => ['required', 'boolean'],

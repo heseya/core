@@ -18,7 +18,7 @@ class ProductUpdateRequest extends ProductCreateRequest
         // $rules['metadata'] = ['prohibited'];
         // $rules['metadata_private'] = ['prohibited'];
         $rules['name'] = ['string', 'max:255'];
-        $rules['price_base'] = ['array'];
+        $rules['prices_base'] = ['array', 'max:1'];
         $rules['public'] = ['boolean'];
         $rules['shipping_digital'] = ['boolean'];
         $rules['slug'] = [

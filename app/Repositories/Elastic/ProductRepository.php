@@ -4,19 +4,23 @@ declare(strict_types=1);
 
 namespace App\Repositories\Elastic;
 
+use App\Dtos\PriceDto;
 use App\Dtos\ProductSearchDto;
 use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\Product\ProductPriceType;
 use App\Exceptions\ClientException;
 use App\Exceptions\ServerException;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
 use App\Models\Media;
 use App\Models\Metadata;
+use App\Models\Price;
 use App\Models\Product;
 use App\Models\Tag;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\SortServiceContract;
 use Elasticsearch\Common\Exceptions\BadRequest400Exception;
+use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -384,5 +388,49 @@ class ProductRepository implements ProductRepositoryContract
         }
 
         throw new ServerException(Exceptions::SERVER_MAPPING_NOT_FOUND);
+    }
+
+    // I don't mind if this repository gets deleted
+    /**
+     * @param array<string, PriceDto[]> $priceMatrix
+     */
+    public function setProductPrices(string $productId, array $priceMatrix): void
+    {
+        // Probably can be optimized with sql down the line
+        foreach ($priceMatrix as $type => $prices) {
+            foreach ($prices as $price) {
+                Price::query()
+                    ->updateOrCreate([
+                        'model_id' => $productId,
+                        'model_type' => Product::class,
+                        'price_type' => $type,
+                    ], [
+                        'value' => $price->value,
+                        'is_net' => false,
+                    ]);
+            }
+        }
+    }
+
+    /**
+     * @param string $productId
+     * @param ProductPriceType[] $priceTypes
+     *
+     * @return array<ProductPriceType, PriceDto[]>
+     * @throws DtoException
+     */
+    public function getProductPrices(string $productId, array $priceTypes): array
+    {
+        /** @var \Illuminate\Database\Eloquent\Collection<Price> $prices */
+        $prices = Price::query()
+            ->where('model_id', $productId)
+            ->whereIn('price_type', $priceTypes)
+            ->get();
+
+        return $prices->reduce(function (array $carry, Price $price) {
+            $carry[$price->price_type][] = new PriceDto($price->value);
+
+            return $carry;
+        }, []);
     }
 }

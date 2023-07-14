@@ -15,6 +15,7 @@ class PriceResource extends Resource
         return [
             'id' => $this->resource->getKey(),
             'gross' => $this->resource->value->getAmount(),
+            'currency' => $this->resource->value->getCurrency()->getCurrencyCode(),
         ];
     }
 }
