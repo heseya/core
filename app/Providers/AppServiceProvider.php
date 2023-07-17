@@ -2,12 +2,10 @@
 
 namespace App\Providers;
 
-use App\Models\Product;
 use App\Services\AnalyticsService;
 use App\Services\AppService;
 use App\Services\AttributeOptionService;
 use App\Services\AttributeService;
-use App\Services\AuditService;
 use App\Services\AuthService;
 use App\Services\AvailabilityService;
 use App\Services\BannerService;
@@ -16,7 +14,6 @@ use App\Services\Contracts\AnalyticsServiceContract;
 use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\AttributeOptionServiceContract;
 use App\Services\Contracts\AttributeServiceContract;
-use App\Services\Contracts\AuditServiceContract;
 use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\BannerServiceContract;
@@ -110,7 +107,6 @@ use App\Services\UserService;
 use App\Services\WebHookService;
 use App\Services\WishlistService;
 use Illuminate\Support\ServiceProvider;
-use Laravel\Scout\Builder;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -133,7 +129,6 @@ class AppServiceProvider extends ServiceProvider
         UserServiceContract::class => UserService::class,
         RoleServiceContract::class => RoleService::class,
         PermissionServiceContract::class => PermissionService::class,
-        AuditServiceContract::class => AuditService::class,
         TokenServiceContract::class => TokenService::class,
         ProductServiceContract::class => ProductService::class,
         WebHookServiceContract::class => WebHookService::class,
@@ -186,19 +181,5 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->isLocal()) {
             $this->app->register('\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider');
         }
-    }
-
-    public function boot(): void
-    {
-        Builder::macro('sort', function (?string $sortString = null) {
-            if ($sortString !== null) {
-                // @phpstan-ignore-next-line
-                return app(SortServiceContract::class)->sort($this, $sortString);
-            }
-
-            return $this;
-        });
-
-        Product::disableSearchSyncing();
     }
 }

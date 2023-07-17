@@ -2,36 +2,20 @@
 
 namespace App\Services;
 
-use App\Enums\ExceptionsEnums\Exceptions;
-use App\Exceptions\ClientException;
-use App\Models\Contracts\SortableContract;
 use App\Rules\WhereIn;
 use App\Services\Contracts\SortServiceContract;
-use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use Laravel\Scout\Builder as ScoutBuilder;
 
 class SortService implements SortServiceContract
 {
     /**
-     * @throws Exception
-     */
-    public function sortScout(ScoutBuilder $query, ?string $sortString): Builder|ScoutBuilder
-    {
-        if ($query->model instanceof SortableContract && $sortString !== null) {
-            return $this->sort($query, $sortString, $query->model->getSortable());
-        }
-        throw new ClientException(Exceptions::CLIENT_MODEL_NOT_SORTABLE);
-    }
-
-    /**
      * @throws ValidationException
      */
-    public function sort(Builder|ScoutBuilder $query, string $sortString, array $sortable): Builder|ScoutBuilder
+    public function sort(Builder $query, string $sortString, array $sortable): Builder
     {
         $sort = explode(',', $sortString);
 
@@ -66,9 +50,9 @@ class SortService implements SortServiceContract
         )->validate();
     }
 
-    private function addOrder(Builder|ScoutBuilder $query, string $field, string $order): void
+    private function addOrder(Builder $query, string $field, string $order): void
     {
-        if (Str::contains($field, 'set.') && $query instanceof Builder) {
+        if (Str::contains($field, 'set.')) {
             $query->leftJoin('product_set_product', function (JoinClause $join) use ($field): void {
                 $join->on('product_set_product.product_id', 'products.id')
                     ->join('product_sets', function (JoinClause $join) use ($field): void {

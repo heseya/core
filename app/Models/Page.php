@@ -14,27 +14,19 @@ use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use OwenIt\Auditing\Auditable;
-use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use Spatie\Translatable\HasTranslations;
 
 /**
  * @mixin IdeHelperPage
  */
-class Page extends Model implements AuditableContract, SortableContract, Translatable
+class Page extends Model implements SortableContract, Translatable
 {
-    use Auditable;
-    use Auditable;
     use HasCriteria;
-    use HasFactory;
     use HasFactory;
     use HasMetadata;
     use HasSeoMetadata;
-    use HasSeoMetadata;
     use HasTranslations;
     use SoftDeletes;
-    use SoftDeletes;
-    use Sortable;
     use Sortable;
 
     protected $fillable = [

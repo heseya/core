@@ -12,7 +12,6 @@ use App\Events\ItemUpdated;
 use App\Events\ItemUpdatedQuantity;
 use App\Exceptions\ClientException;
 use App\Models\Item;
-use App\Models\Option;
 use App\Models\OrderProduct;
 use App\Models\Product;
 use App\Models\Schema;
@@ -224,23 +223,6 @@ class ItemService implements ItemServiceContract
         }
     }
 
-    /**
-     * Refresh serchable index on all related products.
-     */
-    public function refreshSearchable(Item $item): void
-    {
-        $ids = $item->products()->select('id')->pluck('id');
-
-        /** @var Option $option */
-        foreach ($item->options as $option) {
-            $productIds = $option->schema?->products()->select('id')->pluck('id');
-            $ids->concat($productIds ? $productIds->toArray() : []);
-        }
-
-        // @phpstan-ignore-next-line
-        Product::whereIn('id', $ids->unique())->searchable();
-    }
-
     private function checkItems(array $items): array
     {
         $selectedItems = [];
@@ -249,7 +231,8 @@ class ItemService implements ItemServiceContract
 
         /** @var OrderProductDto $item */
         foreach ($items as $item) {
-            $product = Product::findOrFail($item->getProductId());
+            /** @var Product $product */
+            $product = Product::query()->findOrFail($item->getProductId());
             $schemas = $item->getSchemas();
 
             if ($product->purchase_limit_per_user !== null) {
@@ -280,6 +263,9 @@ class ItemService implements ItemServiceContract
         return [$products, $selectedItems];
     }
 
+    /**
+     * @throws ClientException
+     */
     private function checkProductPurchaseLimit(
         string $productId,
         float $limit,

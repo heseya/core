@@ -490,7 +490,6 @@ readonly class OrderService implements OrderServiceContract
 
         $old = Address::find($order->{$attribute});
         Cache::add('address.' . $order->{$attribute}, $old ? ((string) $old) : null);
-        $order->forceAudit($attribute);
         if ($attribute === 'shipping_address_id' && $order->shipping_type === ShippingType::POINT) {
             return Address::create($addressDto->toArray());
         }

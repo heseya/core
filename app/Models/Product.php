@@ -21,7 +21,6 @@ use App\Criteria\WhereNotSlug;
 use App\Enums\DiscountTargetType;
 use App\Models\Contracts\SortableContract;
 use App\Models\Interfaces\Translatable;
-use App\Services\Contracts\ProductSearchServiceContract;
 use App\SortColumnTypes\TranslatedColumn;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasDiscounts;
@@ -37,13 +36,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
-use JeroenG\Explorer\Application\Explored;
-use JeroenG\Explorer\Application\SearchableFields;
-use JeroenG\Explorer\Domain\Analysis\Analysis;
-use JeroenG\Explorer\Domain\Analysis\Analyzer\StandardAnalyzer;
-use Laravel\Scout\Searchable;
-use OwenIt\Auditing\Auditable;
-use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use Spatie\Translatable\HasTranslations;
 
 /**
@@ -54,25 +46,17 @@ use Spatie\Translatable\HasTranslations;
  *
  * @mixin IdeHelperProduct
  */
-class Product extends Model implements AuditableContract, Explored, SearchableFields, SortableContract, Translatable
+class Product extends Model implements SortableContract, Translatable
 {
-    use Auditable;
-    use Auditable;
     use HasCriteria;
     use HasDiscountConditions;
     use HasDiscounts;
     use HasFactory;
-    use HasFactory;
     use HasMediaAttachments;
     use HasMetadata;
     use HasSeoMetadata;
-    use HasSeoMetadata;
     use HasTranslations;
-    use Searchable;
-    use Searchable;
     use SoftDeletes;
-    use SoftDeletes;
-    use Sortable;
     use Sortable;
 
     protected $fillable = [
@@ -105,16 +89,6 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
         'name',
         'description_html',
         'description_short',
-    ];
-
-    protected array $auditInclude = [
-        'slug',
-        'public',
-        'quantity_step',
-        'price_min',
-        'price_max',
-        'available',
-        'order',
     ];
 
     protected $casts = [
@@ -171,37 +145,6 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
 
     protected string $defaultSortBy = 'products.order';
     protected string $defaultSortDirection = 'desc';
-
-    public function mappableAs(): array
-    {
-        $searchService = app(ProductSearchServiceContract::class);
-
-        return $searchService->mappableAs();
-    }
-
-    public function toSearchableArray(): array
-    {
-        $searchService = app(ProductSearchServiceContract::class);
-
-        return $searchService->mapSearchableArray($this);
-    }
-
-    public function getSearchableFields(): array
-    {
-        $searchService = app(ProductSearchServiceContract::class);
-
-        return $searchService->searchableFields();
-    }
-
-    public function indexSettings(): array
-    {
-        $analyzer = new StandardAnalyzer('morfologik');
-        $analyzer->setFilters(['lowercase', 'morfologik_stem']);
-
-        return (new Analysis())
-            ->addAnalyzer($analyzer)
-            ->build();
-    }
 
     public function sets(): BelongsToMany
     {

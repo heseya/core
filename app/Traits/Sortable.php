@@ -5,11 +5,10 @@ namespace App\Traits;
 use App\Services\Contracts\SortServiceContract;
 use App\SortColumnTypes\SortableColumn;
 use Illuminate\Database\Eloquent\Builder;
-use Laravel\Scout\Builder as ScoutBuilder;
 
 trait Sortable
 {
-    public function scopeSort(Builder $query, ?string $sortString = null): Builder|ScoutBuilder
+    public function scopeSort(Builder $query, ?string $sortString = null): Builder
     {
         if ($sortString !== null) {
             $query = app(SortServiceContract::class)

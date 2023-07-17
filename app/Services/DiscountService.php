@@ -432,10 +432,10 @@ readonly class DiscountService implements DiscountServiceContract
         }
     }
 
-    public function applyDiscountsOnProduct(Product $product, bool $reindex = true): void
+    public function applyDiscountsOnProduct(Product $product): void
     {
         $salesWithBlockList = $this->getSalesWithBlockList();
-        $this->applyAllDiscountsOnProduct($product, $salesWithBlockList, $reindex);
+        $this->applyAllDiscountsOnProduct($product, $salesWithBlockList);
     }
 
     public function applyDiscountOnOrderProduct(OrderProduct $orderProduct, Discount $discount): OrderProduct
@@ -671,7 +671,6 @@ readonly class DiscountService implements DiscountServiceContract
     public function applyAllDiscountsOnProduct(
         Product $product,
         Collection $salesWithBlockList,
-        bool $reindex = true,
     ): void {
         [
             $minPriceDiscounted,
@@ -687,10 +686,6 @@ readonly class DiscountService implements DiscountServiceContract
         // detach and attach only add 2 queries to database, sync add 1 query for every element in given array,
         $product->sales()->detach();
         $product->sales()->attach($productSales->pluck('id'));
-
-        if ($reindex) {
-            $product->searchable();
-        }
     }
 
     private function checkDiscountTarget(Discount $discount, CartDto $cart): bool
@@ -1552,11 +1547,8 @@ readonly class DiscountService implements DiscountServiceContract
 
         $productQuery->chunk(100, function ($products) use ($salesWithBlockList): void {
             foreach ($products as $product) {
-                $this->applyAllDiscountsOnProduct($product, $salesWithBlockList, false);
+                $this->applyAllDiscountsOnProduct($product, $salesWithBlockList);
             }
-
-            // @phpstan-ignore-next-line
-            Product::query()->whereIn('id', $products->pluck('id'))->searchable();
         });
     }
 }

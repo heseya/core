@@ -89,7 +89,7 @@ final readonly class ProductService implements ProductServiceContract
         $product->available = $availability['available'];
         $product->shipping_time = $availability['shipping_time'];
         $product->shipping_date = $availability['shipping_date'];
-        $this->discountService->applyDiscountsOnProduct($product, false);
+        $this->discountService->applyDiscountsOnProduct($product);
 
         return $product;
     }
@@ -118,12 +118,10 @@ final readonly class ProductService implements ProductServiceContract
             $product->getKey(),
             null,
             null,
-            $product->price_min, // @phpstan-ignore-line
-            $product->price_max, // @phpstan-ignore-line
+            $product->price_min ?? 0,
+            $product->price_max ?? 0,
         );
         ProductCreated::dispatch($product);
-        // @phpstan-ignore-next-line
-        Product::where($product->getKeyName(), $product->getKey())->searchable();
 
         return $product->refresh();
     }
@@ -154,14 +152,12 @@ final readonly class ProductService implements ProductServiceContract
                 $product->getKey(),
                 $oldMinPrice,
                 $oldMaxPrice,
-                $product->price_min, // @phpstan-ignore-line
-                $product->price_max, // @phpstan-ignore-line
+                $product->price_min ?? 0,
+                $product->price_max ?? 0,
             );
         }
 
         ProductUpdated::dispatch($product);
-        // @phpstan-ignore-next-line
-        Product::query()->where($product->getKeyName(), $product->getKey())->searchable();
 
         // fix for duplicated items in relation after recalculating availability
         $product->unsetRelation('items');
@@ -177,7 +173,6 @@ final readonly class ProductService implements ProductServiceContract
 
         $this->mediaService->sync($product, []);
 
-        $productId = $product->getKey();
         $product->delete();
 
         if ($product->seo !== null) {
@@ -185,8 +180,6 @@ final readonly class ProductService implements ProductServiceContract
         }
 
         DB::commit();
-
-        Product::query()->where('id', $productId)->withTrashed()->first()?->unsearchable();
     }
 
     public function getMinMaxPrices(Product $product): array

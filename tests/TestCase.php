@@ -16,13 +16,11 @@ use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Tests\Support\ElasticTest;
 use Tests\Traits\JsonQueryCounter;
 
 abstract class TestCase extends BaseTestCase
 {
     use CreatesApplication;
-    use ElasticTest;
     use JsonQueryCounter;
     use RefreshDatabase;
 
@@ -38,12 +36,10 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        $this->fakeElastic();
-
         $seeder = new InitSeeder();
         $seeder->run();
 
-        $this->lang = Language::where('default', true)->firstOrFail()->getKey();
+        $this->lang = Language::query()->where('default', true)->firstOrFail()->getKey();
         App::setLocale($this->lang);
 
         $this->tokenService = App::make(TokenServiceContract::class);
@@ -67,10 +63,10 @@ abstract class TestCase extends BaseTestCase
         app()->forgetInstances();
     }
 
-    public function actingAs(Authenticatable $authenticatable, $guard = null): self
+    public function actingAs(Authenticatable $user, $guard = null): self
     {
         $token = $this->tokenService->createToken(
-            $authenticatable,
+            $user,
             new TokenType(TokenType::ACCESS),
             Str::uuid()->toString(),
         );

@@ -6,7 +6,6 @@ use App\DTO\Metadata\MetadataDto;
 use App\DTO\Metadata\MetadataPersonalDto;
 use App\Dtos\MetadataPersonalListDto;
 use App\Models\Model;
-use App\Models\Product;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\MetadataServiceContract;
@@ -30,10 +29,6 @@ class MetadataService implements MetadataServiceContract
     public function updateOrCreate(Model|Role $model, MetadataDto $dto): void
     {
         $this->processMetadata($model, $dto, $dto->public ? 'metadata' : 'metadataPrivate');
-
-        if ($model instanceof Product) {
-            $model->searchable();
-        }
     }
 
     public function returnModel(array $routeSegments): Model|Role|null

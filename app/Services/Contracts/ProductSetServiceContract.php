@@ -39,6 +39,4 @@ interface ProductSetServiceContract
     public function attach(ProductSet $set, array $productsIds): Collection;
 
     public function reorderProducts(ProductSet $set, ProductsReorderDto $dto): void;
-
-    public function indexAllProducts(ProductSet $set): void;
 }

@@ -10,8 +10,6 @@ use App\Traits\HasMetadata;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use OwenIt\Auditing\Auditable;
-use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use Spatie\Translatable\HasTranslations;
 
 /**
@@ -20,9 +18,8 @@ use Spatie\Translatable\HasTranslations;
  *
  * @mixin IdeHelperStatus
  */
-class Status extends Model implements AuditableContract, Translatable
+class Status extends Model implements Translatable
 {
-    use Auditable;
     use HasCriteria;
     use HasFactory;
     use HasMetadata;
