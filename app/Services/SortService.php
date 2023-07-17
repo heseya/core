@@ -50,20 +50,52 @@ class SortService implements SortServiceContract
         )->validate();
     }
 
+    // TODO: refactor this
     private function addOrder(Builder $query, string $field, string $order): void
     {
-        if (Str::contains($field, 'set.')) {
-            $query->leftJoin('product_set_product', function (JoinClause $join) use ($field): void {
-                $join->on('product_set_product.product_id', 'products.id')
-                    ->join('product_sets', function (JoinClause $join) use ($field): void {
-                        $join->on('product_sets.id', 'product_set_product.product_set_id')
-                            ->where('product_sets.slug', Str::after($field, 'set.'));
-                    });
-            })
-                ->select('product_set_product.order AS set_order', 'products.*')
-                ->orderBy('set_order', $order);
-        } else {
-            $query->orderBy($field, $order);
+        if (Str::startsWith($field, 'set.')) {
+            $this->addSetOrder($query, $field, $order);
+
+            return;
+        } elseif (Str::startsWith($field, 'attribute.')) {
+            $this->addAttributeOrder($query, $field, $order);
+
+            return;
         }
+
+        $query->orderBy($field, $order);
+    }
+
+    private function addSetOrder(Builder $query, string $field, string $order): void
+    {
+        $query->leftJoin('product_set_product', function (JoinClause $join) use ($field): void {
+            $join->on('product_set_product.product_id', 'products.id')
+                ->join('product_sets', function (JoinClause $join) use ($field): void {
+                    $join->on('product_sets.id', 'product_set_product.product_set_id')
+                        ->where('product_sets.slug', Str::after($field, 'set.'));
+                });
+        })
+            ->addSelect('products.*')
+            ->addSelect('product_set_product.order AS set_order')
+            ->orderBy('set_order', $order);
+    }
+
+    private function addAttributeOrder(Builder $query, string $field, string $order): void
+    {
+        $query->leftJoin('product_attribute', function (JoinClause $join) use ($field): void {
+            $join
+                ->on('product_attribute.product_id', 'products.id')
+                ->where('product_attribute.attribute_id', Str::after($field, 'attribute.'))
+                ->join('product_attribute_attribute_option', function (JoinClause $join): void {
+                    $join
+                        ->on('product_attribute_attribute_option.product_attribute_id', 'product_attribute.id')
+                        ->join('attribute_options', function (JoinClause $join): void {
+                            $join->on('product_attribute_attribute_option.attribute_option_id', 'attribute_options.id');
+                        });
+                });
+        })
+            ->addSelect('products.*')
+            ->addSelect('attribute_options.name AS attribute_order')
+            ->orderBy('attribute_order', $order);
     }
 }
