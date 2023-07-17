@@ -12,7 +12,6 @@ trait SeoRules
     {
         return [
             "{$prefix}translations" => [
-                'required',
                 new Translations(['title', 'description', 'keywords', 'no_index']),
             ],
 
@@ -21,7 +20,7 @@ trait SeoRules
             "{$prefix}translations.*.keywords" => ['nullable', 'array'],
             "{$prefix}translations.*.no_index" => ['nullable', 'boolean'],
 
-            "{$prefix}published" => ['required', 'array', 'min:1'],
+            "{$prefix}published" => ['array', 'min:1'],
             "{$prefix}published.*" => ['uuid', 'exists:languages,id'],
 
             "{$prefix}og_image_id" => ['nullable', 'uuid', 'exists:media,id'],

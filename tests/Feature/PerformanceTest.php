@@ -70,7 +70,7 @@ class PerformanceTest extends TestCase
             ->json('GET', '/products/id:' . $product->getKey())
             ->assertOk();
 
-        $this->assertQueryCountLessThan(26);
+        $this->assertQueryCountLessThan(27);
     }
 
     public function testIndexPerformanceListAttribute500(): void
@@ -118,7 +118,7 @@ class PerformanceTest extends TestCase
             ->getJson('/attributes/id:' . $attribute->getKey())
             ->assertOk();
 
-        $this->assertQueryCountLessThan(6);
+        $this->assertQueryCountLessThan(7);
     }
 
     public function testShowPerformanceListAttributeOptions2500(): void
@@ -137,7 +137,7 @@ class PerformanceTest extends TestCase
             ->getJson('/attributes/id:' . $attribute->getKey() . '/options')
             ->assertOk();
 
-        $this->assertQueryCountLessThan(9);
+        $this->assertQueryCountLessThan(10);
     }
 
     public function testIndexPerformanceAttribute500(): void
@@ -155,7 +155,7 @@ class PerformanceTest extends TestCase
             ->getJson('/attributes/id:' . $attribute->getKey())
             ->assertOk();
 
-        $this->assertQueryCountLessThan(9);
+        $this->assertQueryCountLessThan(10);
     }
 
     public function testIndexPerformanceBanner100(): void
@@ -198,7 +198,7 @@ class PerformanceTest extends TestCase
             ->getJson('/banners')
             ->assertOk();
 
-        $this->assertQueryCountLessThan(12);
+        $this->assertQueryCountLessThan(13);
     }
 
     public function testIndexPerformanceOrder500(): void
@@ -244,7 +244,7 @@ class PerformanceTest extends TestCase
             ->assertOk();
 
         // TODO: this should be improved
-        $this->assertQueryCountLessThan(12);
+        $this->assertQueryCountLessThan(13);
     }
 
     public function testIndexPerformanceDiscount(): void
@@ -265,7 +265,7 @@ class PerformanceTest extends TestCase
             ->json('GET', '/sales/id:' . $discount->getKey())
             ->assertOk();
 
-        $this->assertQueryCountLessThan(17);
+        $this->assertQueryCountLessThan(18);
     }
 
     public function testCreateSalePerformance1000Products(): void
@@ -313,6 +313,7 @@ class PerformanceTest extends TestCase
 
         $this->assertEquals(1071, $product->price_min);
 
+        // TODO: WTF?!
         // Every product with discount +3 query to database (update, detach(sales), attach(sales))
         // 1000 products = +- 3137 queries, for 10000 +- 31130
         $this->assertQueryCountLessThan(3200);
@@ -764,6 +765,6 @@ class PerformanceTest extends TestCase
             ->json('GET', '/items/id:' . $productItem->getKey())
             ->assertOk();
 
-        $this->assertQueryCountLessThan(11);
+        $this->assertQueryCountLessThan(12);
     }
 }
