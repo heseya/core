@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Dtos\RegisterDto;
+use App\DTO\Auth\RegisterDto;
 use App\Dtos\TFAConfirmDto;
 use App\Dtos\TFAPasswordDto;
 use App\Dtos\TFASetupDto;
@@ -33,7 +33,6 @@ use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UserLoginAttemptServiceContract;
 use App\Services\Contracts\UserServiceContract;
-use Heseya\Dto\Missing;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -44,6 +43,8 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use PHPGangsta_GoogleAuthenticator;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
+use Propaganistas\LaravelPhone\PhoneNumber;
+use Spatie\LaravelData\Optional;
 
 class AuthService implements AuthServiceContract
 {
@@ -305,14 +306,16 @@ class AuthService implements AuthServiceContract
     public function register(RegisterDto $dto): User
     {
         $fields = $dto->toArray();
-        $fields['password'] = Hash::make($dto->getPassword());
+        $fields['password'] = Hash::make($dto->password);
 
-        $authenticated = Role::where('type', RoleType::AUTHENTICATED)->first();
+        if (!($dto->phone instanceof Optional)) {
+            $phone = new PhoneNumber($dto->phone);
+            $fields['phone_number'] = $phone->formatNational();
+            $fields['phone_country'] = $phone->getCountry();
+        }
 
-        $roleIds = !$dto->getRoles() instanceof Missing ? $dto->getRoles() : [];
-        $roleModels = Role::query()
-            ->whereIn('id', $roleIds)
-            ->get();
+        $authenticated = Role::query()->where('type', RoleType::AUTHENTICATED)->first();
+        $roleModels = Role::query()->whereIn('id', $dto->roles)->get();
 
         $nonRegistrationRoles = $roleModels->filter(fn (Role $role) => !$role->is_registration_role);
 
@@ -324,15 +327,15 @@ class AuthService implements AuthServiceContract
         $user = User::query()->create($fields);
         $user->syncRoles([$authenticated, ...$roleModels]);
 
-        $this->consentService->syncUserConsents($user, $dto->getConsents());
+        $this->consentService->syncUserConsents($user, $dto->consents);
 
         $preferences = UserPreference::query()->create();
         $preferences->refresh();
 
         $user->preferences()->associate($preferences);
 
-        if (!($dto->getMetadataPersonal() instanceof Missing)) {
-            $this->metadataService->sync($user, $dto->getMetadataPersonal());
+        if (!($dto->metadata_personal instanceof Optional)) {
+            $this->metadataService->sync($user, $dto->metadata_personal);
         }
 
         $user->save();

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Utils;
 
 use App\DTO\Metadata\MetadataDto;
+use App\DTO\Metadata\MetadataPersonalDto;
 use App\Enums\MetadataType;
 use Spatie\LaravelData\Optional;
 
@@ -33,6 +34,24 @@ final readonly class Map
                     $key,
                     $value,
                     false,
+                    MetadataType::matchType($value)
+                );
+            }
+        }
+
+        return count($return) > 0 ? $return : new Optional();
+    }
+
+    public static function toMetadataPersonal(
+        array|Optional $metadata = new Optional(),
+    ): array|Optional {
+        $return = [];
+
+        if (is_array($metadata)) {
+            foreach ($metadata as $key => $value) {
+                $return[] = new MetadataPersonalDto(
+                    $key,
+                    $value,
                     MetadataType::matchType($value)
                 );
             }

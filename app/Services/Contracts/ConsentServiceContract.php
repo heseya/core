@@ -15,7 +15,7 @@ interface ConsentServiceContract
 
     public function destroy(Consent $consent): void;
 
-    public function syncUserConsents(User $user, Collection $consents): void;
+    public function syncUserConsents(User $user, array $consents): void;
 
     public function updateUserConsents(?Collection $consents, User $user): void;
 }
