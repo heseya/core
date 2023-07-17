@@ -127,6 +127,23 @@ class UpdateTranslatableColumns extends Migration
                     ->save();
             },
         ));
+
+        DbSchema::table('product_sets', function (Blueprint $table): void {
+            $table->text('name')->change();
+            $table->text('description_html')->nullable()->change();
+            $table->text('published')->nullable();
+        });
+
+        Status::chunk(100, fn ($statuses) => $statuses->each(
+            function (Status $status) use ($lang): void {
+                $attr = $status->getAttributes();
+                $status
+                    ->setAttribute('published', [$lang])
+                    ->setTranslation('name', $lang, $attr['name'])
+                    ->setTranslation('description_html', $lang, $attr['description_html'])
+                    ->save();
+            },
+        ));
     }
 
     /**

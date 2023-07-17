@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Dtos\ProductSetDto;
-use App\Dtos\ProductSetUpdateDto;
+use App\DTO\ProductSet\ProductSetDto;
+use App\DTO\ProductSet\ProductSetUpdateDto;
 use App\Dtos\ProductsReorderDto;
 use App\Http\Requests\ProductSetAttachRequest;
 use App\Http\Requests\ProductSetIndexRequest;
 use App\Http\Requests\ProductSetProductReorderRequest;
 use App\Http\Requests\ProductSetReorderRequest;
 use App\Http\Requests\ProductSetShowRequest;
-use App\Http\Requests\ProductSetStoreRequest;
-use App\Http\Requests\ProductSetUpdateRequest;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\ProductSetChildrenResource;
 use App\Http\Resources\ProductSetParentChildrenResource;
@@ -19,16 +17,16 @@ use App\Http\Resources\ProductSetParentResource;
 use App\Http\Resources\ProductSetResource;
 use App\Models\ProductSet;
 use App\Services\Contracts\ProductSetServiceContract;
-use Heseya\Dto\DtoException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
-class ProductSetController extends Controller
+final class ProductSetController extends Controller
 {
     public function __construct(
-        private ProductSetServiceContract $productSetService,
+        private readonly ProductSetServiceContract $productSetService,
     ) {}
 
     public function index(ProductSetIndexRequest $request): JsonResource
@@ -55,12 +53,8 @@ class ProductSetController extends Controller
         return ProductSetParentResource::make($productSet);
     }
 
-    /**
-     * @throws DtoException
-     */
-    public function store(ProductSetStoreRequest $request): JsonResource
+    public function store(ProductSetDto $dto, Request $request): JsonResource
     {
-        $dto = ProductSetDto::instantiateFromRequest($request);
         $productSet = $this->productSetService->create($dto);
 
         if ($request->has('tree') && $request->boolean('tree')) {
@@ -70,9 +64,8 @@ class ProductSetController extends Controller
         return ProductSetParentResource::make($productSet);
     }
 
-    public function update(ProductSet $productSet, ProductSetUpdateRequest $request): JsonResource
+    public function update(ProductSet $productSet, ProductSetUpdateDto $dto, Request $request): JsonResource
     {
-        $dto = ProductSetUpdateDto::instantiateFromRequest($request);
         $productSet = $this->productSetService->update($productSet, $dto);
 
         if ($request->has('tree') && $request->boolean('tree')) {

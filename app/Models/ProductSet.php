@@ -8,6 +8,7 @@ use App\Criteria\ParentIdSearch;
 use App\Criteria\ProductSetSearch;
 use App\Criteria\WhereInIds;
 use App\Enums\DiscountTargetType;
+use App\Models\Interfaces\Translatable;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasDiscounts;
 use App\Traits\HasMetadata;
@@ -23,13 +24,14 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Spatie\Translatable\HasTranslations;
 
 /**
  * @property mixed $pivot
  *
  * @mixin IdeHelperProductSet
  */
-class ProductSet extends Model
+class ProductSet extends Model implements Translatable
 {
     use HasCriteria;
     use HasDiscountConditions;
@@ -37,6 +39,7 @@ class ProductSet extends Model
     use HasFactory;
     use HasMetadata;
     use HasSeoMetadata;
+    use HasTranslations;
     use SoftDeletes;
 
     protected $fillable = [
@@ -49,6 +52,11 @@ class ProductSet extends Model
         'parent_id',
         'description_html',
         'cover_id',
+    ];
+
+    protected array $translatable = [
+        'name',
+        'description_html',
     ];
 
     protected $casts = [

@@ -93,10 +93,8 @@ class SeoMetadataService implements SeoMetadataServiceContract
         $seo->setAttribute('no_index', '{}');
 
         foreach ($dto->translations as $lang => $translations) {
-            $translationArray = $translations->toArray() + [
-                'no_index' => $translations->getNoIndex() instanceof Missing
-                        ? false
-                        : $translations->getNoIndex(),
+            $translationArray = $translations + [
+                'no_index' => $translations['no_index'] ?? false,
             ];
 
             foreach ($translationArray as $key => $translation) {
@@ -117,7 +115,7 @@ class SeoMetadataService implements SeoMetadataServiceContract
         $seoMetadata->fill($dto->toArray());
 
         foreach ($dto->translations as $lang => $translations) {
-            foreach ($translations->toArray() as $key => $translation) {
+            foreach ($translations as $key => $translation) {
                 $seoMetadata->setTranslation($key, $lang, $translation);
             }
         }

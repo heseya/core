@@ -39,7 +39,6 @@ use App\Services\Contracts\PaymentMethodServiceContract;
 use App\Services\Contracts\PaymentServiceContract;
 use App\Services\Contracts\PermissionServiceContract;
 use App\Services\Contracts\PriceServiceContract;
-use App\Services\Contracts\ProductSearchServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\Contracts\ProviderServiceContract;
@@ -83,7 +82,6 @@ use App\Services\PaymentMethodService;
 use App\Services\PaymentService;
 use App\Services\PermissionService;
 use App\Services\PriceService;
-use App\Services\ProductSearchService;
 use App\Services\ProductService;
 use App\Services\ProductSetService;
 use App\Services\ProviderService;
@@ -146,7 +144,6 @@ class AppServiceProvider extends ServiceProvider
         AttributeServiceContract::class => AttributeService::class,
         AttributeOptionServiceContract::class => AttributeOptionService::class,
         SortServiceContract::class => SortService::class,
-        ProductSearchServiceContract::class => ProductSearchService::class,
         ConsentServiceContract::class => ConsentService::class,
         BannerServiceContract::class => BannerService::class,
         UserLoginAttemptServiceContract::class => UserLoginAttemptService::class,

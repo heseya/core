@@ -2,8 +2,8 @@
 
 namespace App\Services\Contracts;
 
-use App\Dtos\ProductSetDto;
-use App\Dtos\ProductSetUpdateDto;
+use App\DTO\ProductSet\ProductSetDto;
+use App\DTO\ProductSet\ProductSetUpdateDto;
 use App\Dtos\ProductsReorderDto;
 use App\Models\ProductSet;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
