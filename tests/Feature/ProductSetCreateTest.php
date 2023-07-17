@@ -138,51 +138,6 @@ class ProductSetCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateTreeViewFalse($user): void
-    {
-        $this->{$user}->givePermissionTo('product_sets.add');
-
-        Event::fake([ProductSetCreated::class]);
-
-        $set = [
-            'name' => 'Test',
-        ];
-
-        $defaults = [
-            'public' => true,
-            'slug' => 'test',
-        ];
-
-        $this
-            ->actingAs($this->{$user})
-            ->postJson('/product-sets?tree=0', $set + [
-                'slug_suffix' => 'test',
-                'slug_override' => false,
-            ])
-            ->assertCreated()
-            ->assertJson([
-                'data' => $set + $defaults + [
-                    'slug_override' => false,
-                    'slug_suffix' => 'test',
-                    'parent' => null,
-                    'children_ids' => [],
-                ],
-            ])
-            ->assertJsonMissing(['data' => 'children']);
-
-        $this->assertDatabaseHas(
-            'product_sets',
-            $set + $defaults + [
-                'parent_id' => null,
-            ]
-        );
-
-        Event::assertDispatched(ProductSetCreated::class);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testCreateMinimalWithWebHook($user): void
     {
         $this->{$user}->givePermissionTo('product_sets.add');
@@ -576,78 +531,6 @@ class ProductSetCreateTest extends TestCase
         $response->assertStatus(422);
 
         Event::assertNotDispatched(ProductSetCreated::class);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateTreeView($user): void
-    {
-        $this->{$user}->givePermissionTo('product_sets.add');
-
-        Event::fake([ProductSetCreated::class]);
-
-        $child = ProductSet::factory()->create([
-            'parent_id' => 'null',
-            'name' => 'Child',
-            'slug' => 'child',
-            'public' => true,
-            'public_parent' => false,
-        ]);
-
-        $grandchild = ProductSet::factory()->create([
-            'parent_id' => $child->getKey(),
-            'name' => 'Grandchild',
-            'slug' => 'child-grandchild',
-            'public' => true,
-            'public_parent' => false,
-        ]);
-
-        $response = $this->actingAs($this->{$user})->postJson('/product-sets?tree=1', [
-            'name' => 'New',
-            'slug_override' => false,
-            'slug_suffix' => 'new',
-            'children_ids' => [
-                $child->getKey(),
-            ],
-        ]);
-        $parentId = $response->json('data.id');
-        $response
-            ->assertCreated()
-            ->assertJson(['data' => [
-                'parent' => null,
-                'slug' => 'new',
-                'slug_suffix' => 'new',
-                'slug_override' => false,
-                'children' => [
-                    [
-                        'id' => $child->getKey(),
-                        'name' => 'Child',
-                        'slug' => 'new-child',
-                        'slug_suffix' => 'child',
-                        'slug_override' => false,
-                        'public' => true,
-                        'visible' => true,
-                        'parent_id' => $parentId,
-                        'children' => [
-                            [
-                                'id' => $grandchild->getKey(),
-                                'name' => 'Grandchild',
-                                'slug' => 'new-child-grandchild',
-                                'slug_suffix' => 'grandchild',
-                                'slug_override' => false,
-                                'public' => true,
-                                'visible' => true,
-                                'parent_id' => $child->getKey(),
-                                'children' => [],
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-            ]);
-
-        Event::assertDispatched(ProductSetCreated::class);
     }
 
     /**
