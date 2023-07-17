@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\DTO\OrderStatus\OrderStatusDto;
+use App\DTO\OrderStatus\OrderStatusCreateDto;
+use App\DTO\OrderStatus\OrderStatusUpdateDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
 use App\Exceptions\Error;
@@ -32,14 +33,14 @@ class StatusController extends Controller
         );
     }
 
-    public function store(OrderStatusDto $dto): JsonResource
+    public function store(OrderStatusCreateDto $dto): JsonResource
     {
         return StatusResource::make(
             $this->statusService->store($dto)
         );
     }
 
-    public function update(Status $status, OrderStatusDto $dto): JsonResource
+    public function update(Status $status, OrderStatusUpdateDto $dto): JsonResource
     {
         return StatusResource::make(
             $this->statusService->update($status, $dto),

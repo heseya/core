@@ -14,7 +14,7 @@ use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 
-class ProductSetDto extends Data
+class ProductSetCreateDto extends Data
 {
     #[Computed]
     public readonly array|Optional $metadata;

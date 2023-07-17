@@ -56,14 +56,6 @@ final class StatusTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexWithTranslationsFlag(string $user): void
-    {
-        $this->{$user}->givePermissionTo('statuses.show');
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testIndexByIds(string $user): void
     {
         $this->{$user}->givePermissionTo('statuses.show');
@@ -166,19 +158,19 @@ final class StatusTest extends TestCase
             'cancel' => $cancel,
         ]);
 
-        $status = [
-            'name' => 'Test Status 2',
-            'color' => '444444',
-            'description' => 'Testowy opis testowego statusu 2.',
-            'cancel' => !$cancel,
-        ];
-
         $this
             ->actingAs($this->{$user})
-            ->patchJson(
-                '/statuses/id:' . $this->status_model->getKey(),
-                $status,
-            )
+            ->json('PATCH', '/statuses/id:' . $this->status_model->getKey(), [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test Status 2',
+                        'description' => 'Testowy opis testowego statusu 2.',
+                    ],
+                ],
+                'published' => [$this->lang],
+                'color' => '444444',
+                'cancel' => !$cancel,
+            ])
             ->assertOk()
             ->assertJson(['data' => [
                 'name' => 'Test Status 2',
@@ -231,7 +223,7 @@ final class StatusTest extends TestCase
     /**
      * @dataProvider statusUpdateProvider
      */
-    public function testUpdateWhenUsedByOrderSameCancel($user, bool $cancel): void
+    public function testUpdateWhenUsedByOrderSameCancel(string $user, bool $cancel): void
     {
         $this->{$user}->givePermissionTo('statuses.edit');
 
@@ -243,27 +235,23 @@ final class StatusTest extends TestCase
             'status_id' => $this->status_model->getKey(),
         ]);
 
-        $data = [
-            'name' => 'Test Status 2',
-            'cancel' => $cancel,
-        ];
-
         $this
             ->actingAs($this->{$user})
-            ->json(
-                'PATCH',
-                '/statuses/id:' . $this->status_model->getKey(),
-                $data,
-            )
+            ->json('PATCH', '/statuses/id:' . $this->status_model->getKey(), [
+                'cancel' => $cancel,
+            ])
             ->assertOk();
 
-        $this->assertDatabaseHas('statuses', $data + ['id' => $this->status_model->getKey()]);
+        $this->assertDatabaseHas('statuses', [
+            'id' => $this->status_model->getKey(),
+            'cancel' => $cancel,
+        ]);
     }
 
     /**
      * @dataProvider statusUpdateProvider
      */
-    public function testUpdateHiddenWhenUsedByOrder($user, bool $hidden): void
+    public function testUpdateHiddenWhenUsedByOrder(string $user, bool $hidden): void
     {
         $this->{$user}->givePermissionTo('statuses.edit');
 
@@ -275,21 +263,17 @@ final class StatusTest extends TestCase
             'status_id' => $this->status_model->getKey(),
         ]);
 
-        $data = [
-            'name' => 'Test Status 2',
-            'hidden' => !$hidden,
-        ];
-
         $this
             ->actingAs($this->{$user})
-            ->json(
-                'PATCH',
-                '/statuses/id:' . $this->status_model->getKey(),
-                $data,
-            )
+            ->json('PATCH', '/statuses/id:' . $this->status_model->getKey(), [
+                'hidden' => !$hidden,
+            ])
             ->assertOk();
 
-        $this->assertDatabaseHas('statuses', $data + ['id' => $this->status_model->getKey()]);
+        $this->assertDatabaseHas('statuses', [
+            'id' => $this->status_model->getKey(),
+            'hidden' => !$hidden,
+        ]);
     }
 
     public function testDeleteUnauthorized(): void
@@ -303,7 +287,7 @@ final class StatusTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDelete($user): void
+    public function testDelete(string $user): void
     {
         $this->{$user}->givePermissionTo('statuses.remove');
 
@@ -317,7 +301,7 @@ final class StatusTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteWhenUsedByOrder($user): void
+    public function testDeleteWhenUsedByOrder(string $user): void
     {
         $this->{$user}->givePermissionTo('statuses.remove');
 
@@ -336,7 +320,7 @@ final class StatusTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testReorderUnauthorized($user): void
+    public function testReorderUnauthorized(string $user): void
     {
         $status1 = Status::factory()->create();
         $status2 = Status::factory()->create();
@@ -354,7 +338,7 @@ final class StatusTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testReorder($user): void
+    public function testReorder(string $user): void
     {
         $this->{$user}->givePermissionTo('statuses.edit');
 

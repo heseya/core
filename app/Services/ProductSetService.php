@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\DTO\ProductSet\ProductSetDto;
+use App\DTO\ProductSet\ProductSetCreateDto;
 use App\DTO\ProductSet\ProductSetUpdateDto;
 use App\Dtos\ProductsReorderDto;
 use App\Events\ProductSetCreated;
@@ -63,7 +63,7 @@ final readonly class ProductSetService implements ProductSetServiceContract
     /**
      * @throws ValidationException
      */
-    public function create(ProductSetDto $dto): ProductSet
+    public function create(ProductSetCreateDto $dto): ProductSet
     {
         if ($dto->parent_id !== null) {
             /** @var ProductSet $parent */

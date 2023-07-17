@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\DTO\ProductSet\ProductSetDto;
+use App\DTO\ProductSet\ProductSetCreateDto;
 use App\DTO\ProductSet\ProductSetUpdateDto;
 use App\Dtos\ProductsReorderDto;
 use App\Http\Requests\ProductSetAttachRequest;
@@ -53,7 +53,7 @@ final class ProductSetController extends Controller
         return ProductSetParentResource::make($productSet);
     }
 
-    public function store(ProductSetDto $dto, Request $request): JsonResource
+    public function store(ProductSetCreateDto $dto, Request $request): JsonResource
     {
         $productSet = $this->productSetService->create($dto);
 

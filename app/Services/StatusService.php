@@ -2,7 +2,8 @@
 
 namespace App\Services;
 
-use App\DTO\OrderStatus\OrderStatusDto;
+use App\DTO\OrderStatus\OrderStatusCreateDto;
+use App\DTO\OrderStatus\OrderStatusUpdateDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
 use App\Exceptions\PublishingException;
@@ -22,7 +23,7 @@ readonly class StatusService implements StatusServiceContract
     /**
      * @throws PublishingException
      */
-    public function store(OrderStatusDto $dto): Status
+    public function store(OrderStatusCreateDto $dto): Status
     {
         $status = new Status($dto->toArray());
 
@@ -43,15 +44,25 @@ readonly class StatusService implements StatusServiceContract
 
     /**
      * @throws ClientException
+     * @throws PublishingException
      */
-    public function update(Status $status, OrderStatusDto $dto): Status
+    public function update(Status $status, OrderStatusUpdateDto $dto): Status
     {
-        if ($status->orders()->count() > 0 && $dto->cancel !== $status->cancel) {
+        if (!($dto->cancel instanceof Optional) && $dto->cancel !== $status->cancel && $status->orders()->count() > 0) {
             // cannot unset cancel when any order with this status exists
             throw new ClientException(Exceptions::CLIENT_STATUS_USED);
         }
 
-        $status->update($dto->toArray());
+        $status->fill($dto->toArray());
+
+        if (!($dto->translations instanceof Optional)) {
+            foreach ($dto->translations as $lang => $translations) {
+                $status->setLocale($lang)->fill($translations);
+            }
+            $this->translationService->checkPublished($status, ['name']);
+        }
+
+        $status->save();
 
         if (!($dto->metadata instanceof Optional)) {
             $this->metadataService->sync($status, $dto->metadata);

@@ -31,11 +31,16 @@ final class ProductSetUpdateTest extends TestCase
 
         Event::fake([ProductSetUpdated::class]);
 
-        $newSet = ProductSet::factory()->create();
+        /** @var ProductSet $set */
+        $set = ProductSet::factory()->create();
+
+        /** @var Attribute $attribute */
+        $attribute = Attribute::factory()->create();
+        $set->attributes()->sync($attribute->getKey());
 
         $this
             ->actingAs($this->{$user})
-            ->patchJson('/product-sets/id:' . $newSet->getKey(), [
+            ->patchJson("/product-sets/id:{$set->getKey()}", [
                 'translations' => [
                     $this->lang => [
                         'name' => 'Test Edit',
@@ -61,6 +66,9 @@ final class ProductSetUpdateTest extends TestCase
             'parent_id' => null,
             'slug' => 'test-edit',
         ]);
+
+        // attributes should remain the same
+        $this->assertTrue($set->attributes->contains($attribute));
 
         Event::assertDispatched(ProductSetUpdated::class);
     }
@@ -246,56 +254,6 @@ final class ProductSetUpdateTest extends TestCase
             ])->assertOk();
 
         $this->assertFalse($set->attributes->contains($attrOne));
-
-        Event::assertDispatched(ProductSetUpdated::class);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdateWithoutAttributes(string $user): void
-    {
-        $this->{$user}->givePermissionTo('product_sets.edit');
-
-        Event::fake([ProductSetUpdated::class]);
-
-        $newSet = ProductSet::factory()->create([
-            'public' => false,
-            'order' => 40,
-        ]);
-
-        $attrOne = Attribute::factory()->create();
-
-        $newSet->attributes()->sync($attrOne->getKey());
-
-        $parentId = [
-            'parent_id' => null,
-        ];
-
-        $response = $this->actingAs($this->{$user})->patchJson(
-            '/product-sets/id:' . $newSet->getKey(),
-            $parentId + [
-                'children_ids' => [],
-                'slug_suffix' => 'test-edit',
-                'slug_override' => false,
-            ],
-        );
-
-        $response
-            ->assertOk()
-            ->assertJson(['data' => [
-                'parent' => null,
-                'children_ids' => [],
-                'slug' => 'test-edit',
-                'slug_suffix' => 'test-edit',
-                'slug_override' => false,
-            ]]);
-
-        $this->assertDatabaseHas('product_sets', $parentId + [
-            'slug' => 'test-edit',
-        ]);
-
-        $this->assertTrue($newSet->attributes->contains($attrOne));
 
         Event::assertDispatched(ProductSetUpdated::class);
     }
