@@ -2,11 +2,10 @@
 
 namespace App\Services;
 
-use App\DTO\Schemas\OptionDto;
+use App\DTO\ProductSchema\OptionDto;
 use App\Models\Option;
 use App\Models\Schema;
 use App\Services\Contracts\OptionServiceContract;
-use Illuminate\Support\Collection;
 use Spatie\LaravelData\Optional;
 
 final readonly class OptionService implements OptionServiceContract
@@ -14,9 +13,9 @@ final readonly class OptionService implements OptionServiceContract
     /**
      * @param OptionDto[] $options
      */
-    public function sync(Schema $schema, array $options = []): void
+    public function sync(Schema $schema, array $options): void
     {
-        $keep = Collection::empty();
+        $keep = [];
 
         foreach ($options as $order => $optionItem) {
             $optionData = array_merge(
@@ -43,7 +42,7 @@ final readonly class OptionService implements OptionServiceContract
                 $option->items()->sync($optionItem->items);
             }
 
-            $keep->add($option->getKey());
+            $keep[] = $option->getKey();
         }
 
         $schema->options()->whereNotIn('id', $keep)->delete();

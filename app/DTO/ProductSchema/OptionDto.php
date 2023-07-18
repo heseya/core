@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DTO\Schemas;
+namespace App\DTO\ProductSchema;
 
 use App\Rules\Translations;
 use Spatie\LaravelData\Attributes\Validation\Rule;

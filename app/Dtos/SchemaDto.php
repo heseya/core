@@ -2,7 +2,7 @@
 
 namespace App\Dtos;
 
-use App\DTO\Schemas\OptionDto;
+use App\DTO\ProductSchema\OptionDto;
 use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Traits\MapMetadata;
 use Heseya\Dto\Dto;

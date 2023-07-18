@@ -2,22 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Dtos\LanguageDto;
-use App\Http\Requests\LanguageCreateRequest;
-use App\Http\Requests\LanguageUpdateRequest;
+use App\DTO\Language\LanguageCreateDto;
+use App\DTO\Language\LanguageUpdateDto;
 use App\Http\Resources\LanguageResource;
 use App\Models\Language;
 use App\Services\Contracts\LanguageServiceContract;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
 
-class LanguageController extends Controller
+final class LanguageController extends Controller
 {
     public function __construct(
-        private LanguageServiceContract $languageService,
+        private readonly LanguageServiceContract $languageService,
     ) {}
 
     public function index(): JsonResource
@@ -33,29 +32,24 @@ class LanguageController extends Controller
         );
     }
 
-    public function store(LanguageCreateRequest $request): JsonResource
+    public function store(LanguageCreateDto $dto): JsonResource
     {
-        $language = $this->languageService->create(
-            LanguageDto::instantiateFromRequest($request),
+        return LanguageResource::make(
+            $this->languageService->create($dto),
         );
-
-        return LanguageResource::make($language);
     }
 
-    public function update(Language $language, LanguageUpdateRequest $request): JsonResource
+    public function update(Language $language, LanguageUpdateDto $dto): JsonResource
     {
-        $language = $this->languageService->update(
-            $language,
-            LanguageDto::instantiateFromRequest($request),
+        return LanguageResource::make(
+            $this->languageService->update($language, $dto),
         );
-
-        return LanguageResource::make($language);
     }
 
-    public function destroy(Language $language): JsonResponse
+    public function destroy(Language $language): HttpResponse
     {
         $this->languageService->delete($language);
 
-        return Response::json(null, 204);
+        return Response::noContent();
     }
 }

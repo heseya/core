@@ -2,6 +2,7 @@
 
 namespace App\Rules;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
 use App\Models\Role;
 use Closure;
@@ -18,7 +19,7 @@ class IsRegistrationRole implements ValidationRule
                 ->where('type', '=', RoleType::REGULAR)
                 ->exists()
         ) {
-            $fail("Cannot register with a role ID: {$value}");
+            $fail(Exceptions::CLIENT_REGISTER_WITH_NON_REGISTRATION_ROLE);
         }
     }
 }

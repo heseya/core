@@ -53,7 +53,7 @@ class LanguageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexHidden($user): void
+    public function testIndexHidden(string $user): void
     {
         $this->{$user}->givePermissionTo('languages.show_hidden');
 
@@ -69,7 +69,7 @@ class LanguageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithoutPermissions($user): void
+    public function testCreateWithoutPermissions(string $user): void
     {
         $this
             ->actingAs($this->{$user})
@@ -85,7 +85,7 @@ class LanguageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreate($user): void
+    public function testCreate(string $user): void
     {
         $this->{$user}->givePermissionTo('languages.add');
 
@@ -118,7 +118,7 @@ class LanguageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithWebHookDispatched($user): void
+    public function testCreateWithWebHookDispatched(string $user): void
     {
         $this->{$user}->givePermissionTo('languages.add');
 
@@ -150,7 +150,7 @@ class LanguageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateWithoutPermissions($user): void
+    public function testUpdateWithoutPermissions(string $user): void
     {
         $this
             ->actingAs($this->{$user})
@@ -166,7 +166,7 @@ class LanguageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdate($user): void
+    public function testUpdate(string $user): void
     {
         $this->{$user}->givePermissionTo('languages.edit');
 
@@ -199,7 +199,7 @@ class LanguageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateWithWebHookDispatched($user): void
+    public function testUpdateWithWebHookDispatched(string $user): void
     {
         $this->{$user}->givePermissionTo('languages.edit');
 
@@ -253,7 +253,7 @@ class LanguageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDelete($user): void
+    public function testDelete(string $user): void
     {
         $this->{$user}->givePermissionTo('languages.remove');
 
@@ -273,7 +273,7 @@ class LanguageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteWithWebHookDispatched($user): void
+    public function testDeleteWithWebHookDispatched(string $user): void
     {
         $this->{$user}->givePermissionTo('languages.remove');
 
@@ -307,20 +307,20 @@ class LanguageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteDefaultLanguage($user): void
+    public function testDeleteDefaultLanguage(string $user): void
     {
         $this->{$user}->givePermissionTo('languages.remove');
 
         $this
             ->actingAs($this->{$user})
             ->json('DELETE', "/languages/id:{$this->language->getKey()}")
-            ->assertStatus(400);
+            ->assertUnprocessable();
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testGetDefaultTranslation($user): void
+    public function testGetDefaultTranslation(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show_details');
 
@@ -347,11 +347,12 @@ class LanguageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testGetRequestedTranslation($user): void
+    public function testGetRequestedTranslation(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show_details');
 
-        $newLanguage = Language::create([
+        /** @var Language $newLanguage */
+        $newLanguage = Language::query()->create([
             'iso' => 'de',
             'name' => 'Deutsch',
             'default' => false,
@@ -385,7 +386,7 @@ class LanguageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testGetHiddenTranslation($user): void
+    public function testGetHiddenTranslation(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show_details');
 
@@ -422,19 +423,19 @@ class LanguageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUncheckCurrentDefaultLanguage($user): void
+    public function testUncheckCurrentDefaultLanguage(string $user): void
     {
         $this->{$user}->givePermissionTo('languages.edit');
 
         $this
             ->actingAs($this->{$user})
             ->json('PATCH', "/languages/id:{$this->language->getKey()}", [
-                'iso' => 'pl',
-                'name' => 'Polski',
+                'iso' => 'es',
+                'name' => 'Espanol',
                 'hidden' => false,
                 'default' => false,
             ])
-            ->assertStatus(400)
+            ->assertUnprocessable()
             ->assertJsonFragment(['message' => 'There must be exactly one default language.']);
 
         $this->assertDatabaseHas('languages', [

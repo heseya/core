@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
-use App\Dtos\LanguageDto;
+use App\DTO\Language\LanguageCreateDto;
+use App\DTO\Language\LanguageUpdateDto;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Events\LanguageCreated;
 use App\Events\LanguageDeleted;
 use App\Events\LanguageUpdated;
@@ -12,11 +14,12 @@ use App\Services\Contracts\LanguageServiceContract;
 
 class LanguageService implements LanguageServiceContract
 {
-    public function create(LanguageDto $dto): Language
+    public function create(LanguageCreateDto $dto): Language
     {
-        $language = Language::create($dto->toArray());
+        /** @var Language $language */
+        $language = Language::query()->create($dto->toArray());
 
-        if ($dto->getDefault() === true) {
+        if ($dto->default === true) {
             $this->defaultSet($language);
         }
 
@@ -25,20 +28,18 @@ class LanguageService implements LanguageServiceContract
         return $language;
     }
 
-    public function defaultSet(Language $language): void
+    /**
+     * @throws StoreException
+     */
+    public function update(Language $language, LanguageUpdateDto $dto): Language
     {
-        Language::where('id', '!=', $language->getKey())->update(['default' => false]);
-    }
-
-    public function update(Language $language, LanguageDto $dto): Language
-    {
-        if ($language->default && !$dto->getDefault()) {
-            throw new StoreException('There must be exactly one default language.');
+        if ($language->default && !$dto->default) {
+            throw new StoreException(Exceptions::CLIENT_DUPLICATED_DEFAULT_LANGUAGE);
         }
 
         $language->update($dto->toArray());
 
-        if ($dto->getDefault() === true) {
+        if ($dto->default === true) {
             $this->defaultSet($language);
         }
 
@@ -47,18 +48,28 @@ class LanguageService implements LanguageServiceContract
         return $language;
     }
 
+    /**
+     * @throws StoreException
+     */
     public function delete(Language $language): void
     {
         if ($language->default === true) {
-            throw new StoreException('You cannot delete the default language.');
+            throw new StoreException(Exceptions::CLIENT_DELETE_DEFAULT_LANGUAGE);
         }
 
-        if (Language::count() <= 1) {
-            throw new StoreException('There must be at least one language.');
+        if (Language::query()->count() <= 1) {
+            throw new StoreException(Exceptions::CLIENT_NO_DEFAULT_LANGUAGE);
         }
 
         LanguageDeleted::dispatch($language);
 
         $language->delete();
+    }
+
+    private function defaultSet(Language $language): void
+    {
+        Language::query()
+            ->where('id', '!=', $language->getKey())
+            ->update(['default' => false]);
     }
 }
