@@ -59,7 +59,7 @@ class PageService implements PageServiceContract
         $page = new Page($attributes);
 
         foreach ($dto->translations as $lang => $translations) {
-            $page->setLocale($lang)->fill($translations->toArray());
+            $page->setLocale($lang)->fill($translations);
         }
 
         $this->translationService->checkPublished($page, ['name', 'content_html']);
@@ -85,7 +85,7 @@ class PageService implements PageServiceContract
 
         if (!$dto->translations instanceof Optional) {
             foreach ($dto->translations as $lang => $translations) {
-                $page->setLocale($lang)->fill($translations->toArray());
+                $page->setLocale($lang)->fill($translations);
             }
             $this->translationService->checkPublished($page, ['name', 'content_html']);
         }

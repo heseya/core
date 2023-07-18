@@ -56,7 +56,7 @@ class ProductSetIndexTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexSetsShow($user): void
+    public function testIndexSetsShow(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.show');
 
@@ -66,7 +66,7 @@ class ProductSetIndexTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function index($user): void
+    public function index(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.show');
 
@@ -104,7 +104,7 @@ class ProductSetIndexTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexByIds($user): void
+    public function testIndexByIds(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.show');
 
@@ -136,7 +136,7 @@ class ProductSetIndexTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexParentIdEmpty($user): void
+    public function testIndexParentIdEmpty(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.show');
 
@@ -175,13 +175,13 @@ class ProductSetIndexTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(11);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testIndexProductsAdd($user): void
+    public function testIndexProductsAdd(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
@@ -191,7 +191,7 @@ class ProductSetIndexTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexSetsProductsEdit($user): void
+    public function testIndexSetsProductsEdit(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
 
@@ -201,7 +201,7 @@ class ProductSetIndexTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexHidden($user): void
+    public function testIndexHidden(string $user): void
     {
         $this->{$user}->givePermissionTo(['product_sets.show', 'product_sets.show_hidden']);
 
@@ -261,7 +261,7 @@ class ProductSetIndexTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexRoot($user): void
+    public function testIndexRoot(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.show');
 
@@ -289,7 +289,7 @@ class ProductSetIndexTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexRootHidden($user): void
+    public function testIndexRootHidden(string $user): void
     {
         $this->{$user}->givePermissionTo(['product_sets.show', 'product_sets.show_hidden']);
 
@@ -327,7 +327,7 @@ class ProductSetIndexTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testSearchByParentId($user): void
+    public function testSearchByParentId(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.show');
 

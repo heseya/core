@@ -27,8 +27,8 @@ final class PageCreateDto extends Data
         public readonly Optional|SeoMetadataDto $seo,
 
         #[MapInputName('metadata')]
-        private readonly array|Optional $metadata_public,
-        private readonly array|Optional $metadata_private,
+        public readonly array|Optional $metadata_public,
+        public readonly array|Optional $metadata_private,
     ) {
         $this->metadata = Map::toMetadata(
             $this->metadata_public,
