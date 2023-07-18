@@ -8,6 +8,7 @@ use App\Criteria\ParentIdSearch;
 use App\Criteria\ProductSetSearch;
 use App\Criteria\WhereInIds;
 use App\Enums\DiscountTargetType;
+use App\Models\Contracts\SeoContract;
 use App\Models\Interfaces\Translatable;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasDiscounts;
@@ -31,7 +32,7 @@ use Spatie\Translatable\HasTranslations;
  *
  * @mixin IdeHelperProductSet
  */
-class ProductSet extends Model implements Translatable
+class ProductSet extends Model implements SeoContract, Translatable
 {
     use HasCriteria;
     use HasDiscountConditions;

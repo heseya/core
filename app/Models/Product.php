@@ -19,6 +19,7 @@ use App\Criteria\WhereInIds;
 use App\Criteria\WhereNotId;
 use App\Criteria\WhereNotSlug;
 use App\Enums\DiscountTargetType;
+use App\Models\Contracts\SeoContract;
 use App\Models\Contracts\SortableContract;
 use App\Models\Interfaces\Translatable;
 use App\SortColumnTypes\TranslatedColumn;
@@ -46,7 +47,7 @@ use Spatie\Translatable\HasTranslations;
  *
  * @mixin IdeHelperProduct
  */
-class Product extends Model implements SortableContract, Translatable
+class Product extends Model implements SeoContract, SortableContract, Translatable
 {
     use HasCriteria;
     use HasDiscountConditions;

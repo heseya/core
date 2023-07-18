@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\WhereInIds;
+use App\Models\Contracts\SeoContract;
 use App\Models\Contracts\SortableContract;
 use App\Models\Interfaces\Translatable;
 use App\Traits\HasMetadata;
@@ -19,7 +20,7 @@ use Spatie\Translatable\HasTranslations;
 /**
  * @mixin IdeHelperPage
  */
-class Page extends Model implements SortableContract, Translatable
+class Page extends Model implements SeoContract, SortableContract, Translatable
 {
     use HasCriteria;
     use HasFactory;

@@ -2,24 +2,19 @@
 
 namespace App\Services;
 
+use App\DTO\SeoMetadata\SeoKeywordsDto;
 use App\DTO\SeoMetadata\SeoMetadataDto;
-use App\Dtos\SeoKeywordsDto;
 use App\Dtos\SeoMetadataDto as SeoMetadataDtoOld;
-use App\Enums\SeoModelType;
 use App\Exceptions\PublishingException;
 use App\Models\Model;
-use App\Models\Page;
-use App\Models\Product;
-use App\Models\ProductSet;
 use App\Models\SeoMetadata;
 use App\Services\Contracts\SeoMetadataServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
-use Heseya\Dto\Missing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Str;
+use Spatie\LaravelData\Optional;
 
 class SeoMetadataService implements SeoMetadataServiceContract
 {
@@ -46,10 +41,8 @@ class SeoMetadataService implements SeoMetadataServiceContract
             ]);
 
             foreach ($dto->translations as $lang => $translations) {
-                $translationArray = $translations->toArray() + [
-                    'no_index' => $translations->getNoIndex() instanceof Missing
-                        ? false
-                        : $translations->getNoIndex(),
+                $translationArray = $translations + [
+                    'no_index' => $translations['no_index'] ?? false,
                 ];
 
                 foreach ($translationArray as $key => $translation) {
@@ -66,7 +59,7 @@ class SeoMetadataService implements SeoMetadataServiceContract
             $seo->fill($dto->toArray());
 
             foreach ($dto->translations as $lang => $translations) {
-                foreach ($translations->toArray() as $key => $translation) {
+                foreach ($translations as $key => $translation) {
                     $seo->setTranslation($key, $lang, $translation);
                 }
             }
@@ -134,33 +127,20 @@ class SeoMetadataService implements SeoMetadataServiceContract
 
     public function checkKeywords(SeoKeywordsDto $dto): Collection
     {
-        $keywords = $dto->getKeywords();
-
-        $excluded_id = $dto->getExcludedId();
-        $excluded_model = $dto->getExcludedModel();
-
-        $morph_closure = $excluded_id instanceof Missing ? null :
-            function (Builder $query, $type) use ($excluded_id, $excluded_model): void {
-                if (!$excluded_model instanceof Missing
-                    && $type === SeoModelType::getValue(Str::upper(Str::snake($excluded_model)))
-                ) {
-                    $query->where('model_id', '!=', $excluded_id);
-                }
-            };
-
         $lang = App::getLocale();
+        $query = SeoMetadata::query();
 
-        return SeoMetadata::query()->whereHasMorph(
-            'modelSeo',
-            [
-                Page::class,
-                Product::class,
-                ProductSet::class,
-            ],
-            $morph_closure
-        )
-            ->whereJsonLength("keywords->{$lang}", count($keywords))
-            ->whereJsonContains("keywords->{$lang}", $keywords)
+        if (!($dto->excluded instanceof Optional)) {
+            $query->whereHasMorph(
+                'modelSeo',
+                "App\\Models\\{$dto->excluded->model}",
+                fn (Builder $query) => $query->where('model_id', '!=', $dto->excluded->id),
+            );
+        }
+
+        return $query
+            ->whereJsonLength("keywords->{$lang}", count($dto->keywords))
+            ->whereJsonContains("keywords->{$lang}", $dto->keywords)
             ->get();
     }
 

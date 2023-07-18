@@ -35,7 +35,7 @@ class SeoMetadataDto extends Dto implements InstantiateFromRequest
         $seo = $request->has('seo') ? 'seo.' : '';
 
         $translations = array_map(
-            fn ($data) => SeoMetadataTranslationDto::fromDataArray($data),
+            fn ($data) => SeoMetadataTranslationDto::fromDataArray(is_string($data) ? [$data] : $data)->toArray(),
             $request->input($seo . 'translations', []),
         );
 

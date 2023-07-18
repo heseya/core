@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\DTO\SeoMetadata\SeoKeywordsDto;
 use App\DTO\SeoMetadata\SeoMetadataDto;
-use App\Dtos\SeoKeywordsDto;
-use App\Http\Requests\SeoKeywordsRequest;
 use App\Http\Resources\SeoKeywordsResource;
 use App\Http\Resources\SeoMetadataResource;
 use App\Services\Contracts\SeoMetadataServiceContract;
@@ -29,12 +28,8 @@ final class SeoMetadataController extends Controller
         return SeoMetadataResource::make($this->seoMetadataService->createOrUpdate($dto));
     }
 
-    public function checkKeywords(SeoKeywordsRequest $request): JsonResource
+    public function checkKeywords(SeoKeywordsDto $dto): JsonResource
     {
-        $seoCollection = $this->seoMetadataService->checkKeywords(
-            SeoKeywordsDto::instantiateFromRequest($request),
-        );
-
-        return SeoKeywordsResource::make($seoCollection);
+        return SeoKeywordsResource::make($this->seoMetadataService->checkKeywords($dto));
     }
 }

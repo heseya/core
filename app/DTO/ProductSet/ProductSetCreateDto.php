@@ -23,15 +23,15 @@ class ProductSetCreateDto extends Data
         #[Rule(new Translations(['name', 'description_html']))]
         public readonly array $translations,
         #[AlphaDash, Max(255)]
-        public string|null $slug_suffix,
-        public bool $slug_override,
-        public bool $public,
+        public readonly string|null $slug_suffix,
+        public readonly bool $slug_override,
+        public readonly bool $public,
         #[Exists('product_sets', 'id')]
-        public string|null $parent_id,
+        public readonly string|null $parent_id,
         #[Exists('media', 'id')]
-        public string|null $cover_id,
-        public array $children_ids,
-        public array $attributes,
+        public readonly string|null $cover_id,
+        public readonly array $children_ids,
+        public readonly array $attributes,
 
         public readonly Optional|SeoMetadataDto $seo,
 

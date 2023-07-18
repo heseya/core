@@ -10,6 +10,7 @@ use App\Criteria\WhereHasCode;
 use App\Criteria\WhereInIds;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Models\Contracts\SeoContract;
 use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
 use Heseya\Searchable\Criteria\Like;
@@ -27,7 +28,7 @@ use Illuminate\Support\Collection;
  *
  * @mixin IdeHelperDiscount
  */
-class Discount extends Model
+class Discount extends Model implements SeoContract
 {
     use HasCriteria;
     use HasFactory;

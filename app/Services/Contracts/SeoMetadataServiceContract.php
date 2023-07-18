@@ -2,8 +2,8 @@
 
 namespace App\Services\Contracts;
 
+use App\DTO\SeoMetadata\SeoKeywordsDto;
 use App\DTO\SeoMetadata\SeoMetadataDto;
-use App\Dtos\SeoKeywordsDto;
 use App\Dtos\SeoMetadataDto as SeoMetadataDtoOld;
 use App\Models\Model;
 use App\Models\SeoMetadata;

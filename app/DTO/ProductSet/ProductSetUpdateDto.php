@@ -15,15 +15,15 @@ class ProductSetUpdateDto extends Data
 {
     public function __construct(
         #[AlphaDash, Max(255)]
-        public Optional|string|null $slug_suffix,
-        public bool|Optional $slug_override,
-        public bool|Optional $public,
+        public readonly Optional|string|null $slug_suffix,
+        public readonly bool|Optional $slug_override,
+        public readonly bool|Optional $public,
         #[Exists('product_sets', 'id')]
-        public Optional|string|null $parent_id,
+        public readonly Optional|string|null $parent_id,
         #[Exists('media', 'id')]
-        public Optional|string|null $cover_id,
-        public array|Optional $children_ids,
-        public array|Optional $attributes,
+        public readonly Optional|string|null $cover_id,
+        public readonly array|Optional $children_ids,
+        public readonly array|Optional $attributes,
 
         public readonly Optional|SeoMetadataDto $seo,
 
