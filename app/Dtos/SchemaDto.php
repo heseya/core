@@ -2,6 +2,7 @@
 
 namespace App\Dtos;
 
+use App\DTO\Schemas\OptionDto;
 use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Traits\MapMetadata;
 use Heseya\Dto\Dto;
@@ -35,7 +36,7 @@ final class SchemaDto extends Dto implements InstantiateFromRequest
         $optionsArrayDto = [];
         if (!$options instanceof Missing && $options !== null) {
             foreach ($options as $option) {
-                $optionsArrayDto[] = OptionDto::fromArray($option);
+                $optionsArrayDto[] = OptionDto::from($option);
             }
         }
 

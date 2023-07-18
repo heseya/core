@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Models\Interfaces\Translatable;
-use App\Traits\HasMetadata;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -15,7 +14,6 @@ use Spatie\Translatable\HasTranslations;
 class Option extends Model implements Translatable
 {
     use HasFactory;
-    use HasMetadata;
     use HasTranslations;
 
     protected $fillable = [

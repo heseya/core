@@ -3,14 +3,11 @@
 namespace App\Http\Resources;
 
 use App\Traits\GetAllTranslations;
-use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
 class OptionResource extends Resource
 {
     use GetAllTranslations;
-
-    use MetadataResource;
 
     public function base(Request $request): array
     {
@@ -28,7 +25,6 @@ class OptionResource extends Resource
         return array_merge(
             $data,
             $request->has('translations') ? $this->getAllTranslations() : [],
-            $this->metadataResource('options.show_metadata_private'),
         );
     }
 }
