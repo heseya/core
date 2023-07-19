@@ -8,7 +8,11 @@ use App\Http\Requests\ShippingMethodUpdateRequest;
 use App\Models\App;
 use App\Models\User;
 use App\Traits\MapMetadata;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
 use Heseya\Dto\Dto;
+use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +26,7 @@ class ShippingMethodUpdateDto extends Dto implements InstantiateFromRequest
     protected bool|Missing $block_list;
     protected ?array $payment_methods;
     protected ?array $countries;
+    /** @var PriceRangeDto[]|null $price_ranges */
     protected ?array $price_ranges;
     protected int|Missing $shipping_time_min;
     protected int|Missing $shipping_time_max;
@@ -32,11 +37,22 @@ class ShippingMethodUpdateDto extends Dto implements InstantiateFromRequest
 
     protected array|Missing $metadata;
 
+    /**
+     * @throws RoundingNecessaryException
+     * @throws DtoException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
     public static function instantiateFromRequest(
         FormRequest|ShippingMethodStoreRequest|ShippingMethodUpdateRequest $request,
     ): self {
         /** @var User|App|null $user */
         $user = Auth::user();
+
+        $price_ranges = $request->input('price_ranges') ? array_map(
+            fn ($data) => PriceRangeDto::fromData(...$data),
+            $request->input('price_ranges'),
+        ) : null;
 
         return new self(
             name: $request->input('name', new Missing()),
@@ -44,7 +60,7 @@ class ShippingMethodUpdateDto extends Dto implements InstantiateFromRequest
             block_list: $request->input('block_list', new Missing()),
             payment_methods: $request->input('payment_methods'),
             countries: $request->input('countries'),
-            price_ranges: $request->input('price_ranges'),
+            price_ranges: $price_ranges,
             shipping_time_min: $request->input('shipping_time_min', new Missing()),
             shipping_time_max: $request->input('shipping_time_max', new Missing()),
             shipping_type: $request->input('shipping_type', new Missing()),
@@ -80,6 +96,9 @@ class ShippingMethodUpdateDto extends Dto implements InstantiateFromRequest
         return $this->countries;
     }
 
+    /**
+     * @return PriceRangeDto[]|null
+     */
     public function getPriceRanges(): ?array
     {
         return $this->price_ranges;

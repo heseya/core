@@ -13,9 +13,14 @@ use Brick\Money\Money as BrickMoney;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
-readonly class Money implements ValidationRule
+readonly class Price implements ValidationRule
 {
+    /**
+     * @param string[] $amountKeys
+     * @param BigDecimal|null $min
+     */
     public function __construct(
+        private array $amountKeys,
         private ?BigDecimal $min = null,
     ) {}
 
@@ -25,42 +30,59 @@ readonly class Money implements ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (!is_array($value)) {
-            $fail('The :attribute is not an object');
+        $currency = $this->validateCurrency($value, $fail);
 
+        if ($currency === null) {
             return;
         }
 
-        if (!array_key_exists('value', $value)) {
-            $fail("The :attribute is missing key 'value'");
+        foreach ($this->amountKeys as $amountKey) {
+            $this->validateAmount($value, $amountKey, $currency, $fail);
+        }
+    }
 
-            return;
+    public function validateCurrency(mixed $value, Closure $fail): ?Currency
+    {
+        if (!is_array($value)) {
+            $fail('The :attribute is not an object');
+            return null;
         }
 
         if (!array_key_exists('currency', $value)) {
             $fail("The :attribute is missing key 'currency'");
-
-            return;
+            return null;
         }
 
         $currency = Currency::tryFrom($value['currency']);
 
         if ($currency === null) {
             $fail("The :attribute currency {$value['currency']} is invalid");
+        }
 
+        return $currency;
+    }
+
+    /**
+     * @throws MathException
+     * @throws MoneyMismatchException
+     */
+    public function validateAmount(mixed $value, string $amountKey, Currency $currency, Closure $fail): void
+    {
+        if (!array_key_exists($amountKey, $value)) {
+            $fail("The :attribute is missing key '{$amountKey}'");
             return;
         }
 
-        $amount = $value['value'];
+        $amount = $value[$amountKey];
         $money = null;
         try {
             $money = BrickMoney::of($amount, $currency->value);
         } catch (NumberFormatException) {
-            $fail('The :attribute value must be decimal string');
+            $fail("The :attribute {$amountKey} must be decimal string");
         } catch (RoundingNecessaryException) {
-            $fail("The :attribute value has too many decimal places for currency {$currency->value}");
+            $fail("The :attribute {$amountKey} has too many decimal places for currency {$currency->value}");
         } catch (UnknownCurrencyException) {
-            $fail("The :attribute currency {$currency->value} is invalid");
+            $fail("The :attribute currency {$currency->value} for {$amountKey} is invalid");
         }
 
         if ($this->min !== null && $money?->isLessThan($this->min)) {

@@ -44,6 +44,7 @@ class ProductRepository implements ProductRepositoryContract
                         'model_id' => $productId,
                         'model_type' => Product::class,
                         'price_type' => $type,
+                        'currency' => $price->value->getCurrency()->getCurrencyCode(),
                     ], [
                         'value' => $price->value,
                         'is_net' => false,

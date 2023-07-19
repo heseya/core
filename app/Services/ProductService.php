@@ -12,6 +12,7 @@ use App\Events\ProductDeleted;
 use App\Events\ProductPriceUpdated;
 use App\Events\ProductUpdated;
 use App\Models\Option;
+use App\Models\Price;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Repositories\Contracts\ProductRepositoryContract;
@@ -95,12 +96,12 @@ readonly class ProductService implements ProductServiceContract
             'price_base' => $dto->prices_base,
         ]);
 
-        [$priceMin, $priceMax] = $this->getMinMaxPrices($product);
+        [$pricesMin, $pricesMax] = $this->getMinMaxPrices($product);
 
         // TODO: Need to calc schema prices for each currency
         $this->productRepository->setProductPrices($product->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto($priceMin)],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto($priceMax)],
+            ProductPriceType::PRICE_MIN_INITIAL->value => $pricesMin,
+            ProductPriceType::PRICE_MAX_INITIAL->value => $pricesMax,
         ]);
 
         $availability = $this->availabilityService->getCalculateProductAvailability($product);
@@ -212,24 +213,33 @@ readonly class ProductService implements ProductServiceContract
     }
 
     /**
-     * @return Money[]
+     * @return PriceDto[][]
      *
      * @throws MathException
      * @throws MoneyMismatchException
+     * @throws DtoException
      */
     public function getMinMaxPrices(Product $product): array
     {
+        // TODO: Get schema prices for each currency
         [$schemaMin, $schemaMax] = $this->getSchemasPrices(
             clone $product->schemas,
             clone $product->schemas,
         );
 
-        /** @var Money $price */
-        $price = $product->pricesBase()->first()->value;
+        /** @var Collection $pricesMin */
+        $pricesMin = $product->pricesBase->map(
+            fn (Price $price) => new PriceDto($price->value->plus($schemaMin)),
+        );
+
+        /** @var Collection $pricesMin */
+        $pricesMax = $product->pricesBase->map(
+            fn (Price $price) => new PriceDto($price->value->plus($schemaMax)),
+        );
 
         return [
-            $price->plus($schemaMin),
-            $price->plus($schemaMax),
+            $pricesMin->toArray(),
+            $pricesMax->toArray(),
         ];
     }
 
@@ -240,11 +250,11 @@ readonly class ProductService implements ProductServiceContract
      */
     public function updateMinMaxPrices(Product $product): void
     {
-        [$priceMin, $priceMax] = $this->getMinMaxPrices($product);
+        [$pricesMin, $pricesMax] = $this->getMinMaxPrices($product);
 
         $this->productRepository->setProductPrices($product->getKey(), [
-            ProductPriceType::PRICE_MIN->value => [new PriceDto($priceMin)],
-            ProductPriceType::PRICE_MAX->value => [new PriceDto($priceMax)],
+            ProductPriceType::PRICE_MIN_INITIAL->value => $pricesMin,
+            ProductPriceType::PRICE_MAX_INITIAL->value => $pricesMax,
         ]);
         $this->discountService->applyDiscountsOnProduct($product);
     }

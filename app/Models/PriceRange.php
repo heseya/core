@@ -17,21 +17,30 @@ class PriceRange extends Model
     protected $fillable = [
         'start',
         'value',
+        'currency',
     ];
 
     public function start(): Attribute
     {
-        return Attribute::make(
-            get: fn (BigDecimal|string $value): Money => Money::ofMinor($value, 'PLN'),
-            set: fn (Money $value): BigDecimal => $value->getMinorAmount(),
-        );
+        return self::priceAttribute('start');
     }
 
     public function value(): Attribute
     {
+        return self::priceAttribute('value');
+    }
+
+    private static function priceAttribute(string $attributeName): Attribute
+    {
         return Attribute::make(
-            get: fn (BigDecimal|string $value): Money => Money::ofMinor($value, 'PLN'),
-            set: fn (Money $value): BigDecimal => $value->getMinorAmount(),
+            get: fn (mixed $value, array $attributes): Money => Money::ofMinor(
+                $attributes[$attributeName],
+                $attributes['currency'],
+            ),
+            set: fn (Money $value): array => [
+                $attributeName => $value->getMinorAmount(),
+                'currency' => $value->getCurrency()->getCurrencyCode(),
+            ],
         );
     }
 }

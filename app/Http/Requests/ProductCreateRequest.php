@@ -5,7 +5,8 @@ namespace App\Http\Requests;
 use App\Http\Requests\Contracts\MetadataRequestContract;
 use App\Http\Requests\Contracts\SeoRequestContract;
 use App\Rules\AttributeOptionExist;
-use App\Rules\Money;
+use App\Rules\Price;
+use App\Rules\PricesEveryCurrency;
 use App\Rules\ProductAttributeOptions;
 use App\Rules\UniqueIdInRequest;
 use App\Traits\MetadataRules;
@@ -29,8 +30,8 @@ class ProductCreateRequest extends FormRequest implements MetadataRequestContrac
                 'name' => ['required', 'string', 'max:255'],
                 'slug' => ['required', 'string', 'max:255', 'unique:products', 'alpha_dash'],
 
-                'prices_base' => ['required', 'array', 'size:1'],
-                'prices_base.*' => [new Money(min: BigDecimal::zero())],
+                'prices_base' => ['required', new PricesEveryCurrency()],
+                'prices_base.*' => [new Price(['value'], min: BigDecimal::zero())],
 
                 'public' => ['required', 'boolean'],
                 'shipping_digital' => ['required', 'boolean'],

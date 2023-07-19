@@ -10,7 +10,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface ShippingMethodServiceContract
 {
-    public function index(?array $search, ?string $country, Money $cartValue): LengthAwarePaginator;
+    public function index(?array $search, ?string $country, ?Money $cartValue): LengthAwarePaginator;
 
     public function store(ShippingMethodCreateDto $shippingMethodDto): ShippingMethod;
 

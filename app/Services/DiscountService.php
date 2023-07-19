@@ -317,7 +317,9 @@ readonly class DiscountService implements DiscountServiceContract
     public function calcCartDiscounts(CartDto $cart, Collection $products): CartResource
     {
         $discounts = $this->getActiveSalesAndCoupons($cart->getCoupons());
+        /** @var ?ShippingMethod $shippingMethod */
         $shippingMethod = null;
+        /** @var ?ShippingMethod $shippingMethodDigital */
         $shippingMethodDigital = null;
 
         if (!$cart->getShippingMethodId() instanceof Missing) {
@@ -336,7 +338,7 @@ readonly class DiscountService implements DiscountServiceContract
             $product = $products->firstWhere('id', $cartItem->getProductId());
 
             if (!($product instanceof Product)) {
-                // skip when product is not avaiable
+                // skip when product is not available
                 continue;
             }
 

@@ -7,8 +7,10 @@ use App\Criteria\MetadataSearch;
 use App\Criteria\WhereInIds;
 use App\Traits\HasDiscounts;
 use App\Traits\HasMetadata;
+use Brick\Math\BigDecimal;
 use Brick\Money\Money;
 use Heseya\Searchable\Traits\HasCriteria;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -18,7 +20,7 @@ use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
- * @property ?Money $price
+ * @property Money[] $prices
  *
  * @mixin IdeHelperShippingMethod
  */
@@ -101,15 +103,27 @@ class ShippingMethod extends Model implements AuditableContract
 
     public function getPrice(Money $orderTotal): Money
     {
-        /** TODO: Search for specific currency */
-
         /** @var PriceRange $priceRange */
         $priceRange = $this->priceRanges()
+            ->where('currency', '=', $orderTotal->getCurrency()->getCurrencyCode())
             ->where('start', '<=', $orderTotal->getMinorAmount())
             ->orderBy('start', 'desc')
-            ->first();
+            ->firstOrFail();
 
-        return $priceRange->value ?? Money::zero($orderTotal->getCurrency());
+        return $priceRange->value;
+    }
+
+    /**
+     * @return Money[]
+     */
+    public function getStartingPrices(): array
+    {
+        /** @var Collection<PriceRange> $priceRanges */
+        $priceRanges = $this->priceRanges()
+            ->where('start', '=', BigDecimal::zero())
+            ->get();
+
+        return $priceRanges->map(fn (PriceRange $range) => $range->value)->toArray();
     }
 
     public function priceRanges(): HasMany

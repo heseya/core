@@ -836,8 +836,7 @@ class ShippingMethodTest extends TestCase
                 'block_list' => $this->shipping_method->block_list,
                 'shipping_time_min' => $this->shipping_method->shipping_time_min,
                 'shipping_time_max' => $this->shipping_method->shipping_time_max,
-            ],
-            ])
+            ]])
             ->assertJsonCount(2, 'data.price_ranges')
             ->assertJsonFragment(['start' => ['gross' => $this->shipping_method->priceRanges->first()->start->getAmount()]])
             ->assertJsonFragment(['value' => ['gross' => $this->shipping_method->priceRanges->first()->value->getAmount()]])
@@ -876,6 +875,7 @@ class ShippingMethodTest extends TestCase
                     [
                         'start' => '0',
                         'value' => '10.37',
+                        'currency' => Currency::DEFAULT->value,
                     ],
                 ],
             ],

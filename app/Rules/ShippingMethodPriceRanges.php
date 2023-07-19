@@ -2,40 +2,40 @@
 
 namespace App\Rules;
 
-use Illuminate\Contracts\Validation\Rule;
+use App\Enums\Currency;
+use Brick\Math\BigDecimal;
+use Closure;
+use Exception;
+use Illuminate\Contracts\Validation\ValidationRule;
+use function Sentry\trace;
 
-class ShippingMethodPriceRanges implements Rule
+class ShippingMethodPriceRanges implements ValidationRule
 {
-    /**
-     * Determine if the validation rule passes.
-     */
-    public function passes($attribute, $value): bool
+    public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        // for update
-        if ($value === null || !$value) {
-            return true;
+        if (!is_array($value)) {
+            $fail('The :attribute is not an array');
+            return;
         }
 
-        foreach ($value as $item) {
-            if (!isset($item['start'])) {
-                return false;
-            }
+        $currencyTable = [];
 
-            $minimumValue = (float) $item['start'];
+        foreach ($value as $price_range) {
+            $currency = $price_range['currency'] ?? '';
 
-            if ($minimumValue === 0.0) {
-                return true;
-            }
+            try {
+                $start = BigDecimal::of($price_range['start']);
+
+                if ($start->isZero()) {
+                    $currencyTable[$currency] = true;
+                }
+            } catch (Exception) {}
         }
 
-        return false;
-    }
-
-    /**
-     * Get the validation error message.
-     */
-    public function message(): string
-    {
-        return 'No element of the price range begins with 0';
+        foreach (Currency::cases() as $currency) {
+            if (($currencyTable[$currency->value] ?? false) !== true) {
+                $fail("The :attribute has no range starting with 0 for currency {$currency->value}");
+            }
+        }
     }
 }

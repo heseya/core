@@ -33,10 +33,10 @@ class ShippingMethodController extends Controller
      */
     public function index(ShippingMethodIndexRequest $request): JsonResource
     {
-        $cartTotal = Money::of(
-            $request->input('cart_value', 0),
-            Currency::DEFAULT->value,
-        );
+        $cartTotal = $request->input('cart_value') ? Money::of(
+            $request->input('cart_value.value'),
+            $request->input('cart_value.currency'),
+        ) : null;
 
         $shippingMethods = $this->shippingMethodService->index(
             $request->only('metadata', 'metadata_private', 'ids'),

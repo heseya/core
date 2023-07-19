@@ -16,9 +16,11 @@ class PriceRangeResource extends Resource
             'id' => $this->resource->getKey(),
             'start' => [
                 'gross' => $this->resource->start->getAmount(),
+                'currency' => $this->resource->start->getCurrency()->getCurrencyCode(),
             ],
             'value' => [
                 'gross' => $this->resource->value->getAmount(),
+                'currency' => $this->resource->value->getCurrency()->getCurrencyCode(),
             ],
         ];
     }
