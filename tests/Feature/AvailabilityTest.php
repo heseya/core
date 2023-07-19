@@ -614,14 +614,17 @@ class AvailabilityTest extends TestCase
     /**
      * @dataProvider multipleSchemasProvider
      */
-    public function testCreateWithMultipleSchemasWithOptions($user, int $schemaCount): void
+    public function testCreateWithMultipleSchemasWithOptions(string $user, int $schemaCount): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
         $schemas = $this->createSchemasWithOptions($schemaCount);
 
         $this->actingAs($this->{$user})->postJson('/products', [
-            'name' => 'Test',
+            'translations' => [
+                $this->lang => ['name' => 'Test'],
+            ],
+            'published' => [$this->lang],
             'slug' => 'test',
             'price' => 10,
             'public' => false,
@@ -634,7 +637,7 @@ class AvailabilityTest extends TestCase
     /**
      * @dataProvider multipleSchemasProvider
      */
-    public function testAddDepositToItemInSchemaOption($user, int $schemaCount): void
+    public function testAddDepositToItemInSchemaOption(string $user, int $schemaCount): void
     {
         $this->{$user}->givePermissionTo('deposits.add');
 
