@@ -350,7 +350,6 @@ class AuthService implements AuthServiceContract
         /** @var User $user */
         $user = Auth::user();
         $user->update($dto->toArray());
-
         $user->preferences()->update($dto->getPreferences()->toArray());
 
         $this->consentService->updateUserConsents(Collection::make($dto->getConsents()), $user);
@@ -358,6 +357,9 @@ class AuthService implements AuthServiceContract
         return $user;
     }
 
+    /**
+     * @throws ClientException
+     */
     public function selfRemove(string $password): void
     {
         if ($this->isAppAuthenticated()) {

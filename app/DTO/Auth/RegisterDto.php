@@ -2,6 +2,7 @@
 
 namespace App\DTO\Auth;
 
+use App\Rules\ConsentsExists;
 use App\Rules\IsRegistrationRole;
 use App\Rules\RequiredConsents;
 use App\Utils\Map;
@@ -16,17 +17,17 @@ use Spatie\LaravelData\Support\Validation\ValidationContext;
 class RegisterDto extends Data
 {
     public function __construct(
-        public string $name,
-        public string $email,
-        public string $password,
+        public readonly string $name,
+        public readonly string $email,
+        public readonly string $password,
         #[BeforeOrEqual('now')]
-        public Optional|string $birthday_date,
+        public readonly Optional|string $birthday_date,
         #[Rule('phone:AUTO')]
-        public Optional|string $phone,
+        public readonly Optional|string $phone,
         public array|Optional $metadata_personal,
 
-        public array $consents = [],
-        public array $roles = [],
+        public readonly array $consents,
+        public readonly array $roles = [],
     ) {
         $this->metadata_personal = Map::toMetadataPersonal($this->metadata_personal);
     }
@@ -41,8 +42,8 @@ class RegisterDto extends Data
                 ValidationRule::unique('users')->whereNull('deleted_at'),
             ],
             'password' => ['required', 'string', Password::defaults()],
-            'consents.*' => ['exists:consents,id', 'boolean'],
             'consents' => ['array', new RequiredConsents()],
+            'consents.*' => ['boolean', new ConsentsExists()],
             'roles.*' => [new IsRegistrationRole()],
         ];
     }

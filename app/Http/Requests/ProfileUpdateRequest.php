@@ -2,7 +2,8 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\RequiredConsentsUpdate;
+use App\Rules\ConsentsExists;
+use App\Rules\RequiredConsents;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProfileUpdateRequest extends FormRequest
@@ -13,8 +14,8 @@ class ProfileUpdateRequest extends FormRequest
             'name' => ['nullable', 'string', 'max:255'],
             'birthday_date' => ['nullable', 'date', 'before_or_equal:now'],
             'phone' => ['nullable', 'phone:AUTO'],
-            'consents.*' => ['exists:consents,id', 'boolean'],
-            'consents' => ['nullable', 'array', new RequiredConsentsUpdate()],
+            'consents' => ['nullable', 'array', new RequiredConsents()],
+            'consents.*' => ['boolean', new ConsentsExists()],
             'preferences' => ['array'],
             'preferences.successful_login_attempt_alert' => ['boolean'],
             'preferences.failed_login_attempt_alert' => ['boolean'],

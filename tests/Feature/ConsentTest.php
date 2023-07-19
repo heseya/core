@@ -206,20 +206,22 @@ class ConsentTest extends TestCase
 
     public function testRegisterWithoutConsentWhenExists(): void
     {
-        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        /** @var Role $role */
+        $role = Role::query()->where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
         $role->givePermissionTo('auth.register');
 
         Consent::factory()->create([
             'required' => true,
         ]);
 
-        $response = $this->json('POST', '/register', [
-            'name' => 'test',
-            'email' => 'test@test.test',
-            'password' => 'TestTset432!!',
-        ]);
-
-        $response->assertStatus(422)
+        $this
+            ->json('POST', '/register', [
+                'name' => 'test',
+                'email' => 'test@test.test',
+                'password' => 'TestTset432!!',
+                'consents' => [],
+            ])
+            ->assertStatus(422)
             ->assertJsonFragment(['message' => 'You must accept the required consents.']);
     }
 
@@ -227,7 +229,8 @@ class ConsentTest extends TestCase
     {
         Notification::fake();
 
-        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        /** @var Role $role */
+        $role = Role::query()->where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
         $role->givePermissionTo('auth.register');
 
         $response = $this->json('POST', '/register', [
@@ -239,7 +242,8 @@ class ConsentTest extends TestCase
             ],
         ]);
 
-        $response->assertCreated()
+        $response
+            ->assertCreated()
             ->assertJsonFragment([
                 'name' => 'test',
                 'email' => 'test@test.test',
