@@ -89,6 +89,7 @@ final class PaymentService implements PaymentServiceContract
 
     /**
      * @throws ClientException
+     *
      * @deprecated
      */
     private function createPaymentLegacy(PaymentMethod $method, Order $order, string $continueUrl): Payment

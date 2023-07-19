@@ -36,9 +36,8 @@ class SeoMetadataService implements SeoMetadataServiceContract
         $seo = SeoMetadata::query()->where('global', '=', true)->first();
 
         if ($seo === null) {
-            $seo = new SeoMetadata($dto->toArray() + [
-                'global' => true,
-            ]);
+            $seo = new SeoMetadata($dto->toArray());
+            $seo->global = true;
 
             foreach ($dto->translations as $lang => $translations) {
                 $translationArray = $translations + [
@@ -82,6 +81,7 @@ class SeoMetadataService implements SeoMetadataServiceContract
     public function createOrUpdateFor(Model $model, SeoMetadataDto|SeoMetadataDtoOld $dto): void
     {
         $seo = new SeoMetadata($dto->toArray());
+        $seo->global = false;
 
         $seo->setAttribute('no_index', '{}');
 
