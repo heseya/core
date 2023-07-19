@@ -43,7 +43,7 @@ class ShippingMethodCreateDto extends Dto implements InstantiateFromRequest
      * @throws NumberFormatException
      */
     public static function instantiateFromRequest(
-        FormRequest|ShippingMethodStoreRequest|ShippingMethodUpdateRequest $request,
+        FormRequest|ShippingMethodStoreRequest $request,
     ): self {
         /** @var User|App|null $user */
         $user = Auth::user();
@@ -56,7 +56,7 @@ class ShippingMethodCreateDto extends Dto implements InstantiateFromRequest
         return new self(
             name: $request->input('name'),
             public: $request->input('public'),
-            block_list: $request->input('block_list'),
+            block_list: $request->input('block_list', false),
             payment_methods: $request->input('payment_methods'),
             countries: $request->input('countries'),
             price_ranges: $price_ranges,

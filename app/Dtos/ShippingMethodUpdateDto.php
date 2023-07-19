@@ -44,7 +44,7 @@ class ShippingMethodUpdateDto extends Dto implements InstantiateFromRequest
      * @throws NumberFormatException
      */
     public static function instantiateFromRequest(
-        FormRequest|ShippingMethodStoreRequest|ShippingMethodUpdateRequest $request,
+        FormRequest|ShippingMethodUpdateRequest $request,
     ): self {
         /** @var User|App|null $user */
         $user = Auth::user();

@@ -170,8 +170,10 @@ readonly class ProductService implements ProductServiceContract
         /** @var Money $minPrice */
         $minPrice = $product->pricesMin->first()->value;
         /** @var Money $maxPrice */
-        $maxPrice = $product->pricesMax()->first()->value;
+        $maxPrice = $product->pricesMax->first()->value;
 
+
+        // TODO: This is just wrong
         if (!$oldMinPrice->isEqualTo($minPrice) || !$oldMaxPrice->isEqualTo($maxPrice)) {
             ProductPriceUpdated::dispatch(
                 $product->getKey(),

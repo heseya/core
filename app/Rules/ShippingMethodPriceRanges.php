@@ -9,7 +9,7 @@ use Exception;
 use Illuminate\Contracts\Validation\ValidationRule;
 use function Sentry\trace;
 
-class ShippingMethodPriceRanges implements ValidationRule
+readonly class ShippingMethodPriceRanges implements ValidationRule
 {
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
@@ -27,14 +27,20 @@ class ShippingMethodPriceRanges implements ValidationRule
                 $start = BigDecimal::of($price_range['start']);
 
                 if ($start->isZero()) {
-                    $currencyTable[$currency] = true;
+                    $currencyTable[$currency] = ($currencyTable[$currency] ?? 0) + 1;
                 }
             } catch (Exception) {}
         }
 
         foreach (Currency::cases() as $currency) {
-            if (($currencyTable[$currency->value] ?? false) !== true) {
+            $startingRanges = $currencyTable[$currency->value] ?? 0;
+
+            if ($startingRanges === 0) {
                 $fail("The :attribute has no range starting with 0 for currency {$currency->value}");
+            }
+
+            if ($startingRanges >= 2) {
+                $fail("The :attribute already has a range starting with 0 for currency {$currency->value}");
             }
         }
     }

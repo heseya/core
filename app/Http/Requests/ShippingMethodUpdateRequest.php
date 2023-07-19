@@ -21,7 +21,6 @@ class ShippingMethodUpdateRequest extends FormRequest
             'countries.*' => ['string', 'size:2', 'exists:countries,code'],
             'price_ranges' => [new ShippingMethodPriceRanges()],
             'price_ranges.*' => [new Price(['value', 'start'], min: BigDecimal::zero())],
-            'price_ranges.*.start' => ['numeric', 'distinct'],
             'shipping_time_min' => ['numeric', 'integer', 'min:0'],
             'shipping_time_max' => ['numeric', 'integer', 'min:0', 'gte:shipping_time_min'],
         ];
