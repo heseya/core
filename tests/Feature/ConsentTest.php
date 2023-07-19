@@ -27,7 +27,7 @@ class ConsentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexUnauthorized($user): void
+    public function testIndexUnauthorized(string $user): void
     {
         Consent::factory()->count(10)->create();
 
@@ -39,7 +39,7 @@ class ConsentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndex($user): void
+    public function testIndex(string $user): void
     {
         $this->{$user}->givePermissionTo('consents.show');
 
@@ -54,7 +54,7 @@ class ConsentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShow($user): void
+    public function testShow(string $user): void
     {
         $this->{$user}->givePermissionTo('consents.show_details');
 
@@ -77,7 +77,7 @@ class ConsentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowUnauthorized($user): void
+    public function testShowUnauthorized(string $user): void
     {
         Consent::factory()->count(10)->create();
         $consent = Consent::factory()->create();
@@ -90,7 +90,7 @@ class ConsentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testStoreUnauthorized($user): void
+    public function testStoreUnauthorized(string $user): void
     {
         $consent = Consent::factory()->make();
 
@@ -102,7 +102,7 @@ class ConsentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testStore($user): void
+    public function testStore(string $user): void
     {
         $this->{$user}->givePermissionTo('consents.add');
 
@@ -122,7 +122,7 @@ class ConsentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateUnauthorized($user): void
+    public function testUpdateUnauthorized(string $user): void
     {
         $consent = Consent::factory()->make();
 
@@ -135,7 +135,7 @@ class ConsentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testFullUpdate($user): void
+    public function testFullUpdate(string $user): void
     {
         $this->{$user}->givePermissionTo('consents.edit');
 
@@ -154,7 +154,7 @@ class ConsentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdate($user): void
+    public function testUpdate(string $user): void
     {
         $this->{$user}->givePermissionTo('consents.edit');
 
@@ -181,7 +181,7 @@ class ConsentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteUnauthorized($user): void
+    public function testDeleteUnauthorized(string $user): void
     {
         $response = $this->actingAs($this->{$user})
             ->json('delete', '/consents/id:' . $this->consent->getKey());
@@ -192,7 +192,7 @@ class ConsentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDelete($user): void
+    public function testDelete(string $user): void
     {
         $this->{$user}->givePermissionTo('consents.remove');
 

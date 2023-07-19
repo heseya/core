@@ -8,7 +8,7 @@ use App\Models\Role;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
-class IsRegistrationRole implements ValidationRule
+final readonly class IsRegistrationRole implements ValidationRule
 {
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {

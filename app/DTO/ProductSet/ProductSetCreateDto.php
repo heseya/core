@@ -25,19 +25,20 @@ class ProductSetCreateDto extends Data
         #[AlphaDash, Max(255)]
         public readonly string|null $slug_suffix,
         public readonly bool $slug_override,
-        public readonly bool $public,
-        #[Exists('product_sets', 'id')]
-        public readonly string|null $parent_id,
-        #[Exists('media', 'id')]
-        public readonly string|null $cover_id,
-        public readonly array $children_ids,
-        public readonly array $attributes,
+        public readonly bool|Optional $public,
 
         public readonly Optional|SeoMetadataDto $seo,
 
         #[MapInputName('metadata')]
-        private readonly array|Optional $metadata_public,
-        private readonly array|Optional $metadata_private,
+        public readonly array|Optional $metadata_public,
+        public readonly array|Optional $metadata_private,
+
+        #[Exists('product_sets', 'id')]
+        public readonly string|null $parent_id = null,
+        #[Exists('media', 'id')]
+        public readonly string|null $cover_id = null,
+        public readonly array $children_ids = [],
+        public readonly array $attributes = [],
     ) {
         $this->metadata = Map::toMetadata(
             $this->metadata_public,

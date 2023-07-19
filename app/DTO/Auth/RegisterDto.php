@@ -2,10 +2,10 @@
 
 namespace App\DTO\Auth;
 
-use App\Rules\ConsentExists;
 use App\Rules\IsRegistrationRole;
 use App\Rules\RequiredConsents;
 use App\Utils\Map;
+use Illuminate\Validation\Rule as ValidationRule;
 use Illuminate\Validation\Rules\Password;
 use Spatie\LaravelData\Attributes\Validation\BeforeOrEqual;
 use Spatie\LaravelData\Attributes\Validation\Rule;
@@ -38,10 +38,10 @@ class RegisterDto extends Data
                 'required',
                 'email',
                 'max:255',
-                \Illuminate\Validation\Rule::unique('users')->whereNull('deleted_at'),
+                ValidationRule::unique('users')->whereNull('deleted_at'),
             ],
             'password' => ['required', 'string', Password::defaults()],
-            'consents.*' => [new ConsentExists(), 'boolean'],
+            'consents.*' => ['exists:consents,id', 'boolean'],
             'consents' => ['array', new RequiredConsents()],
             'roles.*' => [new IsRegistrationRole()],
         ];

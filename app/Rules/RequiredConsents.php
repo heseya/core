@@ -18,8 +18,7 @@ class RequiredConsents implements ImplicitRule
     {
         $consents = Consent::where('required', true)->get();
 
-        return $consents
-            ->every(fn ($consent) => array_key_exists($consent->getKey(), $value ?? [])
+        return $consents->every(fn ($consent) => array_key_exists($consent->getKey(), $value ?? [])
                 && $value[$consent->getKey()] === true);
     }
 

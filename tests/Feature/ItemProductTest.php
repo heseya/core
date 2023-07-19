@@ -24,11 +24,14 @@ class ItemProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testStoreProductWithItems($user): void
+    public function testStoreProductWithItems(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
-        $response = $this->actingAs($this->{$user})->postJson('/products', [
-            'name' => 'test',
+        $response = $this->actingAs($this->{$user})->json('POST', '/products', [
+            'translations' => [
+                $this->lang => ['name' => 'Test'],
+            ],
+            'published' => [$this->lang],
             'slug' => 'test',
             'price' => 50,
             'public' => true,
@@ -52,7 +55,7 @@ class ItemProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductItemsCannotSetRequiredQuantityBelowZero($user): void
+    public function testProductItemsCannotSetRequiredQuantityBelowZero(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
         $this
@@ -76,7 +79,7 @@ class ItemProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateProductWithItems($user): void
+    public function testUpdateProductWithItems(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
         $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
@@ -103,7 +106,7 @@ class ItemProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateProductWithoutItems($user): void
+    public function testUpdateProductWithoutItems(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
         $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
@@ -120,7 +123,7 @@ class ItemProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateProductWithEmptyItems($user): void
+    public function testUpdateProductWithEmptyItems(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
         $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
@@ -139,7 +142,7 @@ class ItemProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateProductWithItemsOverride($user): void
+    public function testUpdateProductWithItemsOverride(string $user): void
     {
         $this->product->items()->attach($this->items->get(0)->getKey(), ['required_quantity' => 5]);
         $this->product->items()->attach($this->items->get(1)->getKey(), ['required_quantity' => 15]);
@@ -174,7 +177,7 @@ class ItemProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateProductWithClearItems($user): void
+    public function testUpdateProductWithClearItems(string $user): void
     {
         $this->product->items()->attach($this->items->get(0)->getKey(), ['required_quantity' => 5]);
         $this->product->items()->attach($this->items->get(1)->getKey(), ['required_quantity' => 15]);
@@ -209,7 +212,7 @@ class ItemProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateProductWithoutItemsOverride($user): void
+    public function testUpdateProductWithoutItemsOverride(string $user): void
     {
         $this->product->items()->attach($this->items->get(0)->getKey(), ['required_quantity' => 5]);
         $this->product->items()->attach($this->items->get(1)->getKey(), ['required_quantity' => 15]);
@@ -244,7 +247,7 @@ class ItemProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductItemsHasRequiredQuantityInsteadOfQuantity($user): void
+    public function testProductItemsHasRequiredQuantityInsteadOfQuantity(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
 
