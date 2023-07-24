@@ -5,6 +5,9 @@ namespace Tests\Feature;
 use App\Enums\Currency;
 use App\Models\PriceRange;
 use App\Models\ShippingMethod;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Tests\TestCase;
 
@@ -12,6 +15,10 @@ class ShippingMethodPriceRangesTest extends TestCase
 {
     /**
      * @dataProvider authProvider
+     *
+     * @throws NumberFormatException
+     * @throws UnknownCurrencyException
+     * @throws RoundingNecessaryException
      */
     public function testIndexByPrice($user): void
     {
@@ -25,24 +32,30 @@ class ShippingMethodPriceRangesTest extends TestCase
         $currency = Currency::DEFAULT->value;
 
         $shippingMethod->priceRanges()->saveMany([
-            $priceRange1 = PriceRange::make([
+            PriceRange::query()->make([
                 'start' => Money::zero($currency),
                 'value' => Money::of(20, $currency),
             ]),
-            $priceRange2 = PriceRange::make([
+            PriceRange::query()->make([
                 'start' => Money::of(1000, $currency),
                 'value' => Money::of(10, $currency),
             ]),
-            $priceRange3 = PriceRange::make([
+            PriceRange::query()->make([
                 'start' => Money::of(1500, $currency),
                 'value' => Money::zero($currency),
             ]),
         ]);
 
         $this->actingAs($this->{$user})
-            ->json('GET', '/shipping-methods', ['cart_value' => '1200.00'])
+            ->json('GET', '/shipping-methods', ['cart_value' => [
+                'value' => '1200.00',
+                'currency' => $currency,
+            ]])
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonFragment(['price' => ['gross' => '10.00']]);
+            ->assertJsonFragment(['prices' => [[
+                'gross' => '10.00',
+                'currency' => $currency,
+            ]]]);
     }
 }

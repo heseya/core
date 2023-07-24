@@ -15,14 +15,14 @@ interface ProductRepositoryContract
     /**
      * @param array<string, PriceDto[]> $priceMatrix
      */
-    public function setProductPrices(string $productId, array $priceMatrix): void;
+    public static function setProductPrices(string $productId, array $priceMatrix): void;
 
     /**
      * @param string $productId
      * @param ProductPriceType[] $priceTypes
      *
-     * @return array<ProductPriceType, PriceDto[]>
+     * @return PriceDto[][]
      * @throws DtoException
      */
-    public function getProductPrices(string $productId, array $priceTypes): array;
+    public static function getProductPrices(string $productId, array $priceTypes): array;
 }

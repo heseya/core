@@ -6,7 +6,9 @@ namespace App\Repositories\Eloquent;
 
 use App\Dtos\PriceDto;
 use App\Dtos\ProductSearchDto;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\Product\ProductPriceType;
+use App\Exceptions\ServerException;
 use App\Models\Price;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryContract;
@@ -34,7 +36,7 @@ class ProductRepository implements ProductRepositoryContract
     /**
      * @param array<ProductPriceType, PriceDto[]> $priceMatrix
      */
-    public function setProductPrices(string $productId, array $priceMatrix): void
+    public static function setProductPrices(string $productId, array $priceMatrix): void
     {
         // Probably can be optimized with sql down the line
         foreach ($priceMatrix as $type => $prices) {
@@ -57,10 +59,11 @@ class ProductRepository implements ProductRepositoryContract
      * @param string $productId
      * @param ProductPriceType[] $priceTypes
      *
-     * @return array<ProductPriceType, PriceDto[]>
+     * @return PriceDto[][]
      * @throws DtoException
+     * @throws ServerException
      */
-    public function getProductPrices(string $productId, array $priceTypes): array
+    public static function getProductPrices(string $productId, array $priceTypes): array
     {
         /** @var Collection<Price> $prices */
         $prices = Price::query()
@@ -68,10 +71,21 @@ class ProductRepository implements ProductRepositoryContract
             ->whereIn('price_type', $priceTypes)
             ->get();
 
-        return $prices->reduce(function (array $carry, Price $price) {
+        $groupedPrices = $prices->reduce(function (array $carry, Price $price) {
             $carry[$price->price_type][] = new PriceDto($price->value);
 
             return $carry;
         }, []);
+
+        return array_map(
+            function (ProductPriceType $type) use ($productId, $groupedPrices) {
+                if (!array_key_exists($type->value, $groupedPrices)) {
+                    throw new ServerException(Exceptions::SERVER_NO_PRICE_MATCHING_CRITERIA);
+                }
+
+                return $groupedPrices[$type->value];
+            },
+            $priceTypes,
+        );
     }
 }

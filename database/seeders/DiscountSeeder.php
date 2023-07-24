@@ -2,19 +2,36 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
+use App\Exceptions\ClientException;
+use App\Exceptions\ServerException;
 use App\Models\Discount;
 use App\Models\Order;
 use App\Models\Product;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\DiscountService;
+use Brick\Math\Exception\MathException;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\MoneyMismatchException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
+use Heseya\Dto\DtoException;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\App;
 
 class DiscountSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * @throws RoundingNecessaryException
+     * @throws MoneyMismatchException
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws ClientException
+     * @throws NumberFormatException
+     * @throws DtoException
+     * @throws ServerException
      */
     public function run(): void
     {
@@ -24,10 +41,12 @@ class DiscountSeeder extends Seeder
 
         /** @var DiscountService $discountService */
         $discountService = App::make(DiscountServiceContract::class);
-
         $discountService->applyDiscountsOnProducts(Product::all());
 
-        foreach (Order::inRandomOrder()->limit(30)->get() as $order) {
+        $currency = Currency::DEFAULT->value;
+
+        foreach (Order::query()->inRandomOrder()->limit(30)->get() as $order) {
+            /** @var Discount $discount */
             $discount = $discounts
                 ->whereIn(
                     'target_type',
@@ -38,16 +57,20 @@ class DiscountSeeder extends Seeder
                 )
                 ->random();
 
-            $update = [];
-            $appliedDiscount = 0;
+            $cart_total = Money::of($order->cart_total, $currency);
+            $shipping_price = Money::of($order->shipping_price, $currency);
 
+            /**
+             * @var Money $appliedDiscount
+             * @var array $update
+             */
             [$appliedDiscount, $update] = match ($discount->target_type->value) {
                 DiscountTargetType::ORDER_VALUE => $this
                     ->calcOrderDiscounts(
                         'cart_total',
                         'minimal_order_price',
                         $discountService,
-                        $order->cart_total,
+                        $cart_total,
                         $discount,
                     ),
                 DiscountTargetType::SHIPPING_PRICE => $this
@@ -55,17 +78,18 @@ class DiscountSeeder extends Seeder
                         'shipping_price',
                         'minimal_shipping_price',
                         $discountService,
-                        $order->shipping_price,
+                        $shipping_price,
                         $discount,
                     ),
             };
 
+            // TODO: Change to money with discounts rework
             $order->discounts()->attach($discount, [
                 'name' => $discount->name,
                 'value' => $discount->value,
                 'type' => $discount->type,
                 'target_type' => $discount->target_type,
-                'applied_discount' => $appliedDiscount,
+                'applied_discount' => $appliedDiscount->getAmount()->toFloat(),
             ]);
 
             $order->update($update + [
@@ -74,18 +98,27 @@ class DiscountSeeder extends Seeder
         }
     }
 
+    /**
+     * @throws RoundingNecessaryException
+     * @throws MoneyMismatchException
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws ClientException
+     * @throws NumberFormatException
+     */
     private function calcOrderDiscounts(
         string $field,
         string $minimalPrice,
         DiscountService $discountService,
-        float $price,
+        Money $price,
         Discount $discount,
     ): array {
         $appliedDiscount = $discountService->calc($price, $discount);
         $appliedDiscount = $discountService->calcAppliedDiscount($price, $appliedDiscount, $minimalPrice);
 
+        // TODO: Change to money with orders rework
         $update = [
-            $field => $price - $appliedDiscount,
+            $field => $price->minus($appliedDiscount)->getAmount()->toFloat(),
         ];
 
         return [$appliedDiscount, $update];

@@ -52,7 +52,6 @@ use App\Models\Discount;
 use App\Models\DiscountCondition;
 use App\Models\Order;
 use App\Models\OrderProduct;
-use App\Models\Price;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Role;
@@ -69,6 +68,7 @@ use App\Services\Contracts\ShippingTimeDateServiceContract;
 use Brick\Math\Exception\MathException;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Math\RoundingMode;
 use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
@@ -203,7 +203,7 @@ readonly class DiscountService implements DiscountServiceContract
         }
 
         if ($discount->type->is(DiscountType::PERCENTAGE)) {
-            return $value->multipliedBy($discount->value / 100);
+            return $value->multipliedBy($discount->value / 100, RoundingMode::HALF_UP);
         }
 
         if ($discount->type->is(DiscountType::AMOUNT)) {
@@ -313,6 +313,7 @@ readonly class DiscountService implements DiscountServiceContract
      * @throws StoreException
      * @throws MoneyMismatchException
      * @throws UnknownCurrencyException
+     * @throws DtoException
      */
     public function calcCartDiscounts(CartDto $cart, Collection $products): CartResource
     {
@@ -330,6 +331,9 @@ readonly class DiscountService implements DiscountServiceContract
             $shippingMethodDigital = ShippingMethod::query()->findOrFail($cart->getDigitalShippingMethodId());
         }
 
+        /**
+         * TODO: Cart needs currency
+         */
         $currency = Currency::DEFAULT->value;
         $cartItems = [];
         $cartValue = Money::zero($currency);
@@ -342,15 +346,34 @@ readonly class DiscountService implements DiscountServiceContract
                 continue;
             }
 
-            $price = $product->price;
+            [$prices] = $this->productRepository::getProductPrices($product->getKey(), [
+                ProductPriceType::PRICE_BASE,
+            ]);
+
+            [$price] = array_filter($prices, fn (PriceDto $price) => $price->value->getCurrency()->is($currency));
+
+            if ($price === null) {
+                throw new ServerException(Exceptions::SERVER_NO_PRICE_MATCHING_CRITERIA);
+            }
+
+            $price = $price->value;
+            /** @var Money $price */
 
             foreach ($cartItem->getSchemas() as $schemaId => $value) {
+                /** @var Schema $schema */
                 $schema = $product->schemas()->findOrFail($schemaId);
 
-                $price += $schema->getPrice($value, $cartItem->getSchemas());
+                $price += $price->plus(
+                    $schema->getPrice($value, $cartItem->getSchemas()),
+                );
             }
-            $cartValue = $cartValue->plus($price * $cartItem->getQuantity());
-            $cartItems[] = new CartItemResponse($cartItem->getCartItemId(), $price, $price, $cartItem->getQuantity());
+            $cartValue = $cartValue->plus($price->multipliedBy($cartItem->getQuantity()));
+            $cartItems[] = new CartItemResponse(
+                $cartItem->getCartItemId(),
+                $price->getAmount()->toFloat(),
+                $price->getAmount()->toFloat(),
+                $cartItem->getQuantity(),
+            );
         }
         $cartShippingTimeAndDate = $this->shippingTimeDateService->getTimeAndDateForCart($cart, $products);
 
@@ -451,27 +474,41 @@ readonly class DiscountService implements DiscountServiceContract
      * @throws UnknownCurrencyException
      * @throws ClientException
      * @throws NumberFormatException
+     * @throws ServerException
+     * @throws DtoException
      */
     public function applyDiscountOnProduct(
         Product $product,
         OrderProductDto $orderProductDto,
         Discount $discount
     ): OrderProduct {
-        $price = $product->price;
+        // TODO: Get currency somehow
+        $currency = Currency::DEFAULT->value;
+
+        [$prices] = $this->productRepository::getProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_BASE,
+        ]);
+
+        [$price] = array_filter($prices, fn (PriceDto $price) => $price->value->getCurrency()->is($currency));
+
+        if ($price === null) {
+            throw new ServerException(Exceptions::SERVER_NO_PRICE_MATCHING_CRITERIA);
+        }
+
+        $price = $price->value;
+        /** @var Money $price */
 
         foreach ($orderProductDto->getSchemas() as $schemaId => $value) {
             /** @var Schema $schema */
             $schema = $product->schemas()->findOrFail($schemaId);
 
-            $price += $schema->getPrice($value, $orderProductDto->getSchemas());
+            $price = $price->plus($schema->getPrice($value, $orderProductDto->getSchemas()));
         }
-
-        $priceAsMoney = Money::of($price, Currency::DEFAULT->value);
 
         return new OrderProduct([
             'product_id' => $product->getKey(),
             'quantity' => $orderProductDto->getQuantity(),
-            'price' => $this->calcPrice($priceAsMoney, $product->getKey(), $discount)->getAmount()->toFloat(),
+            'price' => $this->calcPrice($price, $product->getKey(), $discount)->getAmount()->toFloat(),
         ]);
     }
 
@@ -585,11 +622,23 @@ readonly class DiscountService implements DiscountServiceContract
         };
     }
 
-    public function calcAppliedDiscount(float $price, float $appliedDiscount, string $setting): float
+    /**
+     * @throws UnknownCurrencyException
+     * @throws RoundingNecessaryException
+     * @throws NumberFormatException
+     * @throws MathException
+     * @throws MoneyMismatchException
+     */
+    public function calcAppliedDiscount(Money $price, Money $appliedDiscount, string $setting): Money
     {
-        $minimalPrice = $this->settingsService->getMinimalPrice($setting);
+        $minimalPrice = Money::of(
+            $this->settingsService->getMinimalPrice($setting),
+            $price->getCurrency(),
+        );
 
-        return $price - $appliedDiscount < $minimalPrice ? $price - $minimalPrice : $appliedDiscount;
+        $maximumDiscount = $price->minus($minimalPrice);
+
+        return $appliedDiscount->isGreaterThan($maximumDiscount) ? $maximumDiscount : $appliedDiscount;
     }
 
     public function activeSales(): Collection
@@ -738,17 +787,19 @@ readonly class DiscountService implements DiscountServiceContract
     ): array {
         $sales = $this->sortDiscounts($product->allProductSales($salesWithBlockList));
 
-        $priceMatrix = $this->productRepository->getProductPrices($product->getKey(), [
-            ProductPriceType::PRICE_MIN,
-            ProductPriceType::PRICE_MAX,
+        [
+            $minPrice,
+            $maxPrice,
+            $basePrice,
+        ] = $this->productRepository->getProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_MIN_INITIAL,
+            ProductPriceType::PRICE_MAX_INITIAL,
             ProductPriceType::PRICE_BASE,
         ]);
 
         // prevent error when price_min or price_max is null
-        $minPricesDiscounted = $priceMatrix[ProductPriceType::PRICE_MIN->value]
-            ?? $priceMatrix[ProductPriceType::PRICE_BASE->value];
-        $maxPricesDiscounted = $priceMatrix[ProductPriceType::PRICE_MAX->value]
-            ?? $priceMatrix[ProductPriceType::PRICE_BASE->value];
+        $minPricesDiscounted = $minPrice ?? $basePrice;
+        $maxPricesDiscounted = $maxPrice ?? $basePrice;
 
         // TODO: Should have a minimum price for each currency
         $minimalProductPriceSetting = $this->settingsService->getMinimalPrice('minimal_product_price');
@@ -1045,6 +1096,7 @@ readonly class DiscountService implements DiscountServiceContract
      * @throws UnknownCurrencyException
      * @throws NumberFormatException
      * @throws ClientException
+     * @throws MoneyMismatchException
      */
     private function calcOrderProductDiscount(
         OrderProduct $orderProduct,
@@ -1056,14 +1108,17 @@ readonly class DiscountService implements DiscountServiceContract
         );
 
         $appliedDiscount = $this->calcAppliedDiscount(
-            $orderProduct->price,
-            $this->calc($price, $discount)->getAmount()->toFloat(),
+            $price,
+            $this->calc($price, $discount),
             'minimal_product_price',
         );
-        $orderProduct->price -= $appliedDiscount;
 
+        // TODO: Service shouldn't modify prices randomly
+        $orderProduct->price = $price->minus($appliedDiscount)->getAmount()->toFloat();
+
+        // TODO: Change to money
         // Adding a discount to orderProduct
-        $this->attachDiscount($orderProduct, $discount, $appliedDiscount);
+        $this->attachDiscount($orderProduct, $discount, $appliedDiscount->getAmount()->toFloat());
     }
 
     /**
@@ -1072,6 +1127,7 @@ readonly class DiscountService implements DiscountServiceContract
      * @throws UnknownCurrencyException
      * @throws NumberFormatException
      * @throws ClientException
+     * @throws MoneyMismatchException
      */
     private function applyDiscountOnOrderValue(Order $order, Discount $discount): Order
     {
@@ -1081,14 +1137,16 @@ readonly class DiscountService implements DiscountServiceContract
         );
 
         $appliedDiscount = $this->calcAppliedDiscount(
-            $order->cart_total,
-            $this->calc($cartTotal, $discount)->getAmount()->toFloat(),
+            $cartTotal,
+            $this->calc($cartTotal, $discount),
             'minimal_order_price',
         );
 
-        $order->cart_total -= $appliedDiscount;
+        // TODO: Service shouldn't modify prices randomly
+        $order->cart_total = $cartTotal->minus($appliedDiscount)->getAmount()->toFloat();
 
-        $this->attachDiscount($order, $discount, $appliedDiscount);
+        // TODO: Change to money
+        $this->attachDiscount($order, $discount, $appliedDiscount->getAmount()->toFloat());
 
         return $order;
     }
@@ -1099,6 +1157,7 @@ readonly class DiscountService implements DiscountServiceContract
      * @throws UnknownCurrencyException
      * @throws NumberFormatException
      * @throws ClientException
+     * @throws MoneyMismatchException
      */
     private function applyDiscountOnOrderShipping(Order $order, Discount $discount): Order
     {
@@ -1114,13 +1173,16 @@ readonly class DiscountService implements DiscountServiceContract
             ) === $discount->target_is_allow_list
         ) {
             $appliedDiscount = $this->calcAppliedDiscount(
-                $order->shipping_price,
-                $this->calc($shipping_price, $discount)->getAmount()->toFloat(),
+                $shipping_price,
+                $this->calc($shipping_price, $discount),
                 'minimal_shipping_price',
             );
-            $order->shipping_price -= $appliedDiscount;
 
-            $this->attachDiscount($order, $discount, $appliedDiscount);
+            // TODO: Service shouldn't modify prices randomly
+            $order->shipping_price = $shipping_price->minus($appliedDiscount)->getAmount()->toFloat();
+
+            // TODO: Change to money
+            $this->attachDiscount($order, $discount, $appliedDiscount->getAmount()->toFloat());
         }
 
         return $order;
@@ -1142,6 +1204,13 @@ readonly class DiscountService implements DiscountServiceContract
         );
     }
 
+    /**
+     * @throws RoundingNecessaryException
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     * @throws ClientException
+     */
     private function applyDiscountOnOrderProducts(Order $order, Discount $discount): Order
     {
         $cartValue = 0;
@@ -1157,6 +1226,14 @@ readonly class DiscountService implements DiscountServiceContract
         return $order;
     }
 
+    /**
+     * @throws RoundingNecessaryException
+     * @throws MoneyMismatchException
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws ClientException
+     * @throws NumberFormatException
+     */
     private function applyDiscountOnOrderCheapestProduct(Order $order, Discount $discount): Order
     {
         /** @var OrderProduct $product */
@@ -1237,6 +1314,7 @@ readonly class DiscountService implements DiscountServiceContract
      * @throws UnknownCurrencyException
      * @throws ClientException
      * @throws NumberFormatException
+     * @throws MoneyMismatchException
      */
     private function applyDiscountOnCartShipping(
         Discount $discount,
@@ -1254,11 +1332,12 @@ readonly class DiscountService implements DiscountServiceContract
                 $discount->shippingMethods->pluck('id')->toArray()
             ) === $discount->target_is_allow_list
         ) {
+            // TODO: Change this random assignment
             $cartResource->shipping_price -= $this->calcAppliedDiscount(
-                $cartResource->shipping_price,
-                $this->calc($shippingPrice, $discount)->getAmount()->toFloat(),
+                $shippingPrice,
+                $this->calc($shippingPrice, $discount),
                 'minimal_shipping_price',
-            );
+            )->getAmount()->toFloat();
 
             $cartResource->shipping_price = round($cartResource->shipping_price, 2, PHP_ROUND_HALF_UP);
         }
@@ -1272,6 +1351,7 @@ readonly class DiscountService implements DiscountServiceContract
      * @throws UnknownCurrencyException
      * @throws NumberFormatException
      * @throws ClientException
+     * @throws MoneyMismatchException
      */
     private function applyDiscountOnCartTotal(Discount $discount, CartResource $cartResource): CartResource
     {
@@ -1280,11 +1360,12 @@ readonly class DiscountService implements DiscountServiceContract
             Currency::DEFAULT->value,
         );
 
+        // TODO: Change this random assignment
         $cartResource->cart_total -= $this->calcAppliedDiscount(
-            $cartResource->cart_total,
-            $this->calc($cartTotal, $discount)->getAmount()->toFloat(),
+            $cartTotal,
+            $this->calc($cartTotal, $discount),
             'minimal_order_price',
-        );
+        )->getAmount()->toFloat();
         $cartResource->cart_total = round($cartResource->cart_total, 2, PHP_ROUND_HALF_UP);
 
         return $cartResource;
@@ -1574,6 +1655,7 @@ readonly class DiscountService implements DiscountServiceContract
     private function checkConditionUserInRole(DiscountCondition $condition): bool
     {
         $conditionDto = UserInRoleConditionDto::fromArray($condition->value + ['type' => $condition->type]);
+        /** @var User $user */
         $user = Auth::user();
 
         if ($user) {

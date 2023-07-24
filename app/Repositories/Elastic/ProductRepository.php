@@ -379,6 +379,10 @@ class ProductRepository implements ProductRepositoryContract
         return $query->filter($value ? $term : Invert::query($term));
     }
 
+    /**
+     * @throws ClientException
+     * @throws ServerException
+     */
     private function handleElastic400(BadRequest400Exception $exception): void
     {
         $error = Str::of($exception->getMessage());
@@ -391,46 +395,17 @@ class ProductRepository implements ProductRepositoryContract
     }
 
     // I don't mind if this repository gets deleted
-    /**
-     * @param array<string, PriceDto[]> $priceMatrix
-     */
-    public function setProductPrices(string $productId, array $priceMatrix): void
+    public static function setProductPrices(string $productId, array $priceMatrix): void
     {
-        // Probably can be optimized with sql down the line
-        foreach ($priceMatrix as $type => $prices) {
-            foreach ($prices as $price) {
-                Price::query()
-                    ->updateOrCreate([
-                        'model_id' => $productId,
-                        'model_type' => Product::class,
-                        'price_type' => $type,
-                    ], [
-                        'value' => $price->value,
-                        'is_net' => false,
-                    ]);
-            }
-        }
+        \App\Repositories\Eloquent\ProductRepository::setProductPrices($productId, $priceMatrix);
     }
 
     /**
-     * @param string $productId
-     * @param ProductPriceType[] $priceTypes
-     *
-     * @return array<ProductPriceType, PriceDto[]>
      * @throws DtoException
+     * @throws ServerException
      */
-    public function getProductPrices(string $productId, array $priceTypes): array
+    public static function getProductPrices(string $productId, array $priceTypes): array
     {
-        /** @var \Illuminate\Database\Eloquent\Collection<Price> $prices */
-        $prices = Price::query()
-            ->where('model_id', $productId)
-            ->whereIn('price_type', $priceTypes)
-            ->get();
-
-        return $prices->reduce(function (array $carry, Price $price) {
-            $carry[$price->price_type][] = new PriceDto($price->value);
-
-            return $carry;
-        }, []);
+        return \App\Repositories\Eloquent\ProductRepository::getProductPrices($productId, $priceTypes);
     }
 }

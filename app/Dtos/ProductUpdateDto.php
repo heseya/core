@@ -48,7 +48,7 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
     {
         $prices_base = array_map(
             fn ($data) => PriceDto::fromData(...$data),
-            $request->input('prices_base'),
+            $request->input('prices_base') ?? [],
         );
 
         return new self(

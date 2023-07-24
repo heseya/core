@@ -153,10 +153,10 @@ readonly class ProductService implements ProductServiceContract
      */
     public function update(Product $product, ProductUpdateDto $dto): Product
     {
-        /** @var Money $oldMinPrice */
-        $oldMinPrice = $product->pricesMin->first()->value;
-        /** @var Money $oldMaxPrice */
-        $oldMaxPrice = $product->pricesMax->first()->value;
+        /** @var ?Money $oldMinPrice */
+        $oldMinPrice = $product->pricesMin->first()?->value;
+        /** @var ?Money $oldMaxPrice */
+        $oldMaxPrice = $product->pricesMax->first()?->value;
 
         DB::beginTransaction();
 
@@ -174,7 +174,12 @@ readonly class ProductService implements ProductServiceContract
 
 
         // TODO: This is just wrong
-        if (!$oldMinPrice->isEqualTo($minPrice) || !$oldMaxPrice->isEqualTo($maxPrice)) {
+        if (
+            $oldMinPrice === null
+            || $oldMaxPrice === null
+            || !$oldMinPrice->isEqualTo($minPrice)
+            || !$oldMaxPrice->isEqualTo($maxPrice)
+        ) {
             ProductPriceUpdated::dispatch(
                 $product->getKey(),
                 $oldMinPrice,
@@ -328,6 +333,9 @@ readonly class ProductService implements ProductServiceContract
         return $minmax;
     }
 
+    /**
+     * @return float[]
+     */
     private function getBestSchemasPrices(
         Collection $allSchemas,
         Collection $remainingSchemas,
@@ -346,23 +354,27 @@ readonly class ProductService implements ProductServiceContract
         ));
     }
 
+    /**
+     * @return float[]
+     */
     private function bestMinMax(Collection $minmaxCol): array
     {
-        return [
-            $minmaxCol->reduce(function (?float $carry, array $current) {
-                if ($carry === null) {
-                    return $current[0];
-                }
+        $bestMin = $minmaxCol->reduce(function (?float $carry, array $current) {
+            if ($carry === null) {
+                return $current[0];
+            }
 
-                return min($current[0], $carry);
-            }),
-            $minmaxCol->reduce(function (?float $carry, array $current) {
-                if ($carry === null) {
-                    return $current[1];
-                }
+            return min($current[0], $carry);
+        }) ?? 0;
 
-                return max($current[1], $carry);
-            }),
-        ];
+        $bestMax = $minmaxCol->reduce(function (?float $carry, array $current) {
+            if ($carry === null) {
+                return $current[1];
+            }
+
+            return max($current[1], $carry);
+        }) ?? $bestMin;
+
+        return [$bestMin, $bestMax];
     }
 }

@@ -2,13 +2,23 @@
 
 namespace Unit;
 
+use App\Dtos\PriceDto;
 use App\Enums\ConditionType;
+use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Enums\Product\ProductPriceType;
+use App\Http\Resources\ProductResource;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
 use App\Models\Product;
+use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\DiscountServiceContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
+use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -178,32 +188,49 @@ class ActiveSalesTest extends TestCase
         $this->assertFalse($activeSales->contains($sale7));
     }
 
+    /**
+     * @throws DtoException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
     public function testCheckActiveSalesJob(): void
     {
         Carbon::setTestNow('2022-04-21T10:00:00');
 
+        $currency = Currency::DEFAULT->value;
+
+        /** @var ProductRepositoryContract $productRepository */
+        $productRepository = App::make(ProductRepositoryContract::class);
+
         $product1 = Product::factory()->create([
             'name' => 'Product had discount',
             'public' => true,
-            'price' => 1000,
-            'price_min_initial' => 1000,
-            'price_max_initial' => 3500,
+        ]);
+        $productRepository->setProductPrices($product1->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(1000, $currency))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(1000, $currency))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(3500, $currency))],
         ]);
 
         $product2 = Product::factory()->create([
             'name' => 'Product will have discount',
             'public' => true,
-            'price' => 2500,
-            'price_min_initial' => 2000,
-            'price_max_initial' => 4000,
+        ]);
+        $productRepository->setProductPrices($product2->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(2500, $currency))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(2000, $currency))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(4000, $currency))],
         ]);
 
         $product3 = Product::factory()->create([
             'name' => 'Just the product',
             'public' => true,
-            'price' => 1500,
-            'price_min_initial' => 1200,
-            'price_max_initial' => 2000,
+        ]);
+        $productRepository->setProductPrices($product3->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(1500, $currency))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(1200, $currency))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(2000, $currency))],
         ]);
 
         $sale1 = Discount::factory()->create([
@@ -217,7 +244,8 @@ class ActiveSalesTest extends TestCase
 
         $sale1->products()->sync($product1->getKey());
 
-        $conditionGroup1 = ConditionGroup::create();
+        /** @var ConditionGroup $conditionGroup1 */
+        $conditionGroup1 = ConditionGroup::query()->create();
 
         $conditionGroup1->conditions()->create([
             'type' => ConditionType::TIME_BETWEEN,
@@ -241,7 +269,8 @@ class ActiveSalesTest extends TestCase
 
         $sale2->products()->sync($product2->getKey());
 
-        $conditionGroup2 = ConditionGroup::create();
+        /** @var ConditionGroup $conditionGroup2 */
+        $conditionGroup2 = ConditionGroup::query()->create();
 
         $conditionGroup2->conditions()->create([
             'type' => ConditionType::TIME_BETWEEN,
@@ -261,14 +290,14 @@ class ActiveSalesTest extends TestCase
         $product2->refresh();
         $product3->refresh();
 
-        $this->assertEquals(800, $product1->price_min);
-        $this->assertEquals(3300, $product1->price_max);
+        $this->assertEquals(800, $product1->pricesMin->first()->value->getAmount()->toInt());
+        $this->assertEquals(3300, $product1->pricesMax->first()->value->getAmount()->toInt());
 
-        $this->assertEquals(2000, $product2->price_min);
-        $this->assertEquals(4000, $product2->price_max);
+        $this->assertEquals(2000, $product2->pricesMin->first()->value->getAmount()->toInt());
+        $this->assertEquals(4000, $product2->pricesMax->first()->value->getAmount()->toInt());
 
-        $this->assertEquals(1200, $product3->price_min);
-        $this->assertEquals(2000, $product3->price_max);
+        $this->assertEquals(1200, $product3->pricesMin->first()->value->getAmount()->toInt());
+        $this->assertEquals(2000, $product3->pricesMax->first()->value->getAmount()->toInt());
 
         Carbon::setTestNow('2022-04-21T12:00:00');
         $this->travelTo('2022-04-21T12:00:00');
@@ -278,14 +307,14 @@ class ActiveSalesTest extends TestCase
         $product2->refresh();
         $product3->refresh();
 
-        $this->assertEquals(1000, $product1->price_min);
-        $this->assertEquals(3500, $product1->price_max);
+        $this->assertEquals(1000, $product1->pricesMin->first()->value->getAmount()->toInt());
+        $this->assertEquals(3500, $product1->pricesMax->first()->value->getAmount()->toInt());
 
-        $this->assertEquals(1700, $product2->price_min);
-        $this->assertEquals(3700, $product2->price_max);
+        $this->assertEquals(1700, $product2->pricesMin->first()->value->getAmount()->toInt());
+        $this->assertEquals(3700, $product2->pricesMax->first()->value->getAmount()->toInt());
 
-        $this->assertEquals(1200, $product3->price_min);
-        $this->assertEquals(2000, $product3->price_max);
+        $this->assertEquals(1200, $product3->pricesMin->first()->value->getAmount()->toInt());
+        $this->assertEquals(2000, $product3->pricesMax->first()->value->getAmount()->toInt());
 
         $activeSales = Cache::get('sales.active');
         $this->assertCount(1, $activeSales);
