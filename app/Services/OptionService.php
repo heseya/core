@@ -5,11 +5,16 @@ namespace App\Services;
 use App\DTO\ProductSchema\OptionDto;
 use App\Models\Option;
 use App\Models\Schema;
+use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\OptionServiceContract;
 use Spatie\LaravelData\Optional;
 
 final readonly class OptionService implements OptionServiceContract
 {
+    public function __construct(
+        private MetadataServiceContract $metadataService,
+    ) {}
+
     /**
      * @param OptionDto[] $options
      */
@@ -40,6 +45,10 @@ final readonly class OptionService implements OptionServiceContract
 
             if (!($optionItem->items instanceof Optional)) {
                 $option->items()->sync($optionItem->items);
+            }
+
+            if (!($optionItem->metadata instanceof Optional)) {
+                $this->metadataService->sync($option, $optionItem->metadata);
             }
 
             $keep[] = $option->getKey();

@@ -18,41 +18,7 @@ trait MapMetadata
             data_set($data, $key, $value);
         }
 
-        $metadata = [];
-
-        if (array_key_exists('metadata', $data)) {
-            foreach ($data['metadata'] as $key => $value) {
-                $metadata[] = new MetadataDto(
-                    $key,
-                    $value,
-                    true,
-                    MetadataType::matchType($value),
-                );
-            }
-        }
-
-        if ($request->has('metadata_private')) {
-            foreach ($request->input('metadata_private') as $key => $value) {
-                $metadata[] = new MetadataDto(
-                    $key,
-                    $value,
-                    false,
-                    MetadataType::matchType($value),
-                );
-            }
-        }
-
-        if ($request->has('metadata_personal')) {
-            foreach ($request->input('metadata_personal') as $key => $value) {
-                $metadata[] = new MetadataPersonalDto(
-                    $key,
-                    $value,
-                    MetadataType::matchType($value),
-                );
-            }
-        }
-
-        return count($metadata) > 0 ? $metadata : new Missing();
+        return self::mapMetadataFromArray($data);
     }
 
     public static function mapMetadataFromArray(array $data): array|Missing
@@ -76,6 +42,16 @@ trait MapMetadata
                     $key,
                     $value,
                     false,
+                    MetadataType::matchType($value),
+                );
+            }
+        }
+
+        if (array_key_exists('metadata_personal', $data)) {
+            foreach ($data['metadata_personal'] as $key => $value) {
+                $metadata[] = new MetadataPersonalDto(
+                    $key,
+                    $value,
                     MetadataType::matchType($value),
                 );
             }

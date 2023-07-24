@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\SchemaType;
 use App\Rules\EnumKey;
+use App\Rules\Translations;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SchemaUpdateRequest extends FormRequest
@@ -28,9 +29,15 @@ class SchemaUpdateRequest extends FormRequest
             'used_schemas.*' => ['uuid', 'exists:schemas,id'],
 
             'options' => ['nullable', 'array'],
-            'options.*.name' => ['string', 'max:255'],
             'options.*.price' => ['sometimes', 'numeric'],
             'options.*.disabled' => ['sometimes', 'required', 'boolean'],
+
+            'options.*.translations' => [
+                'sometimes',
+                'required',
+                new Translations(['name']),
+            ],
+            'options.*.translations.*.name' => ['string', 'max:255'],
 
             'options.*.items' => ['nullable', 'array'],
             'options.*.items.*' => ['uuid', 'exists:items,id'],

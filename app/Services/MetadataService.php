@@ -34,7 +34,6 @@ class MetadataService implements MetadataServiceContract
     public function returnModel(array $routeSegments): Model|Role|null
     {
         $segments = Collection::make($routeSegments);
-
         $segment = $segments->first();
 
         $class = match ($segment) {
