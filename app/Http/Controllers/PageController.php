@@ -11,7 +11,6 @@ use App\Http\Requests\PageUpdateRequest;
 use App\Http\Resources\PageResource;
 use App\Models\Page;
 use App\Services\Contracts\PageServiceContract;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
 
@@ -51,17 +50,17 @@ class PageController extends Controller
         return PageResource::make($page);
     }
 
-    public function destroy(Page $page): JsonResponse
+    public function destroy(Page $page): \Illuminate\Http\Response
     {
         $this->pageService->delete($page);
 
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::noContent();
     }
 
-    public function reorder(PageReorderRequest $request): JsonResponse
+    public function reorder(PageReorderRequest $request): \Illuminate\Http\Response
     {
         $this->pageService->reorder($request->input('pages'));
 
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::noContent();
     }
 }

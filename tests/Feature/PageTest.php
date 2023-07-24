@@ -801,12 +801,12 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testReorder($user): void
+    public function testReorder(string $user): void
     {
         $this->{$user}->givePermissionTo('pages.edit');
 
         DB::table('pages')->delete();
-        $page = Page::factory()->count(10)->create();
+        $page = Page::factory()->count(3)->create();
 
         $ids = $page->pluck('id');
 

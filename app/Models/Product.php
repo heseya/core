@@ -245,6 +245,7 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
     public function attributes(): BelongsToMany
     {
         return $this->belongsToMany(Attribute::class, 'product_attribute')
+            ->orderBy('order')
             ->withPivot('id')
             ->using(ProductAttribute::class);
     }
