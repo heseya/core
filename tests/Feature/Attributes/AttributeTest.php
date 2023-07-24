@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Attributes;
 
 use App\Enums\AttributeType;
 use App\Enums\MetadataType;

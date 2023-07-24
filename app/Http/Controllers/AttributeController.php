@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\DTO\ReorderDto;
 use App\Dtos\AttributeDto;
 use App\Http\Requests\AttributeIndexRequest;
 use App\Http\Requests\AttributeStoreRequest;
@@ -9,20 +10,23 @@ use App\Http\Requests\AttributeUpdateRequest;
 use App\Http\Resources\AttributeResource;
 use App\Models\Attribute;
 use App\Services\Contracts\AttributeServiceContract;
-use Illuminate\Http\JsonResponse;
+use App\Services\Contracts\ReorderServiceContract;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
 
 class AttributeController extends Controller
 {
     public function __construct(
-        private readonly AttributeServiceContract $attributeService
+        private readonly AttributeServiceContract $attributeService,
+        private readonly ReorderServiceContract $reorderService,
     ) {}
 
     public function index(AttributeIndexRequest $request): JsonResource
     {
         $query = Attribute::searchByCriteria($request->validated())
+            ->orderBy('order')
             ->with(['metadata', 'metadataPrivate']);
 
         return AttributeResource::collection(
@@ -54,10 +58,17 @@ class AttributeController extends Controller
         return AttributeResource::make($attribute);
     }
 
-    public function destroy(Attribute $attribute): JsonResponse
+    public function destroy(Attribute $attribute): HttpResponse
     {
         $this->attributeService->delete($attribute);
 
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::noContent();
+    }
+
+    public function reorder(ReorderDto $dto): HttpResponse
+    {
+        $this->reorderService->reorderAndSave(Attribute::class, $dto);
+
+        return Response::noContent();
     }
 }

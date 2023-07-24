@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\DTO\ReorderDto;
+use App\Models\Model;
 use App\Services\Contracts\ReorderServiceContract;
 
 class ReorderService implements ReorderServiceContract
@@ -15,5 +17,15 @@ class ReorderService implements ReorderServiceContract
         }
 
         return $return;
+    }
+
+    /**
+     * @param class-string<Model> $class
+     */
+    public function reorderAndSave(string $class, ReorderDto $dto): void
+    {
+        foreach ($dto->ids as $key => $id) {
+            $class::query()->where('id', $id)->update(['order' => $key]);
+        }
     }
 }

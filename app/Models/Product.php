@@ -208,6 +208,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     public function attributes(): BelongsToMany
     {
         return $this->belongsToMany(Attribute::class, 'product_attribute')
+            ->orderBy('order')
             ->withPivot('id')
             ->using(ProductAttribute::class);
     }

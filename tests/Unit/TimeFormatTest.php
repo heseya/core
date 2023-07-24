@@ -12,7 +12,6 @@ use App\Models\Option;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\OrderSchema;
-use App\Models\PackageTemplate;
 use App\Models\Page;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
@@ -141,11 +140,6 @@ class TimeFormatTest extends TestCase
         ]);
 
         $this->modelTimeFormat($orderSchema, ['created_at', 'updated_at']);
-    }
-
-    public function testPackageTemplateTimeFormat(): void
-    {
-        $this->modelTimeFormat(PackageTemplate::factory()->create(), ['created_at', 'updated_at']);
     }
 
     public function testPageTimeFormat(): void

@@ -271,3 +271,35 @@ AttributeOptionParams:
         description: Success
     security:
       - BearerAuth: [ ]
+
+AttributesReorder:
+  post:
+    tags:
+      - Attributes
+    summary: 'reorder attribute'
+    requestBody:
+      $ref: './../requests/Reorder.yml#/Reorder'
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]
+
+AttributeOptionReorder:
+  post:
+    tags:
+      - Attributes
+    summary: 'reorder attribute options'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      $ref: './../requests/Reorder.yml#/Reorder'
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]

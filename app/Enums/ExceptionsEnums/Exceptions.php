@@ -107,6 +107,8 @@ final class Exceptions extends Enum
     public const CLIENT_DELETE_DEFAULT_LANGUAGE = 'You cannot delete the default language.';
     public const CLIENT_NO_DEFAULT_LANGUAGE = 'There must be at least one language.';
 
+    public const CLIENT_OPTION_NOT_RELATED_TO_ATTRIBUTE = 'Option is not related to provided attribute';
+
     public const SERVER_CDN_ERROR = 'CDN responded with an error';
     public const SERVER_ERROR = 'Server responded with an error';
     public const SERVER_ORDER_STATUSES_NOT_CONFIGURED = 'Order statuses are not configured';

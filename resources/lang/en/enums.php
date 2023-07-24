@@ -8,7 +8,6 @@ return [
         EventType::ORDER_CREATED => 'Event triggered when new orders are created',
         EventType::ORDER_UPDATED => 'Event triggered after order is updated',
         EventType::ORDER_UPDATED_STATUS => 'Event triggered after order status is updated',
-        EventType::ORDER_REQUESTED_SHIPPING => 'Event triggered at creating shipping list',
         EventType::PRODUCT_CREATED => 'Event triggered when new products are created',
         EventType::PRODUCT_UPDATED => 'Event triggered after product is updated',
         EventType::PRODUCT_DELETED => 'Event triggered after product is deleted',
