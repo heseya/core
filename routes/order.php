@@ -21,8 +21,6 @@ Route::prefix('orders')->group(function (): void {
         ->middleware('can:orders.show_details');
     Route::patch('id:{order:id}/status', [OrderController::class, 'updateStatus'])
         ->middleware('can:orders.edit.status');
-    Route::post('id:{order:id}/shipping-lists', [OrderController::class, 'shippingLists'])
-        ->middleware('permission:orders.edit|orders.edit.status'); // !!
     Route::patch('id:{order:id}', [OrderController::class, 'update'])
         ->middleware('can:orders.edit');
     Route::patch('id:{order:id}/metadata', [MetadataController::class, 'updateOrCreate'])
