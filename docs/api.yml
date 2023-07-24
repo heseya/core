@@ -120,10 +120,6 @@ paths:
     $ref: './paths/Orders.yml#/OrderProductUrls'
   /cart/process:
     $ref: './paths/Orders.yml#/CartProcess'
-  /package-templates:
-    $ref: './paths/PackageTemplates.yml#/PackageTemplates'
-  '/package-templates/id:{id}':
-    $ref: './paths/PackageTemplates.yml#/PackageTemplatesParam'
   /pages:
     $ref: './paths/Pages.yml#/Pages'
   '/pages/{slug}':
@@ -410,8 +406,6 @@ components:
       $ref: './schemas/ShippingMethods.yml#/ShippingMethod'
     Status:
       $ref: './schemas/Statuses.yml#/Status'
-    PackageTemplateSwagger:
-      $ref: './schemas/PackageTemplate.yml#/PackageTemplate'
     Tag:
       $ref: './schemas/Tags.yml#/Tag'
     ProductSet:

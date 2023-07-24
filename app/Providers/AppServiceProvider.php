@@ -35,7 +35,6 @@ use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\OptionServiceContract;
 use App\Services\Contracts\OrderServiceContract;
-use App\Services\Contracts\PackageTemplateServiceContract;
 use App\Services\Contracts\PageServiceContract;
 use App\Services\Contracts\PaymentMethodServiceContract;
 use App\Services\Contracts\PaymentServiceContract;
@@ -77,7 +76,6 @@ use App\Services\NameService;
 use App\Services\OneTimeSecurityCodeService;
 use App\Services\OptionService;
 use App\Services\OrderService;
-use App\Services\PackageTemplateService;
 use App\Services\PageService;
 use App\Services\PaymentMethodService;
 use App\Services\PaymentService;
@@ -150,7 +148,6 @@ class AppServiceProvider extends ServiceProvider
         BannerServiceContract::class => BannerService::class,
         UserLoginAttemptServiceContract::class => UserLoginAttemptService::class,
         StatusServiceContract::class => StatusService::class,
-        PackageTemplateServiceContract::class => PackageTemplateService::class,
         DepositServiceContract::class => DepositService::class,
         ShippingTimeDateServiceContract::class => ShippingTimeDateService::class,
         ProviderServiceContract::class => ProviderService::class,

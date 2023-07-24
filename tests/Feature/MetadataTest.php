@@ -10,7 +10,6 @@ use App\Models\Item;
 use App\Models\Media;
 use App\Models\Option;
 use App\Models\Order;
-use App\Models\PackageTemplate;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductSet;
@@ -120,21 +119,6 @@ class MetadataTest extends TestCase
                 ['model' => ShippingMethod::class,
                     'prefix_url' => 'shipping-methods',
                     'role' => 'shipping_methods.edit',
-                ],
-            ],
-
-            'package templates as user' => [
-                'user', [
-                    'model' => PackageTemplate::class,
-                    'prefix_url' => 'package-templates',
-                    'role' => 'packages.edit',
-                ],
-            ],
-            'package templates as application' => [
-                'application', [
-                    'model' => PackageTemplate::class,
-                    'prefix_url' => 'package-templates',
-                    'role' => 'packages.edit',
                 ],
             ],
 
