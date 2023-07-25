@@ -10,8 +10,10 @@ use App\Utils\Map;
 use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\Validation\Rule;
+use Spatie\LaravelData\Attributes\Validation\Unique;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
+use Spatie\LaravelData\Support\Validation\References\RouteParameterReference;
 
 final class PageUpdateDto extends Data
 {
@@ -21,6 +23,7 @@ final class PageUpdateDto extends Data
     public function __construct(
         #[Rule(new Translations(['name', 'content_html']))]
         public readonly array|Optional $translations,
+        #[Unique('pages', ignore: new RouteParameterReference('page'))]
         public readonly Optional|string $slug,
         public readonly bool|Optional $public,
 

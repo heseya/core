@@ -10,6 +10,7 @@ use App\Utils\Map;
 use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\Validation\Rule;
+use Spatie\LaravelData\Attributes\Validation\Unique;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 
@@ -21,6 +22,7 @@ final class PageCreateDto extends Data
     public function __construct(
         #[Rule(new Translations(['name', 'content_html']))]
         public readonly array $translations,
+        #[Unique('pages')]
         public readonly string $slug,
         public readonly bool $public,
 

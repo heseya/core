@@ -75,7 +75,7 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndex($user): void
+    public function testIndex(string $user): void
     {
         $this->{$user}->givePermissionTo('pages.show');
 
@@ -86,8 +86,7 @@ class PageTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ],
-            ]);
+            ]]);
 
         $this->assertQueryCountLessThan(11);
     }
@@ -95,7 +94,30 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexWithTranslationsFlag($user): void
+    public function testIndexWithTranslationsFlag(string $user): void
+    {
+        $this->{$user}->givePermissionTo('pages.show');
+
+        $response = $this
+            ->actingAs($this->{$user})
+            ->getJson('/pages?translations');
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
+
+        $firstElement = $response->json('data.0');
+
+        $this->assertArrayHasKey('translations', $firstElement);
+        $this->assertIsArray($firstElement['translations']);
+
+        $this->assertQueryCountLessThan(11);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexWithTranslationsFlag2(string $user): void
     {
         $this->{$user}->givePermissionTo('pages.show');
 
@@ -118,30 +140,7 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexWithTranslationsFlag2($user): void
-    {
-        $this->{$user}->givePermissionTo('pages.show');
-
-        $response = $this
-            ->actingAs($this->{$user})
-            ->getJson('/pages?translations');
-
-        $response
-            ->assertOk()
-            ->assertJsonCount(1, 'data');
-
-        $firstElement = $response['data'][0];
-
-        $this->assertArrayHasKey('translations', $firstElement);
-        $this->assertIsArray($firstElement['translations']);
-
-        $this->assertQueryCountLessThan(11);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testIndexByIds($user): void
+    public function testIndexByIds(string $user): void
     {
         $this->{$user}->givePermissionTo('pages.show');
 
@@ -167,7 +166,7 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexPerformance($user): void
+    public function testIndexPerformance(string $user): void
     {
         $this->{$user}->givePermissionTo('pages.show');
 
@@ -185,7 +184,7 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexHidden($user): void
+    public function testIndexHidden(string $user): void
     {
         $this->{$user}->givePermissionTo(['pages.show', 'pages.show_hidden']);
 
@@ -207,7 +206,7 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testView($user): void
+    public function testView(string $user): void
     {
         $this->{$user}->givePermissionTo('pages.show_details');
 
@@ -227,7 +226,7 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testViewWrongIdOrSlug($user): void
+    public function testViewWrongIdOrSlug(string $user): void
     {
         $this->{$user}->givePermissionTo('pages.show_details');
 
@@ -247,7 +246,7 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testViewPrivateMetadata($user): void
+    public function testViewPrivateMetadata(string $user): void
     {
         $this->{$user}->givePermissionTo(['pages.show_details', 'pages.show_metadata_private']);
 
@@ -279,7 +278,7 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testViewHiddenUnauthorized($user): void
+    public function testViewHiddenUnauthorized(string $user): void
     {
         $this->{$user}->givePermissionTo('pages.show_details');
 
@@ -295,7 +294,7 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testViewHidden($user): void
+    public function testViewHidden(string $user): void
     {
         $this->{$user}->givePermissionTo(['pages.show_details', 'pages.show_hidden']);
 
@@ -321,18 +320,16 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreate($user): void
+    public function testCreate(string $user): void
     {
         $this->{$user}->givePermissionTo('pages.add');
 
         Event::fake([PageCreated::class]);
 
         $html = '<h1>hello world</h1>';
-
-        $this->actingAs($this->{$user})
+        $this
+            ->actingAs($this->{$user})
             ->postJson('/pages', [
-                'slug' => 'test-test',
-                'public' => true,
                 'translations' => [
                     $this->lang => [
                         'name' => 'Test',
@@ -340,51 +337,22 @@ class PageTest extends TestCase
                     ],
                 ],
                 'published' => [$this->lang],
-            ])
-            ->assertJson([
-                'data' => [
-                    'name' => 'Test',
-                    'slug' => 'test-test',
-                    'public' => true,
-                    'content_html' => $html,
-                ],
-            ])
-            ->assertCreated();
-
-        $this->assertDatabaseHas('pages', [
-            "name->{$this->lang}" => 'Test',
-            'slug' => 'test-test',
-            'public' => true,
-            "content_html->{$this->lang}" => $html,
-        ]);
-
-        $response = $this->actingAs($this->{$user})
-            ->postJson('/pages', [
                 'slug' => 'test-test',
                 'public' => true,
-                'translations' => [
-                    $this->lang => [
-                        'name' => 'Test',
-                        'content_html' => $html,
-                    ],
-                ],
-                'published' => [$this->lang],
             ])
-            ->assertJson([
-                'data' => [
-                    'name' => 'Test',
-                    'slug' => 'test-test',
-                    'public' => true,
-                    'content_html' => $html,
-                ],
-            ])
-            ->assertCreated();
+            ->assertCreated()
+            ->assertJsonFragment([
+                'name' => 'Test',
+                'slug' => 'test-test',
+                'public' => true,
+                'content_html' => $html,
+            ]);
 
         $this->assertDatabaseHas('pages', [
             "name->{$this->lang}" => 'Test',
+            "content_html->{$this->lang}" => $html,
             'slug' => 'test-test',
             'public' => true,
-            "content_html->{$this->lang}" => $html,
         ]);
 
         Event::assertDispatched(PageCreated::class);
@@ -393,19 +361,20 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithSameSlug($user): void
+    public function testCreateWithSameSlug(string $user): void
     {
         $this->{$user}->givePermissionTo('pages.add');
 
-        $html = '<h1>hello world</h1>';
-        $page = [
-            'name' => 'Test',
+        $response = $this->actingAs($this->{$user})->postJson('/pages', [
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                    'content_html' => '<h1>html</h1>',
+                ],
+            ],
             'slug' => $this->page->slug,
             'public' => true,
-            'content_html' => $html,
-        ];
-
-        $response = $this->actingAs($this->{$user})->postJson('/pages', $page);
+        ]);
 
         $response->assertJsonFragment([
             'key' => ValidationError::UNIQUE,
@@ -422,21 +391,31 @@ class PageTest extends TestCase
         Event::fake([PageCreated::class]);
 
         $html = '<h1>hello world</h1>';
-        $page = [
-            'name' => 'Test',
-            'slug' => 'test-test',
-            'public' => true,
-            'content_html' => $html,
-            'metadata' => [
-                'attributeMeta' => 'attributeValue',
-            ],
-        ];
-
         $this
             ->actingAs($this->{$user})
-            ->postJson('/pages', $page)
+            ->postJson('/pages', [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                        'content_html' => $html,
+                    ],
+                ],
+                'slug' => 'test-test',
+                'public' => true,
+                'metadata' => [
+                    'attributeMeta' => 'attributeValue',
+                ],
+            ])
             ->assertJson([
-                'data' => $page,
+                'data' => [
+                    'name' => 'Test',
+                    'content_html' => $html,
+                    'slug' => 'test-test',
+                    'public' => true,
+                    'metadata' => [
+                        'attributeMeta' => 'attributeValue',
+                    ],
+                ],
             ])
             ->assertCreated();
 
@@ -446,28 +425,38 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithMetadataPrivate($user): void
+    public function testCreateWithMetadataPrivate(string $user): void
     {
         $this->{$user}->givePermissionTo(['pages.add', 'pages.show_metadata_private']);
 
         Event::fake([PageCreated::class]);
 
         $html = '<h1>hello world</h1>';
-        $page = [
-            'name' => 'Test',
-            'slug' => 'test-test',
-            'public' => true,
-            'content_html' => $html,
-            'metadata_private' => [
-                'attributeMetaPriv' => 'attributeValue',
-            ],
-        ];
-
         $this
             ->actingAs($this->{$user})
-            ->postJson('/pages', $page)
+            ->postJson('/pages', [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                        'content_html' => $html,
+                    ],
+                ],
+                'slug' => 'test-test',
+                'public' => true,
+                'metadata_private' => [
+                    'attributeMetaPriv' => 'attributeValue',
+                ],
+            ])
             ->assertJson([
-                'data' => $page,
+                'data' => [
+                    'name' => 'Test',
+                    'content_html' => $html,
+                    'slug' => 'test-test',
+                    'public' => true,
+                    'metadata_private' => [
+                        'attributeMetaPriv' => 'attributeValue',
+                    ],
+                ],
             ])
             ->assertCreated();
 
@@ -477,7 +466,7 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithWebHook($user): void
+    public function testCreateWithWebHook(string $user): void
     {
         $this->{$user}->givePermissionTo('pages.add');
 
@@ -494,11 +483,9 @@ class PageTest extends TestCase
         Bus::fake();
 
         $html = '<h1>hello world</h1>';
-
-        $response = $this->actingAs($this->{$user})
+        $response = $this
+            ->actingAs($this->{$user})
             ->postJson('/pages', [
-                'slug' => 'test-test',
-                'public' => true,
                 'translations' => [
                     $this->lang => [
                         'name' => 'Test',
@@ -506,51 +493,22 @@ class PageTest extends TestCase
                     ],
                 ],
                 'published' => [$this->lang],
-            ])
-            ->assertJson([
-                'data' => [
-                    'name' => 'Test',
-                    'slug' => 'test-test',
-                    'public' => true,
-                    'content_html' => $html,
-                ],
-            ])
-            ->assertCreated();
-
-        $this->assertDatabaseHas('pages', [
-            "name->{$this->lang}" => 'Test',
-            'slug' => 'test-test',
-            'public' => true,
-            "content_html->{$this->lang}" => $html,
-        ]);
-
-        $response = $this->actingAs($this->{$user})
-            ->postJson('/pages', [
                 'slug' => 'test-test',
                 'public' => true,
-                'translations' => [
-                    $this->lang => [
-                        'name' => 'Test',
-                        'content_html' => $html,
-                    ],
-                ],
-                'published' => [$this->lang],
             ])
-            ->assertJson([
-                'data' => [
-                    'name' => 'Test',
-                    'slug' => 'test-test',
-                    'public' => true,
-                    'content_html' => $html,
-                ],
+            ->assertJsonFragment([
+                'name' => 'Test',
+                'slug' => 'test-test',
+                'public' => true,
+                'content_html' => $html,
             ])
             ->assertCreated();
 
         $this->assertDatabaseHas('pages', [
             "name->{$this->lang}" => 'Test',
+            "content_html->{$this->lang}" => $html,
             'slug' => 'test-test',
             'public' => true,
-            "content_html->{$this->lang}" => $html,
         ]);
 
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
@@ -558,7 +516,7 @@ class PageTest extends TestCase
                 && $job->data[0] instanceof PageCreated;
         });
 
-        $page = Page::find($response->getData()->data->id);
+        $page = Page::find($response->json('data.id'));
 
         $event = new PageCreated($page);
         $listener = new WebHookEventListener();
@@ -578,40 +536,51 @@ class PageTest extends TestCase
     /**
      * @dataProvider booleanProvider
      */
-    public function testCreateWithSeo($user, $boolean, $booleanValue): void
+    public function testCreateWithSeo(string $user, bool $boolean, bool $booleanValue): void
     {
         $this->{$user}->givePermissionTo('pages.add');
 
         $html = '<h1>hello world</h1>';
 
-        $this->actingAs($this->{$user})->json('POST', '/pages', ['data' => [
-            'name' => 'Test',
+        $this->actingAs($this->{$user})->json('POST', '/pages', [
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                    'content_html' => $html,
+                ],
+            ],
+            'published' => [$this->lang],
             'slug' => 'test-test',
             'public' => true,
-            'content_html' => $html,
             'seo' => [
-                'title' => 'seo title',
-                'description' => 'seo description',
+                'translations' => [
+                    $this->lang => [
+                        'title' => 'seo title',
+                        'description' => 'seo description',
+                        'no_index' => $booleanValue,
+                    ],
+                ],
+                'published' => [$this->lang],
             ],
-        ]])->assertCreated();
+        ])->assertCreated();
 
         $this->assertDatabaseHas('pages', [
             "name->{$this->lang}" => 'Test',
+            "content_html->{$this->lang}" => $html,
             'slug' => 'test-test',
             'public' => true,
-            "content_html->{$this->lang}" => $html,
         ]);
         $this->assertDatabaseHas('seo_metadata', [
             "title->{$this->lang}" => 'seo title',
             "description->{$this->lang}" => 'seo description',
-            'no_index' => $booleanValue,
+            "no_index->{$this->lang}" => $booleanValue,
         ]);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testCreateByOrder($user): void
+    public function testCreateByOrder(string $user): void
     {
         $this->{$user}->givePermissionTo('pages.add');
 
@@ -621,17 +590,21 @@ class PageTest extends TestCase
 
         for ($i = 0; $i < 3; ++$i) {
             $name = ' order test ' . $this->faker->sentence(mt_rand(1, 3));
-            $page = [
-                'name' => $name,
+
+            $response = $this->actingAs($this->{$user})->postJson('/pages', [
+                'translations' => [
+                    $this->lang => [
+                        'name' => $name,
+                        'content_html' => '<p>' . $this->faker->sentence(mt_rand(10, 30)) . '</p>',
+                    ],
+                ],
+                'published' => [$this->lang],
                 'slug' => Str::slug($name),
                 'public' => $this->faker->boolean,
-                'content_html' => '<p>' . $this->faker->sentence(mt_rand(10, 30)) . '</p>',
-            ];
-
-            $response = $this->actingAs($this->{$user})->postJson('/pages', $page);
+            ]);
             $response->assertCreated();
 
-            $uuids[] = $response->getData()->data->id;
+            $uuids[] = $response->json('data.id');
         }
 
         $this->assertDatabaseHas('pages', [
@@ -653,7 +626,7 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteAndCreateWithTheSameSlug($user): void
+    public function testDeleteAndCreateWithTheSameSlug(string $user): void
     {
         $this->{$user}->givePermissionTo('pages.add');
         $this->{$user}->givePermissionTo('pages.remove');
@@ -672,21 +645,31 @@ class PageTest extends TestCase
         $this->assertEquals('test_' . $this->page->deleted_at, $this->page->slug);
 
         Event::assertDispatched(PageDeleted::class);
-
         Event::fake([PageCreated::class]);
-        $page = [
-            'name' => 'Test',
-            'slug' => 'test',
-            'public' => true,
-            'content_html' => '<h1>hello world</h1>',
-        ];
 
-        $response = $this->actingAs($this->{$user})->postJson('/pages', $page);
-        $response->assertJson([
-            'data' => $page,
-        ])->assertCreated();
+        $this
+            ->actingAs($this->{$user})
+            ->postJson('/pages', [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                        'content_html' => '<h1>hello world</h1>',
+                    ],
+                ],
+                'published' => [$this->lang],
+                'slug' => 'test',
+                'public' => true,
+            ])
+            ->assertJsonFragment([
+                'name' => 'Test',
+                'content_html' => '<h1>hello world</h1>',
+            ])
+            ->assertCreated();
 
-        $this->assertDatabaseHas('pages', $page);
+        $this->assertDatabaseHas('pages', [
+            "name->{$this->lang}" => 'Test',
+            "content_html->{$this->lang}" => '<h1>hello world</h1>',
+        ]);
 
         Event::assertDispatched(PageCreated::class);
     }
@@ -813,7 +796,7 @@ class PageTest extends TestCase
                 && $job->data[0] instanceof PageUpdated;
         });
 
-        $page = Page::find($response->getData()->data->id);
+        $page = Page::find($response->json('data.id'));
 
         $event = new PageUpdated($page);
         $listener = new WebHookEventListener();
@@ -840,43 +823,45 @@ class PageTest extends TestCase
     /**
      * @dataProvider booleanProvider
      */
-    public function testUpdateWithSeo($user, $boolean, $booleanValue): void
+    public function testUpdateWithSeo(string $user, bool $boolean, bool $booleanValue): void
     {
         $this->{$user}->givePermissionTo('pages.edit');
 
-        $html = '<h1>hello world 2</h1>';
-        $page = [
-            'name' => 'Test 2',
-            'slug' => 'test-2',
-            'public' => $boolean,
-            'content_html' => $html,
-            'seo' => [
-                'title' => 'seo title',
-                'description' => 'seo description',
-                'no_index' => $boolean,
-            ],
-        ];
-
         $seo = SeoMetadata::factory()->create();
         $this->page->seo()->save($seo);
-
-        $response = $this->actingAs($this->{$user})->json(
-            'PATCH',
-            '/pages/id:' . $this->page->getKey(),
-            $page
-        );
-
-        $response
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', '/pages/id:' . $this->page->getKey(), [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test 2',
+                        'content_html' => '<h1>hello world 2</h1>',
+                    ],
+                ],
+                'published' => [$this->lang],
+                'slug' => 'test-2',
+                'public' => $boolean,
+                'seo' => [
+                    'translations' => [
+                        $this->lang => [
+                            'title' => 'seo title',
+                            'description' => 'seo description',
+                            'no_index' => $boolean,
+                        ],
+                    ],
+                    'published' => [$this->lang],
+                ],
+            ])
             ->assertOk()
             ->assertJsonFragment([
-                'title' => $page['seo']['title'],
-                'description' => $page['seo']['description'],
+                'title' => 'seo title',
+                'description' => 'seo description',
                 'no_index' => $booleanValue,
             ])->assertJsonFragment([
-                'name' => $page['name'],
-                'slug' => $page['slug'],
+                'name' => 'Test 2',
+                'slug' => 'test-2',
                 'public' => $booleanValue,
-                'content_html' => $html,
+                'content_html' => '<h1>hello world 2</h1>',
             ]);
 
         $this->assertDatabaseHas('pages', [
@@ -884,12 +869,12 @@ class PageTest extends TestCase
             "name->{$this->lang}" => 'Test 2',
             'slug' => 'test-2',
             'public' => $booleanValue,
-            'content_html' => $html,
+            "content_html->{$this->lang}" => '<h1>hello world 2</h1>',
         ]);
         $this->assertDatabaseHas('seo_metadata', [
-            'title' => 'seo title',
-            'description' => 'seo description',
-            'no_index' => $booleanValue,
+            "title->{$this->lang}" => 'seo title',
+            "description->{$this->lang}" => 'seo description',
+            "no_index->{$this->lang}" => $booleanValue,
         ]);
     }
 
@@ -913,7 +898,7 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDelete($user): void
+    public function testDelete(string $user): void
     {
         $this->{$user}->givePermissionTo('pages.remove');
 
@@ -934,7 +919,7 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testReorderUnauthorized($user): void
+    public function testReorderUnauthorized(string $user): void
     {
         DB::table('pages')->delete();
         $page = Page::factory()->count(10)->create();
