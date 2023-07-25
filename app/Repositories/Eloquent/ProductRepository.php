@@ -6,6 +6,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Dtos\PriceDto;
 use App\Dtos\ProductSearchDto;
+use App\Enums\Currency;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\Product\ProductPriceType;
 use App\Exceptions\ServerException;
@@ -14,7 +15,6 @@ use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 
@@ -56,29 +56,31 @@ class ProductRepository implements ProductRepositoryContract
     }
 
     /**
-     * @param string $productId
      * @param ProductPriceType[] $priceTypes
      *
      * @return PriceDto[][]
+     *
      * @throws DtoException
      * @throws ServerException
      */
-    public static function getProductPrices(string $productId, array $priceTypes): array
+    public static function getProductPrices(string $productId, array $priceTypes, ?Currency $currency = null): array
     {
-        /** @var Collection<Price> $prices */
         $prices = Price::query()
             ->where('model_id', $productId)
-            ->whereIn('price_type', $priceTypes)
-            ->get();
+            ->whereIn('price_type', $priceTypes);
 
-        $groupedPrices = $prices->reduce(function (array $carry, Price $price) {
+        if ($currency !== null) {
+            $prices = $prices->where('currency', $currency->value);
+        }
+
+        $groupedPrices = $prices->get()->reduce(function (array $carry, Price $price) {
             $carry[$price->price_type][] = new PriceDto($price->value);
 
             return $carry;
         }, []);
 
         return array_map(
-            function (ProductPriceType $type) use ($productId, $groupedPrices) {
+            function (ProductPriceType $type) use ($groupedPrices) {
                 if (!array_key_exists($type->value, $groupedPrices)) {
                     throw new ServerException(Exceptions::SERVER_NO_PRICE_MATCHING_CRITERIA);
                 }

@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Dtos\PriceDto;
+use App\Dtos\ProductCreateDto;
 use App\Enums\ConditionType;
 use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
@@ -21,13 +23,16 @@ use App\Models\Role;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
+use App\Services\Contracts\ProductServiceContract;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
+use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\App;
 use Tests\TestCase;
 
 class CartTest extends TestCase
@@ -47,11 +52,14 @@ class CartTest extends TestCase
     private Option $option;
     private Option $option2;
     private Item $item;
+    private ProductServiceContract $productService;
+    private Currency $currency;
 
     /**
      * @throws UnknownCurrencyException
      * @throws RoundingNecessaryException
      * @throws NumberFormatException
+     * @throws DtoException
      */
     public function setUp(): void
     {
@@ -64,29 +72,32 @@ class CartTest extends TestCase
             'shipping_type' => ShippingType::ADDRESS,
         ]);
 
+        $this->productService = App::make(ProductServiceContract::class);
+        $this->currency = Currency::DEFAULT;
+
         /** @var PriceRange $lowRange */
         $lowRange = PriceRange::query()->create([
-            'start' => Money::zero(Currency::DEFAULT->value),
-            'value' => Money::of(8.11, Currency::DEFAULT->value),
+            'start' => Money::zero($this->currency->value),
+            'value' => Money::of(8.11, $this->currency->value),
         ]);
 
         /** @var PriceRange $highRange */
         $highRange = PriceRange::query()->create([
-            'start' => Money::of(210, Currency::DEFAULT->value),
-            'value' => Money::of(0.0, Currency::DEFAULT->value),
+            'start' => Money::of(210, $this->currency->value),
+            'value' => Money::of(0.0, $this->currency->value),
         ]);
 
         $this->shippingMethod->priceRanges()->saveMany([$lowRange, $highRange]);
 
-        $this->product = Product::factory()->create([
+        $this->product = $this->productService->create(ProductCreateDto::fake([
             'public' => true,
-            'price' => 4600.0,
-        ]);
+            'prices_base' => [new PriceDto(Money::of(4600.0, $this->currency->value))],
+        ]));
 
-        $this->productWithSchema = Product::factory()->create([
-            'price' => 100,
+        $this->productWithSchema = $this->productService->create(ProductCreateDto::fake([
             'public' => true,
-        ]);
+            'prices_base' => [new PriceDto(Money::of(100.0, $this->currency->value))],
+        ]));
         $this->schema = Schema::factory()->create([
             'type' => 'select',
             'price' => 0,
@@ -107,10 +118,10 @@ class CartTest extends TestCase
             'price' => 100,
         ]);
 
-        $this->digitalProduct = Product::factory()->create([
+        $this->digitalProduct = $this->productService->create(ProductCreateDto::fake([
             'public' => true,
             'shipping_digital' => true,
-        ]);
+        ]));
         $this->digitalShippingMethod = ShippingMethod::factory()->create([
             'shipping_type' => ShippingType::DIGITAL,
         ]);
@@ -604,14 +615,13 @@ class CartTest extends TestCase
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
-        $currency = Currency::DEFAULT->value;
         $shippingMethod = ShippingMethod::factory()->create([
             'public' => true,
             'shipping_type' => ShippingType::ADDRESS,
         ]);
         $lowRange = PriceRange::create([
-            'start' => Money::zero($currency),
-            'value' => Money::of(10, $currency),
+            'start' => Money::zero($this->currency->value),
+            'value' => Money::of(10, $this->currency->value),
         ]);
 
         $shippingMethod->priceRanges()->saveMany([$lowRange]);
@@ -922,25 +932,27 @@ class CartTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
      */
     public function testCartProcessWithDiscountValueAmountExtendPrice($user): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
-        $product = Product::factory()->create([
+        $product = $this->productService->create(ProductCreateDto::fake([
             'public' => true,
-            'price' => 10,
-        ]);
+            'prices_base' => [new PriceDto(Money::of(10.0, $this->currency->value))],
+        ]));
         $schema = Schema::factory()->create([
             'type' => 'string',
             'price' => 20,
             'hidden' => false,
         ]);
         $product->schemas()->save($schema);
-        $product2 = Product::factory()->create([
+        $product2 = $this->productService->create(ProductCreateDto::fake([
             'public' => true,
-            'price' => 100,
-        ]);
+            'prices_base' => [new PriceDto(Money::of(100.0, $this->currency->value))],
+        ]));
         $sale = Discount::factory()->create([
             'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::PRODUCTS,
@@ -976,15 +988,17 @@ class CartTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
      */
     public function testCartProcessWithPromotionOnMultiProductWithSchema($user): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
-        $product = Product::factory()->create([
+        $product = $this->productService->create(ProductCreateDto::fake([
             'public' => true,
-            'price' => 10,
-        ]);
+            'prices_base' => [new PriceDto(Money::of(10.0, $this->currency->value))],
+        ]));
         $schema = Schema::factory()->create([
             'type' => 'string',
             'price' => 20,
@@ -1141,6 +1155,8 @@ class CartTest extends TestCase
 
     /**
      * @dataProvider couponOrSaleProvider
+     *
+     * @throws DtoException
      */
     public function testCartProcessRoundedValues($user, $coupon): void
     {
@@ -1148,10 +1164,10 @@ class CartTest extends TestCase
 
         $code = $coupon ? [] : ['code' => null];
 
-        $product = Product::factory()->create([
+        $product = $this->productService->create(ProductCreateDto::fake([
             'public' => true,
-            'price' => 4601.0,
-        ]);
+            'prices_base' => [new PriceDto(Money::of(4601.0, $this->currency->value))],
+        ]));
 
         $discountApplied = Discount::factory()->create([
             'description' => 'Testowy kupon obowiązujący',
@@ -1199,6 +1215,7 @@ class CartTest extends TestCase
         $discountCode = $coupon ? ['code' => $discountApplied->code] : [];
         $discountCode2 = $coupon ? ['code' => $discountApplied2->code] : [];
 
+        // Yes those new values are accurate, old ones were wrong
         $response
             ->assertOk()
             ->assertJsonFragment([
@@ -1227,6 +1244,8 @@ class CartTest extends TestCase
 
     /**
      * @dataProvider couponOrSaleProvider
+     *
+     * @throws DtoException
      */
     public function testCartProcessRoundedValuesCheapestProduct($user, $coupon): void
     {
@@ -1234,10 +1253,10 @@ class CartTest extends TestCase
 
         $code = $coupon ? [] : ['code' => null];
 
-        $product = Product::factory()->create([
+        $product = $this->productService->create(ProductCreateDto::fake([
             'public' => true,
-            'price' => 45,
-        ]);
+            'prices_base' => [new PriceDto(Money::of(45.0, $this->currency->value))],
+        ]));
 
         $discountApplied = Discount::factory()->create([
             'description' => 'Testowy kupon obowiązujący',
@@ -1320,6 +1339,8 @@ class CartTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
      */
     public function testCartProcessShippingTimeAndDateWhitUnlimitedStockShippingDate($user): void
     {
@@ -1331,10 +1352,10 @@ class CartTest extends TestCase
 
         $item = Item::factory()->create($itemData);
 
-        $product = Product::factory()->create([
+        $product = $this->productService->create(ProductCreateDto::fake([
             'public' => true,
-            'price' => 4600.0,
-        ]);
+            'prices_base' => [new PriceDto(Money::of(4600.0, $this->currency->value))],
+        ]));
         $product->items()->attach($item->getKey(), ['required_quantity' => 100]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
@@ -1359,6 +1380,8 @@ class CartTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
      */
     public function testCartProcessShippingTimeAndDateWhitMultiProductsAndOneItem($user): void
     {
@@ -1368,10 +1391,10 @@ class CartTest extends TestCase
 
         $item = Item::factory()->create();
 
-        $product = Product::factory()->create([
+        $product = $this->productService->create(ProductCreateDto::fake([
             'public' => true,
-            'price' => 4600.0,
-        ]);
+            'prices_base' => [new PriceDto(Money::of(4600.0, $this->currency->value))],
+        ]));
 
         Deposit::factory([
             'quantity' => 150,
@@ -1457,6 +1480,8 @@ class CartTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
      */
     public function testCartProcessShippingTimeAndDateWhitMultiProductsAndOneNotAvailable($user): void
     {
@@ -1467,14 +1492,14 @@ class CartTest extends TestCase
         $item = Item::factory()->create();
         $item2 = Item::factory()->create();
 
-        $product = Product::factory()->create([
+        $product = $this->productService->create(ProductCreateDto::fake([
             'public' => true,
-            'price' => 4600.0,
-        ]);
-        $product2 = Product::factory()->create([
+            'prices_base' => [new PriceDto(Money::of(4600.0, $this->currency->value))],
+        ]));
+        $product2 = $this->productService->create(ProductCreateDto::fake([
             'public' => true,
-            'price' => 4600.0,
-        ]);
+            'prices_base' => [new PriceDto(Money::of(4600.0, $this->currency->value))],
+        ]));
 
         Deposit::factory([
             'quantity' => 150,
@@ -1834,9 +1859,9 @@ class CartTest extends TestCase
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
-        $productWithSale = Product::factory()->create([
+        $productWithSale = $this->productService->create(ProductCreateDto::fake([
             'public' => true,
-        ]);
+        ]));
 
         $sale = Discount::factory()->create([
             'code' => null,
@@ -2067,6 +2092,8 @@ class CartTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
      */
     public function testCartProcessPurchaseLimitWithSale($user): void
     {
@@ -2099,10 +2126,10 @@ class CartTest extends TestCase
             'purchase_limit_per_user' => 0,
         ]);
 
-        $product = Product::factory()->create([
+        $product = $this->productService->create(ProductCreateDto::fake([
             'public' => true,
-            'price' => 1000,
-        ]);
+            'prices_base' => [new PriceDto(Money::of(1000.0, $this->currency->value))],
+        ]));
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -2481,12 +2508,18 @@ class CartTest extends TestCase
         ];
     }
 
+    /**
+     * @throws RoundingNecessaryException
+     * @throws DtoException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
     private function prepareCouponWithProductInSetAndCountConditions(bool $productInSet, bool $isAllowList): array
     {
-        $product = Product::factory()->create([
+        $product = $this->productService->create(ProductCreateDto::fake([
             'public' => true,
-            'price' => 49,
-        ]);
+            'prices_base' => [new PriceDto(Money::of(49.0, $this->currency->value))],
+        ]));
 
         $set = ProductSet::factory()->create([
             'public' => true,

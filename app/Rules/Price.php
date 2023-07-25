@@ -17,7 +17,6 @@ readonly class Price implements ValidationRule
 {
     /**
      * @param string[] $amountKeys
-     * @param BigDecimal|null $min
      */
     public function __construct(
         private array $amountKeys,
@@ -45,11 +44,13 @@ readonly class Price implements ValidationRule
     {
         if (!is_array($value)) {
             $fail('The :attribute is not an object');
+
             return null;
         }
 
         if (!array_key_exists('currency', $value)) {
             $fail("The :attribute is missing key 'currency'");
+
             return null;
         }
 
@@ -70,6 +71,7 @@ readonly class Price implements ValidationRule
     {
         if (!array_key_exists($amountKey, $value)) {
             $fail("The :attribute is missing key '{$amountKey}'");
+
             return;
         }
 

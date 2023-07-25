@@ -7,7 +7,6 @@ use Brick\Math\BigDecimal;
 use Closure;
 use Exception;
 use Illuminate\Contracts\Validation\ValidationRule;
-use function Sentry\trace;
 
 readonly class ShippingMethodPriceRanges implements ValidationRule
 {
@@ -15,6 +14,7 @@ readonly class ShippingMethodPriceRanges implements ValidationRule
     {
         if (!is_array($value)) {
             $fail('The :attribute is not an array');
+
             return;
         }
 
@@ -29,7 +29,8 @@ readonly class ShippingMethodPriceRanges implements ValidationRule
                 if ($start->isZero()) {
                     $currencyTable[$currency] = ($currencyTable[$currency] ?? 0) + 1;
                 }
-            } catch (Exception) {}
+            } catch (Exception) {
+            }
         }
 
         foreach (Currency::cases() as $currency) {

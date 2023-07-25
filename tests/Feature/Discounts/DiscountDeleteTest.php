@@ -2,8 +2,11 @@
 
 namespace Tests\Feature\Discounts;
 
+use App\Dtos\PriceDto;
+use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Enums\Product\ProductPriceType;
 use App\Events\CouponDeleted;
 use App\Events\SaleDeleted;
 use App\Listeners\WebHookEventListener;
@@ -11,7 +14,10 @@ use App\Models\Discount;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\WebHook;
+use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\DiscountServiceContract;
+use Brick\Money\Money;
+use Heseya\Dto\DtoException;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
@@ -23,6 +29,17 @@ use Tests\TestCase;
 
 class DiscountDeleteTest extends TestCase
 {
+    private ProductRepositoryContract $productRepository;
+    private Currency $currency;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->productRepository = App::make(ProductRepositoryContract::class);
+        $this->currency = Currency::DEFAULT;
+    }
+
     /**
      * @dataProvider couponOrSaleProvider
      */
@@ -193,6 +210,7 @@ class DiscountDeleteTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     * @throws DtoException
      */
     public function testDeleteSaleWithProduct(string $user): void
     {
@@ -207,9 +225,11 @@ class DiscountDeleteTest extends TestCase
 
         $product = Product::factory()->create([
             'public' => true,
-            'price' => 100,
-            'price_min_initial' => 100,
-            'price_max_initial' => 200,
+        ]);
+        $this->productRepository::setProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(100, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(100, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(200, $this->currency->value))],
         ]);
 
         $discount->products()->attach($product);
@@ -220,20 +240,30 @@ class DiscountDeleteTest extends TestCase
         // Apply discount to products before update
         $discountService->applyDiscountsOnProducts(Collection::make([$product]));
 
-        $this->assertDatabaseHas('products', [
-            'id' => $product->getKey(),
-            'price_min' => 90,
-            'price_max' => 190,
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $product->getKey(),
+            'price_type' => ProductPriceType::PRICE_MIN,
+            'value' => '9000',
+        ]);
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $product->getKey(),
+            'price_type' => ProductPriceType::PRICE_MAX,
+            'value' => '19000',
         ]);
 
         $response = $this->actingAs($this->{$user})->deleteJson('/sales/id:' . $discount->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($discount);
 
-        $this->assertDatabaseHas('products', [
-            'id' => $product->getKey(),
-            'price_min' => 100,
-            'price_max' => 200,
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $product->getKey(),
+            'price_type' => ProductPriceType::PRICE_MIN,
+            'value' => '10000',
+        ]);
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $product->getKey(),
+            'price_type' => ProductPriceType::PRICE_MAX,
+            'value' => '20000',
         ]);
     }
 
@@ -253,9 +283,11 @@ class DiscountDeleteTest extends TestCase
 
         $product = Product::factory()->create([
             'public' => true,
-            'price' => 100,
-            'price_min_initial' => 100,
-            'price_max_initial' => 200,
+        ]);
+        $this->productRepository::setProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(100, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(100, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(200, $this->currency->value))],
         ]);
 
         $parentSet = ProductSet::factory()->create(['public' => true]);
@@ -280,20 +312,30 @@ class DiscountDeleteTest extends TestCase
         // Apply discount to products before update
         $discountService->applyDiscountsOnProducts(Collection::make([$product]));
 
-        $this->assertDatabaseHas('products', [
-            'id' => $product->getKey(),
-            'price_min' => 90,
-            'price_max' => 190,
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $product->getKey(),
+            'price_type' => ProductPriceType::PRICE_MIN,
+            'value' => '9000',
+        ]);
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $product->getKey(),
+            'price_type' => ProductPriceType::PRICE_MAX,
+            'value' => '19000',
         ]);
 
         $response = $this->actingAs($this->{$user})->deleteJson('/sales/id:' . $discount->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($discount);
 
-        $this->assertDatabaseHas('products', [
-            'id' => $product->getKey(),
-            'price_min' => 100,
-            'price_max' => 200,
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $product->getKey(),
+            'price_type' => ProductPriceType::PRICE_MIN,
+            'value' => '10000',
+        ]);
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $product->getKey(),
+            'price_type' => ProductPriceType::PRICE_MAX,
+            'value' => '20000',
         ]);
     }
 }

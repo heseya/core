@@ -50,76 +50,6 @@ readonly class ProductService implements ProductServiceContract
      * @throws MoneyMismatchException
      * @throws DtoException
      */
-    private function setup(Product $product, ProductCreateDto|ProductUpdateDto $dto): Product
-    {
-        if (!($dto->schemas instanceof Missing)) {
-            $this->schemaService->sync($product, $dto->schemas);
-        }
-
-        if (!($dto->sets instanceof Missing)) {
-            $product->sets()->sync($dto->sets);
-        }
-
-        if (!($dto->items instanceof Missing)) {
-            $this->assignItems($product, $dto->items);
-        }
-
-        if (!($dto->media instanceof Missing)) {
-            $this->mediaService->sync($product, $dto->media);
-        }
-
-        if (!($dto->tags instanceof Missing)) {
-            $product->tags()->sync($dto->tags);
-        }
-
-        if (!($dto->getMetadata() instanceof Missing)) {
-            $this->metadataService->sync($product, $dto->getMetadata());
-        }
-
-        if (!($dto->attributes instanceof Missing)) {
-            $this->attributeService->sync($product, $dto->attributes);
-        }
-
-        if (!($dto->descriptions instanceof Missing)) {
-            $product->pages()->sync($dto->descriptions);
-        }
-
-        if (!($dto->seo instanceof Missing)) {
-            $this->seoMetadataService->createOrUpdateFor($product, $dto->seo);
-        }
-
-        if (!($dto->relatedSets instanceof Missing)) {
-            $product->relatedSets()->sync($dto->relatedSets);
-        }
-
-        $this->productRepository->setProductPrices($product->getKey(), [
-            'price_base' => $dto->prices_base,
-        ]);
-
-        [$pricesMin, $pricesMax] = $this->getMinMaxPrices($product);
-
-        // TODO: Need to calc schema prices for each currency
-        $this->productRepository->setProductPrices($product->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => $pricesMin,
-            ProductPriceType::PRICE_MAX_INITIAL->value => $pricesMax,
-        ]);
-
-        $availability = $this->availabilityService->getCalculateProductAvailability($product);
-        $product->quantity = $availability['quantity'];
-        $product->available = $availability['available'];
-        $product->shipping_time = $availability['shipping_time'];
-        $product->shipping_date = $availability['shipping_date'];
-
-        $this->discountService->applyDiscountsOnProduct($product, false);
-
-        return $product;
-    }
-
-    /**
-     * @throws MathException
-     * @throws MoneyMismatchException
-     * @throws DtoException
-     */
     public function create(ProductCreateDto $dto): Product
     {
         DB::beginTransaction();
@@ -171,7 +101,6 @@ readonly class ProductService implements ProductServiceContract
         $minPrice = $product->pricesMin->first()->value;
         /** @var Money $maxPrice */
         $maxPrice = $product->pricesMax->first()->value;
-
 
         // TODO: This is just wrong
         if (
@@ -264,6 +193,76 @@ readonly class ProductService implements ProductServiceContract
             ProductPriceType::PRICE_MAX_INITIAL->value => $pricesMax,
         ]);
         $this->discountService->applyDiscountsOnProduct($product);
+    }
+
+    /**
+     * @throws MathException
+     * @throws MoneyMismatchException
+     * @throws DtoException
+     */
+    private function setup(Product $product, ProductCreateDto|ProductUpdateDto $dto): Product
+    {
+        if (!($dto->schemas instanceof Missing)) {
+            $this->schemaService->sync($product, $dto->schemas);
+        }
+
+        if (!($dto->sets instanceof Missing)) {
+            $product->sets()->sync($dto->sets);
+        }
+
+        if (!($dto->items instanceof Missing)) {
+            $this->assignItems($product, $dto->items);
+        }
+
+        if (!($dto->media instanceof Missing)) {
+            $this->mediaService->sync($product, $dto->media);
+        }
+
+        if (!($dto->tags instanceof Missing)) {
+            $product->tags()->sync($dto->tags);
+        }
+
+        if (!($dto->getMetadata() instanceof Missing)) {
+            $this->metadataService->sync($product, $dto->getMetadata());
+        }
+
+        if (!($dto->attributes instanceof Missing)) {
+            $this->attributeService->sync($product, $dto->attributes);
+        }
+
+        if (!($dto->descriptions instanceof Missing)) {
+            $product->pages()->sync($dto->descriptions);
+        }
+
+        if (!($dto->seo instanceof Missing)) {
+            $this->seoMetadataService->createOrUpdateFor($product, $dto->seo);
+        }
+
+        if (!($dto->relatedSets instanceof Missing)) {
+            $product->relatedSets()->sync($dto->relatedSets);
+        }
+
+        $this->productRepository->setProductPrices($product->getKey(), [
+            'price_base' => $dto->prices_base,
+        ]);
+
+        [$pricesMin, $pricesMax] = $this->getMinMaxPrices($product);
+
+        // TODO: Need to calc schema prices for each currency
+        $this->productRepository->setProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_MIN_INITIAL->value => $pricesMin,
+            ProductPriceType::PRICE_MAX_INITIAL->value => $pricesMax,
+        ]);
+
+        $availability = $this->availabilityService->getCalculateProductAvailability($product);
+        $product->quantity = $availability['quantity'];
+        $product->available = $availability['available'];
+        $product->shipping_time = $availability['shipping_time'];
+        $product->shipping_date = $availability['shipping_date'];
+
+        $this->discountService->applyDiscountsOnProduct($product, false);
+
+        return $product;
     }
 
     private function assignItems(Product $product, ?array $items): void

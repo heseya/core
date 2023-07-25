@@ -1235,6 +1235,7 @@ class DiscountConditionsCheckTest extends TestCase
 
     /**
      * @dataProvider cartLengthProviderPass
+     *
      * @throws DtoException
      */
     public function testCheckConditionCartLengthPass($quantity1, $quantity2, $value): void
@@ -1308,6 +1309,7 @@ class DiscountConditionsCheckTest extends TestCase
 
     /**
      * @dataProvider cartLengthProviderFail
+     *
      * @throws DtoException
      */
     public function testCheckConditionCartLengthFail($quantity1, $quantity2, $value): void
@@ -1411,6 +1413,7 @@ class DiscountConditionsCheckTest extends TestCase
 
     /**
      * @dataProvider couponsCountProvider
+     *
      * @throws DtoException
      */
     public function testCheckConditionCouponsCount($quantity, $value, $result): void
@@ -1451,6 +1454,7 @@ class DiscountConditionsCheckTest extends TestCase
 
     /**
      * @dataProvider couponsCountWithSalesProvider
+     *
      * @throws DtoException
      */
     public function testCheckConditionCouponsCountWithSales($result): void

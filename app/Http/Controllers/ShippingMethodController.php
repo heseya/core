@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Dtos\ShippingMethodCreateDto;
 use App\Dtos\ShippingMethodUpdateDto;
-use App\Enums\Currency;
 use App\Http\Requests\ShippingMethodIndexRequest;
 use App\Http\Requests\ShippingMethodReorderRequest;
 use App\Http\Requests\ShippingMethodStoreRequest;

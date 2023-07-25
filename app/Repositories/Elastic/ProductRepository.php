@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace App\Repositories\Elastic;
 
-use App\Dtos\PriceDto;
 use App\Dtos\ProductSearchDto;
+use App\Enums\Currency;
 use App\Enums\ExceptionsEnums\Exceptions;
-use App\Enums\Product\ProductPriceType;
 use App\Exceptions\ClientException;
 use App\Exceptions\ServerException;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
 use App\Models\Media;
 use App\Models\Metadata;
-use App\Models\Price;
 use App\Models\Product;
 use App\Models\Tag;
 use App\Repositories\Contracts\ProductRepositoryContract;
@@ -404,8 +402,8 @@ class ProductRepository implements ProductRepositoryContract
      * @throws DtoException
      * @throws ServerException
      */
-    public static function getProductPrices(string $productId, array $priceTypes): array
+    public static function getProductPrices(string $productId, array $priceTypes, ?Currency $currency = null): array
     {
-        return \App\Repositories\Eloquent\ProductRepository::getProductPrices($productId, $priceTypes);
+        return \App\Repositories\Eloquent\ProductRepository::getProductPrices($productId, $priceTypes, $currency);
     }
 }

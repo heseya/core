@@ -207,7 +207,6 @@ class DiscountApplyTest extends TestCase
 
         $shippingMethod->priceRanges()->save($lowRange);
 
-
         $coupon3 = Discount::factory([
             'type' => DiscountType::AMOUNT,
             'value' => 10.0,
@@ -339,6 +338,7 @@ class DiscountApplyTest extends TestCase
 
     /**
      * @dataProvider discountProductDataProvider
+     *
      * @throws DtoException
      */
     public function testApplyDiscountToProductNotAllowList($type, $value, $result, $discountKind): void
@@ -629,6 +629,7 @@ class DiscountApplyTest extends TestCase
 
     /**
      * @dataProvider discountDataProvider
+     *
      * @throws DtoException
      */
     public function testApplyDiscountToOrderProductNotAllowList($type, $value, $result, $discountKind): void
@@ -833,6 +834,7 @@ class DiscountApplyTest extends TestCase
 
     /**
      * @dataProvider discountDataProvider
+     *
      * @throws DtoException
      */
     public function testApplyDiscountToCartItemNotAllowList($type, $value, $result, $discountKind): void

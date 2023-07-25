@@ -117,7 +117,7 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
             'description_html' => '<p>' . $faker->sentence(10) . '</p>',
             'description_short' => $faker->sentence(10),
             'public' => $faker->boolean,
-            'shipping_digital' => $faker->boolean,
+            'shipping_digital' => false,
             'prices_base' => [$price],
         ]);
     }

@@ -393,7 +393,7 @@ class ShippingMethodTest extends TestCase
 
         $response = $this->actingAs($this->{$user})
             ->postJson('/shipping-methods', $shipping_method + [
-                'price_ranges' => $this->priceRanges
+                'price_ranges' => $this->priceRanges,
             ]);
 
         $response

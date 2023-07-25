@@ -37,9 +37,9 @@ class ProductFactory extends Factory
         ];
     }
 
-    public function configure(): ProductFactory
+    public function configure(): self
     {
-        return $this->afterCreating(function (Product $product) {
+        return $this->afterCreating(function (Product $product): void {
             /** @var ProductRepositoryContract $productRepository */
             $productRepository = App::make(ProductRepositoryContract::class);
 

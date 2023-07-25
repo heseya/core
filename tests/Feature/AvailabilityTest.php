@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Dtos\ShippingMethodCreateDto;
 use App\Enums\Currency;
 use App\Enums\SchemaType;
 use App\Enums\ShippingType;
@@ -20,10 +21,13 @@ use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Services\AvailabilityService;
 use App\Services\Contracts\AvailabilityServiceContract;
+use App\Services\Contracts\ShippingMethodServiceContract;
 use Brick\Money\Money;
+use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
@@ -36,6 +40,7 @@ class AvailabilityTest extends TestCase
     private Option $option;
     private Schema $schema;
     private Product $product;
+    private ShippingMethodServiceContract $shippingMethodService;
 
     public function setUp(): void
     {
@@ -46,6 +51,8 @@ class AvailabilityTest extends TestCase
             'public' => true,
             'quantity' => 0,
         ]);
+
+        $this->shippingMethodService = App::make(ShippingMethodServiceContract::class);
     }
 
     /**
@@ -303,6 +310,8 @@ class AvailabilityTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
      */
     public function testUnavailableAfterOrder($user): void
     {
@@ -317,6 +326,10 @@ class AvailabilityTest extends TestCase
             'quantity' => 2,
         ]);
 
+        $shippingMethod = $this->shippingMethodService->store(ShippingMethodCreateDto::fake([
+            'shipping_type' => ShippingType::ADDRESS,
+        ]));
+
         $data->get('item')->options()->saveMany([$data->get('optionOne'), $data->get('optionTwo')]);
 
         $this->product->schemas()->saveMany([$data->get('schemaOne'), $data->get('schemaTwo')]);
@@ -324,9 +337,7 @@ class AvailabilityTest extends TestCase
 
         $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => 'test@test.test',
-            'shipping_method_id' => ShippingMethod::factory()->create([
-                'shipping_type' => ShippingType::ADDRESS,
-            ])->getKey(),
+            'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_place' => Address::factory()->create()->toArray(),
             'billing_address' => Address::factory()->create()->toArray(),
             'items' => [
@@ -389,14 +400,16 @@ class AvailabilityTest extends TestCase
             'price' => 0,
         ]);
 
+        $shippingMethod = $this->shippingMethodService->store(ShippingMethodCreateDto::fake([
+            'shipping_type' => ShippingType::ADDRESS,
+        ]));
+
         $this->{$user}->givePermissionTo('orders.add');
         $this->{$user}->givePermissionTo('orders.edit.status');
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => 'test@test.test',
-            'shipping_method_id' => ShippingMethod::factory()->create([
-                'shipping_type' => ShippingType::ADDRESS,
-            ])->getKey(),
+            'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_place' => Address::factory()->create()->toArray(),
             'billing_address' => Address::factory()->create()->toArray(),
             'items' => [
@@ -409,7 +422,7 @@ class AvailabilityTest extends TestCase
                     ],
                 ],
             ],
-        ]);
+        ])->assertCreated();
 
         $order = Order::find($response->getData()->data->id);
 
@@ -627,10 +640,15 @@ class AvailabilityTest extends TestCase
 
         $schemas = $this->createSchemasWithOptions($schemaCount);
 
+        $prices = array_map(fn (Currency $currency) => [
+            'value' => '10.00',
+            'currency' => $currency->value,
+        ], Currency::cases());
+
         $this->actingAs($this->{$user})->postJson('/products', [
             'name' => 'Test',
             'slug' => 'test',
-            'price' => 10,
+            'prices_base' => $prices,
             'public' => false,
             'shipping_digital' => false,
             'sets' => [],

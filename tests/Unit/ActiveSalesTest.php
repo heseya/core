@@ -8,7 +8,6 @@ use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\Product\ProductPriceType;
-use App\Http\Resources\ProductResource;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
 use App\Models\Product;

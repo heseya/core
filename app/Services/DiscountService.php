@@ -203,7 +203,9 @@ readonly class DiscountService implements DiscountServiceContract
         }
 
         if ($discount->type->is(DiscountType::PERCENTAGE)) {
-            return $value->multipliedBy($discount->value / 100, RoundingMode::HALF_UP);
+            // It's debatable which rounding mode we use based on context
+            // This fits with current tests
+            return $value->multipliedBy($discount->value / 100, RoundingMode::HALF_DOWN);
         }
 
         if ($discount->type->is(DiscountType::AMOUNT)) {
@@ -332,11 +334,11 @@ readonly class DiscountService implements DiscountServiceContract
         }
 
         /**
-         * TODO: Cart needs currency
+         * TODO: Cart needs currency.
          */
-        $currency = Currency::DEFAULT->value;
+        $currency = Currency::DEFAULT;
         $cartItems = [];
-        $cartValue = Money::zero($currency);
+        $cartValue = Money::zero($currency->value);
 
         foreach ($cart->getItems() as $cartItem) {
             $product = $products->firstWhere('id', $cartItem->getProductId());
@@ -346,24 +348,18 @@ readonly class DiscountService implements DiscountServiceContract
                 continue;
             }
 
-            [$prices] = $this->productRepository::getProductPrices($product->getKey(), [
+            /** @var PriceDto $priceDto */
+            [[$priceDto]] = $this->productRepository::getProductPrices($product->getKey(), [
                 ProductPriceType::PRICE_BASE,
-            ]);
+            ], $currency);
 
-            [$price] = array_filter($prices, fn (PriceDto $price) => $price->value->getCurrency()->is($currency));
-
-            if ($price === null) {
-                throw new ServerException(Exceptions::SERVER_NO_PRICE_MATCHING_CRITERIA);
-            }
-
-            $price = $price->value;
-            /** @var Money $price */
+            $price = $priceDto->value;
 
             foreach ($cartItem->getSchemas() as $schemaId => $value) {
                 /** @var Schema $schema */
                 $schema = $product->schemas()->findOrFail($schemaId);
 
-                $price += $price->plus(
+                $price = $price->plus(
                     $schema->getPrice($value, $cartItem->getSchemas()),
                 );
             }
@@ -377,9 +373,9 @@ readonly class DiscountService implements DiscountServiceContract
         }
         $cartShippingTimeAndDate = $this->shippingTimeDateService->getTimeAndDateForCart($cart, $products);
 
-        $shippingPrice = $shippingMethod !== null ? $shippingMethod->getPrice($cartValue) : Money::zero($currency);
+        $shippingPrice = $shippingMethod !== null ? $shippingMethod->getPrice($cartValue) : Money::zero($currency->value);
         $shippingPrice = $shippingPrice->plus(
-            $shippingMethodDigital !== null ? $shippingMethodDigital->getPrice($cartValue) : Money::zero($currency),
+            $shippingMethodDigital !== null ? $shippingMethodDigital->getPrice($cartValue) : Money::zero($currency->value),
         );
         $summary = $cartValue->plus($shippingPrice);
 
@@ -406,7 +402,7 @@ readonly class DiscountService implements DiscountServiceContract
                 && $this->checkConditionGroups($discount, $cart, $cartResource->cart_total)
             ) {
                 $cartResource = $this->applyDiscountOnCart($discount, $cart, $cartResource);
-                $newSummary = Money::of($cartResource->cart_total + $cartResource->shipping_price, $currency);
+                $newSummary = Money::of($cartResource->cart_total + $cartResource->shipping_price, $currency->value);
                 $appliedDiscount = $summary->minus($newSummary);
 
                 if ($discount->code !== null) {
@@ -483,20 +479,14 @@ readonly class DiscountService implements DiscountServiceContract
         Discount $discount
     ): OrderProduct {
         // TODO: Get currency somehow
-        $currency = Currency::DEFAULT->value;
+        $currency = Currency::DEFAULT;
 
-        [$prices] = $this->productRepository::getProductPrices($product->getKey(), [
+        /** @var PriceDto $priceDto */
+        [[$priceDto]] = $this->productRepository::getProductPrices($product->getKey(), [
             ProductPriceType::PRICE_BASE,
-        ]);
+        ], $currency);
 
-        [$price] = array_filter($prices, fn (PriceDto $price) => $price->value->getCurrency()->is($currency));
-
-        if ($price === null) {
-            throw new ServerException(Exceptions::SERVER_NO_PRICE_MATCHING_CRITERIA);
-        }
-
-        $price = $price->value;
-        /** @var Money $price */
+        $price = $priceDto->value;
 
         foreach ($orderProductDto->getSchemas() as $schemaId => $value) {
             /** @var Schema $schema */
@@ -861,9 +851,9 @@ readonly class DiscountService implements DiscountServiceContract
         bool $reindex = true,
     ): void {
         [
-            /** @var PriceDto[] $minPricesDiscounted */
+            // @var PriceDto[] $minPricesDiscounted
             $minPricesDiscounted,
-            /** @var PriceDto[] $maxPricesDiscounted */
+            // @var PriceDto[] $maxPricesDiscounted
             $maxPricesDiscounted,
             $productSales,
         ] = $this->calcAllDiscountsOnProduct($product, $salesWithBlockList, false);

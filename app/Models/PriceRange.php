@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Brick\Math\BigDecimal;
 use Brick\Money\Money;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
