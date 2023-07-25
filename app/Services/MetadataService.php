@@ -9,6 +9,7 @@ use App\Models\Model;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\MetadataServiceContract;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -95,6 +96,7 @@ class MetadataService implements MetadataServiceContract
         MetadataDto|MetadataPersonalDto $dto,
         string $relation,
     ): void {
+        /** @var Builder $query */
         $query = $model->{$relation}();
 
         if ($dto->value === null) {
@@ -105,7 +107,10 @@ class MetadataService implements MetadataServiceContract
 
         $query->updateOrCreate(
             ['name' => $dto->name],
-            $dto->toArray(),
+            [
+                'value' => $dto->value,
+                'value_type' => $dto->value_type,
+            ],
         );
     }
 }

@@ -47,6 +47,8 @@ final class SchemaStoreRequest extends FormRequest
 
                 'options.*.price' => ['sometimes', 'required', 'numeric'],
                 'options.*.disabled' => ['sometimes', 'required', 'boolean'],
+                'options.*.metadata' => ['array'],
+                'options.*.metadata_private' => ['array'],
                 'used_schemas' => ['nullable', 'array'],
                 'used_schemas.*' => ['uuid', 'exists:schemas,id'],
 
