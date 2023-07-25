@@ -53,7 +53,7 @@ class OrderDocumentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testStoreDocument($user): void
+    public function testStoreDocument(string $user): void
     {
         Http::fake(['*' => Http::response([0 => ['path' => 'image.jpeg']])]);
 
@@ -80,7 +80,7 @@ class OrderDocumentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteDocument($user): void
+    public function testDeleteDocument(string $user): void
     {
         Http::fake(['*' => Http::response()]);
 
@@ -107,7 +107,7 @@ class OrderDocumentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testSendDocuments($user): void
+    public function testSendDocuments(string $user): void
     {
         Event::fake(SendOrderDocument::class);
 
@@ -132,7 +132,7 @@ class OrderDocumentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testSendOtherOrderDocument($user): void
+    public function testSendOtherOrderDocument(string $user): void
     {
         Event::fake(SendOrderDocument::class);
 
@@ -165,7 +165,7 @@ class OrderDocumentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDownloadDocument($user): void
+    public function testDownloadDocument(string $user): void
     {
         $this->{$user}->givePermissionTo('orders.show_details');
 
@@ -180,16 +180,15 @@ class OrderDocumentTest extends TestCase
 
         Http::fake(['*' => Http::response($file)]);
 
-        $response = $this->actingAs($this->{$user})
+        $this
+            ->actingAs($this->{$user})
             ->json(
                 'GET',
                 'orders/id:'
                 . $this->order->getKey() . '/docs/id:'
                 . $this->order->documents->last()->pivot->id
                 . '/download'
-            );
-
-        $response
+            )
             ->assertStatus(200)
             ->assertHeader('content-disposition', 'attachment; filename=test.jpeg');
     }
@@ -197,7 +196,7 @@ class OrderDocumentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDownloadUserDocumentWithoutPermission($user): void
+    public function testDownloadUserDocumentWithoutPermission(string $user): void
     {
         $this->order->update(['user_id' => $this->{$user}->getKey()]);
 
@@ -231,7 +230,7 @@ class OrderDocumentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDownloadDocumentUnauthorized($user): void
+    public function testDownloadDocumentUnauthorized(string $user): void
     {
         $file = UploadedFile::fake()->image('test.jpeg');
 

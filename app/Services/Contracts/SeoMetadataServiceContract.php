@@ -5,7 +5,7 @@ namespace App\Services\Contracts;
 use App\DTO\SeoMetadata\SeoKeywordsDto;
 use App\DTO\SeoMetadata\SeoMetadataDto;
 use App\Dtos\SeoMetadataDto as SeoMetadataDtoOld;
-use App\Models\Model;
+use App\Models\Contracts\SeoContract;
 use App\Models\SeoMetadata;
 use Illuminate\Support\Collection;
 
@@ -15,7 +15,7 @@ interface SeoMetadataServiceContract
 
     public function createOrUpdate(SeoMetadataDto $dto): SeoMetadata;
 
-    public function createOrUpdateFor(Model $model, SeoMetadataDto|SeoMetadataDtoOld $dto): void;
+    public function createOrUpdateFor(SeoContract $model, SeoMetadataDto|SeoMetadataDtoOld $dto): void;
 
     public function update(SeoMetadataDto|SeoMetadataDtoOld $dto, SeoMetadata $seoMetadata): SeoMetadata;
 

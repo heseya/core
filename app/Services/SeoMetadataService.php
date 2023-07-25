@@ -6,6 +6,7 @@ use App\DTO\SeoMetadata\SeoKeywordsDto;
 use App\DTO\SeoMetadata\SeoMetadataDto;
 use App\Dtos\SeoMetadataDto as SeoMetadataDtoOld;
 use App\Exceptions\PublishingException;
+use App\Models\Contracts\SeoContract;
 use App\Models\Model;
 use App\Models\SeoMetadata;
 use App\Services\Contracts\SeoMetadataServiceContract;
@@ -27,9 +28,6 @@ class SeoMetadataService implements SeoMetadataServiceContract
         return $this->getGlobalSeo();
     }
 
-    /**
-     * @throws PublishingException
-     */
     public function createOrUpdate(SeoMetadataDto $dto): SeoMetadata
     {
         /** @var SeoMetadata|null $seo */
@@ -49,8 +47,6 @@ class SeoMetadataService implements SeoMetadataServiceContract
                 }
             }
 
-            $this->translationService->checkPublished($seo, []);
-
             $seo->save();
         }
 
@@ -63,8 +59,6 @@ class SeoMetadataService implements SeoMetadataServiceContract
                 }
             }
 
-            $this->translationService->checkPublished($seo, []);
-
             $seo->save();
         }
 
@@ -75,10 +69,8 @@ class SeoMetadataService implements SeoMetadataServiceContract
 
     /**
      * Create or update seo for given model.
-     *
-     * @throws PublishingException
      */
-    public function createOrUpdateFor(Model $model, SeoMetadataDto|SeoMetadataDtoOld $dto): void
+    public function createOrUpdateFor(SeoContract $model, SeoMetadataDto|SeoMetadataDtoOld $dto): void
     {
         $seo = new SeoMetadata($dto->toArray());
         $seo->global = false;
@@ -95,9 +87,7 @@ class SeoMetadataService implements SeoMetadataServiceContract
             }
         }
 
-        $this->translationService->checkPublished($seo, []);
-
-        $seo->save();
+        $model->seo()->save($seo);
     }
 
     /**

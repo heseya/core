@@ -26,7 +26,7 @@ class RegisterDto extends Data
         public readonly Optional|string $phone,
         public array|Optional $metadata_personal,
 
-        public readonly array $consents,
+        public readonly array $consents = [],
         public readonly array $roles = [],
     ) {
         $this->metadata_personal = Map::toMetadataPersonal($this->metadata_personal);
