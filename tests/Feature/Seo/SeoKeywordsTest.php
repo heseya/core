@@ -122,9 +122,11 @@ class SeoKeywordsTest extends TestCase
             ->actingAs($this->{$user})
             ->json('PATCH', "/products/id:{$product->getKey()}", ['seo' => [
                 'translations' => [
-                    'title' => 'product-title',
-                    'description' => 'product-description',
-                    'keywords' => ['product', 'key', 'words'],
+                    $this->lang => [
+                        'title' => 'product-title',
+                        'description' => 'product-description',
+                        'keywords' => ['product', 'key', 'words'],
+                    ],
                 ],
                 'header_tags' => ['meta' => ['name' => 'description', 'content' => 'My amazing site.']],
             ]])
