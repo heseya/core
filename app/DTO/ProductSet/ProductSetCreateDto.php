@@ -11,6 +11,7 @@ use Spatie\LaravelData\Attributes\Validation\AlphaDash;
 use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Rule;
+use Spatie\LaravelData\Attributes\Validation\Uuid;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 
@@ -20,12 +21,14 @@ class ProductSetCreateDto extends Data
     public readonly array|Optional $metadata;
 
     public function __construct(
+        #[Uuid]
+        public readonly Optional|string $id,
         #[Rule(new Translations(['name', 'description_html']))]
         public readonly array $translations,
         #[AlphaDash, Max(255)]
         public readonly string|null $slug_suffix,
         public readonly bool $slug_override,
-        public readonly bool|Optional $public,
+        public readonly bool $public,
 
         public readonly Optional|SeoMetadataDto $seo,
 

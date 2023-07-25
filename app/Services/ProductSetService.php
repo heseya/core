@@ -115,6 +115,8 @@ final readonly class ProductSetService implements ProductSetServiceContract
             $this->metadataService->sync($set, $dto->metadata);
         }
 
+        $set->refresh();
+
         // searchable is handled by the event listener
         ProductSetCreated::dispatch($set);
 
