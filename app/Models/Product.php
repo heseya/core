@@ -196,7 +196,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     {
         return $this
             ->belongsToMany(Schema::class, 'product_schemas')
-            ->with(['options', 'metadata', 'metadataPrivate'])
+            ->with(['options', 'metadata', 'metadataPrivate', 'options.metadata', 'metadata.metadataPrivate'])
             ->orderByPivot('order');
     }
 
