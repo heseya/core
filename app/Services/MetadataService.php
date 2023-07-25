@@ -110,6 +110,7 @@ class MetadataService implements MetadataServiceContract
             [
                 'value' => $dto->value,
                 'value_type' => $dto->value_type,
+                'public' => $dto->public ?? true,
             ],
         );
     }

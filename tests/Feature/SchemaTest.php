@@ -455,7 +455,7 @@ class SchemaTest extends TestCase
                         'price' => 1000,
                         'disabled' => false,
                         'metadata' => [
-                            'attributeMeta' => 'attributeValue',
+                            'attributeMetaOption' => 'attributeValueOption',
                         ],
                     ],
                 ],
@@ -469,7 +469,7 @@ class SchemaTest extends TestCase
                 'price' => 1000,
                 'disabled' => false,
                 'metadata' => [
-                    'attributeMeta' => 'attributeValue',
+                    'attributeMetaOption' => 'attributeValueOption',
                 ],
             ]);
     }
@@ -855,12 +855,14 @@ class SchemaTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * TODO: WTF??
      */
     public function testUpdateWithEmptyData(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
 
-        $schemaValues = [
+        $schema = Schema::factory()->create([
             'name' => 'new schema',
             'description' => 'new schema description',
             'price' => 10,
@@ -868,8 +870,7 @@ class SchemaTest extends TestCase
             'required' => true,
             'max' => 10,
             'min' => 1,
-        ];
-        $schema = Schema::factory()->create($schemaValues);
+        ]);
 
         $item = Item::factory()->create();
         $item2 = Item::factory()->create();
@@ -889,7 +890,15 @@ class SchemaTest extends TestCase
 
         $response->assertOk();
 
-        $this->assertDatabaseHas('schemas', $schemaValues);
+        $this->assertDatabaseHas('schemas', [
+            "name->{$this->lang}" => 'new schema',
+            "description->{$this->lang}" => 'new schema description',
+            'price' => 10,
+            'hidden' => false,
+            'required' => true,
+            'max' => 10,
+            'min' => 1,
+        ]);
     }
 
     /**
@@ -918,12 +927,14 @@ class SchemaTest extends TestCase
             'public' => true,
         ]);
 
-        $this->actingAs($this->{$user})->json('PATCH', '/schemas/id:' . $schema->getKey(), [
-            'metadata' => [
-                'first' => 'new value',
-                'second' => 'new metadata',
-            ],
-        ])
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', '/schemas/id:' . $schema->getKey(), [
+                'metadata' => [
+                    'first' => 'new value',
+                    'second' => 'new metadata',
+                ],
+            ])
             ->assertOk()
             ->assertJsonFragment([
                 'metadata' => [

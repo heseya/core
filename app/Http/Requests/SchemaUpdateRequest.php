@@ -12,9 +12,14 @@ class SchemaUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'type' => ['string', new EnumKey(SchemaType::class)],
-            'name' => ['string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:255'],
+            'translations' => ['sometimes', new Translations(['name', 'description'])],
+            'translations.*.name' => ['sometimes', 'string', 'max:255'],
+            'translations.*.description' => ['sometimes', 'nullable', 'string', 'max:255'],
+
+            'published' => ['sometimes', 'array', 'min:1'],
+            'published.*' => ['sometimes', 'uuid', 'exists:languages,id'],
+
+            'type' => ['sometimes', 'string', new EnumKey(SchemaType::class)],
             'price' => ['nullable', 'numeric'],
             'hidden' => ['nullable', 'boolean'],
             'required' => ['nullable', 'boolean'],
@@ -25,19 +30,20 @@ class SchemaUpdateRequest extends FormRequest
             'pattern' => ['nullable', 'string', 'max:255'],
             'validation' => ['nullable', 'string', 'max:255'],
 
-            'used_schemas' => ['nullable', 'array'],
-            'used_schemas.*' => ['uuid', 'exists:schemas,id'],
-
             'options' => ['nullable', 'array'],
-            'options.*.price' => ['sometimes', 'numeric'],
-            'options.*.disabled' => ['sometimes', 'required', 'boolean'],
-
             'options.*.translations' => [
                 'sometimes',
-                'required',
                 new Translations(['name']),
             ],
             'options.*.translations.*.name' => ['string', 'max:255'],
+
+            'options.*.price' => ['sometimes', 'required', 'numeric'],
+            'options.*.disabled' => ['sometimes', 'required', 'boolean'],
+            'options.*.metadata' => ['array'],
+            'options.*.metadata_private' => ['array'],
+
+            'used_schemas' => ['nullable', 'array'],
+            'used_schemas.*' => ['uuid', 'exists:schemas,id'],
 
             'options.*.items' => ['nullable', 'array'],
             'options.*.items.*' => ['uuid', 'exists:items,id'],
