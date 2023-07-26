@@ -732,6 +732,7 @@ class DiscountTest extends TestCase
 
     /**
      * @dataProvider authWithDiscountProvider
+     *
      * @throws DtoException
      */
     public function testCreateWithProduct($user, $discountKind): void
@@ -2163,6 +2164,7 @@ class DiscountTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
      * @throws DtoException
      */
     public function testUpdateInactiveSaleWithProduct($user): void
@@ -2201,7 +2203,6 @@ class DiscountTest extends TestCase
             ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(190, $this->currency->value))],
             ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(250, $this->currency->value))],
         ]);
-
 
         $product3 = Product::factory()->create([
             'public' => true,
@@ -2285,6 +2286,7 @@ class DiscountTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
      * @throws DtoException
      */
     public function testCreateActiveSaleAndExpiredAfter($user): void
@@ -2335,8 +2337,8 @@ class DiscountTest extends TestCase
         $response->assertCreated();
 
         $this->assertProductPrices($product->getKey(), [
-           ProductPriceType::PRICE_MIN->value => 900,
-           ProductPriceType::PRICE_MAX->value => 900,
+            ProductPriceType::PRICE_MIN->value => 900,
+            ProductPriceType::PRICE_MAX->value => 900,
         ]);
 
         $discountModel = Discount::find($response->getData()->data->id);

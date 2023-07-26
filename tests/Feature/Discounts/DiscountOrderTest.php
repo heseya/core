@@ -258,6 +258,7 @@ class DiscountOrderTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
      * @throws DtoException
      */
     public function testCreateOrderMultipleDiscounts($user): void

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Currency;
 use App\Models\Product;
 use App\Models\ProductSet;
 use Tests\TestCase;
@@ -170,6 +171,11 @@ class ProductRelatedSetsTest extends TestCase
         $set1 = ProductSet::factory()->create();
         $set2 = ProductSet::factory()->create();
 
+        $prices = array_map(fn (Currency $currency) => [
+            'value' => '10.00',
+            'currency' => $currency->value,
+        ], Currency::cases());
+
         $response = $this->actingAs($this->{$user})->postJson('/products', [
             'translations' => [
                 $this->lang => [
@@ -178,7 +184,7 @@ class ProductRelatedSetsTest extends TestCase
             ],
             'published' => [$this->lang],
             'slug' => 'test',
-            'price' => 150,
+            'prices_base' => $prices,
             'public' => false,
             'shipping_digital' => false,
             'related_sets' => [

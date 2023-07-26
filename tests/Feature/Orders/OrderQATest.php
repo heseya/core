@@ -2,14 +2,27 @@
 
 namespace Tests\Feature\Orders;
 
+use App\Dtos\PriceDto;
+use App\Dtos\ProductCreateDto;
+use App\Dtos\ShippingMethodCreateDto;
 use App\Enums\ConditionType;
+use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Enums\ShippingType;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ShippingMethod;
+use App\Services\Contracts\ProductServiceContract;
+use App\Services\Contracts\ShippingMethodServiceContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
+use Heseya\Dto\DtoException;
+use Illuminate\Support\Facades\App;
 use Tests\TestCase;
 
 /**
@@ -27,18 +40,36 @@ class OrderQATest extends TestCase
         'phone' => '+48543234123',
     ];
 
+    private Product $product;
+    private ShippingMethod $shippingMethod;
+
     /**
-     * HES-1962.
+     * @throws RoundingNecessaryException
+     * @throws DtoException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
      */
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        /** @var ProductServiceContract $productService */
+        $productService = App::make(ProductServiceContract::class);
+        $this->product = $productService->create(ProductCreateDto::fake([
+            'prices_base' => [new PriceDto(Money::of(100, Currency::DEFAULT->value))],
+            'public' => true,
+        ]));
+
+        /** @var ShippingMethodServiceContract $productService */
+        $shippingMethodService = App::make(ShippingMethodServiceContract::class);
+        $this->shippingMethod = $shippingMethodService->store(ShippingMethodCreateDto::fake([
+            'shipping_type' => ShippingType::ADDRESS,
+        ]));
+    }
+
     public function testSalesAndCode(): void
     {
         $this->user->givePermissionTo('orders.add');
-
-        /** @var Product $product */
-        $product = Product::factory()->create([
-            'price' => 100,
-            'public' => true,
-        ]);
 
         $coupon = Discount::factory()->create([
             'active' => true,
@@ -77,7 +108,7 @@ class OrderQATest extends TestCase
         ]);
 
         /** @var Discount $saleTargetProduct */
-        $saleTargetProduct = $product->discounts()->create([
+        $saleTargetProduct = $this->product->discounts()->create([
             'name' => 'Sale Target Product',
             'priority' => 0,
             'active' => true,
@@ -103,9 +134,9 @@ class OrderQATest extends TestCase
             ->actingAs($this->user)
             ->json('POST', '/orders', [
                 'email' => 'test@example.com',
-                'shipping_method_id' => ShippingMethod::factory()->create()->getKey(),
+                'shipping_method_id' => $this->shippingMethod->getKey(),
                 'items' => [[
-                    'product_id' => $product->getKey(),
+                    'product_id' => $this->product->getKey(),
                     'quantity' => 1,
                 ],
                 ],
@@ -129,21 +160,12 @@ class OrderQATest extends TestCase
         $this->assertEquals(72.9, $order->summary);
     }
 
-    /**
-     * HES-1962.
-     */
     public function testTargetProductSale(): void
     {
         $this->user->givePermissionTo('orders.add');
 
-        /** @var Product $product */
-        $product = Product::factory()->create([
-            'price' => 100,
-            'public' => true,
-        ]);
-
         /** @var Discount $saleTargetProduct */
-        $saleTargetProduct = $product->discounts()->create([
+        $saleTargetProduct = $this->product->discounts()->create([
             'name' => 'Sale Target Product',
             'priority' => 0,
             'active' => true,
@@ -158,9 +180,9 @@ class OrderQATest extends TestCase
             ->actingAs($this->user)
             ->json('POST', '/orders', [
                 'email' => 'test@example.com',
-                'shipping_method_id' => ShippingMethod::factory()->create()->getKey(),
+                'shipping_method_id' => $this->shippingMethod->getKey(),
                 'items' => [[
-                    'product_id' => $product->getKey(),
+                    'product_id' => $this->product->getKey(),
                     'quantity' => 1,
                 ],
                 ],

@@ -210,6 +210,7 @@ class DiscountDeleteTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
      * @throws DtoException
      */
     public function testDeleteSaleWithProduct(string $user): void

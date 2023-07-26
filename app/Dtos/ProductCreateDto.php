@@ -4,7 +4,6 @@ namespace App\Dtos;
 
 use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Enums\Currency;
-use App\Models\Language;
 use App\Traits\MapMetadata;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
@@ -119,7 +118,7 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
                     'name' => $name,
                     'description_html' => "<p>{$description}</p>",
                     'description_short' => $description,
-                ]
+                ],
             ],
             'published' => [$langId],
             'slug' => Str::slug($name) . '-' . mt_rand(1, 99999),

@@ -204,7 +204,7 @@ final readonly class ProductService implements ProductServiceContract
         ]);
         $this->discountService->applyDiscountsOnProduct($product);
     }
-    
+
     /**
      * @throws MathException
      * @throws MoneyMismatchException
