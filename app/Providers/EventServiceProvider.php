@@ -10,6 +10,9 @@ use App\Events\ItemCreated;
 use App\Events\ItemDeleted;
 use App\Events\ItemUpdated;
 use App\Events\ItemUpdatedQuantity;
+use App\Events\LanguageCreated;
+use App\Events\LanguageDeleted;
+use App\Events\LanguageUpdated;
 use App\Events\NewLocalizationLoginAttempt;
 use App\Events\OrderCreated;
 use App\Events\OrderDocumentEvent;
@@ -41,7 +44,6 @@ use App\Events\UserCreated;
 use App\Events\UserDeleted;
 use App\Events\UserUpdated;
 use App\Listeners\ItemUpdatedQuantityListener;
-use App\Listeners\MakeSetProductsSearchable;
 use App\Listeners\OrderCreatedListener;
 use App\Listeners\OrderUpdatedStatusListener;
 use App\Listeners\UserCreatedListener;
@@ -83,14 +85,23 @@ class EventServiceProvider extends ServiceProvider
         ItemUpdatedQuantity::class => [
             ItemUpdatedQuantityListener::class,
         ],
-        ProductSetCreated::class => [
-            MakeSetProductsSearchable::class,
-        ],
-        ProductSetUpdated::class => [
-            MakeSetProductsSearchable::class,
-        ],
         UserCreated::class => [
             UserCreatedListener::class,
+        ],
+        UserDeleted::class => [
+            WebHookEventListener::class,
+        ],
+        UserUpdated::class => [
+            WebHookEventListener::class,
+        ],
+        LanguageCreated::class => [
+            WebHookEventListener::class,
+        ],
+        LanguageUpdated::class => [
+            WebHookEventListener::class,
+        ],
+        LanguageDeleted::class => [
+            WebHookEventListener::class,
         ],
     ];
 

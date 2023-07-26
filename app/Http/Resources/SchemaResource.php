@@ -2,17 +2,19 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class SchemaResource extends Resource
 {
+    use GetAllTranslations;
     use MetadataResource;
 
     public function base(Request $request): array
     {
-        return array_merge([
+        $data = [
             'id' => $this->resource->getKey(),
             'type' => Str::lower($this->resource->type->key),
             'name' => $this->resource->name,
@@ -31,7 +33,13 @@ class SchemaResource extends Resource
             'shipping_date' => $this->resource->shipping_date,
             'options' => OptionResource::collection($this->resource->options),
             'used_schemas' => $this->resource->usedSchemas->map(fn ($schema) => $schema->getKey()),
-        ], $this->metadataResource('schemas.show_metadata_private'));
+        ];
+
+        return array_merge(
+            $data,
+            $request->has('translations') ? $this->getAllTranslations() : [],
+            $this->metadataResource('schemas.show_metadata_private'),
+        );
     }
 
     public function view(Request $request): array

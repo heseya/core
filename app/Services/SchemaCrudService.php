@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Dtos\SchemaDto;
+use App\Exceptions\PublishingException;
 use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
@@ -11,26 +12,40 @@ use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\OptionServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use App\Services\Contracts\SchemaCrudServiceContract;
+use App\Services\Contracts\TranslationServiceContract;
 use Heseya\Dto\Missing;
 
-class SchemaCrudService implements SchemaCrudServiceContract
+final readonly class SchemaCrudService implements SchemaCrudServiceContract
 {
     public function __construct(
         private AvailabilityServiceContract $availabilityService,
         private MetadataServiceContract $metadataService,
         private OptionServiceContract $optionService,
         private ProductServiceContract $productService,
+        private TranslationServiceContract $translationService,
     ) {}
 
+    /**
+     * @throws PublishingException
+     */
     public function store(SchemaDto $dto): Schema
     {
-        /** @var Schema $schema */
-        $schema = Schema::query()->create($dto->toArray());
+        $schema = new Schema($dto->toArray());
+
+        foreach ($dto->translations as $lang => $translations) {
+            $schema->setLocale($lang)->fill($translations);
+        }
+
+        $this->translationService->checkPublished($schema, ['name']);
+
+        $schema->save();
 
         if (!$dto->getOptions() instanceof Missing && $dto->getOptions() !== null) {
             $this->optionService->sync($schema, $dto->getOptions());
             $schema->refresh();
         }
+
+        $this->translationService->checkPublishedRelations($schema, ['options' => ['name']]);
 
         if (!$dto->getUsedSchemas() instanceof Missing && $dto->getUsedSchemas() !== null) {
             foreach ($dto->getUsedSchemas() as $input) {
@@ -54,14 +69,25 @@ class SchemaCrudService implements SchemaCrudServiceContract
         return $schema;
     }
 
+    /**
+     * @throws PublishingException
+     */
     public function update(Schema $schema, SchemaDto $dto): Schema
     {
-        $schema->update($dto->toArray());
+        $schema->fill($dto->toArray());
+
+        foreach ($dto->translations as $lang => $translations) {
+            $schema->setLocale($lang)->fill($translations);
+        }
+
+        $schema->save();
 
         if (!$dto->getOptions() instanceof Missing) {
             $this->optionService->sync($schema, $dto->getOptions());
             $schema->refresh();
         }
+
+        $this->translationService->checkPublished($schema, ['name']);
 
         if (!$dto->getUsedSchemas() instanceof Missing) {
             $schema->usedSchemas()->detach();

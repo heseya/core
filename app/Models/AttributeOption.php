@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
+ * @property string $name
+ *
  * @mixin IdeHelperAttributeOption
  */
 class AttributeOption extends Model

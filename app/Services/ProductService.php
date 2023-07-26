@@ -9,6 +9,7 @@ use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductPriceUpdated;
 use App\Events\ProductUpdated;
+use App\Exceptions\PublishingException;
 use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
@@ -20,11 +21,12 @@ use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
+use App\Services\Contracts\TranslationServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-readonly class ProductService implements ProductServiceContract
+final readonly class ProductService implements ProductServiceContract
 {
     public function __construct(
         private MediaServiceContract $mediaService,
@@ -34,6 +36,7 @@ readonly class ProductService implements ProductServiceContract
         private MetadataServiceContract $metadataService,
         private AttributeServiceContract $attributeService,
         private DiscountServiceContract $discountService,
+        private TranslationServiceContract $translationService,
     ) {}
 
     private function setup(Product $product, ProductCreateDto|ProductUpdateDto $dto): Product
@@ -86,17 +89,27 @@ readonly class ProductService implements ProductServiceContract
         $product->available = $availability['available'];
         $product->shipping_time = $availability['shipping_time'];
         $product->shipping_date = $availability['shipping_date'];
-        $this->discountService->applyDiscountsOnProduct($product, false);
+        $this->discountService->applyDiscountsOnProduct($product);
 
         return $product;
     }
 
+    /**
+     * @throws PublishingException
+     */
     public function create(ProductCreateDto $dto): Product
     {
         DB::beginTransaction();
 
-        /** @var Product $product */
-        $product = Product::query()->create($dto->toArray());
+        $product = new Product($dto->toArray());
+
+        foreach ($dto->translations as $lang => $translations) {
+            $product->setLocale($lang)->fill($translations);
+        }
+
+        $this->translationService->checkPublished($product, ['name']);
+
+        $product->save();
         $product = $this->setup($product, $dto);
         $product->save();
 
@@ -105,16 +118,17 @@ readonly class ProductService implements ProductServiceContract
             $product->getKey(),
             null,
             null,
-            $product->price_min, // @phpstan-ignore-line
-            $product->price_max, // @phpstan-ignore-line
+            $product->price_min ?? 0,
+            $product->price_max ?? 0,
         );
         ProductCreated::dispatch($product);
-        // @phpstan-ignore-next-line
-        Product::where($product->getKeyName(), $product->getKey())->searchable();
 
         return $product->refresh();
     }
 
+    /**
+     * @throws PublishingException
+     */
     public function update(Product $product, ProductUpdateDto $dto): Product
     {
         $oldMinPrice = $product->price_min;
@@ -123,6 +137,11 @@ readonly class ProductService implements ProductServiceContract
         DB::beginTransaction();
 
         $product->fill($dto->toArray());
+        foreach ($dto->translations as $lang => $translations) {
+            $product->setLocale($lang)->fill($translations);
+        }
+        $this->translationService->checkPublished($product, ['name']);
+
         $product = $this->setup($product, $dto);
         $product->save();
 
@@ -133,14 +152,12 @@ readonly class ProductService implements ProductServiceContract
                 $product->getKey(),
                 $oldMinPrice,
                 $oldMaxPrice,
-                $product->price_min, // @phpstan-ignore-line
-                $product->price_max, // @phpstan-ignore-line
+                $product->price_min ?? 0,
+                $product->price_max ?? 0,
             );
         }
 
         ProductUpdated::dispatch($product);
-        // @phpstan-ignore-next-line
-        Product::query()->where($product->getKeyName(), $product->getKey())->searchable();
 
         // fix for duplicated items in relation after recalculating availability
         $product->unsetRelation('items');
@@ -156,7 +173,6 @@ readonly class ProductService implements ProductServiceContract
 
         $this->mediaService->sync($product, []);
 
-        $productId = $product->getKey();
         $product->delete();
 
         if ($product->seo !== null) {
@@ -164,8 +180,6 @@ readonly class ProductService implements ProductServiceContract
         }
 
         DB::commit();
-
-        Product::query()->where('id', $productId)->withTrashed()->first()?->unsearchable();
     }
 
     public function getMinMaxPrices(Product $product): array

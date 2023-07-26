@@ -2,9 +2,10 @@
 
 namespace App\Http;
 
+use App\Http\Middleware\AcceptLanguage;
 use App\Http\Middleware\AppAccessRestrict;
 use App\Http\Middleware\Authenticate;
-use App\Http\Middleware\Language;
+use App\Http\Middleware\ContentLanguage;
 use App\Http\Middleware\TrimStrings;
 use App\Http\Middleware\TrustProxies;
 use App\Http\Middleware\UndotParams;
@@ -32,12 +33,13 @@ class Kernel extends HttpKernel
     protected $middleware = [
         HandleCors::class,
         ValidatePostSize::class,
-        Language::class,
+        AcceptLanguage::class,
         TrustProxies::class,
         TrimStrings::class,
         ConvertEmptyStringsToNull::class,
         Pagination::class,
         Authenticate::class,
+        ContentLanguage::class,
         UndotParams::class,
     ];
 

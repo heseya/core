@@ -2,7 +2,7 @@
 
 namespace App\Services\Contracts;
 
-use App\Dtos\MetadataDto;
+use App\DTO\Metadata\MetadataDto;
 use App\Dtos\MetadataPersonalListDto;
 use App\Models\Model;
 use App\Models\Role;

@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property mixed $pivot
+ * @property string $name
+ * @property string $description
  * @property AttributeType $type
  *
  * @mixin IdeHelperAttribute

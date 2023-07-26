@@ -4,7 +4,6 @@ namespace Tests\Unit;
 
 use App\Models\Address;
 use App\Models\App;
-use App\Models\Audit;
 use App\Models\Deposit;
 use App\Models\Discount;
 use App\Models\Item;
@@ -46,17 +45,6 @@ class TimeFormatTest extends TestCase
     public function testAppTimeFormat(): void
     {
         $this->modelTimeFormat(App::factory()->create(), ['created_at', 'updated_at']);
-    }
-
-    public function testAuditTimeFormat(): void
-    {
-        $audit = Audit::create([
-            'event' => 'event',
-            'auditable_type' => 'auditable_type',
-            'auditable_id' => 'auditable_id',
-        ]);
-
-        $this->modelTimeFormat($audit, ['created_at']);
     }
 
     public function testDepositTimeFormat(): void

@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 class MediaAttachment extends Pivot
 {
     use HasUuid;
+
     protected $table = 'media_attachments';
 
     protected $fillable = [

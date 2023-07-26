@@ -57,7 +57,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndex($user): void
+    public function testIndex(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show');
 
@@ -68,8 +68,7 @@ class ItemTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ],
-            ]);
+            ]]);
 
         $this->assertQueryCountLessThan(11);
     }
@@ -77,7 +76,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexByIds($user): void
+    public function testIndexByIds(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show');
 
@@ -94,14 +93,13 @@ class ItemTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ],
-            ]);
+            ]]);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testIndexPerformance($user): void
+    public function testIndexPerformance(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show');
 
@@ -119,7 +117,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexFilterByAvailable($user): void
+    public function testIndexFilterByAvailable(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show');
 
@@ -184,7 +182,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexFilterBySoldOutAndDay($user): void
+    public function testIndexFilterBySoldOutAndDay(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show');
 
@@ -200,7 +198,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexSortByQuantityAndFilterByDay($user): void
+    public function testIndexSortByQuantityAndFilterByDay(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show');
 
@@ -216,7 +214,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexFilterByDay($user): void
+    public function testIndexFilterByDay(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show');
 
@@ -256,7 +254,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexFilterByDayWithHour($user): void
+    public function testIndexFilterByDayWithHour(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show');
 
@@ -300,7 +298,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testView($user): void
+    public function testView(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show_details');
 
@@ -316,7 +314,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testViewWithProducts($user): void
+    public function testViewWithProducts(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show_details');
 
@@ -347,13 +345,13 @@ class ItemTest extends TestCase
                 'name' => $product2->name,
             ]);
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(11);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testViewWithSchemas($user): void
+    public function testViewWithSchemas(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show_details');
 
@@ -404,13 +402,13 @@ class ItemTest extends TestCase
                 'name' => $schema2->name,
             ]);
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(11);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testViewWrongId($user): void
+    public function testViewWrongId(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show_details');
 
@@ -438,7 +436,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreate($user): void
+    public function testCreate(string $user): void
     {
         $this->{$user}->givePermissionTo('items.add');
 
@@ -462,7 +460,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithUuid($user): void
+    public function testCreateWithUuid(string $user): void
     {
         $this->{$user}->givePermissionTo('items.add');
 
@@ -487,7 +485,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithoutPermission($user): void
+    public function testCreateWithoutPermission(string $user): void
     {
         Event::fake(ItemCreated::class);
 
@@ -508,7 +506,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithMetadata($user): void
+    public function testCreateWithMetadata(string $user): void
     {
         $this->{$user}->givePermissionTo('items.add');
 
@@ -538,7 +536,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithMetadataPrivate($user): void
+    public function testCreateWithMetadataPrivate(string $user): void
     {
         $this->{$user}->givePermissionTo(['items.add', 'items.show_metadata_private']);
 
@@ -568,7 +566,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithWebHook($user): void
+    public function testCreateWithWebHook(string $user): void
     {
         $this->{$user}->givePermissionTo('items.add');
 
@@ -631,7 +629,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdate($user): void
+    public function testUpdate(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
 
@@ -659,7 +657,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateWithPartialData($user): void
+    public function testUpdateWithPartialData(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
 
@@ -694,7 +692,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateWithPartialDataSku($user): void
+    public function testUpdateWithPartialDataSku(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
 
@@ -729,7 +727,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateWithWebHook($user): void
+    public function testUpdateWithWebHook(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
 
@@ -802,7 +800,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDelete($user): void
+    public function testDelete(string $user): void
     {
         $this->{$user}->givePermissionTo('items.remove');
 
@@ -821,7 +819,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteWithWebHook($user): void
+    public function testDeleteWithWebHook(string $user): void
     {
         $this->{$user}->givePermissionTo('items.remove');
 
@@ -867,7 +865,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateValidationInvalidBothShippingTimeAndDate($user): void
+    public function testCreateValidationInvalidBothShippingTimeAndDate(string $user): void
     {
         $this->{$user}->givePermissionTo('items.add');
 
@@ -888,7 +886,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateValidationInvalidBothUnlimitedShippingTimeAndDate($user): void
+    public function testUpdateValidationInvalidBothUnlimitedShippingTimeAndDate(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
 
@@ -911,7 +909,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateValidationUnlimitedShippingDateLesserThenShippingDate($user): void
+    public function testUpdateValidationUnlimitedShippingDateLesserThenShippingDate(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
 
@@ -939,7 +937,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateValidationUnlimitedShippingTimeLesserThenShippingTime($user): void
+    public function testUpdateValidationUnlimitedShippingTimeLesserThenShippingTime(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
 
@@ -967,7 +965,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateUnlimitedShippingTime($user): void
+    public function testUpdateUnlimitedShippingTime(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
 
@@ -1003,7 +1001,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateUnlimitedShippingTimeNull($user): void
+    public function testUpdateUnlimitedShippingTimeNull(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
 
@@ -1022,7 +1020,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateUnlimitedShippingDate($user): void
+    public function testUpdateUnlimitedShippingDate(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
         $date = Carbon::today()->addDays(4);
@@ -1058,7 +1056,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateUnlimitedShippingDateWithSameDateAsDeposit($user): void
+    public function testUpdateUnlimitedShippingDateWithSameDateAsDeposit(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
         $date = Carbon::today()->addDays(4);
@@ -1083,7 +1081,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateUnlimitedShippingDateNull($user): void
+    public function testUpdateUnlimitedShippingDateNull(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
 
@@ -1102,7 +1100,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateUnlimitedShippingTime($user): void
+    public function testCreateUnlimitedShippingTime(string $user): void
     {
         $this->{$user}->givePermissionTo('items.add');
 
@@ -1122,7 +1120,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateUnlimitedShippingDate($user): void
+    public function testCreateUnlimitedShippingDate(string $user): void
     {
         $this->{$user}->givePermissionTo('items.add');
 
@@ -1142,7 +1140,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowWhitAvailability($user): void
+    public function testShowWhitAvailability(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show_details');
 
@@ -1202,7 +1200,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexWhitAvailability($user): void
+    public function testIndexWhitAvailability(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show');
         $this->{$user}->givePermissionTo('items.show_details');

@@ -15,10 +15,10 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
-class SchemaController extends Controller
+final class SchemaController extends Controller
 {
     public function __construct(
-        private SchemaCrudServiceContract $schemaService,
+        private readonly SchemaCrudServiceContract $schemaService,
     ) {}
 
     public function index(IndexSchemaRequest $request): JsonResource

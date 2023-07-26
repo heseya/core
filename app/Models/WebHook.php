@@ -13,15 +13,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
-use OwenIt\Auditing\Auditable;
-use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @mixin IdeHelperWebHook
  */
-class WebHook extends Model implements AuditableContract, SortableContract
+class WebHook extends Model implements SortableContract
 {
-    use Auditable;
     use HasCriteria;
     use HasFactory;
     use Notifiable;

@@ -2,14 +2,15 @@
 
 namespace App\Services\Contracts;
 
-use App\Dtos\StatusDto;
+use App\DTO\OrderStatus\OrderStatusCreateDto;
+use App\DTO\OrderStatus\OrderStatusUpdateDto;
 use App\Models\Status;
 
 interface StatusServiceContract
 {
-    public function store(StatusDto $dto): Status;
+    public function store(OrderStatusCreateDto $dto): Status;
 
-    public function update(Status $status, StatusDto $dto): Status;
+    public function update(Status $status, OrderStatusUpdateDto $dto): Status;
 
     public function destroy(Status $status): void;
 }

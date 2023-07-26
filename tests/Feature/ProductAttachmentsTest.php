@@ -1,10 +1,13 @@
 <?php
 
+namespace Tests\Feature;
+
 use App\Enums\MediaAttachmentType;
 use App\Enums\VisibilityType;
 use App\Models\Media;
 use App\Models\MediaAttachment;
 use App\Models\Product;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class ProductAttachmentsTest extends TestCase
@@ -184,10 +187,11 @@ class ProductAttachmentsTest extends TestCase
      */
     public function testDeleteAttachment(string $user): void
     {
-        $this->{$user}->givePermissionTo(['products.edit', 'products.show_attachments_private']);
+        Http::fake(['*' => Http::response([], 204)]);
 
         $attachment = $this->createAttachment(VisibilityType::PUBLIC);
 
+        $this->{$user}->givePermissionTo(['products.edit', 'products.show_attachments_private']);
         $this
             ->actingAs($this->{$user})
             ->deleteJson("/products/id:{$this->product->getKey()}/attachments/id:{$attachment->getKey()}")
@@ -197,9 +201,9 @@ class ProductAttachmentsTest extends TestCase
         $this->assertModelMissing($this->media);
     }
 
-    private function createAttachment(VisibilityType $visibility)
+    private function createAttachment(VisibilityType $visibility): MediaAttachment
     {
-        return MediaAttachment::query()->create([
+        return MediaAttachment::create([
             'name' => 'Test',
             'type' => MediaAttachmentType::OTHER,
             'visibility' => $visibility,

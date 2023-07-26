@@ -46,8 +46,9 @@ final class Exceptions extends Enum
     public const CLIENT_REMOVE_ROLE_THAT_USER_DOESNT_HAVE =
         'Can\'t remove a role with permissions you don\'t have from the user';
 
-    public const CLIENT_REGISTER_WITH_NON_REGISTRATION_ROLE =
-        'Can\'t register with a non registration role';
+    public const CLIENT_REGISTER_WITH_NON_REGISTRATION_ROLE = 'Can\'t register with a non registration role.';
+    public const CLIENT_CONSENT_NOT_EXISTS = 'Consent not exists';
+    public const CLIENT_NOT_ACCEPTED_ALL_REQUIRED_CONSENTS = 'You must accept the required consents.';
     public const CLIENT_ONLY_OWNER_GRANTS_OWNER_ROLE = 'Only owner can grant the owner role';
     public const CLIENT_ONLY_OWNER_REMOVES_OWNER_ROLE = 'Only owner can remove the owner role';
     public const CLIENT_ONE_OWNER_REMAINS = 'There must always be at least one Owner left';
@@ -56,7 +57,6 @@ final class Exceptions extends Enum
     public const CLIENT_ORDER_EDIT_ERROR = 'Error in order update transaction. Check order and addresses data';
     public const CLIENT_CHANGE_CANCELED_ORDER_STATUS = 'Cannot change the status of a cancelled order';
     public const CLIENT_UNKNOWN_STATUS = 'Unknown order status';
-    public const CLIENT_MODEL_NOT_SORTABLE = 'Model is not sortable';
     public const CLIENT_ORDER_PAID = 'Order is already paid';
     public const CLIENT_UNKNOWN_PAYMENT_METHOD = 'Unknown payment method';
     public const CLIENT_INVALID_PAYMENT = 'Payment signature hash isn\'t correct hash';
@@ -89,14 +89,23 @@ final class Exceptions extends Enum
     public const CLIENT_STATUS_USED = 'Can\'t update or remove status that is currently used in order';
 
     public const CLIENT_SHIPPING_METHOD_NOT_OWNER = 'This shipping method belongs to other application';
-
     public const CLIENT_SHIPPING_METHOD_INVALID_TYPE = 'Shipping method or digital shipping method type is invalid';
+    public const CLIENT_SHIPPING_METHOD_NOT_EXISTS = 'Shipping method does not exist.';
+    public const CLIENT_SHIPPING_POINT_NOT_EXISTS = 'Shipping point does not exists.';
+    public const CLIENT_SHIPPING_POINT_STRING = 'Shipping point should be string.';
+    public const CLIENT_SHIPPING_ADDRESS_INVALID = 'Shipping address in invalid.';
 
     public const CDN_NOT_ALLOWED_TO_CHANGE_ALT = 'You cannot change alt attribute of this image';
 
     public const CLIENT_PROVIDER_IS_NOT_ACTIVE = 'Chosen auth provider is not active';
     public const CLIENT_PROVIDER_HAS_NO_CONFIG = 'Chosen auth provider is not active';
     public const CLIENT_PROVIDER_NOT_FOUND = 'Provider cannot be found';
+
+    public const CLIENT_INVALID_EXCLUDED_MODEL = 'Invalid excluded model';
+
+    public const CLIENT_DUPLICATED_DEFAULT_LANGUAGE = 'There must be exactly one default language.';
+    public const CLIENT_DELETE_DEFAULT_LANGUAGE = 'You cannot delete the default language.';
+    public const CLIENT_NO_DEFAULT_LANGUAGE = 'There must be at least one language.';
 
     public const CLIENT_OPTION_NOT_RELATED_TO_ATTRIBUTE = 'Option is not related to provided attribute';
 
@@ -105,7 +114,6 @@ final class Exceptions extends Enum
     public const SERVER_ORDER_STATUSES_NOT_CONFIGURED = 'Order statuses are not configured';
     public const SERVER_TRANSACTION_ERROR = 'Unexpected error occurred during the database transaction.';
     public const SERVER_PAYMENT_MICROSERVICE_ERROR = 'Payment service error.';
-    public const SERVER_MAPPING_NOT_FOUND = 'Not found mapping for this query';
     public const SERVER_SHIPPING_TYPE_NO_VALIDATION = 'Validation is not implemented for selected shipping type';
 
     public const ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE = 'Not every item is available';

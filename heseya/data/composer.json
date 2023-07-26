@@ -1,0 +1,12 @@
+{
+    "name": "heseya/data",
+    "description": "Unfucked Laravel Data rule inferrers",
+    "type": "library",
+    "require": {},
+    "version": "1.0.0",
+    "autoload": {
+        "psr-4": {
+            "Heseya\\Data\\": "src/"
+        }
+    }
+}

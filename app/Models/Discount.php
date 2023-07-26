@@ -10,6 +10,7 @@ use App\Criteria\WhereHasCode;
 use App\Criteria\WhereInIds;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Models\Contracts\SeoContract;
 use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
 use Heseya\Searchable\Criteria\Like;
@@ -19,8 +20,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
-use OwenIt\Auditing\Auditable;
-use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @property mixed $pivot
@@ -29,9 +28,8 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  *
  * @mixin IdeHelperDiscount
  */
-class Discount extends Model implements AuditableContract
+class Discount extends Model implements SeoContract
 {
-    use Auditable;
     use HasCriteria;
     use HasFactory;
     use HasMetadata;

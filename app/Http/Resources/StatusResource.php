@@ -2,16 +2,18 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
 class StatusResource extends Resource
 {
+    use GetAllTranslations;
     use MetadataResource;
 
     public function base(Request $request): array
     {
-        return array_merge([
+        $data = [
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
             'color' => $this->resource->color,
@@ -19,6 +21,12 @@ class StatusResource extends Resource
             'description' => $this->resource->description,
             'hidden' => $this->resource->hidden,
             'no_notifications' => $this->resource->no_notifications,
-        ], $this->metadataResource('statuses.show_metadata_private'));
+        ];
+
+        return array_merge(
+            $data,
+            $request->has('translations') ? $this->getAllTranslations() : [],
+            $this->metadataResource('statuses.show_metadata_private'),
+        );
     }
 }

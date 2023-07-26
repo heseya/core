@@ -118,14 +118,16 @@ class ProductShippingCacheTest extends TestCase
     private function productDataWithItem(Item $item): array
     {
         return [
-            'name' => 'Test',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                ],
+            ],
+            'published' => [$this->lang],
             'slug' => 'test',
-            'price' => 100.00,
-            'description_html' => '<h1>Description</h1>',
-            'description_short' => 'So called short description...',
+            'price' => 100,
             'public' => true,
             'shipping_digital' => false,
-            'vat_rate' => 23,
             'items' => [
                 [
                     'id' => $item->getKey(),

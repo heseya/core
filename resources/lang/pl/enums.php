@@ -43,5 +43,11 @@ return [
         EventType::FAILED_LOGIN_ATTEMPT => 'Zdarzenie wyzwalane po niepomyślnej próbie logowania',
         EventType::ORDER_UPDATED_SHIPPING_NUMBER => 'Zdarzenie wyzwalane po aktualizacji numeru listu przewozowego',
         EventType::SEND_ORDER_URLS => 'Zdarzenie wyzwalane po wysłaniu linków do zamówionych produktów',
+        EventType::DISCOUNT_CREATED => 'Zdarzenie wyzwalane po utworzeniu nowych kodów rabatowych',
+        EventType::DISCOUNT_UPDATED => 'Zdarzenie wyzwalane po aktualizacji kodów rabatowych',
+        EventType::DISCOUNT_DELETED => 'Zdarzenie wyzwalane po usunięciu kodów rabatowych',
+        EventType::LANGUAGE_CREATED => 'Zdarzenie wyzwalane po utworzeniu nowego języka',
+        EventType::LANGUAGE_UPDATED => 'Zdarzenie wyzwalane po aktualizacji języka',
+        EventType::LANGUAGE_DELETED => 'Zdarzenie wyzwalane po usunięciu języka',
     ],
 ];

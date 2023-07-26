@@ -1,0 +1,18 @@
+Language:
+  properties:
+    id:
+      type: string
+      example: af42facf-2386-4a1f-9f68-c7ed87d8fa32
+    name:
+      type: string
+      example: 'Polski'
+    iso:
+      type: string
+      example: 'pl'
+    default:
+      type: boolean
+      example: 'true'
+    hidden:
+      type: boolean
+      example: 'false'
+  type: object
