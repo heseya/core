@@ -17,8 +17,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Auth;
-use OwenIt\Auditing\Auditable;
-use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use Spatie\Permission\Models\Role as SpatieRole;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -29,9 +27,8 @@ use Spatie\Permission\PermissionRegistrar;
  *
  * @mixin IdeHelperRole
  */
-class Role extends SpatieRole implements AuditableContract
+class Role extends SpatieRole
 {
-    use Auditable;
     use HasCriteria;
     use HasDiscountConditions;
     use HasFactory;

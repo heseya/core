@@ -17,6 +17,7 @@ use App\Models\Attribute;
 use App\Models\AttributeOption;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
+use App\Models\Language;
 use App\Models\Media;
 use App\Models\Product;
 use App\Models\ProductAttribute;
@@ -185,8 +186,7 @@ class ProductTest extends TestCase
                         'items' => [[
                             'name' => 'Koszulka XL',
                             'sku' => 'K001/XL',
-                        ],
-                        ],
+                        ]],
                         'metadata' => [],
                     ],
                     [
@@ -197,8 +197,7 @@ class ProductTest extends TestCase
                         'items' => [[
                             'name' => 'Koszulka L',
                             'sku' => 'K001/L',
-                        ],
-                        ],
+                        ]],
                         'metadata' => [],
                     ],
                 ],
@@ -210,6 +209,26 @@ class ProductTest extends TestCase
         ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexWithTranslationsFlag(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.show');
+
+        $response = $this->actingAs($this->{$user})->getJson('/products?limit=100&translations');
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJson(['data' => [
+                $this->expected_short,
+            ]]);
+
+        $this->assertArrayHasKey('translations', $response->json('data.0'));
+        $this->assertIsArray($response->json('data.0.translations'));
+        $this->assertQueryCountLessThan(14);
+    }
+
     public function testIndexUnauthorized(): void
     {
         $this->getJson('/products')->assertForbidden();
@@ -218,7 +237,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndex($user): void
+    public function testIndex(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show');
 
@@ -250,7 +269,43 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexSortPrice($user): void
+    public function testShowWithTranslationsFlagHidden(string $user): void
+    {
+        $this->{$user}->givePermissionTo(['products.show_details', 'products.show_hidden']);
+
+        /** @var Product $product */
+        $product = Product::factory()->create([
+            'name' => 'Test product with translations',
+            'public' => true,
+        ]);
+
+        /** @var Language $language */
+        $language = Language::query()->create([
+            'iso' => 'fr',
+            'name' => 'France',
+            'default' => false,
+            'hidden' => true,
+        ]);
+
+        $product->setLocale($language->getKey())->update([
+            'name' => 'Test FR translation',
+        ]);
+
+        $response = $this
+            ->actingAs($this->{$user})
+            ->getJson('/products/' . $product->slug . '?translations');
+
+        $response
+            ->assertOk();
+
+        $this->arrayHasKey('translations', $response->json('data'));
+        $this->arrayHasKey($language->getKey(), $response->json('data.translations'));
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSortPrice(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show');
 
@@ -308,7 +363,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexHidden($user): void
+    public function testIndexHidden(string $user): void
     {
         $this->{$user}->givePermissionTo(['products.show', 'products.show_hidden']);
 
@@ -339,7 +394,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShow($user): void
+    public function testShow(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show_details');
 
@@ -359,7 +414,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowWithAttributeMetadata($user): void
+    public function testShowWithAttributeMetadata(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show_details');
 
@@ -385,7 +440,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowWrongIdOrSlug($user): void
+    public function testShowWrongIdOrSlug(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show_details');
 
@@ -405,7 +460,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowSets($user): void
+    public function testShowSets(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show_details');
 
@@ -460,7 +515,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowPrivateSetsNoPermission($user): void
+    public function testShowPrivateSetsNoPermission(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show_details');
 
@@ -502,7 +557,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowPrivateSetsWithPermission($user): void
+    public function testShowPrivateSetsWithPermission(string $user): void
     {
         $this->{$user}->givePermissionTo(['products.show_details', 'product_sets.show_hidden']);
 
@@ -557,7 +612,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowSetsWithCover($user): void
+    public function testShowSetsWithCover(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show_details');
 
@@ -640,7 +695,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowAttributes($user): void
+    public function testShowAttributes(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show_details');
 
@@ -683,7 +738,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowPrivateMetadata($user): void
+    public function testShowPrivateMetadata(string $user): void
     {
         $this->{$user}->givePermissionTo(['products.show_details', 'products.show_metadata_private']);
 
@@ -701,14 +756,13 @@ class ProductTest extends TestCase
             ->assertOk()
             ->assertJsonFragment(['metadata_private' => [
                 $privateMetadata->name => $privateMetadata->value,
-            ],
-            ]);
+            ]]);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testShowHiddenUnauthorized($user): void
+    public function testShowHiddenUnauthorized(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show_details');
 
@@ -726,7 +780,7 @@ class ProductTest extends TestCase
      *
      * @dataProvider authProvider
      */
-    public function testShowHiddenWithPublicSetUnauthorized($user): void
+    public function testShowHiddenWithPublicSetUnauthorized(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show_details');
 
@@ -749,7 +803,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowHidden($user): void
+    public function testShowHidden(string $user): void
     {
         $this->{$user}->givePermissionTo(['products.show_details', 'products.show_hidden']);
 
@@ -934,7 +988,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowWithSalesBlockListEmpty($user): void
+    public function testShowWithSalesBlockListEmpty(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show_details');
 
@@ -981,7 +1035,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowWithSalesProductSets($user): void
+    public function testShowWithSalesProductSets(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show_details');
 
@@ -1086,7 +1140,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowWithSalesProductSetsChildren($user): void
+    public function testShowWithSalesProductSetsChildren(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show_details');
 
@@ -1181,21 +1235,26 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreate($user): void
+    public function testCreate(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
         Queue::fake();
 
         $response = $this->actingAs($this->{$user})->postJson('/products', [
-            'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
-            'description_html' => '<h1>Description</h1>',
-            'description_short' => 'So called short description...',
             'public' => true,
             'vat_rate' => 23,
             'shipping_digital' => false,
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                    'description_html' => '<h1>Description</h1>',
+                    'description_short' => 'So called short description...',
+                ],
+            ],
+            'published' => [$this->lang],
         ]);
 
         $response
@@ -1216,13 +1275,13 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 100,
             'public' => true,
             'vat_rate' => 23,
             'shipping_digital' => false,
-            'description_html' => '<h1>Description</h1>',
-            'description_short' => 'So called short description...',
+            "description_html->{$this->lang}" => '<h1>Description</h1>',
+            "description_short->{$this->lang}" => 'So called short description...',
         ]);
 
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
@@ -1230,7 +1289,8 @@ class ProductTest extends TestCase
                 && $job->data[0] instanceof ProductCreated;
         });
 
-        $product = Product::find($response->getData()->data->id);
+        /** @var Product $product */
+        $product = Product::query()->find($response->json('data.id'));
         $event = new ProductCreated($product);
         $listener = new WebHookEventListener();
 
@@ -1242,7 +1302,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithWebHookQueue($user): void
+    public function testCreateWithWebHookQueue(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
@@ -1259,10 +1319,15 @@ class ProductTest extends TestCase
         Queue::fake();
 
         $response = $this->actingAs($this->{$user})->postJson('/products', [
-            'name' => 'Test',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                    'description_html' => '<h1>Description</h1>',
+                ],
+            ],
+            'published' => [$this->lang],
             'slug' => 'test',
             'price' => 100.00,
-            'description_html' => '<h1>Description</h1>',
             'public' => true,
             'shipping_digital' => false,
         ]);
@@ -1278,16 +1343,15 @@ class ProductTest extends TestCase
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
-            ],
-            ]);
+            ]]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 100,
             'public' => true,
             'shipping_digital' => false,
-            'description_html' => '<h1>Description</h1>',
+            "description_html->{$this->lang}" => '<h1>Description</h1>',
         ]);
 
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
@@ -1295,7 +1359,8 @@ class ProductTest extends TestCase
                 && $job->data[0] instanceof ProductCreated;
         });
 
-        $product = Product::find($response->getData()->data->id);
+        /** @var Product $product */
+        $product = Product::query()->find($response->json('data.id'));
         $event = new ProductCreated($product);
         $listener = new WebHookEventListener();
 
@@ -1315,7 +1380,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithWebHookDispatched($user): void
+    public function testCreateWithWebHookDispatched(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
@@ -1332,10 +1397,15 @@ class ProductTest extends TestCase
         Bus::fake();
 
         $response = $this->actingAs($this->{$user})->postJson('/products', [
-            'name' => 'Test',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                    'description_html' => '<h1>Description</h1>',
+                ],
+            ],
+            'published' => [$this->lang],
             'slug' => 'test',
             'price' => 100.00,
-            'description_html' => '<h1>Description</h1>',
             'public' => true,
             'shipping_digital' => false,
         ]);
@@ -1351,16 +1421,15 @@ class ProductTest extends TestCase
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
-            ],
-            ]);
+            ]]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 100,
             'public' => true,
             'shipping_digital' => false,
-            'description_html' => '<h1>Description</h1>',
+            "description_html->{$this->lang}" => '<h1>Description</h1>',
         ]);
 
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
@@ -1368,7 +1437,8 @@ class ProductTest extends TestCase
                 && $job->data[0] instanceof ProductCreated;
         });
 
-        $product = Product::find($response->getData()->data->id);
+        /** @var Product $product */
+        $product = Product::query()->find($response->json('data.id'));
         $event = new ProductCreated($product);
         $listener = new WebHookEventListener();
 
@@ -1388,7 +1458,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateHiddenWithWebHookWithoutHidden($user): void
+    public function testCreateHiddenWithWebHookWithoutHidden(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
@@ -1405,17 +1475,22 @@ class ProductTest extends TestCase
         Queue::fake();
 
         $response = $this->actingAs($this->{$user})->postJson('/products', [
-            'name' => 'Test',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                    'description_html' => '<h1>Description</h1>',
+                ],
+            ],
+            'published' => [$this->lang],
             'slug' => 'test',
             'price' => 100.00,
-            'description_html' => '<h1>Description</h1>',
             'public' => false,
             'shipping_digital' => false,
         ]);
 
         $response
             ->assertCreated()
-            ->assertJson(['data' => [
+            ->assertJsonFragment([
                 'slug' => 'test',
                 'name' => 'Test',
                 'price' => 100,
@@ -1424,16 +1499,15 @@ class ProductTest extends TestCase
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
-            ],
             ]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 100,
             'public' => false,
             'shipping_digital' => false,
-            'description_html' => '<h1>Description</h1>',
+            "description_html->{$this->lang}" => '<h1>Description</h1>',
         ]);
 
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
@@ -1441,7 +1515,8 @@ class ProductTest extends TestCase
                 && $job->data[0] instanceof ProductCreated;
         });
 
-        $product = Product::find($response->getData()->data->id);
+        /** @var Product $product */
+        $product = Product::query()->find($response->json('data.id'));
         $event = new ProductCreated($product);
         $listener = new WebHookEventListener();
 
@@ -1453,7 +1528,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateHiddenWithWebHook($user): void
+    public function testCreateHiddenWithWebHook(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
@@ -1470,10 +1545,15 @@ class ProductTest extends TestCase
         Bus::fake();
 
         $response = $this->actingAs($this->{$user})->postJson('/products', [
-            'name' => 'Test',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                    'description_html' => '<h1>Description</h1>',
+                ],
+            ],
+            'published' => [$this->lang],
             'slug' => 'test',
             'price' => 100.00,
-            'description_html' => '<h1>Description</h1>',
             'public' => false,
             'shipping_digital' => false,
         ]);
@@ -1489,21 +1569,21 @@ class ProductTest extends TestCase
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
-            ],
-            ]);
+            ]]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 100,
             'public' => false,
             'shipping_digital' => false,
-            'description_html' => '<h1>Description</h1>',
+            "description_html->{$this->lang}" => '<h1>Description</h1>',
         ]);
 
         Bus::assertDispatched(CallQueuedListener::class, fn ($job) => $job->class = WebHookEventListener::class);
 
-        $product = Product::find($response->getData()->data->id);
+        /** @var Product $product */
+        $product = Product::query()->find($response->json('data.id'));
         $event = new ProductCreated($product);
         $listener = new WebHookEventListener();
 
@@ -1523,14 +1603,19 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithZeroPrice($user): void
+    public function testCreateWithZeroPrice(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
         $this
             ->actingAs($this->{$user})
             ->postJson('/products', [
-                'name' => 'Test',
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                    ],
+                ],
+                'published' => [$this->lang],
                 'slug' => 'test',
                 'price' => 0,
                 'public' => true,
@@ -1540,7 +1625,7 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 0,
         ]);
     }
@@ -1548,7 +1633,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithUuid($user): void
+    public function testCreateWithUuid(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
@@ -1558,7 +1643,12 @@ class ProductTest extends TestCase
             ->actingAs($this->{$user})
             ->postJson('/products', [
                 'id' => $uuid,
-                'name' => 'Test',
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                    ],
+                ],
+                'published' => [$this->lang],
                 'slug' => 'test',
                 'price' => 100,
                 'public' => true,
@@ -1577,7 +1667,7 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('products', [
             'id' => $uuid,
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 100,
             'shipping_digital' => false,
         ]);
@@ -1586,32 +1676,36 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateDigital($user): void
+    public function testCreateDigital(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
         $this
             ->actingAs($this->{$user})
             ->postJson('/products', [
-                'name' => 'Test',
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                    ],
+                ],
+                'published' => [$this->lang],
                 'slug' => 'test',
                 'price' => 100,
                 'public' => true,
                 'shipping_digital' => true,
             ])
             ->assertCreated()
-            ->assertJson(['data' => [
+            ->assertJsonFragment([
                 'slug' => 'test',
                 'name' => 'Test',
                 'price' => 100,
                 'public' => true,
                 'shipping_digital' => true,
-            ],
             ]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 100,
             'shipping_digital' => true,
         ]);
@@ -1620,48 +1714,19 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateNonDigital($user): void
+    public function testCreateWithNegativePrice(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
         $this
             ->actingAs($this->{$user})
             ->postJson('/products', [
-                'name' => 'Test',
-                'slug' => 'test',
-                'price' => 100,
-                'public' => true,
-                'shipping_digital' => false,
-            ])
-            ->assertCreated()
-            ->assertJson(['data' => [
-                'slug' => 'test',
-                'name' => 'Test',
-                'price' => 100,
-                'public' => true,
-                'shipping_digital' => false,
-            ],
-            ]);
-
-        $this->assertDatabaseHas('products', [
-            'slug' => 'test',
-            'name' => 'Test',
-            'price' => 100,
-            'shipping_digital' => false,
-        ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateWithNegativePrice($user): void
-    {
-        $this->{$user}->givePermissionTo('products.add');
-
-        $this
-            ->actingAs($this->{$user})
-            ->postJson('/products', [
-                'name' => 'Test',
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                    ],
+                ],
+                'published' => [$this->lang],
                 'slug' => 'test',
                 'price' => -100,
                 'public' => true,
@@ -1673,16 +1738,22 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithSchemas($user): void
+    public function testCreateWithSchemas(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
         Event::fake([ProductCreated::class]);
 
+        /** @var Schema $schema */
         $schema = Schema::factory()->create();
 
         $response = $this->actingAs($this->{$user})->postJson('/products', [
-            'name' => 'Test',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                ],
+            ],
+            'published' => [$this->lang],
             'slug' => 'test',
             'price' => 150,
             'public' => false,
@@ -1691,13 +1762,11 @@ class ProductTest extends TestCase
                 $schema->getKey(),
             ],
         ]);
-
         $response->assertCreated();
-        $product = $response->getData()->data;
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 150,
             'public' => false,
             'shipping_digital' => false,
@@ -1705,8 +1774,8 @@ class ProductTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('product_schemas', [
-            'product_id' => $product->id,
-            'schema_id' => $schema->id,
+            'product_id' => $response->json('data.id'),
+            'schema_id' => $schema->getKey(),
         ]);
 
         Event::assertDispatched(ProductCreated::class);
@@ -1715,7 +1784,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithSets($user): void
+    public function testCreateWithSets(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
@@ -1725,7 +1794,12 @@ class ProductTest extends TestCase
         $set2 = ProductSet::factory()->create();
 
         $response = $this->actingAs($this->{$user})->postJson('/products', [
-            'name' => 'Test',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                ],
+            ],
+            'published' => [$this->lang],
             'slug' => 'test',
             'price' => 150,
             'public' => false,
@@ -1737,24 +1811,24 @@ class ProductTest extends TestCase
         ]);
 
         $response->assertCreated();
-        $product = $response->getData()->data;
+        $productId = $response->json('data.id');
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 150,
             'public' => false,
             'shipping_digital' => false,
-            'description_html' => null,
+            "description_html->{$this->lang}" => null,
         ]);
 
         $this->assertDatabaseHas('product_set_product', [
-            'product_id' => $product->id,
+            'product_id' => $productId,
             'product_set_id' => $set1->getKey(),
         ]);
 
         $this->assertDatabaseHas('product_set_product', [
-            'product_id' => $product->id,
+            'product_id' => $productId,
             'product_set_id' => $set2->getKey(),
         ]);
 
@@ -1764,7 +1838,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider booleanProvider
      */
-    public function testCreateWithSeo($user, $boolean, $booleanValue): void
+    public function testCreateWithSeo(string $user, $boolean, $booleanValue): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
@@ -1774,15 +1848,25 @@ class ProductTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->{$user})->json('POST', '/products', [
-            'name' => 'Test',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                    'description_html' => '<h1>Description</h1>',
+                ],
+            ],
+            'published' => [$this->lang],
             'slug' => 'test',
             'price' => 100.00,
-            'description_html' => '<h1>Description</h1>',
             'public' => $boolean,
             'shipping_digital' => false,
             'seo' => [
-                'title' => 'seo title',
-                'description' => 'seo description',
+                'translations' => [
+                    $this->lang => [
+                        'title' => 'seo title',
+                        'description' => 'seo description',
+                        'no_index' => $booleanValue,
+                    ],
+                ],
                 'og_image_id' => $media->getKey(),
                 'no_index' => $boolean,
                 'header_tags' => ['test1', 'test2'],
@@ -1792,7 +1876,6 @@ class ProductTest extends TestCase
         $response
             ->assertCreated()
             ->assertJson(['data' => [
-                'slug' => 'test',
                 'name' => 'Test',
                 'price' => 100,
                 'public' => $booleanValue,
@@ -1801,31 +1884,35 @@ class ProductTest extends TestCase
                 'cover' => null,
                 'gallery' => [],
                 'seo' => [
-                    'title' => 'seo title',
-                    'description' => 'seo description',
+                    'translations' => [
+                        $this->lang => [
+                            'title' => 'seo title',
+                            'description' => 'seo description',
+                            'no_index' => $booleanValue,
+                        ],
+                    ],
                     'og_image' => [
                         'id' => $media->getKey(),
                     ],
-                    'no_index' => $booleanValue,
                     'header_tags' => ['test1', 'test2'],
                 ],
             ]]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 100,
             'public' => $booleanValue,
             'shipping_digital' => false,
-            'description_html' => '<h1>Description</h1>',
+            "description_html->{$this->lang}" => '<h1>Description</h1>',
         ]);
 
         $this->assertDatabaseHas('seo_metadata', [
-            'title' => 'seo title',
-            'description' => 'seo description',
+            "title->{$this->lang}" => 'seo title',
+            "description->{$this->lang}" => 'seo description',
             'model_id' => $response->getData()->data->id,
             'model_type' => Product::class,
-            'no_index' => $booleanValue,
+            "no_index->{$this->lang}" => $booleanValue,
         ]);
 
         $this->assertDatabaseCount('seo_metadata', 2);
@@ -1834,20 +1921,28 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithSeoDefaultIndex($user): void
+    public function testCreateWithSeoDefaultIndex(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
         $response = $this->actingAs($this->{$user})->json('POST', '/products', [
-            'name' => 'Test',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                ],
+            ],
+            'published' => [$this->lang],
             'slug' => 'test',
             'price' => 100.00,
-            'description_html' => '<h1>Description</h1>',
             'public' => true,
             'shipping_digital' => false,
             'seo' => [
-                'title' => 'seo title',
-                'description' => 'seo description',
+                'translations' => [
+                    $this->lang => [
+                        'title' => 'seo title',
+                        'description' => 'seo description',
+                    ],
+                ],
             ],
         ]);
 
@@ -1859,7 +1954,6 @@ class ProductTest extends TestCase
                 'price' => 100,
                 'public' => true,
                 'shipping_digital' => false,
-                'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
                 'seo' => [
@@ -1867,24 +1961,22 @@ class ProductTest extends TestCase
                     'description' => 'seo description',
                     'no_index' => false,
                 ],
-            ],
-            ]);
+            ]]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 100,
             'public' => true,
             'shipping_digital' => false,
-            'description_html' => '<h1>Description</h1>',
         ]);
 
         $this->assertDatabaseHas('seo_metadata', [
-            'title' => 'seo title',
-            'description' => 'seo description',
-            'model_id' => $response->getData()->data->id,
+            "title->{$this->lang}" => 'seo title',
+            "description->{$this->lang}" => 'seo description',
+            'model_id' => $response->json('data.id'),
             'model_type' => Product::class,
-            'no_index' => false,
+            "no_index->{$this->lang}" => false,
         ]);
 
         $this->assertDatabaseCount('seo_metadata', 2);
@@ -1893,7 +1985,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateMinMaxPrice($user): void
+    public function testCreateMinMaxPrice(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
@@ -1915,13 +2007,19 @@ class ProductTest extends TestCase
             'schemas' => [
                 $schema->getKey(),
             ],
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                ],
+            ],
+            'published' => [$this->lang],
         ]);
 
         $response->assertCreated();
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => $productPrice,
             'price_min' => $productPrice,
             'price_max' => $productPrice + $schemaPrice,
@@ -1934,7 +2032,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateMinPriceWithRequiredSchema($user): void
+    public function testCreateMinPriceWithRequiredSchema(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
@@ -1947,7 +2045,12 @@ class ProductTest extends TestCase
 
         $productPrice = 150;
         $response = $this->actingAs($this->{$user})->postJson('/products', [
-            'name' => 'Test',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                ],
+            ],
+            'published' => [$this->lang],
             'slug' => 'test',
             'price' => $productPrice,
             'public' => false,
@@ -1962,20 +2065,20 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => $productPrice,
             'price_min' => $productPrice + $schemaPrice,
             'price_max' => $productPrice + $schemaPrice,
             'public' => false,
             'shipping_digital' => false,
-            'description_html' => null,
+            "description_html->{$this->lang}" => null,
         ]);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithAttribute($user): void
+    public function testCreateWithAttribute(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
@@ -1996,7 +2099,12 @@ class ProductTest extends TestCase
         $response = $this
             ->actingAs($this->{$user})
             ->postJson('/products', [
-                'name' => 'Test',
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                    ],
+                ],
+                'published' => [$this->lang],
                 'slug' => 'test',
                 'price' => 0,
                 'public' => true,
@@ -2048,11 +2156,12 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 0,
         ]);
 
-        $product = Product::find($response->getData()->data->id);
+        /** @var Product $product */
+        $product = Product::query()->find($response->json('data.id'));
 
         $productAttribute1 = ProductAttribute::where('product_id', $product->getKey())
             ->where('attribute_id', $attribute->getKey())
@@ -2086,7 +2195,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithAttributeMultipleOptions($user): void
+    public function testCreateWithAttributeMultipleOptions(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
@@ -2105,7 +2214,12 @@ class ProductTest extends TestCase
         $response = $this
             ->actingAs($this->{$user})
             ->postJson('/products', [
-                'name' => 'Test',
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                    ],
+                ],
+                'published' => [$this->lang],
                 'slug' => 'test',
                 'price' => 0,
                 'public' => true,
@@ -2146,11 +2260,12 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 0,
         ]);
 
-        $product = Product::find($response->getData()->data->id);
+        /** @var Product $product */
+        $product = Product::query()->find($response->json('data.id'));
 
         $productAttribute = ProductAttribute::where('product_id', $product->getKey())
             ->where('attribute_id', $attribute->getKey())
@@ -2177,7 +2292,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithAttributeInvalidMultipleOptions($user): void
+    public function testCreateWithAttributeInvalidMultipleOptions(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
@@ -2214,7 +2329,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithAttributeInvalidOption($user): void
+    public function testCreateWithAttributeInvalidOption(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
@@ -2229,7 +2344,12 @@ class ProductTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->postJson('/products', [
-                'name' => 'Test',
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                    ],
+                ],
+                'published' => [$this->lang],
                 'slug' => 'test',
                 'price' => 0,
                 'public' => true,
@@ -2246,7 +2366,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithExistingSale($user): void
+    public function testCreateWithExistingSale(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
@@ -2267,15 +2387,19 @@ class ProductTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/products', [
-            'name' => 'Test',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                ],
+            ],
+            'published' => [$this->lang],
             'slug' => 'test',
             'price' => 100.00,
             'public' => true,
             'shipping_digital' => false,
         ]);
 
-        $productId = $response->getData()->data->id;
-
+        $productId = $response->json('data.id');
         $response
             ->assertCreated()
             ->assertJsonFragment([
@@ -2297,78 +2421,6 @@ class ProductTest extends TestCase
         ]);
     }
 
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateWithGoogleProductCategory($user): void
-    {
-        $this->{$user}->givePermissionTo('products.add');
-
-        $response = $this->actingAs($this->{$user})->postJson('/products', [
-            'name' => 'Test',
-            'slug' => 'test',
-            'price' => 100.00,
-            'description_html' => '<h1>Description</h1>',
-            'description_short' => 'So called short description...',
-            'public' => true,
-            'shipping_digital' => false,
-            'google_product_category' => 123,
-        ]);
-
-        $response->assertCreated();
-
-        $this->assertDatabaseHas('products', [
-            'google_product_category' => 123,
-        ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateWithWrongGoogleProductCategory($user): void
-    {
-        $this->{$user}->givePermissionTo('products.add');
-
-        $response = $this->actingAs($this->{$user})->postJson('/products', [
-            'name' => 'Test',
-            'slug' => 'test',
-            'price' => 100.00,
-            'description_html' => '<h1>Description</h1>',
-            'description_short' => 'So called short description...',
-            'public' => true,
-            'shipping_digital' => false,
-            'google_product_category' => 123456,
-        ]);
-
-        // no validation
-        $response->assertCreated();
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateWithNullGoogleProductCategory($user): void
-    {
-        $this->{$user}->givePermissionTo('products.add');
-
-        $response = $this->actingAs($this->{$user})->postJson('/products', [
-            'name' => 'Test',
-            'slug' => 'test',
-            'price' => 100.00,
-            'description_html' => '<h1>Description</h1>',
-            'description_short' => 'So called short description...',
-            'public' => true,
-            'shipping_digital' => false,
-            'google_product_category' => null,
-        ]);
-
-        $response->assertCreated();
-
-        $this->assertDatabaseHas('products', [
-            'google_product_category' => null,
-        ]);
-    }
-
     public function testUpdateUnauthorized(): void
     {
         Event::fake([ProductUpdated::class]);
@@ -2380,53 +2432,39 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdate($user): void
+    public function testUpdate(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
 
-        Queue::fake();
-
-        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
-            'name' => 'Updated',
+        $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
+            'translations' => [$this->lang => [
+                'name' => 'Updated',
+                'description_html' => '<h1>New description</h1>',
+                'description_short' => 'New so called short description',
+            ]],
+            'published' => [$this->lang],
             'slug' => 'updated',
             'price' => 150,
-            'description_html' => '<h1>New description</h1>',
-            'description_short' => 'New so called short description',
             'public' => false,
             'vat_rate' => 5,
-        ]);
-
-        $response->assertOk();
+        ])->assertOk();
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
-            'name' => 'Updated',
+            "name->{$this->lang}" => 'Updated',
             'slug' => 'updated',
             'price' => 150,
-            'description_html' => '<h1>New description</h1>',
-            'description_short' => 'New so called short description',
+            "description_html->{$this->lang}" => '<h1>New description</h1>',
+            "description_short->{$this->lang}" => 'New so called short description',
             'public' => false,
             'vat_rate' => 5,
         ]);
-
-        Queue::assertPushed(CallQueuedListener::class, function ($job) {
-            return $job->class === WebHookEventListener::class
-                && $job->data[0] instanceof ProductUpdated;
-        });
-
-        $product = Product::find($this->product->getKey());
-        $event = new ProductUpdated($product);
-        $listener = new WebHookEventListener();
-
-        $listener->handle($event);
-
-        Queue::assertNotPushed(CallWebhookJob::class);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateDigital($user): void
+    public function testUpdateDigital(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
 
@@ -2450,7 +2488,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateWithWebHookQueue($user): void
+    public function testUpdateWithWebHookQueue(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
 
@@ -2466,23 +2504,8 @@ class ProductTest extends TestCase
 
         Queue::fake();
 
-        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
-            'name' => 'Updated',
+        $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'slug' => 'updated',
-            'price' => 150,
-            'description_html' => '<h1>New description</h1>',
-            'public' => false,
-        ]);
-
-        $response->assertOk();
-
-        $this->assertDatabaseHas('products', [
-            'id' => $this->product->getKey(),
-            'name' => 'Updated',
-            'slug' => 'updated',
-            'price' => 150,
-            'description_html' => '<h1>New description</h1>',
-            'public' => false,
         ]);
 
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
@@ -2510,7 +2533,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateWithWebHookDispatched($user): void
+    public function testUpdateWithWebHookDispatched(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
 
@@ -2526,23 +2549,8 @@ class ProductTest extends TestCase
 
         Bus::fake();
 
-        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
-            'name' => 'Updated',
+        $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'slug' => 'updated',
-            'price' => 150,
-            'description_html' => '<h1>New description</h1>',
-            'public' => false,
-        ]);
-
-        $response->assertOk();
-
-        $this->assertDatabaseHas('products', [
-            'id' => $this->product->getKey(),
-            'name' => 'Updated',
-            'slug' => 'updated',
-            'price' => 150,
-            'description_html' => '<h1>New description</h1>',
-            'public' => false,
         ]);
 
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
@@ -2570,7 +2578,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateChangeSets($user): void
+    public function testUpdateChangeSets(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
 
@@ -2595,8 +2603,6 @@ class ProductTest extends TestCase
             ],
         ]);
 
-        $response->assertOk();
-
         $this->assertDatabaseHas('product_set_product', [
             'product_id' => $product->getKey(),
             'product_set_id' => $set2->getKey(),
@@ -2618,7 +2624,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateDeleteSets($user): void
+    public function testUpdateDeleteSets(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
 
@@ -2631,15 +2637,9 @@ class ProductTest extends TestCase
 
         $product->sets()->sync([$set1->getKey(), $set2->getKey()]);
 
-        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $product->getKey(), [
-            'name' => $product->name,
-            'slug' => $product->slug,
-            'price' => $product->price,
-            'public' => $product->public,
+        $this->actingAs($this->{$user})->patchJson('/products/id:' . $product->getKey(), [
             'sets' => [],
         ]);
-
-        $response->assertOk();
 
         $this->assertDatabaseMissing('product_set_product', [
             'product_id' => $product->getKey(),
@@ -2651,7 +2651,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateWithSeo($user): void
+    public function testUpdateWithSeo(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
 
@@ -2667,39 +2667,27 @@ class ProductTest extends TestCase
         $seo = SeoMetadata::factory()->create();
         $product->seo()->save($seo);
 
-        $response = $this->actingAs($this->{$user})->json('PATCH', '/products/id:' . $product->getKey(), [
-            'name' => 'Updated',
-            'slug' => 'updated',
-            'price' => 150,
-            'description_html' => '<h1>New description</h1>',
-            'public' => false,
+        $this->actingAs($this->{$user})->json('PATCH', '/products/id:' . $product->getKey(), [
             'seo' => [
-                'title' => 'seo title',
-                'description' => 'seo description',
+                'translations' => [
+                    $this->lang => [
+                        'title' => 'seo title',
+                        'description' => 'seo description',
+                    ],
+                ],
             ],
         ]);
 
-        $response->assertOk();
-
-        $this->assertDatabaseHas('products', [
-            'id' => $product->getKey(),
-            'name' => 'Updated',
-            'slug' => 'updated',
-            'price' => 150,
-            'description_html' => '<h1>New description</h1>',
-            'public' => false,
-        ]);
-
         $this->assertDatabaseHas('seo_metadata', [
-            'title' => 'seo title',
-            'description' => 'seo description',
+            "title->{$this->lang}" => 'seo title',
+            "description->{$this->lang}" => 'seo description',
         ]);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateMinMaxPrice($user): void
+    public function testUpdateMinMaxPrice(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
 
@@ -2730,8 +2718,6 @@ class ProductTest extends TestCase
             ],
         ]);
 
-        $response->assertOk();
-
         $this->assertDatabaseHas('products', [
             $product->getKeyName() => $product->getKey(),
             'price' => $productNewPrice,
@@ -2743,7 +2729,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateMinMaxPriceWithSale($user): void
+    public function testUpdateMinMaxPriceWithSale(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
 
@@ -2802,7 +2788,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateSchemaMinMaxPrice($user): void
+    public function testUpdateSchemaMinMaxPrice(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
 
@@ -2829,8 +2815,6 @@ class ProductTest extends TestCase
             'required' => false,
         ]);
 
-        $response->assertOk();
-
         $this->assertDatabaseHas('products', [
             $product->getKeyName() => $product->getKey(),
             'price' => $productPrice,
@@ -2842,7 +2826,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateSchemaMinMaxPriceWithSale($user): void
+    public function testUpdateSchemaMinMaxPriceWithSale(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
 
@@ -2897,57 +2881,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateWithGoogleProductCategory($user): void
-    {
-        $this->{$user}->givePermissionTo('products.edit');
-
-        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
-            'google_product_category' => 123,
-        ]);
-
-        $response->assertOk();
-
-        $this->assertDatabaseHas('products', [
-            'google_product_category' => 123,
-        ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdateWithWrongGoogleProductCategory($user): void
-    {
-        $this->{$user}->givePermissionTo('products.edit');
-
-        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
-            'google_product_category' => 123456789,
-        ]);
-
-        $response->assertOk();
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdateWithNullGoogleProductCategory($user): void
-    {
-        $this->{$user}->givePermissionTo('products.edit');
-
-        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
-            'google_product_category' => null,
-        ]);
-
-        $response->assertOk();
-
-        $this->assertDatabaseHas('products', [
-            'google_product_category' => null,
-        ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testDeleteSchemaMinMaxPrice($user): void
+    public function testDeleteSchemaMinMaxPrice(string $user): void
     {
         $this->{$user}->givePermissionTo('schemas.remove');
 
@@ -2968,8 +2902,6 @@ class ProductTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->deleteJson('/schemas/id:' . $schema->getKey());
 
-        $response->assertNoContent();
-
         $this->assertDatabaseHas('products', [
             $product->getKeyName() => $product->getKey(),
             'price' => $productPrice,
@@ -2981,7 +2913,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteSchemaMinMaxPriceWithSale($user): void
+    public function testDeleteSchemaMinMaxPriceWithSale(string $user): void
     {
         $this->{$user}->givePermissionTo('schemas.remove');
 
@@ -3038,7 +2970,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDelete($user): void
+    public function testDelete(string $user): void
     {
         $this->{$user}->givePermissionTo('products.remove');
 
@@ -3077,7 +3009,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteWithMedia($user): void
+    public function testDeleteWithMedia(string $user): void
     {
         $this->{$user}->givePermissionTo('products.remove');
 
@@ -3109,7 +3041,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteWithWebHookQueue($user): void
+    public function testDeleteWithWebHookQueue(string $user): void
     {
         $this->{$user}->givePermissionTo('products.remove');
 
@@ -3133,7 +3065,6 @@ class ProductTest extends TestCase
                 && $job->data[0] instanceof ProductDeleted;
         });
 
-        $response->assertNoContent();
         $this->assertSoftDeleted($this->product);
 
         $product = $this->product;
@@ -3156,7 +3087,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteWithWebHookDispatched($user): void
+    public function testDeleteWithWebHookDispatched(string $user): void
     {
         $this->{$user}->givePermissionTo('products.remove');
 
@@ -3180,7 +3111,6 @@ class ProductTest extends TestCase
                 && $job->data[0] instanceof ProductDeleted;
         });
 
-        $response->assertNoContent();
         $this->assertSoftDeleted($this->product);
 
         $product = $this->product;
@@ -3203,7 +3133,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductHasSchemaOnSchemaDelete($user): void
+    public function testProductHasSchemaOnSchemaDelete(string $user): void
     {
         $this->{$user}->givePermissionTo('schemas.remove');
 
@@ -3226,7 +3156,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductHasSchemaOnSchemaAdded($user): void
+    public function testProductHasSchemaOnSchemaAdded(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
 
@@ -3250,7 +3180,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductHasSchemaOnSchemasRemovedFromProduct($user): void
+    public function testProductHasSchemaOnSchemasRemovedFromProduct(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
 

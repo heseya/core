@@ -4,6 +4,7 @@ namespace App\Dtos;
 
 use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Enums\Currency;
+use App\Models\Language;
 use App\Traits\MapMetadata;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
@@ -22,7 +23,8 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
     use MapMetadata;
 
     public function __construct(
-        readonly public string $name,
+        readonly public array $translations,
+        readonly public array $published,
         readonly public string $slug,
         /** @var PriceDto[] */
         readonly public array $prices_base,
@@ -33,8 +35,6 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
         readonly public float|Missing $quantity_step = new Missing(),
         readonly public int|Missing|null $google_product_category = new Missing(),
         readonly public float|Missing $vat_rate = new Missing(),
-        readonly public ?string $description_html = null,
-        readonly public ?string $description_short = null,
         readonly public float|Missing|null $purchase_limit_per_user = new Missing(),
         readonly public array|Missing $media = new Missing(),
         readonly public array|Missing $tags = new Missing(),
@@ -62,7 +62,8 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
         );
 
         return new self(
-            name: $request->input('name'),
+            translations: $request->input('translations', []),
+            published: $request->input('published', []),
             slug: $request->input('slug'),
             prices_base: $prices_base,
             public: $request->boolean('public'),
@@ -72,8 +73,6 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
             quantity_step: $request->input('quantity_step') ?? new Missing(),
             google_product_category: $request->input('google_product_category', new Missing()),
             vat_rate: $request->input('vat_rate') ?? new Missing(),
-            description_html: $request->input('description_html'),
-            description_short: $request->input('description_short'),
             purchase_limit_per_user: $request->input('purchase_limit_per_user', new Missing()),
             media: $request->input('media') ?? new Missing(),
             tags: $request->input('tags') ?? new Missing(),
@@ -103,6 +102,7 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
     {
         $faker = App::make(Generator::class);
         $name = $faker->sentence(mt_rand(1, 3));
+        $description = $faker->sentence(10);
 
         $price = new PriceDto(
             Money::of(
@@ -111,11 +111,18 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
             )
         );
 
+        $langId = App::getLocale();
+
         return new self(...$data + [
-            'name' => $name,
+            'translations' => [
+                $langId => [
+                    'name' => $name,
+                    'description_html' => "<p>{$description}</p>",
+                    'description_short' => $description,
+                ]
+            ],
+            'published' => [$langId],
             'slug' => Str::slug($name) . '-' . mt_rand(1, 99999),
-            'description_html' => '<p>' . $faker->sentence(10) . '</p>',
-            'description_short' => $faker->sentence(10),
             'public' => $faker->boolean,
             'shipping_digital' => false,
             'prices_base' => [$price],

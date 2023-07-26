@@ -2,13 +2,16 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\GetAllTranslations;
 use Illuminate\Http\Request;
 
 class SeoMetadataResource extends Resource
 {
+    use GetAllTranslations;
+
     public function base(Request $request): array
     {
-        return [
+        $data = [
             'title' => $this->resource->title,
             'description' => $this->resource->description,
             'keywords' => $this->resource->keywords,
@@ -17,5 +20,10 @@ class SeoMetadataResource extends Resource
             'no_index' => $this->resource->no_index,
             'header_tags' => $this->resource->header_tags,
         ];
+
+        return array_merge(
+            $data,
+            $request->has('translations') ? $this->getAllTranslations() : []
+        );
     }
 }

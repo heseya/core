@@ -5,6 +5,7 @@ namespace Tests;
 use App\Enums\RoleType;
 use App\Enums\TokenType;
 use App\Models\App as Application;
+use App\Models\Language;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\TokenServiceContract;
@@ -15,13 +16,11 @@ use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Tests\Support\ElasticTest;
 use Tests\Traits\JsonQueryCounter;
 
 abstract class TestCase extends BaseTestCase
 {
     use CreatesApplication;
-    use ElasticTest;
     use JsonQueryCounter;
     use RefreshDatabase;
 
@@ -31,14 +30,17 @@ abstract class TestCase extends BaseTestCase
     public string $password = 'secret';
     public TokenServiceContract $tokenService;
 
+    public string $lang;
+
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->fakeElastic();
-
         $seeder = new InitSeeder();
         $seeder->run();
+
+        $this->lang = Language::query()->where('default', true)->firstOrFail()->getKey();
+        App::setLocale($this->lang);
 
         $this->tokenService = App::make(TokenServiceContract::class);
 
@@ -61,10 +63,10 @@ abstract class TestCase extends BaseTestCase
         app()->forgetInstances();
     }
 
-    public function actingAs(Authenticatable $authenticatable, $guard = null): self
+    public function actingAs(Authenticatable $user, $guard = null): self
     {
         $token = $this->tokenService->createToken(
-            $authenticatable,
+            $user,
             new TokenType(TokenType::ACCESS),
             Str::uuid()->toString(),
         );

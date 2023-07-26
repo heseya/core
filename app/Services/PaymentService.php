@@ -20,10 +20,10 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use Throwable;
 
-class PaymentService implements PaymentServiceContract
+final class PaymentService implements PaymentServiceContract
 {
     /**
-     * @throws ServerException|ClientException
+     * @throws ClientException
      */
     public function getPayment(Order $order, PaymentMethod $paymentMethod, string $continueUrl): Payment
     {
@@ -66,6 +66,9 @@ class PaymentService implements PaymentServiceContract
         );
     }
 
+    /**
+     * @throws ServerException
+     */
     private function validatePaymentServiceResponse(Response $response): void
     {
         if (!$response->ok()) {
@@ -85,6 +88,8 @@ class PaymentService implements PaymentServiceContract
     }
 
     /**
+     * @throws ClientException
+     *
      * @deprecated
      */
     private function createPaymentLegacy(PaymentMethod $method, Order $order, string $continueUrl): Payment

@@ -14,7 +14,7 @@ class StoreException extends Exception
         int $code = 0,
         ?Throwable $previous = null,
         protected bool $simpleLogs = false,
-        private array $errorArray = [],
+        private readonly array $errorArray = [],
     ) {
         parent::__construct($message, $code, $previous);
         $this->code = Exceptions::getCode($message);

@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Language;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\App;
 
 class DatabaseSeeder extends Seeder
 {
@@ -11,6 +13,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        App::setLocale(Language::where('default', true)->firstOrFail()->getKey());
+
         $this
             ->call(InitSeeder::class)
             ->call(ItemSeeder::class)
@@ -20,7 +24,6 @@ class DatabaseSeeder extends Seeder
             ->call(OrderSeeder::class)
             ->call(PageSeeder::class)
             ->call(UserSeeder::class)
-            ->call(PackageTemplateSeeder::class)
             ->call(DiscountSeeder::class)
             ->call(WebHookEventLogSeeder::class)
             ->call(DepositSeeder::class);

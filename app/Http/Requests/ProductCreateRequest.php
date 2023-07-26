@@ -8,6 +8,7 @@ use App\Rules\AttributeOptionExist;
 use App\Rules\Price;
 use App\Rules\PricesEveryCurrency;
 use App\Rules\ProductAttributeOptions;
+use App\Rules\Translations;
 use App\Rules\UniqueIdInRequest;
 use App\Traits\MetadataRules;
 use App\Traits\SeoRules;
@@ -22,12 +23,20 @@ class ProductCreateRequest extends FormRequest implements MetadataRequestContrac
     public function rules(): array
     {
         return array_merge(
-            $this->seoRules(),
             $this->metadataRules(),
             [
                 'id' => ['uuid'],
+                'translations' => [
+                    'required',
+                    new Translations(['name', 'description_html', 'description_short']),
+                ],
+                'translations.*.name' => ['required', 'string', 'max:255'],
+                'translations.*.description_html' => ['nullable', 'string'],
+                'translations.*.description_short' => ['nullable', 'string', 'max:5000'],
 
-                'name' => ['required', 'string', 'max:255'],
+                'published' => ['required', 'array', 'min:1'],
+                'published.*' => ['uuid', 'exists:languages,id'],
+
                 'slug' => ['required', 'string', 'max:255', 'unique:products', 'alpha_dash'],
 
                 'prices_base' => ['required', new PricesEveryCurrency()],
@@ -35,9 +44,6 @@ class ProductCreateRequest extends FormRequest implements MetadataRequestContrac
 
                 'public' => ['required', 'boolean'],
                 'shipping_digital' => ['required', 'boolean'],
-
-                'description_html' => ['nullable', 'string'],
-                'description_short' => ['nullable', 'string', 'max:5000'],
 
                 'quantity_step' => ['numeric'],
                 'order' => ['numeric'],

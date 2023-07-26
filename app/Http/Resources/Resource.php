@@ -6,6 +6,7 @@ use App\Services\Contracts\SeoMetadataServiceContract;
 use Heseya\Resource\JsonResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Config;
 
 class Resource extends JsonResource
 {
@@ -36,9 +37,9 @@ class Resource extends JsonResource
                     'symbol' => 'PLN',
                     'decimals' => 2,
                 ],
-                'language' => [
-                    'symbol' => App::currentLocale(),
-                ],
+                'language' => LanguageResource::make(
+                    Config::get('language.model'),
+                ),
                 'seo' => SeoMetadataResource::make($seoMetadataService->getGlobalSeo()),
             ],
         ];

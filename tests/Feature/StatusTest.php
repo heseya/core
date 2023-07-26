@@ -7,7 +7,7 @@ use App\Models\Order;
 use App\Models\Status;
 use Tests\TestCase;
 
-class StatusTest extends TestCase
+final class StatusTest extends TestCase
 {
     /** $status is used in TestCase. */
     private Status $status_model;
@@ -42,21 +42,21 @@ class StatusTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndex($user): void
+    public function testIndex(string $user): void
     {
         $this->{$user}->givePermissionTo('statuses.show');
 
         $response = $this->actingAs($this->{$user})->getJson('/statuses');
         $response
             ->assertOk()
-            ->assertJsonCount(4, 'data') // domyślne statusy z migracji + ten utworzony teraz
+            ->assertJsonCount(4, 'data') // default statuses from migration + the one created now
             ->assertJsonFragment([$this->expected]);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testIndexByIds($user): void
+    public function testIndexByIds(string $user): void
     {
         $this->{$user}->givePermissionTo('statuses.show');
 
@@ -79,99 +79,56 @@ class StatusTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreate($user): void
+    public function testCreate(string $user): void
     {
-        $this->{$user}->givePermissionTo('statuses.add');
+        $this->{$user}->givePermissionTo('statuses.add', 'statuses.show_metadata_private');
 
         $status = [
-            'name' => 'Test Status',
             'color' => 'ffffff',
-            'description' => 'To jest status testowy.',
             'hidden' => true,
             'no_notifications' => true,
-        ];
-
-        $response = $this->actingAs($this->{$user})->postJson('/statuses', $status);
-        $response
-            ->assertCreated()
-            ->assertJson(['data' => $status]);
-
-        $this->assertDatabaseHas('statuses', $status);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateWithMetadata($user): void
-    {
-        $this->{$user}->givePermissionTo('statuses.add');
-
-        $status = [
-            'name' => 'Test Status',
-            'color' => 'ffffff',
-            'description' => 'To jest status testowy.',
-            'hidden' => true,
-            'no_notifications' => true,
+            'cancel' => false,
             'metadata' => [
                 'attributeMeta' => 'attributeValue',
             ],
-        ];
-
-        $this
-            ->actingAs($this->{$user})
-            ->postJson('/statuses', $status)
-            ->assertCreated()
-            ->assertJson(['data' => $status]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateWithMetadataPrivate($user): void
-    {
-        $this->{$user}->givePermissionTo(['statuses.add', 'statuses.show_metadata_private']);
-
-        $status = [
-            'name' => 'Test Status',
-            'color' => 'ffffff',
-            'description' => 'To jest status testowy.',
-            'hidden' => true,
-            'no_notifications' => true,
             'metadata_private' => [
-                'attributeMetaPriv' => 'attributeValue',
+                'attributeMetaPrivate' => 'attributeValue',
             ],
         ];
 
         $this
             ->actingAs($this->{$user})
-            ->postJson('/statuses', $status)
-            ->assertCreated()
-            ->assertJson(['data' => $status]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateDefault($user): void
-    {
-        $this->{$user}->givePermissionTo('statuses.add');
-
-        $status = [
-            'name' => 'Test Status',
-            'color' => 'ffffff',
-            'description' => 'To jest status testowy.',
-        ];
-
-        $response = $this->actingAs($this->{$user})->postJson('/statuses', $status);
-        $response
+            ->postJson('/statuses', $status + [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test Status',
+                        'description' => 'Test description.',
+                    ],
+                ],
+                'published' => [$this->lang],
+            ])
             ->assertCreated()
             ->assertJson(['data' => $status + [
-                'hidden' => false,
-                'no_notifications' => false,
-            ],
-            ]);
+                'name' => 'Test Status',
+                'description' => 'Test description.',
+            ]]);
 
-        $this->assertDatabaseHas('statuses', $status);
+        $this->assertDatabaseHas('statuses', [
+            "name->{$this->lang}" => 'Test Status',
+            'color' => 'ffffff',
+            "description->{$this->lang}" => 'Test description.',
+            'hidden' => true,
+            'cancel' => false,
+            'no_notifications' => true,
+        ]);
+        $this->assertDatabaseHas('metadata', [
+            'name' => 'attributeMeta',
+            'value' => 'attributeValue',
+        ]);
+        $this->assertDatabaseHas('metadata', [
+            'name' => 'attributeMetaPrivate',
+            'value' => 'attributeValue',
+        ]);
     }
 
     public function testUpdateUnauthorized(): void
@@ -193,7 +150,7 @@ class StatusTest extends TestCase
     /**
      * @dataProvider statusUpdateProvider
      */
-    public function testUpdate($user, bool $cancel): void
+    public function testUpdate(string $user, bool $cancel): void
     {
         $this->{$user}->givePermissionTo('statuses.edit');
 
@@ -201,23 +158,31 @@ class StatusTest extends TestCase
             'cancel' => $cancel,
         ]);
 
-        $status = [
-            'name' => 'Test Status 2',
-            'color' => '444444',
-            'description' => 'Testowy opis testowego statusu 2.',
-            'cancel' => !$cancel,
-        ];
-
         $this
             ->actingAs($this->{$user})
-            ->patchJson(
-                '/statuses/id:' . $this->status_model->getKey(),
-                $status,
-            )
+            ->json('PATCH', '/statuses/id:' . $this->status_model->getKey(), [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test Status 2',
+                        'description' => 'Testowy opis testowego statusu 2.',
+                    ],
+                ],
+                'published' => [$this->lang],
+                'color' => '444444',
+                'cancel' => !$cancel,
+            ])
             ->assertOk()
-            ->assertJson(['data' => $status]);
+            ->assertJson(['data' => [
+                'name' => 'Test Status 2',
+                'color' => '444444',
+                'description' => 'Testowy opis testowego statusu 2.',
+            ]]);
 
-        $this->assertDatabaseHas('statuses', $status + ['id' => $this->status_model->getKey()]);
+        $this->assertDatabaseHas('statuses', [
+            "name->{$this->lang}" => 'Test Status 2',
+            'color' => '444444',
+            "description->{$this->lang}" => 'Testowy opis testowego statusu 2.',
+        ] + ['id' => $this->status_model->getKey()]);
     }
 
     /**
@@ -258,7 +223,7 @@ class StatusTest extends TestCase
     /**
      * @dataProvider statusUpdateProvider
      */
-    public function testUpdateWhenUsedByOrderSameCancel($user, bool $cancel): void
+    public function testUpdateWhenUsedByOrderSameCancel(string $user, bool $cancel): void
     {
         $this->{$user}->givePermissionTo('statuses.edit');
 
@@ -270,27 +235,23 @@ class StatusTest extends TestCase
             'status_id' => $this->status_model->getKey(),
         ]);
 
-        $data = [
-            'name' => 'Test Status 2',
-            'cancel' => $cancel,
-        ];
-
         $this
             ->actingAs($this->{$user})
-            ->json(
-                'PATCH',
-                '/statuses/id:' . $this->status_model->getKey(),
-                $data,
-            )
+            ->json('PATCH', '/statuses/id:' . $this->status_model->getKey(), [
+                'cancel' => $cancel,
+            ])
             ->assertOk();
 
-        $this->assertDatabaseHas('statuses', $data + ['id' => $this->status_model->getKey()]);
+        $this->assertDatabaseHas('statuses', [
+            'id' => $this->status_model->getKey(),
+            'cancel' => $cancel,
+        ]);
     }
 
     /**
      * @dataProvider statusUpdateProvider
      */
-    public function testUpdateHiddenWhenUsedByOrder($user, bool $hidden): void
+    public function testUpdateHiddenWhenUsedByOrder(string $user, bool $hidden): void
     {
         $this->{$user}->givePermissionTo('statuses.edit');
 
@@ -302,21 +263,17 @@ class StatusTest extends TestCase
             'status_id' => $this->status_model->getKey(),
         ]);
 
-        $data = [
-            'name' => 'Test Status 2',
-            'hidden' => !$hidden,
-        ];
-
         $this
             ->actingAs($this->{$user})
-            ->json(
-                'PATCH',
-                '/statuses/id:' . $this->status_model->getKey(),
-                $data,
-            )
+            ->json('PATCH', '/statuses/id:' . $this->status_model->getKey(), [
+                'hidden' => !$hidden,
+            ])
             ->assertOk();
 
-        $this->assertDatabaseHas('statuses', $data + ['id' => $this->status_model->getKey()]);
+        $this->assertDatabaseHas('statuses', [
+            'id' => $this->status_model->getKey(),
+            'hidden' => !$hidden,
+        ]);
     }
 
     public function testDeleteUnauthorized(): void
@@ -330,7 +287,7 @@ class StatusTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDelete($user): void
+    public function testDelete(string $user): void
     {
         $this->{$user}->givePermissionTo('statuses.remove');
 
@@ -344,7 +301,7 @@ class StatusTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteWhenUsedByOrder($user): void
+    public function testDeleteWhenUsedByOrder(string $user): void
     {
         $this->{$user}->givePermissionTo('statuses.remove');
 
@@ -363,7 +320,7 @@ class StatusTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testReorderUnauthorized($user): void
+    public function testReorderUnauthorized(string $user): void
     {
         $status1 = Status::factory()->create();
         $status2 = Status::factory()->create();
@@ -381,7 +338,7 @@ class StatusTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testReorder($user): void
+    public function testReorder(string $user): void
     {
         $this->{$user}->givePermissionTo('statuses.edit');
 

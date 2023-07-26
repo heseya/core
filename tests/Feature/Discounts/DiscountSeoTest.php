@@ -25,17 +25,25 @@ class DiscountSeoTest extends TestCase
                 'target_type' => DiscountTargetType::ORDER_VALUE,
                 'target_is_allow_list' => true,
                 'seo' => [
-                    'title' => 'Great Sale!',
-                    'description' => 'Really Great',
+                    'translations' => [
+                        $this->lang => [
+                            'title' => 'Great Sale!',
+                            'description' => 'Really Great',
+                        ],
+                    ],
                 ],
             ])
-            ->assertCreated();
+            ->assertCreated()
+            ->assertJsonFragment([
+                'title' => 'Great Sale!',
+                'description' => 'Really Great',
+            ]);
 
         $this->assertDatabaseHas('seo_metadata', [
             'model_id' => $response->json('data.id'),
             'model_type' => Discount::class,
-            'title' => 'Great Sale!',
-            'description' => 'Really Great',
+            "title->{$this->lang}" => 'Great Sale!',
+            "description->{$this->lang}" => 'Really Great',
         ]);
     }
 
@@ -51,17 +59,25 @@ class DiscountSeoTest extends TestCase
             ->actingAs($this->{$user})
             ->json('PATCH', "/coupons/id:{$sale->getKey()}", [
                 'seo' => [
-                    'title' => 'Sale',
-                    'description' => 'Interesting business proposition',
+                    'translations' => [
+                        $this->lang => [
+                            'title' => 'Sale',
+                            'description' => 'Interesting business proposition',
+                        ],
+                    ],
                 ],
             ])
-            ->assertOk();
+            ->assertOk()
+            ->assertJsonFragment([
+                'title' => 'Sale',
+                'description' => 'Interesting business proposition',
+            ]);
 
         $this->assertDatabaseHas('seo_metadata', [
             'model_id' => $sale->getKey(),
             'model_type' => Discount::class,
-            'title' => 'Sale',
-            'description' => 'Interesting business proposition',
+            "title->{$this->lang}" => 'Sale',
+            "description->{$this->lang}" => 'Interesting business proposition',
         ]);
     }
 }

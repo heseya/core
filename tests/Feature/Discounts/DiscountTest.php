@@ -920,6 +920,7 @@ class DiscountTest extends TestCase
             'target_is_allow_list' => true,
         ];
 
+        /** @var Product $product */
         $product = Product::factory()->create([
             'public' => true,
         ]);
@@ -962,7 +963,7 @@ class DiscountTest extends TestCase
                 'public' => true,
             ]);
 
-        $discountId = $response->getData()->data->id;
+        $discountId = $response->json('data.id');
 
         $this->assertDatabaseHas('discounts', $discount + ['id' => $discountId]);
         $this->assertDatabaseHas('model_has_discounts', [
@@ -972,7 +973,6 @@ class DiscountTest extends TestCase
         ]);
         $this->assertDatabaseHas('products', [
             'id' => $product->getKey(),
-            'name' => $product->name,
             'price_min' => 810,
             'price_max' => 1080,
         ]);
@@ -997,6 +997,7 @@ class DiscountTest extends TestCase
             'target_is_allow_list' => true,
         ];
 
+        /** @var Product $product */
         $product = Product::factory()->create([
             'public' => true,
         ]);
@@ -1050,7 +1051,6 @@ class DiscountTest extends TestCase
         ]);
         $this->assertDatabaseHas('products', [
             'id' => $product->getKey(),
-            'name' => $product->name,
             'price_min' => 900,
             'price_max' => 1200,
         ]);
@@ -1084,9 +1084,7 @@ class DiscountTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment($discount);
 
-        $discountId = $response->getData()->data->id;
-
-        $this->assertDatabaseHas('discounts', $discount + ['id' => $discountId]);
+        $this->assertDatabaseHas('discounts', $discount + ['id' => $response->json('data.id')]);
     }
 
     /**
@@ -1111,9 +1109,9 @@ class DiscountTest extends TestCase
             $discount['code'] = 'S43SA2';
         }
 
-        $response = $this->actingAs($this->{$user})->json('POST', "/{$discountKind}", $discount);
-
-        $response
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', "/{$discountKind}", $discount)
             ->assertStatus(422);
     }
 

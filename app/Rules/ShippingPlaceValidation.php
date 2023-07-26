@@ -45,7 +45,7 @@ final class ShippingPlaceValidation implements DataAwareRule, ValidationRule
         /** @var ShippingMethod $shippingMethod */
         $shippingMethod = ShippingMethod::query()->findOr(
             $this->data['shipping_method_id'],
-            fn () => $fail('Shipping method does not exist.'),
+            fn () => $fail(Exceptions::CLIENT_SHIPPING_METHOD_NOT_EXISTS),
         );
 
         match ($shippingMethod->shipping_type) {
@@ -59,14 +59,14 @@ final class ShippingPlaceValidation implements DataAwareRule, ValidationRule
     private function point(mixed $value, Closure $fail): void
     {
         if (Address::query()->where('id', $value)->doesntExist()) {
-            $fail('Shipping point does not exist.');
+            $fail(Exceptions::CLIENT_SHIPPING_POINT_NOT_EXISTS);
         }
     }
 
     private function pointExternal(mixed $value, Closure $fail): void
     {
         if (!is_string($value)) {
-            $fail('Shipping point should be string.');
+            $fail(Exceptions::CLIENT_SHIPPING_POINT_STRING);
         }
     }
 
@@ -82,7 +82,7 @@ final class ShippingPlaceValidation implements DataAwareRule, ValidationRule
             'shipping_place.country' => ['string', 'size:2'],
             'shipping_place.vat' => ['nullable', 'string', 'max:15'],
         ])->fails()) {
-            $fail('Shipping address in invalid.');
+            $fail(Exceptions::CLIENT_SHIPPING_ADDRESS_INVALID);
         }
     }
 }

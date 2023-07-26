@@ -3,16 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Support\Facades\Config;
-use OwenIt\Auditing\Auditable;
-use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @mixin IdeHelperSetting
  */
-class Setting extends Model implements AuditableContract
+class Setting extends Model
 {
-    use Auditable;
-
     protected $fillable = [
         'name',
         'value',

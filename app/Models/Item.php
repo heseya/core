@@ -20,17 +20,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use OwenIt\Auditing\Auditable;
-use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @property mixed $pivot
  *
  * @mixin IdeHelperItem
  */
-class Item extends Model implements AuditableContract, SortableContract
+class Item extends Model implements SortableContract
 {
-    use Auditable;
     use HasCriteria;
     use HasFactory;
     use HasMetadata;

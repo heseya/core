@@ -5,14 +5,16 @@ namespace App\Models;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\SchemaSearch;
+use App\Criteria\TranslatedLike;
 use App\Criteria\WhereInIds;
 use App\Enums\SchemaType;
 use App\Models\Contracts\SortableContract;
+use App\Models\Interfaces\Translatable;
 use App\Rules\OptionAvailable;
+use App\SortColumnTypes\TranslatedColumn;
 use App\Traits\HasMetadata;
 use App\Traits\Sortable;
 use BenSampo\Enum\Exceptions\InvalidEnumKeyException;
-use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -22,17 +24,21 @@ use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Spatie\Translatable\HasTranslations;
 
 /**
- * @property SchemaType $type;
+ * @property string $name
+ * @property string $description
+ * @property SchemaType $type
  *
  * @mixin IdeHelperSchema
  */
-class Schema extends Model implements SortableContract
+class Schema extends Model implements SortableContract, Translatable
 {
     use HasCriteria;
     use HasFactory;
     use HasMetadata;
+    use HasTranslations;
     use Sortable;
 
     protected $fillable = [
@@ -51,6 +57,12 @@ class Schema extends Model implements SortableContract
         'available',
         'shipping_time',
         'shipping_date',
+        'published',
+    ];
+
+    protected array $translatable = [
+        'name',
+        'description',
     ];
 
     protected $casts = [
@@ -59,11 +71,12 @@ class Schema extends Model implements SortableContract
         'required' => 'bool',
         'available' => 'bool',
         'type' => SchemaType::class,
+        'published' => 'array',
     ];
 
     protected array $criteria = [
         'search' => SchemaSearch::class,
-        'name' => Like::class,
+        'name' => TranslatedLike::class,
         'hidden',
         'required',
         'metadata' => MetadataSearch::class,
@@ -72,7 +85,7 @@ class Schema extends Model implements SortableContract
     ];
 
     protected array $sortable = [
-        'name',
+        'name' => TranslatedColumn::class,
         'sku',
         'created_at',
         'updated_at',
@@ -157,7 +170,7 @@ class Schema extends Model implements SortableContract
     public function options(): HasMany
     {
         return $this->hasMany(Option::class)
-            ->with(['items', 'metadata', 'metadataPrivate'])
+            ->with(['items'])
             ->orderBy('order')
             ->orderBy('created_at')
             ->orderBy('name', 'DESC');

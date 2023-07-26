@@ -34,6 +34,7 @@ class ProductFactory extends Factory
             'description_html' => '<p>' . $this->faker->sentence(10) . '</p>',
             'description_short' => $this->faker->sentence(10),
             'public' => $this->faker->boolean,
+            'published' => [App::getLocale()],
         ];
     }
 

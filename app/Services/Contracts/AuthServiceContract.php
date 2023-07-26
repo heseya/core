@@ -2,7 +2,7 @@
 
 namespace App\Services\Contracts;
 
-use App\Dtos\RegisterDto;
+use App\DTO\Auth\RegisterDto;
 use App\Dtos\TFAConfirmDto;
 use App\Dtos\TFAPasswordDto;
 use App\Dtos\TFASetupDto;

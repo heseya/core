@@ -11,19 +11,12 @@ abstract class Model extends LaravelModel
 {
     use HasUuid;
 
-    protected array $forceAudit = [];
-
-    public function forceAudit(string ...$attributes): void
-    {
-        $this->forceAudit = array_merge($this->forceAudit, $attributes);
-    }
-
     public function getDirty(): array
     {
         $dirty = [];
 
         foreach ($this->getAttributes() as $key => $value) {
-            if (in_array($key, $this->forceAudit) || !$this->originalIsEquivalent($key)) {
+            if (!$this->originalIsEquivalent($key)) {
                 $dirty[$key] = $value;
             }
         }
@@ -40,7 +33,7 @@ abstract class Model extends LaravelModel
     protected function serializeDate(DateTimeInterface $date): string
     {
         // 2019-02-01T03:45:27+00:00
-        return Carbon::instance($date)->toIso8601String();
+        return Carbon::instance($date)->toAtomString();
     }
 
     public function morphManyWithIdentifier(

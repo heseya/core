@@ -54,7 +54,7 @@ interface DiscountServiceContract
 
     public function applyDiscountsOnProducts(Collection $products): void;
 
-    public function applyDiscountsOnProduct(Product $product, bool $reindex = true): void;
+    public function applyDiscountsOnProduct(Product $product): void;
 
     public function applyDiscountOnOrderProduct(OrderProduct $orderProduct, Discount $discount): OrderProduct;
 

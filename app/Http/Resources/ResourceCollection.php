@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use App\Services\Contracts\SeoMetadataServiceContract;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Config;
 
 class ResourceCollection extends \Heseya\Resource\ResourceCollection
 {
@@ -25,9 +26,9 @@ class ResourceCollection extends \Heseya\Resource\ResourceCollection
                     'symbol' => 'PLN',
                     'decimals' => 2,
                 ],
-                'language' => [
-                    'symbol' => App::currentLocale(),
-                ],
+                'language' => LanguageResource::make(
+                    Config::get('language.model'),
+                ),
                 'seo' => SeoMetadataResource::make($seoMetadataService->getGlobalSeo()),
             ],
         ];

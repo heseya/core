@@ -51,6 +51,7 @@ final class Handler extends ExceptionHandler
         TFAException::class => ErrorCode::UNPROCESSABLE_ENTITY,
         GoogleProductCategoryFileException::class => ErrorCode::UNPROCESSABLE_ENTITY,
         OrderException::class => ErrorCode::UNPROCESSABLE_ENTITY,
+        PublishingException::class => ErrorCode::UNPROCESSABLE_ENTITY,
 
         // 500
         ServerException::class => ErrorCode::INTERNAL_SERVER_ERROR,

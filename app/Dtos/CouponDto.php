@@ -6,7 +6,6 @@ use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\CouponCreateRequest;
 use App\Http\Requests\CouponUpdateRequest;
 use App\Http\Requests\SaleCreateRequest;
-use App\Http\Requests\StatusUpdateRequest;
 use App\Traits\MapMetadata;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
@@ -19,7 +18,7 @@ final class CouponDto extends SaleDto implements InstantiateFromRequest
     protected array|Missing $metadata;
 
     public static function instantiateFromRequest(
-        CouponCreateRequest|CouponUpdateRequest|FormRequest|SaleCreateRequest|StatusUpdateRequest $request
+        CouponCreateRequest|CouponUpdateRequest|FormRequest|SaleCreateRequest $request
     ): self {
         return new self(
             code: $request->input('code', new Missing()),

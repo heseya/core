@@ -170,7 +170,6 @@ return [
         // PackageTemplate Service Providers...
         SocialiteProviders\Manager\ServiceProvider::class,
         Spatie\Permission\PermissionServiceProvider::class,
-        OwenIt\Auditing\AuditingServiceProvider::class,
 
         // Application Service Providers...
         App\Providers\AppServiceProvider::class,

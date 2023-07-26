@@ -24,9 +24,6 @@ class ProductsAvailabilityTest extends TestCase
     {
         parent::setUp();
         $this->availabilityService = app(AvailabilityServiceContract::class);
-
-        Item::disableAuditing();
-        Product::disableAuditing();
     }
 
     // Product not have any schema or items related
