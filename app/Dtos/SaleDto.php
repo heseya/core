@@ -4,7 +4,6 @@ namespace App\Dtos;
 
 use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\SaleCreateRequest;
-use App\Http\Requests\StatusUpdateRequest;
 use App\Traits\MapMetadata;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
@@ -32,7 +31,7 @@ class SaleDto extends Dto implements InstantiateFromRequest
     protected array|Missing $metadata;
     protected Missing|SeoMetadataDto $seo;
 
-    public static function instantiateFromRequest(FormRequest|SaleCreateRequest|StatusUpdateRequest $request): self
+    public static function instantiateFromRequest(FormRequest|SaleCreateRequest $request): self
     {
         return new self(
             name: $request->input('name', new Missing()),

@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Dtos\ProductSetDto;
-use App\Dtos\ProductSetUpdateDto;
+use App\DTO\ProductSet\ProductSetCreateDto;
+use App\DTO\ProductSet\ProductSetUpdateDto;
 use App\Dtos\ProductsReorderDto;
 use App\Events\ProductSetCreated;
 use App\Events\ProductSetDeleted;
@@ -22,9 +22,10 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Spatie\LaravelData\Optional;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class ProductSetService implements ProductSetServiceContract
+final readonly class ProductSetService implements ProductSetServiceContract
 {
     public function __construct(
         private SeoMetadataServiceContract $seoMetadataService,
@@ -62,7 +63,7 @@ class ProductSetService implements ProductSetServiceContract
     /**
      * @throws ValidationException
      */
-    public function create(ProductSetDto $dto): ProductSet
+    public function create(ProductSetCreateDto $dto): ProductSet
     {
         if ($dto->parent_id !== null) {
             /** @var ProductSet $parent */
@@ -87,34 +88,34 @@ class ProductSetService implements ProductSetServiceContract
             'slug' => 'unique:product_sets,slug',
         ])->validate();
 
-        /** @var ProductSet $set */
-        $set = ProductSet::query()->create($dto->toArray() + [
+        $set = new ProductSet($dto->toArray() + [
             'order' => $order,
             'slug' => $slug,
             'public_parent' => $publicParent,
         ]);
 
-        $attributes = null;
-        if (!$dto->attributes_ids instanceof Missing) {
-            $attributes = Collection::make($dto->attributes_ids);
+        foreach ($dto->translations as $lang => $translations) {
+            $set->setLocale($lang)->fill($translations);
         }
-        if ($attributes !== null && $attributes->isNotEmpty()) {
-            $set->attributes()->sync($attributes);
-        }
+
+        $set->save();
+        $set->attributes()->sync($dto->attributes);
 
         $children = Collection::make($dto->children_ids);
         if ($children->isNotEmpty()) {
-            $children = $children->map(fn ($id) => ProductSet::findOrFail($id));
+            $children = $children->map(fn ($id) => ProductSet::query()->findOrFail($id));
             $this->updateChildren($children, $set->getKey(), $slug, $publicParent && $dto->public);
         }
 
-        if (!($dto->seo instanceof Missing)) {
+        if (!($dto->seo instanceof Optional)) {
             $this->seoMetadataService->createOrUpdateFor($set, $dto->seo);
         }
 
-        if (!($dto->metadata instanceof Missing)) {
+        if (!($dto->metadata instanceof Optional)) {
             $this->metadataService->sync($set, $dto->metadata);
         }
+
+        $set->refresh();
 
         // searchable is handled by the event listener
         ProductSetCreated::dispatch($set);
@@ -155,10 +156,11 @@ class ProductSetService implements ProductSetServiceContract
 
     public function update(ProductSet $set, ProductSetUpdateDto $dto): ProductSet
     {
-        if ($dto->getParentId() !== null) {
-            $parent = ProductSet::query()->findOrFail($dto->getParentId());
+        if (!($dto->parent_id instanceof Optional) && $dto->parent_id !== null) {
+            /** @var ProductSet $parent */
+            $parent = ProductSet::query()->findOrFail($dto->parent_id);
 
-            if ($set->parent_id !== $dto->getParentId()) {
+            if ($set->parent_id !== $dto->parent_id) {
                 $lastChild = $parent->children()->reversed()->first();
                 $order = $lastChild ? $lastChild->order + 1 : 0;
             } else {
@@ -166,7 +168,7 @@ class ProductSetService implements ProductSetServiceContract
             }
 
             $publicParent = $parent->public && $parent->public_parent;
-            $slug = $this->prepareSlug($dto->isSlugOverridden(), $dto->getSlugSuffix(), $parent->slug);
+            $slug = $this->prepareSlug($dto->slug_override, $dto->slug_suffix, $parent->slug);
         } else {
             if ($set->parent_id !== null) {
                 $last = ProductSet::reversed()->first();
@@ -176,38 +178,45 @@ class ProductSetService implements ProductSetServiceContract
             }
 
             $publicParent = true;
-            $slug = $dto->getSlugSuffix() instanceof Missing ? $set->slug : $dto->getSlugSuffix();
+            $slug = $dto->slug_suffix instanceof Optional ? $set->slug : $dto->slug_suffix;
         }
 
         Validator::make(['slug' => $slug], [
             'slug' => Rule::unique('product_sets', 'slug')->ignoreModel($set),
         ])->validate();
 
-        $children = ProductSet::query()->whereIn('id', $dto->getChildrenIds())->get();
-        $this->updateChildren($children, $set->getKey(), $slug, $publicParent && $dto->isPublic());
+        if (!($dto->children_ids instanceof Optional)) {
+            $children = ProductSet::query()->whereIn('id', $dto->children_ids)->get();
+            $this->updateChildren($children, $set->getKey(), $slug, $publicParent && $dto->public);
 
-        $rootOrder = ProductSet::reversed()->first()?->order + 1;
+            $rootOrder = ProductSet::reversed()->first()?->order + 1;
 
-        $set->children()
-            ->whereNotIn('id', $dto->getChildrenIds())
-            ->update([
-                'parent_id' => null,
-                'order' => $rootOrder + $order,
-            ]);
+            $set->children()
+                ->whereNotIn('id', $dto->children_ids)
+                ->update([
+                    'parent_id' => null,
+                    'order' => $rootOrder + $order,
+                ]);
+        }
 
-        $set->update($dto->toArray() + [
+        $set->fill($dto->toArray() + [
             'order' => $order,
             'slug' => $slug,
             'public_parent' => $publicParent,
         ]);
 
-        if (!($dto->getAttributesIds() instanceof Missing)) {
-            $attributes = Collection::make($dto->getAttributesIds());
-            $set->attributes()->sync($attributes);
+        foreach ($dto->translations as $lang => $translations) {
+            $set->setLocale($lang)->fill($translations);
         }
 
-        if (!($dto->getSeo() instanceof Missing)) {
-            $this->seoMetadataService->createOrUpdateFor($set, $dto->getSeo());
+        $set->save();
+
+        if (!($dto->attributes instanceof Optional)) {
+            $set->attributes()->sync($dto->attributes);
+        }
+
+        if (!($dto->seo instanceof Optional)) {
+            $this->seoMetadataService->createOrUpdateFor($set, $dto->seo);
         }
 
         // searchable is handled by the event listener
@@ -228,16 +237,7 @@ class ProductSetService implements ProductSetServiceContract
 
     public function attach(ProductSet $set, array $productsIds): Collection
     {
-        // old products for reindexing
-        $oldProductsIds = $set->products()->pluck('id');
-
         $set->products()->sync($productsIds);
-
-        // @phpstan-ignore-next-line
-        Product::query()->whereIn(
-            'id',
-            $oldProductsIds->merge($productsIds)->unique(),
-        )->searchable();
 
         return $set->products;
     }
@@ -248,17 +248,12 @@ class ProductSetService implements ProductSetServiceContract
             $set->children->each(fn ($subset) => $this->delete($subset));
         }
 
-        $productsIds = $set->allProductsIds();
-
         if ($set->delete()) {
             ProductSetDeleted::dispatch($set);
             if ($set->seo !== null) {
                 $this->seoMetadataService->delete($set->seo);
             }
         }
-
-        // @phpstan-ignore-next-line
-        Product::query()->whereIn('id', $productsIds)->searchable();
     }
 
     public function products(ProductSet $set): LengthAwarePaginator
@@ -299,6 +294,7 @@ class ProductSetService implements ProductSetServiceContract
     public function reorderProducts(ProductSet $set, ProductsReorderDto $dto): void
     {
         if (!$dto->getProducts() instanceof Missing) {
+            /** @var Product $product */
             $product = $set->products()->where('id', $dto->getProducts()[0]['id'])->firstOrFail();
             $order = $dto->getProducts()[0]['order'];
             $orderedProductsAmount = $set->products()
@@ -328,12 +324,6 @@ class ProductSetService implements ProductSetServiceContract
 
             $this->assignOrderToNulls($highestOrder, $set->products->whereNull('pivot.order'));
         }
-    }
-
-    public function indexAllProducts(ProductSet $set): void
-    {
-        // @phpstan-ignore-next-line
-        Product::query()->whereIn('id', $set->allProductsIds())->searchable();
     }
 
     private function setHigherOrder(Product $product, int $order): void
@@ -372,12 +362,12 @@ class ProductSetService implements ProductSetServiceContract
     }
 
     private function prepareSlug(
-        bool|Missing $isOverridden,
-        Missing|string|null $slugSuffix,
+        bool|Optional $isOverridden,
+        Optional|string|null $slugSuffix,
         string $parentSlug
     ): ?string {
-        $slug = $slugSuffix instanceof Missing ? null : $slugSuffix;
-        if (!$isOverridden instanceof Missing && !$isOverridden) {
+        $slug = $slugSuffix instanceof Optional ? null : $slugSuffix;
+        if (!$isOverridden instanceof Optional && !$isOverridden) {
             return "{$parentSlug}-{$slug}";
         }
 

@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property mixed $pivot
+ * @property string $name
+ * @property string $description
  * @property AttributeType $type
  *
  * @mixin IdeHelperAttribute
@@ -37,6 +39,7 @@ class Attribute extends Model
         'type',
         'global',
         'sortable',
+        'order',
     ];
 
     protected $casts = [
@@ -57,12 +60,16 @@ class Attribute extends Model
 
     public function options(): HasMany
     {
-        return $this->hasMany(AttributeOption::class)->with('metadata', 'metadataPrivate');
+        return $this
+            ->hasMany(AttributeOption::class)
+            ->orderBy('order')
+            ->with('metadata', 'metadataPrivate');
     }
 
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class, 'product_attribute')
+        return $this
+            ->belongsToMany(Product::class, 'product_attribute')
             ->withPivot('id')
             ->using(ProductAttribute::class);
     }

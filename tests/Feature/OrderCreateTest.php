@@ -38,7 +38,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 use Spatie\WebhookServer\CallWebhookJob;
@@ -1502,43 +1501,6 @@ class OrderCreateTest extends TestCase
         ]);
 
         $response->assertStatus(422);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateOrderWithEnabledAudit($user): void
-    {
-        Config::set('audit.console', true);
-        $this->{$user}->givePermissionTo('orders.add');
-
-        Event::fake([OrderCreated::class]);
-
-        $productQuantity = 2;
-
-        $response = $this->actingAs($this->{$user})->postJson('/orders', [
-            'email' => $this->email,
-            'shipping_method_id' => $this->shippingMethod->getKey(),
-            'billing_address' => $this->address->toArray(),
-            'shipping_place' => $this->address->toArray(),
-            'items' => [
-                [
-                    'product_id' => $this->product->getKey(),
-                    'quantity' => $productQuantity,
-                ],
-            ],
-        ]);
-
-        $response->assertCreated();
-        $order = Order::find($response->getData()->data->id);
-
-        $this->assertDatabaseHas('audits', [
-            'auditable_id' => $order->getKey(),
-            'auditable_type' => Order::class,
-            'event' => 'created',
-        ]);
-
-        Event::assertDispatched(OrderCreated::class);
     }
 
     public function testCreateOrderWithoutAnyStatuses(): void

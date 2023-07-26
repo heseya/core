@@ -8,7 +8,6 @@ use App\Models\Banner;
 use App\Models\Discount;
 use App\Models\Item;
 use App\Models\Order;
-use App\Models\PackageTemplate;
 use App\Models\Page;
 use App\Models\ProductSet;
 use App\Models\Role;
@@ -165,24 +164,6 @@ class MetadataFilterTest extends TestCase
                     'prefix_url' => 'shipping-methods',
                     'public_role' => 'shipping_methods.show',
                     'private_role' => 'shipping_methods.show_metadata_private',
-                ],
-            ],
-
-            'package templates as user' => [
-                'user', [
-                    'model' => PackageTemplate::class,
-                    'prefix_url' => 'package-templates',
-                    'public_role' => 'packages.show',
-                    'private_role' => 'packages.show_metadata_private',
-                ],
-            ],
-            'package templates as application' => [
-                'application',
-                [
-                    'model' => PackageTemplate::class,
-                    'prefix_url' => 'package-templates',
-                    'public_role' => 'packages.show',
-                    'private_role' => 'packages.show_metadata_private',
                 ],
             ],
 

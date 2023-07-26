@@ -491,34 +491,6 @@ class UserDeleteTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteWithAudits($user): void
-    {
-        $this->{$user}->givePermissionTo('users.remove');
-
-        $audit = $this->user->audits()->create([
-            'event' => 'created',
-            'auditable_id' => $this->user->getKey(),
-            'auditable_type' => User::class,
-            'old_values' => '',
-            'new_values' => '',
-            'url' => 'test',
-            'ip_address' => 'test',
-            'user_agent' => 'test',
-            'tags' => '',
-            'created_at' => now(),
-        ]);
-
-        $this
-            ->actingAs($this->{$user})
-            ->deleteJson('/users/id:' . $this->user->getKey())
-            ->assertNoContent();
-
-        $this->assertModelMissing($audit);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testDeleteWithPreferences($user): void
     {
         $this->{$user}->givePermissionTo('users.remove');

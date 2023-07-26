@@ -2,8 +2,8 @@
 
 namespace App\Services\Contracts;
 
-use App\Dtos\ProductSetDto;
-use App\Dtos\ProductSetUpdateDto;
+use App\DTO\ProductSet\ProductSetCreateDto;
+use App\DTO\ProductSet\ProductSetUpdateDto;
 use App\Dtos\ProductsReorderDto;
 use App\Models\ProductSet;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -15,7 +15,7 @@ interface ProductSetServiceContract
 
     public function searchAll(array $attributes, bool $root): LengthAwarePaginator;
 
-    public function create(ProductSetDto $dto): ProductSet;
+    public function create(ProductSetCreateDto $dto): ProductSet;
 
     public function update(ProductSet $set, ProductSetUpdateDto $dto): ProductSet;
 
@@ -39,6 +39,4 @@ interface ProductSetServiceContract
     public function attach(ProductSet $set, array $productsIds): Collection;
 
     public function reorderProducts(ProductSet $set, ProductsReorderDto $dto): void;
-
-    public function indexAllProducts(ProductSet $set): void;
 }

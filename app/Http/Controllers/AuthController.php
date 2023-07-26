@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Dtos\RegisterDto;
+use App\DTO\Auth\RegisterDto;
 use App\Dtos\SavedAddressDto;
 use App\Dtos\TFAConfirmDto;
 use App\Dtos\TFAPasswordDto;
@@ -13,7 +13,6 @@ use App\Http\Requests\PasswordChangeRequest;
 use App\Http\Requests\PasswordResetRequest;
 use App\Http\Requests\PasswordResetSaveRequest;
 use App\Http\Requests\ProfileUpdateRequest;
-use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\SavedAddressStoreRequest;
 use App\Http\Requests\SavedAddressUpdateRequest;
 use App\Http\Requests\TFAConfirmRequest;
@@ -37,6 +36,7 @@ use App\Services\Contracts\SavedAddressServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
@@ -44,9 +44,9 @@ use Illuminate\Support\Facades\Response;
 class AuthController extends Controller
 {
     public function __construct(
-        private AuthServiceContract $authService,
-        private AppServiceContract $appService,
-        private SavedAddressServiceContract $savedAddresService,
+        private readonly AuthServiceContract $authService,
+        private readonly AppServiceContract $appService,
+        private readonly SavedAddressServiceContract $savedAddersService,
     ) {}
 
     public function login(LoginRequest $request): JsonResource
@@ -73,18 +73,18 @@ class AuthController extends Controller
         return AuthResource::make($tokens);
     }
 
-    public function logout(): JsonResponse
+    public function logout(): HttpResponse
     {
         $this->authService->logout();
 
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::noContent();
     }
 
-    public function resetPassword(PasswordResetRequest $request): JsonResponse
+    public function resetPassword(PasswordResetRequest $request): HttpResponse
     {
         $this->authService->resetPassword($request->input('email'), $request->input('redirect_url'));
 
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::noContent();
     }
 
     public function showResetPasswordForm(?string $token = null, ?string $email = null): JsonResource
@@ -97,7 +97,7 @@ class AuthController extends Controller
         return UserResource::make($user);
     }
 
-    public function saveResetPassword(PasswordResetSaveRequest $request): JsonResponse
+    public function saveResetPassword(PasswordResetSaveRequest $request): HttpResponse
     {
         $this->authService->saveResetPassword(
             $request->input('email'),
@@ -105,10 +105,10 @@ class AuthController extends Controller
             $request->input('password')
         );
 
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::noContent();
     }
 
-    public function changePassword(PasswordChangeRequest $request): JsonResponse
+    public function changePassword(PasswordChangeRequest $request): HttpResponse
     {
         /** @var User $user */
         $user = $request->user();
@@ -118,7 +118,7 @@ class AuthController extends Controller
             $request->input('password_new')
         );
 
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::noContent();
     }
 
     public function profile(Request $request): JsonResponse
@@ -170,36 +170,36 @@ class AuthController extends Controller
         return TFARecoveryCodesResource::make($this->authService->generateRecoveryCodes($dto));
     }
 
-    public function removeTFA(TFAPasswordRequest $request): JsonResponse
+    public function removeTFA(TFAPasswordRequest $request): HttpResponse
     {
         $this->authService->removeTFA(TFAPasswordDto::instantiateFromRequest($request));
 
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::noContent();
     }
 
-    public function removeUsersTFA(User $user): JsonResponse
+    public function removeUsersTFA(User $user): HttpResponse
     {
         Gate::inspect('removeUserTFA', [User::class, $user]);
 
         $this->authService->removeUsersTFA($user);
 
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::noContent();
     }
 
-    public function register(RegisterRequest $request): JsonResource
+    public function register(RegisterDto $dto): JsonResource
     {
-        return UserResource::make($this->authService->register(RegisterDto::instantiateFromRequest($request)));
+        return UserResource::make($this->authService->register($dto));
     }
 
     public function storeSavedAddress(SavedAddressStoreRequest $request, int $type): JsonResource
     {
-        $this->savedAddresService->storeAddress(
+        $this->savedAddersService->storeAddress(
             SavedAddressDto::instantiateFromRequest($request),
             $type
         );
 
         return SavedAddressResource::collection(
-            SavedAddress::where([
+            SavedAddress::query()->where([
                 'user_id' => Auth::id(),
                 'type' => $type,
             ])->get()
@@ -211,14 +211,14 @@ class AuthController extends Controller
         SavedAddress $address,
         int $type
     ): JsonResource {
-        $this->savedAddresService->updateAddress(
+        $this->savedAddersService->updateAddress(
             $address,
             SavedAddressDto::instantiateFromRequest($request),
             $type
         );
 
         return SavedAddressResource::collection(
-            SavedAddress::where([
+            SavedAddress::query()->where([
                 'user_id' => Auth::id(),
                 'type' => $type,
             ])->get()
@@ -227,10 +227,10 @@ class AuthController extends Controller
 
     public function deleteSavedAddress(SavedAddress $address, int $type): JsonResource
     {
-        $this->savedAddresService->deleteSavedAddress($address);
+        $this->savedAddersService->deleteSavedAddress($address);
 
         return SavedAddressResource::collection(
-            SavedAddress::where([
+            SavedAddress::query()->where([
                 'user_id' => Auth::id(),
                 'type' => $type,
             ])->get()

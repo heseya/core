@@ -51,7 +51,7 @@ class AvailabilityTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testRestockAvailable($user): void
+    public function testRestockAvailable(string $user): void
     {
         Event::fake(ProductUpdated::class);
 
@@ -113,7 +113,7 @@ class AvailabilityTest extends TestCase
      * @dataProvider authProvider
      * Case when options' permutations require both items' quantity to be greater than 0, restocking only 1 item.
      */
-    public function testRestockUnavailable($user): void
+    public function testRestockUnavailable(string $user): void
     {
         $this->{$user}->givePermissionTo('deposits.add');
 
@@ -208,7 +208,7 @@ class AvailabilityTest extends TestCase
      * @dataProvider authProvider
      * Case when permutation requires single item with greater quantity.
      */
-    public function testProductRequiresSingleItemWithGreaterQuantity($user): void
+    public function testProductRequiresSingleItemWithGreaterQuantity(string $user): void
     {
         Event::fake(ProductUpdated::class);
 
@@ -256,7 +256,7 @@ class AvailabilityTest extends TestCase
      * @dataProvider authProvider
      * Case when permutation requires single item with greater quantity failed due to too small deposit.
      */
-    public function testProductRequiresSingleItemWithGreaterQuantityFailed($user): void
+    public function testProductRequiresSingleItemWithGreaterQuantityFailed(string $user): void
     {
         Event::fake(ProductUpdated::class);
 
@@ -304,7 +304,7 @@ class AvailabilityTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUnavailableAfterOrder($user): void
+    public function testUnavailableAfterOrder(string $user): void
     {
         Event::fake(ProductUpdated::class);
 
@@ -369,7 +369,7 @@ class AvailabilityTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testAvailableAfterOrderCancel($user): void
+    public function testAvailableAfterOrderCancel(string $user): void
     {
         Event::fake(ProductUpdated::class);
 
@@ -471,7 +471,7 @@ class AvailabilityTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductAvailabilityAfterProductUpdate($user): void
+    public function testProductAvailabilityAfterProductUpdate(string $user): void
     {
         Event::fake(ProductUpdated::class);
 
@@ -513,7 +513,7 @@ class AvailabilityTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductAvailabilityAfterProductUpdateFailed($user): void
+    public function testProductAvailabilityAfterProductUpdateFailed(string $user): void
     {
         Event::fake(ProductUpdated::class);
 
@@ -621,14 +621,17 @@ class AvailabilityTest extends TestCase
     /**
      * @dataProvider multipleSchemasProvider
      */
-    public function testCreateWithMultipleSchemasWithOptions($user, int $schemaCount): void
+    public function testCreateWithMultipleSchemasWithOptions(string $user, int $schemaCount): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
         $schemas = $this->createSchemasWithOptions($schemaCount);
 
         $this->actingAs($this->{$user})->postJson('/products', [
-            'name' => 'Test',
+            'translations' => [
+                $this->lang => ['name' => 'Test'],
+            ],
+            'published' => [$this->lang],
             'slug' => 'test',
             'price' => 10,
             'public' => false,
@@ -641,7 +644,7 @@ class AvailabilityTest extends TestCase
     /**
      * @dataProvider multipleSchemasProvider
      */
-    public function testAddDepositToItemInSchemaOption($user, int $schemaCount): void
+    public function testAddDepositToItemInSchemaOption(string $user, int $schemaCount): void
     {
         $this->{$user}->givePermissionTo('deposits.add');
 

@@ -1,0 +1,11 @@
+Reorder:
+  content:
+    application/json:
+      schema:
+        required:
+          - ids
+        type: object
+        properties:
+          ids:
+            description: 'Array of ids'
+            type: array

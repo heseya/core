@@ -219,7 +219,6 @@ readonly class UserService implements UserServiceContract
             $user->securityCodes()->delete();
 
             // Disassociate orders from the user
-            // Order has audits containing buyer_id, but they cannot just be deleted :(
             $user->orders()->update([
                 'buyer_id' => null,
                 'buyer_type' => null,
@@ -254,10 +253,6 @@ readonly class UserService implements UserServiceContract
             ]);
             $user->remember_token = null;
             $user->save();
-
-            // Delete audits related to the user
-            // Must be done after the user is updated
-            $user->audits()->delete();
 
             // Delete user preferences
             $preferences?->delete();

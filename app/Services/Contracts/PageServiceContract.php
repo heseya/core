@@ -2,8 +2,8 @@
 
 namespace App\Services\Contracts;
 
-use App\Dtos\PageCreateDto;
-use App\Dtos\PageUpdateDto;
+use App\DTO\Page\PageCreateDto;
+use App\DTO\Page\PageUpdateDto;
 use App\Models\Page;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 

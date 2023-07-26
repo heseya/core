@@ -2290,14 +2290,15 @@ class AuthTest extends TestCase
         ]);
 
         $email = $this->faker->email();
-        $this->json('POST', '/register', [
-            'name' => 'Registered user',
-            'email' => $email,
-            'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
-            'roles' => [
-                $newRole->getKey(),
-            ],
-        ])
+        $this
+            ->json('POST', '/register', [
+                'name' => 'Registered user',
+                'email' => $email,
+                'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+                'roles' => [
+                    $newRole->getKey(),
+                ],
+            ])
             ->assertStatus(Response::HTTP_CREATED)
             ->assertJsonFragment([
                 $newRole->getKeyName() => $newRole->getKey(),
@@ -2368,7 +2369,8 @@ class AuthTest extends TestCase
     {
         Notification::fake();
 
-        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        /** @var Role $role */
+        $role = Role::query()->where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
         $role->givePermissionTo('auth.register');
 
         $email = $this->faker->email();
@@ -2402,7 +2404,8 @@ class AuthTest extends TestCase
                 ],
             ]);
 
-        $user = User::where('email', $email)->first();
+        /** @var User $user */
+        $user = User::query()->where('email', $email)->first();
 
         $this->assertDatabaseMissing('metadata', [
             'model_id' => $user->getKey(),

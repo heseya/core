@@ -5,7 +5,6 @@ namespace Tests\Unit;
 use App\Enums\Currency;
 use App\Models\Address;
 use App\Models\App;
-use App\Models\Audit;
 use App\Models\Deposit;
 use App\Models\Discount;
 use App\Models\Item;
@@ -14,7 +13,6 @@ use App\Models\Option;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\OrderSchema;
-use App\Models\PackageTemplate;
 use App\Models\Page;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
@@ -52,17 +50,6 @@ class TimeFormatTest extends TestCase
     public function testAppTimeFormat(): void
     {
         $this->modelTimeFormat(App::factory()->create(), ['created_at', 'updated_at']);
-    }
-
-    public function testAuditTimeFormat(): void
-    {
-        $audit = Audit::create([
-            'event' => 'event',
-            'auditable_type' => 'auditable_type',
-            'auditable_id' => 'auditable_id',
-        ]);
-
-        $this->modelTimeFormat($audit, ['created_at']);
     }
 
     public function testDepositTimeFormat(): void
@@ -158,11 +145,6 @@ class TimeFormatTest extends TestCase
         ]);
 
         $this->modelTimeFormat($orderSchema, ['created_at', 'updated_at']);
-    }
-
-    public function testPackageTemplateTimeFormat(): void
-    {
-        $this->modelTimeFormat(PackageTemplate::factory()->create(), ['created_at', 'updated_at']);
     }
 
     public function testPageTimeFormat(): void

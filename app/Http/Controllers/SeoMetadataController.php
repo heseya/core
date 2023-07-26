@@ -2,20 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Dtos\SeoKeywordsDto;
-use App\Dtos\SeoMetadataDto;
-use App\Http\Requests\SeoKeywordsRequest;
-use App\Http\Requests\SeoRequest;
+use App\DTO\SeoMetadata\SeoKeywordsDto;
+use App\DTO\SeoMetadata\SeoMetadataDto;
 use App\Http\Resources\SeoKeywordsResource;
 use App\Http\Resources\SeoMetadataResource;
 use App\Services\Contracts\SeoMetadataServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class SeoMetadataController extends Controller
+final class SeoMetadataController extends Controller
 {
     public function __construct(
-        private SeoMetadataServiceContract $seoMetadataService,
+        private readonly SeoMetadataServiceContract $seoMetadataService,
     ) {}
 
     public function show(): JsonResponse
@@ -25,19 +23,13 @@ class SeoMetadataController extends Controller
             ->setStatusCode(200);
     }
 
-    public function createOrUpdate(SeoRequest $request): JsonResource
+    public function createOrUpdate(SeoMetadataDto $dto): JsonResource
     {
-        $seo = SeoMetadataDto::instantiateFromRequest($request);
-
-        return SeoMetadataResource::make($this->seoMetadataService->createOrUpdate($seo));
+        return SeoMetadataResource::make($this->seoMetadataService->createOrUpdate($dto));
     }
 
-    public function checkKeywords(SeoKeywordsRequest $request): JsonResource
+    public function checkKeywords(SeoKeywordsDto $dto): JsonResource
     {
-        $seoCollection = $this->seoMetadataService->checkKeywords(
-            SeoKeywordsDto::instantiateFromRequest($request),
-        );
-
-        return SeoKeywordsResource::make($seoCollection);
+        return SeoKeywordsResource::make($this->seoMetadataService->checkKeywords($dto));
     }
 }

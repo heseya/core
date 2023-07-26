@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Product;
+use App\Rules\Translations;
 use Illuminate\Validation\Rule;
 
 class ProductUpdateRequest extends ProductCreateRequest
@@ -26,6 +27,12 @@ class ProductUpdateRequest extends ProductCreateRequest
             'max:255',
             'alpha_dash',
             Rule::unique('products')->ignore($product->slug, 'slug'),
+        ];
+
+        $rules['published'] = ['nullable', 'array', 'min:1'];
+        $rules['translations'] = [
+            'nullable',
+            new Translations(['name', 'description_html', 'description_short']),
         ];
 
         return $rules;

@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Audits\Redactors\AddressRedactor;
-use App\Audits\Redactors\StatusRedactor;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\OrderSearch;
@@ -28,15 +26,12 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
-use OwenIt\Auditing\Auditable;
-use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @mixin IdeHelperOrder
  */
-class Order extends Model implements AuditableContract, SortableContract
+class Order extends Model implements SortableContract
 {
-    use Auditable;
     use HasCriteria;
     use HasFactory;
     use HasMetadata;
@@ -67,26 +62,6 @@ class Order extends Model implements AuditableContract, SortableContract
         'shipping_place',
         'invoice_requested',
         'shipping_type',
-    ];
-
-    protected array $auditInclude = [
-        'code',
-        'email',
-        'currency',
-        'comment',
-        'status_id',
-        'shipping_method_id',
-        'digital_shipping_method_id',
-        'shipping_price',
-        'shipping_number',
-        'billing_address_id',
-        'shipping_address_id',
-    ];
-
-    protected array $attributeModifiers = [
-        'status_id' => StatusRedactor::class,
-        'billing_address_id' => AddressRedactor::class,
-        'shipping_address_id' => AddressRedactor::class,
     ];
 
     protected array $criteria = [
@@ -194,17 +169,6 @@ class Order extends Model implements AuditableContract, SortableContract
         return $this->hasManyThrough(Deposit::class, OrderProduct::class);
     }
 
-    /**
-     * @param array $items
-     */
-    public function saveItems($items): void
-    {
-        foreach ($items as $item) {
-            $item = OrderProduct::query()->create($item);
-            $this->products()->save($item);
-        }
-    }
-
     public function products(): HasMany
     {
         return $this->hasMany(OrderProduct::class);
@@ -216,15 +180,6 @@ class Order extends Model implements AuditableContract, SortableContract
             ->belongsToMany(Media::class, 'order_document', 'order_id', 'media_id')
             ->using(OrderDocument::class)
             ->withPivot('id', 'type', 'name');
-    }
-
-    public function generateCode(): string
-    {
-        do {
-            $code = Str::upper(Str::random(6));
-        } while (self::query()->where('code', $code)->exists());
-
-        return $code;
     }
 
     public function buyer(): MorphTo

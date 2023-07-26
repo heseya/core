@@ -2,22 +2,25 @@
 
 namespace App\Services;
 
+use App\DTO\ProductSchema\OptionDto;
 use App\Models\Option;
 use App\Models\Schema;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\OptionServiceContract;
-use Heseya\Dto\Missing;
-use Illuminate\Support\Collection;
+use Spatie\LaravelData\Optional;
 
-class OptionService implements OptionServiceContract
+final readonly class OptionService implements OptionServiceContract
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
     ) {}
 
-    public function sync(Schema $schema, array $options = []): void
+    /**
+     * @param OptionDto[] $options
+     */
+    public function sync(Schema $schema, array $options): void
     {
-        $keep = Collection::empty();
+        $keep = [];
 
         foreach ($options as $order => $optionItem) {
             $optionData = array_merge(
@@ -25,25 +28,30 @@ class OptionService implements OptionServiceContract
                 ['order' => $order],
             );
 
-            if (!$optionItem->getId() instanceof Missing) {
+            if (!$optionItem->id instanceof Optional) {
                 /** @var Option $option */
-                $option = Option::query()->findOrFail($optionItem->getId());
-                $option->update($optionData);
+                $option = Option::query()->findOrFail($optionItem->id);
+                $option->fill($optionData);
             } else {
-                $option = $schema->options()->create($optionData);
+                /** @var Option $option */
+                $option = $schema->options()->make($optionData);
             }
 
-            $option->items()->sync(
-                !$optionItem->getItems() instanceof Missing ?
-                    $optionItem->getItems() ?? []
-                    : [],
-            );
-
-            if (!($optionItem->getMetadata() instanceof Missing)) {
-                $this->metadataService->sync($option, $optionItem->getMetadata());
+            foreach ($optionItem->translations ?? [] as $lang => $translations) {
+                $option->setLocale($lang)->fill($translations);
             }
 
-            $keep->add($option->getKey());
+            $option->save();
+
+            if (!($optionItem->items instanceof Optional)) {
+                $option->items()->sync($optionItem->items);
+            }
+
+            if (!($optionItem->metadata instanceof Optional)) {
+                $this->metadataService->sync($option, $optionItem->metadata);
+            }
+
+            $keep[] = $option->getKey();
         }
 
         $schema->options()->whereNotIn('id', $keep)->delete();

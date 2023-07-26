@@ -5,7 +5,7 @@ namespace App\Rules;
 use App\Models\Schema;
 use Illuminate\Contracts\Validation\Rule;
 
-class OptionAvailable implements Rule
+readonly class OptionAvailable implements Rule
 {
     public function __construct(
         private Schema $schema,

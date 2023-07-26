@@ -19,7 +19,12 @@ class ProductCreateTest extends TestCase
         $response = $this
             ->actingAs($this->{$user})
             ->json('POST', '/products', [
-                'name' => 'Test',
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                    ],
+                ],
+                'published' => [$this->lang],
                 'slug' => 'slug',
                 'price' => 100,
                 'public' => true,

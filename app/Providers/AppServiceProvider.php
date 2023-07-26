@@ -2,12 +2,10 @@
 
 namespace App\Providers;
 
-use App\Models\Product;
 use App\Services\AnalyticsService;
 use App\Services\AppService;
 use App\Services\AttributeOptionService;
 use App\Services\AttributeService;
-use App\Services\AuditService;
 use App\Services\AuthService;
 use App\Services\AvailabilityService;
 use App\Services\BannerService;
@@ -16,7 +14,6 @@ use App\Services\Contracts\AnalyticsServiceContract;
 use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\AttributeOptionServiceContract;
 use App\Services\Contracts\AttributeServiceContract;
-use App\Services\Contracts\AuditServiceContract;
 use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\BannerServiceContract;
@@ -28,6 +25,7 @@ use App\Services\Contracts\EventServiceContract;
 use App\Services\Contracts\FavouriteServiceContract;
 use App\Services\Contracts\GoogleCategoryServiceContract;
 use App\Services\Contracts\ItemServiceContract;
+use App\Services\Contracts\LanguageServiceContract;
 use App\Services\Contracts\MediaAttachmentServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
@@ -35,13 +33,11 @@ use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\OptionServiceContract;
 use App\Services\Contracts\OrderServiceContract;
-use App\Services\Contracts\PackageTemplateServiceContract;
 use App\Services\Contracts\PageServiceContract;
 use App\Services\Contracts\PaymentMethodServiceContract;
 use App\Services\Contracts\PaymentServiceContract;
 use App\Services\Contracts\PermissionServiceContract;
 use App\Services\Contracts\PriceServiceContract;
-use App\Services\Contracts\ProductSearchServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\Contracts\ProviderServiceContract;
@@ -58,6 +54,7 @@ use App\Services\Contracts\SilverboxServiceContract;
 use App\Services\Contracts\SortServiceContract;
 use App\Services\Contracts\StatusServiceContract;
 use App\Services\Contracts\TokenServiceContract;
+use App\Services\Contracts\TranslationServiceContract;
 use App\Services\Contracts\UrlServiceContract;
 use App\Services\Contracts\UserLoginAttemptServiceContract;
 use App\Services\Contracts\UserServiceContract;
@@ -70,6 +67,7 @@ use App\Services\EventService;
 use App\Services\FavouriteService;
 use App\Services\GoogleCategoryService;
 use App\Services\ItemService;
+use App\Services\LanguageService;
 use App\Services\MediaAttachmentService;
 use App\Services\MediaService;
 use App\Services\MetadataService;
@@ -77,13 +75,11 @@ use App\Services\NameService;
 use App\Services\OneTimeSecurityCodeService;
 use App\Services\OptionService;
 use App\Services\OrderService;
-use App\Services\PackageTemplateService;
 use App\Services\PageService;
 use App\Services\PaymentMethodService;
 use App\Services\PaymentService;
 use App\Services\PermissionService;
 use App\Services\PriceService;
-use App\Services\ProductSearchService;
 use App\Services\ProductService;
 use App\Services\ProductSetService;
 use App\Services\ProviderService;
@@ -100,13 +96,13 @@ use App\Services\SilverboxService;
 use App\Services\SortService;
 use App\Services\StatusService;
 use App\Services\TokenService;
+use App\Services\TranslationService;
 use App\Services\UrlService;
 use App\Services\UserLoginAttemptService;
 use App\Services\UserService;
 use App\Services\WebHookService;
 use App\Services\WishlistService;
 use Illuminate\Support\ServiceProvider;
-use Laravel\Scout\Builder;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -129,7 +125,6 @@ class AppServiceProvider extends ServiceProvider
         UserServiceContract::class => UserService::class,
         RoleServiceContract::class => RoleService::class,
         PermissionServiceContract::class => PermissionService::class,
-        AuditServiceContract::class => AuditService::class,
         TokenServiceContract::class => TokenService::class,
         ProductServiceContract::class => ProductService::class,
         WebHookServiceContract::class => WebHookService::class,
@@ -137,7 +132,9 @@ class AppServiceProvider extends ServiceProvider
         SeoMetadataServiceContract::class => SeoMetadataService::class,
         UrlServiceContract::class => UrlService::class,
         ItemServiceContract::class => ItemService::class,
+        LanguageServiceContract::class => LanguageService::class,
         OneTimeSecurityCodeContract::class => OneTimeSecurityCodeService::class,
+        TranslationServiceContract::class => TranslationService::class,
         SavedAddressServiceContract::class => SavedAddressService::class,
         AvailabilityServiceContract::class => AvailabilityService::class,
         DocumentServiceContract::class => DocumentService::class,
@@ -145,12 +142,10 @@ class AppServiceProvider extends ServiceProvider
         AttributeServiceContract::class => AttributeService::class,
         AttributeOptionServiceContract::class => AttributeOptionService::class,
         SortServiceContract::class => SortService::class,
-        ProductSearchServiceContract::class => ProductSearchService::class,
         ConsentServiceContract::class => ConsentService::class,
         BannerServiceContract::class => BannerService::class,
         UserLoginAttemptServiceContract::class => UserLoginAttemptService::class,
         StatusServiceContract::class => StatusService::class,
-        PackageTemplateServiceContract::class => PackageTemplateService::class,
         DepositServiceContract::class => DepositService::class,
         ShippingTimeDateServiceContract::class => ShippingTimeDateService::class,
         ProviderServiceContract::class => ProviderService::class,
@@ -180,19 +175,5 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->isLocal()) {
             $this->app->register('\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider');
         }
-    }
-
-    public function boot(): void
-    {
-        Builder::macro('sort', function (?string $sortString = null) {
-            if ($sortString !== null) {
-                // @phpstan-ignore-next-line
-                return app(SortServiceContract::class)->sort($this, $sortString);
-            }
-
-            return $this;
-        });
-
-        Product::disableSearchSyncing();
     }
 }

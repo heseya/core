@@ -71,6 +71,6 @@ class PayPal implements PaymentMethod
             'status' => PaymentStatus::SUCCESSFUL,
         ]);
 
-        return Redirect::to(Config::get('app.store_url') . '/status/' . $payment->order->code);
+        return Redirect::to($payment->continue_url ?? Config::get('app.store_url'));
     }
 }

@@ -3,12 +3,12 @@
 namespace App\Traits;
 
 use App\Services\Contracts\SortServiceContract;
+use App\SortColumnTypes\SortableColumn;
 use Illuminate\Database\Eloquent\Builder;
-use Laravel\Scout\Builder as ScoutBuilder;
 
 trait Sortable
 {
-    public function scopeSort(Builder $query, ?string $sortString = null): Builder|ScoutBuilder
+    public function scopeSort(Builder $query, ?string $sortString = null): Builder
     {
         if ($sortString !== null) {
             $query = app(SortServiceContract::class)
@@ -23,8 +23,16 @@ trait Sortable
 
     public function getSortable(): array
     {
-        // @phpstan-ignore-next-line
-        return $this->sortable ?? [];
+        /** @phpstan-ignore-next-line */
+        $sortable = $this->sortable ?? [];
+
+        foreach ($sortable as $key => $value) {
+            if ($value instanceof SortableColumn) {
+                $sortable['$key'] = $value::getColumnName($key);
+            }
+        }
+
+        return $sortable;
     }
 
     public function getDefaultSortBy(): string

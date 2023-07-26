@@ -21,7 +21,6 @@ use App\Http\Requests\OrderDocumentRequest;
 use App\Http\Requests\OrderIndexRequest;
 use App\Http\Requests\OrderProductSearchRequest;
 use App\Http\Requests\OrderProductUpdateRequest;
-use App\Http\Requests\OrderShippingListRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Http\Requests\SendDocumentRequest;
@@ -170,13 +169,6 @@ class OrderController extends Controller
         Gate::inspect('showUserOrder', [Order::class, $order]);
 
         return OrderResource::make($order);
-    }
-
-    public function shippingLists(Order $order, OrderShippingListRequest $request): JsonResource
-    {
-        return OrderResource::make(
-            $this->orderService->shippingList($order, $request->package_template_id)
-        );
     }
 
     public function storeDocument(OrderDocumentRequest $request, Order $order): JsonResource

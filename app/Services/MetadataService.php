@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
-use App\Dtos\MetadataDto;
-use App\Dtos\MetadataPersonalDto;
+use App\DTO\Metadata\MetadataDto;
+use App\DTO\Metadata\MetadataPersonalDto;
 use App\Dtos\MetadataPersonalListDto;
 use App\Models\Model;
-use App\Models\Product;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\MetadataServiceContract;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -29,17 +29,12 @@ class MetadataService implements MetadataServiceContract
 
     public function updateOrCreate(Model|Role $model, MetadataDto $dto): void
     {
-        $this->processMetadata($model, $dto, $dto->isPublic() ? 'metadata' : 'metadataPrivate');
-
-        if ($model instanceof Product) {
-            $model->searchable();
-        }
+        $this->processMetadata($model, $dto, $dto->public ? 'metadata' : 'metadataPrivate');
     }
 
     public function returnModel(array $routeSegments): Model|Role|null
     {
         $segments = Collection::make($routeSegments);
-
         $segment = $segments->first();
 
         $class = match ($segment) {
@@ -67,8 +62,9 @@ class MetadataService implements MetadataServiceContract
     public function updateOrCreateMyPersonal(MetadataPersonalListDto $dto): Collection
     {
         $user = Auth::user();
-        if ($user !== null) {
-            foreach ($dto->getMetadata() as $metadata) {
+
+        if ($user instanceof User) {
+            foreach ($dto->metadata as $metadata) {
                 $this->processMetadata($user, $metadata, 'metadataPersonal');
             }
 
@@ -80,8 +76,10 @@ class MetadataService implements MetadataServiceContract
 
     public function updateOrCreateUserPersonal(MetadataPersonalListDto $dto, string $userId): Collection
     {
-        $user = User::findOrFail($userId);
-        foreach ($dto->getMetadata() as $metadata) {
+        /** @var User $user */
+        $user = User::query()->findOrFail($userId);
+
+        foreach ($dto->metadata as $metadata) {
             $this->processMetadata($user, $metadata, 'metadataPersonal');
         }
 
@@ -93,19 +91,27 @@ class MetadataService implements MetadataServiceContract
         return $segments[2] === 'options';
     }
 
-    private function processMetadata(Model|Role $model, MetadataDto|MetadataPersonalDto $dto, string $relation): void
-    {
+    private function processMetadata(
+        Model|Role $model,
+        MetadataDto|MetadataPersonalDto $dto,
+        string $relation,
+    ): void {
+        /** @var Builder $query */
         $query = $model->{$relation}();
 
-        if ($dto->getValue() === null) {
-            $query->where('name', $dto->getName())->delete();
+        if ($dto->value === null) {
+            $query->where('name', $dto->name)->delete();
 
             return;
         }
 
         $query->updateOrCreate(
-            ['name' => $dto->getName()],
-            $dto->toArray(),
+            ['name' => $dto->name],
+            [
+                'value' => $dto->value,
+                'value_type' => $dto->value_type,
+                'public' => $dto->public ?? true,
+            ],
         );
     }
 }

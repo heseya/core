@@ -15,7 +15,6 @@ use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\SchemaType;
 use App\Enums\ShippingType;
 use App\Events\OrderCreated;
-use App\Events\OrderRequestedShipping;
 use App\Events\OrderUpdated;
 use App\Events\OrderUpdatedShippingNumber;
 use App\Events\SendOrderUrls;
@@ -30,7 +29,6 @@ use App\Models\CartResource;
 use App\Models\Option;
 use App\Models\Order;
 use App\Models\OrderProduct;
-use App\Models\PackageTemplate;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
@@ -55,7 +53,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
-class OrderService implements OrderServiceContract
+final readonly class OrderService implements OrderServiceContract
 {
     public function __construct(
         private DiscountServiceContract $discountService,
@@ -369,14 +367,6 @@ class OrderService implements OrderServiceContract
             ->paginate(Config::get('pagination.per_page'));
     }
 
-    public function shippingList(Order $order, string $packageTemplateId): Order
-    {
-        $packageTemplate = PackageTemplate::findOrFail($packageTemplateId);
-        OrderRequestedShipping::dispatch($order, $packageTemplate);
-
-        return $order;
-    }
-
     public function cartProcess(CartDto $cartDto): CartResource
     {
         // Lista tylko dostępnych produktów
@@ -497,7 +487,6 @@ class OrderService implements OrderServiceContract
 
         $old = Address::find($order->{$attribute});
         Cache::add('address.' . $order->{$attribute}, $old ? ((string) $old) : null);
-        $order->forceAudit($attribute);
         if ($attribute === 'shipping_address_id' && $order->shipping_type === ShippingType::POINT) {
             return Address::create($addressDto->toArray());
         }

@@ -18,7 +18,6 @@ trait AvailabilityUntiles
         parent::__construct($name, $data, $dataName);
 
         $this->availabilityService = new AvailabilityService(new DepositService());
-        Item::disableAuditing();
     }
 
     /**

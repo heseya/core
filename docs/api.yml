@@ -120,10 +120,6 @@ paths:
     $ref: './paths/Orders.yml#/OrderProductUrls'
   /cart/process:
     $ref: './paths/Orders.yml#/CartProcess'
-  /package-templates:
-    $ref: './paths/PackageTemplates.yml#/PackageTemplates'
-  '/package-templates/id:{id}':
-    $ref: './paths/PackageTemplates.yml#/PackageTemplatesParam'
   /pages:
     $ref: './paths/Pages.yml#/Pages'
   '/pages/{slug}':
@@ -304,10 +300,14 @@ paths:
     $ref: './paths/WebHooks.yml#/WebhooksParams'
   '/attributes':
     $ref: './paths/Attributes.yml#/Attributes'
+  '/attributes/reorder':
+    $ref: './paths/Attributes.yml#/AttributesReorder'
   '/attributes/id:{id}':
     $ref: './paths/Attributes.yml#/AttributesParams'
   '/attributes/id:{id}/options':
     $ref: './paths/Attributes.yml#/AttributeOption'
+  '/attributes/id:{id}/options/reorder':
+    $ref: './paths/Attributes.yml#/AttributeOptionReorder'
   '/attributes/id:{attribute_id}/options/id:{option_id}':
     $ref: './paths/Attributes.yml#/AttributeOptionParams'
   '/consents':
@@ -406,8 +406,6 @@ components:
       $ref: './schemas/ShippingMethods.yml#/ShippingMethod'
     Status:
       $ref: './schemas/Statuses.yml#/Status'
-    PackageTemplateSwagger:
-      $ref: './schemas/PackageTemplate.yml#/PackageTemplate'
     Tag:
       $ref: './schemas/Tags.yml#/Tag'
     ProductSet:

@@ -28,27 +28,25 @@ class ConsentService implements ConsentServiceContract
         $consent->delete();
     }
 
-    public function syncUserConsents(User $user, Collection $consents): void
+    public function syncUserConsents(User $user, array $consents): void
     {
-        $consents->each(function ($consent, $key) use ($user): void {
+        foreach ($consents as $key => $consent) {
             $user->consents()->attach($key, ['value' => $consent]);
-        });
+        }
     }
 
     public function updateUserConsents(?Collection $consents, User $user): void
     {
         if ($consents?->isNotEmpty()) {
-            $consents->each(function ($value, $key) use ($user): void {
-                ConsentUser::updateOrInsert(
-                    [
-                        'user_id' => $user->getKey(),
-                        'consent_id' => $key,
-                    ],
-                    [
-                        'value' => $value,
-                    ]
-                );
-            });
+            $consents->each(fn ($value, $key) => ConsentUser::updateOrInsert(
+                [
+                    'user_id' => $user->getKey(),
+                    'consent_id' => $key,
+                ],
+                [
+                    'value' => $value,
+                ],
+            ));
         }
     }
 }

@@ -20,7 +20,6 @@ class ProductSetCreateTest extends TestCase
 {
     private ProductSet $set;
     private ProductSet $privateSet;
-    private ProductSet $childSet;
     private ProductSet $subChildSet;
 
     public function setUp(): void
@@ -39,7 +38,7 @@ class ProductSetCreateTest extends TestCase
             'order' => 11,
         ]);
 
-        $this->childSet = ProductSet::factory()->create([
+        $childSet = ProductSet::factory()->create([
             'public' => true,
             'public_parent' => true,
             'parent_id' => $this->set->getKey(),
@@ -48,7 +47,7 @@ class ProductSetCreateTest extends TestCase
         $this->subChildSet = ProductSet::factory()->create([
             'public' => false,
             'public_parent' => true,
-            'parent_id' => $this->childSet->getKey(),
+            'parent_id' => $childSet->getKey(),
         ]);
     }
 
@@ -73,35 +72,38 @@ class ProductSetCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateMinimal($user): void
+    public function testCreateMinimal(string $user): void
     {
-        $this->{$user}->givePermissionTo('product_sets.add');
-
         Event::fake([ProductSetCreated::class]);
-
-        $set = [
-            'name' => 'Test',
-        ];
 
         $defaults = [
             'public' => true,
             'slug' => 'test',
         ];
 
-        $response = $this->actingAs($this->{$user})->postJson('/product-sets', $set + [
-            'slug_suffix' => 'test',
-            'slug_override' => false,
-        ]);
-        $response
+        $this->{$user}->givePermissionTo('product_sets.add');
+        $this
+            ->actingAs($this->{$user})
+            ->postJson('/product-sets', [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                    ],
+                ],
+                'published' => [$this->lang],
+                'public' => true,
+                'slug_suffix' => 'test',
+                'slug_override' => false,
+            ])
             ->assertCreated()
-            ->assertJson(['data' => $set + $defaults + [
+            ->assertJson(['data' => $defaults + [
                 'slug_override' => false,
                 'slug_suffix' => 'test',
                 'parent' => null,
-            ],
-            ]);
+            ]]);
 
-        $this->assertDatabaseHas('product_sets', $set + $defaults + [
+        $this->assertDatabaseHas('product_sets', $defaults + [
+            "name->{$this->lang}" => 'Test',
             'parent_id' => null,
         ]);
 
@@ -111,79 +113,39 @@ class ProductSetCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithUuid($user): void
+    public function testCreateWithUuid(string $user): void
     {
+        $id = Uuid::uuid4()->toString();
+
         $this->{$user}->givePermissionTo('product_sets.add');
-
-        Event::fake([ProductSetCreated::class]);
-
-        $set = [
-            'name' => 'Test',
-            'id' => Uuid::uuid4()->toString(),
-        ];
-
-        $response = $this->actingAs($this->{$user})->postJson('/product-sets', $set + [
-            'slug_suffix' => 'test',
-            'slug_override' => false,
-        ]);
-        $response
-            ->assertCreated()
-            ->assertJson(['data' => $set]);
-
-        $this->assertDatabaseHas('product_sets', $set);
-
-        Event::assertDispatched(ProductSetCreated::class);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateTreeViewFalse($user): void
-    {
-        $this->{$user}->givePermissionTo('product_sets.add');
-
-        Event::fake([ProductSetCreated::class]);
-
-        $set = [
-            'name' => 'Test',
-        ];
-
-        $defaults = [
-            'public' => true,
-            'slug' => 'test',
-        ];
-
         $this
             ->actingAs($this->{$user})
-            ->postJson('/product-sets?tree=0', $set + [
+            ->postJson('/product-sets', [
+                'id' => $id,
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                    ],
+                ],
+                'published' => [$this->lang],
+                'public' => true,
                 'slug_suffix' => 'test',
                 'slug_override' => false,
             ])
             ->assertCreated()
-            ->assertJson([
-                'data' => $set + $defaults + [
-                    'slug_override' => false,
-                    'slug_suffix' => 'test',
-                    'parent' => null,
-                    'children_ids' => [],
-                ],
-            ])
-            ->assertJsonMissing(['data' => 'children']);
+            ->assertJsonFragment(['id' => $id]);
 
-        $this->assertDatabaseHas(
-            'product_sets',
-            $set + $defaults + [
-                'parent_id' => null,
-            ]
-        );
-
-        Event::assertDispatched(ProductSetCreated::class);
+        $this->assertDatabaseHas('product_sets', [
+            'id' => $id,
+            "name->{$this->lang}" => 'Test',
+            'public' => true,
+        ]);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testCreateMinimalWithWebHook($user): void
+    public function testCreateMinimalWithWebHook(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.add');
 
@@ -199,29 +161,31 @@ class ProductSetCreateTest extends TestCase
 
         Bus::fake();
 
-        $set = [
-            'name' => 'Test',
-        ];
-
         $defaults = [
             'public' => true,
             'slug' => 'test',
         ];
 
-        $response = $this->actingAs($this->{$user})->postJson('/product-sets', $set + [
+        $response = $this->actingAs($this->{$user})->postJson('/product-sets', [
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test Parent',
+                ],
+            ],
+            'published' => [$this->lang],
+            'public' => true,
             'slug_suffix' => 'test',
             'slug_override' => false,
         ]);
         $response
             ->assertCreated()
-            ->assertJson(['data' => $set + $defaults + [
+            ->assertJson(['data' => $defaults + [
                 'slug_override' => false,
                 'slug_suffix' => 'test',
                 'parent' => null,
-            ],
-            ]);
+            ]]);
 
-        $this->assertDatabaseHas('product_sets', $set + $defaults + [
+        $this->assertDatabaseHas('product_sets', $defaults + [
             'parent_id' => null,
         ]);
 
@@ -250,7 +214,7 @@ class ProductSetCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateFull($user): void
+    public function testCreateFull(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.add');
 
@@ -261,19 +225,23 @@ class ProductSetCreateTest extends TestCase
             'url' => 'https://picsum.photos/seed/' . mt_rand(0, 999999) . '/800',
         ]);
 
-        $set = [
-            'name' => 'Test',
-            'public' => false,
-        ];
-
-        $response = $this->actingAs($this->{$user})->postJson('/product-sets', $set + [
+        $response = $this->actingAs($this->{$user})->postJson('/product-sets', [
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test Parent',
+                ],
+            ],
+            'published' => [$this->lang],
+            'public' => true,
             'slug_suffix' => 'test',
             'slug_override' => false,
             'cover_id' => $media->getKey(),
         ]);
         $response
             ->assertCreated()
-            ->assertJson(['data' => $set + [
+            ->assertJson(['data' => [
+                'name' => 'Test Parent',
+                'public' => true,
                 'slug_suffix' => 'test',
                 'slug_override' => false,
                 'parent' => null,
@@ -283,10 +251,10 @@ class ProductSetCreateTest extends TestCase
                     'type' => $media->type->value,
                     'url' => $media->url,
                 ],
-            ],
-            ]);
+            ]]);
 
-        $this->assertDatabaseHas('product_sets', $set + [
+        $this->assertDatabaseHas('product_sets', [
+            "name->{$this->lang}" => 'Test Parent',
             'parent_id' => null,
             'slug' => 'test',
         ]);
@@ -297,7 +265,7 @@ class ProductSetCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateFullWithWebHook($user): void
+    public function testCreateFullWithWebHook(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.add');
 
@@ -313,18 +281,20 @@ class ProductSetCreateTest extends TestCase
 
         Bus::fake();
 
-        $set = [
-            'name' => 'Test',
-            'public' => false,
-        ];
-
-        $response = $this->actingAs($this->{$user})->postJson('/product-sets', $set + [
+        $response = $this->actingAs($this->{$user})->postJson('/product-sets', [
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                ],
+            ],
+            'published' => [$this->lang],
             'slug_suffix' => 'test',
             'slug_override' => false,
+            'public' => false,
         ]);
         $response
             ->assertCreated()
-            ->assertJson(['data' => $set + [
+            ->assertJson(['data' => [
                 'slug_suffix' => 'test',
                 'slug_override' => false,
                 'parent' => null,
@@ -332,7 +302,7 @@ class ProductSetCreateTest extends TestCase
             ],
             ]);
 
-        $this->assertDatabaseHas('product_sets', $set + [
+        $this->assertDatabaseHas('product_sets', [
             'parent_id' => null,
             'slug' => 'test',
         ]);
@@ -362,17 +332,20 @@ class ProductSetCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateParent($user): void
+    public function testCreateParent(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.add');
 
         Event::fake([ProductSetCreated::class]);
 
-        $set = [
-            'name' => 'Test Parent',
-        ];
-
-        $response = $this->actingAs($this->{$user})->postJson('/product-sets', $set + [
+        $response = $this->actingAs($this->{$user})->postJson('/product-sets', [
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test Parent',
+                ],
+            ],
+            'published' => [$this->lang],
+            'public' => true,
             'slug_override' => false,
             'slug_suffix' => 'test-parent',
             'children_ids' => [
@@ -383,7 +356,7 @@ class ProductSetCreateTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJson(['data' => $set + [
+            ->assertJson(['data' => [
                 'slug_override' => false,
                 'slug_suffix' => 'test-parent',
                 'slug' => 'test-parent',
@@ -391,10 +364,10 @@ class ProductSetCreateTest extends TestCase
                     //                    $this->privateSet->getKey(),
                     $this->set->getKey(),
                 ],
-            ],
-            ]);
+            ]]);
 
-        $this->assertDatabaseHas('product_sets', $set + [
+        $this->assertDatabaseHas('product_sets', [
+            "name->{$this->lang}" => 'Test Parent',
             'slug' => 'test-parent',
         ]);
 
@@ -418,33 +391,38 @@ class ProductSetCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateChild($user): void
+    public function testCreateChild(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.add');
 
         Event::fake([ProductSetCreated::class]);
 
+        /** @var ProductSet $parent */
         $parent = ProductSet::factory()->create([
             'public' => true,
             'public_parent' => true,
             'order' => 15,
         ]);
 
-        $set = [
-            'name' => 'Test Child',
-        ];
-
         $parentId = [
             'parent_id' => $parent->getKey(),
         ];
 
-        $response = $this->actingAs($this->{$user})->postJson('/product-sets', $set + $parentId + [
+        $response = $this->actingAs($this->{$user})->postJson('/product-sets', $parentId + [
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test Child',
+                ],
+            ],
+            'published' => [$this->lang],
+            'public' => true,
             'slug_suffix' => 'test-child',
             'slug_override' => false,
         ]);
         $response
             ->assertCreated()
-            ->assertJson(['data' => $set + [
+            ->assertJson(['data' => [
+                'name' => 'Test Child',
                 'slug' => $parent->slug . '-test-child',
                 'slug_suffix' => 'test-child',
                 'slug_override' => false,
@@ -452,7 +430,7 @@ class ProductSetCreateTest extends TestCase
                     'id' => $parent->getKey(),
                     'name' => $parent->name,
                     'slug' => $parent->slug,
-                    'slug_suffix' => $parent->slugSuffix,
+                    'slug_suffix' => $parent->slug_suffix,
                     'slug_override' => false,
                     'public' => $parent->public,
                     'visible' => $parent->public && $parent->public_parent,
@@ -460,7 +438,8 @@ class ProductSetCreateTest extends TestCase
             ],
             ]);
 
-        $this->assertDatabaseHas('product_sets', $set + $parentId + [
+        $this->assertDatabaseHas('product_sets', $parentId + [
+            "name->{$this->lang}" => 'Test Child',
             'slug' => $parent->slug . '-test-child',
         ]);
 
@@ -470,7 +449,7 @@ class ProductSetCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateOrder($user): void
+    public function testCreateOrder(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.add');
 
@@ -481,29 +460,30 @@ class ProductSetCreateTest extends TestCase
             'order' => 20,
         ]);
 
-        $set = [
-            'name' => 'Test Order',
-        ];
-
-        $order = [
-            'order' => 21,
-        ];
-
-        $response = $this->actingAs($this->{$user})->postJson('/product-sets', $set + [
-            'slug_suffix' => 'test-order',
-            'slug_override' => false,
-        ]);
-        $response
+        $this
+            ->actingAs($this->{$user})
+            ->postJson('/product-sets', [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test Order',
+                    ],
+                ],
+                'public' => true,
+                'published' => [$this->lang],
+                'slug_suffix' => 'test-order',
+                'slug_override' => false,
+                'order' => 21,
+            ])
             ->assertCreated()
-            ->assertJson(['data' => $set + [
+            ->assertJson(['data' => [
                 'slug' => 'test-order',
                 'slug_suffix' => 'test-order',
                 'slug_override' => false,
-            ],
-            ]);
+            ]]);
 
-        $this->assertDatabaseHas('product_sets', $set + $order + [
+        $this->assertDatabaseHas('product_sets', [
             'slug' => 'test-order',
+            'order' => 21,
         ]);
 
         Event::assertDispatched(ProductSetCreated::class);
@@ -512,7 +492,7 @@ class ProductSetCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateChildVisibility($user): void
+    public function testCreateChildVisibility(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.add');
 
@@ -524,30 +504,34 @@ class ProductSetCreateTest extends TestCase
             'order' => 15,
         ]);
 
-        $set = [
-            'name' => 'Test Child',
-            'public' => true,
-        ];
-
         $parentId = [
             'parent_id' => $parent->getKey(),
         ];
 
-        $response = $this->actingAs($this->{$user})->postJson('/product-sets', $set + $parentId + [
-            'slug_suffix' => 'test-child',
-            'slug_override' => true,
-        ]);
-        $response
+        $this
+            ->actingAs($this->{$user})
+            ->postJson('/product-sets', $parentId + [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test Child',
+                    ],
+                ],
+                'published' => [$this->lang],
+                'public' => true,
+                'slug_suffix' => 'test-child',
+                'slug_override' => true,
+            ])
             ->assertCreated()
-            ->assertJson(['data' => $set + [
+            ->assertJson(['data' => [
+                'name' => 'Test Child',
                 'visible' => false,
                 'slug' => 'test-child',
                 'slug_suffix' => 'test-child',
                 'slug_override' => true,
-            ],
-            ]);
+            ]]);
 
-        $this->assertDatabaseHas('product_sets', $set + $parentId + [
+        $this->assertDatabaseHas('product_sets', $parentId + [
+            "name->{$this->lang}" => 'Test Child',
             'public_parent' => false,
         ]);
 
@@ -557,7 +541,7 @@ class ProductSetCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateDuplicateSlug($user): void
+    public function testCreateDuplicateSlug(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.add');
 
@@ -581,126 +565,61 @@ class ProductSetCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateTreeView($user): void
+    public function testCreateWithSeo(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.add');
-
-        Event::fake([ProductSetCreated::class]);
-
-        $child = ProductSet::factory()->create([
-            'parent_id' => 'null',
-            'name' => 'Child',
-            'slug' => 'child',
-            'public' => true,
-            'public_parent' => false,
-        ]);
-
-        $grandchild = ProductSet::factory()->create([
-            'parent_id' => $child->getKey(),
-            'name' => 'Grandchild',
-            'slug' => 'child-grandchild',
-            'public' => true,
-            'public_parent' => false,
-        ]);
-
-        $response = $this->actingAs($this->{$user})->postJson('/product-sets?tree=1', [
-            'name' => 'New',
-            'slug_override' => false,
-            'slug_suffix' => 'new',
-            'children_ids' => [
-                $child->getKey(),
-            ],
-        ]);
-        $parentId = $response->json('data.id');
-        $response
-            ->assertCreated()
-            ->assertJson(['data' => [
-                'parent' => null,
-                'slug' => 'new',
-                'slug_suffix' => 'new',
-                'slug_override' => false,
-                'children' => [
-                    [
-                        'id' => $child->getKey(),
-                        'name' => 'Child',
-                        'slug' => 'new-child',
-                        'slug_suffix' => 'child',
-                        'slug_override' => false,
-                        'public' => true,
-                        'visible' => true,
-                        'parent_id' => $parentId,
-                        'children' => [
-                            [
-                                'id' => $grandchild->getKey(),
-                                'name' => 'Grandchild',
-                                'slug' => 'new-child-grandchild',
-                                'slug_suffix' => 'grandchild',
-                                'slug_override' => false,
-                                'public' => true,
-                                'visible' => true,
-                                'parent_id' => $child->getKey(),
-                                'children' => [],
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-            ]);
-
-        Event::assertDispatched(ProductSetCreated::class);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateWithSeo($user): void
-    {
-        $this->{$user}->givePermissionTo('product_sets.add');
-
-        $set = [
-            'name' => 'Test',
-            'public' => false,
-        ];
 
         $media = Media::factory()->create([
             'type' => MediaType::PHOTO,
             'url' => 'https://picsum.photos/seed/' . mt_rand(0, 999999) . '/800',
         ]);
 
-        $response = $this->actingAs($this->{$user})->postJson('/product-sets', $set + [
+        $response = $this->actingAs($this->{$user})->postJson('/product-sets', [
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                ],
+            ],
+            'published' => [$this->lang],
+            'public' => true,
             'slug_suffix' => 'test',
             'slug_override' => false,
             'seo' => [
-                'title' => 'seo title',
-                'description' => 'seo description',
+                'translations' => [
+                    $this->lang => [
+                        'title' => 'seo title',
+                        'description' => 'seo description',
+                    ],
+                ],
+                'published' => [$this->lang],
                 'og_image_id' => $media->getKey(),
             ],
         ]);
+
         $response
             ->assertCreated()
-            ->assertJson(['data' => $set + [
+            ->assertJsonFragment([
+                'name' => 'Test',
                 'slug_suffix' => 'test',
                 'slug_override' => false,
                 'parent' => null,
                 'slug' => 'test',
-                'seo' => [
-                    'title' => 'seo title',
-                    'description' => 'seo description',
-                    'og_image' => [
-                        'id' => $media->getKey(),
-                    ],
-                ],
-            ],
-            ]);
+            ])
+            ->assertJsonFragment([
+                'title' => 'seo title',
+                'description' => 'seo description',
+            ])
+            ->assertJsonFragment(['id' => $media->getKey()]);
 
         $this->assertDatabaseHas('seo_metadata', [
-            'title' => 'seo title',
-            'description' => 'seo description',
-            'model_id' => $response->getData()->data->id,
+            "title->{$this->lang}" => 'seo title',
+            "description->{$this->lang}" => 'seo description',
+            'model_id' => $response->json('data.id'),
             'model_type' => ProductSet::class,
         ]);
 
-        $this->assertDatabaseHas('product_sets', $set + [
+        $this->assertDatabaseHas('product_sets', [
+            "name->{$this->lang}" => 'Test',
             'parent_id' => null,
             'slug' => 'test',
         ]);
@@ -709,25 +628,23 @@ class ProductSetCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithAttributes($user): void
+    public function testCreateWithAttributes(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.add');
 
         Event::fake([ProductSetCreated::class]);
 
-        $set = [
-            'name' => 'Test',
-        ];
-
-        $defaults = [
-            'public' => true,
-            'slug' => 'test',
-        ];
-
         $attrOne = Attribute::factory()->create();
         $attrTwo = Attribute::factory()->create();
 
-        $response = $this->actingAs($this->{$user})->postJson('/product-sets', $set + [
+        $response = $this->actingAs($this->{$user})->postJson('/product-sets', [
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                ],
+            ],
+            'published' => [$this->lang],
+            'public' => true,
             'slug_suffix' => 'test',
             'slug_override' => false,
             'attributes' => [
@@ -738,17 +655,18 @@ class ProductSetCreateTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJson(['data' => $set + $defaults + [
+            ->assertJsonFragment([
                 'slug_override' => false,
                 'slug_suffix' => 'test',
                 'parent' => null,
-            ],
+                'slug' => 'test',
             ]);
 
-        $productSet = ProductSet::find($response->getData()->data->id);
+        $productSet = ProductSet::find($response->json('data.id'));
 
-        $this->assertDatabaseHas('product_sets', $set + $defaults + [
+        $this->assertDatabaseHas('product_sets', [
             'parent_id' => null,
+            'slug' => 'test',
         ])
             ->assertDatabaseHas('attribute_product_set', [
                 'attribute_id' => $attrOne->getKey(),

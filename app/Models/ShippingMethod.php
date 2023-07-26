@@ -14,17 +14,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Auth;
-use OwenIt\Auditing\Auditable;
-use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @property ?Money $price
  *
  * @mixin IdeHelperShippingMethod
  */
-class ShippingMethod extends Model implements AuditableContract
+class ShippingMethod extends Model
 {
-    use Auditable;
     use HasCriteria;
     use HasDiscounts;
     use HasFactory;

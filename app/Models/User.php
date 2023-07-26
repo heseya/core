@@ -13,7 +13,6 @@ use App\Enums\SavedAddressType;
 use App\Models\Contracts\SortableContract;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasMetadata;
-use App\Traits\HasMetadataPersonal;
 use App\Traits\HasWebHooks;
 use App\Traits\HasWishlist;
 use App\Traits\Sortable;
@@ -33,8 +32,6 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
-use OwenIt\Auditing\Auditable;
-use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use Propaganistas\LaravelPhone\PhoneNumber;
 use Spatie\Permission\Traits\HasRoles;
@@ -44,9 +41,8 @@ use Spatie\Permission\Traits\HasRoles;
  *
  * @mixin IdeHelperUser
  */
-class User extends Model implements AuditableContract, AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, JWTSubject, SortableContract
+class User extends Model implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, JWTSubject, SortableContract
 {
-    use Auditable;
     use Authenticatable;
     use Authorizable;
     use CanResetPassword;
@@ -54,7 +50,6 @@ class User extends Model implements AuditableContract, AuthenticatableContract, 
     use HasDiscountConditions;
     use HasFactory;
     use HasMetadata;
-    use HasMetadataPersonal;
     use HasRoles;
     use HasWebHooks;
     use HasWishlist;
@@ -177,5 +172,10 @@ class User extends Model implements AuditableContract, AuthenticatableContract, 
     public function providers(): HasMany
     {
         return $this->hasMany(UserProvider::class, 'user_id', 'id');
+    }
+
+    public function metadataPersonal(): MorphMany
+    {
+        return $this->morphMany(MetadataPersonal::class, 'model', 'model_type', 'model_id');
     }
 }
