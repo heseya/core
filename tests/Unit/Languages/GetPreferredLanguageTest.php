@@ -4,14 +4,12 @@ namespace Tests\Unit\Languages;
 
 use App\Models\Language;
 use App\Traits\GetPreferredLanguage;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Tests\TestCase;
 
 class GetPreferredLanguageTest extends TestCase
 {
     use GetPreferredLanguage;
-    use RefreshDatabase;
 
     public function testDefaultNoHeader(): void
     {
