@@ -3,6 +3,7 @@
 namespace Tests\Feature\Orders;
 
 use App\Dtos\PriceDto;
+use App\Dtos\PriceRangeDto;
 use App\Dtos\ProductCreateDto;
 use App\Dtos\ShippingMethodCreateDto;
 use App\Enums\ConditionType;
@@ -13,6 +14,7 @@ use App\Enums\ShippingType;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
 use App\Models\Order;
+use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Services\Contracts\ProductServiceContract;
@@ -53,18 +55,21 @@ class OrderQATest extends TestCase
     {
         parent::setUp();
 
+        $currency = Currency::DEFAULT->value;
+
         /** @var ProductServiceContract $productService */
         $productService = App::make(ProductServiceContract::class);
         $this->product = $productService->create(ProductCreateDto::fake([
-            'prices_base' => [new PriceDto(Money::of(100, Currency::DEFAULT->value))],
+            'prices_base' => [new PriceDto(Money::of(100, $currency))],
             'public' => true,
         ]));
 
-        /** @var ShippingMethodServiceContract $productService */
-        $shippingMethodService = App::make(ShippingMethodServiceContract::class);
-        $this->shippingMethod = $shippingMethodService->store(ShippingMethodCreateDto::fake([
-            'shipping_type' => ShippingType::ADDRESS,
-        ]));
+        $this->shippingMethod = ShippingMethod::factory()->create();
+        $freeRange = PriceRange::query()->create([
+            'start' => Money::zero($currency),
+            'value' => Money::zero($currency),
+        ]);
+        $this->shippingMethod->priceRanges()->save($freeRange);
     }
 
     public function testSalesAndCode(): void
@@ -138,8 +143,7 @@ class OrderQATest extends TestCase
                 'items' => [[
                     'product_id' => $this->product->getKey(),
                     'quantity' => 1,
-                ],
-                ],
+                ]],
                 'coupons' => [
                     $coupon->code,
                 ],
@@ -184,8 +188,7 @@ class OrderQATest extends TestCase
                 'items' => [[
                     'product_id' => $this->product->getKey(),
                     'quantity' => 1,
-                ],
-                ],
+                ]],
                 'shipping_place' => self::ADDRESS,
                 'billing_address' => self::ADDRESS,
             ])

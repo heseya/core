@@ -728,6 +728,16 @@ readonly class DiscountService implements DiscountServiceContract
         $this->applyDiscountsOnProductsLazy($products, $salesWithBlockList);
     }
 
+    /**
+     * @throws MoneyMismatchException
+     * @throws ServerException
+     * @throws UnknownCurrencyException
+     * @throws RoundingNecessaryException
+     * @throws DtoException
+     * @throws MathException
+     * @throws ClientException
+     * @throws NumberFormatException
+     */
     public function checkActiveSales(): void
     {
         /** @var Collection<int, mixed> $activeSales */

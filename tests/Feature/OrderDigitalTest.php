@@ -2,9 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Currency;
 use App\Enums\ShippingType;
+use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\ShippingMethod;
+use Brick\Money\Money;
 use Tests\TestCase;
 
 class OrderDigitalTest extends TestCase
@@ -20,6 +23,8 @@ class OrderDigitalTest extends TestCase
     {
         parent::setUp();
 
+        $currency = Currency::DEFAULT->value;
+
         $this->digitalProduct = Product::factory()->create([
             'public' => true,
             'shipping_digital' => true,
@@ -27,6 +32,11 @@ class OrderDigitalTest extends TestCase
         $this->digitalShippingMethod = ShippingMethod::factory()->create([
             'shipping_type' => ShippingType::DIGITAL,
         ]);
+        $freeRange = PriceRange::query()->create([
+            'start' => Money::zero($currency),
+            'value' => Money::zero($currency),
+        ]);
+        $this->digitalShippingMethod->priceRanges()->save($freeRange);
 
         $this->physicalProduct = Product::factory()->create([
             'public' => true,
@@ -34,6 +44,11 @@ class OrderDigitalTest extends TestCase
         $this->physicalShippingMethod = ShippingMethod::factory()->create([
             'shipping_type' => ShippingType::ADDRESS,
         ]);
+        $freeRange = PriceRange::query()->create([
+            'start' => Money::zero($currency),
+            'value' => Money::zero($currency),
+        ]);
+        $this->physicalShippingMethod->priceRanges()->save($freeRange);
 
         $this->billingAddress = [
             'name' => 'Wojtek Testowy',

@@ -17,6 +17,7 @@ use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
+use Ramsey\Uuid\Uuid;
 
 class ProductRepository implements ProductRepositoryContract
 {
@@ -38,21 +39,27 @@ class ProductRepository implements ProductRepositoryContract
      */
     public static function setProductPrices(string $productId, array $priceMatrix): void
     {
-        // Probably can be optimized with sql down the line
+        $rows = [];
+
         foreach ($priceMatrix as $type => $prices) {
             foreach ($prices as $price) {
-                Price::query()
-                    ->updateOrCreate([
-                        'model_id' => $productId,
-                        'model_type' => Product::class,
-                        'price_type' => $type,
-                        'currency' => $price->value->getCurrency()->getCurrencyCode(),
-                    ], [
-                        'value' => $price->value,
-                        'is_net' => false,
-                    ]);
+                $rows[] = [
+                    'id' => Uuid::uuid4(),
+                    'model_id' => $productId,
+                    'model_type' => Product::class,
+                    'price_type' => $type,
+                    'currency' => $price->value->getCurrency()->getCurrencyCode(),
+                    'value' => $price->value->getMinorAmount(),
+                    'is_net' => false,
+                ];
             }
         }
+
+        Price::query()->upsert(
+            $rows,
+            ['model_id', 'price_type', 'currency'],
+            ['value', 'is_net'],
+        );
     }
 
     /**

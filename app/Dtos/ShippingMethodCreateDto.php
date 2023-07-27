@@ -76,6 +76,10 @@ class ShippingMethodCreateDto extends Dto implements InstantiateFromRequest
 
     /**
      * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
+     * @throws DtoException
      */
     public static function fake(array $data = []): self
     {
@@ -85,7 +89,7 @@ class ShippingMethodCreateDto extends Dto implements InstantiateFromRequest
 
         $priceRange = new PriceRangeDto(
             Money::zero($currency),
-            Money::of(round(mt_rand(500, 6000), -2), $currency),
+            Money::of(round(mt_rand(500, 2000) / 100, 2), $currency),
         );
 
         return new self(...$data + [
@@ -130,10 +134,5 @@ class ShippingMethodCreateDto extends Dto implements InstantiateFromRequest
     public function getShippingPoints(): ?array
     {
         return $this->shipping_points;
-    }
-
-    public function getAppId(): string|null
-    {
-        return $this->app_id;
     }
 }

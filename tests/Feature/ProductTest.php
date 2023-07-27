@@ -130,7 +130,10 @@ class ProductTest extends TestCase
             'id' => $this->product->getKey(),
             'name' => $this->product->name,
             'slug' => $this->product->slug,
-            'price' => (int) $this->product->price,
+            'prices_base' => [[
+                "gross" => $this->product->price,
+                "currency" => "PLN",
+            ]],
             'visible' => $this->product->public,
             'public' => (bool) $this->product->public,
             'available' => true,

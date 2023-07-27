@@ -199,7 +199,7 @@ final readonly class OrderService implements OrderServiceContract
                     ]);
 
                     $order->products()->save($orderProduct);
-                    $cartValueInitial += $product->price * $item->getQuantity();
+                    $cartValueInitial += $price * $item->getQuantity();
 
                     $schemaProductPrice = 0;
                     // Add schemas to products
@@ -283,6 +283,9 @@ final readonly class OrderService implements OrderServiceContract
         }
     }
 
+    /**
+     * @throws ClientException
+     */
     public function update(OrderUpdateDto $dto, Order $order): JsonResponse
     {
         DB::beginTransaction();

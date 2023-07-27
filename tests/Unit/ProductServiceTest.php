@@ -2,10 +2,18 @@
 
 namespace Tests\Unit;
 
+use App\Dtos\PriceDto;
+use App\Dtos\ProductCreateDto;
+use App\Enums\Currency;
 use App\Enums\SchemaType;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Services\Contracts\ProductServiceContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
+use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
 
@@ -13,46 +21,53 @@ class ProductServiceTest extends TestCase
 {
     private ProductServiceContract $productService;
 
+    private static int $price = 10;
+    private Product $product;
+
+    /**
+     * @throws RoundingNecessaryException
+     * @throws DtoException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
     public function setUp(): void
     {
         parent::setUp();
 
         $this->productService = App::make(ProductServiceContract::class);
+
+        /** @var Product $product */
+        $this->product = $this->productService->create(ProductCreateDto::fake([
+            'prices_base' => [new PriceDto(Money::of(self::$price, Currency::DEFAULT->value))],
+        ]));
     }
 
     public function testMinMaxPricesNoSchemas(): void
     {
-        $price = 10;
-        /** @var Product $product */
-        $product = Product::factory()->create([
-            'price' => $price,
-        ]);
-
         $this->assertEquals(
-            [$price, $price],
-            $this->productService->getMinMaxPrices($product),
+            [self::$price, self::$price],
+            $this->productService->getMinMaxPrices($this->product),
         );
     }
 
     public static function schemaProvider(): array
     {
         $base = [
-            $price = 10,
             $schemaPrice = 5,
         ];
 
         return [
             'optional schema' => array_merge(
                 $base,
-                [SchemaType::STRING, false, [$price, $price + $schemaPrice]]
+                [SchemaType::STRING, false, [self::$price, self::$price + $schemaPrice]]
             ),
             'boolean schema' => array_merge(
                 $base,
-                [SchemaType::BOOLEAN, true, [$price, $price + $schemaPrice]],
+                [SchemaType::BOOLEAN, true, [self::$price, self::$price + $schemaPrice]],
             ),
             'required schema' => array_merge(
                 $base,
-                [SchemaType::STRING, true, [$price + $schemaPrice, $price + $schemaPrice]],
+                [SchemaType::STRING, true, [self::$price + $schemaPrice, self::$price + $schemaPrice]],
             ),
         ];
     }
@@ -61,17 +76,12 @@ class ProductServiceTest extends TestCase
      * @dataProvider schemaProvider
      */
     public function testMinMaxPricesSchema(
-        float $price,
         float $schemaPrice,
         int $type,
         bool $required,
         array $minmax,
     ): void {
         /** @var Product $product */
-        $product = Product::factory()->create([
-            'price' => $price,
-        ]);
-
         $product->schemas()->create([
             'name' => 'Test',
             'type' => $type,
@@ -88,7 +98,6 @@ class ProductServiceTest extends TestCase
     public static function selectSchemaProvider(): array
     {
         $base = [
-            $price = 10,
             $schemaPrice = 5,
             $optionPriceLowest = 5,
             $optionPriceMedium = 7,
@@ -99,15 +108,15 @@ class ProductServiceTest extends TestCase
             'optional' => array_merge($base, [
                 false,
                 [
-                    $price,
-                    $price + $schemaPrice + $optionPriceHighest,
+                    self::$price,
+                    self::$price + $schemaPrice + $optionPriceHighest,
                 ],
             ]),
             'required' => array_merge($base, [
                 true,
                 [
-                    $price + $schemaPrice + $optionPriceLowest,
-                    $price + $schemaPrice + $optionPriceHighest,
+                    self::$price + $schemaPrice + $optionPriceLowest,
+                    self::$price + $schemaPrice + $optionPriceHighest,
                 ],
             ]),
         ];
@@ -117,7 +126,6 @@ class ProductServiceTest extends TestCase
      * @dataProvider selectSchemaProvider
      */
     public function testMinMaxPricesSelectSchema(
-        float $price,
         float $schemaPrice,
         float $optionPriceLowest,
         float $optionPriceMedium,
@@ -125,13 +133,8 @@ class ProductServiceTest extends TestCase
         bool $required,
         array $minmax,
     ): void {
-        /** @var Product $product */
-        $product = Product::factory()->create([
-            'price' => $price,
-        ]);
-
         /** @var Schema $schema */
-        $schema = $product->schemas()->create([
+        $schema = $this->product->schemas()->create([
             'name' => 'Test',
             'type' => SchemaType::SELECT,
             'price' => $schemaPrice,
@@ -153,14 +156,13 @@ class ProductServiceTest extends TestCase
 
         $this->assertEquals(
             $minmax,
-            $this->productService->getMinMaxPrices($product),
+            $this->productService->getMinMaxPrices($this->product),
         );
     }
 
     public static function multiplySchemaProvider(): array
     {
         $base = [
-            $price = 10,
             $schemaPrice = 5,
             $schemaMin = 2,
             $schemaMax = 5,
@@ -169,13 +171,13 @@ class ProductServiceTest extends TestCase
         return [
             'optional' => array_merge($base, [
                 false,
-                [$price, $price + $schemaPrice * $schemaMax],
+                [self::$price, self::$price + $schemaPrice * $schemaMax],
             ]),
             'required' => array_merge($base, [
                 true,
                 [
-                    $price + $schemaPrice * $schemaMin,
-                    $price + $schemaPrice * $schemaMax,
+                    self::$price + $schemaPrice * $schemaMin,
+                    self::$price + $schemaPrice * $schemaMax,
                 ],
             ]),
         ];
@@ -185,19 +187,13 @@ class ProductServiceTest extends TestCase
      * @dataProvider multiplySchemaProvider
      */
     public function testMinMaxPricesMultiplySchema(
-        float $price,
         float $schemaPrice,
         float $schemaMin,
         float $schemaMax,
         bool $required,
         array $minmax,
     ): void {
-        /** @var Product $product */
-        $product = Product::factory()->create([
-            'price' => $price,
-        ]);
-
-        $product->schemas()->create([
+        $this->product->schemas()->create([
             'name' => 'Test',
             'type' => SchemaType::MULTIPLY,
             'price' => $schemaPrice,
@@ -208,14 +204,13 @@ class ProductServiceTest extends TestCase
 
         $this->assertEquals(
             $minmax,
-            $this->productService->getMinMaxPrices($product),
+            $this->productService->getMinMaxPrices($this->product),
         );
     }
 
     public static function multiplyAnotherSchemaProvider(): array
     {
         $base = [
-            $price = 10,
             $schemaBasePrice = 5,
             $schemaMin = 2,
             $schemaMax = 5,
@@ -225,15 +220,15 @@ class ProductServiceTest extends TestCase
             'optional' => array_merge($base, [
                 false,
                 [
-                    $price,
-                    $price + $schemaBasePrice * $schemaMax,
+                    self::$price,
+                    self::$price + $schemaBasePrice * $schemaMax,
                 ],
             ]),
             'required' => array_merge($base, [
                 true,
                 [
-                    $price + $schemaBasePrice * $schemaMin,
-                    $price + $schemaBasePrice * $schemaMax,
+                    self::$price + $schemaBasePrice * $schemaMin,
+                    self::$price + $schemaBasePrice * $schemaMax,
                 ],
             ]),
         ];
@@ -243,20 +238,14 @@ class ProductServiceTest extends TestCase
      * @dataProvider multiplyAnotherSchemaProvider
      */
     public function testMinMaxPricesMultiplyAnotherSchemaOptional(
-        float $price,
         float $schemaBasePrice,
         float $schemaMin,
         float $schemaMax,
         bool $required,
         array $minmax,
     ): void {
-        /** @var Product $product */
-        $product = Product::factory()->create([
-            'price' => $price,
-        ]);
-
         /** @var Schema $baseSchema */
-        $baseSchema = $product->schemas()->create([
+        $baseSchema = $this->product->schemas()->create([
             'name' => 'Test',
             'type' => SchemaType::STRING,
             'price' => $schemaBasePrice,
@@ -264,7 +253,7 @@ class ProductServiceTest extends TestCase
         ]);
 
         /** @var Schema $multiplySchema */
-        $multiplySchema = $product->schemas()->create([
+        $multiplySchema = $this->product->schemas()->create([
             'name' => 'Test2',
             'type' => SchemaType::MULTIPLY_SCHEMA,
             'min' => $schemaMin,
@@ -276,20 +265,14 @@ class ProductServiceTest extends TestCase
 
         $this->assertEquals(
             $minmax,
-            $this->productService->getMinMaxPrices($product),
+            $this->productService->getMinMaxPrices($this->product),
         );
     }
 
     public function testMinMaxPricesMultipleSchemas(): void
     {
-        $price = 10;
-        /** @var Product $product */
-        $product = Product::factory()->create([
-            'price' => $price,
-        ]);
-
         $schema1Price = 5;
-        $product->schemas()->create([
+        $this->product->schemas()->create([
             'name' => 'Test',
             'type' => SchemaType::STRING,
             'price' => $schema1Price,
@@ -297,7 +280,7 @@ class ProductServiceTest extends TestCase
         ]);
 
         $schema2Price = 7;
-        $product->schemas()->create([
+        $this->product->schemas()->create([
             'name' => 'Test2',
             'type' => SchemaType::NUMERIC,
             'price' => $schema2Price,
@@ -305,7 +288,7 @@ class ProductServiceTest extends TestCase
         ]);
 
         $schema3Price = 10;
-        $product->schemas()->create([
+        $this->product->schemas()->create([
             'name' => 'Test3',
             'type' => SchemaType::BOOLEAN,
             'price' => $schema3Price,
@@ -314,10 +297,10 @@ class ProductServiceTest extends TestCase
 
         $this->assertEquals(
             [
-                $price + $schema1Price,
-                $price + $schema1Price + $schema2Price + $schema3Price,
+                self::$price + $schema1Price,
+                self::$price + $schema1Price + $schema2Price + $schema3Price,
             ],
-            $this->productService->getMinMaxPrices($product),
+            $this->productService->getMinMaxPrices($this->product),
         );
     }
 }
