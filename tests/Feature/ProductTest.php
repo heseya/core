@@ -1846,7 +1846,7 @@ class ProductTest extends TestCase
             'url' => 'https://picsum.photos/seed/' . mt_rand(0, 999999) . '/800',
         ]);
 
-        $response = $this->actingAs($this->{$user})->json('POST', '/products', [
+        $response = $this->actingAs($this->{$user})->json('POST', '/products?with_translations=1', [
             'translations' => [
                 $this->lang => [
                     'name' => 'Test',
