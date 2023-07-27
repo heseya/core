@@ -99,7 +99,7 @@ class SeoMetadataTest extends TestCase
      */
     public function testShowWithTranslationsFlag(string $user): void
     {
-        $response = $this->actingAs($this->{$user})->json('GET', '/seo?translations');
+        $response = $this->actingAs($this->{$user})->json('GET', '/seo?with_translations=1');
 
         $expected_structure = array_merge($this->expected_structure, ['translations']);
 

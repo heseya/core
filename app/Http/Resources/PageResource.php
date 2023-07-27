@@ -20,7 +20,7 @@ class PageResource extends Resource
             'public' => $this->resource->public,
             'order' => $this->resource->order,
         ],
-            $request->has('translations') ? $this->getAllTranslations('pages.show_hidden') : [],
+            $request->boolean('with_translations') ? $this->getAllTranslations('pages.show_hidden') : [],
             $this->metadataResource('pages.show_metadata_private')
         );
     }

@@ -50,7 +50,7 @@ class ProductResource extends Resource
 
         return array_merge(
             $data,
-            $request->has('translations') ? $this->getAllTranslations('products.show_hidden') : [],
+            $request->boolean('with_translations') ? $this->getAllTranslations('products.show_hidden') : [],
             $this->metadataResource('products.show_metadata_private'),
         );
     }

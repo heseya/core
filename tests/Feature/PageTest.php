@@ -100,7 +100,7 @@ class PageTest extends TestCase
 
         $response = $this
             ->actingAs($this->{$user})
-            ->getJson('/pages?translations');
+            ->getJson('/pages?with_translations=1');
 
         $response
             ->assertOk()
@@ -123,7 +123,7 @@ class PageTest extends TestCase
 
         $response = $this
             ->actingAs($this->{$user})
-            ->getJson('/pages?translations');
+            ->getJson('/pages?with_translations=1');
 
         $response
             ->assertOk()

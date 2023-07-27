@@ -52,7 +52,7 @@ class SchemaTest extends TestCase
 
         Schema::factory()->count(5)->create();
 
-        $response = $this->actingAs($this->{$user})->getJson('/schemas?translations');
+        $response = $this->actingAs($this->{$user})->getJson('/schemas?with_translations=1');
 
         $response
             ->assertOk()

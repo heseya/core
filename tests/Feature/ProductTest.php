@@ -216,7 +216,7 @@ class ProductTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
-        $response = $this->actingAs($this->{$user})->getJson('/products?limit=100&translations');
+        $response = $this->actingAs($this->{$user})->getJson('/products?limit=100&with_translations=1');
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -293,10 +293,9 @@ class ProductTest extends TestCase
 
         $response = $this
             ->actingAs($this->{$user})
-            ->getJson('/products/' . $product->slug . '?translations');
+            ->json('GET', "/products/{$product->slug}?with_translations=1");
 
-        $response
-            ->assertOk();
+        $response->assertOk();
 
         $this->arrayHasKey('translations', $response->json('data'));
         $this->arrayHasKey($language->getKey(), $response->json('data.translations'));

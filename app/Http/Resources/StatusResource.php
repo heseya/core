@@ -25,7 +25,7 @@ class StatusResource extends Resource
 
         return array_merge(
             $data,
-            $request->has('translations') ? $this->getAllTranslations() : [],
+            $request->boolean('with_translations') ? $this->getAllTranslations() : [],
             $this->metadataResource('statuses.show_metadata_private'),
         );
     }

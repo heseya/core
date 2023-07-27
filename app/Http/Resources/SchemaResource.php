@@ -37,7 +37,7 @@ class SchemaResource extends Resource
 
         return array_merge(
             $data,
-            $request->has('translations') ? $this->getAllTranslations() : [],
+            $request->boolean('with_translations') ? $this->getAllTranslations() : [],
             $this->metadataResource('schemas.show_metadata_private'),
         );
     }

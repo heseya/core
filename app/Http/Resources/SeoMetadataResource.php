@@ -23,7 +23,7 @@ class SeoMetadataResource extends Resource
 
         return array_merge(
             $data,
-            $request->has('translations') ? $this->getAllTranslations() : []
+            $request->boolean('with_translations') ? $this->getAllTranslations() : []
         );
     }
 }
