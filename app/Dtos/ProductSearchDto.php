@@ -3,8 +3,14 @@
 namespace App\Dtos;
 
 use App\Dtos\Contracts\InstantiateFromRequest;
+use App\Enums\Currency;
 use App\Http\Requests\ProductIndexRequest;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
 use Heseya\Dto\Dto;
+use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
@@ -34,9 +40,15 @@ class ProductSearchDto extends Dto implements InstantiateFromRequest
     private array|Missing $metadata;
     private array|Missing $metadata_private;
 
-    private float|Missing $price_min;
-    private float|Missing $price_max;
+    private Money|Missing $price_min;
+    private Money|Missing $price_max;
 
+    /**
+     * @throws UnknownCurrencyException
+     * @throws RoundingNecessaryException
+     * @throws DtoException
+     * @throws NumberFormatException
+     */
     public static function instantiateFromRequest(FormRequest|ProductIndexRequest $request): self
     {
         $sort = $request->input('sort');
@@ -44,6 +56,19 @@ class ProductSearchDto extends Dto implements InstantiateFromRequest
             ? Str::replace('price:asc', 'price_min:asc', $sort) : $sort;
         $sort = Str::contains($sort, 'price:desc')
             ? Str::replace('price:desc', 'price_max:desc', $sort) : $sort;
+
+        $priceMin = new Missing();
+        $priceMax = new Missing();
+        if ($request->has('price.currency')) {
+            $currency = Currency::from($request->input('price.currency'));
+
+            if ($request->has('price.min')) {
+                $priceMin = Money::of($request->input('price.min'), $currency->value);
+            }
+            if ($request->has('price.max')) {
+                $priceMax = Money::of($request->input('price.max'), $currency->value);
+            }
+        }
 
         return new self(
             search: $request->input('search'),
@@ -65,29 +90,14 @@ class ProductSearchDto extends Dto implements InstantiateFromRequest
             attribute_not: self::array('attribute_not', $request),
             metadata: self::array('metadata', $request),
             metadata_private: self::array('metadata_private', $request),
-            price_min: $request->input('price.min', new Missing()),
-            price_max: $request->input('price.max', new Missing())
+            price_min: $priceMin,
+            price_max: $priceMax,
         );
-    }
-
-    public function getSearch(): ?string
-    {
-        return $this->search;
     }
 
     public function getSort(): ?string
     {
         return $this->sort;
-    }
-
-    public function getPriceMin(): float|Missing
-    {
-        return $this->price_min;
-    }
-
-    public function getPriceMax(): float|Missing
-    {
-        return $this->price_max;
     }
 
     private static function boolean(string $key, FormRequest|ProductIndexRequest $request): bool|Missing

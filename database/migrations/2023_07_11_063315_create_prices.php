@@ -18,6 +18,8 @@ return new class extends Migration {
             $table->string('currency', 3);
             $table->boolean('is_net')->default(false);
 
+            $table->unique(['model_id', 'price_type', 'currency']);
+
             $table->timestamps();
         });
     }

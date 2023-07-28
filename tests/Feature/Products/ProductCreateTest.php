@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Products;
 
+use App\Enums\Currency;
 use App\Models\Page;
 use App\Models\Product;
 use Tests\TestCase;
@@ -15,6 +16,11 @@ class ProductCreateTest extends TestCase
     {
         $page = Page::factory()->create();
 
+        $prices = array_map(fn (Currency $currency) => [
+            'value' => '100.00',
+            'currency' => $currency->value,
+        ], Currency::cases());
+
         $this->{$user}->givePermissionTo('products.add');
         $response = $this
             ->actingAs($this->{$user})
@@ -26,7 +32,7 @@ class ProductCreateTest extends TestCase
                 ],
                 'published' => [$this->lang],
                 'slug' => 'slug',
-                'price' => 100,
+                'prices_base' => $prices,
                 'public' => true,
                 'shipping_digital' => false,
                 'descriptions' => [$page->getKey()],

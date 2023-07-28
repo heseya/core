@@ -13,7 +13,6 @@ class PriceResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->resource->getKey(),
             'gross' => $this->resource->value->getAmount(),
             'currency' => $this->resource->value->getCurrency()->getCurrencyCode(),
         ];

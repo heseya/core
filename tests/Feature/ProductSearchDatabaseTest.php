@@ -12,6 +12,9 @@ use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Tag;
 use App\Repositories\Contracts\ProductRepositoryContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -594,6 +597,9 @@ class ProductSearchDatabaseTest extends TestCase
      * @dataProvider authProvider
      *
      * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testSearchByPrice($user): void
     {
@@ -629,7 +635,11 @@ class ProductSearchDatabaseTest extends TestCase
 
         $this
             ->actingAs($this->{$user})
-            ->json('GET', '/products', ['price' => ['min' => 100, 'max' => 200]])
+            ->json('GET', '/products', ['price' => [
+                'min' => '100.00',
+                'max' => '200.00',
+                'currency' => $currency->value,
+            ]])
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $product->getKey()]);

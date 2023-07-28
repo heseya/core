@@ -21,6 +21,7 @@ readonly class Price implements ValidationRule
     public function __construct(
         private array $amountKeys,
         private ?BigDecimal $min = null,
+        private bool $nullable = false,
     ) {}
 
     /**
@@ -70,17 +71,26 @@ readonly class Price implements ValidationRule
     public function validateAmount(mixed $value, string $amountKey, Currency $currency, Closure $fail): void
     {
         if (!array_key_exists($amountKey, $value)) {
-            $fail("The :attribute is missing key '{$amountKey}'");
+            if (!$this->nullable) {
+                $fail("The :attribute is missing key '{$amountKey}'");
+            }
 
             return;
         }
 
         $amount = $value[$amountKey];
+
+        if (!is_string($amount)) {
+            $fail("The :attribute {$amountKey} must be a decimal string");
+        }
+
         $money = null;
         try {
             $money = BrickMoney::of($amount, $currency->value);
         } catch (NumberFormatException) {
-            $fail("The :attribute {$amountKey} must be decimal string");
+            if (is_string($amount)) {
+                $fail("The :attribute {$amountKey} must be a decimal string");
+            }
         } catch (RoundingNecessaryException) {
             $fail("The :attribute {$amountKey} has too many decimal places for currency {$currency->value}");
         } catch (UnknownCurrencyException) {

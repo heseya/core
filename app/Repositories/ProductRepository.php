@@ -24,7 +24,7 @@ class ProductRepository implements ProductRepositoryContract
     public function search(ProductSearchDto $dto): LengthAwarePaginator
     {
         $query = Product::searchByCriteria($dto->toArray())
-            ->with(['attributes', 'metadata', 'media', 'tags', 'items'])
+            ->with(['attributes', 'metadata', 'media', 'tags', 'items', 'pricesBase', 'pricesMin', 'pricesMax', 'pricesMinInitial', 'pricesMaxInitial'])
             ->sort($dto->getSort());
 
         if (Gate::denies('products.show_hidden')) {

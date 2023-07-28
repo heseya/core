@@ -6,6 +6,8 @@ use App\Criteria\LessOrEquals;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\MoreOrEquals;
+use App\Criteria\PriceMaxCap;
+use App\Criteria\PriceMinCap;
 use App\Criteria\ProductAttributeSearch;
 use App\Criteria\ProductNotAttributeSearch;
 use App\Criteria\ProductSearch;
@@ -79,12 +81,6 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'shipping_digital',
         'purchase_limit_per_user',
         'published',
-
-        //        'price',
-        //        'price_min',
-        //        'price_max',
-        //        'price_min_initial',
-        //        'price_max_initial',
     ];
 
     protected array $translatable = [
@@ -104,8 +100,6 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'quantity' => 'float',
         'shipping_digital' => 'bool',
         'purchase_limit_per_user' => 'float',
-
-        //        'price' => 'float',
     ];
 
     protected array $sortable = [
@@ -143,9 +137,8 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'has_items' => WhereHasItems::class,
         'has_schemas' => WhereHasSchemas::class,
         'shipping_digital' => Equals::class,
-
-        //        'price_max' => LessOrEquals::class,
-        //        'price_min' => MoreOrEquals::class,
+        'price_min' => PriceMinCap::class,
+        'price_max' => PriceMaxCap::class,
     ];
 
     protected string $defaultSortBy = 'products.order';

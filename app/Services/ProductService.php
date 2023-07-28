@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Dtos\PriceDto;
 use App\Dtos\ProductCreateDto;
 use App\Dtos\ProductUpdateDto;
+use App\Enums\Currency;
 use App\Enums\Product\ProductPriceType;
 use App\Enums\SchemaType;
 use App\Events\ProductCreated;
@@ -93,10 +94,12 @@ final readonly class ProductService implements ProductServiceContract
      */
     public function update(Product $product, ProductUpdateDto $dto): Product
     {
+        $currency = Currency::DEFAULT->value;
+
         /** @var ?Money $oldMinPrice */
-        $oldMinPrice = $product->pricesMin->first()?->value;
+        $oldMinPrice = $product->pricesMin->where('currency', $currency)->first()?->value;
         /** @var ?Money $oldMaxPrice */
-        $oldMaxPrice = $product->pricesMax->first()?->value;
+        $oldMaxPrice = $product->pricesMax->where('currency', $currency)->first()?->value;
 
         DB::beginTransaction();
 
@@ -113,9 +116,9 @@ final readonly class ProductService implements ProductServiceContract
         DB::commit();
 
         /** @var Money $minPrice */
-        $minPrice = $product->pricesMin->first()->value;
+        $minPrice = $product->pricesMin->where('currency', $currency)->first()->value;
         /** @var Money $maxPrice */
-        $maxPrice = $product->pricesMax->first()->value;
+        $maxPrice = $product->pricesMax->where('currency', $currency)->first()->value;
 
         // TODO: This is just wrong
         if (
