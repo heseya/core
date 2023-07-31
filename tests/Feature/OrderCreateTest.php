@@ -1675,7 +1675,7 @@ class OrderCreateTest extends TestCase
             ->assertCreated();
 
         $this->assertDatabaseHas('addresses', $address + [
-            'vat' => null,
+            'vat' => '',
         ]);
     }
 
