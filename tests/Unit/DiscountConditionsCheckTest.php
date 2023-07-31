@@ -4,7 +4,6 @@ namespace Unit;
 
 use App\Dtos\CartDto;
 use App\Dtos\PriceDto;
-use App\Dtos\ProductCreateDto;
 use App\Enums\ConditionType;
 use App\Enums\Currency;
 use App\Models\ConditionGroup;
@@ -27,6 +26,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class DiscountConditionsCheckTest extends TestCase
 {
@@ -58,7 +58,7 @@ class DiscountConditionsCheckTest extends TestCase
         $this->currency = Currency::DEFAULT->value;
         $this->productService = App::make(ProductServiceContract::class);
 
-        $this->product = $this->productService->create(ProductCreateDto::fake([
+        $this->product = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [new PriceDto(Money::of(20, $this->currency))],
             'public' => true,
         ]));
@@ -138,7 +138,7 @@ class DiscountConditionsCheckTest extends TestCase
         $this->prepareConditionGroup();
         $this->discount->conditionGroups()->attach($this->prepareNewConditionGroup());
 
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [new PriceDto(Money::of(60, $this->currency))],
             'public' => true,
         ]));
@@ -178,7 +178,7 @@ class DiscountConditionsCheckTest extends TestCase
         $this->prepareConditionGroup();
         $this->discount->conditionGroups()->attach($this->prepareNewConditionGroup());
 
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [new PriceDto(Money::of(60, $this->currency))],
             'public' => true,
         ]));
@@ -411,11 +411,14 @@ class DiscountConditionsCheckTest extends TestCase
 
     /**
      * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testCheckConditionProductInPass(): void
     {
-        $product1 = $this->productService->create(ProductCreateDto::fake());
-        $product2 = $this->productService->create(ProductCreateDto::fake());
+        $product1 = $this->productService->create(FakeDto::productCreateDto());
+        $product2 = $this->productService->create(FakeDto::productCreateDto());
 
         $cart = CartDto::fromArray([
             'items' => [
@@ -446,11 +449,14 @@ class DiscountConditionsCheckTest extends TestCase
 
     /**
      * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testCheckConditionProductInFail(): void
     {
-        $product1 = $this->productService->create(ProductCreateDto::fake());
-        $product2 = $this->productService->create(ProductCreateDto::fake());
+        $product1 = $this->productService->create(FakeDto::productCreateDto());
+        $product2 = $this->productService->create(FakeDto::productCreateDto());
 
         $cart = CartDto::fromArray([
             'items' => [
@@ -480,11 +486,14 @@ class DiscountConditionsCheckTest extends TestCase
 
     /**
      * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testCheckConditionProductInAllowListFalsePass(): void
     {
-        $product1 = $this->productService->create(ProductCreateDto::fake());
-        $product2 = $this->productService->create(ProductCreateDto::fake());
+        $product1 = $this->productService->create(FakeDto::productCreateDto());
+        $product2 = $this->productService->create(FakeDto::productCreateDto());
 
         $cart = CartDto::fromArray([
             'items' => [
@@ -514,11 +523,14 @@ class DiscountConditionsCheckTest extends TestCase
 
     /**
      * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testCheckConditionProductInAllowListFalseFail(): void
     {
-        $this->productService->create(ProductCreateDto::fake());
-        $product2 = $this->productService->create(ProductCreateDto::fake());
+        $this->productService->create(FakeDto::productCreateDto());
+        $product2 = $this->productService->create(FakeDto::productCreateDto());
 
         $cart = CartDto::fromArray([
             'items' => [
@@ -555,7 +567,7 @@ class DiscountConditionsCheckTest extends TestCase
      */
     public function testCheckConditionProductInSetPass(): void
     {
-        $product = $this->productService->create(ProductCreateDto::fake());
+        $product = $this->productService->create(FakeDto::productCreateDto());
         $set1 = ProductSet::factory()->create();
         $set2 = ProductSet::factory()->create();
 
@@ -596,7 +608,7 @@ class DiscountConditionsCheckTest extends TestCase
      */
     public function testCheckConditionProductInChildrenSetPass(): void
     {
-        $product = $this->productService->create(ProductCreateDto::fake());
+        $product = $this->productService->create(FakeDto::productCreateDto());
         $set1 = ProductSet::factory()->create();
         $childrenSet = ProductSet::factory()->create([
             'parent_id' => $set1->getKey(),
@@ -641,7 +653,7 @@ class DiscountConditionsCheckTest extends TestCase
      */
     public function testCheckConditionProductInSetFail(): void
     {
-        $product = $this->productService->create(ProductCreateDto::fake());
+        $product = $this->productService->create(FakeDto::productCreateDto());
         $set1 = ProductSet::factory()->create();
         $set2 = ProductSet::factory()->create();
 
@@ -681,7 +693,7 @@ class DiscountConditionsCheckTest extends TestCase
      */
     public function testCheckConditionProductInChildrenSetFail(): void
     {
-        $product = $this->productService->create(ProductCreateDto::fake());
+        $product = $this->productService->create(FakeDto::productCreateDto());
         $set1 = ProductSet::factory()->create();
         $childrenSet = ProductSet::factory()->create([
             'parent_id' => $set1->getKey(),
@@ -727,7 +739,7 @@ class DiscountConditionsCheckTest extends TestCase
      */
     public function testCheckConditionProductInSetAllowListFalsePass(): void
     {
-        $product = $this->productService->create(ProductCreateDto::fake());
+        $product = $this->productService->create(FakeDto::productCreateDto());
         $set1 = ProductSet::factory()->create();
         $set2 = ProductSet::factory()->create();
 
@@ -767,7 +779,7 @@ class DiscountConditionsCheckTest extends TestCase
      */
     public function testCheckConditionProductInChildrenSetAllowListFalsePass(): void
     {
-        $product = $this->productService->create(ProductCreateDto::fake());
+        $product = $this->productService->create(FakeDto::productCreateDto());
         $set1 = ProductSet::factory()->create();
         $childrenSet = ProductSet::factory()->create([
             'parent_id' => $set1->getKey(),
@@ -813,7 +825,7 @@ class DiscountConditionsCheckTest extends TestCase
      */
     public function testCheckConditionProductInSetAllowListFalseFail(): void
     {
-        $product = $this->productService->create(ProductCreateDto::fake());
+        $product = $this->productService->create(FakeDto::productCreateDto());
         ProductSet::factory()->create();
         $set2 = ProductSet::factory()->create();
 
@@ -853,7 +865,7 @@ class DiscountConditionsCheckTest extends TestCase
      */
     public function testCheckConditionProductInChildrenSetAllowListFalseFail(): void
     {
-        $product = $this->productService->create(ProductCreateDto::fake());
+        $product = $this->productService->create(FakeDto::productCreateDto());
         $set1 = ProductSet::factory()->create();
         $childrenSet = ProductSet::factory()->create([
             'parent_id' => $set1->getKey(),
@@ -1237,11 +1249,14 @@ class DiscountConditionsCheckTest extends TestCase
      * @dataProvider cartLengthProviderPass
      *
      * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testCheckConditionCartLengthPass($quantity1, $quantity2, $value): void
     {
-        $product1 = $this->productService->create(ProductCreateDto::fake());
-        $product2 = $this->productService->create(ProductCreateDto::fake());
+        $product1 = $this->productService->create(FakeDto::productCreateDto());
+        $product2 = $this->productService->create(FakeDto::productCreateDto());
 
         $cart = CartDto::fromArray([
             'items' => [
@@ -1311,11 +1326,14 @@ class DiscountConditionsCheckTest extends TestCase
      * @dataProvider cartLengthProviderFail
      *
      * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testCheckConditionCartLengthFail($quantity1, $quantity2, $value): void
     {
-        $product1 = $this->productService->create(ProductCreateDto::fake());
-        $product2 = $this->productService->create(ProductCreateDto::fake());
+        $product1 = $this->productService->create(FakeDto::productCreateDto());
+        $product2 = $this->productService->create(FakeDto::productCreateDto());
 
         $cart = CartDto::fromArray([
             'items' => [
@@ -1418,7 +1436,7 @@ class DiscountConditionsCheckTest extends TestCase
      */
     public function testCheckConditionCouponsCount($quantity, $value, $result): void
     {
-        $product1 = $this->productService->create(ProductCreateDto::fake());
+        $product1 = $this->productService->create(FakeDto::productCreateDto());
 
         $coupons = Discount::factory()->count($quantity)->create();
 
@@ -1456,10 +1474,13 @@ class DiscountConditionsCheckTest extends TestCase
      * @dataProvider couponsCountWithSalesProvider
      *
      * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testCheckConditionCouponsCountWithSales($result): void
     {
-        $product1 = $this->productService->create(ProductCreateDto::fake());
+        $product1 = $this->productService->create(FakeDto::productCreateDto());
 
         Discount::factory()->create(['code' => null]);
 

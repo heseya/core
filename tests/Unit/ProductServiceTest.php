@@ -3,7 +3,6 @@
 namespace Tests\Unit;
 
 use App\Dtos\PriceDto;
-use App\Dtos\ProductCreateDto;
 use App\Enums\Currency;
 use App\Enums\SchemaType;
 use App\Models\Product;
@@ -16,6 +15,7 @@ use Brick\Money\Money;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class ProductServiceTest extends TestCase
 {
@@ -38,7 +38,7 @@ class ProductServiceTest extends TestCase
         $this->productService = App::make(ProductServiceContract::class);
 
         // @var Product $product
-        $this->product = $this->productService->create(ProductCreateDto::fake([
+        $this->product = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [new PriceDto(Money::of(self::$price, Currency::DEFAULT->value))],
         ]));
     }

@@ -3,7 +3,6 @@
 namespace App\Dtos;
 
 use App\Dtos\Contracts\InstantiateFromRequest;
-use App\Enums\Currency;
 use App\Http\Requests\ShippingMethodStoreRequest;
 use App\Models\App;
 use App\Models\User;
@@ -11,8 +10,6 @@ use App\Traits\MapMetadata;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
-use Brick\Money\Money;
-use Faker\Generator;
 use Heseya\Dto\Dto;
 use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
@@ -72,35 +69,6 @@ class ShippingMethodCreateDto extends Dto implements InstantiateFromRequest
             app_id: $user instanceof App ? $user->id : null,
             metadata: self::mapMetadata($request),
         );
-    }
-
-    /**
-     * @throws DtoException
-     * @throws NumberFormatException
-     * @throws RoundingNecessaryException
-     * @throws UnknownCurrencyException
-     * @throws DtoException
-     */
-    public static function fake(array $data = []): self
-    {
-        $faker = \Illuminate\Support\Facades\App::make(Generator::class);
-
-        $currency = Currency::DEFAULT->value;
-
-        $priceRange = new PriceRangeDto(
-            Money::zero($currency),
-            Money::of(round(mt_rand(500, 2000) / 100, 2), $currency),
-        );
-
-        return new self(...$data + [
-            'name' => $faker->randomElement([
-                'dpd',
-                'inpostkurier',
-            ]),
-            'public' => $faker->boolean,
-            'block_list' => $faker->boolean,
-            'price_ranges' => [$priceRange],
-        ]);
     }
 
     public function getName(): string

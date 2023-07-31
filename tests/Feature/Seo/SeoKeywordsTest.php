@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Seo;
 
-use App\Dtos\ProductCreateDto;
 use App\Models\Product;
 use App\Models\SeoMetadata;
 use App\Services\Contracts\ProductServiceContract;
@@ -13,6 +12,7 @@ use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class SeoKeywordsTest extends TestCase
 {
@@ -130,7 +130,7 @@ class SeoKeywordsTest extends TestCase
     {
         /** @var ProductServiceContract $productService */
         $productService = App::make(ProductServiceContract::class);
-        $product = $productService->create(ProductCreateDto::fake());
+        $product = $productService->create(FakeDto::productCreateDto());
 
         $this->{$user}->givePermissionTo('products.edit');
         $this

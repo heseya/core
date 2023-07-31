@@ -2,25 +2,35 @@
 
 namespace Tests\Feature;
 
-use App\Dtos\ProductCreateDto;
 use App\Enums\Currency;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Services\Contracts\ProductServiceContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class ProductRelatedSetsTest extends TestCase
 {
     private Product $product;
 
+    /**
+     * @throws DtoException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
     public function setUp(): void
     {
         parent::setUp();
 
         /** @var ProductServiceContract $productService */
         $productService = App::make(ProductServiceContract::class);
-        $this->product = $productService->create(ProductCreateDto::fake([
+        $this->product = $productService->create(FakeDto::productCreateDto([
             'public' => true,
         ]));
     }

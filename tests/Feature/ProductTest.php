@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Dtos\PriceDto;
-use App\Dtos\ProductCreateDto;
 use App\Enums\AttributeType;
 use App\Enums\ConditionType;
 use App\Enums\Currency;
@@ -47,6 +46,7 @@ use Illuminate\Support\Facades\Queue;
 use Ramsey\Uuid\Uuid;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class ProductTest extends TestCase
 {
@@ -88,7 +88,7 @@ class ProductTest extends TestCase
         /** @var AvailabilityServiceContract $availabilityService */
         $availabilityService = App::make(AvailabilityServiceContract::class);
 
-        $this->product = $this->productService->create(ProductCreateDto::fake([
+        $this->product = $this->productService->create(FakeDto::productCreateDto([
             'shipping_digital' => false,
             'public' => true,
             'order' => 1,

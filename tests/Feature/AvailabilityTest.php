@@ -2,8 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Dtos\ProductCreateDto;
-use App\Dtos\ShippingMethodCreateDto;
 use App\Enums\Currency;
 use App\Enums\SchemaType;
 use App\Enums\ShippingType;
@@ -35,6 +33,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class AvailabilityTest extends TestCase
 {
@@ -60,7 +59,7 @@ class AvailabilityTest extends TestCase
 
         /** @var ProductServiceContract $productService */
         $productService = App::make(ProductServiceContract::class);
-        $this->product = $productService->create(ProductCreateDto::fake());
+        $this->product = $productService->create(FakeDto::productCreateDto());
         $this->product->update([
             'available' => false,
             'public' => true,
@@ -327,6 +326,9 @@ class AvailabilityTest extends TestCase
      * @dataProvider authProvider
      *
      * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testUnavailableAfterOrder(string $user): void
     {
@@ -341,7 +343,7 @@ class AvailabilityTest extends TestCase
             'quantity' => 2,
         ]);
 
-        $shippingMethod = $this->shippingMethodService->store(ShippingMethodCreateDto::fake([
+        $shippingMethod = $this->shippingMethodService->store(FakeDto::shippingMethodCreate([
             'shipping_type' => ShippingType::ADDRESS,
         ]));
 
@@ -394,6 +396,11 @@ class AvailabilityTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testAvailableAfterOrderCancel(string $user): void
     {
@@ -415,7 +422,7 @@ class AvailabilityTest extends TestCase
             'price' => 0,
         ]);
 
-        $shippingMethod = $this->shippingMethodService->store(ShippingMethodCreateDto::fake([
+        $shippingMethod = $this->shippingMethodService->store(FakeDto::shippingMethodCreate([
             'shipping_type' => ShippingType::ADDRESS,
         ]));
 

@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Products;
 
-use App\Dtos\ProductCreateDto;
 use App\Enums\Currency;
 use App\Models\Page;
 use App\Services\Contracts\ProductServiceContract;
@@ -12,6 +11,7 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class ProductCreateTest extends TestCase
 {
@@ -64,7 +64,7 @@ class ProductCreateTest extends TestCase
     {
         /** @var ProductServiceContract $productService */
         $productService = App::make(ProductServiceContract::class);
-        $product = $productService->create(ProductCreateDto::fake());
+        $product = $productService->create(FakeDto::productCreateDto());
         $page = Page::factory()->create();
 
         $this->{$user}->givePermissionTo('products.edit');

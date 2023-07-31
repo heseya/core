@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Dtos\PriceDto;
-use App\Dtos\ProductCreateDto;
 use App\Enums\Currency;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
@@ -26,6 +25,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 use Tests\Traits\CreateShippingMethod;
+use Tests\Utils\FakeDto;
 
 class OrderDepositTest extends TestCase
 {
@@ -59,7 +59,7 @@ class OrderDepositTest extends TestCase
 
         $this->productService = App::make(ProductServiceContract::class);
         $this->currency = Currency::DEFAULT;
-        $this->product = $this->productService->create(ProductCreateDto::fake([
+        $this->product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(100.00, $this->currency->value))],
         ]));
@@ -363,6 +363,9 @@ class OrderDepositTest extends TestCase
      * @dataProvider authProvider
      *
      * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testCreateOrdersAndCheckDeposits($user): void
     {
@@ -381,7 +384,7 @@ class OrderDepositTest extends TestCase
             'unlimited_stock_shipping_time' => 10,
         ]);
 
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(100.00, $this->currency->value))],
         ]));
@@ -660,7 +663,7 @@ class OrderDepositTest extends TestCase
             'unlimited_stock_shipping_date' => $date,
         ]);
 
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(100.00, $this->currency->value))],
         ]));

@@ -3,7 +3,6 @@
 namespace Tests\Feature\Discounts;
 
 use App\Dtos\PriceDto;
-use App\Dtos\ProductCreateDto;
 use App\Enums\ConditionType;
 use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
@@ -29,6 +28,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 use Tests\Traits\CreateShippingMethod;
+use Tests\Utils\FakeDto;
 
 class DiscountOrderTest extends TestCase
 {
@@ -58,7 +58,7 @@ class DiscountOrderTest extends TestCase
         $this->productService = App::make(ProductServiceContract::class);
         $this->currency = Currency::DEFAULT;
 
-        $this->product = $this->productService->create(ProductCreateDto::fake([
+        $this->product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(100, $this->currency->value))],
         ]));
@@ -234,7 +234,7 @@ class DiscountOrderTest extends TestCase
             'value' => 15,
         ]);
 
-        $conditionGroup = ConditionGroup::create();
+        $conditionGroup = ConditionGroup::query()->create();
 
         $conditionGroup->conditions()->create([
             'type' => ConditionType::MAX_USES,
@@ -260,6 +260,9 @@ class DiscountOrderTest extends TestCase
      * @dataProvider authProvider
      *
      * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testCreateOrderMultipleDiscounts($user): void
     {
@@ -267,17 +270,17 @@ class DiscountOrderTest extends TestCase
 
         $shippingMethod = $this->createShippingMethod(20, ['shipping_type' => ShippingType::ADDRESS]);
 
-        $product1 = $this->productService->create(ProductCreateDto::fake([
+        $product1 = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(100, $this->currency->value))],
         ]));
 
-        $product2 = $this->productService->create(ProductCreateDto::fake([
+        $product2 = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(200, $this->currency->value))],
         ]));
 
-        $product3 = $this->productService->create(ProductCreateDto::fake([
+        $product3 = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(50, $this->currency->value))],
         ]));
@@ -458,7 +461,7 @@ class DiscountOrderTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment(['summary' => 185.5]); // 90 (first product) + 85,5 (second product) + 10 (delivery)
 
-        $order = Order::find($response->getData()->data->id);
+        $order = Order::query()->find($response->getData()->data->id);
 
         $products = $order->products;
 
@@ -525,11 +528,16 @@ class DiscountOrderTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testCreateOrderPriceRoundWithOrderValueDiscount($user): void
     {
         $this->{$user}->givePermissionTo('orders.add');
-        $product1 = $this->productService->create(ProductCreateDto::fake([
+        $product1 = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(5588.75, $this->currency->value))],
         ]));
@@ -590,11 +598,16 @@ class DiscountOrderTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testCreateOrderPriceRound($user): void
     {
         $this->{$user}->givePermissionTo('orders.add');
-        $product1 = $this->productService->create(ProductCreateDto::fake([
+        $product1 = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(5588.75, $this->currency->value))],
         ]));
@@ -639,12 +652,17 @@ class DiscountOrderTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testOrderCreateMultiItemWithDiscountValueAmount($user): void
     {
         $this->{$user}->givePermissionTo('orders.add');
 
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(10, $this->currency->value))],
         ]));
@@ -680,12 +698,17 @@ class DiscountOrderTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testOrderCreateItemWithDiscountValueAmountExtendPrice($user): void
     {
         $this->{$user}->givePermissionTo('orders.add');
 
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(10, $this->currency->value))],
         ]));
@@ -726,12 +749,17 @@ class DiscountOrderTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testOrderCreateSchemaProductWithDiscountValueAmount($user): void
     {
         $this->{$user}->givePermissionTo('orders.add');
 
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(10, $this->currency->value))],
         ]));
@@ -777,12 +805,17 @@ class DiscountOrderTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testOrderCreateMultiSchemaProductWithDiscountValueAmount($user): void
     {
         $this->{$user}->givePermissionTo('orders.add');
 
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(10, $this->currency->value))],
         ]));
@@ -828,12 +861,17 @@ class DiscountOrderTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testOrderCreateSchemaProductWithDiscountValueAmountExtendPrice($user): void
     {
         $this->{$user}->givePermissionTo('orders.add');
 
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(10, $this->currency->value))],
         ]));
@@ -883,12 +921,17 @@ class DiscountOrderTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testOrderCreateDiscountCheapestProductAndCheckDeposits($user): void
     {
         $this->{$user}->givePermissionTo('orders.add');
 
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(100, $this->currency->value))],
         ]));
@@ -954,13 +997,18 @@ class DiscountOrderTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testCreateOrderCorrectShippingPriceAfterDiscount($user): void
     {
         $this->{$user}->givePermissionTo('orders.add');
 
         $productPrice = 50;
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of($productPrice, $this->currency->value))],
         ]));

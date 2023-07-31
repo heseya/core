@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Dtos\PriceDto;
-use App\Dtos\ProductCreateDto;
 use App\Enums\ConditionType;
 use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
@@ -50,6 +49,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class OrderCreateTest extends TestCase
 {
@@ -300,7 +300,7 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::zero($this->currency->value))],
         ]));
@@ -921,7 +921,7 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(150, $this->currency->value))],
         ]));

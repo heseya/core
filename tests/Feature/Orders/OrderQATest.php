@@ -3,7 +3,6 @@
 namespace Tests\Feature\Orders;
 
 use App\Dtos\PriceDto;
-use App\Dtos\ProductCreateDto;
 use App\Enums\ConditionType;
 use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
@@ -22,6 +21,7 @@ use Brick\Money\Money;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 /**
  * These are cases picked up by manual testers.
@@ -55,7 +55,7 @@ class OrderQATest extends TestCase
 
         /** @var ProductServiceContract $productService */
         $productService = App::make(ProductServiceContract::class);
-        $this->product = $productService->create(ProductCreateDto::fake([
+        $this->product = $productService->create(FakeDto::productCreateDto([
             'prices_base' => [new PriceDto(Money::of(100, $currency))],
             'public' => true,
         ]));

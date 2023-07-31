@@ -3,19 +3,14 @@
 namespace App\Dtos;
 
 use App\Dtos\Contracts\InstantiateFromRequest;
-use App\Enums\Currency;
 use App\Traits\MapMetadata;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
-use Brick\Money\Money;
-use Faker\Generator;
 use Heseya\Dto\Dto;
 use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Str;
 
 class ProductCreateDto extends Dto implements InstantiateFromRequest
 {
@@ -89,42 +84,5 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
     public function getMetadata(): array|Missing
     {
         return $this->metadata;
-    }
-
-    /**
-     * @throws DtoException
-     * @throws NumberFormatException
-     * @throws RoundingNecessaryException
-     * @throws UnknownCurrencyException
-     */
-    public static function fake(array $data = []): self
-    {
-        $faker = App::make(Generator::class);
-        $name = $faker->sentence(mt_rand(1, 3));
-        $description = $faker->sentence(10);
-
-        $price = new PriceDto(
-            Money::of(
-                round(mt_rand(500, 6000), -2),
-                Currency::DEFAULT->value,
-            )
-        );
-
-        $langId = App::getLocale();
-
-        return new self(...$data + [
-            'translations' => [
-                $langId => [
-                    'name' => $name,
-                    'description_html' => "<p>{$description}</p>",
-                    'description_short' => $description,
-                ],
-            ],
-            'published' => [$langId],
-            'slug' => Str::slug($name) . '-' . mt_rand(1, 99999),
-            'public' => $faker->boolean,
-            'shipping_digital' => false,
-            'prices_base' => [$price],
-        ]);
     }
 }

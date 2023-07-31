@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Products;
 
-use App\Dtos\ProductCreateDto;
 use App\Enums\Currency;
 use App\Models\Product;
 use App\Services\Contracts\ProductServiceContract;
@@ -12,6 +11,7 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class GoogleProductCategoryTest extends TestCase
 {
@@ -51,7 +51,7 @@ class GoogleProductCategoryTest extends TestCase
 
         /** @var ProductServiceContract $productService */
         $productService = App::make(ProductServiceContract::class);
-        $this->product = $productService->create(ProductCreateDto::fake());
+        $this->product = $productService->create(FakeDto::productCreateDto());
     }
 
     /**

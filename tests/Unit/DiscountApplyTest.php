@@ -6,7 +6,6 @@ use App\Dtos\CartDto;
 use App\Dtos\CartItemDto;
 use App\Dtos\OrderProductDto;
 use App\Dtos\PriceDto;
-use App\Dtos\ProductCreateDto;
 use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
@@ -30,6 +29,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class DiscountApplyTest extends TestCase
 {
@@ -64,7 +64,7 @@ class DiscountApplyTest extends TestCase
         $this->currency = Currency::DEFAULT->value;
         $this->productService = App::make(ProductServiceContract::class);
 
-        $this->product = $this->productService->create(ProductCreateDto::fake([
+        $this->product = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [new PriceDto(Money::of(120, $this->currency))],
             'public' => true,
         ]));
@@ -111,7 +111,7 @@ class DiscountApplyTest extends TestCase
         ]);
 
         $order = Order::factory()->create();
-        $this->productToOrderProduct = $this->productService->create(ProductCreateDto::fake([
+        $this->productToOrderProduct = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [new PriceDto(Money::of(120, $this->currency))],
             'public' => true,
         ]));
@@ -166,7 +166,7 @@ class DiscountApplyTest extends TestCase
             'code' => null,
         ])->create();
 
-        $product1 = $this->productService->create(ProductCreateDto::fake([
+        $product1 = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [new PriceDto(Money::of(30, $this->currency))],
             'public' => true,
         ]));
@@ -180,14 +180,14 @@ class DiscountApplyTest extends TestCase
             'target_is_allow_list' => true,
         ])->create();
 
-        $product2 = $this->productService->create(ProductCreateDto::fake([
+        $product2 = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [new PriceDto(Money::of(40, $this->currency))],
             'public' => true,
         ]));
 
         $coupon->products()->attach($product2);
 
-        $product3 = $this->productService->create(ProductCreateDto::fake([
+        $product3 = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [new PriceDto(Money::of(50, $this->currency))],
             'public' => true,
         ]));
@@ -344,7 +344,7 @@ class DiscountApplyTest extends TestCase
     public function testApplyDiscountToProductNotAllowList($type, $value, $result, $discountKind): void
     {
         $this->product->schemas()->sync([$this->schema->getKey()]);
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [new PriceDto(Money::of(220, $this->currency))],
             'public' => true,
         ]));
@@ -635,7 +635,7 @@ class DiscountApplyTest extends TestCase
     public function testApplyDiscountToOrderProductNotAllowList($type, $value, $result, $discountKind): void
     {
         $code = $discountKind === 'coupon' ? [] : ['code' => null];
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [new PriceDto(Money::of(220, $this->currency))],
             'public' => true,
         ]));
@@ -840,7 +840,7 @@ class DiscountApplyTest extends TestCase
     public function testApplyDiscountToCartItemNotAllowList($type, $value, $result, $discountKind): void
     {
         $code = $discountKind === 'coupon' ? [] : ['code' => null];
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [new PriceDto(Money::of(220, $this->currency))],
             'public' => true,
         ]));
@@ -1177,12 +1177,12 @@ class DiscountApplyTest extends TestCase
             'target_is_allow_list' => false,
         ])->create();
 
-        $product1 = $this->productService->create(ProductCreateDto::fake([
+        $product1 = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [new PriceDto(Money::of(80, $this->currency))],
             'public' => true,
         ]));
 
-        $product2 = $this->productService->create(ProductCreateDto::fake([
+        $product2 = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [new PriceDto(Money::of(120, $this->currency))],
             'public' => true,
         ]));

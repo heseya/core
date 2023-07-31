@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Dtos\ProductCreateDto;
 use App\Enums\Currency;
 use App\Models\Item;
 use App\Models\Product;
@@ -14,6 +13,7 @@ use Heseya\Dto\DtoException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class ItemProductTest extends TestCase
 {
@@ -35,7 +35,7 @@ class ItemProductTest extends TestCase
 
         /** @var ProductServiceContract $productService */
         $productService = App::make(ProductServiceContract::class);
-        $this->product = $productService->create(ProductCreateDto::fake());
+        $this->product = $productService->create(FakeDto::productCreateDto());
 
         $this->items = Item::factory()->count(3)->create();
         $this->prices = array_map(fn (Currency $currency) => [

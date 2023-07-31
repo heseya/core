@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Dtos\PriceDto;
-use App\Dtos\ProductCreateDto;
 use App\Enums\ConditionType;
 use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
@@ -34,6 +33,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class CartTest extends TestCase
 {
@@ -89,12 +89,12 @@ class CartTest extends TestCase
 
         $this->shippingMethod->priceRanges()->saveMany([$lowRange, $highRange]);
 
-        $this->product = $this->productService->create(ProductCreateDto::fake([
+        $this->product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(4600.0, $this->currency->value))],
         ]));
 
-        $this->productWithSchema = $this->productService->create(ProductCreateDto::fake([
+        $this->productWithSchema = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(100.0, $this->currency->value))],
         ]));
@@ -118,7 +118,7 @@ class CartTest extends TestCase
             'price' => 100,
         ]);
 
-        $this->digitalProduct = $this->productService->create(ProductCreateDto::fake([
+        $this->digitalProduct = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'shipping_digital' => true,
         ]));
@@ -939,7 +939,7 @@ class CartTest extends TestCase
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(10.0, $this->currency->value))],
         ]));
@@ -949,7 +949,7 @@ class CartTest extends TestCase
             'hidden' => false,
         ]);
         $product->schemas()->save($schema);
-        $product2 = $this->productService->create(ProductCreateDto::fake([
+        $product2 = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(100.0, $this->currency->value))],
         ]));
@@ -995,7 +995,7 @@ class CartTest extends TestCase
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(10.0, $this->currency->value))],
         ]));
@@ -1164,7 +1164,7 @@ class CartTest extends TestCase
 
         $code = $coupon ? [] : ['code' => null];
 
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(4601.0, $this->currency->value))],
         ]));
@@ -1253,7 +1253,7 @@ class CartTest extends TestCase
 
         $code = $coupon ? [] : ['code' => null];
 
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(45.0, $this->currency->value))],
         ]));
@@ -1352,7 +1352,7 @@ class CartTest extends TestCase
 
         $item = Item::factory()->create($itemData);
 
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(4600.0, $this->currency->value))],
         ]));
@@ -1391,7 +1391,7 @@ class CartTest extends TestCase
 
         $item = Item::factory()->create();
 
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(4600.0, $this->currency->value))],
         ]));
@@ -1492,11 +1492,11 @@ class CartTest extends TestCase
         $item = Item::factory()->create();
         $item2 = Item::factory()->create();
 
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(4600.0, $this->currency->value))],
         ]));
-        $product2 = $this->productService->create(ProductCreateDto::fake([
+        $product2 = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(4600.0, $this->currency->value))],
         ]));
@@ -1859,7 +1859,7 @@ class CartTest extends TestCase
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
-        $productWithSale = $this->productService->create(ProductCreateDto::fake([
+        $productWithSale = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
         ]));
 
@@ -2126,7 +2126,7 @@ class CartTest extends TestCase
             'purchase_limit_per_user' => 0,
         ]);
 
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(1000.0, $this->currency->value))],
         ]));
@@ -2516,7 +2516,7 @@ class CartTest extends TestCase
      */
     private function prepareCouponWithProductInSetAndCountConditions(bool $productInSet, bool $isAllowList): array
     {
-        $product = $this->productService->create(ProductCreateDto::fake([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
             'prices_base' => [new PriceDto(Money::of(49.0, $this->currency->value))],
         ]));
