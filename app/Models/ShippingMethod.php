@@ -10,7 +10,6 @@ use App\Traits\HasMetadata;
 use Brick\Math\BigDecimal;
 use Brick\Money\Money;
 use Heseya\Searchable\Traits\HasCriteria;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -115,7 +114,6 @@ class ShippingMethod extends Model
      */
     public function getStartingPrices(): array
     {
-        /** @var Collection<PriceRange> $priceRanges */
         $priceRanges = $this->priceRanges()
             ->where('start', '=', BigDecimal::zero())
             ->get();

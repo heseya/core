@@ -29,7 +29,6 @@ use App\Services\Contracts\SeoMetadataServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
 use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
-use Brick\Money\Money;
 use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
 use Illuminate\Support\Collection;
@@ -50,8 +49,6 @@ final readonly class ProductService implements ProductServiceContract
     ) {}
 
     /**
-     * @throws MathException
-     * @throws MoneyMismatchException
      * @throws DtoException
      * @throws PublishingException
      */
@@ -73,13 +70,20 @@ final readonly class ProductService implements ProductServiceContract
 
         DB::commit();
 
+        /** @var PriceDto $priceMin */
+        // @var PriceDto $priceMax
+        [[$priceMin], [$priceMax]] = $this->productRepository::getProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_MIN,
+            ProductPriceType::PRICE_MAX,
+        ]);
+
         // TODO: Make this webhook with currencies
         ProductPriceUpdated::dispatch(
             $product->getKey(),
             null,
             null,
-            $product->pricesMin->first()->value,
-            $product->pricesMax->first()->value,
+            $priceMin->value,
+            $priceMax->value,
         );
         ProductCreated::dispatch($product);
 
@@ -94,12 +98,14 @@ final readonly class ProductService implements ProductServiceContract
      */
     public function update(Product $product, ProductUpdateDto $dto): Product
     {
-        $currency = Currency::DEFAULT->value;
+        $currency = Currency::DEFAULT;
 
-        /** @var ?Money $oldMinPrice */
-        $oldMinPrice = $product->pricesMin->where('currency', $currency)->first()?->value;
-        /** @var ?Money $oldMaxPrice */
-        $oldMaxPrice = $product->pricesMax->where('currency', $currency)->first()?->value;
+        /** @var PriceDto $oldPriceMin */
+        // @var PriceDto $oldPriceMax
+        [[$oldPriceMin], [$oldPriceMax]] = $this->productRepository::getProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_MIN,
+            ProductPriceType::PRICE_MAX,
+        ], $currency);
 
         DB::beginTransaction();
 
@@ -115,24 +121,24 @@ final readonly class ProductService implements ProductServiceContract
 
         DB::commit();
 
-        /** @var Money $minPrice */
-        $minPrice = $product->pricesMin->where('currency', $currency)->first()->value;
-        /** @var Money $maxPrice */
-        $maxPrice = $product->pricesMax->where('currency', $currency)->first()->value;
+        /** @var PriceDto $priceMin */
+        // @var PriceDto $priceMax
+        [[$priceMin], [$priceMax]] = $this->productRepository::getProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_MIN,
+            ProductPriceType::PRICE_MAX,
+        ], $currency);
 
         // TODO: This is just wrong
         if (
-            $oldMinPrice === null
-            || $oldMaxPrice === null
-            || !$oldMinPrice->isEqualTo($minPrice)
-            || !$oldMaxPrice->isEqualTo($maxPrice)
+            !$oldPriceMin->value->isEqualTo($priceMin->value)
+            || !$oldPriceMax->value->isEqualTo($priceMax->value)
         ) {
             ProductPriceUpdated::dispatch(
                 $product->getKey(),
-                $oldMinPrice,
-                $oldMaxPrice,
-                $minPrice,
-                $maxPrice,
+                $oldPriceMin->value,
+                $oldPriceMax->value,
+                $priceMin->value,
+                $priceMax->value,
             );
         }
 
@@ -163,10 +169,6 @@ final readonly class ProductService implements ProductServiceContract
 
     /**
      * @return PriceDto[][]
-     *
-     * @throws MathException
-     * @throws MoneyMismatchException
-     * @throws DtoException
      */
     public function getMinMaxPrices(Product $product): array
     {
@@ -176,27 +178,21 @@ final readonly class ProductService implements ProductServiceContract
             clone $product->schemas,
         );
 
-        /** @var Collection $pricesMin */
+        /** @var PriceDto[] $pricesMin */
         $pricesMin = $product->pricesBase->map(
+            /** @phpstan-ignore-next-line  */
             fn (Price $price) => new PriceDto($price->value->plus($schemaMin)),
-        );
+        )->toArray();
 
-        /** @var Collection $pricesMin */
+        /** @var PriceDto[] $pricesMax */
         $pricesMax = $product->pricesBase->map(
+            /** @phpstan-ignore-next-line  */
             fn (Price $price) => new PriceDto($price->value->plus($schemaMax)),
-        );
+        )->toArray();
 
-        return [
-            $pricesMin->toArray(),
-            $pricesMax->toArray(),
-        ];
+        return [$pricesMin, $pricesMax];
     }
 
-    /**
-     * @throws MathException
-     * @throws MoneyMismatchException
-     * @throws DtoException
-     */
     public function updateMinMaxPrices(Product $product): void
     {
         [$pricesMin, $pricesMax] = $this->getMinMaxPrices($product);
@@ -208,11 +204,6 @@ final readonly class ProductService implements ProductServiceContract
         $this->discountService->applyDiscountsOnProduct($product);
     }
 
-    /**
-     * @throws MathException
-     * @throws MoneyMismatchException
-     * @throws DtoException
-     */
     private function setup(Product $product, ProductCreateDto|ProductUpdateDto $dto): Product
     {
         if (!($dto->schemas instanceof Missing)) {

@@ -67,7 +67,7 @@ class ShippingMethodUpdateDto extends Dto implements InstantiateFromRequest
             shipping_type: $request->input('shipping_type', new Missing()),
             integration_key: $request->input('integration_key'),
             shipping_points: $request->input('shipping_points'),
-            app_id: $user instanceof App ? Auth::id() : null,
+            app_id: $user instanceof App ? $user->id : null,
             metadata: self::mapMetadata($request),
         );
     }

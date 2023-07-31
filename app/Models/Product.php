@@ -2,10 +2,8 @@
 
 namespace App\Models;
 
-use App\Criteria\LessOrEquals;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
-use App\Criteria\MoreOrEquals;
 use App\Criteria\PriceMaxCap;
 use App\Criteria\PriceMinCap;
 use App\Criteria\ProductAttributeSearch;
@@ -21,6 +19,7 @@ use App\Criteria\WhereInIds;
 use App\Criteria\WhereNotId;
 use App\Criteria\WhereNotSlug;
 use App\Enums\DiscountTargetType;
+use App\Enums\Product\ProductPriceType;
 use App\Models\Contracts\SeoContract;
 use App\Models\Contracts\SortableContract;
 use App\Models\Interfaces\Translatable;
@@ -37,6 +36,7 @@ use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Spatie\Translatable\HasTranslations;
@@ -273,53 +273,33 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         return $sales->unique('id');
     }
 
-    public function pricesBase(): MorphManyWithIdentifier
+    private function prices(): MorphMany
     {
-        return $this->morphManyWithIdentifier(
-            Price::class,
-            'model',
-            'price_type',
-            'price_base'
-        );
+        return $this->morphMany(Price::class, 'model');
     }
 
-    public function pricesMin(): MorphManyWithIdentifier
+    public function pricesBase(): MorphMany
     {
-        return $this->morphManyWithIdentifier(
-            Price::class,
-            'model',
-            'price_type',
-            'price_min'
-        );
+        return $this->prices()->where('price_type', ProductPriceType::PRICE_BASE->value);
     }
 
-    public function pricesMax(): MorphManyWithIdentifier
+    public function pricesMin(): MorphMany
     {
-        return $this->morphManyWithIdentifier(
-            Price::class,
-            'model',
-            'price_type',
-            'price_max'
-        );
+        return $this->prices()->where('price_type', ProductPriceType::PRICE_MIN->value);
     }
 
-    public function pricesMinInitial(): MorphManyWithIdentifier
+    public function pricesMax(): MorphMany
     {
-        return $this->morphManyWithIdentifier(
-            Price::class,
-            'model',
-            'price_type',
-            'price_min_initial'
-        );
+        return $this->prices()->where('price_type', ProductPriceType::PRICE_MAX->value);
     }
 
-    public function pricesMaxInitial(): MorphManyWithIdentifier
+    public function pricesMinInitial(): MorphMany
     {
-        return $this->morphManyWithIdentifier(
-            Price::class,
-            'model',
-            'price_type',
-            'price_max_initial'
-        );
+        return $this->prices()->where('price_type', ProductPriceType::PRICE_MIN_INITIAL->value);
+    }
+
+    public function pricesMaxInitial(): MorphMany
+    {
+        return $this->prices()->where('price_type', ProductPriceType::PRICE_MAX_INITIAL->value);
     }
 }

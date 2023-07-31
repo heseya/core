@@ -457,8 +457,8 @@ readonly class DiscountService implements DiscountServiceContract
             // TODO: Fix this with multiple currencies
             return new ProductPriceDto(
                 $product->getKey(),
-                $minPriceDiscounted[0]?->value->getAmount()->toFloat(),
-                $maxPriceDiscounted[0]?->value->getAmount()->toFloat(),
+                $minPriceDiscounted[0]->value->getAmount()->toFloat(),
+                $maxPriceDiscounted[0]->value->getAmount()->toFloat(),
             );
         })->toArray();
     }
@@ -788,18 +788,12 @@ readonly class DiscountService implements DiscountServiceContract
         $sales = $this->sortDiscounts($product->allProductSales($salesWithBlockList));
 
         [
-            $minPrice,
-            $maxPrice,
-            $basePrice,
+            $minPricesDiscounted,
+            $maxPricesDiscounted,
         ] = $this->productRepository->getProductPrices($product->getKey(), [
             ProductPriceType::PRICE_MIN_INITIAL,
             ProductPriceType::PRICE_MAX_INITIAL,
-            ProductPriceType::PRICE_BASE,
         ]);
-
-        // prevent error when price_min or price_max is null
-        $minPricesDiscounted = $minPrice ?? $basePrice;
-        $maxPricesDiscounted = $maxPrice ?? $basePrice;
 
         // TODO: Should have a minimum price for each currency
         $minimalProductPriceSetting = $this->settingsService->getMinimalPrice('minimal_product_price');
@@ -1650,10 +1644,10 @@ readonly class DiscountService implements DiscountServiceContract
     private function checkConditionUserInRole(DiscountCondition $condition): bool
     {
         $conditionDto = UserInRoleConditionDto::fromArray($condition->value + ['type' => $condition->type]);
-        /** @var User $user */
+        /** @var User|App|null $user */
         $user = Auth::user();
 
-        if ($user) {
+        if ($user instanceof User) {
             /** @var Role $role */
             foreach ($user->roles as $role) {
                 if (in_array($role->getKey(), $conditionDto->getRoles()) === $conditionDto->isIsAllowList()) {

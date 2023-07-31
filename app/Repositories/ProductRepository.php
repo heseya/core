@@ -35,7 +35,7 @@ class ProductRepository implements ProductRepositoryContract
     }
 
     /**
-     * @param array<ProductPriceType, PriceDto[]> $priceMatrix
+     * @param PriceDto[][] $priceMatrix
      */
     public static function setProductPrices(string $productId, array $priceMatrix): void
     {

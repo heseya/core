@@ -40,8 +40,8 @@ class ProductSearchDto extends Dto implements InstantiateFromRequest
     private array|Missing $metadata;
     private array|Missing $metadata_private;
 
-    private Money|Missing $price_min;
-    private Money|Missing $price_max;
+    private Missing|Money $price_min;
+    private Missing|Money $price_max;
 
     /**
      * @throws UnknownCurrencyException

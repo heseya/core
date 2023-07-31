@@ -3,14 +3,11 @@
 namespace Tests\Feature\Orders;
 
 use App\Dtos\PriceDto;
-use App\Dtos\PriceRangeDto;
 use App\Dtos\ProductCreateDto;
-use App\Dtos\ShippingMethodCreateDto;
 use App\Enums\ConditionType;
 use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
-use App\Enums\ShippingType;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
 use App\Models\Order;
@@ -18,7 +15,6 @@ use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Services\Contracts\ProductServiceContract;
-use App\Services\Contracts\ShippingMethodServiceContract;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;

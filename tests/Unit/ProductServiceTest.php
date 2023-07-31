@@ -37,7 +37,7 @@ class ProductServiceTest extends TestCase
 
         $this->productService = App::make(ProductServiceContract::class);
 
-        /** @var Product $product */
+        // @var Product $product
         $this->product = $this->productService->create(ProductCreateDto::fake([
             'prices_base' => [new PriceDto(Money::of(self::$price, Currency::DEFAULT->value))],
         ]));

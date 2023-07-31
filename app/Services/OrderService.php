@@ -167,7 +167,7 @@ final readonly class OrderService implements OrderServiceContract
                     'buyer_type' => $buyer::class,
                     'invoice_requested' => $getInvoiceRequested,
                     'shipping_place' => $shippingPlace,
-                    'shipping_type' => $shippingMethod->shipping_type ?? $digitalShippingMethod->shipping_type,
+                    'shipping_type' => $shippingMethod->shipping_type ?? $digitalShippingMethod->shipping_type ?? null,
                 ] + $dto->toArray(),
             );
 
@@ -301,6 +301,7 @@ final readonly class OrderService implements OrderServiceContract
                     ? $digitalShippingMethod->shipping_type : $order->digitalShippingMethod?->shipping_type;
             }
 
+            /** @var string $shippingType */
             if ($shippingType !== ShippingType::POINT) {
                 $shippingPlace = $dto->getShippingPlace() instanceof AddressDto ?
                     $this->modifyAddress(
@@ -447,7 +448,7 @@ final readonly class OrderService implements OrderServiceContract
     }
 
     /**
-     * @return ShippingMethod[]
+     * @return (ShippingMethod|null)[]
      *
      * @throws OrderException
      */

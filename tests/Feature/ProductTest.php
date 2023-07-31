@@ -165,8 +165,8 @@ class ProductTest extends TestCase
             'name' => $this->product->name,
             'slug' => $this->product->slug,
             'prices_base' => [[
-                "gross" => '100.00',
-                "currency" => "PLN",
+                'gross' => '100.00',
+                'currency' => 'PLN',
             ]],
             'visible' => $this->product->public,
             'public' => (bool) $this->product->public,
@@ -385,7 +385,6 @@ class ProductTest extends TestCase
             'prices_base' => [new PriceDto(Money::of(1500, $this->currency->value))],
             'prices_min' => [new PriceDto(Money::of(100, $this->currency->value))],
         ]);
-
 
         $this
             ->actingAs($this->{$user})
@@ -1173,7 +1172,6 @@ class ProductTest extends TestCase
 
         $response = $this->actingAs($this->{$user})
             ->getJson('/products/id:' . $this->saleProduct->getKey());
-
 
         $response
             ->assertOk()

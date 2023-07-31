@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
+ * @property Money $value
+ *
  * @mixin IdeHelperPrice
  */
 class Price extends Model
