@@ -351,7 +351,7 @@ class ProductTest extends TestCase
      */
     public function testIndexSortPrice(string $user): void
     {
-        $this->markTestSkipped("Skipped until sorting gets reimplemented");
+        $this->markTestSkipped('Skipped until sorting gets reimplemented');
 
         $this->{$user}->givePermissionTo('products.show');
 

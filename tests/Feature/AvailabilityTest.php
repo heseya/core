@@ -65,7 +65,7 @@ class AvailabilityTest extends TestCase
             'available' => false,
             'public' => true,
             'quantity' => 0,
-        ]);;
+        ]);
 
         $this->shippingMethodService = App::make(ShippingMethodServiceContract::class);
     }

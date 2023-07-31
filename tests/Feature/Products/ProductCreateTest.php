@@ -5,7 +5,6 @@ namespace Tests\Feature\Products;
 use App\Dtos\ProductCreateDto;
 use App\Enums\Currency;
 use App\Models\Page;
-use App\Models\Product;
 use App\Services\Contracts\ProductServiceContract;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
