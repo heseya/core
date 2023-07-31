@@ -29,6 +29,7 @@ use App\Traits\HasMediaAttachments;
 use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
 use App\Traits\Sortable;
+use Domain\ProductAttribute\Models\Attribute;
 use Heseya\Searchable\Criteria\Equals;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
@@ -44,7 +45,6 @@ use Spatie\Translatable\HasTranslations;
  * @property string $description_html
  * @property string $description_short
  * @property mixed $pivot
- *
  * @mixin IdeHelperProduct
  */
 class Product extends Model implements SeoContract, SortableContract, Translatable

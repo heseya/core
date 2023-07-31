@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\AttributeType;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
@@ -13,8 +12,6 @@ use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductUpdated;
 use App\Listeners\WebHookEventListener;
-use App\Models\Attribute;
-use App\Models\AttributeOption;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
 use App\Models\Language;
@@ -28,6 +25,9 @@ use App\Models\WebHook;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\ProductServiceContract;
+use Domain\ProductAttribute\Enums\AttributeType;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;

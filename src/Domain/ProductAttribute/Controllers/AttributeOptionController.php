@@ -1,27 +1,30 @@
 <?php
 
-namespace App\Http\Controllers;
+declare(strict_types=1);
+
+namespace Domain\ProductAttribute\Controllers;
 
 use App\DTO\ReorderDto;
 use App\Dtos\AttributeOptionDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\AttributeOptionIndexRequest;
 use App\Http\Requests\AttributeOptionRequest;
 use App\Http\Resources\AttributeOptionResource;
-use App\Models\Attribute;
-use App\Models\AttributeOption;
-use App\Services\Contracts\AttributeOptionServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\ProductAttribute\Services\AttributeOptionService;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
 
-class AttributeOptionController extends Controller
+final class AttributeOptionController extends Controller
 {
     public function __construct(
-        private readonly AttributeOptionServiceContract $attributeOptionService,
+        private readonly AttributeOptionService $attributeOptionService,
         private readonly ReorderServiceContract $reorderService,
     ) {}
 

@@ -1,13 +1,16 @@
 <?php
 
-namespace App\Http\Controllers;
+declare(strict_types=1);
 
+namespace Domain\ProductAttribute\Controllers;
+
+use App\Http\Controllers\Controller;
 use App\Http\Requests\FilterIndexRequest;
 use App\Http\Resources\AttributeResource;
-use App\Models\Attribute;
+use Domain\ProductAttribute\Models\Attribute;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class FilterController extends Controller
+final class FilterController extends Controller
 {
     public function indexBySetsIds(FilterIndexRequest $request): JsonResource
     {

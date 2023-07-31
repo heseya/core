@@ -17,7 +17,6 @@ use App\Http\Resources\ProductResource;
 use App\Http\Resources\ResourceCollection;
 use App\Models\MediaAttachment;
 use App\Models\Product;
-use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\MediaAttachmentServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -30,13 +29,12 @@ final class ProductController extends Controller
 {
     public function __construct(
         private readonly ProductServiceContract $productService,
-        private readonly ProductRepositoryContract $productRepository,
         private readonly MediaAttachmentServiceContract $attachmentService,
     ) {}
 
     public function index(ProductIndexRequest $request): JsonResource
     {
-        $products = $this->productRepository->search(
+        $products = $this->productService->search(
             ProductSearchDto::instantiateFromRequest($request),
         );
 

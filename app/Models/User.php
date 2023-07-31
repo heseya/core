@@ -38,7 +38,6 @@ use Spatie\Permission\Traits\HasRoles;
 
 /**
  * @property string|null $remember_token
- *
  * @mixin IdeHelperUser
  */
 class User extends Model implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, JWTSubject, SortableContract

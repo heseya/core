@@ -2,8 +2,8 @@
 
 namespace App\Rules;
 
-use App\Enums\AttributeType;
-use App\Models\Attribute;
+use Domain\ProductAttribute\Enums\AttributeType;
+use Domain\ProductAttribute\Models\Attribute;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Str;
 

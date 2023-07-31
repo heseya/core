@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 /**
  * @property ConditionType $type;
- *
  * @mixin IdeHelperDiscountCondition
  */
 class DiscountCondition extends Model

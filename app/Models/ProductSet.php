@@ -14,6 +14,7 @@ use App\Traits\HasDiscountConditions;
 use App\Traits\HasDiscounts;
 use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
+use Domain\ProductAttribute\Models\Attribute;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Builder;
@@ -29,7 +30,6 @@ use Spatie\Translatable\HasTranslations;
 
 /**
  * @property mixed $pivot
- *
  * @mixin IdeHelperProductSet
  */
 class ProductSet extends Model implements SeoContract, Translatable

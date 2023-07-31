@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Models\Attribute;
-use App\Models\AttributeOption;
 use App\Models\Media;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Tag;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Carbon;
 use Illuminate\Testing\TestResponse;

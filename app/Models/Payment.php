@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property PaymentStatus $status
- *
  * @mixin IdeHelperPayment
  */
 class Payment extends Model

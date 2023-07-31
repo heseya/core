@@ -5,7 +5,6 @@ namespace App\DTO\Auth;
 use App\Rules\ConsentsExists;
 use App\Rules\IsRegistrationRole;
 use App\Rules\RequiredConsents;
-use App\Utils\Map;
 use Illuminate\Validation\Rule as ValidationRule;
 use Illuminate\Validation\Rules\Password;
 use Spatie\LaravelData\Attributes\Validation\BeforeOrEqual;
@@ -13,6 +12,7 @@ use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
+use Support\Utils\Map;
 
 class RegisterDto extends Data
 {

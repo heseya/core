@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\AttributeType;
 use App\Traits\MetadataRules;
+use Domain\ProductAttribute\Enums\AttributeType;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AttributeOptionRequest extends FormRequest

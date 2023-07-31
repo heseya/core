@@ -1,16 +1,20 @@
 <?php
 
-namespace App\Services;
+declare(strict_types=1);
+
+namespace Domain\ProductAttribute\Services;
 
 use App\Dtos\AttributeOptionDto;
-use App\Models\AttributeOption;
-use App\Services\Contracts\AttributeOptionServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Heseya\Dto\Missing;
 
-class AttributeOptionService implements AttributeOptionServiceContract
+final readonly class AttributeOptionService
 {
-    public function __construct(private MetadataServiceContract $metadataService) {}
+    public function __construct(
+        private MetadataServiceContract $metadataService,
+        private AttributeService $attributeService,
+    ) {}
 
     public function create(string $attributeId, AttributeOptionDto $dto): AttributeOption
     {
@@ -37,6 +41,10 @@ class AttributeOptionService implements AttributeOptionServiceContract
             $attributeOption->update($dto->toArray());
 
             return $attributeOption;
+        }
+
+        if ($attributeOption->attribute !== null) {
+            $this->attributeService->updateMinMax($attributeOption->attribute);
         }
 
         return $this->create($attributeId, $dto);

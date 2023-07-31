@@ -69,7 +69,9 @@
     "psr-4": {
       "App\\": "app/",
       "Database\\Factories\\": "database/factories/",
-      "Database\\Seeders\\": "database/seeders/"
+      "Database\\Seeders\\": "database/seeders/",
+      "Domain\\": "src/Domain",
+      "Support\\": "src/Support"
     }
   },
   "autoload-dev": {
@@ -129,7 +131,8 @@
       "@stan"
     ],
     "pint": [
-      "./vendor/bin/pint"
+      "./vendor/bin/pint ./src --config ./pint.json",
+      "./vendor/bin/pint ./app --config ./pint-app.json"
     ],
     "pre-commit": [
       "@style",
@@ -157,7 +160,8 @@
       "@php artisan db:seed --class=\"Database\\Seeders\\InitSeeder\""
     ],
     "stan": [
-      "./vendor/bin/phpstan analyse --memory-limit=2G"
+      "./vendor/bin/phpstan analyse -c ./phpstan.neon --memory-limit=2G",
+      "./vendor/bin/phpstan analyse -c ./phpstan-app.neon --memory-limit=2G"
     ],
     "style": [
       "@normalize",

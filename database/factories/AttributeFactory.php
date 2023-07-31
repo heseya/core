@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Enums\AttributeType;
-use App\Models\Attribute;
+use Domain\ProductAttribute\Enums\AttributeType;
+use Domain\ProductAttribute\Models\Attribute;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;

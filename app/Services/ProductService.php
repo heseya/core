@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Dtos\ProductCreateDto;
+use App\Dtos\ProductSearchDto;
 use App\Dtos\ProductUpdateDto;
 use App\Enums\SchemaType;
 use App\Events\ProductCreated;
@@ -13,7 +14,6 @@ use App\Exceptions\PublishingException;
 use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
-use App\Services\Contracts\AttributeServiceContract;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\MediaServiceContract;
@@ -22,9 +22,13 @@ use App\Services\Contracts\ProductServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
+use Domain\ProductAttribute\Services\AttributeService;
 use Heseya\Dto\Missing;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 final readonly class ProductService implements ProductServiceContract
 {
@@ -34,10 +38,23 @@ final readonly class ProductService implements ProductServiceContract
         private SeoMetadataServiceContract $seoMetadataService,
         private AvailabilityServiceContract $availabilityService,
         private MetadataServiceContract $metadataService,
-        private AttributeServiceContract $attributeService,
+        private AttributeService $attributeService,
         private DiscountServiceContract $discountService,
         private TranslationServiceContract $translationService,
     ) {}
+
+    public function search(ProductSearchDto $dto): LengthAwarePaginator
+    {
+        $query = Product::searchByCriteria($dto->toArray())
+            ->with(['attributes', 'metadata', 'media', 'tags', 'items'])
+            ->sort($dto->getSort());
+
+        if (Gate::denies('products.show_hidden')) {
+            $query->where('products.public', true);
+        }
+
+        return $query->paginate(Config::get('pagination.per_page'));
+    }
 
     private function setup(Product $product, ProductCreateDto|ProductUpdateDto $dto): Product
     {

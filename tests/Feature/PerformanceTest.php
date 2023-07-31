@@ -5,8 +5,6 @@ namespace Tests\Feature;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\MetadataType;
-use App\Models\Attribute;
-use App\Models\AttributeOption;
 use App\Models\Banner;
 use App\Models\BannerMedia;
 use App\Models\Country;
@@ -23,6 +21,8 @@ use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\Tag;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

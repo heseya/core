@@ -4,16 +4,12 @@ namespace App\Providers;
 
 use App\Services\AnalyticsService;
 use App\Services\AppService;
-use App\Services\AttributeOptionService;
-use App\Services\AttributeService;
 use App\Services\AuthService;
 use App\Services\AvailabilityService;
 use App\Services\BannerService;
 use App\Services\ConsentService;
 use App\Services\Contracts\AnalyticsServiceContract;
 use App\Services\Contracts\AppServiceContract;
-use App\Services\Contracts\AttributeOptionServiceContract;
-use App\Services\Contracts\AttributeServiceContract;
 use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\BannerServiceContract;
@@ -139,8 +135,6 @@ class AppServiceProvider extends ServiceProvider
         AvailabilityServiceContract::class => AvailabilityService::class,
         DocumentServiceContract::class => DocumentService::class,
         MetadataServiceContract::class => MetadataService::class,
-        AttributeServiceContract::class => AttributeService::class,
-        AttributeOptionServiceContract::class => AttributeOptionService::class,
         SortServiceContract::class => SortService::class,
         ConsentServiceContract::class => ConsentService::class,
         BannerServiceContract::class => BannerService::class,

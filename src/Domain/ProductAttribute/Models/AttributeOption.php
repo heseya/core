@@ -1,11 +1,14 @@
 <?php
 
-namespace App\Models;
+declare(strict_types=1);
+
+namespace Domain\ProductAttribute\Models;
 
 use App\Criteria\AttributeOptionSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\WhereInIds;
+use App\Models\Model;
 use App\Traits\HasMetadata;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
@@ -15,10 +18,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property string $name
- *
- * @mixin IdeHelperAttributeOption
  */
-class AttributeOption extends Model
+final class AttributeOption extends Model
 {
     use HasCriteria;
     use HasFactory;
@@ -40,6 +41,7 @@ class AttributeOption extends Model
         'updated_at' => 'datetime',
     ];
 
+    /** @var string[] */
     protected array $criteria = [
         'search' => AttributeOptionSearch::class,
         'metadata' => MetadataSearch::class,

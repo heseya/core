@@ -3,7 +3,6 @@
 namespace App\DTO\OrderStatus;
 
 use App\Rules\Translations;
-use App\Utils\Map;
 use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -11,6 +10,7 @@ use Spatie\LaravelData\Attributes\Validation\Min;
 use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
+use Support\Utils\Map;
 
 final class OrderStatusUpdateDto extends Data
 {

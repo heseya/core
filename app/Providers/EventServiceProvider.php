@@ -49,12 +49,10 @@ use App\Listeners\OrderUpdatedStatusListener;
 use App\Listeners\UserCreatedListener;
 use App\Listeners\WebHookEventListener;
 use App\Listeners\WebHookFailedListener;
-use App\Models\AttributeOption;
 use App\Models\Deposit;
 use App\Models\ItemProduct;
 use App\Models\Payment;
 use App\Models\Schema;
-use App\Observers\AttributeOptionObserver;
 use App\Observers\DepositObserver;
 use App\Observers\ItemProductObserver;
 use App\Observers\PaymentObserver;
@@ -155,7 +153,6 @@ class EventServiceProvider extends ServiceProvider
         Event::listen(SocialiteWasCalled::class, AppleExtendSocialite::class);
 
         // Ugly observers 🤮
-        AttributeOption::observe(AttributeOptionObserver::class);
         Deposit::observe(DepositObserver::class);
         ItemProduct::observe(ItemProductObserver::class);
         Payment::observe(PaymentObserver::class);

@@ -3,7 +3,6 @@
 namespace App\DTO\ProductSchema;
 
 use App\Rules\Translations;
-use App\Utils\Map;
 use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\Validation\Rule;
@@ -11,6 +10,7 @@ use Spatie\LaravelData\Attributes\Validation\Uuid;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
+use Support\Utils\Map;
 
 class OptionDto extends Data
 {

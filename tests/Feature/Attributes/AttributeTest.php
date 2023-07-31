@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Attributes;
 
-use App\Enums\AttributeType;
 use App\Enums\MetadataType;
-use App\Models\Attribute;
-use App\Models\AttributeOption;
 use App\Models\Option;
+use Domain\ProductAttribute\Enums\AttributeType;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Illuminate\Support\Carbon;
 use Ramsey\Uuid\Uuid;
 use Tests\TestCase;

@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Enums;
+declare(strict_types=1);
+
+namespace Domain\ProductAttribute\Enums;
 
 enum AttributeType: string
 {

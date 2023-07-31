@@ -25,7 +25,6 @@ use Illuminate\Support\Collection;
  * @property mixed $pivot
  * @property DiscountType $type
  * @property DiscountTargetType $target_type
- *
  * @mixin IdeHelperDiscount
  */
 class Discount extends Model implements SeoContract
