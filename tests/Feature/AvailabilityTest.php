@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Dtos\ProductCreateDto;
 use App\Dtos\ShippingMethodCreateDto;
 use App\Enums\Currency;
 use App\Enums\SchemaType;
@@ -21,7 +22,11 @@ use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Services\AvailabilityService;
 use App\Services\Contracts\AvailabilityServiceContract;
+use App\Services\Contracts\ProductServiceContract;
 use App\Services\Contracts\ShippingMethodServiceContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -42,15 +47,25 @@ class AvailabilityTest extends TestCase
     private Product $product;
     private ShippingMethodServiceContract $shippingMethodService;
 
+    /**
+     * @throws RoundingNecessaryException
+     * @throws DtoException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
     public function setUp(): void
     {
         parent::setUp();
         Product::query()->delete();
-        $this->product = Product::factory()->create([
+
+        /** @var ProductServiceContract $productService */
+        $productService = App::make(ProductServiceContract::class);
+        $this->product = $productService->create(ProductCreateDto::fake());
+        $this->product->update([
             'available' => false,
             'public' => true,
             'quantity' => 0,
-        ]);
+        ]);;
 
         $this->shippingMethodService = App::make(ShippingMethodServiceContract::class);
     }
@@ -583,10 +598,6 @@ class AvailabilityTest extends TestCase
         $this->{$user}->givePermissionTo('orders.add');
         $email = $this->faker->freeEmail;
 
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
-
         $currency = Currency::DEFAULT->value;
         $shippingMethod = ShippingMethod::factory()->create(['public' => true]);
         $lowRange = PriceRange::create([
@@ -607,10 +618,9 @@ class AvailabilityTest extends TestCase
 
         $schemas = $this->createSchemasWithOptions($schemaCount);
 
-        $product->schemas()->sync(array_keys($schemas));
-        $product->update([
+        $this->product->schemas()->sync(array_keys($schemas));
+        $this->product->update([
             'has_schemas' => true,
-            'price' => 100,
         ]);
 
         $this->actingAs($this->{$user})->postJson('/orders', [
@@ -620,7 +630,7 @@ class AvailabilityTest extends TestCase
             'billing_address' => $address->toArray(),
             'items' => [
                 [
-                    'product_id' => $product->getKey(),
+                    'product_id' => $this->product->getKey(),
                     'quantity' => 1,
                     'schemas' => $schemas,
                 ],
@@ -746,14 +756,14 @@ class AvailabilityTest extends TestCase
         $availabilityService->calculateProductAvailability($this->product->refresh());
     }
 
+    /**
+     * @throws RoundingNecessaryException
+     * @throws DtoException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
     private function createProductForAvailabilityCheckWithDirectItems(): Product
     {
-        $product = Product::factory()->create();
-
-        $product->update([
-            'available' => false,
-        ]);
-
         $schema = Schema::factory()->create([
             'name' => 'schemaOne',
             'type' => SchemaType::SELECT,
@@ -761,9 +771,9 @@ class AvailabilityTest extends TestCase
             'available' => false,
         ]);
 
-        $product->schemas()->attach($schema->getKey());
+        $this->product->schemas()->attach($schema->getKey());
 
-        return $product->refresh();
+        return $this->product->refresh();
     }
 
     private function createSchemasWithOptions(int $schemaCount): array

@@ -29,6 +29,15 @@ class GoogleProductCategoryTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
+
+        $prices = array_map(
+            fn (Currency $currency) => [
+                'value' => '100.00',
+                'currency' => $currency->value,
+            ],
+            Currency::cases(),
+        );
+
         $this->request = [
             'translations' => [
                 $this->lang => [
@@ -39,7 +48,7 @@ class GoogleProductCategoryTest extends TestCase
             'slug' => 'slug',
             'public' => true,
             'shipping_digital' => false,
-            'prices_base' => [new PriceDto(Money::of(100, Currency::DEFAULT->value))],
+            'prices_base' => $prices,
         ];
 
         /** @var ProductServiceContract $productService */

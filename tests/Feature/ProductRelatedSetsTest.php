@@ -20,7 +20,9 @@ class ProductRelatedSetsTest extends TestCase
 
         /** @var ProductServiceContract $productService */
         $productService = App::make(ProductServiceContract::class);
-        $this->product = $productService->create(ProductCreateDto::fake());
+        $this->product = $productService->create(ProductCreateDto::fake([
+            'public' => true,
+        ]));
     }
 
     /**
