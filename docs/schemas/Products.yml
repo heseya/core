@@ -12,26 +12,66 @@ Product:
       description: 'Displayed product name'
       type: string
       example: 'White socks'
-    price:
-      description: 'Base price of the product excluding schemas'
-      type: number
-      example: 10.99
-    price_min:
-      description: 'Min price after applied all sales'
-      type: number
-      example: 11.99
-    price_max:
-      description: 'Max price after applied all sales'
-      type: number
-      example: 19.99
-    price_min_initial:
-      description: 'Minimum available product price accounting for schemas'
-      type: number
-      example: 12.99
-    price_max_initial:
-      description: 'Maximum available product price accounting for schemas'
-      type: number
-      example: 20.99
+    prices_base:
+      description: 'Base prices of the product excluding schemas'
+      type: array
+      items:
+        type: object
+        properties:
+          value:
+            type: string
+            example: '9.99'
+          currency:
+            type: string
+            example: 'PLN'
+    prices_min:
+      description: 'Min prices after applied all sales'
+      type: array
+      items:
+        type: object
+        properties:
+          value:
+            type: string
+            example: '9.99'
+          currency:
+            type: string
+            example: 'PLN'
+    prices_max:
+      description: 'Max prices after applied all sales'
+      type: array
+      items:
+        type: object
+        properties:
+          value:
+            type: string
+            example: '9.99'
+          currency:
+            type: string
+            example: 'PLN'
+    prices_min_initial:
+      description: 'Minimum available product prices accounting for schemas'
+      type: array
+      items:
+        type: object
+        properties:
+          value:
+            type: string
+            example: '9.99'
+          currency:
+            type: string
+            example: 'PLN'
+    prices_max_initial:
+      description: 'Maximum available product prices accounting for schemas'
+      type: array
+      items:
+        type: object
+        properties:
+          value:
+            type: string
+            example: '9.99'
+          currency:
+            type: string
+            example: 'PLN'
     public:
       description: 'Whether product is not set to be hidden.'
       type: boolean
@@ -172,18 +212,42 @@ ProductShort:
       description: 'Displayed product name'
       type: string
       example: 'White socks'
-    price:
-      description: 'Base price of the product excluding schemas'
-      type: number
-      example: 10.99
-    price_min:
-      description: 'Min price after applied all sales'
-      type: number
-      example: 11.99
-    price_max:
-      description: 'Max price after applied all sales'
-      type: number
-      example: 19.99
+    prices_base:
+      description: 'Base prices of the product excluding schemas'
+      type: array
+      items:
+        type: object
+        properties:
+          value:
+            type: string
+            example: '9.99'
+          currency:
+            type: string
+            example: 'PLN'
+    prices_min:
+      description: 'Min prices after applied all sales'
+      type: array
+      items:
+        type: object
+        properties:
+          value:
+            type: string
+            example: '9.99'
+          currency:
+            type: string
+            example: 'PLN'
+    prices_max:
+      description: 'Max prices after applied all sales'
+      type: array
+      items:
+        type: object
+        properties:
+          value:
+            type: string
+            example: '9.99'
+          currency:
+            type: string
+            example: 'PLN'
     public:
       description: 'Whether product is not set to be hidden.'
       type: boolean

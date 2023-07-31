@@ -20,6 +20,7 @@ ShippingMethod:
         example: PL
     price_ranges:
       type: array
+      description: 'Needs a price range for each currency'
       items:
         properties:
           start:
@@ -30,6 +31,10 @@ ShippingMethod:
             description: 'price in this range'
             type: string
             example: '18.70'
+          currency:
+            description: 'currency of this range'
+            type: string
+            example: 'PLN'
         type: object
     shipping_time_min:
       type: number
