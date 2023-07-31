@@ -22,7 +22,7 @@ abstract class TestCase extends BaseTestCase
 {
     use CreatesApplication;
     use JsonQueryCounter;
-    //    use RefreshDatabase;
+    use RefreshDatabase;
 
     public User $user;
     public Application $application;
