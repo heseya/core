@@ -2,13 +2,30 @@
 
 namespace Tests\Feature\Products;
 
+use App\Dtos\PriceDto;
+use App\Dtos\ProductCreateDto;
+use App\Enums\Currency;
 use App\Models\Product;
+use App\Services\Contracts\ProductServiceContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
+use Heseya\Dto\DtoException;
+use Illuminate\Support\Facades\App;
 use Tests\TestCase;
 
 class GoogleProductCategoryTest extends TestCase
 {
     private array $request;
+    private Product $product;
 
+    /**
+     * @throws RoundingNecessaryException
+     * @throws DtoException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
     public function setUp(): void
     {
         parent::setUp();
@@ -22,8 +39,12 @@ class GoogleProductCategoryTest extends TestCase
             'slug' => 'slug',
             'public' => true,
             'shipping_digital' => false,
-            'price' => 100,
+            'prices_base' => [new PriceDto(Money::of(100, Currency::DEFAULT->value))],
         ];
+
+        /** @var ProductServiceContract $productService */
+        $productService = App::make(ProductServiceContract::class);
+        $this->product = $productService->create(ProductCreateDto::fake());
     }
 
     /**
@@ -85,12 +106,10 @@ class GoogleProductCategoryTest extends TestCase
      */
     public function testUpdateWithGoogleProductCategory(string $user): void
     {
-        $product = Product::factory()->create();
-
         $this->{$user}->givePermissionTo('products.edit');
         $this
             ->actingAs($this->{$user})
-            ->patchJson("/products/id:{$product->getKey()}", [
+            ->patchJson("/products/id:{$this->product->getKey()}", [
                 'google_product_category' => 123,
             ])
             ->assertOk();
@@ -105,12 +124,10 @@ class GoogleProductCategoryTest extends TestCase
      */
     public function testUpdateWithWrongGoogleProductCategory(string $user): void
     {
-        $product = Product::factory()->create();
-
         $this->{$user}->givePermissionTo('products.edit');
         $this
             ->actingAs($this->{$user})
-            ->patchJson("/products/id:{$product->getKey()}", [
+            ->patchJson("/products/id:{$this->product->getKey()}", [
                 'google_product_category' => 123456789,
             ])
             ->assertOk(); // no validation
@@ -121,12 +138,10 @@ class GoogleProductCategoryTest extends TestCase
      */
     public function testUpdateWithNullGoogleProductCategory(string $user): void
     {
-        $product = Product::factory()->create();
-
         $this->{$user}->givePermissionTo('products.edit');
         $this
             ->actingAs($this->{$user})
-            ->patchJson("/products/id:{$product->getKey()}", [
+            ->patchJson("/products/id:{$this->product->getKey()}", [
                 'google_product_category' => null,
             ])
             ->assertOk();

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Dtos\PriceDto;
+use App\Dtos\ProductCreateDto;
 use App\Enums\AttributeType;
 use App\Enums\ConditionType;
 use App\Enums\Currency;
@@ -87,17 +88,20 @@ class ProductTest extends TestCase
         /** @var AvailabilityServiceContract $availabilityService */
         $availabilityService = App::make(AvailabilityServiceContract::class);
 
-        $this->product = Product::factory()->create([
+        $this->product = $this->productService->create(ProductCreateDto::fake([
             'shipping_digital' => false,
             'public' => true,
             'order' => 1,
-        ]);
+            'prices_base' => [new PriceDto(Money::of(100, $this->currency->value))],
+        ]));
 
-        $this->productRepository::setProductPrices($this->product->getKey(), [
-            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(100, $this->currency->value))],
-            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(100, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(100, $this->currency->value))],
-        ]);
+//        $this->productRepository::setProductPrices($this->product->getKey(), [
+//            ProductPriceType::PRICE_BASE->value => ,
+//            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(100, $this->currency->value))],
+//            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(100, $this->currency->value))],
+//            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(100, $this->currency->value))],
+//            ProductPriceType::PRICE_MAX->value => [new PriceDto(Money::of(100, $this->currency->value))],
+//        ]);
 
         $schema = $this->product->schemas()->create([
             'name' => 'Rozmiar',
@@ -363,27 +367,27 @@ class ProductTest extends TestCase
             'public' => true,
         ]);
         $this->productRepository::setProductPrices($product1->getKey(), [
-            'prices_base' => [new PriceDto(Money::of(1200, $this->currency->value))],
-            'prices_min' => [new PriceDto(Money::of(1100, $this->currency->value))],
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(1200, $this->currency->value))],
+            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(1100, $this->currency->value))],
         ]);
         $product2 = Product::factory()->create([
             'public' => true,
         ]);
         $this->productRepository::setProductPrices($product1->getKey(), [
-            'prices_base' => [new PriceDto(Money::of(1300, $this->currency->value))],
-            'prices_min' => [new PriceDto(Money::of(1050, $this->currency->value))],
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(1300, $this->currency->value))],
+            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(1050, $this->currency->value))],
         ]);
         $product3 = Product::factory()->create([
             'public' => true,
         ]);
         $this->productRepository::setProductPrices($product1->getKey(), [
-            'prices_base' => [new PriceDto(Money::of(1500, $this->currency->value))],
-            'prices_min' => [new PriceDto(Money::of(1000, $this->currency->value))],
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(1500, $this->currency->value))],
+            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(1000, $this->currency->value))],
         ]);
 
         $this->productRepository::setProductPrices($this->product->getKey(), [
-            'prices_base' => [new PriceDto(Money::of(1500, $this->currency->value))],
-            'prices_min' => [new PriceDto(Money::of(100, $this->currency->value))],
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(1500, $this->currency->value))],
+            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(100, $this->currency->value))],
         ]);
 
         $this

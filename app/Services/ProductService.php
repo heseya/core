@@ -101,7 +101,7 @@ final readonly class ProductService implements ProductServiceContract
         $currency = Currency::DEFAULT;
 
         /** @var PriceDto $oldPriceMin */
-        // @var PriceDto $oldPriceMax
+        /** @var PriceDto $oldPriceMax */
         [[$oldPriceMin], [$oldPriceMax]] = $this->productRepository::getProductPrices($product->getKey(), [
             ProductPriceType::PRICE_MIN,
             ProductPriceType::PRICE_MAX,

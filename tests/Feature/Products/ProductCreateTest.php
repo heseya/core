@@ -2,9 +2,16 @@
 
 namespace Tests\Feature\Products;
 
+use App\Dtos\ProductCreateDto;
 use App\Enums\Currency;
 use App\Models\Page;
 use App\Models\Product;
+use App\Services\Contracts\ProductServiceContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Heseya\Dto\DtoException;
+use Illuminate\Support\Facades\App;
 use Tests\TestCase;
 
 class ProductCreateTest extends TestCase
@@ -48,10 +55,17 @@ class ProductCreateTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
+     * @throws DtoException
      */
     public function testUpdateDescriptions(string $user): void
     {
-        $product = Product::factory()->create();
+        /** @var ProductServiceContract $productService */
+        $productService = App::make(ProductServiceContract::class);
+        $product = $productService->create(ProductCreateDto::fake());
         $page = Page::factory()->create();
 
         $this->{$user}->givePermissionTo('products.edit');

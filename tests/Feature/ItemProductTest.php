@@ -2,10 +2,17 @@
 
 namespace Tests\Feature;
 
+use App\Dtos\ProductCreateDto;
 use App\Enums\Currency;
 use App\Models\Item;
 use App\Models\Product;
+use App\Services\Contracts\ProductServiceContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Heseya\Dto\DtoException;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App;
 use Tests\TestCase;
 
 class ItemProductTest extends TestCase
@@ -14,12 +21,22 @@ class ItemProductTest extends TestCase
     private Collection $items;
     private array $prices;
 
+    /**
+     * @throws RoundingNecessaryException
+     * @throws DtoException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
     public function setUp(): void
     {
         parent::setUp();
         Product::query()->delete();
         Item::query()->delete();
-        $this->product = Product::factory()->create();
+
+        /** @var ProductServiceContract $productService */
+        $productService = App::make(ProductServiceContract::class);
+        $this->product = $productService->create(ProductCreateDto::fake());
+
         $this->items = Item::factory()->count(3)->create();
         $this->prices = array_map(fn (Currency $currency) => [
             'value' => '10.00',
