@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\ProductAttribute\Services;
 
+use App\Exceptions\ServerException;
 use Domain\Metadata\MetadataService;
 use Domain\ProductAttribute\Dtos\AttributeCreateDto;
 use Domain\ProductAttribute\Dtos\AttributeDto;
 use Domain\ProductAttribute\Dtos\AttributeIndexDto;
 use Domain\ProductAttribute\Dtos\AttributeResponseDto;
 use Domain\ProductAttribute\Dtos\AttributeUpdateDto;
+use Domain\ProductAttribute\Dtos\FiltersDto;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Repositories\AttributeRepository;
 use Illuminate\Support\Facades\Gate;
 use Spatie\LaravelData\Optional;
+use Spatie\LaravelData\PaginatedDataCollection;
 
 final readonly class AttributeService
 {
@@ -25,34 +28,32 @@ final readonly class AttributeService
     ) {}
 
     /**
-     * @return AttributeDto[]
+     * @param AttributeIndexDto $dto
+     *
+     * @return PaginatedDataCollection<int, AttributeDto>
+     * @throws ServerException
      */
-    public function index(AttributeIndexDto $dto): array
+    public function index(AttributeIndexDto $dto): PaginatedDataCollection
     {
-        return $this->repository->index($dto);
+        return $this->repository->search($dto);
+    }
+
+    public function filters(FiltersDto $dto)
+    {
+        return $this->repository->getAllGlobal($dto->sets);
     }
 
     public function show(string $id): AttributeResponseDto
     {
         $attribute = $this->repository->getOne($id);
 
-        if (Gate::allows('attributes.show_metadata_private')) {
-            $metadata_private = [];
-        }
+        [$metadata, $metadata_private] = $this->metadataService->getAll(
+            Attribute::class,
+            $id,
+            Gate::allows('attributes.show_metadata_private'),
+        );
 
-        [$min, $max] = match ($attribute->type) {
-            AttributeType::NUMBER => [$attribute->min_number, $attribute->max_number],
-            AttributeType::DATE => [$attribute->min_date, $attribute->max_date],
-            default => [null, null],
-        };
-
-        return AttributeResponseDto::from([
-            ...$attribute->toArray(),
-            'min' => $min,
-            'max' => $max,
-            'metadata' => [],
-            'metadata_private' => $metadata_private,
-        ]);
+        return $this->prepareResponse($attribute, $metadata, $metadata_private);
     }
 
     public function create(AttributeCreateDto $dto): AttributeResponseDto
@@ -81,16 +82,36 @@ final readonly class AttributeService
 
     public function updateMinMax(Attribute $attribute): void
     {
-        $attribute->refresh();
-
         if ($attribute->type === AttributeType::NUMBER) {
+            $attribute->refresh();
             $attribute->min_number = $attribute->options->min('value_number');
             $attribute->max_number = $attribute->options->max('value_number');
             $attribute->save();
         } elseif ($attribute->type === AttributeType::DATE) {
+            $attribute->refresh();
             $attribute->min_date = $attribute->options->min('value_date');
             $attribute->max_date = $attribute->options->max('value_date');
             $attribute->save();
         }
+    }
+
+    /**
+     * @param array<string, bool|float|int|string|null> $metadata
+     * @param array<string, bool|float|int|string|null> $metadata_private
+     */
+    private function prepareResponse(AttributeDto $dto, array $metadata, array $metadata_private): AttributeResponseDto
+    {
+        [$min, $max] = match ($dto->type) {
+            AttributeType::NUMBER => [$dto->min_number, $dto->max_number],
+            AttributeType::DATE => [$dto->min_date, $dto->max_date],
+            default => [null, null],
+        };
+
+        return AttributeResponseDto::from($dto, [
+            'min' => $min,
+            'max' => $max,
+            'metadata' => $metadata,
+            'metadata_private' => $metadata_private,
+        ]);
     }
 }

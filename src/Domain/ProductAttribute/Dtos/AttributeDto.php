@@ -6,9 +6,12 @@ namespace Domain\ProductAttribute\Dtos;
 
 use Domain\ProductAttribute\Enums\AttributeType;
 use Spatie\LaravelData\Data;
+use Support\LaravelData\ExtendedData;
 
 final class AttributeDto extends Data
 {
+    use ExtendedData;
+
     public function __construct(
         public readonly string $id,
         public readonly string $name,

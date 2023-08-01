@@ -13,6 +13,27 @@ final readonly class MetadataService
     ) {}
 
     /**
+     * Get all metadata for given model.
+     *
+     * @return array<string, bool|float|int|string|null>[]
+     */
+    public function getAll(string $class, string $id, bool $with_private): array
+    {
+        $public = [];
+        $private = [];
+
+        foreach ($this->repository->getAll($class, $id, $with_private) as $metadata) {
+            if ($metadata->public) {
+                $public[$metadata->name] = $metadata->value;
+            } else {
+                $private[$metadata->name] = $metadata->value;
+            }
+        }
+
+        return [$public, $private];
+    }
+
+    /**
      * @param MetadataDto[] $metadata
      */
     public function sync(string $class, string $id, array $metadata): void

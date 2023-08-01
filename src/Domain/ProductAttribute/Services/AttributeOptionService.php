@@ -25,7 +25,9 @@ final readonly class AttributeOptionService
             ],
             $dto->toArray(),
         );
-        $attributeOption = AttributeOption::create($data);
+
+        /** @var AttributeOption $attributeOption */
+        $attributeOption = AttributeOption::query()->create($data);
 
         if (!($dto->getMetadata() instanceof Missing)) {
             $this->metadataService->sync($attributeOption, $dto->getMetadata());
@@ -37,17 +39,18 @@ final readonly class AttributeOptionService
     public function updateOrCreate(string $attributeId, AttributeOptionDto $dto): AttributeOption
     {
         if ($dto->id !== null && !$dto->id instanceof Missing) {
-            $attributeOption = AttributeOption::findOrFail($dto->id);
+            /** @var AttributeOption $attributeOption */
+            $attributeOption = AttributeOption::query()->findOrFail($dto->id);
             $attributeOption->update($dto->toArray());
-
-            return $attributeOption;
+        } else {
+            $attributeOption = $this->create($attributeId, $dto);
         }
 
         if ($attributeOption->attribute !== null) {
             $this->attributeService->updateMinMax($attributeOption->attribute);
         }
 
-        return $this->create($attributeId, $dto);
+        return $attributeOption;
     }
 
     public function delete(AttributeOption $attributeOption): void

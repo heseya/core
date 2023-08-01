@@ -4,27 +4,54 @@ declare(strict_types=1);
 
 namespace Domain\ProductAttribute\Repositories;
 
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Exceptions\ServerException;
 use Domain\ProductAttribute\Dtos\AttributeCreateDto;
 use Domain\ProductAttribute\Dtos\AttributeDto;
 use Domain\ProductAttribute\Dtos\AttributeIndexDto;
 use Domain\ProductAttribute\Dtos\AttributeUpdateDto;
 use Domain\ProductAttribute\Models\Attribute;
 use Illuminate\Support\Facades\Config;
+use Spatie\LaravelData\DataCollection;
+use Spatie\LaravelData\PaginatedDataCollection;
 
 final readonly class AttributeRepository
 {
     /**
-     * @return AttributeDto[]
+     * @param AttributeIndexDto $dto
+     *
+     * @return PaginatedDataCollection<int, AttributeDto>
+     * @throws ServerException
      */
-    public function index(AttributeIndexDto $dto): array
+    public function search(AttributeIndexDto $dto): PaginatedDataCollection
     {
-        $query = Attribute::searchByCriteria($dto->toArray())
-            ->orderBy('order')
-            ->with(['metadata', 'metadataPrivate']);
+        $per_page = Config::get('pagination.per_page');
 
-        return array_map(function ($el) {
-            return AttributeDto::from($el);
-        }, $query->paginate(Config::get('pagination.per_page')));
+        if (!is_int($per_page)) {
+            throw new ServerException(Exceptions::SERVER_BAD_CONFIG_TYPE);
+        }
+
+        $attributes = Attribute::searchByCriteria($dto->toArray())
+            ->orderBy('order')
+            ->paginate($per_page);
+
+        return AttributeDto::paginatedCollection($attributes);
+    }
+
+    /**
+     * @param string[] $sets
+     *
+     * @return DataCollection<int, AttributeDto>
+     */
+    public function getAllGlobal(array $sets = []): DataCollection
+    {
+        return AttributeDto::staticCollection(Attribute::query()
+            ->whereHas(
+                'productSets',
+                fn ($query) => $query->whereIn('product_set_id', $sets),
+            )
+            ->orWhere('global', '=', true)
+            ->get());
     }
 
     public function getOne(string $id): AttributeDto

@@ -50,6 +50,9 @@ final class AttributeOption extends Model
         'ids' => WhereInIds::class,
     ];
 
+    /**
+     * @return BelongsTo<Attribute, AttributeOption>
+     */
     public function attribute(): BelongsTo
     {
         return $this->belongsTo(Attribute::class);
