@@ -5,11 +5,14 @@ namespace App\Http\Requests;
 use App\Http\Requests\Contracts\MetadataRequestContract;
 use App\Http\Requests\Contracts\SeoRequestContract;
 use App\Rules\AttributeOptionExist;
+use App\Rules\Price;
+use App\Rules\PricesEveryCurrency;
 use App\Rules\ProductAttributeOptions;
 use App\Rules\Translations;
 use App\Rules\UniqueIdInRequest;
 use App\Traits\MetadataRules;
 use App\Traits\SeoRules;
+use Brick\Math\BigDecimal;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProductCreateRequest extends FormRequest implements MetadataRequestContract, SeoRequestContract
@@ -35,7 +38,10 @@ class ProductCreateRequest extends FormRequest implements MetadataRequestContrac
                 'published.*' => ['uuid', 'exists:languages,id'],
 
                 'slug' => ['required', 'string', 'max:255', 'unique:products', 'alpha_dash'],
-                'price' => ['required', 'numeric', 'min:0'],
+
+                'prices_base' => ['required', new PricesEveryCurrency()],
+                'prices_base.*' => [new Price(['value'], min: BigDecimal::zero())],
+
                 'public' => ['required', 'boolean'],
                 'shipping_digital' => ['required', 'boolean'],
 

@@ -25,10 +25,16 @@ PriceRange:
         gross:
           type: string
           example: '0.00'
+        currency:
+          type: string
+          example: 'PLN'
     value:
       type: object
       properties:
         gross:
           type: string
           example: '9.99'
+        currency:
+          type: string
+          example: 'PLN'
   type: object

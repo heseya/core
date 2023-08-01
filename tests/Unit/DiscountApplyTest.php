@@ -5,6 +5,7 @@ namespace Unit;
 use App\Dtos\CartDto;
 use App\Dtos\CartItemDto;
 use App\Dtos\OrderProductDto;
+use App\Dtos\PriceDto;
 use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
@@ -14,24 +15,27 @@ use App\Models\Discount;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\PriceRange;
-use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Services\Contracts\DiscountServiceContract;
+use App\Services\Contracts\ProductServiceContract;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
+use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class DiscountApplyTest extends TestCase
 {
     use RefreshDatabase;
 
+    private ProductServiceContract $productService;
     private DiscountServiceContract $discountService;
     private $product;
     private $productToOrderProduct;
@@ -45,20 +49,25 @@ class DiscountApplyTest extends TestCase
     private OrderProductDto $orderProductDto;
     private OrderProductDto $orderProductDtoWithSchemas;
     private $orderProduct;
+    private string $currency;
 
     /**
      * @throws UnknownCurrencyException
      * @throws RoundingNecessaryException
      * @throws NumberFormatException
+     * @throws DtoException
      */
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->product = Product::factory()->create([
-            'price' => 120.0,
+        $this->currency = Currency::DEFAULT->value;
+        $this->productService = App::make(ProductServiceContract::class);
+
+        $this->product = $this->productService->create(FakeDto::productCreateDto([
+            'prices_base' => [new PriceDto(Money::of(120, $this->currency))],
             'public' => true,
-        ]);
+        ]));
 
         $this->schema = Schema::factory()->create([
             'type' => 'string',
@@ -102,10 +111,10 @@ class DiscountApplyTest extends TestCase
         ]);
 
         $order = Order::factory()->create();
-        $this->productToOrderProduct = Product::factory()->create([
+        $this->productToOrderProduct = $this->productService->create(FakeDto::productCreateDto([
+            'prices_base' => [new PriceDto(Money::of(120, $this->currency))],
             'public' => true,
-            'price' => 120.0,
-        ]);
+        ]));
 
         $this->orderProduct = OrderProduct::factory()->create([
             'order_id' => $order->getKey(),
@@ -141,6 +150,12 @@ class DiscountApplyTest extends TestCase
         $this->discountService = App::make(DiscountServiceContract::class);
     }
 
+    /**
+     * @throws UnknownCurrencyException
+     * @throws DtoException
+     * @throws RoundingNecessaryException
+     * @throws NumberFormatException
+     */
     public function testApplyDiscountsOnCart(): void
     {
         $sale = Discount::factory([
@@ -151,10 +166,10 @@ class DiscountApplyTest extends TestCase
             'code' => null,
         ])->create();
 
-        $product1 = Product::factory()->create([
-            'price' => 30.0,
+        $product1 = $this->productService->create(FakeDto::productCreateDto([
+            'prices_base' => [new PriceDto(Money::of(30, $this->currency))],
             'public' => true,
-        ]);
+        ]));
 
         $sale->products()->attach($product1);
 
@@ -165,17 +180,17 @@ class DiscountApplyTest extends TestCase
             'target_is_allow_list' => true,
         ])->create();
 
-        $product2 = Product::factory()->create([
-            'price' => 40.0,
+        $product2 = $this->productService->create(FakeDto::productCreateDto([
+            'prices_base' => [new PriceDto(Money::of(40, $this->currency))],
             'public' => true,
-        ]);
+        ]));
 
         $coupon->products()->attach($product2);
 
-        $product3 = Product::factory()->create([
-            'price' => 50.0,
+        $product3 = $this->productService->create(FakeDto::productCreateDto([
+            'prices_base' => [new PriceDto(Money::of(50, $this->currency))],
             'public' => true,
-        ]);
+        ]));
 
         $coupon2 = Discount::factory([
             'type' => DiscountType::PERCENTAGE,
@@ -185,6 +200,12 @@ class DiscountApplyTest extends TestCase
         ])->create();
 
         $shippingMethod = ShippingMethod::factory()->create(['public' => true]);
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero(Currency::DEFAULT->value),
+            'value' => Money::of(20.0, Currency::DEFAULT->value),
+        ]);
+
+        $shippingMethod->priceRanges()->save($lowRange);
 
         $coupon3 = Discount::factory([
             'type' => DiscountType::AMOUNT,
@@ -227,7 +248,7 @@ class DiscountApplyTest extends TestCase
             ->calcCartDiscounts($cartDto, Collection::make([$product1, $product2, $product3]));
 
         $this->assertTrue($cartResource->cart_total === 162.0);
-        $this->assertTrue($cartResource->summary === 162.0);
+        $this->assertTrue($cartResource->summary === 182.0);
         $this->assertTrue(count($cartResource->sales) === 1);
         $this->assertTrue(count($cartResource->coupons) === 3);
     }
@@ -317,14 +338,16 @@ class DiscountApplyTest extends TestCase
 
     /**
      * @dataProvider discountProductDataProvider
+     *
+     * @throws DtoException
      */
     public function testApplyDiscountToProductNotAllowList($type, $value, $result, $discountKind): void
     {
         $this->product->schemas()->sync([$this->schema->getKey()]);
-        $product = Product::factory()->create([
-            'price' => 220.0,
+        $product = $this->productService->create(FakeDto::productCreateDto([
+            'prices_base' => [new PriceDto(Money::of(220, $this->currency))],
             'public' => true,
-        ]);
+        ]));
 
         $code = $discountKind === 'coupon' ? [] : ['code' => null];
 
@@ -606,14 +629,16 @@ class DiscountApplyTest extends TestCase
 
     /**
      * @dataProvider discountDataProvider
+     *
+     * @throws DtoException
      */
     public function testApplyDiscountToOrderProductNotAllowList($type, $value, $result, $discountKind): void
     {
         $code = $discountKind === 'coupon' ? [] : ['code' => null];
-        $product = Product::factory()->create([
-            'price' => 220.0,
+        $product = $this->productService->create(FakeDto::productCreateDto([
+            'prices_base' => [new PriceDto(Money::of(220, $this->currency))],
             'public' => true,
-        ]);
+        ]));
 
         $discount = Discount::factory(
             [
@@ -809,14 +834,16 @@ class DiscountApplyTest extends TestCase
 
     /**
      * @dataProvider discountDataProvider
+     *
+     * @throws DtoException
      */
     public function testApplyDiscountToCartItemNotAllowList($type, $value, $result, $discountKind): void
     {
         $code = $discountKind === 'coupon' ? [] : ['code' => null];
-        $product = Product::factory()->create([
-            'price' => 220.0,
+        $product = $this->productService->create(FakeDto::productCreateDto([
+            'prices_base' => [new PriceDto(Money::of(220, $this->currency))],
             'public' => true,
-        ]);
+        ]));
 
         $discount = Discount::factory(
             [
@@ -1135,6 +1162,12 @@ class DiscountApplyTest extends TestCase
         $this->assertTrue($discountedOrder->cart_total === 360.0); // 120.0 * 3
     }
 
+    /**
+     * @throws DtoException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
     public function testApplyDiscountOnOrderCheapestProductAmount(): void
     {
         $discount = Discount::factory([
@@ -1144,15 +1177,15 @@ class DiscountApplyTest extends TestCase
             'target_is_allow_list' => false,
         ])->create();
 
-        $product1 = Product::factory()->create([
+        $product1 = $this->productService->create(FakeDto::productCreateDto([
+            'prices_base' => [new PriceDto(Money::of(80, $this->currency))],
             'public' => true,
-            'price' => 80.0,
-        ]);
+        ]));
 
-        $product2 = Product::factory()->create([
+        $product2 = $this->productService->create(FakeDto::productCreateDto([
+            'prices_base' => [new PriceDto(Money::of(120, $this->currency))],
             'public' => true,
-            'price' => 120.0,
-        ]);
+        ]));
 
         $order = Order::factory()->create([
             'cart_total_initial' => 600.0,

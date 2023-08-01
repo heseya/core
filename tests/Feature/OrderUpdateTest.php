@@ -533,12 +533,12 @@ class OrderUpdateTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'id' => $this->order->getKey(),
-                'comment' => null,
+                'comment' => '',
             ]);
 
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
-            'comment' => null,
+            'comment' => '',
         ]);
 
         Event::assertDispatched(OrderUpdated::class);
@@ -1292,13 +1292,14 @@ class OrderUpdateTest extends TestCase
             'shipping_place' => 'external shipping place',
         ]);
 
+        $price = 1000;
         $orderProduct = new OrderProduct([
             'product_id' => $product->getKey(),
             'quantity' => 1,
-            'price_initial' => $product->price,
-            'price' => $product->price,
-            'base_price_initial' => $product->price,
-            'base_price' => $product->price,
+            'price_initial' => $price,
+            'price' => $price,
+            'base_price_initial' => $price,
+            'base_price' => $price,
             'name' => $product->name,
             'vat_rate' => 0.23,
             'shipping_digital' => $product->shipping_digital,
@@ -1367,13 +1368,14 @@ class OrderUpdateTest extends TestCase
             'shipping_address_id' => $address->getKey(),
         ]);
 
+        $price = 1000;
         $orderProduct = new OrderProduct([
             'product_id' => $product->getKey(),
             'quantity' => 1,
-            'price_initial' => $product->price,
-            'price' => $product->price,
-            'base_price_initial' => $product->price,
-            'base_price' => $product->price,
+            'price_initial' => $price,
+            'price' => $price,
+            'base_price_initial' => $price,
+            'base_price' => $price,
             'name' => $product->name,
             'vat_rate' => 0.23,
             'shipping_digital' => $product->shipping_digital,

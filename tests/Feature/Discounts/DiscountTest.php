@@ -2,9 +2,12 @@
 
 namespace Tests\Feature\Discounts;
 
+use App\Dtos\PriceDto;
 use App\Enums\ConditionType;
+use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Enums\Product\ProductPriceType;
 use App\Enums\ValidationError;
 use App\Events\CouponCreated;
 use App\Events\CouponUpdated;
@@ -19,7 +22,13 @@ use App\Models\Role;
 use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Models\WebHook;
+use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\DiscountServiceContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
+use Heseya\Dto\DtoException;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Carbon;
@@ -43,10 +52,15 @@ class DiscountTest extends TestCase
     private Product $conditionProduct;
     private ProductSet $conditionProductSet;
     private array $expectedStructure;
+    private ProductRepositoryContract $productRepository;
+    private Currency $currency;
 
     public function setUp(): void
     {
         parent::setUp();
+
+        $this->productRepository = App::make(ProductRepositoryContract::class);
+        $this->currency = Currency::DEFAULT;
 
         // coupons
         Discount::factory()->count(10)->create();
@@ -721,6 +735,11 @@ class DiscountTest extends TestCase
 
     /**
      * @dataProvider authWithDiscountProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testCreateWithProduct($user, $discountKind): void
     {
@@ -754,9 +773,13 @@ class DiscountTest extends TestCase
 
         $product = Product::factory()->create([
             'public' => true,
-            'price' => 1000,
-            'price_min_initial' => 900,
-            'price_max_initial' => 1200,
+        ]);
+        $this->productRepository::setProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(1000, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(900, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(1200, $this->currency->value))],
+            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(900, $this->currency->value))],
+            ProductPriceType::PRICE_MAX->value => [new PriceDto(Money::of(1200, $this->currency->value))],
         ]);
 
         $productSet = ProductSet::factory()->create(['public' => true]);
@@ -781,8 +804,14 @@ class DiscountTest extends TestCase
                 'id' => $product->getKey(),
                 'name' => $product->name,
                 'public' => true,
-                'price_min' => $minPriceDiscounted,
-                'price_max' => $maxPriceDiscounted,
+                'prices_min' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => "{$minPriceDiscounted}.00",
+                ]],
+                'prices_max' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => "{$maxPriceDiscounted}.00",
+                ]],
             ])
             ->assertJsonFragment([
                 'id' => $productSet->getKey(),
@@ -807,6 +836,11 @@ class DiscountTest extends TestCase
 
     /**
      * @dataProvider authWithDiscountProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testCreateWithProductInactive($user, $discountKind): void
     {
@@ -833,9 +867,13 @@ class DiscountTest extends TestCase
 
         $product = Product::factory()->create([
             'public' => true,
-            'price' => 1000,
-            'price_min_initial' => 900,
-            'price_max_initial' => 1200,
+        ]);
+        $this->productRepository::setProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(1000, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(900, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(1200, $this->currency->value))],
+            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(900, $this->currency->value))],
+            ProductPriceType::PRICE_MAX->value => [new PriceDto(Money::of(1200, $this->currency->value))],
         ]);
 
         $productSet = ProductSet::factory()->create(['public' => true]);
@@ -861,8 +899,14 @@ class DiscountTest extends TestCase
                 'id' => $product->getKey(),
                 'name' => $product->name,
                 'public' => true,
-                'price_min' => $minPriceDiscounted,
-                'price_max' => $maxPriceDiscounted,
+                'prices_min' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => "{$minPriceDiscounted}.00",
+                ]],
+                'prices_max' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => "{$maxPriceDiscounted}.00",
+                ]],
             ])
             ->assertJsonFragment([
                 'id' => $productSet->getKey(),
@@ -907,9 +951,11 @@ class DiscountTest extends TestCase
         /** @var Product $product */
         $product = Product::factory()->create([
             'public' => true,
-            'price' => 1000,
-            'price_min_initial' => 900,
-            'price_max_initial' => 1200,
+        ]);
+        $this->productRepository::setProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(1000, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(900, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(1200, $this->currency->value))],
         ]);
 
         $parentSet = ProductSet::factory()->create(['public' => true]);
@@ -953,11 +999,6 @@ class DiscountTest extends TestCase
             'model_type' => ProductSet::class,
             'model_id' => $parentSet->getKey(),
         ]);
-        $this->assertDatabaseHas('products', [
-            'id' => $product->getKey(),
-            'price_min' => 810,
-            'price_max' => 1080,
-        ]);
     }
 
     /**
@@ -982,9 +1023,11 @@ class DiscountTest extends TestCase
         /** @var Product $product */
         $product = Product::factory()->create([
             'public' => true,
-            'price' => 1000,
-            'price_min_initial' => 900,
-            'price_max_initial' => 1200,
+        ]);
+        $this->productRepository::setProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(1000, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(900, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(1200, $this->currency->value))],
         ]);
 
         $parentSet = ProductSet::factory()->create(['public' => true]);
@@ -1029,10 +1072,15 @@ class DiscountTest extends TestCase
             'model_type' => ProductSet::class,
             'model_id' => $parentSet->getKey(),
         ]);
-        $this->assertDatabaseHas('products', [
-            'id' => $product->getKey(),
-            'price_min' => 900,
-            'price_max' => 1200,
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $product->getKey(),
+            'price_type' => ProductPriceType::PRICE_MIN->value,
+            'value' => 90000,
+        ]);
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $product->getKey(),
+            'price_type' => ProductPriceType::PRICE_MAX->value,
+            'value' => 120000,
         ]);
     }
 
@@ -1506,6 +1554,11 @@ class DiscountTest extends TestCase
 
     /**
      * @dataProvider timeConditionProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testCreateInactiveSaleNoAddToCache($user, $condition): void
     {
@@ -1514,9 +1567,11 @@ class DiscountTest extends TestCase
 
         $product = Product::factory()->create([
             'public' => true,
-            'price' => 1000,
-            'price_min_initial' => 1000,
-            'price_max_initial' => 1000,
+        ]);
+        $this->productRepository::setProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(1000, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(1000, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(1000, $this->currency->value))],
         ]);
 
         $discount = [
@@ -1548,10 +1603,15 @@ class DiscountTest extends TestCase
 
         $response->assertCreated();
 
-        $this->assertDatabaseHas('products', [
-            'id' => $product->getKey(),
-            'price_min' => 1000,
-            'price_max' => 1000,
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $product->getKey(),
+            'price_type' => ProductPriceType::PRICE_MIN->value,
+            'value' => 100000,
+        ]);
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $product->getKey(),
+            'price_type' => ProductPriceType::PRICE_MAX->value,
+            'value' => 100000,
         ]);
 
         $discountModel = Discount::find($response->getData()->data->id);
@@ -2033,6 +2093,11 @@ class DiscountTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testUpdateSaleWithProduct($user): void
     {
@@ -2041,23 +2106,35 @@ class DiscountTest extends TestCase
 
         $product1 = Product::factory()->create([
             'public' => true,
-            'price' => 100,
-            'price_min_initial' => 100,
-            'price_max_initial' => 150,
+        ]);
+        $this->productRepository::setProductPrices($product1->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(100, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(100, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(150, $this->currency->value))],
+            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(100, $this->currency->value))],
+            ProductPriceType::PRICE_MAX->value => [new PriceDto(Money::of(150, $this->currency->value))],
         ]);
 
         $product2 = Product::factory()->create([
             'public' => true,
-            'price' => 200,
-            'price_min_initial' => 190,
-            'price_max_initial' => 250,
+        ]);
+        $this->productRepository::setProductPrices($product2->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(200, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(150, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(190, $this->currency->value))],
+            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(150, $this->currency->value))],
+            ProductPriceType::PRICE_MAX->value => [new PriceDto(Money::of(190, $this->currency->value))],
         ]);
 
         $product3 = Product::factory()->create([
             'public' => true,
-            'price' => 300,
-            'price_min_initial' => 290,
-            'price_max_initial' => 350,
+        ]);
+        $this->productRepository::setProductPrices($product3->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(300, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(290, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(350, $this->currency->value))],
+            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(290, $this->currency->value))],
+            ProductPriceType::PRICE_MAX->value => [new PriceDto(Money::of(350, $this->currency->value))],
         ]);
 
         $discount->products()->sync([$product1->getKey(), $product2->getKey()]);
@@ -2094,19 +2171,49 @@ class DiscountTest extends TestCase
             ->assertJsonFragment($discountNew + ['id' => $discount->getKey()])
             ->assertJsonFragment([
                 'id' => $product2->getKey(),
-                'price' => 200,
-                'price_min_initial' => 190,
-                'price_max_initial' => 250,
-                'price_min' => 180,
-                'price_max' => 240,
+                'prices_base' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => '200.00',
+                ]],
+                'prices_min_initial' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => '150.00',
+                ]],
+                'prices_max_initial' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => '190.00',
+                ]],
+                'prices_min' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => '140.00',
+                ]],
+                'prices_max' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => '180.00',
+                ]],
             ])
             ->assertJsonFragment([
                 'id' => $product3->getKey(),
-                'price' => 300,
-                'price_min_initial' => 290,
-                'price_max_initial' => 350,
-                'price_min' => 280,
-                'price_max' => 340,
+                'prices_base' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => '300.00',
+                ]],
+                'prices_min_initial' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => '290.00',
+                ]],
+                'prices_max_initial' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => '350.00',
+                ]],
+                'prices_min' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => '280.00',
+                ]],
+                'prices_max' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => '340.00',
+                ]],
             ]);
 
         $this->assertDatabaseHas('discounts', $discountNew + ['id' => $discount->getKey()]);
@@ -2116,34 +2223,38 @@ class DiscountTest extends TestCase
             'sale_id' => $discount->getKey(),
         ]);
 
-        $this->assertDatabaseHas('products', [
-            'id' => $product1->getKey(),
-            'price' => 100,
-            'price_min_initial' => 100,
-            'price_max_initial' => 150,
-            'price_min' => 100,
-            'price_max' => 150,
+        $this->assertProductPrices($product1->getKey(), [
+            ProductPriceType::PRICE_BASE->value => 100,
+            ProductPriceType::PRICE_MIN_INITIAL->value => 100,
+            ProductPriceType::PRICE_MAX_INITIAL->value => 150,
+            ProductPriceType::PRICE_MIN->value => 100,
+            ProductPriceType::PRICE_MAX->value => 150,
         ]);
-        $this->assertDatabaseHas('products', [
-            'id' => $product2->getKey(),
-            'price' => 200,
-            'price_min_initial' => 190,
-            'price_max_initial' => 250,
-            'price_min' => 180,
-            'price_max' => 240,
+
+        $this->assertProductPrices($product2->getKey(), [
+            ProductPriceType::PRICE_BASE->value => 200,
+            ProductPriceType::PRICE_MIN_INITIAL->value => 150,
+            ProductPriceType::PRICE_MAX_INITIAL->value => 190,
+            ProductPriceType::PRICE_MIN->value => 140,
+            ProductPriceType::PRICE_MAX->value => 180,
         ]);
-        $this->assertDatabaseHas('products', [
-            'id' => $product3->getKey(),
-            'price' => 300,
-            'price_min_initial' => 290,
-            'price_max_initial' => 350,
-            'price_min' => 280,
-            'price_max' => 340,
+
+        $this->assertProductPrices($product3->getKey(), [
+            ProductPriceType::PRICE_BASE->value => 300,
+            ProductPriceType::PRICE_MIN_INITIAL->value => 290,
+            ProductPriceType::PRICE_MAX_INITIAL->value => 350,
+            ProductPriceType::PRICE_MIN->value => 280,
+            ProductPriceType::PRICE_MAX->value => 340,
         ]);
     }
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testUpdateInactiveSaleWithProduct($user): void
     {
@@ -2166,23 +2277,35 @@ class DiscountTest extends TestCase
 
         $product1 = Product::factory()->create([
             'public' => true,
-            'price' => 100,
-            'price_min_initial' => 100,
-            'price_max_initial' => 150,
+        ]);
+        $this->productRepository::setProductPrices($product1->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(100, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(100, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(150, $this->currency->value))],
+            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(100, $this->currency->value))],
+            ProductPriceType::PRICE_MAX->value => [new PriceDto(Money::of(150, $this->currency->value))],
         ]);
 
         $product2 = Product::factory()->create([
             'public' => true,
-            'price' => 200,
-            'price_min_initial' => 190,
-            'price_max_initial' => 250,
+        ]);
+        $this->productRepository::setProductPrices($product2->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(200, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(190, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(250, $this->currency->value))],
+            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(190, $this->currency->value))],
+            ProductPriceType::PRICE_MAX->value => [new PriceDto(Money::of(250, $this->currency->value))],
         ]);
 
         $product3 = Product::factory()->create([
             'public' => true,
-            'price' => 300,
-            'price_min_initial' => 290,
-            'price_max_initial' => 350,
+        ]);
+        $this->productRepository::setProductPrices($product3->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(300, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(290, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(350, $this->currency->value))],
+            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(290, $this->currency->value))],
+            ProductPriceType::PRICE_MAX->value => [new PriceDto(Money::of(350, $this->currency->value))],
         ]);
 
         $discount->products()->sync([$product2->getKey(), $product3->getKey()]);
@@ -2209,19 +2332,49 @@ class DiscountTest extends TestCase
             ->assertJsonFragment($discountData + ['id' => $discount->getKey()])
             ->assertJsonFragment([
                 'id' => $product2->getKey(),
-                'price' => 200,
-                'price_min_initial' => 190,
-                'price_max_initial' => 250,
-                'price_min' => 190,
-                'price_max' => 250,
+                'prices_base' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => '200.00',
+                ]],
+                'prices_min_initial' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => '190.00',
+                ]],
+                'prices_max_initial' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => '250.00',
+                ]],
+                'prices_min' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => '190.00',
+                ]],
+                'prices_max' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => '250.00',
+                ]],
             ])
             ->assertJsonFragment([
                 'id' => $product3->getKey(),
-                'price' => 300,
-                'price_min_initial' => 290,
-                'price_max_initial' => 350,
-                'price_min' => 290,
-                'price_max' => 350,
+                'prices_base' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => '300.00',
+                ]],
+                'prices_min_initial' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => '290.00',
+                ]],
+                'prices_max_initial' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => '350.00',
+                ]],
+                'prices_min' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => '290.00',
+                ]],
+                'prices_max' => [[
+                    'currency' => $this->currency->value,
+                    'gross' => '350.00',
+                ]],
             ]);
 
         $this->assertDatabaseHas('discounts', $discountData + ['id' => $discount->getKey()]);
@@ -2231,34 +2384,38 @@ class DiscountTest extends TestCase
             'sale_id' => $discount->getKey(),
         ]);
 
-        $this->assertDatabaseHas('products', [
-            'id' => $product1->getKey(),
-            'price' => 100,
-            'price_min_initial' => 100,
-            'price_max_initial' => 150,
-            'price_min' => 100,
-            'price_max' => 150,
+        $this->assertProductPrices($product1->getKey(), [
+            ProductPriceType::PRICE_BASE->value => 100,
+            ProductPriceType::PRICE_MIN_INITIAL->value => 100,
+            ProductPriceType::PRICE_MAX_INITIAL->value => 150,
+            ProductPriceType::PRICE_MIN->value => 100,
+            ProductPriceType::PRICE_MAX->value => 150,
         ]);
-        $this->assertDatabaseHas('products', [
-            'id' => $product2->getKey(),
-            'price' => 200,
-            'price_min_initial' => 190,
-            'price_max_initial' => 250,
-            'price_min' => 190,
-            'price_max' => 250,
+
+        $this->assertProductPrices($product2->getKey(), [
+            ProductPriceType::PRICE_BASE->value => 200,
+            ProductPriceType::PRICE_MIN_INITIAL->value => 190,
+            ProductPriceType::PRICE_MAX_INITIAL->value => 250,
+            ProductPriceType::PRICE_MIN->value => 190,
+            ProductPriceType::PRICE_MAX->value => 250,
         ]);
-        $this->assertDatabaseHas('products', [
-            'id' => $product3->getKey(),
-            'price' => 300,
-            'price_min_initial' => 290,
-            'price_max_initial' => 350,
-            'price_min' => 290,
-            'price_max' => 350,
+
+        $this->assertProductPrices($product3->getKey(), [
+            ProductPriceType::PRICE_BASE->value => 300,
+            ProductPriceType::PRICE_MIN_INITIAL->value => 290,
+            ProductPriceType::PRICE_MAX_INITIAL->value => 350,
+            ProductPriceType::PRICE_MIN->value => 290,
+            ProductPriceType::PRICE_MAX->value => 350,
         ]);
     }
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testCreateActiveSaleAndExpiredAfter($user): void
     {
@@ -2267,9 +2424,11 @@ class DiscountTest extends TestCase
 
         $product = Product::factory()->create([
             'public' => true,
-            'price' => 1000,
-            'price_min_initial' => 1000,
-            'price_max_initial' => 1000,
+        ]);
+        $this->productRepository::setProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(1000, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(1000, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(1000, $this->currency->value))],
         ]);
 
         $discount = [
@@ -2305,10 +2464,9 @@ class DiscountTest extends TestCase
 
         $response->assertCreated();
 
-        $this->assertDatabaseHas('products', [
-            'id' => $product->getKey(),
-            'price_min' => 900,
-            'price_max' => 900,
+        $this->assertProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_MIN->value => 900,
+            ProductPriceType::PRICE_MAX->value => 900,
         ]);
 
         $discountModel = Discount::find($response->getData()->data->id);
@@ -2321,14 +2479,24 @@ class DiscountTest extends TestCase
         $this->travelTo('2022-05-12T19:00:00');
         $this->artisan('schedule:run');
 
-        $this->assertDatabaseHas('products', [
-            'id' => $product->getKey(),
-            'price_min' => 1000,
-            'price_max' => 1000,
+        $this->assertProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_MIN->value => 1000,
+            ProductPriceType::PRICE_MAX->value => 1000,
         ]);
 
         $activeSales = Cache::get('sales.active');
         $this->assertCount(0, $activeSales);
         $this->assertFalse($activeSales->contains($discountModel->getKey()));
+    }
+
+    private function assertProductPrices(string $productId, array $priceMatrix): void
+    {
+        foreach ($priceMatrix as $type => $value) {
+            $this->assertDatabaseHas('prices', [
+                'model_id' => $productId,
+                'price_type' => $type,
+                'value' => $value * 100,
+            ]);
+        }
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Models\ShippingMethod;
 use App\Traits\MetadataResource;
+use Brick\Money\Money;
 use Illuminate\Http\Request;
 
 /**
@@ -18,7 +19,13 @@ class ShippingMethodResource extends Resource
         return array_merge([
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
-            'price' => $this->resource->price ? ['gross' => $this->resource->price->getAmount()] : null,
+            'prices' => array_map(
+                fn (Money $price) => [
+                    'gross' => $price->getAmount(),
+                    'currency' => $price->getCurrency()->getCurrencyCode(),
+                ],
+                $this->resource->prices ?? [],
+            ),
             'public' => $this->resource->public,
             'block_list' => $this->resource->block_list,
             'payment_methods' => PaymentMethodResource::collection($this->resource->paymentMethods),

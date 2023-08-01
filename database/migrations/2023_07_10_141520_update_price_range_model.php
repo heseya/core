@@ -15,6 +15,10 @@ return new class extends Migration {
         Schema::table('price_ranges', function (Blueprint $table): void {
             $table->decimal('start', 27, 0)->change();
             $table->decimal('value', 27, 0);
+            $table->string('currency', 3);
+
+            $table->dropUnique(['start', 'shipping_method_id']);
+            $table->unique(['start', 'currency', 'shipping_method_id']);
         });
 
         DB::table('price_ranges')->lazyById()->each(function (object $priceRange): void {
@@ -26,7 +30,10 @@ return new class extends Migration {
 
             DB::table('price_ranges')
                 ->where('id', $priceRange->id)
-                ->update(['value' => $money->getMinorAmount()]);
+                ->update([
+                    'value' => $money->getMinorAmount(),
+                    'currency' => $money->getCurrency()->getCurrencyCode(),
+                ]);
         });
 
         Schema::drop('prices');
@@ -58,6 +65,10 @@ return new class extends Migration {
         Schema::table('price_ranges', function (Blueprint $table): void {
             $table->float('start', 19, 4)->change();
             $table->dropColumn('value');
+            $table->dropColumn('currency');
+
+            $table->dropUnique(['start', 'currency', 'shipping_method_id']);
+            $table->unique(['start', 'shipping_method_id']);
         });
     }
 };

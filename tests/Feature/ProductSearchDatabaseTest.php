@@ -2,14 +2,24 @@
 
 namespace Tests\Feature;
 
+use App\Dtos\PriceDto;
+use App\Enums\Currency;
+use App\Enums\Product\ProductPriceType;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
 use App\Models\Media;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Tag;
+use App\Repositories\Contracts\ProductRepositoryContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
+use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\App;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
@@ -43,7 +53,7 @@ class ProductSearchDatabaseTest extends TestCase
                 'id' => $product->getKey(),
             ]);
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(22);
     }
 
     /**
@@ -364,7 +374,7 @@ class ProductSearchDatabaseTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $productRef->getKey()]);
         // + 1 additional query per nesting level
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(22);
     }
 
     /**
@@ -585,32 +595,51 @@ class ProductSearchDatabaseTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testSearchByPrice($user): void
     {
         $this->{$user}->givePermissionTo('products.show');
 
+        /** @var ProductRepositoryContract $productRepository */
+        $productRepository = App::make(ProductRepositoryContract::class);
+        $currency = Currency::DEFAULT;
+
         $product = Product::factory()->create([
             'public' => true,
-            'price_min' => 100,
-            'price_max' => 200,
+        ]);
+        $productRepository::setProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(100, $currency->value))],
+            ProductPriceType::PRICE_MAX->value => [new PriceDto(Money::of(200, $currency->value))],
         ]);
 
-        Product::factory()->create([
+        $product2 = Product::factory()->create([
             'public' => true,
-            'price_min' => 300,
-            'price_max' => 1000,
+        ]);
+        $productRepository::setProductPrices($product2->getKey(), [
+            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(300, $currency->value))],
+            ProductPriceType::PRICE_MAX->value => [new PriceDto(Money::of(1000, $currency->value))],
         ]);
 
-        Product::factory()->create([
+        $product3 = Product::factory()->create([
             'public' => true,
-            'price_min' => 10,
-            'price_max' => 10,
+        ]);
+        $productRepository::setProductPrices($product3->getKey(), [
+            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(10, $currency->value))],
+            ProductPriceType::PRICE_MAX->value => [new PriceDto(Money::of(10, $currency->value))],
         ]);
 
         $this
             ->actingAs($this->{$user})
-            ->json('GET', '/products', ['price' => ['min' => 100, 'max' => 200]])
+            ->json('GET', '/products', ['price' => [
+                'min' => '100.00',
+                'max' => '200.00',
+                'currency' => $currency->value,
+            ]])
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $product->getKey()]);
@@ -1351,7 +1380,7 @@ class ProductSearchDatabaseTest extends TestCase
         $this->assertEquals($product2->getKey(), $data[1]->id);
         $this->assertEquals($product3->getKey(), $data[2]->id);
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(27);
 
         // desc
         $response = $this
