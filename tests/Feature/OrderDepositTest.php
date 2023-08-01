@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Dtos\PriceDto;
+use App\Enums\Currency;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
 use App\Models\Address;
@@ -12,10 +14,18 @@ use App\Models\Product;
 use App\Models\Schema;
 use App\Models\Status;
 use App\Services\Contracts\AvailabilityServiceContract;
+use App\Services\Contracts\ProductServiceContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
+use Heseya\Dto\DtoException;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 use Tests\Traits\CreateShippingMethod;
+use Tests\Utils\FakeDto;
 
 class OrderDepositTest extends TestCase
 {
@@ -30,6 +40,15 @@ class OrderDepositTest extends TestCase
     private array $request;
     private array $addressExpected;
 
+    private ProductServiceContract $productService;
+    private Currency $currency;
+
+    /**
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws DtoException
+     */
     public function setUp(): void
     {
         parent::setUp();
@@ -38,10 +57,13 @@ class OrderDepositTest extends TestCase
 
         Event::fake([OrderCreated::class, OrderUpdatedStatus::class]);
 
-        $this->product = Product::factory()->create([
-            'price' => 100,
+        $this->productService = App::make(ProductServiceContract::class);
+        $this->currency = Currency::DEFAULT;
+        $this->product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-        ]);
+            'prices_base' => [new PriceDto(Money::of(100.00, $this->currency->value))],
+        ]));
+
         $this->schema = Schema::factory()->create([
             'type' => 'select',
             'price' => 0,
@@ -339,6 +361,11 @@ class OrderDepositTest extends TestCase
      * now this product is available within 3 days shipping time
      *
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testCreateOrdersAndCheckDeposits($user): void
     {
@@ -357,10 +384,10 @@ class OrderDepositTest extends TestCase
             'unlimited_stock_shipping_time' => 10,
         ]);
 
-        $product = Product::factory()->create([
-            'price' => 100,
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-        ]);
+            'prices_base' => [new PriceDto(Money::of(100.00, $this->currency->value))],
+        ]));
 
         $product->items()->attach($this->item->getKey(), ['required_quantity' => 1]);
 
@@ -619,6 +646,11 @@ class OrderDepositTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testCreateOrdersWithPreOrderItemAndCheckDeposits($user): void
     {
@@ -631,10 +663,10 @@ class OrderDepositTest extends TestCase
             'unlimited_stock_shipping_date' => $date,
         ]);
 
-        $product = Product::factory()->create([
-            'price' => 100,
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-        ]);
+            'prices_base' => [new PriceDto(Money::of(100.00, $this->currency->value))],
+        ]));
 
         $product->items()->attach($this->item->getKey(), ['required_quantity' => 1]);
 

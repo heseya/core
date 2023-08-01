@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Currency;
 use App\Enums\MetadataType;
 use App\Events\ProductSetCreated;
 use App\Models\Product;
@@ -18,6 +19,11 @@ class MetadataFormsTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.add');
 
+        $prices = array_map(fn (Currency $currency) => [
+            'value' => '10.00',
+            'currency' => $currency->value,
+        ], Currency::cases());
+
         $response = $this
             ->actingAs($this->{$user})
             ->json('POST', '/products', [
@@ -26,7 +32,7 @@ class MetadataFormsTest extends TestCase
                 ],
                 'published' => [$this->lang],
                 'slug' => 'test',
-                'price' => 100.00,
+                'prices_base' => $prices,
                 'public' => true,
                 'shipping_digital' => false,
                 'metadata' => [

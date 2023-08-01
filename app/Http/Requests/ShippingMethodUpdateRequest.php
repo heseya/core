@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\Price;
 use App\Rules\ShippingMethodPriceRanges;
+use Brick\Math\BigDecimal;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ShippingMethodUpdateRequest extends FormRequest
@@ -17,9 +19,8 @@ class ShippingMethodUpdateRequest extends FormRequest
             'payment_methods.*' => ['uuid', 'exists:payment_methods,id'],
             'countries' => 'array',
             'countries.*' => ['string', 'size:2', 'exists:countries,code'],
-            'price_ranges' => ['array', 'min:1', new ShippingMethodPriceRanges()],
-            'price_ranges.*.start' => ['numeric', 'min:0', 'distinct'],
-            'price_ranges.*.value' => ['numeric', 'min:0'],
+            'price_ranges' => [new ShippingMethodPriceRanges()],
+            'price_ranges.*' => [new Price(['value', 'start'], min: BigDecimal::zero())],
             'shipping_time_min' => ['numeric', 'integer', 'min:0'],
             'shipping_time_max' => ['numeric', 'integer', 'min:0', 'gte:shipping_time_min'],
         ];

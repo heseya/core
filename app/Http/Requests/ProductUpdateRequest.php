@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Product;
+use App\Rules\PricesEveryCurrency;
 use App\Rules\Translations;
 use Illuminate\Validation\Rule;
 
@@ -19,7 +20,7 @@ class ProductUpdateRequest extends ProductCreateRequest
         // $rules['metadata'] = ['prohibited'];
         // $rules['metadata_private'] = ['prohibited'];
         $rules['name'] = ['string', 'max:255'];
-        $rules['price'] = ['numeric', 'min:0'];
+        $rules['prices_base'] = [new PricesEveryCurrency()];
         $rules['public'] = ['boolean'];
         $rules['shipping_digital'] = ['boolean'];
         $rules['slug'] = [

@@ -20,12 +20,13 @@ use App\Models\DiscountCondition;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
+use Brick\Money\Money;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 interface DiscountServiceContract
 {
-    public function calc(float $value, Discount $discount): float;
+    public function calc(Money $value, Discount $discount): Money;
 
     public function index(CouponIndexDto|SaleIndexDto $dto): LengthAwarePaginator;
 
@@ -76,7 +77,7 @@ interface DiscountServiceContract
 
     public function applyDiscountOnOrder(Discount $discount, Order $order): Order;
 
-    public function calcAppliedDiscount(float $price, float $appliedDiscount, string $setting): float;
+    public function calcAppliedDiscount(Money $price, Money $appliedDiscount, string $setting): Money;
 
     public function activeSales(): Collection;
 

@@ -7,10 +7,18 @@ ShippingMethod:
     name:
       type: string
       example: 'Next Day Courier'
-    price:
-      description: 'on index shows shipping price for provided "cart_value" (for 0 by default)'
-      type: number
-      example: 2
+    prices:
+      description: 'on index shows shipping prices for provided "cart_value" (for 0 by default)'
+      type: array
+      items:
+        type: object
+        properties:
+          gross:
+            type: string
+            example: '9.99'
+          currency:
+            type: string
+            example: 'PLN'
     public:
       type: boolean
     block_list:

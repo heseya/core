@@ -24,65 +24,63 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
-        Product::withoutSyncingToSearch(function (): void {
-            /** @var ProductServiceContract $productService */
-            $productService = App::make(ProductServiceContract::class);
+        /** @var ProductServiceContract $productService */
+        $productService = App::make(ProductServiceContract::class);
 
-            $products = Product::factory()->count(100)
-                ->state(fn ($sequence) => [
-                    'shipping_digital' => mt_rand(0, 1),
-                ])
-                ->create();
+        $products = Product::factory()->count(100)
+            ->state(fn ($sequence) => [
+                'shipping_digital' => mt_rand(0, 1),
+            ])
+            ->create();
 
-            $sets = ProductSet::all();
+        $sets = ProductSet::all();
 
-            $brands = ProductSet::factory([
-                'name' => 'Brands',
-                'slug' => 'brands',
-            ])->make();
-            $this->seo($brands);
-            $brands = ProductSet::factory([
-                'parent_id' => $brands->getKey(),
-            ])->count(4)->create();
+        $brands = ProductSet::factory([
+            'name' => 'Brands',
+            'slug' => 'brands',
+        ])->make();
+        $this->seo($brands);
+        $brands = ProductSet::factory([
+            'parent_id' => $brands->getKey(),
+        ])->count(4)->create();
 
-            $brands->each(fn ($set) => $this->seo($set));
+        $brands->each(fn ($set) => $this->seo($set));
 
-            $categories = ProductSet::factory([
-                'name' => 'Categories',
-                'slug' => 'categories',
-            ])->create();
-            $this->seo($categories);
-            $categories = ProductSet::factory([
-                'parent_id' => $categories->getKey(),
-            ])->count(4)->create();
+        $categories = ProductSet::factory([
+            'name' => 'Categories',
+            'slug' => 'categories',
+        ])->create();
+        $this->seo($categories);
+        $categories = ProductSet::factory([
+            'parent_id' => $categories->getKey(),
+        ])->count(4)->create();
 
-            $categories->each(fn ($set) => $this->seo($set));
+        $categories->each(fn ($set) => $this->seo($set));
 
-            $products->each(function ($product, $index) use ($sets, $brands, $categories, $productService): void {
-                if (mt_rand(0, 1)) {
-                    $this->schemas($product);
-                }
+        $products->each(function ($product, $index) use ($sets, $brands, $categories, $productService): void {
+            if (mt_rand(0, 1)) {
+                $this->schemas($product);
+            }
 
-                $this->media($product);
-                $this->sets($product, $sets);
-                $this->seo($product);
+            $this->media($product);
+            $this->sets($product, $sets);
+            $this->seo($product);
 
-                if ($index >= 75) {
-                    $this->brands($product, $brands);
-                } elseif ($index >= 50) {
-                    $this->categories($product, $categories);
-                } elseif ($index >= 25) {
-                    $this->brands($product, $brands);
-                    $this->categories($product, $categories);
-                }
+            if ($index >= 75) {
+                $this->brands($product, $brands);
+            } elseif ($index >= 50) {
+                $this->categories($product, $categories);
+            } elseif ($index >= 25) {
+                $this->brands($product, $brands);
+                $this->categories($product, $categories);
+            }
 
-                $product->refresh();
-                $product->save();
-                $productService->updateMinMaxPrices($product);
-            });
-
-            $this->setAvailability();
+            $product->refresh();
+            $product->save();
+            $productService->updateMinMaxPrices($product);
         });
+
+        $this->setAvailability();
     }
 
     private function seo(Product|ProductSet $product): void

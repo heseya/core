@@ -7,6 +7,8 @@ use App\Criteria\MetadataSearch;
 use App\Criteria\WhereInIds;
 use App\Traits\HasDiscounts;
 use App\Traits\HasMetadata;
+use Brick\Math\BigDecimal;
+use Brick\Money\Money;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * @property float $price
+ * @property Money[] $prices
  *
  * @mixin IdeHelperShippingMethod
  */
@@ -95,14 +97,28 @@ class ShippingMethod extends Model
         return $this->belongsToMany(Address::class, 'address_shipping_method');
     }
 
-    public function getPrice(float $orderTotal): float
+    public function getPrice(Money $orderTotal): Money
     {
+        /** @var PriceRange $priceRange */
         $priceRange = $this->priceRanges()
-            ->where('start', '<=', $orderTotal)
+            ->where('currency', '=', $orderTotal->getCurrency()->getCurrencyCode())
+            ->where('start', '<=', $orderTotal->getMinorAmount())
             ->orderBy('start', 'desc')
-            ->first();
+            ->firstOrFail();
 
-        return $priceRange && $priceRange->prices()->first() ? ($priceRange->prices()->first()->value ?? 0.0) : 0.0;
+        return $priceRange->value;
+    }
+
+    /**
+     * @return Money[]
+     */
+    public function getStartingPrices(): array
+    {
+        $priceRanges = $this->priceRanges()
+            ->where('start', '=', BigDecimal::zero())
+            ->get();
+
+        return $priceRanges->map(fn (PriceRange $range) => $range->value)->toArray();
     }
 
     public function priceRanges(): HasMany

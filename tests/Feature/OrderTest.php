@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\MetadataType;
@@ -16,6 +17,7 @@ use App\Models\Discount;
 use App\Models\Item;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
@@ -23,6 +25,7 @@ use App\Models\User;
 use App\Models\WebHook;
 use App\Services\Contracts\OrderServiceContract;
 use App\Services\OrderService;
+use Brick\Money\Money;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
@@ -49,9 +52,14 @@ class OrderTest extends TestCase
 
         Product::factory()->create();
 
-        $this->shippingMethod = ShippingMethod::factory()->create([
-            'shipping_type' => ShippingType::ADDRESS,
+        $currency = Currency::DEFAULT->value;
+        $this->shippingMethod = ShippingMethod::factory()->create();
+        $freeRange = PriceRange::query()->create([
+            'start' => Money::zero($currency),
+            'value' => Money::zero($currency),
         ]);
+        $this->shippingMethod->priceRanges()->save($freeRange);
+
         $status = Status::factory()->create();
         $product = Product::factory()->create();
 
@@ -755,7 +763,7 @@ class OrderTest extends TestCase
             ->assertJsonFragment(['code' => $this->order->code])
             ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
 
-        $this->assertQueryCountLessThan(30);
+        $this->assertQueryCountLessThan(33);
     }
 
     /**
@@ -807,10 +815,9 @@ class OrderTest extends TestCase
             ->assertJsonStructure(['data' => $this->expected_full_view_structure])
             ->assertJsonFragment(['metadata_private' => [
                 $privateMetadata->name => $privateMetadata->value,
-            ],
-            ]);
+            ]]);
 
-        $this->assertQueryCountLessThan(30);
+        $this->assertQueryCountLessThan(34);
     }
 
     public function testViewSummaryUnauthorized(): void
@@ -877,7 +884,7 @@ class OrderTest extends TestCase
                 'summary_paid' => $summaryPaid,
             ]);
 
-        $this->assertQueryCountLessThan(30);
+        $this->assertQueryCountLessThan(33);
     }
 
     /**
@@ -1128,7 +1135,7 @@ class OrderTest extends TestCase
                     ->etc();
             });
 
-        $this->assertQueryCountLessThan(35);
+        $this->assertQueryCountLessThan(45);
     }
 
     public function testUpdateOrderStatusUnauthorized(): void

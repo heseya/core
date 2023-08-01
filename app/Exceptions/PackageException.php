@@ -24,12 +24,14 @@ class PackageException extends StoreException
         if (is_array($this->errors)) {
             $response = [];
             foreach ($this->errors as $key) {
+                /** @var string $field */
                 $field = Str::replace('/', '.', $key->field);
                 $response[$field] = [$key->message . ' [' . $field . ']'];
             }
 
             return $response;
         }
+        /** @var string $field */
         $field = Str::replace('/', '.', $this->errors->field);
 
         return [$field => [$this->errors->message . ' [' . $field . ']']];

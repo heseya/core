@@ -12,6 +12,7 @@ use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\ShippingMethodServiceContract;
+use Brick\Money\Money;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,7 +26,7 @@ readonly class ShippingMethodService implements ShippingMethodServiceContract
         private MetadataServiceContract $metadataService,
     ) {}
 
-    public function index(?array $search, ?string $country, float $cartValue): LengthAwarePaginator
+    public function index(?array $search, ?string $country, ?Money $cartValue): LengthAwarePaginator
     {
         $query = ShippingMethod::query()
             ->searchByCriteria($search ?? [])
@@ -68,7 +69,11 @@ readonly class ShippingMethodService implements ShippingMethodServiceContract
         }
 
         $shippingMethods = $query->paginate(Config::get('pagination.per_page'));
-        $shippingMethods->each(fn (ShippingMethod $method) => $method->price = $method->getPrice($cartValue));
+        $shippingMethods->each(
+            fn (ShippingMethod $method) => $method->prices = $cartValue ?
+                [$method->getPrice($cartValue)] :
+                $method->getStartingPrices(),
+        );
 
         return $shippingMethods;
     }
@@ -99,13 +104,10 @@ readonly class ShippingMethodService implements ShippingMethodServiceContract
             $this->metadataService->sync($shippingMethod, $shippingMethodDto->getMetadata());
         }
 
-        $priceRanges = $shippingMethodDto->getPriceRanges() !== null ? $shippingMethodDto->getPriceRanges() : [];
-        foreach ($priceRanges as $range) {
-            $priceRange = $shippingMethod->priceRanges()->firstOrCreate([
-                'start' => $range['start'],
-            ]);
-            $priceRange->prices()->create([
-                'value' => $range['value'],
+        foreach ($shippingMethodDto->getPriceRanges() as $range) {
+            $shippingMethod->priceRanges()->firstOrCreate([
+                'start' => $range->start,
+                'value' => $range->value,
             ]);
         }
 
@@ -134,11 +136,9 @@ readonly class ShippingMethodService implements ShippingMethodServiceContract
             $shippingMethod->priceRanges()->delete();
 
             foreach ($shippingMethodDto->getPriceRanges() as $range) {
-                $priceRange = $shippingMethod->priceRanges()->firstOrCreate([
-                    'start' => $range['start'],
-                ]);
-                $priceRange->prices()->create([
-                    'value' => $range['value'],
+                $shippingMethod->priceRanges()->firstOrCreate([
+                    'start' => $range->start,
+                    'value' => $range->value,
                 ]);
             }
         }

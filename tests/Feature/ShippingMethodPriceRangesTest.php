@@ -2,14 +2,23 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Currency;
 use App\Models\PriceRange;
 use App\Models\ShippingMethod;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
 use Tests\TestCase;
 
 class ShippingMethodPriceRangesTest extends TestCase
 {
     /**
      * @dataProvider authProvider
+     *
+     * @throws NumberFormatException
+     * @throws UnknownCurrencyException
+     * @throws RoundingNecessaryException
      */
     public function testIndexByPrice($user): void
     {
@@ -20,20 +29,33 @@ class ShippingMethodPriceRangesTest extends TestCase
             'block_list' => false,
         ]);
 
+        $currency = Currency::DEFAULT->value;
+
         $shippingMethod->priceRanges()->saveMany([
-            $priceRange1 = PriceRange::make(['start' => 0]),
-            $priceRange2 = PriceRange::make(['start' => 1000]),
-            $priceRange3 = PriceRange::make(['start' => 1500]),
+            PriceRange::query()->make([
+                'start' => Money::zero($currency),
+                'value' => Money::of(20, $currency),
+            ]),
+            PriceRange::query()->make([
+                'start' => Money::of(1000, $currency),
+                'value' => Money::of(10, $currency),
+            ]),
+            PriceRange::query()->make([
+                'start' => Money::of(1500, $currency),
+                'value' => Money::zero($currency),
+            ]),
         ]);
 
-        $priceRange1->prices()->create(['value' => 20]);
-        $priceRange2->prices()->create(['value' => 10]);
-        $priceRange3->prices()->create(['value' => 0]);
-
         $this->actingAs($this->{$user})
-            ->json('GET', '/shipping-methods', ['cart_value' => 1200])
+            ->json('GET', '/shipping-methods', ['cart_value' => [
+                'value' => '1200.00',
+                'currency' => $currency,
+            ]])
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonFragment(['price' => 10]);
+            ->assertJsonFragment(['prices' => [[
+                'gross' => '10.00',
+                'currency' => $currency,
+            ]]]);
     }
 }

@@ -3,6 +3,9 @@
 namespace App\Dtos;
 
 use App\Dtos\Contracts\InstantiateFromRequest;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
 use Heseya\Dto\Dto;
 use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
@@ -14,7 +17,8 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
         readonly public array $translations,
         readonly public array $published,
         readonly public Missing|string $slug,
-        readonly public float|Missing $price,
+        /** @var PriceDto[] */
+        readonly public array $prices_base,
         readonly public bool|Missing $public,
         readonly public bool|Missing $shipping_digital,
         readonly public int|Missing $order,
@@ -35,14 +39,22 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
 
     /**
      * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public static function instantiateFromRequest(FormRequest $request): self
     {
+        $prices_base = array_map(
+            fn ($data) => PriceDto::fromData(...$data),
+            $request->input('prices_base') ?? [],
+        );
+
         return new self(
             translations: $request->input('translations', []),
             published: $request->input('published', []),
             slug: $request->input('slug') ?? new Missing(),
-            price: $request->input('price') ?? new Missing(),
+            prices_base: $prices_base,
             public: $request->input('public') ?? new Missing(),
             shipping_digital: $request->input('shipping_digital') ?? new Missing(),
             order: $request->input('order') ?? new Missing(),

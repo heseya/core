@@ -5,8 +5,18 @@ Product:
       type: string
     slug:
       type: string
-    price:
-      type: number
+    prices_base:
+      type: array
+      description: 'Needs a price for each currency'
+      items:
+        type: object
+        properties:
+          value:
+            type: string
+            example: '9.99'
+          currency:
+            type: string
+            example: 'PLN'
     public:
       type: boolean
     description_html:
@@ -82,7 +92,7 @@ ProductStore:
         required:
           - name
           - slug
-          - price
+          - prices_base
           - public
           - shipping_digital
         allOf:

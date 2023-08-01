@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Currency;
 use App\Models\Deposit;
 use App\Models\Item;
 use Carbon\Carbon;
@@ -117,6 +118,11 @@ class ProductShippingCacheTest extends TestCase
      */
     private function productDataWithItem(Item $item): array
     {
+        $prices = array_map(fn (Currency $currency) => [
+            'value' => '10.00',
+            'currency' => $currency->value,
+        ], Currency::cases());
+
         return [
             'translations' => [
                 $this->lang => [
@@ -125,7 +131,7 @@ class ProductShippingCacheTest extends TestCase
             ],
             'published' => [$this->lang],
             'slug' => 'test',
-            'price' => 100,
+            'prices_base' => $prices,
             'public' => true,
             'shipping_digital' => false,
             'items' => [
