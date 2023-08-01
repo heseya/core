@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Metadata;
 
-use App\DTO\Metadata\MetadataDto;
+use Domain\Metadata\Dtos\MetadataUpdateDto;
 
 final readonly class MetadataService
 {
@@ -15,26 +15,29 @@ final readonly class MetadataService
     /**
      * Get all metadata for given model.
      *
-     * @return array<string, bool|float|int|string|null>[]
+     * @param class-string $class
+     * @param string[] $ids
+     *
+     * @return array<string, array<string, bool|float|int|string|null>>[]
      */
-    public function getAll(string $class, string $id, bool $with_private): array
+    public function getAll(string $class, array $ids, bool $with_private): array
     {
-        $public = [];
-        $private = [];
+        $return = [];
 
-        foreach ($this->repository->getAll($class, $id, $with_private) as $metadata) {
+        foreach ($this->repository->getAll($class, $ids, $with_private) as $metadata) {
             if ($metadata->public) {
-                $public[$metadata->name] = $metadata->value;
+                $return[$metadata->model_id]['public'][$metadata->name] = $metadata->value;
             } else {
-                $private[$metadata->name] = $metadata->value;
+                $return[$metadata->model_id]['private'][$metadata->name] = $metadata->value;
             }
         }
 
-        return [$public, $private];
+        return $return;
     }
 
     /**
-     * @param MetadataDto[] $metadata
+     * @param class-string $class
+     * @param MetadataUpdateDto[] $metadata
      */
     public function sync(string $class, string $id, array $metadata): void
     {
@@ -43,7 +46,10 @@ final readonly class MetadataService
         }
     }
 
-    private function processMetadata(string $class, string $id, MetadataDto $dto): void
+    /**
+     * @param class-string $class
+     */
+    private function processMetadata(string $class, string $id, MetadataUpdateDto $dto): void
     {
         if ($dto->value === null) {
             $this->repository->delete($class, $id, $dto->name);

@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\DTO\Metadata\MetadataDto;
 use App\Dtos\MetadataPersonalListDto;
 use App\Enums\MetadataType;
 use App\Http\Resources\MetadataResource;
 use App\Services\Contracts\MetadataServiceContract;
+use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -32,7 +32,7 @@ class MetadataController extends Controller
 
         $public = Collection::make($request->segments())->last() === 'metadata';
         foreach ($request->all() as $key => $value) {
-            $dto = new MetadataDto($key, $value, $public, MetadataType::matchType($value));
+            $dto = new MetadataUpdateDto($key, $value, $public, MetadataType::matchType($value));
             $this->metadataService->updateOrCreate($model, $dto);
         }
 

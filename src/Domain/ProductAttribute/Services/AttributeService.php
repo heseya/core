@@ -16,6 +16,7 @@ use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Repositories\AttributeRepository;
 use Illuminate\Support\Facades\Gate;
+use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\PaginatedDataCollection;
 
@@ -38,22 +39,33 @@ final readonly class AttributeService
         return $this->repository->search($dto);
     }
 
-    public function filters(FiltersDto $dto)
+    public function filters(FiltersDto $dto): DataCollection
     {
-        return $this->repository->getAllGlobal($dto->sets);
+        $attributes = $this->repository->getAllGlobal($dto->sets);
+        $response = AttributeResponseDto::collection([]);
+
+        foreach ($attributes as $attribute) {
+            $response->
+        }
+
+        return
     }
 
     public function show(string $id): AttributeResponseDto
     {
         $attribute = $this->repository->getOne($id);
 
-        [$metadata, $metadata_private] = $this->metadataService->getAll(
+        [$metadata] = $this->metadataService->getAll(
             Attribute::class,
-            $id,
+            [$id],
             Gate::allows('attributes.show_metadata_private'),
         );
 
-        return $this->prepareResponse($attribute, $metadata, $metadata_private);
+        return $this->prepareResponse(
+            $attribute,
+            $metadata['public'],
+            $metadata['private'],
+        );
     }
 
     public function create(AttributeCreateDto $dto): AttributeResponseDto
@@ -64,7 +76,17 @@ final readonly class AttributeService
             $this->metadataService->sync(Attribute::class, $attribute->id, $dto->metadata);
         }
 
-        return $this->show($attribute->id);
+        [$metadata] = $this->metadataService->getAll(
+            Attribute::class,
+            [$attribute->id],
+            Gate::allows('attributes.show_metadata_private'),
+        );
+
+        return $this->prepareResponse(
+            $attribute,
+            $metadata['public'],
+            $metadata['private'],
+        );
     }
 
     public function update(string $id, AttributeUpdateDto $dto): AttributeResponseDto

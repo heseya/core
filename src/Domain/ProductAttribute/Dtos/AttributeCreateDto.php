@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\ProductAttribute\Dtos;
 
-use App\DTO\Metadata\MetadataDto;
+use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\MapInputName;
@@ -18,7 +18,7 @@ use Support\Utils\Map;
 
 final class AttributeCreateDto extends Data
 {
-    /** @var Optional|MetadataDto[] */
+    /** @var Optional|MetadataUpdateDto[] */
     #[Computed]
     public readonly array|Optional $metadata;
 

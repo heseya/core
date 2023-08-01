@@ -19,11 +19,11 @@ class MetadataValue implements CastsAttributes
         return match ($model->value_type->value) {
             MetadataType::BOOLEAN => (bool) $value,
             MetadataType::NUMBER => (float) $value,
-            default => $value
+            default => (string) $value,
         };
     }
 
-    public function set(Model $model, string $key, $value, array $attributes): mixed
+    public function set(Model $model, string $key, mixed $value, array $attributes): mixed
     {
         return $value;
     }

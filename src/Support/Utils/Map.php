@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Support\Utils;
 
-use App\DTO\Metadata\MetadataDto;
-use App\DTO\Metadata\MetadataPersonalDto;
 use App\Enums\MetadataType;
+use Domain\Metadata\Dtos\MetadataUpdateDto;
+use Domain\Metadata\Dtos\MetadataPersonalDto;
 use Spatie\LaravelData\Optional;
 
 final readonly class Map
@@ -15,7 +15,7 @@ final readonly class Map
      * @param string[]|Optional $metadata
      * @param string[]|Optional $metadata_private
      *
-     * @return MetadataDto[]|Optional
+     * @return MetadataUpdateDto[]|Optional
      */
     public static function toMetadata(
         array|Optional $metadata = new Optional(),
@@ -25,7 +25,7 @@ final readonly class Map
 
         if (is_array($metadata)) {
             foreach ($metadata as $key => $value) {
-                $return[] = new MetadataDto(
+                $return[] = new MetadataUpdateDto(
                     $key,
                     $value,
                     true,
@@ -36,7 +36,7 @@ final readonly class Map
 
         if (is_array($metadata_private)) {
             foreach ($metadata_private as $key => $value) {
-                $return[] = new MetadataDto(
+                $return[] = new MetadataUpdateDto(
                     $key,
                     $value,
                     false,

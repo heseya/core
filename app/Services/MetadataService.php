@@ -2,13 +2,13 @@
 
 namespace App\Services;
 
-use App\DTO\Metadata\MetadataDto;
-use App\DTO\Metadata\MetadataPersonalDto;
 use App\Dtos\MetadataPersonalListDto;
 use App\Models\Model;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\MetadataServiceContract;
+use Domain\Metadata\Dtos\MetadataUpdateDto;
+use Domain\Metadata\Dtos\MetadataPersonalDto;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -27,7 +27,7 @@ class MetadataService implements MetadataServiceContract
         }
     }
 
-    public function updateOrCreate(Model|Role $model, MetadataDto $dto): void
+    public function updateOrCreate(Model|Role $model, MetadataUpdateDto $dto): void
     {
         $this->processMetadata($model, $dto, $dto->public ? 'metadata' : 'metadataPrivate');
     }
@@ -93,7 +93,7 @@ class MetadataService implements MetadataServiceContract
 
     private function processMetadata(
         Model|Role $model,
-        MetadataDto|MetadataPersonalDto $dto,
+        MetadataUpdateDto|MetadataPersonalDto $dto,
         string $relation,
     ): void {
         /** @var Builder $query */

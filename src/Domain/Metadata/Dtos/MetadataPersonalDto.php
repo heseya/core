@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\DTO\Metadata;
+namespace Domain\Metadata\Dtos;
 
 use Spatie\LaravelData\Data;
 
