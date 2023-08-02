@@ -30,6 +30,7 @@ use Spatie\Translatable\HasTranslations;
 
 /**
  * @property mixed $pivot
+ *
  * @mixin IdeHelperProductSet
  */
 class ProductSet extends Model implements SeoContract, Translatable

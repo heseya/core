@@ -45,6 +45,7 @@ use Spatie\Translatable\HasTranslations;
  * @property string $description_html
  * @property string $description_short
  * @property mixed $pivot
+ *
  * @mixin IdeHelperProduct
  */
 class Product extends Model implements SeoContract, SortableContract, Translatable

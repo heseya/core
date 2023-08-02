@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 
 /**
  * @property float $price
+ *
  * @mixin IdeHelperShippingMethod
  */
 class ShippingMethod extends Model

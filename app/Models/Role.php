@@ -24,6 +24,7 @@ use Spatie\Permission\PermissionRegistrar;
  * @property RoleType $type
  * @property string $name
  * @property bool $is_registration_role
+ *
  * @mixin IdeHelperRole
  */
 class Role extends SpatieRole

@@ -15,6 +15,7 @@ use Spatie\Translatable\HasTranslations;
 /**
  * @property string $name
  * @property string $description
+ *
  * @mixin IdeHelperStatus
  */
 class Status extends Model implements Translatable

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Support\Utils;
 
 use App\Enums\MetadataType;
-use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Domain\Metadata\Dtos\MetadataPersonalDto;
+use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Spatie\LaravelData\Optional;
 
 final readonly class Map

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\ProductAttribute\Controllers;
 
 use App\DTO\ReorderDto;
-use App\Exceptions\ServerException;
 use App\Http\Controllers\Controller;
 use App\Services\Contracts\ReorderServiceContract;
 use Domain\ProductAttribute\Dtos\AttributeCreateDto;
@@ -14,11 +13,12 @@ use Domain\ProductAttribute\Dtos\AttributeResponseDto;
 use Domain\ProductAttribute\Dtos\AttributeUpdateDto;
 use Domain\ProductAttribute\Dtos\FiltersDto;
 use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Resources\AttributeResource;
 use Domain\ProductAttribute\Services\AttributeService;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
-use Spatie\LaravelData\DataCollection;
-use Spatie\LaravelData\PaginatedDataCollection;
 
 final class AttributeController extends Controller
 {
@@ -27,25 +27,31 @@ final class AttributeController extends Controller
         private readonly ReorderServiceContract $reorderService,
     ) {}
 
-    /**
-     * @param AttributeIndexDto $dto
-     *
-     * @return PaginatedDataCollection<int, AttributeResponseDto>
-     * @throws ServerException
-     */
-    public function index(AttributeIndexDto $dto): PaginatedDataCollection
+    // TODO: refactor this
+    public function index(AttributeIndexDto $dto): JsonResource
     {
-        return $this->attributeService->index($dto);
+        return AttributeResource::collection(
+            Attribute::searchByCriteria($dto->toArray())
+                ->with(['metadata', 'metadataPrivate'])
+                ->orderBy('order')
+                ->paginate(Config::get('pagination.per_page')),
+        );
     }
 
-    /**
-     * @param FiltersDto $dto
-     *
-     * @return DataCollection<int, AttributeResponseDto>
-     */
-    public function filters(FiltersDto $dto): DataCollection
+    // TODO: refactor this
+    public function filters(FiltersDto $dto): JsonResource
     {
-        return $this->attributeService->filters($dto);
+        return AttributeResource::collection(
+            Attribute::query()
+                ->whereHas(
+                    'productSets',
+                    fn ($query) => $query->whereIn('product_set_id', $dto->sets),
+                )
+                ->orWhere('global', '=', true)
+                ->with(['metadata', 'metadataPrivate'])
+                ->orderBy('order')
+                ->get(),
+        );
     }
 
     public function show(string $id): AttributeResponseDto

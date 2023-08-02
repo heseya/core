@@ -14,7 +14,6 @@ final readonly class MetadataRepository
     /**
      * @param class-string $class
      * @param string[] $ids
-     * @param bool $with_private
      *
      * @return DataCollection<int, MetadataDto>
      */

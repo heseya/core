@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Support\LaravelData;
 
 use Illuminate\Contracts\Pagination\Paginator;
@@ -14,7 +16,7 @@ trait ExtendedData
         return new (static::$_paginatedCollectionClass)(static::class, $items);
     }
 
-    public static function staticCollection(Enumerable|array|DataCollection $items): DataCollection
+    public static function staticCollection(array|DataCollection|Enumerable $items): DataCollection
     {
         return new (static::$_collectionClass)(static::class, $items);
     }

@@ -3,8 +3,8 @@
 namespace App\Traits;
 
 use App\Enums\MetadataType;
-use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Domain\Metadata\Dtos\MetadataPersonalDto;
+use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Heseya\Dto\Missing;
 use Illuminate\Http\Request;
 

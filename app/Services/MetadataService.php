@@ -7,8 +7,8 @@ use App\Models\Model;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\MetadataServiceContract;
-use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Domain\Metadata\Dtos\MetadataPersonalDto;
+use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -93,7 +93,7 @@ class MetadataService implements MetadataServiceContract
 
     private function processMetadata(
         Model|Role $model,
-        MetadataUpdateDto|MetadataPersonalDto $dto,
+        MetadataPersonalDto|MetadataUpdateDto $dto,
         string $relation,
     ): void {
         /** @var Builder $query */

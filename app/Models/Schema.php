@@ -30,6 +30,7 @@ use Spatie\Translatable\HasTranslations;
  * @property string $name
  * @property string $description
  * @property SchemaType $type
+ *
  * @mixin IdeHelperSchema
  */
 class Schema extends Model implements SortableContract, Translatable

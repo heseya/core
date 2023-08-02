@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Traits\MetadataResource;
+use Domain\ProductAttribute\Resources\AttributeResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 

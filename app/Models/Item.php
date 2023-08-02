@@ -23,6 +23,7 @@ use Illuminate\Support\Str;
 
 /**
  * @property mixed $pivot
+ *
  * @mixin IdeHelperItem
  */
 class Item extends Model implements SortableContract

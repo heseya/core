@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * @property VisibilityType $visibility
  * @property string|null $label used for grouping attachments in different relations
  * @property Media $media
+ *
  * @mixin IdeHelperMediaAttachment
  */
 class MediaAttachment extends Pivot
