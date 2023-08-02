@@ -3,11 +3,11 @@
 namespace Database\Factories;
 
 use App\Dtos\PriceDto;
-use App\Enums\Currency;
 use App\Enums\Product\ProductPriceType;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use Brick\Money\Money;
+use Domains\Currency\Currency;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;

@@ -3,7 +3,6 @@
 namespace Tests\Feature\Discounts;
 
 use App\Dtos\PriceDto;
-use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\Product\ProductPriceType;
@@ -17,6 +16,7 @@ use App\Models\WebHook;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\DiscountServiceContract;
 use Brick\Money\Money;
+use Domains\Currency\Currency;
 use Heseya\Dto\DtoException;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Collection;

@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\Currency;
 use App\Enums\ShippingType;
 use App\Models\Address;
 use App\Models\App;
@@ -14,6 +13,7 @@ use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
+use Domains\Currency\Currency;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 

@@ -2,11 +2,11 @@
 
 namespace App\Dtos;
 
-use App\Enums\Currency;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
+use Domains\Currency\Currency;
 use Heseya\Dto\Dto;
 use Heseya\Dto\DtoException;
 

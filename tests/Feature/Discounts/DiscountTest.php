@@ -4,7 +4,6 @@ namespace Tests\Feature\Discounts;
 
 use App\Dtos\PriceDto;
 use App\Enums\ConditionType;
-use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\Product\ProductPriceType;
@@ -28,6 +27,7 @@ use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
+use Domains\Currency\Currency;
 use Heseya\Dto\DtoException;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Foundation\Testing\WithFaker;

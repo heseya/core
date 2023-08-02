@@ -2,9 +2,9 @@
 
 namespace App\Rules;
 
-use App\Enums\Currency;
 use Brick\Math\BigDecimal;
 use Closure;
+use Domains\Currency\Currency;
 use Exception;
 use Illuminate\Contracts\Validation\ValidationRule;
 

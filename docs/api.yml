@@ -62,6 +62,8 @@ paths:
     $ref: './paths/Provider.yml#/ProviderRedirect'
   /countries:
     $ref: './paths/Countries.yml#/Countries'
+  /currencies:
+    $ref: './paths/Currencies.yml#/Currencies'
   /deposits:
     $ref: './paths/Deposits.yml#/Deposits'
   '/items/id:{id}/deposits':

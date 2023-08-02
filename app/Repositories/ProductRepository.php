@@ -6,13 +6,13 @@ namespace App\Repositories;
 
 use App\Dtos\PriceDto;
 use App\Dtos\ProductSearchDto;
-use App\Enums\Currency;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\Product\ProductPriceType;
 use App\Exceptions\ServerException;
 use App\Models\Price;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryContract;
+use Domains\Currency\Currency;
 use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Config;

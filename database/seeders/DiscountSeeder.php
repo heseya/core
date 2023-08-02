@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
 use App\Exceptions\ClientException;
 use App\Exceptions\ServerException;
@@ -17,6 +16,7 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
+use Domains\Currency\Currency;
 use Heseya\Dto\DtoException;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\App;

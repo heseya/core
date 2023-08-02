@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\MetadataType;
@@ -26,6 +25,7 @@ use App\Models\WebHook;
 use App\Services\Contracts\OrderServiceContract;
 use App\Services\OrderService;
 use Brick\Money\Money;
+use Domains\Currency\Currency;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;

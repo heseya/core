@@ -2,7 +2,6 @@
 
 namespace App\Rules;
 
-use App\Enums\Currency;
 use Brick\Math\BigDecimal;
 use Brick\Math\Exception\MathException;
 use Brick\Math\Exception\NumberFormatException;
@@ -11,6 +10,7 @@ use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money as BrickMoney;
 use Closure;
+use Domains\Currency\Currency;
 use Illuminate\Contracts\Validation\ValidationRule;
 
 readonly class Price implements ValidationRule

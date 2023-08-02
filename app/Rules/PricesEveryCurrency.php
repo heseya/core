@@ -2,8 +2,8 @@
 
 namespace App\Rules;
 
-use App\Enums\Currency;
 use Closure;
+use Domains\Currency\Currency;
 use Illuminate\Contracts\Validation\ValidationRule;
 
 readonly class PricesEveryCurrency implements ValidationRule

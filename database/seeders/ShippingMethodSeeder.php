@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Enums\Currency;
 use App\Enums\ShippingType;
 use App\Models\PaymentMethod;
 use App\Models\ShippingMethod;
@@ -10,6 +9,7 @@ use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
+use Domains\Currency\Currency;
 use Illuminate\Database\Seeder;
 
 class ShippingMethodSeeder extends Seeder
