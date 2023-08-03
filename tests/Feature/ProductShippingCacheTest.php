@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use App\Models\Deposit;
 use App\Models\Item;
 use Carbon\Carbon;
-use Domains\Currency\Currency;
+use Domain\Currency\Currency;
 use Tests\TestCase;
 
 class ProductShippingCacheTest extends TestCase

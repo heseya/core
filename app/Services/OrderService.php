@@ -44,7 +44,7 @@ use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Brick\Money\Money;
-use Domains\Currency\Currency;
+use Domain\Currency\Currency;
 use Exception;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;

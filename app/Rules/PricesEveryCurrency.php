@@ -3,7 +3,7 @@
 namespace App\Rules;
 
 use Closure;
-use Domains\Currency\Currency;
+use Domain\Currency\Currency;
 use Illuminate\Contracts\Validation\ValidationRule;
 
 readonly class PricesEveryCurrency implements ValidationRule

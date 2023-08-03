@@ -71,7 +71,7 @@ use Brick\Math\RoundingMode;
 use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
-use Domains\Currency\Currency;
+use Domain\Currency\Currency;
 use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
 use Illuminate\Database\Eloquent\Builder;

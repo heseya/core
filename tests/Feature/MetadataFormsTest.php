@@ -6,7 +6,7 @@ use App\Enums\MetadataType;
 use App\Events\ProductSetCreated;
 use App\Models\Product;
 use App\Models\ProductSet;
-use Domains\Currency\Currency;
+use Domain\Currency\Currency;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 

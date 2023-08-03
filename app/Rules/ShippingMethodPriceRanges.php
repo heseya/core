@@ -4,7 +4,7 @@ namespace App\Rules;
 
 use Brick\Math\BigDecimal;
 use Closure;
-use Domains\Currency\Currency;
+use Domain\Currency\Currency;
 use Exception;
 use Illuminate\Contracts\Validation\ValidationRule;
 

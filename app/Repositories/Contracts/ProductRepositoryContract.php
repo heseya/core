@@ -5,7 +5,7 @@ namespace App\Repositories\Contracts;
 use App\Dtos\PriceDto;
 use App\Dtos\ProductSearchDto;
 use App\Enums\Product\ProductPriceType;
-use Domains\Currency\Currency;
+use Domain\Currency\Currency;
 use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 

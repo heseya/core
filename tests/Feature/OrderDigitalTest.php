@@ -7,7 +7,7 @@ use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use Brick\Money\Money;
-use Domains\Currency\Currency;
+use Domain\Currency\Currency;
 use Tests\TestCase;
 
 class OrderDigitalTest extends TestCase

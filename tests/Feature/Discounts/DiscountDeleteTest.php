@@ -16,7 +16,7 @@ use App\Models\WebHook;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\DiscountServiceContract;
 use Brick\Money\Money;
-use Domains\Currency\Currency;
+use Domain\Currency\Currency;
 use Heseya\Dto\DtoException;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Collection;

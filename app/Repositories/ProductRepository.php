@@ -12,7 +12,7 @@ use App\Exceptions\ServerException;
 use App\Models\Price;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryContract;
-use Domains\Currency\Currency;
+use Domain\Currency\Currency;
 use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Config;

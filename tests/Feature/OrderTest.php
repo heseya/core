@@ -25,7 +25,7 @@ use App\Models\WebHook;
 use App\Services\Contracts\OrderServiceContract;
 use App\Services\OrderService;
 use Brick\Money\Money;
-use Domains\Currency\Currency;
+use Domain\Currency\Currency;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;

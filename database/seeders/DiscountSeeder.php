@@ -16,7 +16,7 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
-use Domains\Currency\Currency;
+use Domain\Currency\Currency;
 use Heseya\Dto\DtoException;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\App;
