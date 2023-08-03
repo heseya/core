@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\ProductAttribute\Services;
 
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Exceptions\ClientException;
 use App\Models\Product;
 use Domain\Metadata\MetadataService;
 use Domain\ProductAttribute\Dtos\AttributeCreateDto;
-use Domain\ProductAttribute\Dtos\AttributeDto;
-use Domain\ProductAttribute\Dtos\AttributeResponseDto;
 use Domain\ProductAttribute\Dtos\AttributeUpdateDto;
-use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Repositories\AttributeRepository;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Gate;
 use Spatie\LaravelData\Optional;
 
 final readonly class AttributeService
@@ -25,64 +23,36 @@ final readonly class AttributeService
         private AttributeRepository $repository,
     ) {}
 
-    public function show(string $id): AttributeResponseDto
+    public function show(string $id): Attribute
     {
-        $attribute = $this->repository->getOne($id);
-
-        [$metadata] = $this->metadataService->getAll(
-            [$id],
-            Gate::allows('attributes.show_metadata_private'),
-        );
-
-        return $this->prepareResponse($attribute, $metadata);
+        return $this->repository->getOne($id);
     }
 
-    public function create(AttributeCreateDto $dto): AttributeResponseDto
+    public function create(AttributeCreateDto $dto): Attribute
     {
         $attribute = $this->repository->create($dto);
 
         if (!($dto->metadata instanceof Optional)) {
-            $this->metadataService->sync(Attribute::class, $attribute->id, $dto->metadata);
+            $this->metadataService->sync(Attribute::class, $attribute->getKey(), $dto->metadata);
         }
 
-        [$metadata] = $this->metadataService->getAll(
-            [$attribute->id],
-            Gate::allows('attributes.show_metadata_private'),
-        );
-
-        return $this->prepareResponse($attribute, $metadata);
+        return $attribute;
     }
 
-    public function update(string $id, AttributeUpdateDto $dto): AttributeResponseDto
+    /**
+     * @throws ClientException
+     */
+    public function update(string $id, AttributeUpdateDto $dto): void
     {
-        $this->repository->update($id, $dto);
-
-        return $this->show($id);
+        if ($this->repository->update($id, $dto) === 0) {
+            throw new ClientException(Exceptions::CLIENT_CANNOT_DELETE_MODEL);
+        }
     }
 
     public function delete(string $id): void
     {
         $this->attributeOptionService->deleteAll($id);
         $this->repository->delete($id);
-    }
-
-    /**
-     * @param array<string, bool|float|int|string|null>[] $metadata
-     */
-    private function prepareResponse(AttributeDto $dto, array $metadata): AttributeResponseDto
-    {
-        [$min, $max] = match ($dto->type) {
-            AttributeType::NUMBER => [$dto->min_number, $dto->max_number],
-            AttributeType::DATE => [$dto->min_date, $dto->max_date],
-            default => [null, null],
-        };
-
-        return AttributeResponseDto::from($dto, [
-            'min' => $min,
-            'max' => $max,
-            'metadata' => $metadata['public'],
-            'metadata_private' => $metadata['private'],
-        ]);
     }
 
     // TODO: refactor this

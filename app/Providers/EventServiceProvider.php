@@ -57,6 +57,8 @@ use App\Observers\DepositObserver;
 use App\Observers\ItemProductObserver;
 use App\Observers\PaymentObserver;
 use App\Observers\SchemaObserver;
+use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\ProductAttribute\Observers\AttributeOptionObserver;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
 use SocialiteProviders\Apple\AppleExtendSocialite;
@@ -153,6 +155,7 @@ class EventServiceProvider extends ServiceProvider
         Event::listen(SocialiteWasCalled::class, AppleExtendSocialite::class);
 
         // Ugly observers 🤮
+        AttributeOption::observe(AttributeOptionObserver::class);
         Deposit::observe(DepositObserver::class);
         ItemProduct::observe(ItemProductObserver::class);
         Payment::observe(PaymentObserver::class);

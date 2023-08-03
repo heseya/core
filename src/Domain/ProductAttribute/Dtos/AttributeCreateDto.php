@@ -31,6 +31,8 @@ final class AttributeCreateDto extends Data
         public readonly Optional|string $id,
         #[Max(255)]
         public readonly string $name,
+        #[Max(255)]
+        public readonly string $description,
         #[Max(255), AlphaDash, Unique('attributes')]
         public readonly string $slug,
         public readonly AttributeType $type,

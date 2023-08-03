@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\ProductAttribute\Dtos;
 
-use Illuminate\Support\Optional;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Optional;
 
 final class AttributeIndexDto extends Data
 {

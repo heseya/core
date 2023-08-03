@@ -109,14 +109,14 @@ final class Exceptions extends Enum
 
     public const CLIENT_OPTION_NOT_RELATED_TO_ATTRIBUTE = 'Option is not related to provided attribute';
 
+    public const CLIENT_CANNOT_DELETE_MODEL = 'Cannot delete model';
+
     public const SERVER_CDN_ERROR = 'CDN responded with an error';
     public const SERVER_ERROR = 'Server responded with an error';
     public const SERVER_ORDER_STATUSES_NOT_CONFIGURED = 'Order statuses are not configured';
     public const SERVER_TRANSACTION_ERROR = 'Unexpected error occurred during the database transaction.';
     public const SERVER_PAYMENT_MICROSERVICE_ERROR = 'Payment service error.';
     public const SERVER_SHIPPING_TYPE_NO_VALIDATION = 'Validation is not implemented for selected shipping type';
-
-    public const SERVER_BAD_CONFIG_TYPE = 'Config var has bad type';
 
     public const ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE = 'Not every item is available';
     public const ORDER_SHIPPING_METHOD_TYPE_MISMATCH = 'Selected shipping methods don\'t match selected product types';

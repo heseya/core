@@ -98,6 +98,7 @@ use App\Services\UserLoginAttemptService;
 use App\Services\UserService;
 use App\Services\WebHookService;
 use App\Services\WishlistService;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -162,12 +163,17 @@ class AppServiceProvider extends ServiceProvider
             $this->app->bind($abstract, $concrete);
         }
 
+        Factory::guessFactoryNamesUsing(
+            /** @phpstan-ignore-next-line */
+            fn (string $modelName) => 'Database\\Factories\\' . class_basename($modelName) . 'Factory',
+        );
+
         /*
          * Local register of ide helper.
          * Needs to be full path.
          */
         if ($this->app->isLocal()) {
-            $this->app->register('\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider');
+            $this->app->register('Barryvdh\\LaravelIdeHelper\\IdeHelperServiceProvider');
         }
     }
 }

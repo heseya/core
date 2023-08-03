@@ -6,8 +6,6 @@ namespace Domain\ProductAttribute\Services;
 
 use App\Dtos\AttributeOptionDto;
 use App\Services\Contracts\MetadataServiceContract;
-use Domain\ProductAttribute\Enums\AttributeType;
-use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Heseya\Dto\Missing;
 
@@ -47,10 +45,6 @@ final readonly class AttributeOptionService
             $attributeOption = $this->create($attributeId, $dto);
         }
 
-        if ($attributeOption->attribute !== null) {
-            $this->updateMinMax($attributeOption->attribute);
-        }
-
         return $attributeOption;
     }
 
@@ -64,21 +58,5 @@ final readonly class AttributeOptionService
         AttributeOption::query()
             ->where('attribute_id', '=', $attributeId)
             ->delete();
-    }
-
-    // TODO: refactor this
-    private function updateMinMax(Attribute $attribute): void
-    {
-        if ($attribute->type === AttributeType::NUMBER) {
-            $attribute->refresh();
-            $attribute->min_number = $attribute->options->min('value_number');
-            $attribute->max_number = $attribute->options->max('value_number');
-            $attribute->save();
-        } elseif ($attribute->type === AttributeType::DATE) {
-            $attribute->refresh();
-            $attribute->min_date = $attribute->options->min('value_date');
-            $attribute->max_date = $attribute->options->max('value_date');
-            $attribute->save();
-        }
     }
 }

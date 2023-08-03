@@ -1,20 +1,24 @@
 <?php
 
-namespace App\Casts;
+declare(strict_types=1);
+
+namespace Domain\Metadata\Casts;
 
 use App\Enums\MetadataType;
 use App\Models\Metadata;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
 
-class MetadataValue implements CastsAttributes
+/** @phpstan-ignore-next-line */
+final readonly class MetadataValue implements CastsAttributes
 {
     /**
      * Cast the given value.
      *
      * @param Metadata $model
+     * @param array<string, mixed> $attributes
      */
-    public function get(Model $model, string $key, mixed $value, array $attributes): mixed
+    public function get(Model $model, string $key, mixed $value, array $attributes): bool|float|string
     {
         return match ($model->value_type->value) {
             MetadataType::BOOLEAN => (bool) $value,
@@ -23,6 +27,10 @@ class MetadataValue implements CastsAttributes
         };
     }
 
+    /**
+     * @param Metadata $model
+     * @param array<string, mixed> $attributes
+     */
     public function set(Model $model, string $key, mixed $value, array $attributes): mixed
     {
         return $value;

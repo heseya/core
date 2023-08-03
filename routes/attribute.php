@@ -16,7 +16,7 @@ Route::prefix('attributes')->group(function (): void {
         ->middleware('can:attributes.show');
     Route::patch('/id:{id}', [AttributeController::class, 'update'])
         ->middleware('can:attributes.edit');
-    Route::delete('/id:{id}', [AttributeController::class, 'destroy'])
+    Route::delete('/id:{attribute:id}', [AttributeController::class, 'destroy'])
         ->middleware('can:attributes.remove');
     Route::get('/id:{attribute:id}/options', [AttributeOptionController::class, 'index'])
         ->middleware('can:attributes.show');

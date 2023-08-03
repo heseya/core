@@ -15,23 +15,22 @@ final readonly class MetadataService
     /**
      * Get all metadata for given ids.
      *
-     * @param string[] $ids
-     *
-     * @return array<string, array<string, bool|float|int|string|null>>[]
+     * @return array<string, bool|float|int|string|null>[]
      */
-    public function getAll(array $ids, bool $with_private): array
+    public function getAll(string $id, bool $with_private): array
     {
-        $return = [];
+        $public = [];
+        $private = [];
 
-        foreach ($this->repository->getAll($ids, $with_private) as $metadata) {
+        foreach ($this->repository->getAll($id, $with_private) as $metadata) {
             if ($metadata->public) {
-                $return[$metadata->model_id]['public'][$metadata->name] = $metadata->value;
+                $public[$metadata->name] = $metadata->value;
             } else {
-                $return[$metadata->model_id]['private'][$metadata->name] = $metadata->value;
+                $private[$metadata->name] = $metadata->value;
             }
         }
 
-        return $return;
+        return [$public, $private];
     }
 
     /**

@@ -5,29 +5,27 @@ declare(strict_types=1);
 namespace Domain\ProductAttribute\Repositories;
 
 use Domain\ProductAttribute\Dtos\AttributeCreateDto;
-use Domain\ProductAttribute\Dtos\AttributeDto;
 use Domain\ProductAttribute\Dtos\AttributeUpdateDto;
 use Domain\ProductAttribute\Models\Attribute;
 
 final readonly class AttributeRepository
 {
-    public function getOne(string $id): AttributeDto
+    public function getOne(string $id): Attribute
     {
-        return AttributeDto::from(
-            Attribute::query()->findOrFail($id),
-        );
+        return Attribute::query()->findOrFail($id);
     }
 
-    public function create(AttributeCreateDto $dto): AttributeDto
+    public function create(AttributeCreateDto $dto): Attribute
     {
-        return AttributeDto::from(
-            Attribute::query()->create($dto->toArray()),
-        );
+        return Attribute::query()->create($dto->toArray());
     }
 
-    public function update(string $id, AttributeUpdateDto $dto): void
+    /**
+     * Update given model, returns number of rows affected.
+     */
+    public function update(string $id, AttributeUpdateDto $dto): int
     {
-        Attribute::query()
+        return Attribute::query()
             ->where('id', '=', $id)
             ->update($dto->toArray());
     }

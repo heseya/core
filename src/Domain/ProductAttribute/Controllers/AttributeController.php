@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Domain\ProductAttribute\Controllers;
 
 use App\DTO\ReorderDto;
+use App\Exceptions\ClientException;
 use App\Http\Controllers\Controller;
 use App\Services\Contracts\ReorderServiceContract;
 use Domain\ProductAttribute\Dtos\AttributeCreateDto;
 use Domain\ProductAttribute\Dtos\AttributeIndexDto;
-use Domain\ProductAttribute\Dtos\AttributeResponseDto;
 use Domain\ProductAttribute\Dtos\AttributeUpdateDto;
 use Domain\ProductAttribute\Dtos\FiltersDto;
 use Domain\ProductAttribute\Models\Attribute;
@@ -27,7 +27,6 @@ final class AttributeController extends Controller
         private readonly ReorderServiceContract $reorderService,
     ) {}
 
-    // TODO: refactor this
     public function index(AttributeIndexDto $dto): JsonResource
     {
         return AttributeResource::collection(
@@ -38,7 +37,6 @@ final class AttributeController extends Controller
         );
     }
 
-    // TODO: refactor this
     public function filters(FiltersDto $dto): JsonResource
     {
         return AttributeResource::collection(
@@ -54,24 +52,35 @@ final class AttributeController extends Controller
         );
     }
 
-    public function show(string $id): AttributeResponseDto
+    public function show(string $id): JsonResource
     {
-        return $this->attributeService->show($id);
+        return AttributeResource::make(
+            $this->attributeService->show($id),
+        );
     }
 
-    public function store(AttributeCreateDto $dto): AttributeResponseDto
+    public function store(AttributeCreateDto $dto): JsonResource
     {
-        return $this->attributeService->create($dto);
+        return AttributeResource::make(
+            $this->attributeService->create($dto),
+        );
     }
 
-    public function update(string $id, AttributeUpdateDto $dto): AttributeResponseDto
+    /**
+     * @throws ClientException
+     */
+    public function update(string $id, AttributeUpdateDto $dto): JsonResource
     {
-        return $this->attributeService->update($id, $dto);
+        $this->attributeService->update($id, $dto);
+
+        return AttributeResource::make(
+            $this->attributeService->show($id),
+        );
     }
 
-    public function destroy(string $id): HttpResponse
+    public function destroy(Attribute $attribute): HttpResponse
     {
-        $this->attributeService->delete($id);
+        $this->attributeService->delete($attribute->getKey());
 
         return Response::noContent();
     }

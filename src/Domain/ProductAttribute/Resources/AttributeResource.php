@@ -29,7 +29,7 @@ final class AttributeResource extends Resource
         };
 
         return array_merge([
-            'id' => $this->resource->getKey(),
+            'id' => $this->resource->id,
             'name' => $this->resource->name,
             'slug' => $this->resource->slug,
             'description' => $this->resource->description,

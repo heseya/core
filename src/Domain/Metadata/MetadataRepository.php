@@ -12,14 +12,12 @@ use Spatie\LaravelData\DataCollection;
 final readonly class MetadataRepository
 {
     /**
-     * @param string[] $ids
-     *
      * @return DataCollection<int, MetadataDto>
      */
-    public function getAll(array $ids, bool $with_private): DataCollection
+    public function getAll(string $id, bool $with_private): DataCollection
     {
         $query = Metadata::query()
-            ->whereIn('model_id', $ids);
+            ->where('model_id', '=', $id);
 
         if (!$with_private) {
             $query->where('public', '=', true);
@@ -35,8 +33,8 @@ final readonly class MetadataRepository
     {
         Metadata::query()->updateOrCreate([
             'name' => $dto->name,
-            'model_type' => $class,
             'model_id' => $id,
+            'model_type' => $class,
         ], $dto->toArray());
     }
 
