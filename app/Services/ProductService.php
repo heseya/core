@@ -2,9 +2,12 @@
 
 namespace App\Services;
 
+use App\Dtos\PriceDto;
 use App\Dtos\ProductCreateDto;
 use App\Dtos\ProductSearchDto;
 use App\Dtos\ProductUpdateDto;
+use App\Enums\Currency;
+use App\Enums\Product\ProductPriceType;
 use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
@@ -12,8 +15,11 @@ use App\Events\ProductPriceUpdated;
 use App\Events\ProductUpdated;
 use App\Exceptions\PublishingException;
 use App\Models\Option;
+use App\Models\Price;
 use App\Models\Product;
 use App\Models\Schema;
+use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Services\Contracts\AttributeServiceContract;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\MediaServiceContract;
@@ -22,6 +28,9 @@ use App\Services\Contracts\ProductServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
+use Brick\Math\Exception\MathException;
+use Brick\Money\Exception\MoneyMismatchException;
+use Heseya\Dto\DtoException;
 use Domain\ProductAttribute\Services\AttributeService;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -40,6 +49,7 @@ final readonly class ProductService implements ProductServiceContract
         private MetadataServiceContract $metadataService,
         private AttributeService $attributeService,
         private DiscountServiceContract $discountService,
+        private ProductRepositoryContract $productRepository,
         private TranslationServiceContract $translationService,
     ) {}
 
@@ -54,6 +64,162 @@ final readonly class ProductService implements ProductServiceContract
         }
 
         return $query->paginate(Config::get('pagination.per_page'));
+    }
+
+    /**
+     * @throws DtoException
+     * @throws PublishingException
+     */
+    public function create(ProductCreateDto $dto): Product
+    {
+        DB::beginTransaction();
+
+        $product = new Product($dto->toArray());
+
+        foreach ($dto->translations as $lang => $translations) {
+            $product->setLocale($lang)->fill($translations);
+        }
+
+        $this->translationService->checkPublished($product, ['name']);
+
+        $product->save();
+        $product = $this->setup($product, $dto);
+        $product->save();
+
+        DB::commit();
+
+        /** @var PriceDto $priceMin */
+        // @var PriceDto $priceMax
+        [[$priceMin], [$priceMax]] = $this->productRepository::getProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_MIN,
+            ProductPriceType::PRICE_MAX,
+        ]);
+
+        // TODO: Make this webhook with currencies
+        ProductPriceUpdated::dispatch(
+            $product->getKey(),
+            null,
+            null,
+            $priceMin->value,
+            $priceMax->value,
+        );
+        ProductCreated::dispatch($product);
+
+        return $product->refresh();
+    }
+
+    /**
+     * @throws MathException
+     * @throws DtoException
+     * @throws MoneyMismatchException
+     * @throws PublishingException
+     */
+    public function update(Product $product, ProductUpdateDto $dto): Product
+    {
+        $currency = Currency::DEFAULT;
+
+        /** @var PriceDto $oldPriceMin */
+        // @var PriceDto $oldPriceMax
+        [[$oldPriceMin], [$oldPriceMax]] = $this->productRepository::getProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_MIN,
+            ProductPriceType::PRICE_MAX,
+        ], $currency);
+
+        DB::beginTransaction();
+
+        $product->fill($dto->toArray());
+        foreach ($dto->translations as $lang => $translations) {
+            $product->setLocale($lang)->fill($translations);
+        }
+        $this->translationService->checkPublished($product, ['name']);
+
+        $product = $this->setup($product, $dto);
+        $product->save();
+        $product->refresh();
+
+        DB::commit();
+
+        /** @var PriceDto $priceMin */
+        // @var PriceDto $priceMax
+        [[$priceMin], [$priceMax]] = $this->productRepository::getProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_MIN,
+            ProductPriceType::PRICE_MAX,
+        ], $currency);
+
+        // TODO: This is just wrong
+        if (
+            !$oldPriceMin->value->isEqualTo($priceMin->value)
+            || !$oldPriceMax->value->isEqualTo($priceMax->value)
+        ) {
+            ProductPriceUpdated::dispatch(
+                $product->getKey(),
+                $oldPriceMin->value,
+                $oldPriceMax->value,
+                $priceMin->value,
+                $priceMax->value,
+            );
+        }
+
+        ProductUpdated::dispatch($product);
+
+        // fix for duplicated items in relation after recalculating availability
+        $product->unsetRelation('items');
+
+        return $product;
+    }
+
+    public function delete(Product $product): void
+    {
+        ProductDeleted::dispatch($product);
+
+        DB::beginTransaction();
+
+        $this->mediaService->sync($product, []);
+
+        $product->delete();
+
+        if ($product->seo !== null) {
+            $this->seoMetadataService->delete($product->seo);
+        }
+
+        DB::commit();
+    }
+
+    /**
+     * @return PriceDto[][]
+     */
+    public function getMinMaxPrices(Product $product): array
+    {
+        // TODO: Get schema prices for each currency
+        [$schemaMin, $schemaMax] = $this->getSchemasPrices(
+            clone $product->schemas,
+            clone $product->schemas,
+        );
+
+        /** @var PriceDto[] $pricesMin */
+        $pricesMin = $product->pricesBase->map(
+            /** @phpstan-ignore-next-line  */
+            fn (Price $price) => new PriceDto($price->value->plus($schemaMin)),
+        )->toArray();
+
+        /** @var PriceDto[] $pricesMax */
+        $pricesMax = $product->pricesBase->map(
+            /** @phpstan-ignore-next-line  */
+            fn (Price $price) => new PriceDto($price->value->plus($schemaMax)),
+        )->toArray();
+
+        return [$pricesMin, $pricesMax];
+    }
+
+    public function updateMinMaxPrices(Product $product): void
+    {
+        [$pricesMin, $pricesMax] = $this->getMinMaxPrices($product);
+
+        $this->productRepository->setProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_MIN_INITIAL->value => $pricesMin,
+            ProductPriceType::PRICE_MAX_INITIAL->value => $pricesMax,
+        ]);
+        $this->discountService->applyDiscountsOnProduct($product);
     }
 
     private function setup(Product $product, ProductCreateDto|ProductUpdateDto $dto): Product
@@ -98,128 +264,27 @@ final readonly class ProductService implements ProductServiceContract
             $product->relatedSets()->sync($dto->relatedSets);
         }
 
-        [$priceMin, $priceMax] = $this->getMinMaxPrices($product);
-        $product->price_min_initial = $priceMin;
-        $product->price_max_initial = $priceMax;
+        $this->productRepository->setProductPrices($product->getKey(), [
+            'price_base' => $dto->prices_base,
+        ]);
+
+        [$pricesMin, $pricesMax] = $this->getMinMaxPrices($product);
+
+        // TODO: Need to calc schema prices for each currency
+        $this->productRepository->setProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_MIN_INITIAL->value => $pricesMin,
+            ProductPriceType::PRICE_MAX_INITIAL->value => $pricesMax,
+        ]);
+
         $availability = $this->availabilityService->getCalculateProductAvailability($product);
         $product->quantity = $availability['quantity'];
         $product->available = $availability['available'];
         $product->shipping_time = $availability['shipping_time'];
         $product->shipping_date = $availability['shipping_date'];
+
         $this->discountService->applyDiscountsOnProduct($product);
 
         return $product;
-    }
-
-    /**
-     * @throws PublishingException
-     */
-    public function create(ProductCreateDto $dto): Product
-    {
-        DB::beginTransaction();
-
-        $product = new Product($dto->toArray());
-
-        foreach ($dto->translations as $lang => $translations) {
-            $product->setLocale($lang)->fill($translations);
-        }
-
-        $this->translationService->checkPublished($product, ['name']);
-
-        $product->save();
-        $product = $this->setup($product, $dto);
-        $product->save();
-
-        DB::commit();
-        ProductPriceUpdated::dispatch(
-            $product->getKey(),
-            null,
-            null,
-            $product->price_min ?? 0,
-            $product->price_max ?? 0,
-        );
-        ProductCreated::dispatch($product);
-
-        return $product->refresh();
-    }
-
-    /**
-     * @throws PublishingException
-     */
-    public function update(Product $product, ProductUpdateDto $dto): Product
-    {
-        $oldMinPrice = $product->price_min;
-        $oldMaxPrice = $product->price_max;
-
-        DB::beginTransaction();
-
-        $product->fill($dto->toArray());
-        foreach ($dto->translations as $lang => $translations) {
-            $product->setLocale($lang)->fill($translations);
-        }
-        $this->translationService->checkPublished($product, ['name']);
-
-        $product = $this->setup($product, $dto);
-        $product->save();
-
-        DB::commit();
-
-        if ($oldMinPrice !== $product->price_min || $oldMaxPrice !== $product->price_max) {
-            ProductPriceUpdated::dispatch(
-                $product->getKey(),
-                $oldMinPrice,
-                $oldMaxPrice,
-                $product->price_min ?? 0,
-                $product->price_max ?? 0,
-            );
-        }
-
-        ProductUpdated::dispatch($product);
-
-        // fix for duplicated items in relation after recalculating availability
-        $product->unsetRelation('items');
-
-        return $product;
-    }
-
-    public function delete(Product $product): void
-    {
-        ProductDeleted::dispatch($product);
-
-        DB::beginTransaction();
-
-        $this->mediaService->sync($product, []);
-
-        $product->delete();
-
-        if ($product->seo !== null) {
-            $this->seoMetadataService->delete($product->seo);
-        }
-
-        DB::commit();
-    }
-
-    public function getMinMaxPrices(Product $product): array
-    {
-        [$schemaMin, $schemaMax] = $this->getSchemasPrices(
-            clone $product->schemas,
-            clone $product->schemas,
-        );
-
-        return [
-            $product->price + $schemaMin,
-            $product->price + $schemaMax,
-        ];
-    }
-
-    public function updateMinMaxPrices(Product $product): void
-    {
-        $productMinMaxPrices = $this->getMinMaxPrices($product);
-        $product->update([
-            'price_min_initial' => $productMinMaxPrices[0],
-            'price_max_initial' => $productMinMaxPrices[1],
-        ]);
-        $this->discountService->applyDiscountsOnProduct($product);
     }
 
     private function assignItems(Product $product, ?array $items): void
@@ -233,6 +298,9 @@ final readonly class ProductService implements ProductServiceContract
         $product->items()->sync($items);
     }
 
+    /**
+     * @return float[]
+     */
     private function getSchemasPrices(
         Collection $allSchemas,
         Collection $remainingSchemas,
@@ -286,6 +354,9 @@ final readonly class ProductService implements ProductServiceContract
         return $minmax;
     }
 
+    /**
+     * @return float[]
+     */
     private function getBestSchemasPrices(
         Collection $allSchemas,
         Collection $remainingSchemas,
@@ -304,23 +375,27 @@ final readonly class ProductService implements ProductServiceContract
         ));
     }
 
+    /**
+     * @return float[]
+     */
     private function bestMinMax(Collection $minmaxCol): array
     {
-        return [
-            $minmaxCol->reduce(function (?float $carry, array $current) {
-                if ($carry === null) {
-                    return $current[0];
-                }
+        $bestMin = $minmaxCol->reduce(function (?float $carry, array $current) {
+            if ($carry === null) {
+                return $current[0];
+            }
 
-                return min($current[0], $carry);
-            }),
-            $minmaxCol->reduce(function (?float $carry, array $current) {
-                if ($carry === null) {
-                    return $current[1];
-                }
+            return min($current[0], $carry);
+        }) ?? 0;
 
-                return max($current[1], $carry);
-            }),
-        ];
+        $bestMax = $minmaxCol->reduce(function (?float $carry, array $current) {
+            if ($carry === null) {
+                return $current[1];
+            }
+
+            return max($current[1], $carry);
+        }) ?? $bestMin;
+
+        return [$bestMin, $bestMax];
     }
 }

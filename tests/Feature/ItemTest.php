@@ -321,14 +321,12 @@ class ItemTest extends TestCase
         $product1 = Product::factory()->create(['public' => true]);
         $product1->items()->attach([$this->item->getKey() => [
             'required_quantity' => 1,
-        ],
-        ]);
+        ]]);
 
         $product2 = Product::factory()->create(['public' => true]);
         $product2->items()->attach([$this->item->getKey() => [
             'required_quantity' => 1,
-        ],
-        ]);
+        ]]);
 
         $this
             ->actingAs($this->{$user})
@@ -345,7 +343,7 @@ class ItemTest extends TestCase
                 'name' => $product2->name,
             ]);
 
-        $this->assertQueryCountLessThan(11);
+        $this->assertQueryCountLessThan(17);
     }
 
     /**

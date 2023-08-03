@@ -88,6 +88,7 @@ class AttributeSearch implements Rule
     private function validateOptions(mixed $value): bool
     {
         if (!is_array($value)) {
+            /** @var string $value */
             $value = Str::replace('%2C', ',', $value);
             $value = explode(',', $value);
         }

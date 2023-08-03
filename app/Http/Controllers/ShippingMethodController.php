@@ -11,6 +11,10 @@ use App\Http\Requests\ShippingMethodUpdateRequest;
 use App\Http\Resources\ShippingMethodResource;
 use App\Models\ShippingMethod;
 use App\Services\Contracts\ShippingMethodServiceContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
@@ -21,12 +25,22 @@ class ShippingMethodController extends Controller
         private readonly ShippingMethodServiceContract $shippingMethodService,
     ) {}
 
+    /**
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     */
     public function index(ShippingMethodIndexRequest $request): JsonResource
     {
+        $cartTotal = $request->input('cart_value') ? Money::of(
+            $request->input('cart_value.value'),
+            $request->input('cart_value.currency'),
+        ) : null;
+
         $shippingMethods = $this->shippingMethodService->index(
             $request->only('metadata', 'metadata_private', 'ids'),
             $request->input('country'),
-            $request->input('cart_value', 0),
+            $cartTotal,
         );
 
         return ShippingMethodResource::collection($shippingMethods);

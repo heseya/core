@@ -4,6 +4,9 @@ namespace App\Dtos;
 
 use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Traits\MapMetadata;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
 use Heseya\Dto\Dto;
 use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
@@ -16,41 +19,50 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
     public function __construct(
         readonly public array $translations,
         readonly public array $published,
-        readonly public Missing|string $id,
         readonly public string $slug,
-        readonly public float $price,
+        /** @var PriceDto[] */
+        readonly public array $prices_base,
         readonly public bool $public,
         readonly public bool $shipping_digital,
-        readonly public int|Missing $order,
-        readonly public float|Missing $quantity_step,
-        readonly public int|Missing|null $google_product_category,
-        readonly public float|Missing $vat_rate,
-        readonly public float|Missing|null $purchase_limit_per_user,
-        readonly public array|Missing $media,
-        readonly public array|Missing $tags,
-        readonly public array|Missing $schemas,
-        readonly public array|Missing $sets,
-        readonly public array|Missing $items,
-        readonly public Missing|SeoMetadataDto $seo,
-        readonly public array|Missing $metadata,
-        readonly public array|Missing $attributes,
-        readonly public array|Missing $descriptions,
-        readonly public array|Missing $relatedSets,
+        readonly public Missing|string $id = new Missing(),
+        readonly public int|Missing $order = new Missing(),
+        readonly public float|Missing $quantity_step = new Missing(),
+        readonly public int|Missing|null $google_product_category = new Missing(),
+        readonly public float|Missing $vat_rate = new Missing(),
+        readonly public float|Missing|null $purchase_limit_per_user = new Missing(),
+        readonly public array|Missing $media = new Missing(),
+        readonly public array|Missing $tags = new Missing(),
+        readonly public array|Missing $schemas = new Missing(),
+        readonly public array|Missing $sets = new Missing(),
+        readonly public array|Missing $items = new Missing(),
+        readonly public Missing|SeoMetadataDto $seo = new Missing(),
+        readonly public array|Missing $metadata = new Missing(),
+        readonly public array|Missing $attributes = new Missing(),
+        readonly public array|Missing $descriptions = new Missing(),
+        readonly public array|Missing $relatedSets = new Missing(),
     ) {}
 
     /**
      * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public static function instantiateFromRequest(FormRequest $request): self
     {
+        $prices_base = array_map(
+            fn ($data) => PriceDto::fromData(...$data),
+            $request->input('prices_base'),
+        );
+
         return new self(
             translations: $request->input('translations', []),
             published: $request->input('published', []),
-            id: $request->input('id') ?? new Missing(),
             slug: $request->input('slug'),
-            price: $request->input('price'),
+            prices_base: $prices_base,
             public: $request->boolean('public'),
             shipping_digital: $request->boolean('shipping_digital'),
+            id: $request->input('id') ?? new Missing(),
             order: $request->input('order') ?? new Missing(),
             quantity_step: $request->input('quantity_step') ?? new Missing(),
             google_product_category: $request->input('google_product_category', new Missing()),

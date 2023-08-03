@@ -117,6 +117,7 @@ final class Exceptions extends Enum
     public const SERVER_TRANSACTION_ERROR = 'Unexpected error occurred during the database transaction.';
     public const SERVER_PAYMENT_MICROSERVICE_ERROR = 'Payment service error.';
     public const SERVER_SHIPPING_TYPE_NO_VALIDATION = 'Validation is not implemented for selected shipping type';
+    public const SERVER_NO_PRICE_MATCHING_CRITERIA = 'No price exists matching the given criteria';
 
     public const ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE = 'Not every item is available';
     public const ORDER_SHIPPING_METHOD_TYPE_MISMATCH = 'Selected shipping methods don\'t match selected product types';

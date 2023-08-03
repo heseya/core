@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Enums\Currency;
 use App\Models\Address;
 use App\Models\App;
 use App\Models\Deposit;
@@ -28,6 +29,10 @@ use App\Models\Status;
 use App\Models\Tag;
 use App\Models\Token;
 use App\Models\User;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -172,21 +177,35 @@ class TimeFormatTest extends TestCase
         $this->modelTimeFormat($permission, ['created_at', 'updated_at']);
     }
 
+    /**
+     * @throws UnknownCurrencyException
+     * @throws RoundingNecessaryException
+     * @throws NumberFormatException
+     */
     public function testPriceTimeFormat(): void
     {
         $price = Price::query()->create([
             'model_id' => 'model_id',
             'model_type' => 'model_type',
-            'value' => 10,
+            'price_type' => '',
+            'value' => Money::of(10, Currency::DEFAULT->value),
         ]);
 
         $this->modelTimeFormat($price, ['created_at', 'updated_at']);
     }
 
+    /**
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     */
     public function testPriceRangeTimeFormat(): void
     {
+        $currency = Currency::DEFAULT->value;
+
         $priceRange = PriceRange::query()->create([
-            'start' => 0,
+            'start' => Money::zero($currency),
+            'value' => Money::of(10, $currency),
         ]);
 
         $this->modelTimeFormat($priceRange, ['created_at', 'updated_at']);

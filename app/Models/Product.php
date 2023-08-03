@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use App\Criteria\LessOrEquals;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
-use App\Criteria\MoreOrEquals;
+use App\Criteria\PriceMaxCap;
+use App\Criteria\PriceMinCap;
 use App\Criteria\ProductAttributeSearch;
 use App\Criteria\ProductNotAttributeSearch;
 use App\Criteria\ProductSearch;
@@ -19,6 +19,7 @@ use App\Criteria\WhereInIds;
 use App\Criteria\WhereNotId;
 use App\Criteria\WhereNotSlug;
 use App\Enums\DiscountTargetType;
+use App\Enums\Product\ProductPriceType;
 use App\Models\Contracts\SeoContract;
 use App\Models\Contracts\SortableContract;
 use App\Models\Interfaces\Translatable;
@@ -36,6 +37,7 @@ use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Spatie\Translatable\HasTranslations;
@@ -65,19 +67,14 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'id',
         'name',
         'slug',
-        'price',
         'description_html',
         'description_short',
         'public',
         'quantity_step',
         'google_product_category',
         'vat_rate',
-        'price_min',
-        'price_max',
         'available',
         'order',
-        'price_min_initial',
-        'price_max_initial',
         'shipping_time',
         'shipping_date',
         'has_schemas',
@@ -95,7 +92,6 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
 
     protected $casts = [
         'shipping_date' => 'date',
-        'price' => 'float',
         'public' => 'bool',
         'available' => 'bool',
         'quantity_step' => 'float',
@@ -109,17 +105,18 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
 
     protected array $sortable = [
         'id',
-        'price',
         'name' => TranslatedColumn::class,
         'created_at',
         'updated_at',
         'order',
         'public',
         'available',
-        'price_min',
-        'price_max',
         'attribute.*',
         'set.*',
+
+        //        'price',
+        //        'price_min',
+        //        'price_max',
     ];
 
     protected array $criteria = [
@@ -135,14 +132,14 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'tags_not' => WhereNotId::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
-        'price_max' => LessOrEquals::class,
-        'price_min' => MoreOrEquals::class,
         'attribute' => ProductAttributeSearch::class,
         'attribute_not' => ProductNotAttributeSearch::class,
         'has_cover' => WhereHasPhoto::class,
         'has_items' => WhereHasItems::class,
         'has_schemas' => WhereHasSchemas::class,
         'shipping_digital' => Equals::class,
+        'price_min' => PriceMinCap::class,
+        'price_max' => PriceMaxCap::class,
     ];
 
     protected string $defaultSortBy = 'products.order';
@@ -275,5 +272,35 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         $sales = $sales->diff($productSetSales->where('target_is_allow_list', false));
 
         return $sales->unique('id');
+    }
+
+    private function prices(): MorphMany
+    {
+        return $this->morphMany(Price::class, 'model');
+    }
+
+    public function pricesBase(): MorphMany
+    {
+        return $this->prices()->where('price_type', ProductPriceType::PRICE_BASE->value);
+    }
+
+    public function pricesMin(): MorphMany
+    {
+        return $this->prices()->where('price_type', ProductPriceType::PRICE_MIN->value);
+    }
+
+    public function pricesMax(): MorphMany
+    {
+        return $this->prices()->where('price_type', ProductPriceType::PRICE_MAX->value);
+    }
+
+    public function pricesMinInitial(): MorphMany
+    {
+        return $this->prices()->where('price_type', ProductPriceType::PRICE_MIN_INITIAL->value);
+    }
+
+    public function pricesMaxInitial(): MorphMany
+    {
+        return $this->prices()->where('price_type', ProductPriceType::PRICE_MAX_INITIAL->value);
     }
 }
