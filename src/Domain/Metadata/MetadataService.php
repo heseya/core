@@ -13,18 +13,17 @@ final readonly class MetadataService
     ) {}
 
     /**
-     * Get all metadata for given model.
+     * Get all metadata for given ids.
      *
-     * @param class-string $class
      * @param string[] $ids
      *
      * @return array<string, array<string, bool|float|int|string|null>>[]
      */
-    public function getAll(string $class, array $ids, bool $with_private): array
+    public function getAll(array $ids, bool $with_private): array
     {
         $return = [];
 
-        foreach ($this->repository->getAll($class, $ids, $with_private) as $metadata) {
+        foreach ($this->repository->getAll($ids, $with_private) as $metadata) {
             if ($metadata->public) {
                 $return[$metadata->model_id]['public'][$metadata->name] = $metadata->value;
             } else {
@@ -52,7 +51,7 @@ final readonly class MetadataService
     private function processMetadata(string $class, string $id, MetadataUpdateDto $dto): void
     {
         if ($dto->value === null) {
-            $this->repository->delete($class, $id, $dto->name);
+            $this->repository->delete($id, $dto->name);
 
             return;
         }

@@ -30,7 +30,6 @@ final readonly class AttributeService
         $attribute = $this->repository->getOne($id);
 
         [$metadata] = $this->metadataService->getAll(
-            Attribute::class,
             [$id],
             Gate::allows('attributes.show_metadata_private'),
         );
@@ -47,7 +46,6 @@ final readonly class AttributeService
         }
 
         [$metadata] = $this->metadataService->getAll(
-            Attribute::class,
             [$attribute->id],
             Gate::allows('attributes.show_metadata_private'),
         );
@@ -99,21 +97,5 @@ final readonly class AttributeService
         $product->attributes()->get()->each(
             fn (Attribute $attribute) => $attribute->pivot->options()->sync($data[$attribute->getKey()])
         );
-    }
-
-    // TODO: refactor this
-    public function updateMinMax(Attribute $attribute): void
-    {
-        if ($attribute->type === AttributeType::NUMBER) {
-            $attribute->refresh();
-            $attribute->min_number = $attribute->options->min('value_number');
-            $attribute->max_number = $attribute->options->max('value_number');
-            $attribute->save();
-        } elseif ($attribute->type === AttributeType::DATE) {
-            $attribute->refresh();
-            $attribute->min_date = $attribute->options->min('value_date');
-            $attribute->max_date = $attribute->options->max('value_date');
-            $attribute->save();
-        }
     }
 }
