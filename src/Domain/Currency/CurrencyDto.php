@@ -1,6 +1,8 @@
 <?php
 
-namespace Domains\Currency;
+declare(strict_types=1);
+
+namespace Domain\Currency;
 
 use Spatie\LaravelData\Data;
 

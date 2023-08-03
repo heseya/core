@@ -1,6 +1,8 @@
 <?php
 
-namespace Domains\Support;
+declare(strict_types=1);
+
+namespace Support;
 
 use App\Http\Resources\LanguageResource;
 use App\Http\Resources\SeoMetadataResource;

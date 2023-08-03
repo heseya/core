@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Domains\Currency;
+namespace Domain\Currency;
 
 use App\Http\Controllers\Controller;
 use Brick\Money\Exception\UnknownCurrencyException;
-use Domains\Support\ResourceDto;
+use Support\ResourceDto;
 
 class CurrencyController extends Controller
 {
