@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\ProductRepository;
 use App\Services\AnalyticsService;
 use App\Services\AppService;
 use App\Services\AuthService;
@@ -152,6 +154,9 @@ class AppServiceProvider extends ServiceProvider
         PriceServiceContract::class => PriceService::class,
         MediaAttachmentServiceContract::class => MediaAttachmentService::class,
         SilverboxServiceContract::class => SilverboxService::class,
+
+        // Repositories
+        ProductRepositoryContract::class => ProductRepository::class,
     ];
 
     /**
