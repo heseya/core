@@ -38,7 +38,7 @@ class AvailabilityService implements AvailabilityServiceContract
 
         // Schemas
         $schemas = Schema::query()
-            ->where('type', SchemaType::SELECT)
+            ->where('type', SchemaType::SELECT->value)
             ->whereIn('id', $options->pluck('schema_id'))
             ->get();
         $schemas->each(fn (Schema $schema) => $this->calculateSchemaAvailability($schema));
@@ -153,7 +153,7 @@ class AvailabilityService implements AvailabilityServiceContract
      */
     public function getCalculateSchemaAvailability(Schema $schema): array
     {
-        if ($schema->type->isNot(SchemaType::SELECT)) {
+        if ($schema->type !== SchemaType::SELECT) {
             return [
                 'available' => true,
                 'shipping_time' => null,
@@ -386,7 +386,7 @@ class AvailabilityService implements AvailabilityServiceContract
     {
         return $product
             ->requiredSchemas()
-            ->where('type', SchemaType::SELECT)
+            ->where('type', SchemaType::SELECT->value)
             ->whereHas('options', fn (Builder $query) => $query->whereHas('items'))
             ->with('options.items')
             ->get();
@@ -429,8 +429,8 @@ class AvailabilityService implements AvailabilityServiceContract
         }
 
         if ($shippingDate1 === null || ($shippingDate1 instanceof Carbon
-                && ((!$isAfter && $shippingDate1->isBefore($shippingDate2))
-                    || ($isAfter && $shippingDate1->isAfter($shippingDate2))))) {
+            && ((!$isAfter && $shippingDate1->isBefore($shippingDate2))
+                || ($isAfter && $shippingDate1->isAfter($shippingDate2))))) {
             return $shippingDate2;
         }
 

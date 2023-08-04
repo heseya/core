@@ -9,7 +9,7 @@ class AddOwnerToUsers extends Migration
 {
     public function up(): void
     {
-        $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
+        $owner = Role::where('type', RoleType::OWNER->value)->firstOrFail();
 
         foreach (User::all() as $user) {
             $user->assignRole($owner);

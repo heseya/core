@@ -143,7 +143,7 @@ class ProviderService implements ProviderServiceContract
             ]);
 
             /** @var Role $authenticated */
-            $authenticated = Role::where('type', RoleType::AUTHENTICATED)->first();
+            $authenticated = Role::where('type', RoleType::AUTHENTICATED->value)->first();
             $newUser->syncRoles($authenticated);
 
             $data = $this->authService->loginWithUser(

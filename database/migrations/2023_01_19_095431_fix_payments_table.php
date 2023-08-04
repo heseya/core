@@ -40,15 +40,15 @@ return new class extends Migration {
         });
 
         Payment::query()
-            ->where('status', PaymentStatus::PENDING)
+            ->where('status', PaymentStatus::PENDING->value)
             ->update(['paid' => false]);
 
         Payment::query()
-            ->where('status', PaymentStatus::FAILED)
+            ->where('status', PaymentStatus::FAILED->value)
             ->update(['paid' => false]);
 
         Payment::query()
-            ->where('status', PaymentStatus::SUCCESSFUL)
+            ->where('status', PaymentStatus::SUCCESSFUL->value)
             ->update(['paid' => true]);
     }
 };

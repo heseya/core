@@ -10,6 +10,7 @@ use App\Criteria\RolesSearch;
 use App\Criteria\UserSearch;
 use App\Criteria\WhereInIds;
 use App\Enums\SavedAddressType;
+use App\Enums\TFAType;
 use App\Models\Contracts\SortableContract;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasMetadata;
@@ -99,6 +100,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
     protected $casts = [
         'is_tfa_active' => 'bool',
+        'tfa_type' => TFAType::class,
     ];
 
     /**
@@ -128,13 +130,13 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     public function shippingAddresses(): HasMany
     {
         return $this->hasMany(SavedAddress::class)
-            ->where('type', '=', SavedAddressType::SHIPPING);
+            ->where('type', '=', SavedAddressType::SHIPPING->value);
     }
 
     public function billingAddresses(): HasMany
     {
         return $this->hasMany(SavedAddress::class)
-            ->where('type', '=', SavedAddressType::BILLING);
+            ->where('type', '=', SavedAddressType::BILLING->value);
     }
 
     public function orders(): MorphMany

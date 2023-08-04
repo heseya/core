@@ -23,7 +23,7 @@ class UserCreateRequest extends FormRequest
             'roles' => ['array'],
             'roles.*' => [
                 'uuid',
-                Rule::exists('roles', 'id')->where(fn ($query) => $query->whereNotIn('type', [RoleType::AUTHENTICATED, RoleType::UNAUTHENTICATED])),
+                Rule::exists('roles', 'id')->where(fn ($query) => $query->whereNotIn('type', [RoleType::AUTHENTICATED->value, RoleType::UNAUTHENTICATED->value])),
             ],
             'birthday_date' => ['date', 'before_or_equal:now'],
             'phone' => ['phone:AUTO'],

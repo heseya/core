@@ -45,7 +45,7 @@ final class ShippingPlaceValidation implements DataAwareRule, ValidationRule
         /** @var ShippingMethod $shippingMethod */
         $shippingMethod = ShippingMethod::query()->findOr(
             $this->data['shipping_method_id'],
-            fn () => $fail(Exceptions::CLIENT_SHIPPING_METHOD_NOT_EXISTS),
+            fn () => $fail(Exceptions::CLIENT_SHIPPING_METHOD_NOT_EXISTS->value),
         );
 
         match ($shippingMethod->shipping_type) {

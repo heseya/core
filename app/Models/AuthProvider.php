@@ -2,9 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\AuthProviderKey;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
+ * @property AuthProviderKey $key;
+ *
  * @mixin IdeHelperAuthProvider
  */
 class AuthProvider extends Model
@@ -22,5 +25,6 @@ class AuthProvider extends Model
 
     protected $casts = [
         'active' => 'boolean',
+        'key' => AuthProviderKey::class,
     ];
 }

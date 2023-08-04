@@ -20,7 +20,7 @@ class DiscountConditionModelTest extends TestCase
     public static function conditionsProvider(): array
     {
         return [
-            ConditionType::ORDER_VALUE => [
+            ConditionType::ORDER_VALUE->value => [
                 ConditionType::ORDER_VALUE,
                 [
                     'min_value' => 20,
@@ -29,7 +29,7 @@ class DiscountConditionModelTest extends TestCase
                     'is_in_range' => false,
                 ],
             ],
-            ConditionType::DATE_BETWEEN => [
+            ConditionType::DATE_BETWEEN->value => [
                 ConditionType::DATE_BETWEEN,
                 [
                     'start_at' => Carbon::yesterday()->toDateTimeString(),
@@ -37,7 +37,7 @@ class DiscountConditionModelTest extends TestCase
                     'is_in_range' => false,
                 ],
             ],
-            ConditionType::TIME_BETWEEN => [
+            ConditionType::TIME_BETWEEN->value => [
                 ConditionType::TIME_BETWEEN,
                 [
                     'start_at' => Carbon::now()->subHour()->toTimeString(),
@@ -45,19 +45,19 @@ class DiscountConditionModelTest extends TestCase
                     'is_in_range' => false,
                 ],
             ],
-            ConditionType::MAX_USES => [
+            ConditionType::MAX_USES->value => [
                 ConditionType::MAX_USES,
                 [
                     'max_uses' => 100,
                 ],
             ],
-            ConditionType::MAX_USES_PER_USER => [
+            ConditionType::MAX_USES_PER_USER->value => [
                 ConditionType::MAX_USES_PER_USER,
                 [
                     'max_uses' => 100,
                 ],
             ],
-            ConditionType::WEEKDAY_IN => [
+            ConditionType::WEEKDAY_IN->value => [
                 ConditionType::WEEKDAY_IN,
                 [
                     'weekday' => [true, false, false, true, true, false, false],

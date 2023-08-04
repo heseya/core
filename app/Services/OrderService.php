@@ -208,7 +208,7 @@ final readonly class OrderService implements OrderServiceContract
                         $schema = $product->schemas()->findOrFail($schemaId);
                         $price = $schema->getPrice($value, $item->getSchemas());
 
-                        if ($schema->type->is(SchemaType::SELECT)) {
+                        if ($schema->type === SchemaType::SELECT) {
                             /** @var Option $option */
                             $option = $schema->options()->findOrFail($value);
                             $tempSchemaOrderProduct[$schema->name . '_' . $item->getProductId()] = [$schemaId, $value];
@@ -301,7 +301,7 @@ final readonly class OrderService implements OrderServiceContract
                     ? $digitalShippingMethod->shipping_type : $order->digitalShippingMethod?->shipping_type;
             }
 
-            /** @var string $shippingType */
+            /** @var ShippingType $shippingType */
             if ($shippingType !== ShippingType::POINT) {
                 $shippingPlace = $dto->getShippingPlace() instanceof AddressDto ?
                     $this->modifyAddress(
@@ -460,11 +460,11 @@ final readonly class OrderService implements OrderServiceContract
         try {
             // Validate whether delivery methods are the proper type
             $shippingMethod = $dto->getShippingMethodId() instanceof Missing ? null :
-                ShippingMethod::whereNot('shipping_type', ShippingType::DIGITAL)
+                ShippingMethod::whereNot('shipping_type', ShippingType::DIGITAL->value)
                     ->findOrFail($dto->getShippingMethodId());
 
             $digitalShippingMethod = $dto->getDigitalShippingMethodId() instanceof Missing ? null :
-                ShippingMethod::where('shipping_type', ShippingType::DIGITAL)
+                ShippingMethod::where('shipping_type', ShippingType::DIGITAL->value)
                     ->findOrFail($dto->getDigitalShippingMethodId());
         } catch (Throwable $e) {
             throw new OrderException(Exceptions::CLIENT_SHIPPING_METHOD_INVALID_TYPE);
@@ -556,7 +556,7 @@ final readonly class OrderService implements OrderServiceContract
 
     private function resolveShippingAddress(
         Address|Missing|string|null $shippingPlace,
-        string $shippingType,
+        ShippingType $shippingType,
         Order $order
     ): ?string {
         if ($shippingPlace instanceof Missing) {
@@ -587,7 +587,7 @@ final readonly class OrderService implements OrderServiceContract
 
     private function resolveShippingPlace(
         Address|Missing|string|null $shippingPlace,
-        string $shippingType,
+        ShippingType $shippingType,
         Order $order
     ): ?string {
         if ($shippingPlace instanceof Missing) {

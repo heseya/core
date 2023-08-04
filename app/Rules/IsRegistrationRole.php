@@ -16,10 +16,10 @@ final readonly class IsRegistrationRole implements ValidationRule
             !Role::query()
                 ->where('id', '=', $value)
                 ->where('is_registration_role', '=', true)
-                ->where('type', '=', RoleType::REGULAR)
+                ->where('type', '=', RoleType::REGULAR->value)
                 ->exists()
         ) {
-            $fail(Exceptions::CLIENT_REGISTER_WITH_NON_REGISTRATION_ROLE);
+            $fail(Exceptions::CLIENT_REGISTER_WITH_NON_REGISTRATION_ROLE->value);
         }
     }
 }

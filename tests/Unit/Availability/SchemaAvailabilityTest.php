@@ -16,9 +16,9 @@ class SchemaAvailabilityTest extends TestCase
      */
     public static function schemaTypesProvider(): array
     {
-        return Collection::make(SchemaType::getValues())
+        return Collection::make(SchemaType::cases())
             ->where(fn ($type) => $type !== SchemaType::SELECT)
-            ->mapWithKeys(fn ($type) => [SchemaType::getKey($type) => [$type]])
+            ->mapWithKeys(fn ($type) => [$type->name => [$type->value]])
             ->all();
     }
 
@@ -71,15 +71,17 @@ class SchemaAvailabilityTest extends TestCase
     public function testOptionsWithShippingTime(): void
     {
         $options = [
-            $this->createOption([[
-                'quantity' => 1,
-                'shipping_time' => 1,
-            ],
+            $this->createOption([
+                [
+                    'quantity' => 1,
+                    'shipping_time' => 1,
+                ],
             ]),
-            $this->createOption([[
-                'quantity' => 1,
-                'shipping_time' => 2,
-            ],
+            $this->createOption([
+                [
+                    'quantity' => 1,
+                    'shipping_time' => 2,
+                ],
             ]),
         ];
 
@@ -99,15 +101,17 @@ class SchemaAvailabilityTest extends TestCase
         Carbon::setTestNow(Carbon::create(2022, 9, 1));
 
         $options = [
-            $this->createOption([[
-                'quantity' => 1,
-                'shipping_date' => '2022-10-10',
-            ],
+            $this->createOption([
+                [
+                    'quantity' => 1,
+                    'shipping_date' => '2022-10-10',
+                ],
             ]),
-            $this->createOption([[
-                'quantity' => 1,
-                'shipping_date' => '2022-10-20',
-            ],
+            $this->createOption([
+                [
+                    'quantity' => 1,
+                    'shipping_date' => '2022-10-20',
+                ],
             ]),
         ];
 

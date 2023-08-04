@@ -2,11 +2,13 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
+use App\Enums\Traits\EnumTrait;
 
-final class PaymentStatus extends Enum
+enum PaymentStatus: string
 {
-    public const PENDING = 'pending';
-    public const FAILED = 'failed';
-    public const SUCCESSFUL = 'successful';
+    use EnumTrait;
+
+    case PENDING = 'pending';
+    case FAILED = 'failed';
+    case SUCCESSFUL = 'successful';
 }

@@ -55,7 +55,7 @@ class ShippingTimeDateService implements ShippingTimeDateServiceContract
             foreach ($cartItem->getSchemas() as $schemaId => $value) {
                 $schema = $product->schemas()->findOrFail($schemaId);
                 $optionValue = $schemas[$schema->getKey()] ?? null;
-                if ($optionValue === null || !$schema->type->is(SchemaType::SELECT)) {
+                if ($optionValue === null || $schema->type !== SchemaType::SELECT) {
                     continue;
                 }
                 $option = $schema->options()->find($optionValue);

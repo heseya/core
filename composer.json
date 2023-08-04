@@ -10,7 +10,6 @@
     "ext-json": "*",
     "ext-openssl": "*",
     "ext-soap": "*",
-    "bensampo/laravel-enum": "^v6.2.1",
     "brick/math": "^0.11.0",
     "brick/money": "^0.8.0",
     "guzzlehttp/guzzle": "^7.4",
@@ -168,6 +167,9 @@
     ],
     "test": [
       "@php artisan test --env=.env"
+    ],
+    "test-defects": [
+      "./vendor/bin/phpunit --stop-on-error --stop-on-incomplete --stop-on-failure --cache-result --order-by=defects,random"
     ]
   }
 }

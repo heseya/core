@@ -11,7 +11,7 @@ class AddSalesShowDetailsPermission extends Migration
     {
         Permission::create(['name' => 'sales.show_details', 'display_name' => 'Dostęp do szczegółów promocji']);
 
-        $owner = Role::where('type', RoleType::OWNER)->first();
+        $owner = Role::where('type', RoleType::OWNER->value)->first();
         $owner->givePermissionTo([
             'sales.show_details',
         ]);
@@ -20,7 +20,7 @@ class AddSalesShowDetailsPermission extends Migration
 
     public function down(): void
     {
-        $owner = Role::where('type', RoleType::OWNER)->first();
+        $owner = Role::where('type', RoleType::OWNER->value)->first();
         $owner->revokePermissionTo([
             'sales.show_details',
         ]);

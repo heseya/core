@@ -26,7 +26,7 @@ class WebHookNotification extends Notification
     public function toWebHook(mixed $notifiable): array
     {
         if ($notifiable->with_issuer) {
-            $this->data['issuer'] = match ($this->data['issuer_type']) {
+            $this->data['issuer'] = match (IssuerType::tryFrom($this->data['issuer_type'])) {
                 IssuerType::APP => AppIssuerResource::make($this->issuer)->resolve(),
                 IssuerType::USER => UserIssuerResource::make($this->issuer)->resolve(),
                 default => null,

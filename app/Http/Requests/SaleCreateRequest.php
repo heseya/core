@@ -7,9 +7,9 @@ use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Traits\MetadataRules;
 use App\Traits\SeoRules;
-use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class SaleCreateRequest extends FormRequest
 {
@@ -27,9 +27,9 @@ class SaleCreateRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:255'],
             'description_html' => ['nullable', 'string'],
             'value' => ['required', 'numeric', 'gte:0'],
-            'type' => ['required', new EnumValue(DiscountType::class, false)],
+            'type' => ['required', new Enum(DiscountType::class)],
             'priority' => ['required', 'integer'],
-            'target_type' => ['required', new EnumValue(DiscountTargetType::class, false)],
+            'target_type' => ['required', new Enum(DiscountTargetType::class)],
             'target_is_allow_list' => ['required', 'boolean'],
             'active' => ['boolean'],
 
@@ -38,7 +38,7 @@ class SaleCreateRequest extends FormRequest
 
             'condition_groups.*.conditions.*.type' => [
                 'required',
-                new EnumValue(ConditionType::class, false),
+                new Enum(ConditionType::class),
             ],
 
             'condition_groups.*.conditions.*.roles.*' => ['required', 'uuid', 'exists:roles,id'],
@@ -60,17 +60,19 @@ class SaleCreateRequest extends FormRequest
 
     public function withValidator(Validator $validator): void
     {
-        $validator->sometimes('value', ['max:100'], fn ($input, $item) => $input->type === DiscountType::PERCENTAGE);
+        $validator->sometimes('value', ['max:100'], fn ($input, $item) => DiscountType::tryFrom($input->type) === DiscountType::PERCENTAGE);
 
         $validator->sometimes(
             'condition_groups.*.conditions.*.max_uses',
             ['required', 'numeric'],
             function ($input, $item) {
-                return ConditionType::hasValue($item->type) && ConditionType::fromValue($item->type)
-                    ->in([
+                return in_array(
+                    ConditionType::tryFrom($item->type),
+                    [
                         ConditionType::MAX_USES,
                         ConditionType::MAX_USES_PER_USER,
-                    ]);
+                    ]
+                );
             }
         );
 
@@ -78,13 +80,15 @@ class SaleCreateRequest extends FormRequest
             'condition_groups.*.conditions.*.is_allow_list',
             ['required', 'boolean'],
             function ($input, $item) {
-                return ConditionType::hasValue($item->type) && ConditionType::fromValue($item->type)
-                    ->in([
+                return in_array(
+                    ConditionType::tryFrom($item->type),
+                    [
                         ConditionType::PRODUCT_IN,
                         ConditionType::PRODUCT_IN_SET,
                         ConditionType::USER_IN,
                         ConditionType::USER_IN_ROLE,
-                    ]);
+                    ]
+                );
             }
         );
 
@@ -92,12 +96,14 @@ class SaleCreateRequest extends FormRequest
             'condition_groups.*.conditions.*.is_in_range',
             ['required', 'boolean'],
             function ($input, $item) {
-                return ConditionType::hasValue($item->type) && ConditionType::fromValue($item->type)
-                    ->in([
+                return in_array(
+                    ConditionType::tryFrom($item->type),
+                    [
                         ConditionType::ORDER_VALUE,
                         ConditionType::DATE_BETWEEN,
                         ConditionType::TIME_BETWEEN,
-                    ]);
+                    ]
+                );
             }
         );
 
@@ -105,10 +111,12 @@ class SaleCreateRequest extends FormRequest
             'condition_groups.*.conditions.*.include_taxes',
             ['required', 'boolean'],
             function ($input, $item) {
-                return ConditionType::hasValue($item->type) && ConditionType::fromValue($item->type)
-                    ->in([
+                return in_array(
+                    ConditionType::tryFrom($item->type),
+                    [
                         ConditionType::ORDER_VALUE,
-                    ]);
+                    ]
+                );
             }
         );
 
@@ -116,10 +124,12 @@ class SaleCreateRequest extends FormRequest
             'condition_groups.*.conditions.*.min_value',
             ['required_without:condition_groups.*.conditions.*.max_value', 'numeric'],
             function ($input, $item) {
-                return ConditionType::hasValue($item->type) && ConditionType::fromValue($item->type)
-                    ->in([
+                return in_array(
+                    ConditionType::tryFrom($item->type),
+                    [
                         ConditionType::ORDER_VALUE,
-                    ]);
+                    ]
+                );
             }
         );
 
@@ -131,10 +141,12 @@ class SaleCreateRequest extends FormRequest
                 'gte:condition_groups.*.conditions.*.min_value',
             ],
             function ($input, $item) {
-                return ConditionType::hasValue($item->type) && ConditionType::fromValue($item->type)
-                    ->in([
+                return in_array(
+                    ConditionType::tryFrom($item->type),
+                    [
                         ConditionType::ORDER_VALUE,
-                    ]);
+                    ]
+                );
             }
         );
 
@@ -142,10 +154,12 @@ class SaleCreateRequest extends FormRequest
             'condition_groups.*.conditions.*.start_at',
             ['required_without:condition_groups.*.conditions.*.end_at', 'date_format:H:i:s'],
             function ($input, $item) {
-                return ConditionType::hasValue($item->type) && ConditionType::fromValue($item->type)
-                    ->in([
+                return in_array(
+                    ConditionType::tryFrom($item->type),
+                    [
                         ConditionType::TIME_BETWEEN,
-                    ]);
+                    ]
+                );
             }
         );
 
@@ -153,10 +167,12 @@ class SaleCreateRequest extends FormRequest
             'condition_groups.*.conditions.*.end_at',
             ['required_without:condition_groups.*.conditions.*.start_at', 'date_format:H:i:s'],
             function ($input, $item) {
-                return ConditionType::hasValue($item->type) && ConditionType::fromValue($item->type)
-                    ->in([
+                return in_array(
+                    ConditionType::tryFrom($item->type),
+                    [
                         ConditionType::TIME_BETWEEN,
-                    ]);
+                    ]
+                );
             }
         );
 
@@ -164,10 +180,12 @@ class SaleCreateRequest extends FormRequest
             'condition_groups.*.conditions.*.start_at',
             ['required_without:condition_groups.*.conditions.*.end_at', 'date'],
             function ($input, $item) {
-                return ConditionType::hasValue($item->type) && ConditionType::fromValue($item->type)
-                    ->in([
+                return in_array(
+                    ConditionType::tryFrom($item->type),
+                    [
                         ConditionType::DATE_BETWEEN,
-                    ]);
+                    ]
+                );
             }
         );
 
@@ -179,10 +197,12 @@ class SaleCreateRequest extends FormRequest
                 'after_or_equal:condition_groups.*.conditions.*.start_at',
             ],
             function ($input, $item) {
-                return ConditionType::hasValue($item->type) && ConditionType::fromValue($item->type)
-                    ->in([
+                return in_array(
+                    ConditionType::tryFrom($item->type),
+                    [
                         ConditionType::DATE_BETWEEN,
-                    ]);
+                    ]
+                );
             }
         );
 
@@ -190,10 +210,12 @@ class SaleCreateRequest extends FormRequest
             'condition_groups.*.conditions.*.weekday',
             ['required', 'array', 'min:7', 'max:7'],
             function ($input, $item) {
-                return ConditionType::hasValue($item->type) && ConditionType::fromValue($item->type)
-                    ->in([
+                return in_array(
+                    ConditionType::tryFrom($item->type),
+                    [
                         ConditionType::WEEKDAY_IN,
-                    ]);
+                    ]
+                );
             }
         );
 
@@ -201,10 +223,12 @@ class SaleCreateRequest extends FormRequest
             'condition_groups.*.conditions.*.roles',
             ['array'],
             function ($input, $item) {
-                return ConditionType::hasValue($item->type) && ConditionType::fromValue($item->type)
-                    ->in([
+                return in_array(
+                    ConditionType::tryFrom($item->type),
+                    [
                         ConditionType::USER_IN_ROLE,
-                    ]);
+                    ]
+                );
             }
         );
 
@@ -212,10 +236,12 @@ class SaleCreateRequest extends FormRequest
             'condition_groups.*.conditions.*.users',
             ['array'],
             function ($input, $item) {
-                return ConditionType::hasValue($item->type) && ConditionType::fromValue($item->type)
-                    ->in([
+                return in_array(
+                    ConditionType::tryFrom($item->type),
+                    [
                         ConditionType::USER_IN,
-                    ]);
+                    ]
+                );
             }
         );
 
@@ -223,10 +249,12 @@ class SaleCreateRequest extends FormRequest
             'condition_groups.*.conditions.*.products',
             ['array'],
             function ($input, $item) {
-                return ConditionType::hasValue($item->type) && ConditionType::fromValue($item->type)
-                    ->in([
+                return in_array(
+                    ConditionType::tryFrom($item->type),
+                    [
                         ConditionType::PRODUCT_IN,
-                    ]);
+                    ]
+                );
             }
         );
 
@@ -234,10 +262,12 @@ class SaleCreateRequest extends FormRequest
             'condition_groups.*.conditions.*.product_sets',
             ['array'],
             function ($input, $item) {
-                return ConditionType::hasValue($item->type) && ConditionType::fromValue($item->type)
-                    ->in([
+                return in_array(
+                    ConditionType::tryFrom($item->type),
+                    [
                         ConditionType::PRODUCT_IN_SET,
-                    ]);
+                    ]
+                );
             }
         );
 
@@ -245,11 +275,13 @@ class SaleCreateRequest extends FormRequest
             'condition_groups.*.conditions.*.min_value',
             ['required_without:condition_groups.*.conditions.*.max_value', 'integer'],
             function ($input, $item) {
-                return ConditionType::hasValue($item->type) && ConditionType::fromValue($item->type)
-                    ->in([
+                return in_array(
+                    ConditionType::tryFrom($item->type),
+                    [
                         ConditionType::CART_LENGTH,
                         ConditionType::COUPONS_COUNT,
-                    ]);
+                    ]
+                );
             }
         );
 
@@ -261,11 +293,13 @@ class SaleCreateRequest extends FormRequest
                 'gte:condition_groups.*.conditions.*.min_value',
             ],
             function ($input, $item) {
-                return ConditionType::hasValue($item->type) && ConditionType::fromValue($item->type)
-                    ->in([
+                return in_array(
+                    ConditionType::tryFrom($item->type),
+                    [
                         ConditionType::CART_LENGTH,
                         ConditionType::COUPONS_COUNT,
-                    ]);
+                    ]
+                );
             }
         );
     }

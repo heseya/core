@@ -20,7 +20,7 @@ class ModifyAndAddCouponsAndSalesPermission extends Migration
         Permission::findByName('discounts.edit')->update(['name' => 'coupons.edit']);
         Permission::findByName('discounts.remove')->update(['name' => 'coupons.remove']);
 
-        $owner = Role::where('type', RoleType::OWNER)->first();
+        $owner = Role::where('type', RoleType::OWNER->value)->first();
         $owner->givePermissionTo([
             'sales.show',
             'sales.add',
@@ -32,7 +32,7 @@ class ModifyAndAddCouponsAndSalesPermission extends Migration
 
     public function down(): void
     {
-        $owner = Role::where('type', RoleType::OWNER)->first();
+        $owner = Role::where('type', RoleType::OWNER->value)->first();
         $owner->revokePermissionTo([
             'sales.show',
             'sales.add',

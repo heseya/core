@@ -306,7 +306,7 @@ final readonly class ProductService implements ProductServiceContract
             )->toArray();
             $valueMinMax = [$schema->min, $schema->max];
 
-            $minmax = match ($schema->type->value) {
+            $minmax = match ($schema->type) {
                 default => $getBestSchemasPrices(
                     $required ? ['filled'] : [null, 'filled'],
                 ),

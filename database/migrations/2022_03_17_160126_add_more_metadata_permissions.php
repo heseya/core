@@ -21,7 +21,7 @@ class AddMoreMetadataPermissions extends Migration
         Permission::create(['name' => 'apps.show_metadata_private', 'display_name' => 'Możliwość wyświetlania prywatnych metadanych aplikacji']);
         Permission::create(['name' => 'media.show_metadata_private', 'display_name' => 'Możliwość wyświetlania prywatnych metadanych mediów']);
 
-        $owner = Role::query()->where('type', '=', RoleType::OWNER)->firstOrFail();
+        $owner = Role::query()->where('type', '=', RoleType::OWNER->value)->firstOrFail();
         $owner->givePermissionTo([
             'schemas.show_metadata_private',
             'options.show_metadata_private',
@@ -54,7 +54,7 @@ class AddMoreMetadataPermissions extends Migration
             'media.show_metadata_private',
         ];
 
-        $owner = Role::query()->where('type', '=', RoleType::OWNER)->firstOrFail();
+        $owner = Role::query()->where('type', '=', RoleType::OWNER->value)->firstOrFail();
         $owner->revokePermissionTo($permissions);
         $owner->save();
 
