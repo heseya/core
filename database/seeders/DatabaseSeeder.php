@@ -13,7 +13,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        App::setLocale(Language::where('default', true)->firstOrFail()->getKey());
+        App::setLocale(Language::query()->where('default', true)->firstOrFail()->getKey());
 
         $this
             ->call(InitSeeder::class)
