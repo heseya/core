@@ -19,8 +19,8 @@ class ShippingMethodSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->createShippingMethodsWithType(ShippingType::getValues(), true);
-        $this->createShippingMethodsWithType(ShippingType::getValues(), false);
+        $this->createShippingMethodsWithType(ShippingType::cases(), true);
+        $this->createShippingMethodsWithType(ShippingType::cases(), false);
     }
 
     private function createShippingMethodsWithType(array $types, bool $public): void
@@ -45,7 +45,7 @@ class ShippingMethodSeeder extends Seeder
         $currency = Currency::DEFAULT->value;
         $paymentMethods = PaymentMethod::factory()->count(mt_rand(1, 3))->create();
         $shippingMethod->paymentMethods()->sync($paymentMethods);
-        $priceRange = $shippingMethod->priceRanges()->create([
+        $shippingMethod->priceRanges()->create([
             'start' => Money::zero($currency),
             'value' => Money::of(mt_rand(500, 2000) / 100.0, $currency),
         ]);
