@@ -2,15 +2,15 @@
 
 namespace App\Services\Contracts;
 
-use App\DTO\Metadata\MetadataDto;
 use App\Dtos\MetadataPersonalListDto;
 use App\Models\Model;
 use App\Models\Role;
+use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Illuminate\Support\Collection;
 
 interface MetadataServiceContract
 {
-    public function updateOrCreate(Model|Role $model, MetadataDto $dto): void;
+    public function updateOrCreate(Model|Role $model, MetadataUpdateDto $dto): void;
 
     public function sync(Model|Role $model, array $metadata): void;
 

@@ -72,6 +72,12 @@ Products:
         in: query
         schema:
           type: number
+      - name: price.currency
+        in: query
+        description: 'Currency code, required with price.min and price.max'
+        schema:
+          type: string
+        example: "PLN"
       - name: has_cover
         in: query
         description: 'Product has cover'

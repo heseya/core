@@ -2,9 +2,16 @@
 
 namespace Tests\Feature\Products;
 
+use App\Enums\Currency;
 use App\Models\Page;
-use App\Models\Product;
+use App\Services\Contracts\ProductServiceContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Heseya\Dto\DtoException;
+use Illuminate\Support\Facades\App;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class ProductCreateTest extends TestCase
 {
@@ -14,6 +21,11 @@ class ProductCreateTest extends TestCase
     public function testCreateDescriptions(string $user): void
     {
         $page = Page::factory()->create();
+
+        $prices = array_map(fn (Currency $currency) => [
+            'value' => '100.00',
+            'currency' => $currency->value,
+        ], Currency::cases());
 
         $this->{$user}->givePermissionTo('products.add');
         $response = $this
@@ -26,7 +38,7 @@ class ProductCreateTest extends TestCase
                 ],
                 'published' => [$this->lang],
                 'slug' => 'slug',
-                'price' => 100,
+                'prices_base' => $prices,
                 'public' => true,
                 'shipping_digital' => false,
                 'descriptions' => [$page->getKey()],
@@ -42,10 +54,17 @@ class ProductCreateTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
+     * @throws DtoException
      */
     public function testUpdateDescriptions(string $user): void
     {
-        $product = Product::factory()->create();
+        /** @var ProductServiceContract $productService */
+        $productService = App::make(ProductServiceContract::class);
+        $product = $productService->create(FakeDto::productCreateDto());
         $page = Page::factory()->create();
 
         $this->{$user}->givePermissionTo('products.edit');

@@ -320,7 +320,7 @@ class SavedAddressTest extends TestCase
     {
         $this->{$user}->givePermissionTo('profile.addresses_manage');
 
-        $savedAddress = SavedAddress::create([
+        $savedAddress = SavedAddress::query()->create([
             'name' => 'test',
             'default' => false,
             'user_id' => $this->{$user}->getKey(),
@@ -353,7 +353,7 @@ class SavedAddressTest extends TestCase
                 'zip' => '123',
                 'city' => 'testcity',
                 'country' => 'ts',
-                'vat' => null,
+                'vat' => '',
             ]);
     }
 

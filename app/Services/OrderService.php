@@ -10,7 +10,10 @@ use App\Dtos\OrderProductSearchDto;
 use App\Dtos\OrderProductUpdateDto;
 use App\Dtos\OrderProductUrlDto;
 use App\Dtos\OrderUpdateDto;
+use App\Dtos\PriceDto;
+use App\Enums\Currency;
 use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\Product\ProductPriceType;
 use App\Enums\SchemaType;
 use App\Enums\ShippingType;
 use App\Events\OrderCreated;
@@ -34,12 +37,14 @@ use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\User;
 use App\Notifications\SendUrls;
+use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
+use Brick\Money\Money;
 use Exception;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -58,19 +63,23 @@ final readonly class OrderService implements OrderServiceContract
         private ItemServiceContract $itemService,
         private NameServiceContract $nameService,
         private MetadataServiceContract $metadataService,
-        private DepositServiceContract $depositService
+        private DepositServiceContract $depositService,
+        private ProductRepositoryContract $productRepository,
     ) {}
 
     public function calcSummary(Order $order): float
     {
+        // TODO: This needs to take order currency
+        $currency = Currency::DEFAULT;
+
         $value = 0;
         foreach ($order->products as $item) {
             $value += $item->price * $item->quantity;
         }
 
-        $cartValue = $value;
+        $cartValue = Money::of($value, $currency->value);
         foreach ($order->discounts as $discount) {
-            $value -= $this->discountService->calc($cartValue, $discount);
+            $value -= $this->discountService->calc($cartValue, $discount)->getAmount()->toFloat();
         }
 
         $value = max($value, 0) + $order->shipping_price;
@@ -86,6 +95,8 @@ final readonly class OrderService implements OrderServiceContract
     public function store(OrderDto $dto): Order
     {
         DB::beginTransaction();
+
+        $currency = Currency::DEFAULT;
 
         try {
             $items = $dto->getItems();
@@ -156,7 +167,7 @@ final readonly class OrderService implements OrderServiceContract
                     'buyer_type' => $buyer::class,
                     'invoice_requested' => $getInvoiceRequested,
                     'shipping_place' => $shippingPlace,
-                    'shipping_type' => $shippingMethod->shipping_type ?? $digitalShippingMethod->shipping_type,
+                    'shipping_type' => $shippingMethod->shipping_type ?? $digitalShippingMethod->shipping_type ?? null,
                 ] + $dto->toArray(),
             );
 
@@ -168,20 +179,27 @@ final readonly class OrderService implements OrderServiceContract
                     /** @var Product $product */
                     $product = $products->firstWhere('id', $item->getProductId());
 
+                    /** @var PriceDto $priceDto */
+                    [[$priceDto]] = $this->productRepository::getProductPrices($product->getKey(), [
+                        ProductPriceType::PRICE_BASE,
+                    ], $currency);
+
+                    $price = $priceDto->value->getAmount()->toFloat();
+
                     $orderProduct = new OrderProduct([
                         'product_id' => $item->getProductId(),
                         'quantity' => $item->getQuantity(),
-                        'price_initial' => $product->price,
-                        'price' => $product->price,
-                        'base_price_initial' => $product->price,
-                        'base_price' => $product->price,
+                        'price_initial' => $price,
+                        'price' => $price,
+                        'base_price_initial' => $price,
+                        'base_price' => $price,
                         'name' => $product->name,
                         'vat_rate' => $product->vat_rate,
                         'shipping_digital' => $product->shipping_digital,
                     ]);
 
                     $order->products()->save($orderProduct);
-                    $cartValueInitial += $product->price * $item->getQuantity();
+                    $cartValueInitial += $price * $item->getQuantity();
 
                     $schemaProductPrice = 0;
                     // Add schemas to products
@@ -225,11 +243,14 @@ final readonly class OrderService implements OrderServiceContract
                 // Apply discounts to order/products
                 $order = $this->discountService->calcOrderProductsAndTotalDiscounts($order, $dto);
 
-                $shippingPrice = $shippingMethod?->getPrice($order->cart_total) ?? 0;
-                $shippingPrice += $digitalShippingMethod?->getPrice($order->cart_total) ?? 0;
+                $cartTotal = Money::of($order->cart_total, $currency->value);
+                $shippingPrice = $shippingMethod?->getPrice($cartTotal) ?? Money::zero($currency->value);
+                $shippingPrice = $shippingPrice->plus(
+                    $digitalShippingMethod?->getPrice($cartTotal) ?? Money::zero($currency->value),
+                );
 
-                $order->shipping_price_initial = $shippingPrice;
-                $order->shipping_price = $shippingPrice;
+                $order->shipping_price_initial = $shippingPrice->getAmount()->toFloat();
+                $order->shipping_price = $shippingPrice->getAmount()->toFloat();
 
                 // Apply discounts to order
                 $order = $this->discountService->calcOrderShippingDiscounts($order, $dto);
@@ -262,6 +283,9 @@ final readonly class OrderService implements OrderServiceContract
         }
     }
 
+    /**
+     * @throws ClientException
+     */
     public function update(OrderUpdateDto $dto, Order $order): JsonResponse
     {
         DB::beginTransaction();
@@ -277,6 +301,7 @@ final readonly class OrderService implements OrderServiceContract
                     ? $digitalShippingMethod->shipping_type : $order->digitalShippingMethod?->shipping_type;
             }
 
+            /** @var string $shippingType */
             if ($shippingType !== ShippingType::POINT) {
                 $shippingPlace = $dto->getShippingPlace() instanceof AddressDto ?
                     $this->modifyAddress(
@@ -422,6 +447,11 @@ final readonly class OrderService implements OrderServiceContract
         }
     }
 
+    /**
+     * @return (ShippingMethod|null)[]
+     *
+     * @throws OrderException
+     */
     private function getDeliveryMethods(
         CartDto|OrderDto|OrderUpdateDto $dto,
         Collection $products,

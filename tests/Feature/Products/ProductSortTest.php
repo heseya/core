@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Products;
 
-use App\Models\Attribute;
-use App\Models\AttributeOption;
 use App\Models\Product;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Tests\TestCase;
 
 class ProductSortTest extends TestCase

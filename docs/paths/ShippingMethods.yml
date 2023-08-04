@@ -10,13 +10,20 @@ ShippingMethods:
         schema:
           type: string
           example: DE
-      - name: cart_value
+      - name: cart_value.value
         description: 'cart total you want to display shipping price for'
         in: query
         required: false
         schema:
-          type: number
-          example: 1200
+          type: string
+          example: '1200.00'
+      - name: cart_value.currency
+        description: 'currency of the cart total, required with value'
+        in: query
+        required: false
+        schema:
+          type: string
+          example: 'PLN'
       - name: metadata
         in: query
         description: search by metadata

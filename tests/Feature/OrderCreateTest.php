@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Dtos\PriceDto;
 use App\Enums\ConditionType;
+use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\Product\ProductPriceType;
 use App\Enums\RoleType;
 use App\Enums\SchemaType;
 use App\Enums\ShippingType;
@@ -27,14 +30,26 @@ use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\WebHook;
+use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Services\Contracts\ProductServiceContract;
+use BenSampo\Enum\Exceptions\InvalidEnumMemberException;
+use Brick\Math\Exception\MathException;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\MoneyMismatchException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
+use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class OrderCreateTest extends TestCase
 {
@@ -48,6 +63,16 @@ class OrderCreateTest extends TestCase
     private Product $product;
     private string $email;
 
+    private Currency $currency;
+    private Money $productPrice;
+    private ProductServiceContract $productService;
+
+    /**
+     * @throws UnknownCurrencyException
+     * @throws RoundingNecessaryException
+     * @throws NumberFormatException
+     * @throws DtoException
+     */
     public function setUp(): void
     {
         parent::setUp();
@@ -58,11 +83,17 @@ class OrderCreateTest extends TestCase
             'public' => true,
             'shipping_type' => ShippingType::ADDRESS,
         ]);
-        $lowRange = PriceRange::create(['start' => 0]);
-        $lowRange->prices()->create(['value' => 8.11]);
+        /** @var PriceRange $lowRange */
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero(Currency::DEFAULT->value),
+            'value' => Money::of(8.11, Currency::DEFAULT->value),
+        ]);
 
-        $highRange = PriceRange::create(['start' => 210]);
-        $highRange->prices()->create(['value' => 0.0]);
+        /** @var PriceRange $highRange */
+        $highRange = PriceRange::query()->create([
+            'start' => Money::of(210, Currency::DEFAULT->value),
+            'value' => Money::of(0.0, Currency::DEFAULT->value),
+        ]);
 
         $this->shippingMethod->priceRanges()->saveMany([$lowRange, $highRange]);
 
@@ -71,6 +102,16 @@ class OrderCreateTest extends TestCase
         $this->product = Product::factory()->create([
             'public' => true,
         ]);
+
+        /** @var ProductRepositoryContract $productRepository */
+        $productRepository = App::make(ProductRepositoryContract::class);
+        $this->currency = Currency::DEFAULT;
+        [[$priceDto]] = $productRepository::getProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE,
+        ], $this->currency);
+        $this->productPrice = $priceDto->value;
+
+        $this->productService = App::make(ProductServiceContract::class);
     }
 
     public function testCreateOrderUnauthorized(): void
@@ -97,6 +138,10 @@ class OrderCreateTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws MoneyMismatchException
      */
     public function testCreateSimpleOrder($user): void
     {
@@ -128,13 +173,17 @@ class OrderCreateTest extends TestCase
         $order = $response->getData()->data;
 
         $shippingPrice = $this->shippingMethod->getPrice(
-            $this->product->price * $productQuantity,
+            $this->productPrice->multipliedBy($productQuantity),
         );
+        $summary = $this->productPrice
+            ->multipliedBy($productQuantity)
+            ->plus($shippingPrice);
+
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
             'email' => $this->email,
-            'shipping_price' => $shippingPrice,
-            'summary' => $this->product->price * $productQuantity + $shippingPrice,
+            'shipping_price' => $shippingPrice->getAmount(),
+            'summary' => $summary->getAmount(),
         ]);
         $this->assertDatabaseHas('addresses', $this->address->toArray());
         $this->assertDatabaseHas('order_products', [
@@ -239,6 +288,11 @@ class OrderCreateTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testCreateSimpleOrderPaid($user): void
     {
@@ -246,9 +300,10 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $this->product->update([
-            'price' => 0,
-        ]);
+        $product = $this->productService->create(FakeDto::productCreateDto([
+            'public' => true,
+            'prices_base' => [new PriceDto(Money::zero($this->currency->value))],
+        ]));
 
         $productQuantity = 1;
 
@@ -256,8 +311,10 @@ class OrderCreateTest extends TestCase
             'public' => true,
             'shipping_type' => ShippingType::ADDRESS,
         ]);
-        $lowRange = PriceRange::create(['start' => 0]);
-        $lowRange->prices()->create(['value' => 0]);
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero(Currency::DEFAULT->value),
+            'value' => Money::zero(Currency::DEFAULT->value),
+        ]);
 
         $freeShipping->priceRanges()->save($lowRange);
 
@@ -268,7 +325,7 @@ class OrderCreateTest extends TestCase
             'billing_address' => $this->address->toArray(),
             'items' => [
                 [
-                    'product_id' => $this->product->getKey(),
+                    'product_id' => $product->getKey(),
                     'quantity' => $productQuantity,
                 ],
             ],
@@ -336,12 +393,13 @@ class OrderCreateTest extends TestCase
         $response->assertCreated();
         $order = $response->getData()->data;
 
+        $orderTotal = $this->productPrice
+            ->multipliedBy($productQuantity);
+
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
             'email' => $this->email,
-            'shipping_price' => $this->shippingMethod->getPrice(
-                $this->product->price * $productQuantity,
-            ),
+            'shipping_price' => $this->shippingMethod->getPrice($orderTotal)->getAmount(),
         ]);
         $this->assertDatabaseHas('addresses', $this->address->toArray());
         $this->assertDatabaseHas('order_products', [
@@ -457,21 +515,24 @@ class OrderCreateTest extends TestCase
         $response->assertCreated();
         $order = Order::find($response->getData()->data->id);
 
-        $schemaPrice = $schema->getPrice('Test', [
-            $schema->getKey() => 'Test',
-        ]);
-
-        $shippingPrice = $this->shippingMethod->getPrice(
-            ($this->product->price + $schemaPrice) * $productQuantity,
+        $schemaPrice = Money::of(
+            $schema->getPrice('Test', [
+                $schema->getKey() => 'Test',
+            ]),
+            Currency::DEFAULT->value,
         );
+
+        $orderTotal = $this->productPrice
+            ->plus($schemaPrice)
+            ->multipliedBy($productQuantity);
+
+        $shippingPrice = $this->shippingMethod->getPrice($orderTotal);
 
         $this->assertDatabaseHas('orders', [
             'id' => $order->getKey(),
             'email' => $this->email,
-            'shipping_price' => $this->shippingMethod->getPrice(
-                ($this->product->price + $schemaPrice) * $productQuantity,
-            ),
-            'summary' => ($this->product->price + $schemaPrice) * $productQuantity + $shippingPrice,
+            'shipping_price' => $this->shippingMethod->getPrice($orderTotal)->getAmount(),
+            'summary' => $orderTotal->plus($shippingPrice)->getAmount(),
         ]);
         $this->assertDatabaseHas('addresses', $this->address->toArray());
         $this->assertDatabaseHas('order_products', [
@@ -490,6 +551,10 @@ class OrderCreateTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws MoneyMismatchException
      */
     public function testCreateOrderWithWebHook($user): void
     {
@@ -562,12 +627,14 @@ class OrderCreateTest extends TestCase
             $schema->getKey() => $option->getKey(),
         ]);
 
+        $orderTotal = $this->productPrice
+            ->plus($schemaPrice)
+            ->multipliedBy($productQuantity);
+
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
             'email' => $this->email,
-            'shipping_price' => $this->shippingMethod->getPrice(
-                ($this->product->price + $schemaPrice) * $productQuantity,
-            ),
+            'shipping_price' => $this->shippingMethod->getPrice($orderTotal)->getAmount(),
         ]);
         $this->assertDatabaseHas('addresses', $this->address->toArray());
         $this->assertDatabaseHas('order_products', [
@@ -648,12 +715,14 @@ class OrderCreateTest extends TestCase
             $schema->getKey() => 'Test',
         ]);
 
+        $orderTotal = $this->productPrice
+            ->plus($schemaPrice)
+            ->multipliedBy($productQuantity);
+
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
             'email' => $this->email,
-            'shipping_price' => $this->shippingMethod->getPrice(
-                ($this->product->price + $schemaPrice) * $productQuantity,
-            ),
+            'shipping_price' => $this->shippingMethod->getPrice($orderTotal)->getAmount(),
         ]);
         $this->assertDatabaseHas('addresses', $this->address->toArray());
         $this->assertDatabaseHas('order_products', [
@@ -672,6 +741,10 @@ class OrderCreateTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws InvalidEnumMemberException
+     * @throws MathException
+     * @throws MoneyMismatchException
      */
     public function testCreateOrderNonRequiredSchemaEmpty($user): void
     {
@@ -686,10 +759,9 @@ class OrderCreateTest extends TestCase
             'required' => false, // Important!
         ]);
 
-        $productPrice = 100;
         $this->product->schemas()->sync([$schema->getKey()]);
         $this->product->update([
-            'price' => $productPrice,
+            'price' => $this->productPrice->getAmount()->toFloat(),
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
@@ -716,8 +788,10 @@ class OrderCreateTest extends TestCase
         );
 
         // Expected price doesn't include empty schema
-        $expectedOrderPrice = $productPrice + $this->shippingMethod->getPrice($productPrice);
-        $this->assertEquals($expectedOrderPrice, $order->summary);
+        $expectedOrderPrice = $this->productPrice->plus(
+            $this->shippingMethod->getPrice($this->productPrice),
+        );
+        $this->assertEquals($expectedOrderPrice->getAmount()->toFloat(), $order->summary);
     }
 
     /**
@@ -740,6 +814,11 @@ class OrderCreateTest extends TestCase
         $shippingMethod = ShippingMethod::factory()->create([
             'shipping_type' => ShippingType::ADDRESS,
         ]);
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero(Currency::DEFAULT->value),
+            'value' => Money::zero(Currency::DEFAULT->value),
+        ]);
+        $shippingMethod->priceRanges()->save($lowRange);
         $discount->products()->attach($this->product->getKey());
 
         $conditionGroup = ConditionGroup::create();
@@ -792,6 +871,11 @@ class OrderCreateTest extends TestCase
         $shippingMethod = ShippingMethod::factory()->create([
             'shipping_type' => ShippingType::ADDRESS,
         ]);
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero(Currency::DEFAULT->value),
+            'value' => Money::zero(Currency::DEFAULT->value),
+        ]);
+        $shippingMethod->priceRanges()->save($lowRange);
         $discount->products()->attach($this->product->getKey());
 
         $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
@@ -813,12 +897,11 @@ class OrderCreateTest extends TestCase
         $response->assertCreated();
         $order = Order::find($response->getData()->data->id);
 
+        $orderTotal = $this->productPrice;
         $this->assertDatabaseHas('orders', [
             'id' => $order->getKey(),
             'email' => $this->email,
-            'shipping_price' => $shippingMethod->getPrice(
-                $this->product->price * 1,
-            ),
+            'shipping_price' => $shippingMethod->getPrice($orderTotal)->getAmount(),
         ]);
 
         Event::assertDispatched(OrderCreated::class);
@@ -826,6 +909,11 @@ class OrderCreateTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testCreateOrderWithDiscountMinimalPrices($user): void
     {
@@ -833,10 +921,10 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $product = Product::factory()->create([
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'price' => 150,
-        ]);
+            'prices_base' => [new PriceDto(Money::of(150, $this->currency->value))],
+        ]));
 
         $discount = Discount::factory()->create([
             'description' => 'Testowy kupon',
@@ -872,8 +960,10 @@ class OrderCreateTest extends TestCase
             'public' => true,
             'shipping_type' => ShippingType::ADDRESS,
         ]);
-        $lowRange = PriceRange::create(['start' => 0]);
-        $lowRange->prices()->create(['value' => 10]);
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero(Currency::DEFAULT->value),
+            'value' => Money::of(10, Currency::DEFAULT->value),
+        ]);
 
         $shippingMethod->priceRanges()->saveMany([$lowRange]);
 
@@ -938,7 +1028,14 @@ class OrderCreateTest extends TestCase
     {
         $this->{$user}->givePermissionTo('orders.add');
 
-        $shippingMethod = ShippingMethod::factory()->create();
+        $shippingMethod = ShippingMethod::factory()->create([
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero(Currency::DEFAULT->value),
+            'value' => Money::zero(Currency::DEFAULT->value),
+        ]);
+        $shippingMethod->priceRanges()->save($lowRange);
 
         $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'email' => $this->email,
@@ -1019,7 +1116,14 @@ class OrderCreateTest extends TestCase
 
         $discount->conditionGroups()->attach($conditionGroup);
 
-        $shippingMethod = ShippingMethod::factory()->create();
+        $shippingMethod = ShippingMethod::factory()->create([
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero(Currency::DEFAULT->value),
+            'value' => Money::zero(Currency::DEFAULT->value),
+        ]);
+        $shippingMethod->priceRanges()->save($lowRange);
 
         $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'email' => $this->email,
@@ -1068,7 +1172,14 @@ class OrderCreateTest extends TestCase
 
         $discount->conditionGroups()->attach($conditionGroup);
 
-        $shippingMethod = ShippingMethod::factory()->create();
+        $shippingMethod = ShippingMethod::factory()->create([
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero(Currency::DEFAULT->value),
+            'value' => Money::zero(Currency::DEFAULT->value),
+        ]);
+        $shippingMethod->priceRanges()->save($lowRange);
 
         $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'email' => $this->email,
@@ -1115,6 +1226,11 @@ class OrderCreateTest extends TestCase
             'public' => true,
             'shipping_type' => ShippingType::ADDRESS,
         ]);
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero(Currency::DEFAULT->value),
+            'value' => Money::zero(Currency::DEFAULT->value),
+        ]);
+        $shippingMethod->priceRanges()->save($lowRange);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => $this->email,
@@ -1175,6 +1291,11 @@ class OrderCreateTest extends TestCase
             'public' => true,
             'shipping_type' => ShippingType::POINT,
         ]);
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero(Currency::DEFAULT->value),
+            'value' => Money::zero(Currency::DEFAULT->value),
+        ]);
+        $shippingMethod->priceRanges()->save($lowRange);
 
         $shippingMethod->shippingPoints()->attach($pointAddress);
 
@@ -1235,6 +1356,11 @@ class OrderCreateTest extends TestCase
             'public' => true,
             'shipping_type' => ShippingType::POINT_EXTERNAL,
         ]);
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero(Currency::DEFAULT->value),
+            'value' => Money::zero(Currency::DEFAULT->value),
+        ]);
+        $shippingMethod->priceRanges()->save($lowRange);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => $this->email,
@@ -1293,6 +1419,11 @@ class OrderCreateTest extends TestCase
             'public' => true,
             'shipping_type' => ShippingType::POINT,
         ]);
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero(Currency::DEFAULT->value),
+            'value' => Money::zero(Currency::DEFAULT->value),
+        ]);
+        $shippingMethod->priceRanges()->save($lowRange);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => $this->email,
@@ -1341,6 +1472,11 @@ class OrderCreateTest extends TestCase
             'public' => true,
             'shipping_type' => ShippingType::POINT_EXTERNAL,
         ]);
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero(Currency::DEFAULT->value),
+            'value' => Money::zero(Currency::DEFAULT->value),
+        ]);
+        $shippingMethod->priceRanges()->save($lowRange);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => $this->email,
@@ -1392,7 +1528,14 @@ class OrderCreateTest extends TestCase
 
         $discount->conditionGroups()->attach($conditionGroup);
 
-        $shippingMethod = ShippingMethod::factory()->create();
+        $shippingMethod = ShippingMethod::factory()->create([
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero(Currency::DEFAULT->value),
+            'value' => Money::zero(Currency::DEFAULT->value),
+        ]);
+        $shippingMethod->priceRanges()->save($lowRange);
 
         $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'email' => $this->email,
@@ -1441,7 +1584,14 @@ class OrderCreateTest extends TestCase
 
         $discount->conditionGroups()->attach($conditionGroup);
 
-        $shippingMethod = ShippingMethod::factory()->create();
+        $shippingMethod = ShippingMethod::factory()->create([
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero(Currency::DEFAULT->value),
+            'value' => Money::zero(Currency::DEFAULT->value),
+        ]);
+        $shippingMethod->priceRanges()->save($lowRange);
 
         $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'email' => $this->email,
@@ -1525,7 +1675,7 @@ class OrderCreateTest extends TestCase
             ->assertCreated();
 
         $this->assertDatabaseHas('addresses', $address + [
-            'vat' => null,
+            'vat' => '',
         ]);
     }
 

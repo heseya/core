@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\Attribute;
-use App\Models\AttributeOption;
 use App\Models\ProductSet;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Tests\TestCase;
 
 class FilterTest extends TestCase

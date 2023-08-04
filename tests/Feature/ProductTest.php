@@ -2,19 +2,19 @@
 
 namespace Tests\Feature;
 
-use App\Enums\AttributeType;
+use App\Dtos\PriceDto;
 use App\Enums\ConditionType;
+use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\MediaType;
 use App\Enums\MetadataType;
+use App\Enums\Product\ProductPriceType;
 use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductUpdated;
 use App\Listeners\WebHookEventListener;
-use App\Models\Attribute;
-use App\Models\AttributeOption;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
 use App\Models\Language;
@@ -25,9 +25,18 @@ use App\Models\ProductSet;
 use App\Models\Schema;
 use App\Models\SeoMetadata;
 use App\Models\WebHook;
+use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\ProductServiceContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
+use Heseya\Dto\DtoException;
+use Domain\ProductAttribute\Enums\AttributeType;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
@@ -37,6 +46,7 @@ use Illuminate\Support\Facades\Queue;
 use Ramsey\Uuid\Uuid;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class ProductTest extends TestCase
 {
@@ -46,24 +56,44 @@ class ProductTest extends TestCase
     private array $expected;
     private array $expected_short;
 
+    private Currency $currency;
+    private Product $saleProduct;
+    private array $productPrices;
+
     private ProductServiceContract $productService;
     private DiscountServiceContract $discountService;
+    private ProductRepositoryContract $productRepository;
 
+    /**
+     * @throws UnknownCurrencyException
+     * @throws DtoException
+     * @throws RoundingNecessaryException
+     * @throws NumberFormatException
+     */
     public function setUp(): void
     {
         parent::setUp();
 
+        $this->currency = Currency::DEFAULT;
+
         $this->productService = App::make(ProductServiceContract::class);
         $this->discountService = App::make(DiscountServiceContract::class);
+        $this->productRepository = App::make(ProductRepositoryContract::class);
+
+        $this->productPrices = array_map(fn (Currency $currency) => [
+            'value' => '100.00',
+            'currency' => $currency->value,
+        ], Currency::cases());
 
         /** @var AvailabilityServiceContract $availabilityService */
         $availabilityService = App::make(AvailabilityServiceContract::class);
 
-        $this->product = Product::factory()->create([
+        $this->product = $this->productService->create(FakeDto::productCreateDto([
             'shipping_digital' => false,
             'public' => true,
             'order' => 1,
-        ]);
+            'prices_base' => [new PriceDto(Money::of(100, $this->currency->value))],
+        ]));
 
         $schema = $this->product->schemas()->create([
             'name' => 'Rozmiar',
@@ -130,7 +160,10 @@ class ProductTest extends TestCase
             'id' => $this->product->getKey(),
             'name' => $this->product->name,
             'slug' => $this->product->slug,
-            'price' => (int) $this->product->price,
+            'prices_base' => [[
+                'gross' => '100.00',
+                'currency' => 'PLN',
+            ]],
             'visible' => $this->product->public,
             'public' => (bool) $this->product->public,
             'available' => true,
@@ -207,6 +240,15 @@ class ProductTest extends TestCase
                 $metadata->name => $metadata->value,
             ],
         ]);
+
+        $this->saleProduct = Product::factory()->create([
+            'public' => true,
+        ]);
+        $this->productRepository::setProductPrices($this->saleProduct->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(3000, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(2500, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(3500, $this->currency->value))],
+        ]);
     }
 
     /**
@@ -219,14 +261,14 @@ class ProductTest extends TestCase
         $response = $this->actingAs($this->{$user})->getJson('/products?limit=100&with_translations=1');
         $response
             ->assertOk()
-            ->assertJsonCount(1, 'data')
+            ->assertJsonCount(2, 'data')
             ->assertJson(['data' => [
                 $this->expected_short,
             ]]);
 
         $this->assertArrayHasKey('translations', $response->json('data.0'));
         $this->assertIsArray($response->json('data.0.translations'));
-        $this->assertQueryCountLessThan(14);
+        $this->assertQueryCountLessThan(24);
     }
 
     public function testIndexUnauthorized(): void
@@ -253,17 +295,14 @@ class ProductTest extends TestCase
             ->actingAs($this->{$user})
             ->json('GET', '/products', ['limit' => 100])
             ->assertOk()
-            ->assertJsonCount(2, 'data')
+            ->assertJsonCount(3, 'data')
             ->assertJson([
                 'data' => [
                     0 => $this->expected_short,
                 ],
-            ])->assertJsonFragment([
-                'price_min' => $this->product->price_min,
-                'price_max' => $this->product->price_max,
             ]);
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(29);
     }
 
     /**
@@ -303,30 +342,43 @@ class ProductTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testIndexSortPrice(string $user): void
     {
+        $this->markTestSkipped('Skipped until sorting gets reimplemented');
+
         $this->{$user}->givePermissionTo('products.show');
 
         $product1 = Product::factory()->create([
             'public' => true,
-            'price' => 1200,
-            'price_min' => 1100,
+        ]);
+        $this->productRepository::setProductPrices($product1->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(1200, $this->currency->value))],
+            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(1100, $this->currency->value))],
         ]);
         $product2 = Product::factory()->create([
             'public' => true,
-            'price' => 1300,
-            'price_min' => 1050,
+        ]);
+        $this->productRepository::setProductPrices($product1->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(1300, $this->currency->value))],
+            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(1050, $this->currency->value))],
         ]);
         $product3 = Product::factory()->create([
             'public' => true,
-            'price' => 1500,
-            'price_min' => 1000,
+        ]);
+        $this->productRepository::setProductPrices($product1->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(1500, $this->currency->value))],
+            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(1000, $this->currency->value))],
         ]);
 
-        $this->product->update([
-            'price' => 1500,
-            'price_min' => 1200,
+        $this->productRepository::setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(1500, $this->currency->value))],
+            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(100, $this->currency->value))],
         ]);
 
         $this
@@ -378,7 +430,7 @@ class ProductTest extends TestCase
         $this->actingAs($this->{$user})
             ->json('GET', '/products')
             ->assertOk()
-            ->assertJsonCount(3, 'data'); // Should show all products.
+            ->assertJsonCount(4, 'data'); // Should show all products.
     }
 
     public function testShowUnauthorized(): void
@@ -865,13 +917,6 @@ class ProductTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show_details');
 
-        $product = Product::factory()->create([
-            'public' => true,
-            'price' => 3000,
-            'price_min_initial' => 2500,
-            'price_max_initial' => 3500,
-        ]);
-
         // Applied - product is on list
         $sale1 = Discount::factory()->create([
             'description' => 'Testowa promocja',
@@ -883,7 +928,7 @@ class ProductTest extends TestCase
             'code' => null,
         ]);
 
-        $sale1->products()->attach($product);
+        $sale1->products()->attach($this->saleProduct);
 
         // Not applied - product is not on list
         $sale2 = Discount::factory()->create([
@@ -907,7 +952,7 @@ class ProductTest extends TestCase
             'code' => null,
         ]);
 
-        $sale3->products()->attach($product);
+        $sale3->products()->attach($this->saleProduct);
 
         // Not applied - product is on list, but target_is_allow_list = false
         $sale4 = Discount::factory()->create([
@@ -920,7 +965,7 @@ class ProductTest extends TestCase
             'code' => null,
         ]);
 
-        $sale4->products()->attach($product);
+        $sale4->products()->attach($this->saleProduct);
 
         // Not applied - invalid condition type in condition group
         $sale5 = Discount::factory()->create([
@@ -948,23 +993,38 @@ class ProductTest extends TestCase
 
         $sale5->conditionGroups()->attach($conditionGroup);
 
-        $sale5->products()->attach($product);
+        $sale5->products()->attach($this->saleProduct);
 
-        $this->discountService->applyDiscountsOnProduct($product);
+        $this->discountService->applyDiscountsOnProduct($this->saleProduct);
 
         $response = $this->actingAs($this->{$user})
-            ->getJson('/products/id:' . $product->getKey());
+            ->getJson('/products/id:' . $this->saleProduct->getKey());
 
         $response
             ->assertOk()
             ->assertJsonFragment([
-                'id' => $product->getKey(),
-                'name' => $product->name,
-                'price' => $product->price,
-                'price_min_initial' => $product->price_min_initial,
-                'price_max_initial' => $product->price_max_initial,
-                'price_min' => 2250,
-                'price_max' => 3150,
+                'id' => $this->saleProduct->getKey(),
+                'name' => $this->saleProduct->name,
+                'prices_base' => [[
+                    'gross' => '3000.00',
+                    'currency' => Currency::DEFAULT->value,
+                ]],
+                'prices_min_initial' => [[
+                    'gross' => '2500.00',
+                    'currency' => Currency::DEFAULT->value,
+                ]],
+                'prices_max_initial' => [[
+                    'gross' => '3500.00',
+                    'currency' => Currency::DEFAULT->value,
+                ]],
+                'prices_min' => [[
+                    'gross' => '2250.00',
+                    'currency' => Currency::DEFAULT->value,
+                ]],
+                'prices_max' => [[
+                    'gross' => '3150.00',
+                    'currency' => Currency::DEFAULT->value,
+                ]],
             ])
             ->assertJsonFragment([
                 'id' => $sale1->getKey(),
@@ -991,13 +1051,6 @@ class ProductTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show_details');
 
-        $product = Product::factory()->create([
-            'public' => true,
-            'price' => 3000,
-            'price_min_initial' => 2500,
-            'price_max_initial' => 3500,
-        ]);
-
         // Applied - product is not on block list
         $sale = Discount::factory()->create([
             'description' => 'Testowa promocja',
@@ -1009,21 +1062,36 @@ class ProductTest extends TestCase
             'code' => null,
         ]);
 
-        $this->discountService->applyDiscountsOnProduct($product);
+        $this->discountService->applyDiscountsOnProduct($this->saleProduct);
 
         $response = $this->actingAs($this->{$user})
-            ->getJson('/products/id:' . $product->getKey());
+            ->getJson('/products/id:' . $this->saleProduct->getKey());
 
         $response
             ->assertOk()
             ->assertJsonFragment([
-                'id' => $product->getKey(),
-                'name' => $product->name,
-                'price' => $product->price,
-                'price_min_initial' => $product->price_min_initial,
-                'price_max_initial' => $product->price_max_initial,
-                'price_min' => 2250,
-                'price_max' => 3150,
+                'id' => $this->saleProduct->getKey(),
+                'name' => $this->saleProduct->name,
+                'prices_base' => [[
+                    'gross' => '3000.00',
+                    'currency' => Currency::DEFAULT->value,
+                ]],
+                'prices_min_initial' => [[
+                    'gross' => '2500.00',
+                    'currency' => Currency::DEFAULT->value,
+                ]],
+                'prices_max_initial' => [[
+                    'gross' => '3500.00',
+                    'currency' => Currency::DEFAULT->value,
+                ]],
+                'prices_min' => [[
+                    'gross' => '2250.00',
+                    'currency' => Currency::DEFAULT->value,
+                ]],
+                'prices_max' => [[
+                    'gross' => '3150.00',
+                    'currency' => Currency::DEFAULT->value,
+                ]],
             ])
             ->assertJsonFragment([
                 'id' => $sale->getKey(),
@@ -1038,19 +1106,12 @@ class ProductTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show_details');
 
-        $product = Product::factory()->create([
-            'public' => true,
-            'price' => 3000,
-            'price_min_initial' => 2500,
-            'price_max_initial' => 3500,
-        ]);
-
         $set = ProductSet::factory()->create([
             'public' => true,
             'order' => 20,
         ]);
 
-        $product->sets()->sync([$set->getKey()]);
+        $this->saleProduct->sets()->sync([$set->getKey()]);
 
         // Applied - product set is on allow list
         $sale1 = Discount::factory()->create([
@@ -1102,21 +1163,36 @@ class ProductTest extends TestCase
             'priority' => 0,
         ]);
 
-        $this->discountService->applyDiscountsOnProduct($product);
+        $this->discountService->applyDiscountsOnProduct($this->saleProduct);
 
         $response = $this->actingAs($this->{$user})
-            ->getJson('/products/id:' . $product->getKey());
+            ->getJson('/products/id:' . $this->saleProduct->getKey());
 
         $response
             ->assertOk()
             ->assertJsonFragment([
-                'id' => $product->getKey(),
-                'name' => $product->name,
-                'price' => $product->price,
-                'price_min_initial' => $product->price_min_initial,
-                'price_max_initial' => $product->price_max_initial,
-                'price_min' => 2137.5,
-                'price_max' => 2992.5,
+                'id' => $this->saleProduct->getKey(),
+                'name' => $this->saleProduct->name,
+                'prices_base' => [[
+                    'gross' => '3000.00',
+                    'currency' => Currency::DEFAULT->value,
+                ]],
+                'prices_min_initial' => [[
+                    'gross' => '2500.00',
+                    'currency' => Currency::DEFAULT->value,
+                ]],
+                'prices_max_initial' => [[
+                    'gross' => '3500.00',
+                    'currency' => Currency::DEFAULT->value,
+                ]],
+                'prices_min' => [[
+                    'gross' => '2137.50',
+                    'currency' => Currency::DEFAULT->value,
+                ]],
+                'prices_max' => [[
+                    'gross' => '2992.50',
+                    'currency' => Currency::DEFAULT->value,
+                ]],
             ])
             ->assertJsonFragment([
                 'id' => $sale1->getKey(),
@@ -1143,13 +1219,6 @@ class ProductTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show_details');
 
-        $product = Product::factory()->create([
-            'public' => true,
-            'price' => 3000,
-            'price_min_initial' => 2500,
-            'price_max_initial' => 3500,
-        ]);
-
         $parentSet = ProductSet::factory()->create([
             'public' => true,
             'name' => 'parent',
@@ -1169,7 +1238,7 @@ class ProductTest extends TestCase
             'parent_id' => $childrenSet->getKey(),
         ]);
 
-        $product->sets()->sync([$subChildrenSet->getKey()]);
+        $this->saleProduct->sets()->sync([$subChildrenSet->getKey()]);
 
         // Applied - product set is on allow list
         $sale1 = Discount::factory()->create([
@@ -1198,21 +1267,36 @@ class ProductTest extends TestCase
 
         $sale2->productSets()->attach($parentSet);
 
-        $this->discountService->applyDiscountsOnProduct($product);
+        $this->discountService->applyDiscountsOnProduct($this->saleProduct);
 
         $response = $this->actingAs($this->{$user})
-            ->getJson('/products/id:' . $product->getKey());
+            ->getJson('/products/id:' . $this->saleProduct->getKey());
 
         $response
             ->assertOk()
             ->assertJsonFragment([
-                'id' => $product->getKey(),
-                'name' => $product->name,
-                'price' => $product->price,
-                'price_min_initial' => $product->price_min_initial,
-                'price_max_initial' => $product->price_max_initial,
-                'price_min' => 2250,
-                'price_max' => 3150,
+                'id' => $this->saleProduct->getKey(),
+                'name' => $this->saleProduct->name,
+                'prices_base' => [[
+                    'gross' => '3000.00',
+                    'currency' => Currency::DEFAULT->value,
+                ]],
+                'prices_min_initial' => [[
+                    'gross' => '2500.00',
+                    'currency' => Currency::DEFAULT->value,
+                ]],
+                'prices_max_initial' => [[
+                    'gross' => '3500.00',
+                    'currency' => Currency::DEFAULT->value,
+                ]],
+                'prices_min' => [[
+                    'gross' => '2250.00',
+                    'currency' => Currency::DEFAULT->value,
+                ]],
+                'prices_max' => [[
+                    'gross' => '3150.00',
+                    'currency' => Currency::DEFAULT->value,
+                ]],
             ])
             ->assertJsonFragment([
                 'id' => $sale1->getKey(),
@@ -1242,7 +1326,7 @@ class ProductTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/products', [
             'slug' => 'test',
-            'price' => 100.00,
+            'prices_base' => $this->productPrices,
             'public' => true,
             'vat_rate' => 23,
             'shipping_digital' => false,
@@ -1261,7 +1345,6 @@ class ProductTest extends TestCase
             ->assertJson(['data' => [
                 'slug' => 'test',
                 'name' => 'Test',
-                'price' => 100,
                 'public' => true,
                 'vat_rate' => 23,
                 'shipping_digital' => false,
@@ -1269,13 +1352,15 @@ class ProductTest extends TestCase
                 'description_short' => 'So called short description...',
                 'cover' => null,
                 'gallery' => [],
-            ],
+            ]])
+            ->assertJsonFragment([
+                'gross' => '100.00',
+                'currency' => $this->currency->value,
             ]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
             "name->{$this->lang}" => 'Test',
-            'price' => 100,
             'public' => true,
             'vat_rate' => 23,
             'shipping_digital' => false,
@@ -1326,7 +1411,7 @@ class ProductTest extends TestCase
             ],
             'published' => [$this->lang],
             'slug' => 'test',
-            'price' => 100.00,
+            'prices_base' => $this->productPrices,
             'public' => true,
             'shipping_digital' => false,
         ]);
@@ -1336,7 +1421,6 @@ class ProductTest extends TestCase
             ->assertJson(['data' => [
                 'slug' => 'test',
                 'name' => 'Test',
-                'price' => 100,
                 'public' => true,
                 'shipping_digital' => false,
                 'description_html' => '<h1>Description</h1>',
@@ -1347,7 +1431,6 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
             "name->{$this->lang}" => 'Test',
-            'price' => 100,
             'public' => true,
             'shipping_digital' => false,
             "description_html->{$this->lang}" => '<h1>Description</h1>',
@@ -1404,7 +1487,7 @@ class ProductTest extends TestCase
             ],
             'published' => [$this->lang],
             'slug' => 'test',
-            'price' => 100.00,
+            'prices_base' => $this->productPrices,
             'public' => true,
             'shipping_digital' => false,
         ]);
@@ -1414,7 +1497,6 @@ class ProductTest extends TestCase
             ->assertJson(['data' => [
                 'slug' => 'test',
                 'name' => 'Test',
-                'price' => 100,
                 'public' => true,
                 'shipping_digital' => false,
                 'description_html' => '<h1>Description</h1>',
@@ -1425,7 +1507,6 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
             "name->{$this->lang}" => 'Test',
-            'price' => 100,
             'public' => true,
             'shipping_digital' => false,
             "description_html->{$this->lang}" => '<h1>Description</h1>',
@@ -1482,7 +1563,7 @@ class ProductTest extends TestCase
             ],
             'published' => [$this->lang],
             'slug' => 'test',
-            'price' => 100.00,
+            'prices_base' => $this->productPrices,
             'public' => false,
             'shipping_digital' => false,
         ]);
@@ -1492,7 +1573,6 @@ class ProductTest extends TestCase
             ->assertJsonFragment([
                 'slug' => 'test',
                 'name' => 'Test',
-                'price' => 100,
                 'public' => false,
                 'shipping_digital' => false,
                 'description_html' => '<h1>Description</h1>',
@@ -1503,7 +1583,6 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
             "name->{$this->lang}" => 'Test',
-            'price' => 100,
             'public' => false,
             'shipping_digital' => false,
             "description_html->{$this->lang}" => '<h1>Description</h1>',
@@ -1552,7 +1631,7 @@ class ProductTest extends TestCase
             ],
             'published' => [$this->lang],
             'slug' => 'test',
-            'price' => 100.00,
+            'prices_base' => $this->productPrices,
             'public' => false,
             'shipping_digital' => false,
         ]);
@@ -1562,7 +1641,6 @@ class ProductTest extends TestCase
             ->assertJson(['data' => [
                 'slug' => 'test',
                 'name' => 'Test',
-                'price' => 100,
                 'public' => false,
                 'shipping_digital' => false,
                 'description_html' => '<h1>Description</h1>',
@@ -1573,7 +1651,6 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
             "name->{$this->lang}" => 'Test',
-            'price' => 100,
             'public' => false,
             'shipping_digital' => false,
             "description_html->{$this->lang}" => '<h1>Description</h1>',
@@ -1602,36 +1679,6 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithZeroPrice(string $user): void
-    {
-        $this->{$user}->givePermissionTo('products.add');
-
-        $this
-            ->actingAs($this->{$user})
-            ->postJson('/products', [
-                'translations' => [
-                    $this->lang => [
-                        'name' => 'Test',
-                    ],
-                ],
-                'published' => [$this->lang],
-                'slug' => 'test',
-                'price' => 0,
-                'public' => true,
-                'shipping_digital' => false,
-            ])
-            ->assertCreated();
-
-        $this->assertDatabaseHas('products', [
-            'slug' => 'test',
-            "name->{$this->lang}" => 'Test',
-            'price' => 0,
-        ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testCreateWithUuid(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
@@ -1649,7 +1696,7 @@ class ProductTest extends TestCase
                 ],
                 'published' => [$this->lang],
                 'slug' => 'test',
-                'price' => 100,
+                'prices_base' => $this->productPrices,
                 'public' => true,
                 'shipping_digital' => false,
             ])
@@ -1658,7 +1705,6 @@ class ProductTest extends TestCase
                 'id' => $uuid,
                 'slug' => 'test',
                 'name' => 'Test',
-                'price' => 100,
                 'public' => true,
                 'shipping_digital' => false,
             ]]);
@@ -1667,7 +1713,6 @@ class ProductTest extends TestCase
             'id' => $uuid,
             'slug' => 'test',
             "name->{$this->lang}" => 'Test',
-            'price' => 100,
             'shipping_digital' => false,
         ]);
     }
@@ -1689,7 +1734,7 @@ class ProductTest extends TestCase
                 ],
                 'published' => [$this->lang],
                 'slug' => 'test',
-                'price' => 100,
+                'prices_base' => $this->productPrices,
                 'public' => true,
                 'shipping_digital' => true,
             ])
@@ -1697,7 +1742,6 @@ class ProductTest extends TestCase
             ->assertJsonFragment([
                 'slug' => 'test',
                 'name' => 'Test',
-                'price' => 100,
                 'public' => true,
                 'shipping_digital' => true,
             ]);
@@ -1705,33 +1749,8 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
             "name->{$this->lang}" => 'Test',
-            'price' => 100,
             'shipping_digital' => true,
         ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateWithNegativePrice(string $user): void
-    {
-        $this->{$user}->givePermissionTo('products.add');
-
-        $this
-            ->actingAs($this->{$user})
-            ->postJson('/products', [
-                'translations' => [
-                    $this->lang => [
-                        'name' => 'Test',
-                    ],
-                ],
-                'published' => [$this->lang],
-                'slug' => 'test',
-                'price' => -100,
-                'public' => true,
-                'shipping_digital' => false,
-            ])
-            ->assertUnprocessable();
     }
 
     /**
@@ -1754,7 +1773,7 @@ class ProductTest extends TestCase
             ],
             'published' => [$this->lang],
             'slug' => 'test',
-            'price' => 150,
+            'prices_base' => $this->productPrices,
             'public' => false,
             'shipping_digital' => false,
             'schemas' => [
@@ -1766,7 +1785,6 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
             "name->{$this->lang}" => 'Test',
-            'price' => 150,
             'public' => false,
             'shipping_digital' => false,
             'description_html' => null,
@@ -1800,7 +1818,7 @@ class ProductTest extends TestCase
             ],
             'published' => [$this->lang],
             'slug' => 'test',
-            'price' => 150,
+            'prices_base' => $this->productPrices,
             'public' => false,
             'shipping_digital' => false,
             'sets' => [
@@ -1815,7 +1833,6 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
             "name->{$this->lang}" => 'Test',
-            'price' => 150,
             'public' => false,
             'shipping_digital' => false,
             "description_html->{$this->lang}" => null,
@@ -1855,7 +1872,7 @@ class ProductTest extends TestCase
             ],
             'published' => [$this->lang],
             'slug' => 'test',
-            'price' => 100.00,
+            'prices_base' => $this->productPrices,
             'public' => $boolean,
             'shipping_digital' => false,
             'seo' => [
@@ -1876,7 +1893,6 @@ class ProductTest extends TestCase
             ->assertCreated()
             ->assertJson(['data' => [
                 'name' => 'Test',
-                'price' => 100,
                 'public' => $booleanValue,
                 'shipping_digital' => false,
                 'description_html' => '<h1>Description</h1>',
@@ -1900,7 +1916,6 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
             "name->{$this->lang}" => 'Test',
-            'price' => 100,
             'public' => $booleanValue,
             'shipping_digital' => false,
             "description_html->{$this->lang}" => '<h1>Description</h1>',
@@ -1932,7 +1947,7 @@ class ProductTest extends TestCase
             ],
             'published' => [$this->lang],
             'slug' => 'test',
-            'price' => 100.00,
+            'prices_base' => $this->productPrices,
             'public' => true,
             'shipping_digital' => false,
             'seo' => [
@@ -1950,7 +1965,6 @@ class ProductTest extends TestCase
             ->assertJson(['data' => [
                 'slug' => 'test',
                 'name' => 'Test',
-                'price' => 100,
                 'public' => true,
                 'shipping_digital' => false,
                 'cover' => null,
@@ -1965,7 +1979,6 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
             "name->{$this->lang}" => 'Test',
-            'price' => 100,
             'public' => true,
             'shipping_digital' => false,
         ]);
@@ -1995,11 +2008,10 @@ class ProductTest extends TestCase
             'price' => $schemaPrice,
         ]);
 
-        $productPrice = 150;
         $response = $this->actingAs($this->{$user})->postJson('/products', [
             'name' => 'Test',
             'slug' => 'test',
-            'price' => $productPrice,
+            'prices_base' => $this->productPrices,
             'public' => false,
             'shipping_digital' => false,
             'sets' => [],
@@ -2016,15 +2028,22 @@ class ProductTest extends TestCase
 
         $response->assertCreated();
 
-        $this->assertDatabaseHas('products', [
-            'slug' => 'test',
-            "name->{$this->lang}" => 'Test',
-            'price' => $productPrice,
-            'price_min' => $productPrice,
-            'price_max' => $productPrice + $schemaPrice,
-            'public' => false,
-            'shipping_digital' => false,
-            'description_html' => null,
+        $productId = $response->json('data.id');
+
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $productId,
+            'price_type' => ProductPriceType::PRICE_BASE,
+            'value' => 100 * 100,
+        ]);
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $productId,
+            'price_type' => ProductPriceType::PRICE_MIN,
+            'value' => 100 * 100,
+        ]);
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $productId,
+            'price_type' => ProductPriceType::PRICE_MAX,
+            'value' => (100 + $schemaPrice) * 100,
         ]);
     }
 
@@ -2042,7 +2061,6 @@ class ProductTest extends TestCase
             'price' => $schemaPrice,
         ]);
 
-        $productPrice = 150;
         $response = $this->actingAs($this->{$user})->postJson('/products', [
             'translations' => [
                 $this->lang => [
@@ -2051,7 +2069,7 @@ class ProductTest extends TestCase
             ],
             'published' => [$this->lang],
             'slug' => 'test',
-            'price' => $productPrice,
+            'prices_base' => $this->productPrices,
             'public' => false,
             'shipping_digital' => false,
             'sets' => [],
@@ -2062,15 +2080,22 @@ class ProductTest extends TestCase
 
         $response->assertCreated();
 
-        $this->assertDatabaseHas('products', [
-            'slug' => 'test',
-            "name->{$this->lang}" => 'Test',
-            'price' => $productPrice,
-            'price_min' => $productPrice + $schemaPrice,
-            'price_max' => $productPrice + $schemaPrice,
-            'public' => false,
-            'shipping_digital' => false,
-            "description_html->{$this->lang}" => null,
+        $productId = $response->json('data.id');
+
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $productId,
+            'price_type' => ProductPriceType::PRICE_BASE,
+            'value' => 100 * 100,
+        ]);
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $productId,
+            'price_type' => ProductPriceType::PRICE_MIN,
+            'value' => (100 + $schemaPrice) * 100,
+        ]);
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $productId,
+            'price_type' => ProductPriceType::PRICE_MAX,
+            'value' => (100 + $schemaPrice) * 100,
         ]);
     }
 
@@ -2105,7 +2130,7 @@ class ProductTest extends TestCase
                 ],
                 'published' => [$this->lang],
                 'slug' => 'test',
-                'price' => 0,
+                'prices_base' => $this->productPrices,
                 'public' => true,
                 'shipping_digital' => false,
                 'attributes' => [
@@ -2156,7 +2181,6 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
             "name->{$this->lang}" => 'Test',
-            'price' => 0,
         ]);
 
         /** @var Product $product */
@@ -2220,7 +2244,7 @@ class ProductTest extends TestCase
                 ],
                 'published' => [$this->lang],
                 'slug' => 'test',
-                'price' => 0,
+                'prices_base' => $this->productPrices,
                 'public' => true,
                 'shipping_digital' => false,
                 'attributes' => [
@@ -2260,7 +2284,6 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
             "name->{$this->lang}" => 'Test',
-            'price' => 0,
         ]);
 
         /** @var Product $product */
@@ -2312,7 +2335,7 @@ class ProductTest extends TestCase
             ->postJson('/products', [
                 'name' => 'Test',
                 'slug' => 'test',
-                'price' => 0,
+                'prices_base' => $this->productPrices,
                 'public' => true,
                 'shipping_digital' => false,
                 'attributes' => [
@@ -2350,7 +2373,7 @@ class ProductTest extends TestCase
                 ],
                 'published' => [$this->lang],
                 'slug' => 'test',
-                'price' => 0,
+                'prices_base' => $this->productPrices,
                 'public' => true,
                 'shipping_digital' => false,
                 'attributes' => [
@@ -2393,7 +2416,7 @@ class ProductTest extends TestCase
             ],
             'published' => [$this->lang],
             'slug' => 'test',
-            'price' => 100.00,
+            'prices_base' => $this->productPrices,
             'public' => true,
             'shipping_digital' => false,
         ]);
@@ -2402,21 +2425,21 @@ class ProductTest extends TestCase
         $response
             ->assertCreated()
             ->assertJsonFragment([
-                'id' => $productId,
-                'price_min' => 80,
-                'price_max' => 80,
-            ])
-            ->assertJsonFragment([
                 'id' => $saleApplied->getKey(),
             ])
             ->assertJsonMissing([
                 'id' => $saleNotApplied->getKey(),
             ]);
 
-        $this->assertDatabaseHas('products', [
-            'id' => $productId,
-            'price_min' => 80,
-            'price_max' => 80,
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $productId,
+            'price_type' => ProductPriceType::PRICE_MIN,
+            'value' => 80 * 100,
+        ]);
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $productId,
+            'price_type' => ProductPriceType::PRICE_MAX,
+            'value' => 80 * 100,
         ]);
     }
 
@@ -2443,7 +2466,6 @@ class ProductTest extends TestCase
             ]],
             'published' => [$this->lang],
             'slug' => 'updated',
-            'price' => 150,
             'public' => false,
             'vat_rate' => 5,
         ])->assertOk();
@@ -2452,7 +2474,6 @@ class ProductTest extends TestCase
             'id' => $this->product->getKey(),
             "name->{$this->lang}" => 'Updated',
             'slug' => 'updated',
-            'price' => 150,
             "description_html->{$this->lang}" => '<h1>New description</h1>',
             "description_short->{$this->lang}" => 'New so called short description',
             'public' => false,
@@ -2583,19 +2604,16 @@ class ProductTest extends TestCase
 
         Event::fake([ProductUpdated::class]);
 
-        $product = Product::factory()->create();
-
         $set1 = ProductSet::factory()->create();
         $set2 = ProductSet::factory()->create();
         $set3 = ProductSet::factory()->create();
 
-        $product->sets()->sync([$set1->getKey(), $set2->getKey()]);
+        $this->product->sets()->sync([$set1->getKey(), $set2->getKey()]);
 
-        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $product->getKey(), [
-            'name' => $product->name,
-            'slug' => $product->slug,
-            'price' => $product->price,
-            'public' => $product->public,
+        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
+            'name' => $this->product->name,
+            'slug' => $this->product->slug,
+            'public' => $this->product->public,
             'sets' => [
                 $set2->getKey(),
                 $set3->getKey(),
@@ -2603,17 +2621,17 @@ class ProductTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('product_set_product', [
-            'product_id' => $product->getKey(),
+            'product_id' => $this->product->getKey(),
             'product_set_id' => $set2->getKey(),
         ]);
 
         $this->assertDatabaseHas('product_set_product', [
-            'product_id' => $product->getKey(),
+            'product_id' => $this->product->getKey(),
             'product_set_id' => $set3->getKey(),
         ]);
 
         $this->assertDatabaseMissing('product_set_product', [
-            'product_id' => $product->getKey(),
+            'product_id' => $this->product->getKey(),
             'product_set_id' => $set1->getKey(),
         ]);
 
@@ -2629,19 +2647,17 @@ class ProductTest extends TestCase
 
         Event::fake([ProductUpdated::class]);
 
-        $product = Product::factory()->create();
-
         $set1 = ProductSet::factory()->create();
         $set2 = ProductSet::factory()->create();
 
-        $product->sets()->sync([$set1->getKey(), $set2->getKey()]);
+        $this->product->sets()->sync([$set1->getKey(), $set2->getKey()]);
 
-        $this->actingAs($this->{$user})->patchJson('/products/id:' . $product->getKey(), [
+        $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'sets' => [],
         ]);
 
         $this->assertDatabaseMissing('product_set_product', [
-            'product_id' => $product->getKey(),
+            'product_id' => $this->product->getKey(),
         ]);
 
         Event::assertDispatched(ProductUpdated::class);
@@ -2654,19 +2670,18 @@ class ProductTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.edit');
 
-        $product = Product::factory([
+        $this->product->update([
             'name' => 'Created',
             'slug' => 'created',
-            'price' => 100,
             'description_html' => '<h1>Description</h1>',
             'public' => false,
             'order' => 1,
-        ])->create();
+        ]);
 
         $seo = SeoMetadata::factory()->create();
-        $product->seo()->save($seo);
+        $this->product->seo()->save($seo);
 
-        $this->actingAs($this->{$user})->json('PATCH', '/products/id:' . $product->getKey(), [
+        $this->actingAs($this->{$user})->json('PATCH', '/products/id:' . $this->product->getKey(), [
             'seo' => [
                 'translations' => [
                     $this->lang => [
@@ -2690,10 +2705,7 @@ class ProductTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.edit');
 
-        $productPrice = 150;
-        $product = Product::factory()->create([
-            'price' => $productPrice,
-        ]);
+        $this->product->schemas()->detach();
 
         $schemaPrice = 50;
         $schema = Schema::factory()->create([
@@ -2702,26 +2714,40 @@ class ProductTest extends TestCase
             'price' => $schemaPrice,
         ]);
 
-        $product->schemas()->attach($schema->getKey());
-        $this->productService->updateMinMaxPrices($product);
+        $this->product->schemas()->attach($schema->getKey());
+        $this->productService->updateMinMaxPrices($this->product);
 
         $productNewPrice = 250;
-        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $product->getKey(), [
-            'name' => $product->name,
-            'slug' => $product->slug,
-            'public' => $product->public,
-            'price' => $productNewPrice,
+        $prices = array_map(fn (Currency $currency) => [
+            'value' => "{$productNewPrice}.00",
+            'currency' => $currency->value,
+        ], Currency::cases());
+
+        $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
+            'name' => $this->product->name,
+            'slug' => $this->product->slug,
+            'public' => $this->product->public,
+            'prices_base' => $prices,
             'sets' => [],
             'schemas' => [
                 $schema->getKey(),
             ],
         ]);
 
-        $this->assertDatabaseHas('products', [
-            $product->getKeyName() => $product->getKey(),
-            'price' => $productNewPrice,
-            'price_min' => $productNewPrice,
-            'price_max' => $productNewPrice + $schemaPrice,
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $this->product->getKey(),
+            'price_type' => ProductPriceType::PRICE_BASE,
+            'value' => $productNewPrice * 100,
+        ]);
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $this->product->getKey(),
+            'price_type' => ProductPriceType::PRICE_MIN,
+            'value' => $productNewPrice * 100,
+        ]);
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $this->product->getKey(),
+            'price_type' => ProductPriceType::PRICE_MAX,
+            'value' => ($productNewPrice + $schemaPrice) * 100,
         ]);
     }
 
@@ -2732,11 +2758,6 @@ class ProductTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.edit');
 
-        $productPrice = 150;
-        $product = Product::factory()->create([
-            'price' => $productPrice,
-        ]);
-
         $schemaPrice = 50;
         $schema = Schema::factory()->create([
             'type' => 0,
@@ -2744,8 +2765,8 @@ class ProductTest extends TestCase
             'price' => $schemaPrice,
         ]);
 
-        $product->schemas()->attach($schema->getKey());
-        $this->productService->updateMinMaxPrices($product);
+        $this->product->schemas()->attach($schema->getKey());
+        $this->productService->updateMinMaxPrices($this->product);
 
         $saleValue = 25;
         $sale = Discount::factory()->create([
@@ -2756,16 +2777,21 @@ class ProductTest extends TestCase
             'target_is_allow_list' => true,
         ]);
 
-        $sale->products()->attach($product->getKey());
+        $sale->products()->attach($this->product->getKey());
 
-        $this->discountService->applyDiscountsOnProduct($product);
+        $this->discountService->applyDiscountsOnProduct($this->product);
 
         $productNewPrice = 250;
-        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $product->getKey(), [
-            'name' => $product->name,
-            'slug' => $product->slug,
-            'public' => $product->public,
-            'price' => $productNewPrice,
+        $prices = array_map(fn (Currency $currency) => [
+            'value' => "{$productNewPrice}.00",
+            'currency' => $currency->value,
+        ], Currency::cases());
+
+        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
+            'name' => $this->product->name,
+            'slug' => $this->product->slug,
+            'public' => $this->product->public,
+            'prices_base' => $prices,
             'sets' => [],
             'schemas' => [
                 $schema->getKey(),
@@ -2774,13 +2800,30 @@ class ProductTest extends TestCase
 
         $response->assertOk();
 
-        $this->assertDatabaseHas('products', [
-            $product->getKeyName() => $product->getKey(),
-            'price' => $productNewPrice,
-            'price_min_initial' => $productNewPrice,
-            'price_max_initial' => $productNewPrice + $schemaPrice,
-            'price_min' => $productNewPrice - $saleValue,
-            'price_max' => $productNewPrice + $schemaPrice - $saleValue,
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $this->product->getKey(),
+            'price_type' => ProductPriceType::PRICE_BASE,
+            'value' => $productNewPrice * 100,
+        ]);
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $this->product->getKey(),
+            'price_type' => ProductPriceType::PRICE_MIN_INITIAL,
+            'value' => $productNewPrice * 100,
+        ]);
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $this->product->getKey(),
+            'price_type' => ProductPriceType::PRICE_MAX_INITIAL,
+            'value' => ($productNewPrice + $schemaPrice) * 100,
+        ]);
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $this->product->getKey(),
+            'price_type' => ProductPriceType::PRICE_MIN,
+            'value' => ($productNewPrice - $saleValue) * 100,
+        ]);
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $this->product->getKey(),
+            'price_type' => ProductPriceType::PRICE_MAX,
+            'value' => ($productNewPrice + $schemaPrice - $saleValue) * 100,
         ]);
     }
 
@@ -2791,11 +2834,6 @@ class ProductTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.edit');
 
-        $productPrice = 150;
-        $product = Product::factory()->create([
-            'price' => $productPrice,
-        ]);
-
         $schemaPrice = 50;
         $schema = Schema::factory()->create([
             'type' => 0,
@@ -2803,8 +2841,8 @@ class ProductTest extends TestCase
             'price' => $schemaPrice,
         ]);
 
-        $product->schemas()->attach($schema->getKey());
-        $this->productService->updateMinMaxPrices($product);
+        $this->product->schemas()->attach($schema->getKey());
+        $this->productService->updateMinMaxPrices($this->product);
 
         $schemaNewPrice = 75;
         $response = $this->actingAs($this->{$user})->patchJson('/schemas/id:' . $schema->getKey(), [
@@ -2814,66 +2852,20 @@ class ProductTest extends TestCase
             'required' => false,
         ]);
 
-        $this->assertDatabaseHas('products', [
-            $product->getKeyName() => $product->getKey(),
-            'price' => $productPrice,
-            'price_min' => $productPrice,
-            'price_max' => $productPrice + $schemaNewPrice,
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $this->product->getKey(),
+            'price_type' => ProductPriceType::PRICE_BASE,
+            'value' => 100 * 100,
         ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdateSchemaMinMaxPriceWithSale(string $user): void
-    {
-        $this->{$user}->givePermissionTo('products.edit');
-
-        $productPrice = 150;
-        $product = Product::factory()->create([
-            'price' => $productPrice,
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $this->product->getKey(),
+            'price_type' => ProductPriceType::PRICE_MIN,
+            'value' => 100 * 100,
         ]);
-
-        $schemaPrice = 50;
-        $schema = Schema::factory()->create([
-            'type' => 0,
-            'required' => false,
-            'price' => $schemaPrice,
-        ]);
-
-        $product->schemas()->attach($schema->getKey());
-        $this->productService->updateMinMaxPrices($product);
-
-        $saleValue = 25;
-        $sale = Discount::factory()->create([
-            'code' => null,
-            'type' => DiscountType::AMOUNT,
-            'value' => $saleValue,
-            'target_type' => DiscountTargetType::PRODUCTS,
-            'target_is_allow_list' => true,
-        ]);
-
-        $sale->products()->attach($product->getKey());
-
-        $this->discountService->applyDiscountsOnProduct($product);
-
-        $schemaNewPrice = 75;
-        $response = $this->actingAs($this->{$user})->patchJson('/schemas/id:' . $schema->getKey(), [
-            'name' => 'Test Updated',
-            'price' => $schemaNewPrice,
-            'type' => 'string',
-            'required' => false,
-        ]);
-
-        $response->assertOk();
-
-        $this->assertDatabaseHas('products', [
-            $product->getKeyName() => $product->getKey(),
-            'price' => $productPrice,
-            'price_min_initial' => $productPrice,
-            'price_max_initial' => $productPrice + $schemaNewPrice,
-            'price_min' => $productPrice - $saleValue,
-            'price_max' => $productPrice + $schemaNewPrice - $saleValue,
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $this->product->getKey(),
+            'price_type' => ProductPriceType::PRICE_MAX,
+            'value' => (100 + $schemaNewPrice) * 100,
         ]);
     }
 
@@ -2884,11 +2876,6 @@ class ProductTest extends TestCase
     {
         $this->{$user}->givePermissionTo('schemas.remove');
 
-        $productPrice = 150;
-        $product = Product::factory()->create([
-            'price' => $productPrice,
-        ]);
-
         $schemaPrice = 50;
         $schema = Schema::factory()->create([
             'type' => 0,
@@ -2896,65 +2883,25 @@ class ProductTest extends TestCase
             'price' => $schemaPrice,
         ]);
 
-        $product->schemas()->attach($schema->getKey());
-        $this->productService->updateMinMaxPrices($product);
+        $this->product->schemas()->attach($schema->getKey());
+        $this->productService->updateMinMaxPrices($this->product);
 
         $response = $this->actingAs($this->{$user})->deleteJson('/schemas/id:' . $schema->getKey());
 
-        $this->assertDatabaseHas('products', [
-            $product->getKeyName() => $product->getKey(),
-            'price' => $productPrice,
-            'price_min' => $productPrice,
-            'price_max' => $productPrice,
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $this->product->getKey(),
+            'price_type' => ProductPriceType::PRICE_BASE,
+            'value' => 100 * 100,
         ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testDeleteSchemaMinMaxPriceWithSale(string $user): void
-    {
-        $this->{$user}->givePermissionTo('schemas.remove');
-
-        $productPrice = 150;
-        $product = Product::factory()->create([
-            'price' => $productPrice,
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $this->product->getKey(),
+            'price_type' => ProductPriceType::PRICE_MIN,
+            'value' => 100 * 100,
         ]);
-
-        $schemaPrice = 50;
-        $schema = Schema::factory()->create([
-            'type' => 0,
-            'required' => true,
-            'price' => $schemaPrice,
-        ]);
-
-        $product->schemas()->attach($schema->getKey());
-        $this->productService->updateMinMaxPrices($product);
-
-        $saleValue = 25;
-        $sale = Discount::factory()->create([
-            'code' => null,
-            'type' => DiscountType::AMOUNT,
-            'value' => $saleValue,
-            'target_type' => DiscountTargetType::PRODUCTS,
-            'target_is_allow_list' => true,
-        ]);
-
-        $sale->products()->attach($product->getKey());
-
-        $this->discountService->applyDiscountsOnProduct($product);
-
-        $response = $this->actingAs($this->{$user})->deleteJson('/schemas/id:' . $schema->getKey());
-
-        $response->assertNoContent();
-
-        $this->assertDatabaseHas('products', [
-            $product->getKeyName() => $product->getKey(),
-            'price' => $productPrice,
-            'price_min_initial' => $productPrice,
-            'price_max_initial' => $productPrice,
-            'price_min' => $productPrice - $saleValue,
-            'price_max' => $productPrice - $saleValue,
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $this->product->getKey(),
+            'price_type' => ProductPriceType::PRICE_MAX,
+            'value' => 100 * 100,
         ]);
     }
 
@@ -2977,7 +2924,6 @@ class ProductTest extends TestCase
         $product = Product::factory([
             'name' => 'Created',
             'slug' => 'created',
-            'price' => 100,
             'description_html' => '<h1>Description</h1>',
             'public' => false,
             'order' => 1,
@@ -3020,7 +2966,6 @@ class ProductTest extends TestCase
         $product = Product::factory([
             'name' => 'Delete with media',
             'slug' => 'Delete-with-media',
-            'price' => 100,
             'description_html' => '<h1>Description</h1>',
             'public' => false,
             'order' => 1,

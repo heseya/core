@@ -2,23 +2,46 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Currency;
 use App\Models\Item;
 use App\Models\Product;
+use App\Services\Contracts\ProductServiceContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Heseya\Dto\DtoException;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class ItemProductTest extends TestCase
 {
     private Product $product;
     private Collection $items;
+    private array $prices;
 
+    /**
+     * @throws RoundingNecessaryException
+     * @throws DtoException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
     public function setUp(): void
     {
         parent::setUp();
         Product::query()->delete();
         Item::query()->delete();
-        $this->product = Product::factory()->create();
+
+        /** @var ProductServiceContract $productService */
+        $productService = App::make(ProductServiceContract::class);
+        $this->product = $productService->create(FakeDto::productCreateDto());
+
         $this->items = Item::factory()->count(3)->create();
+        $this->prices = array_map(fn (Currency $currency) => [
+            'value' => '10.00',
+            'currency' => $currency->value,
+        ], Currency::cases());
     }
 
     /**
@@ -33,7 +56,7 @@ class ItemProductTest extends TestCase
             ],
             'published' => [$this->lang],
             'slug' => 'test',
-            'price' => 50,
+            'prices_base' => $this->prices,
             'public' => true,
             'shipping_digital' => false,
             'items' => [
@@ -63,7 +86,7 @@ class ItemProductTest extends TestCase
             ->postJson('/products', [
                 'name' => 'test',
                 'slug' => 'test',
-                'price' => 50,
+                'prices_base' => $this->prices,
                 'public' => true,
                 'shipping_digital' => false,
                 'items' => [
@@ -73,7 +96,7 @@ class ItemProductTest extends TestCase
                     ],
                 ],
             ])
-            ->assertStatus(422);
+            ->assertUnprocessable();
     }
 
     /**
@@ -85,7 +108,7 @@ class ItemProductTest extends TestCase
         $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
-            'price' => 50,
+            'prices_base' => $this->prices,
             'public' => true,
             'items' => [
                 [
@@ -112,7 +135,7 @@ class ItemProductTest extends TestCase
         $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
-            'price' => 50,
+            'prices_base' => $this->prices,
             'public' => true,
         ]);
         $response
@@ -129,7 +152,7 @@ class ItemProductTest extends TestCase
         $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
-            'price' => 50,
+            'prices_base' => $this->prices,
             'public' => true,
             'items' => [],
         ]);
@@ -151,7 +174,7 @@ class ItemProductTest extends TestCase
         $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
-            'price' => 50,
+            'prices_base' => $this->prices,
             'public' => true,
             'items' => [
                 [
@@ -186,7 +209,7 @@ class ItemProductTest extends TestCase
         $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
-            'price' => 50,
+            'prices_base' => $this->prices,
             'public' => true,
             'items' => [],
         ]);
@@ -222,7 +245,7 @@ class ItemProductTest extends TestCase
         $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
-            'price' => 50,
+            'prices_base' => $this->prices,
             'public' => true,
         ]);
 
@@ -257,11 +280,12 @@ class ItemProductTest extends TestCase
         $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
-            'price' => 50,
+            'prices_base' => $this->prices,
             'public' => true,
         ]);
 
         $response
+            ->assertOk()
             ->assertJsonFragment(['required_quantity' => 5])
             ->assertJsonFragment(['required_quantity' => 15])
             ->assertJsonMissing(['quantity']);

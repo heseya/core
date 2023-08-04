@@ -2,18 +2,16 @@
 
 namespace App\Providers;
 
+use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\ProductRepository;
 use App\Services\AnalyticsService;
 use App\Services\AppService;
-use App\Services\AttributeOptionService;
-use App\Services\AttributeService;
 use App\Services\AuthService;
 use App\Services\AvailabilityService;
 use App\Services\BannerService;
 use App\Services\ConsentService;
 use App\Services\Contracts\AnalyticsServiceContract;
 use App\Services\Contracts\AppServiceContract;
-use App\Services\Contracts\AttributeOptionServiceContract;
-use App\Services\Contracts\AttributeServiceContract;
 use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\BannerServiceContract;
@@ -102,6 +100,7 @@ use App\Services\UserLoginAttemptService;
 use App\Services\UserService;
 use App\Services\WebHookService;
 use App\Services\WishlistService;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -139,8 +138,6 @@ class AppServiceProvider extends ServiceProvider
         AvailabilityServiceContract::class => AvailabilityService::class,
         DocumentServiceContract::class => DocumentService::class,
         MetadataServiceContract::class => MetadataService::class,
-        AttributeServiceContract::class => AttributeService::class,
-        AttributeOptionServiceContract::class => AttributeOptionService::class,
         SortServiceContract::class => SortService::class,
         ConsentServiceContract::class => ConsentService::class,
         BannerServiceContract::class => BannerService::class,
@@ -157,6 +154,9 @@ class AppServiceProvider extends ServiceProvider
         PriceServiceContract::class => PriceService::class,
         MediaAttachmentServiceContract::class => MediaAttachmentService::class,
         SilverboxServiceContract::class => SilverboxService::class,
+
+        // Repositories
+        ProductRepositoryContract::class => ProductRepository::class,
     ];
 
     /**
@@ -168,12 +168,17 @@ class AppServiceProvider extends ServiceProvider
             $this->app->bind($abstract, $concrete);
         }
 
+        Factory::guessFactoryNamesUsing(
+            /** @phpstan-ignore-next-line */
+            fn (string $modelName) => 'Database\\Factories\\' . class_basename($modelName) . 'Factory',
+        );
+
         /*
          * Local register of ide helper.
          * Needs to be full path.
          */
         if ($this->app->isLocal()) {
-            $this->app->register('\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider');
+            $this->app->register('Barryvdh\\LaravelIdeHelper\\IdeHelperServiceProvider');
         }
     }
 }

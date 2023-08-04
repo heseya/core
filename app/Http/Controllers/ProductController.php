@@ -17,9 +17,13 @@ use App\Http\Resources\ProductResource;
 use App\Http\Resources\ResourceCollection;
 use App\Models\MediaAttachment;
 use App\Models\Product;
-use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\ProductRepository;
 use App\Services\Contracts\MediaAttachmentServiceContract;
 use App\Services\Contracts\ProductServiceContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Heseya\Dto\DtoException;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Gate;
@@ -30,10 +34,16 @@ final class ProductController extends Controller
 {
     public function __construct(
         private readonly ProductServiceContract $productService,
-        private readonly ProductRepositoryContract $productRepository,
         private readonly MediaAttachmentServiceContract $attachmentService,
+        private readonly ProductRepository $productRepository,
     ) {}
 
+    /**
+     * @throws DtoException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
     public function index(ProductIndexRequest $request): JsonResource
     {
         $products = $this->productRepository->search(

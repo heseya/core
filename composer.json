@@ -11,6 +11,8 @@
     "ext-openssl": "*",
     "ext-soap": "*",
     "bensampo/laravel-enum": "^v6.2.1",
+    "brick/math": "^0.11.0",
+    "brick/money": "^0.8.0",
     "guzzlehttp/guzzle": "^7.4",
     "guzzlehttp/psr7": "^2.2",
     "heseya/2fa": "^2.0",
@@ -19,7 +21,7 @@
     "heseya/laravel-searchable": "^2.0",
     "heseya/pagination": "^1.0.3",
     "heseya/resource": "^1.0",
-    "laravel/framework": "10.3.*",
+    "laravel/framework": "^10.3.0",
     "laravel/socialite": "^5.5",
     "league/omnipay": "^3.2",
     "omnipay/common": "^3.2",
@@ -69,7 +71,9 @@
     "psr-4": {
       "App\\": "app/",
       "Database\\Factories\\": "database/factories/",
-      "Database\\Seeders\\": "database/seeders/"
+      "Database\\Seeders\\": "database/seeders/",
+      "Domain\\": "src/Domain",
+      "Support\\": "src/Support"
     }
   },
   "autoload-dev": {
@@ -129,7 +133,8 @@
       "@stan"
     ],
     "pint": [
-      "./vendor/bin/pint"
+      "./vendor/bin/pint ./src --config ./pint.json",
+      "./vendor/bin/pint ./app --config ./pint-app.json"
     ],
     "pre-commit": [
       "@style",
@@ -157,7 +162,8 @@
       "@php artisan db:seed --class=\"Database\\Seeders\\InitSeeder\""
     ],
     "stan": [
-      "./vendor/bin/phpstan analyse --memory-limit=2G"
+      "./vendor/bin/phpstan analyse -c ./phpstan.neon --memory-limit=2G",
+      "./vendor/bin/phpstan analyse -c ./phpstan-app.neon --memory-limit=2G"
     ],
     "style": [
       "@normalize",

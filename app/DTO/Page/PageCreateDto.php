@@ -6,13 +6,13 @@ namespace App\DTO\Page;
 
 use App\DTO\SeoMetadata\SeoMetadataDto;
 use App\Rules\Translations;
-use App\Utils\Map;
 use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Attributes\Validation\Unique;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
+use Support\Utils\Map;
 
 final class PageCreateDto extends Data
 {

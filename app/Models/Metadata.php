@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Casts\MetadataValue;
 use App\Enums\MetadataType;
+use Domain\Metadata\Casts\MetadataValue;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -21,6 +21,8 @@ class Metadata extends Model
         'value',
         'value_type',
         'public',
+        'model_id',
+        'model_type',
     ];
 
     protected $casts = [

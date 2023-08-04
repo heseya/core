@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use Brick\Money\Money;
 use Illuminate\Support\Carbon;
 
 class ProductPriceUpdated extends WebHookEvent
@@ -10,10 +11,10 @@ class ProductPriceUpdated extends WebHookEvent
 
     public function __construct(
         private readonly string $id,
-        private readonly ?float $oldPriceMin,
-        private readonly ?float $oldPriceMax,
-        private readonly float $newPriceMin,
-        private readonly float $newPriceMax,
+        private readonly ?Money $oldPriceMin,
+        private readonly ?Money $oldPriceMax,
+        private readonly Money $newPriceMin,
+        private readonly Money $newPriceMax,
     ) {
         $this->updatedAt = Carbon::now()->toIso8601String();
         parent::__construct();
@@ -23,10 +24,10 @@ class ProductPriceUpdated extends WebHookEvent
     {
         return [
             'id' => $this->id,
-            'old_price_min' => $this->oldPriceMin,
-            'old_price_max' => $this->oldPriceMax,
-            'new_price_min' => $this->newPriceMin,
-            'new_price_max' => $this->newPriceMax,
+            'old_price_min' => $this->oldPriceMin?->getAmount(),
+            'old_price_max' => $this->oldPriceMax?->getAmount(),
+            'new_price_min' => $this->newPriceMin->getAmount(),
+            'new_price_max' => $this->newPriceMax->getAmount(),
             'updated_at' => $this->updatedAt,
         ];
     }

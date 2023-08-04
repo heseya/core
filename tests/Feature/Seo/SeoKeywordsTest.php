@@ -4,8 +4,15 @@ namespace Tests\Feature\Seo;
 
 use App\Models\Product;
 use App\Models\SeoMetadata;
+use App\Services\Contracts\ProductServiceContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Heseya\Dto\DtoException;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class SeoKeywordsTest extends TestCase
 {
@@ -113,10 +120,17 @@ class SeoKeywordsTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
+     * @throws DtoException
      */
     public function testUpdateProduct(string $user): void
     {
-        $product = Product::factory()->create();
+        /** @var ProductServiceContract $productService */
+        $productService = App::make(ProductServiceContract::class);
+        $product = $productService->create(FakeDto::productCreateDto());
 
         $this->{$user}->givePermissionTo('products.edit');
         $this

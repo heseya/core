@@ -2,7 +2,7 @@
 
 namespace App\Rules;
 
-use App\Models\AttributeOption;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Str;
 
