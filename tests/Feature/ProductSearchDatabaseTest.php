@@ -5,8 +5,6 @@ namespace Tests\Feature;
 use App\Dtos\PriceDto;
 use App\Enums\Currency;
 use App\Enums\Product\ProductPriceType;
-use App\Models\Attribute;
-use App\Models\AttributeOption;
 use App\Models\Media;
 use App\Models\Product;
 use App\Models\ProductSet;

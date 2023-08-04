@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Dtos\PriceDto;
 use App\Dtos\ProductCreateDto;
-use App\Dtos\ProductSearchDto;
 use App\Dtos\ProductUpdateDto;
 use App\Enums\Currency;
 use App\Enums\Product\ProductPriceType;
@@ -32,11 +31,8 @@ use Brick\Money\Exception\MoneyMismatchException;
 use Domain\ProductAttribute\Services\AttributeService;
 use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
 
 final readonly class ProductService implements ProductServiceContract
 {
@@ -51,19 +47,6 @@ final readonly class ProductService implements ProductServiceContract
         private ProductRepositoryContract $productRepository,
         private TranslationServiceContract $translationService,
     ) {}
-
-    public function search(ProductSearchDto $dto): LengthAwarePaginator
-    {
-        $query = Product::searchByCriteria($dto->toArray())
-            ->with(['attributes', 'metadata', 'media', 'tags', 'items'])
-            ->sort($dto->getSort());
-
-        if (Gate::denies('products.show_hidden')) {
-            $query->where('products.public', true);
-        }
-
-        return $query->paginate(Config::get('pagination.per_page'));
-    }
 
     /**
      * @throws DtoException

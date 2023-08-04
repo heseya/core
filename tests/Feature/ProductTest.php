@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Dtos\PriceDto;
-use App\Enums\AttributeType;
 use App\Enums\ConditionType;
 use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
