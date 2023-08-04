@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Dtos\SavedAddressDto;
 use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\SavedAddressType;
 use App\Exceptions\ClientException;
 use App\Models\Address;
 use App\Models\SavedAddress;
@@ -14,11 +15,9 @@ use Illuminate\Support\Facades\DB;
 
 class SavedAddressService implements SavedAddressServiceContract
 {
-    public function storeAddress(SavedAddressDto $addressDto, int $type): ?SavedAddress
+    public function storeAddress(SavedAddressDto $addressDto, SavedAddressType $type): ?SavedAddress
     {
-        $savedAddress = null;
-
-        DB::transaction(function () use ($addressDto, &$savedAddress, $type): void {
+        $savedAddress = DB::transaction(function () use ($addressDto, $type): SavedAddress {
             $address = Address::create([
                 'name' => $addressDto->getAddress()['name'],
                 'phone' => $addressDto->getAddress()['phone'],
@@ -29,7 +28,7 @@ class SavedAddressService implements SavedAddressServiceContract
                 'vat' => $addressDto->getAddress()['vat'],
             ]);
 
-            $savedAddress = SavedAddress::create([
+            return SavedAddress::create([
                 'default' => $addressDto->getDefault(),
                 'name' => $addressDto->getName(),
                 'user_id' => Auth::id(),
@@ -38,7 +37,7 @@ class SavedAddressService implements SavedAddressServiceContract
             ]);
         });
 
-        if ($savedAddress?->default) {
+        if ($savedAddress->default) {
             $this->defaultSet($savedAddress, $type);
         }
 
@@ -48,7 +47,7 @@ class SavedAddressService implements SavedAddressServiceContract
     public function updateAddress(
         SavedAddress $address,
         SavedAddressDto $addressDto,
-        int $type
+        SavedAddressType $type
     ): SavedAddress {
         if (Auth::id() !== $address->user_id) {
             throw new AuthenticationException();
@@ -91,11 +90,11 @@ class SavedAddressService implements SavedAddressServiceContract
         $address->delete();
     }
 
-    public function defaultSet(SavedAddress $address, int $type): void
+    public function defaultSet(SavedAddress $address, SavedAddressType $type): void
     {
         SavedAddress::where('id', '!=', $address->getKey())
             ->where('user_id', '=', $address->user_id)
-            ->where('type', '=', $type)
+            ->where('type', '=', $type->value)
             ->update(['default' => false]);
     }
 }

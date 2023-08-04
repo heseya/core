@@ -74,15 +74,15 @@ class Role extends SpatieRole
         $user = Auth::user();
 
         return $user !== null
-            && $this->type->isNot(RoleType::UNAUTHENTICATED)
-            && $this->type->isNot(RoleType::AUTHENTICATED)
+            && $this->type !== RoleType::UNAUTHENTICATED
+            && $this->type !== RoleType::AUTHENTICATED
             && $user->hasAllPermissions($this->getAllPermissions());
     }
 
     protected static function booted(): void
     {
         static::addGlobalScope('order', function (Builder $builder): void {
-            $builder->orderByRaw('type = ' . RoleType::OWNER . ' DESC, type ASC');
+            $builder->orderByRaw('type = ' . RoleType::OWNER->value . ' DESC, type ASC');
         });
     }
 }

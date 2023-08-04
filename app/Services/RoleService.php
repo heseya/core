@@ -89,11 +89,7 @@ class RoleService implements RoleServiceContract
      */
     public function delete(Role $role): void
     {
-        if (
-            $role->type->is(RoleType::OWNER)
-            || $role->type->is(RoleType::UNAUTHENTICATED)
-            || $role->type->is(RoleType::AUTHENTICATED)
-        ) {
+        if (in_array($role->type, [RoleType::OWNER, RoleType::UNAUTHENTICATED, RoleType::AUTHENTICATED])) {
             throw new ClientException(Exceptions::CLIENT_DELETE_BUILT_IN_ROLE);
         }
 

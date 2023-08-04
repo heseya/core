@@ -2,16 +2,18 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
+use App\Enums\Traits\EnumTrait;
 
-final class SchemaType extends Enum
+enum SchemaType: int
 {
-    public const STRING = 0;
-    public const NUMERIC = 1;
-    public const BOOLEAN = 2;
-    public const DATE = 3;
-    public const SELECT = 4;
-    public const FILE = 5;
-    public const MULTIPLY = 6;
-    public const MULTIPLY_SCHEMA = 7;
+    use EnumTrait;
+
+    case STRING = 0;
+    case NUMERIC = 1;
+    case BOOLEAN = 2;
+    case DATE = 3;
+    case SELECT = 4;
+    case FILE = 5;
+    case MULTIPLY = 6;
+    case MULTIPLY_SCHEMA = 7;
 }

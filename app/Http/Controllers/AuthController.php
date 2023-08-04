@@ -8,6 +8,7 @@ use App\Dtos\TFAConfirmDto;
 use App\Dtos\TFAPasswordDto;
 use App\Dtos\TFASetupDto;
 use App\Dtos\UpdateProfileDto;
+use App\Enums\SavedAddressType;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordChangeRequest;
 use App\Http\Requests\PasswordResetRequest;
@@ -191,7 +192,7 @@ class AuthController extends Controller
         return UserResource::make($this->authService->register($dto));
     }
 
-    public function storeSavedAddress(SavedAddressStoreRequest $request, int $type): JsonResource
+    public function storeSavedAddress(SavedAddressStoreRequest $request, SavedAddressType $type): JsonResource
     {
         $this->savedAddersService->storeAddress(
             SavedAddressDto::instantiateFromRequest($request),
@@ -201,7 +202,7 @@ class AuthController extends Controller
         return SavedAddressResource::collection(
             SavedAddress::query()->where([
                 'user_id' => Auth::id(),
-                'type' => $type,
+                'type' => $type->value,
             ])->get()
         );
     }
@@ -209,7 +210,7 @@ class AuthController extends Controller
     public function updateSavedAddress(
         SavedAddressUpdateRequest $request,
         SavedAddress $address,
-        int $type
+        SavedAddressType $type
     ): JsonResource {
         $this->savedAddersService->updateAddress(
             $address,
@@ -225,14 +226,14 @@ class AuthController extends Controller
         );
     }
 
-    public function deleteSavedAddress(SavedAddress $address, int $type): JsonResource
+    public function deleteSavedAddress(SavedAddress $address, SavedAddressType $type): JsonResource
     {
         $this->savedAddersService->deleteSavedAddress($address);
 
         return SavedAddressResource::collection(
             SavedAddress::query()->where([
                 'user_id' => Auth::id(),
-                'type' => $type,
+                'type' => $type->value,
             ])->get()
         );
     }

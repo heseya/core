@@ -49,16 +49,16 @@ readonly class UserService implements UserServiceContract
         if (!$dto->getRoles() instanceof Missing) {
             $roleModels = Role::query()
                 ->whereIn('id', $dto->getRoles())
-                ->orWhere('type', RoleType::AUTHENTICATED)
+                ->orWhere('type', RoleType::AUTHENTICATED->value)
                 ->get();
         } else {
             $roleModels = Role::query()
-                ->where('type', RoleType::AUTHENTICATED)
+                ->where('type', RoleType::AUTHENTICATED->value)
                 ->get();
         }
 
         $permissions = $roleModels->flatMap(
-            fn ($role) => $role->type->value !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
+            fn ($role) => $role->type !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
         )->unique();
 
         if (!Auth::user()?->hasAllPermissions($permissions)) {
@@ -99,14 +99,14 @@ readonly class UserService implements UserServiceContract
             /** @var Collection<int, Role> $roleModels */
             $roleModels = Role::query()
                 ->whereIn('id', $dto->getRoles())
-                ->orWhere('type', RoleType::AUTHENTICATED)
+                ->orWhere('type', RoleType::AUTHENTICATED->value)
                 ->get();
 
             $newRoles = $roleModels->diff($user->roles);
             $removedRoles = $user->roles->diff($roleModels);
 
             $permissions = $newRoles->flatMap(
-                fn ($role) => $role->type->value !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
+                fn ($role) => $role->type !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
             )->unique();
 
             if (!$authenticable?->hasAllPermissions($permissions)) {
@@ -114,7 +114,7 @@ readonly class UserService implements UserServiceContract
             }
 
             $permissions = $removedRoles->flatMap(
-                fn (Role $role) => $role->type->value !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
+                fn (Role $role) => $role->type !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
             )->unique();
 
             if (!$authenticable->hasAllPermissions($permissions)) {
@@ -123,7 +123,7 @@ readonly class UserService implements UserServiceContract
 
             /** @var Role $owner */
             $owner = Role::query()
-                ->where('type', RoleType::OWNER)
+                ->where('type', RoleType::OWNER->value)
                 ->first();
 
             if ($newRoles->contains($owner) && !$authenticable->hasRole($owner)) {
@@ -137,7 +137,7 @@ readonly class UserService implements UserServiceContract
 
                 $ownerCount = User::query()->whereHas(
                     'roles',
-                    fn (Builder $query) => $query->where('type', RoleType::OWNER),
+                    fn (Builder $query) => $query->where('type', RoleType::OWNER->value),
                 )->count();
 
                 if ($ownerCount < 2) {
@@ -162,7 +162,7 @@ readonly class UserService implements UserServiceContract
     {
         $authenticable = Auth::user();
 
-        $owner = Role::query()->where('type', RoleType::OWNER)->firstOrFail();
+        $owner = Role::query()->where('type', RoleType::OWNER->value)->firstOrFail();
 
         if ($user->hasRole($owner)) {
             if (!$authenticable?->hasRole($owner)) {
@@ -171,7 +171,7 @@ readonly class UserService implements UserServiceContract
 
             $ownerCount = User::query()->whereHas(
                 'roles',
-                fn (Builder $query) => $query->where('type', RoleType::OWNER),
+                fn (Builder $query) => $query->where('type', RoleType::OWNER->value),
             )->count();
 
             if ($ownerCount < 2) {

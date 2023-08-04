@@ -2,24 +2,24 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
-use Exception;
+use App\Enums\Traits\EnumTrait;
 
-final class DiscountTargetType extends Enum
+enum DiscountTargetType: string
 {
-    public const ORDER_VALUE = 'order-value';
-    public const PRODUCTS = 'products';
-    public const SHIPPING_PRICE = 'shipping-price';
-    public const CHEAPEST_PRODUCT = 'cheapest-product';
+    use EnumTrait;
 
-    public static function getPriority(string $value): int
+    case CHEAPEST_PRODUCT = 'cheapest-product';
+    case ORDER_VALUE = 'order-value';
+    case PRODUCTS = 'products';
+    case SHIPPING_PRICE = 'shipping-price';
+
+    public function getPriority(): int
     {
-        return match ($value) {
+        return match ($this) {
             self::PRODUCTS => 0,
             self::CHEAPEST_PRODUCT => 1,
             self::ORDER_VALUE => 2,
-            self::SHIPPING_PRICE => 3,
-            default => throw new Exception('Unknown discount target type'),
+            self::SHIPPING_PRICE => 3
         };
     }
 }

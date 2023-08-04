@@ -11,7 +11,7 @@ return new class extends Migration {
     public function up(): void
     {
         /** @var Role $unauthenticated */
-        $unauthenticated = Role::query()->where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $unauthenticated = Role::query()->where('type', RoleType::UNAUTHENTICATED->value)->firstOrFail();
         $unauthenticated->givePermissionTo('attributes.show');
         $unauthenticated->save();
     }
@@ -22,7 +22,7 @@ return new class extends Migration {
     public function down(): void
     {
         /** @var Role $unauthenticated */
-        $unauthenticated = Role::query()->where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $unauthenticated = Role::query()->where('type', RoleType::UNAUTHENTICATED->value)->firstOrFail();
         $unauthenticated->revokePermissionTo('attributes.show');
         $unauthenticated->save();
     }

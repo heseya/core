@@ -13,11 +13,11 @@ use App\Payments\PayPal;
 use App\Payments\PayU;
 use App\Payments\Przelewy24;
 use App\Services\Contracts\PaymentServiceContract;
-use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Enum;
 use Throwable;
 
 final class PaymentService implements PaymentServiceContract
@@ -76,7 +76,7 @@ final class PaymentService implements PaymentServiceContract
         }
 
         $validator = Validator::make($response->json(), [
-            'status' => ['required', new EnumValue(PaymentStatus::class)],
+            'status' => ['required', new Enum(PaymentStatus::class)],
             'amount' => ['required', 'numeric'],
             'redirect_url' => ['nullable', 'string', 'max:1000'],
             'continue_url' => ['nullable', 'string', 'max:1000'],

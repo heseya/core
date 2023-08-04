@@ -14,7 +14,6 @@ use App\Rules\OptionAvailable;
 use App\SortColumnTypes\TranslatedColumn;
 use App\Traits\HasMetadata;
 use App\Traits\Sortable;
-use BenSampo\Enum\Exceptions\InvalidEnumKeyException;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -118,9 +117,11 @@ class Schema extends Model implements SortableContract, Translatable
         }
 
         if (
-            $this->type->is(SchemaType::NUMERIC)
-            || $this->type->is(SchemaType::MULTIPLY)
-            || $this->type->is(SchemaType::MULTIPLY_SCHEMA)
+            in_array($this->type, [
+                SchemaType::NUMERIC,
+                SchemaType::MULTIPLY,
+                SchemaType::MULTIPLY_SCHEMA,
+            ])
         ) {
             $validation->push('numeric');
         }
@@ -152,7 +153,7 @@ class Schema extends Model implements SortableContract, Translatable
     {
         $items = [];
 
-        if ($value === null || !$this->type->is(SchemaType::SELECT)) {
+        if ($value === null || $this->type !== SchemaType::SELECT) {
             return $items;
         }
 
@@ -176,16 +177,13 @@ class Schema extends Model implements SortableContract, Translatable
             ->orderBy('name', 'DESC');
     }
 
-    /**
-     * @throws InvalidEnumKeyException
-     */
     public function setTypeAttribute(mixed $value): void
     {
-        if (!is_int($value)) {
-            $value = SchemaType::fromKey(Str::upper($value));
+        if (is_string($value)) {
+            $value = SchemaType::fromName($value);
         }
 
-        $this->attributes['type'] = $value;
+        $this->setEnumCastableAttribute('type', $value);
     }
 
     public function products(): BelongsToMany

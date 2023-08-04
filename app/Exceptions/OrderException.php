@@ -2,15 +2,15 @@
 
 namespace App\Exceptions;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use Throwable;
 
 class OrderException extends StoreException
 {
     public function __construct(
-        string $message = '',
-        int $code = 0,
+        Exceptions|string $message = '',
         ?Throwable $previous = null
     ) {
-        parent::__construct($message, $code, $previous);
+        parent::__construct($message, $previous);
     }
 }

@@ -93,9 +93,9 @@ class OrderDocumentTest extends TestCase
         $response = $this->actingAs($this->{$user})
             ->deleteJson(
                 'orders/id:'
-                . $this->order->getKey()
-                . '/docs/id:'
-                . $this->order->documents()->latest()->first()->pivot->id
+                    . $this->order->getKey()
+                    . '/docs/id:'
+                    . $this->order->documents()->latest()->first()->pivot->id
             );
 
         $response->assertStatus(204);
@@ -184,9 +184,9 @@ class OrderDocumentTest extends TestCase
             ->json(
                 'GET',
                 'orders/id:'
-                . $this->order->getKey() . '/docs/id:'
-                . $this->order->documents->last()->pivot->id
-                . '/download'
+                    . $this->order->getKey() . '/docs/id:'
+                    . $this->order->documents->last()->pivot->id
+                    . '/download'
             );
 
         // TODO: don't work i don't now why
@@ -217,15 +217,15 @@ class OrderDocumentTest extends TestCase
             ->json(
                 'GET',
                 'orders/id:'
-                . $this->order->getKey() . '/docs/id:'
-                . $this->order->documents->last()->pivot->id
-                . '/download'
+                    . $this->order->getKey() . '/docs/id:'
+                    . $this->order->documents->last()->pivot->id
+                    . '/download'
             );
 
         $response
             ->assertStatus(422)
             ->assertJsonFragment(
-                ['key' => Exceptions::coerce(Exceptions::CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT)->key],
+                ['key' => Exceptions::CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT->name],
             );
     }
 
@@ -249,15 +249,15 @@ class OrderDocumentTest extends TestCase
             ->json(
                 'GET',
                 'orders/id:'
-                . $this->order->getKey() . '/docs/id:'
-                . $this->order->documents->last()->pivot->id
-                . '/download'
+                    . $this->order->getKey() . '/docs/id:'
+                    . $this->order->documents->last()->pivot->id
+                    . '/download'
             );
 
         $response
             ->assertStatus(422)
             ->assertJsonFragment([
-                'key' => Exceptions::coerce(Exceptions::CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT)->key,
+                'key' => Exceptions::CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT->name,
             ]);
     }
 }

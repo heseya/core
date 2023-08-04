@@ -10,6 +10,7 @@ use App\Criteria\WhereCreatedBefore;
 use App\Criteria\WhereHasStatusHidden;
 use App\Criteria\WhereInIds;
 use App\Enums\PaymentStatus;
+use App\Enums\ShippingType;
 use App\Models\Contracts\SortableContract;
 use App\Traits\HasMetadata;
 use App\Traits\HasOrderDiscount;
@@ -127,7 +128,7 @@ class Order extends Model implements SortableContract
             && $paymentMethodCount > 0;
     }
 
-    public function getShippingTypeAttribute(): string|null
+    public function getShippingTypeAttribute(): ?ShippingType
     {
         return $this->shippingMethod
             ? $this->shippingMethod->shipping_type

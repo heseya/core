@@ -16,16 +16,14 @@ class RoleAssignableSearch extends Criterion
 
         if ($this->value === true) {
             $query
-                ->where('type', '!=', RoleType::UNAUTHENTICATED)
-                ->where('type', '!=', RoleType::AUTHENTICATED)
+                ->whereNotIn('type', [RoleType::UNAUTHENTICATED->value, RoleType::AUTHENTICATED->value])
                 ->whereDoesntHave(
                     'permissions',
                     fn (Builder $sub) => $sub->whereNotIn('id', $permissions),
                 );
         } elseif ($this->value === false) {
             $query
-                ->where('type', '=', RoleType::UNAUTHENTICATED)
-                ->orWhere('type', '=', RoleType::AUTHENTICATED)
+                ->whereIn('type', [RoleType::UNAUTHENTICATED->value, RoleType::AUTHENTICATED->value])
                 ->orWhereHas(
                     'permissions',
                     fn (Builder $sub) => $sub->whereNotIn('id', $permissions),

@@ -69,18 +69,17 @@ class TokenService implements TokenServiceContract
 
     public function createToken(JWTSubject $user, TokenType $type, ?string $uuid = null): string
     {
-        $typ = $type->value;
-
-        $exp = [
+        $exp = match ($type) {
             TokenType::ACCESS => Config::get('jwt.ttl', 5),
             TokenType::IDENTITY => Config::get('jwt.ttl', 5),
             TokenType::REFRESH => 60 * 24 * 90,
-        ];
+        };
 
-        $this->jwt->factory()->setTTL($exp[$typ]);
+        $this->jwt->factory()->setTTL($exp);
+
         $claims = [
             'iss' => Config::get('app.url'),
-            'typ' => $typ,
+            'typ' => $type->value,
         ];
 
         if ($uuid !== null) {

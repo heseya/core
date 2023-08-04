@@ -16,7 +16,7 @@ class MetadataValue implements CastsAttributes
      */
     public function get(Model $model, string $key, mixed $value, array $attributes): mixed
     {
-        return match ($model->value_type->value) {
+        return match ($model->value_type) {
             MetadataType::BOOLEAN => (bool) $value,
             MetadataType::NUMBER => (float) $value,
             default => $value

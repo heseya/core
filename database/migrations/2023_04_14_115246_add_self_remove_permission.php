@@ -16,11 +16,11 @@ return new class extends Migration {
             'display_name' => 'Możliwość usunięcia własnego konta',
         ]);
 
-        Role::where('type', RoleType::AUTHENTICATED)
+        Role::where('type', RoleType::AUTHENTICATED->value)
             ->firstOrFail()
             ->givePermissionTo('users.self_remove');
 
-        Role::where('type', RoleType::OWNER)
+        Role::where('type', RoleType::OWNER->value)
             ->firstOrFail()
             ->givePermissionTo('users.self_remove');
     }
@@ -30,11 +30,11 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Role::where('type', RoleType::AUTHENTICATED)
+        Role::where('type', RoleType::AUTHENTICATED->value)
             ->firstOrFail()
             ->revokePermissionTo('users.self_remove');
 
-        Role::where('type', RoleType::OWNER)
+        Role::where('type', RoleType::OWNER->value)
             ->firstOrFail()
             ->revokePermissionTo('users.self_remove');
 

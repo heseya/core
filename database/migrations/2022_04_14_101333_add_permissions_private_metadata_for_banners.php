@@ -13,14 +13,14 @@ return new class extends Migration {
             'display_name' => 'Możliwość wyświetlania prywatnych metadanych bannerów',
         ]);
 
-        Role::where('type', RoleType::OWNER)
+        Role::where('type', RoleType::OWNER->value)
             ->firstOrFail()
             ->givePermissionTo('banners.show_metadata_private');
     }
 
     public function down(): void
     {
-        Role::where('type', RoleType::OWNER)
+        Role::where('type', RoleType::OWNER->value)
             ->firstOrFail()
             ->revokePermissionTo('banners.show_metadata_private');
 

@@ -2,12 +2,14 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
+use App\Enums\Traits\EnumTrait;
 
-final class ShippingType extends Enum
+enum ShippingType: string
 {
-    public const DIGITAL = 'digital';
-    public const ADDRESS = 'address';
-    public const POINT = 'point';
-    public const POINT_EXTERNAL = 'point-external';
+    use EnumTrait;
+
+    case DIGITAL = 'digital';
+    case ADDRESS = 'address';
+    case POINT = 'point';
+    case POINT_EXTERNAL = 'point-external';
 }

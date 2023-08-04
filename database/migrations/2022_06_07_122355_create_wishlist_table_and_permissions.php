@@ -24,11 +24,11 @@ return new class extends Migration {
 
         Permission::create(['name' => 'profile.wishlist_manage', 'display_name' => 'Możliwość zarządzania swoją listą życzeń']);
 
-        $authenticated = Role::where('type', '=', RoleType::AUTHENTICATED)->firstOrFail();
+        $authenticated = Role::where('type', '=', RoleType::AUTHENTICATED->value)->firstOrFail();
         $authenticated->givePermissionTo('profile.wishlist_manage');
         $authenticated->save();
 
-        $owner = Role::where('type', RoleType::OWNER)->first();
+        $owner = Role::where('type', RoleType::OWNER->value)->first();
         $owner->givePermissionTo('profile.wishlist_manage');
         $owner->save();
     }
@@ -40,11 +40,11 @@ return new class extends Migration {
     {
         Schema::dropIfExists('wishlist');
 
-        $authenticated = Role::where('type', '=', RoleType::AUTHENTICATED)->firstOrFail();
+        $authenticated = Role::where('type', '=', RoleType::AUTHENTICATED->value)->firstOrFail();
         $authenticated->revokePermissionTo('profile.wishlist_manage');
         $authenticated->save();
 
-        $owner = Role::where('type', RoleType::OWNER)->first();
+        $owner = Role::where('type', RoleType::OWNER->value)->first();
         $owner->revokePermissionTo('profile.wishlist_manage');
         $owner->save();
 
