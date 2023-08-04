@@ -16,7 +16,7 @@ class SchemaResource extends Resource
     {
         $data = [
             'id' => $this->resource->getKey(),
-            'type' => Str::lower($this->resource->type->key),
+            'type' => Str::lower($this->resource->type->name),
             'name' => $this->resource->name,
             'description' => $this->resource->description,
             'price' => $this->resource->price,

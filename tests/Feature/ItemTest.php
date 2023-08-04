@@ -497,7 +497,7 @@ class ItemTest extends TestCase
         $response
             ->assertJsonFragment([
                 'code' => 403,
-                'key' => ErrorCode::getKey(ErrorCode::FORBIDDEN),
+                'key' => ErrorCode::FORBIDDEN->name,
             ]);
     }
 

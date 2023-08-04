@@ -82,13 +82,13 @@ class App extends Model implements AuthenticatableContract, AuthorizableContract
     public function shippingAddresses(): HasMany
     {
         return $this->hasMany(SavedAddress::class, 'user_id')
-            ->where('type', '=', SavedAddressType::SHIPPING);
+            ->where('type', '=', SavedAddressType::SHIPPING->value);
     }
 
     public function billingAddresses(): HasMany
     {
         return $this->hasMany(SavedAddress::class, 'user_id')
-            ->where('type', '=', SavedAddressType::BILLING);
+            ->where('type', '=', SavedAddressType::BILLING->value);
     }
 
     public function orders(): MorphMany

@@ -271,7 +271,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/schemas', [
             'name' => 'Test',
-            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'type' => SchemaType::SELECT->name,
             'price' => 120,
             'description' => 'test test',
             'hidden' => false,
@@ -308,7 +308,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/schemas', [
             'name' => 'Test',
-            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'type' => SchemaType::SELECT->name,
             'price' => 120,
             'hidden' => false,
             'required' => false,
@@ -410,7 +410,7 @@ class SchemaTest extends TestCase
                     ],
                 ],
                 'published' => [$this->lang],
-                'type' => SchemaType::getKey(SchemaType::SELECT),
+                'type' => SchemaType::SELECT->name,
                 'price' => 120,
                 'hidden' => true,
                 'required' => true,
@@ -441,7 +441,7 @@ class SchemaTest extends TestCase
                     ],
                 ],
                 'published' => [$this->lang],
-                'type' => SchemaType::getKey(SchemaType::SELECT),
+                'type' => SchemaType::SELECT->name,
                 'price' => 120,
                 'hidden' => false,
                 'required' => false,
@@ -488,7 +488,7 @@ class SchemaTest extends TestCase
                 ],
             ],
             'published' => [$this->lang],
-            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'type' => SchemaType::SELECT->name,
             'price' => 120,
             'hidden' => $boolean,
             'required' => $boolean,
@@ -527,7 +527,7 @@ class SchemaTest extends TestCase
                     ],
                 ],
                 'published' => [$this->lang],
-                'type' => SchemaType::getKey(SchemaType::SELECT),
+                'type' => SchemaType::SELECT->name,
                 'price' => 120,
                 'hidden' => $boolean,
                 'required' => $boolean,
@@ -577,7 +577,7 @@ class SchemaTest extends TestCase
                 ],
             ],
             'published' => [$this->lang],
-            'type' => SchemaType::getKey(SchemaType::STRING),
+            'type' => SchemaType::STRING->name,
             'price' => 120,
             'required' => false,
         ]);
@@ -601,18 +601,19 @@ class SchemaTest extends TestCase
                 ],
             ],
             'published' => [$this->lang],
-            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'type' => SchemaType::SELECT->name,
             'price' => 120,
             'required' => false,
-            'options' => [[
-                'translations' => [
-                    $this->lang => [
-                        'name' => 'Test',
+            'options' => [
+                [
+                    'translations' => [
+                        $this->lang => [
+                            'name' => 'Test',
+                        ],
                     ],
+                    'price' => 0,
+                    'disabled' => false,
                 ],
-                'price' => 0,
-                'disabled' => false,
-            ],
             ],
         ]);
 
@@ -646,7 +647,7 @@ class SchemaTest extends TestCase
                 ],
             ],
             'published' => [$this->lang],
-            'type' => SchemaType::getKey(SchemaType::MULTIPLY_SCHEMA),
+            'type' => SchemaType::MULTIPLY_SCHEMA->name,
             'min' => 1,
             'max' => 10,
             'step' => 0.1,
@@ -680,7 +681,7 @@ class SchemaTest extends TestCase
                 ],
             ],
             'published' => [$this->lang],
-            'type' => SchemaType::getKey(SchemaType::MULTIPLY_SCHEMA),
+            'type' => SchemaType::MULTIPLY_SCHEMA->name,
             'min' => 1,
             'max' => 10,
             'step' => 0.1,
@@ -733,7 +734,7 @@ class SchemaTest extends TestCase
                 ],
                 'published' => [$this->lang],
                 'price' => 200,
-                'type' => SchemaType::getKey(SchemaType::SELECT),
+                'type' => SchemaType::SELECT->name,
                 'hidden' => false,
                 'required' => false,
                 'options' => [
@@ -803,7 +804,7 @@ class SchemaTest extends TestCase
             ],
             'published' => [$this->lang],
             'price' => 200,
-            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'type' => SchemaType::SELECT->name,
             'hidden' => false,
             'required' => false,
             'default' => 0,
@@ -1088,7 +1089,7 @@ class SchemaTest extends TestCase
         $response = $this->actingAs($this->{$user})->json('PATCH', '/schemas/id:' . $schema->getKey(), [
             'name' => 'Test Updated',
             'price' => 200,
-            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'type' => SchemaType::SELECT->name,
             'description' => 'test test',
             'hidden' => false,
             'required' => false,
@@ -1119,7 +1120,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/schemas', [
             'name' => 'Test',
-            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'type' => SchemaType::SELECT->name,
             'price' => 120,
             'description' => 'test test',
             'hidden' => false,

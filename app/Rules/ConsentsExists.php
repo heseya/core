@@ -13,7 +13,7 @@ class ConsentsExists implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (!Consent::query()->where('id', Str::after($attribute, 'consents.'))->exists()) {
-            $fail(Exceptions::CLIENT_CONSENT_NOT_EXISTS);
+            $fail(Exceptions::CLIENT_CONSENT_NOT_EXISTS->value);
         }
     }
 }

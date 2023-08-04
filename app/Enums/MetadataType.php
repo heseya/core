@@ -2,19 +2,21 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
+use App\Enums\Traits\EnumTrait;
 
-final class MetadataType extends Enum
+enum MetadataType: string
 {
-    public const STRING = 'string';
-    public const NUMBER = 'number';
-    public const BOOLEAN = 'boolean';
+    use EnumTrait;
 
-    public static function matchType(bool|float|int|string|null $value): string
+    case BOOLEAN = 'boolean';
+    case NUMBER = 'number';
+    case STRING = 'string';
+
+    public static function matchType(bool|float|int|string|null $value): self
     {
-        return match (gettype($value)) {
-            'boolean' => self::BOOLEAN,
-            'integer', 'double' => self::NUMBER,
+        return match (true) {
+            is_bool($value) => self::BOOLEAN,
+            is_int($value), is_float($value) => self::NUMBER,
             default => self::STRING,
         };
     }

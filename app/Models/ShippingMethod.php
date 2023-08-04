@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\WhereInIds;
+use App\Enums\ShippingType;
 use App\Traits\HasDiscounts;
 use App\Traits\HasMetadata;
 use Brick\Math\BigDecimal;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
 
 /**
  * @property Money[] $prices
+ * @property ?ShippingType $shipping_type
  *
  * @mixin IdeHelperShippingMethod
  */
@@ -53,6 +55,7 @@ class ShippingMethod extends Model
     protected $casts = [
         'public' => 'boolean',
         'block_list' => 'boolean',
+        'shipping_type' => ShippingType::class,
     ];
 
     /** @var array<string, class-string> */

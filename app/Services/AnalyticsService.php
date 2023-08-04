@@ -19,7 +19,7 @@ class AnalyticsService implements AnalyticsServiceContract
 
         return Payment::query()
             ->select([$amount, $count, $key])
-            ->where('status', PaymentStatus::SUCCESSFUL)
+            ->where('status', PaymentStatus::SUCCESSFUL->value)
             // whereDate builds the same query as where, but compares only dates without time
             ->where('created_at', '>=', $from)
             ->where('created_at', '<=', $to)

@@ -3,7 +3,6 @@
 use App\Enums\AuthProviderKey;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
@@ -16,7 +15,7 @@ return new class extends Migration {
             $table->uuid('id');
             $table->enum(
                 'key',
-                Arr::map(AuthProviderKey::cases(), fn ($provider) => $provider->value),
+                AuthProviderKey::values(),
             );
             $table->boolean('active');
             $table->string('client_id')->nullable();
@@ -27,7 +26,7 @@ return new class extends Migration {
             $table->uuid('id');
             $table->enum(
                 'provider',
-                Arr::map(AuthProviderKey::cases(), fn ($provider) => $provider->value),
+                AuthProviderKey::values(),
             );
             $table->string('provider_user_id');
             $table->string('user_id');

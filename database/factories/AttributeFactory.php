@@ -5,7 +5,6 @@ namespace Database\Factories;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 class AttributeFactory extends Factory
@@ -28,7 +27,7 @@ class AttributeFactory extends Factory
             'name' => $name,
             'slug' => Str::slug($name),
             'description' => $this->faker->sentence,
-            'type' => Arr::random(AttributeType::cases()),
+            'type' => AttributeType::getRandomInstance(),
             'global' => $this->faker->boolean,
             'sortable' => $this->faker->boolean,
         ];

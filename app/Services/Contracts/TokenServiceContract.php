@@ -27,7 +27,7 @@ interface TokenServiceContract
     /**
      * Returns new token for a given user.
      */
-    public function createToken(JWTSubject $user, TokenType $type, ?string $uuid): string;
+    public function createToken(JWTSubject $user, TokenType $type, ?string $uuid = null): string;
 
     /**
      * Invalidates the given token.

@@ -3,15 +3,15 @@
 namespace App\Http\Requests;
 
 use App\Enums\TFAType;
-use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class TFASetupRequest extends FormRequest
 {
     public function rules(): array
     {
         return [
-            'type' => ['required', new EnumValue(TFAType::class, false)],
+            'type' => ['required', new Enum(TFAType::class)],
         ];
     }
 }

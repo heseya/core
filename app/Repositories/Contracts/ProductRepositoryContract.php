@@ -9,6 +9,7 @@ use App\Enums\Product\ProductPriceType;
 use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
+/** @see \App\Repositories\ProductRepository */
 interface ProductRepositoryContract
 {
     public function search(ProductSearchDto $dto): LengthAwarePaginator;

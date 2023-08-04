@@ -11,11 +11,10 @@ class PackageException extends StoreException
 
     public function __construct(
         string $message = '',
-        int $code = 0,
         mixed $errors = [],
         ?Throwable $previous = null,
     ) {
-        parent::__construct($message, $code, $previous);
+        parent::__construct($message, $previous);
         $this->errors = $errors;
     }
 

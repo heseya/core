@@ -2,10 +2,12 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
+use App\Enums\Traits\EnumTrait;
 
-final class TwitterCardType extends Enum
+enum TwitterCardType: string
 {
-    public const SUMMARY = 'summary';
-    public const SUMMARY_LARGE_IMAGE = 'summary_large_image';
+    use EnumTrait;
+
+    case SUMMARY = 'summary';
+    case SUMMARY_LARGE_IMAGE = 'summary_large_image';
 }

@@ -18,7 +18,7 @@ class AttributePermissions extends Migration
         ]);
         Permission::create(['name' => 'attributes.remove', 'display_name' => 'Możliwość usuwania cech']);
 
-        $owner = Role::query()->where('type', '=', RoleType::OWNER)->firstOrFail();
+        $owner = Role::query()->where('type', '=', RoleType::OWNER->value)->firstOrFail();
         $owner->givePermissionTo([
             'attributes.show',
             'attributes.add',
@@ -27,7 +27,7 @@ class AttributePermissions extends Migration
         ]);
         $owner->save();
 
-        $authenticated = Role::query()->where('type', '=', RoleType::AUTHENTICATED)->firstOrFail();
+        $authenticated = Role::query()->where('type', '=', RoleType::AUTHENTICATED->value)->firstOrFail();
         $authenticated->givePermissionTo([
             'attributes.show',
         ]);
@@ -36,7 +36,7 @@ class AttributePermissions extends Migration
 
     public function down(): void
     {
-        $owner = Role::query()->where('type', '=', RoleType::OWNER)->firstOrFail();
+        $owner = Role::query()->where('type', '=', RoleType::OWNER->value)->firstOrFail();
         $owner->revokePermissionTo([
             'attributes.show',
             'attributes.add',
@@ -45,7 +45,7 @@ class AttributePermissions extends Migration
         ]);
         $owner->save();
 
-        $authenticated = Role::query()->where('type', '=', RoleType::AUTHENTICATED)->firstOrFail();
+        $authenticated = Role::query()->where('type', '=', RoleType::AUTHENTICATED->value)->firstOrFail();
         $authenticated->revokePermissionTo([
             'attributes.show',
         ]);

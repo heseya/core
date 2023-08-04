@@ -2,10 +2,12 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
+use App\Enums\Traits\EnumTrait;
 
-class SavedAddressType extends Enum
+enum SavedAddressType: int
 {
-    public const SHIPPING = 0;
-    public const BILLING = 1;
+    use EnumTrait;
+
+    case SHIPPING = 0;
+    case BILLING = 1;
 }

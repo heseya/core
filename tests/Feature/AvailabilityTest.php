@@ -344,7 +344,7 @@ class AvailabilityTest extends TestCase
         ]);
 
         $shippingMethod = $this->shippingMethodService->store(FakeDto::shippingMethodCreate([
-            'shipping_type' => ShippingType::ADDRESS,
+            'shipping_type' => ShippingType::ADDRESS->value,
         ]));
 
         $data->get('item')->options()->saveMany([$data->get('optionOne'), $data->get('optionTwo')]);
@@ -423,7 +423,7 @@ class AvailabilityTest extends TestCase
         ]);
 
         $shippingMethod = $this->shippingMethodService->store(FakeDto::shippingMethodCreate([
-            'shipping_type' => ShippingType::ADDRESS,
+            'shipping_type' => ShippingType::ADDRESS->value,
         ]));
 
         $this->{$user}->givePermissionTo('orders.add');

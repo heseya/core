@@ -3,8 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Enums\EventType;
-use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class WebHookLogIndexRequest extends FormRequest
 {
@@ -13,7 +13,7 @@ class WebHookLogIndexRequest extends FormRequest
         return [
             'status_code' => ['nullable', 'numeric'],
             'web_hook_id' => ['nullable', 'string'],
-            'event' => ['nullable', 'string', new EnumValue(EventType::class, false)],
+            'event' => ['nullable', 'string', new Enum(EventType::class)],
             'successful' => ['boolean'],
         ];
     }

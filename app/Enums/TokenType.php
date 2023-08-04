@@ -2,11 +2,13 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
+use App\Enums\Traits\EnumTrait;
 
-final class TokenType extends Enum
+enum TokenType: string
 {
-    public const ACCESS = 'access';
-    public const IDENTITY = 'identity';
-    public const REFRESH = 'refresh';
+    use EnumTrait;
+
+    case ACCESS = 'access';
+    case IDENTITY = 'identity';
+    case REFRESH = 'refresh';
 }

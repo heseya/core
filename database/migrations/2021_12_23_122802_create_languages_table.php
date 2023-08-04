@@ -36,7 +36,7 @@ class CreateLanguagesTable extends Migration
         Permission::create(['name' => 'languages.edit', 'display_name' => 'Możliwość edycji języków']);
         Permission::create(['name' => 'languages.remove', 'display_name' => 'Możliwość usuwania języków']);
 
-        $owner = Role::where('type', RoleType::OWNER)->first();
+        $owner = Role::where('type', RoleType::OWNER->value)->first();
         $owner->givePermissionTo([
             'languages.show_hidden',
             'languages.add',

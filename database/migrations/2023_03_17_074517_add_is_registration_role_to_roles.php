@@ -17,7 +17,7 @@ return new class extends Migration {
         });
 
         DB::table('roles')
-            ->where('type', RoleType::AUTHENTICATED)
+            ->where('type', RoleType::AUTHENTICATED->value)
             ->update(['is_registration_role' => true]);
     }
 

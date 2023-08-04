@@ -25,6 +25,7 @@ use Throwable;
 
 final class Handler extends ExceptionHandler
 {
+    /** @var array<class-string, ErrorCode> */
     private const ERRORS = [
         // 400
         AppAccessException::class => ErrorCode::BAD_REQUEST,
@@ -91,10 +92,12 @@ final class Handler extends ExceptionHandler
             }
             $error = new Error(
                 $exception->getMessage(),
-                $exception instanceof StoreException ?
-                    $exception->getCode() : ErrorCode::getCode(self::ERRORS[$class]),
-                $exception instanceof StoreException ?
-                    $exception->getKey() : ErrorCode::fromValue(self::ERRORS[$class])->key ?? '',
+                $exception instanceof StoreException
+                    ? $exception->getCode()
+                    : self::ERRORS[$class]->getCode(),
+                $exception instanceof StoreException
+                    ? $exception->getKey()
+                    : self::ERRORS[$class]->name ?? '',
                 $this->getExceptionData($exception),
             );
         } else {
@@ -134,22 +137,22 @@ final class Handler extends ExceptionHandler
 
             foreach ($value as $attribute => $attrValue) {
                 $attribute = Str::of($attribute)->afterLast('\\')->toString();
-                $key = ValidationError::coerce($attribute)->value ?? 'INTERNAL_SERVER_ERROR';
+                $errorEnum = ValidationError::coerce($attribute) ?? ValidationError::INTERNAL_SERVER_ERROR;
 
-                $message = array_key_exists($field, $errors) ?
-                    array_key_exists($index, $errors[$field]) ?
-                        $errors[$field][$index] : null
+                $message = array_key_exists($field, $errors)
+                    ? (array_key_exists($index, $errors[$field]) ? $errors[$field][$index] : null)
                     : null;
 
                 // Workaround for Password::defaults() rule
-                if ($key === ValidationError::PASSWORD) {
-                    $key = Str::contains($message, 'data leak') ?
-                        ValidationError::PASSWORDCOMPROMISED : ValidationError::PASSWORDLENGTH;
+                if ($errorEnum === ValidationError::PASSWORD) {
+                    $errorEnum = Str::contains($message, 'data leak')
+                        ? ValidationError::PASSWORDCOMPROMISED
+                        : ValidationError::PASSWORDLENGTH;
                 }
 
                 $validationErrors[$field][$index] = [
-                    'key' => $key,
-                ] + $this->createValidationAttributeData($key, $attrValue);
+                    'key' => $errorEnum->value,
+                ] + $this->createValidationAttributeData($errorEnum, $attrValue);
 
                 if ($message !== null) {
                     $validationErrors[$field][$index] += [
@@ -179,9 +182,9 @@ final class Handler extends ExceptionHandler
         return [];
     }
 
-    private function createValidationAttributeData(string $key, array $data): array
+    private function createValidationAttributeData(ValidationError $errorEnum, array $data): array
     {
-        return match ($key) {
+        return match ($errorEnum) {
             ValidationError::MIN => [
                 'min' => $data[0],
             ],

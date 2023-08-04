@@ -31,7 +31,7 @@ class WebHookEventLogEntryFactory extends Factory
             'url' => $this->faker->url,
             'status_code' => $this->faker->randomElement([200, 400, 500]),
             'payload' => [
-                'event' => EventType::getRandomKey(),
+                'event' => EventType::getRandomName(),
             ],
         ];
     }
