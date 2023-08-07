@@ -1,19 +1,21 @@
 <?php
 
-namespace App\Http\Controllers;
+declare(strict_types=1);
 
-use App\DTO\SeoMetadata\SeoKeywordsDto;
-use App\DTO\SeoMetadata\SeoMetadataDto;
+namespace Domain\Seo;
+
+use App\Http\Controllers\Controller;
 use App\Http\Resources\SeoKeywordsResource;
 use App\Http\Resources\SeoMetadataResource;
-use App\Services\Contracts\SeoMetadataServiceContract;
+use Domain\Seo\Dtos\SeoKeywordsDto;
+use Domain\Seo\Dtos\SeoMetadataDto;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 final class SeoMetadataController extends Controller
 {
     public function __construct(
-        private readonly SeoMetadataServiceContract $seoMetadataService,
+        private readonly SeoMetadataService $seoMetadataService,
     ) {}
 
     public function show(): JsonResponse

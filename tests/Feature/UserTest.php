@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\MetadataType;
 use App\Enums\RoleType;
 use App\Enums\ValidationError;
 use App\Events\UserCreated;
@@ -15,6 +14,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Models\UserPreference;
 use App\Models\WebHook;
+use Domain\Metadata\Enums\MetadataType;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;

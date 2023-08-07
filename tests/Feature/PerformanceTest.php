@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
-use App\Enums\MetadataType;
 use App\Models\Banner;
 use App\Models\BannerMedia;
 use App\Models\Country;
@@ -25,6 +24,7 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Metadata\Enums\MetadataType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductSet\ProductSet;

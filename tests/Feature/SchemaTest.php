@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Enums\MetadataType;
 use App\Enums\SchemaType;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Schema;
+use Domain\Metadata\Enums\MetadataType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;

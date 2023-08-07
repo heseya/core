@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\DTO\SeoMetadata;
+namespace Domain\Seo\Dtos;
 
 use App\Rules\Translations;
 use Spatie\LaravelData\Attributes\MapInputName;
@@ -13,6 +13,11 @@ use Spatie\LaravelData\Optional;
 
 final class SeoMetadataDto extends Data
 {
+    /**
+     * @param array<string, array<string, string>> $translations
+     * @param string[]|Optional|null $header_tags
+     * @param string[] $published
+     */
     public function __construct(
         #[Rule(new Translations(['title', 'description', 'keywords', 'no_index']))]
         public readonly array $translations,

@@ -6,7 +6,7 @@ namespace Support;
 
 use App\Http\Resources\LanguageResource;
 use App\Http\Resources\SeoMetadataResource;
-use App\Services\Contracts\SeoMetadataServiceContract;
+use Domain\Seo\SeoMetadataService;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Spatie\LaravelData\Data;
@@ -25,8 +25,8 @@ final class ResourceDto extends Data
      */
     public function with(): array
     {
-        /** @var SeoMetadataServiceContract $seoMetadataService */
-        $seoMetadataService = App::make(SeoMetadataServiceContract::class);
+        /** @var SeoMetadataService $seoMetadataService */
+        $seoMetadataService = App::make(SeoMetadataService::class);
 
         return [
             'meta' => [

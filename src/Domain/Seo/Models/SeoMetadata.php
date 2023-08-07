@@ -1,19 +1,22 @@
 <?php
 
-namespace App\Models;
+declare(strict_types=1);
 
-use App\Enums\TwitterCardType;
+namespace Domain\Seo\Models;
+
 use App\Models\Interfaces\Translatable;
+use App\Models\Media;
+use App\Models\Model;
+use Domain\Seo\Enums\TwitterCardType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
 
 /**
  * @mixin IdeHelperSeoMetadata
  */
-class SeoMetadata extends Model implements Translatable
+final class SeoMetadata extends Model implements Translatable
 {
     use HasFactory;
     use HasTranslations;
@@ -33,6 +36,7 @@ class SeoMetadata extends Model implements Translatable
         'header_tags',
     ];
 
+    /** @var string[] */
     protected array $translatable = [
         'title',
         'description',
@@ -51,27 +55,11 @@ class SeoMetadata extends Model implements Translatable
         'header_tags' => 'array',
     ];
 
-    protected $attributes = [
-        'global' => false,
-    ];
-
+    /**
+     * @return HasOne<Media>
+     */
     public function media(): HasOne
     {
         return $this->hasOne(Media::class, 'id', 'og_image');
-    }
-
-    public function getKeywordsAttribute(string|null $value): mixed
-    {
-        return $value ? json_decode($value) : null;
-    }
-
-    public function setKeywordsAttribute(mixed $value): void
-    {
-        $this->attributes['keywords'] = json_encode($value);
-    }
-
-    public function modelSeo(): MorphTo
-    {
-        return $this->morphTo('seo', 'model_type', 'model_id', 'id');
     }
 }

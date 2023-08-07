@@ -1,23 +1,23 @@
 <?php
 
-namespace App\Services;
+declare(strict_types=1);
 
-use App\DTO\SeoMetadata\SeoKeywordsDto;
-use App\DTO\SeoMetadata\SeoMetadataDto;
+namespace Domain\Seo;
+
 use App\Dtos\SeoMetadataDto as SeoMetadataDtoOld;
 use App\Exceptions\PublishingException;
 use App\Models\Contracts\SeoContract;
-use App\Models\Model;
-use App\Models\SeoMetadata;
-use App\Services\Contracts\SeoMetadataServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
-use Illuminate\Database\Eloquent\Builder;
+use Domain\Seo\Dtos\SeoKeywordsDto;
+use Domain\Seo\Dtos\SeoMetadataDto;
+use Domain\Seo\Models\SeoMetadata;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Spatie\LaravelData\Optional;
 
-class SeoMetadataService implements SeoMetadataServiceContract
+final class SeoMetadataService
 {
     public function __construct(
         protected TranslationServiceContract $translationService,
@@ -115,17 +115,16 @@ class SeoMetadataService implements SeoMetadataServiceContract
         $seoMetadata->delete();
     }
 
+    /**
+     * @return Collection<int, SeoMetadata>
+     */
     public function checkKeywords(SeoKeywordsDto $dto): Collection
     {
         $lang = App::getLocale();
         $query = SeoMetadata::query();
 
         if (!($dto->excluded instanceof Optional)) {
-            $query->whereHasMorph(
-                'modelSeo',
-                "App\\Models\\{$dto->excluded->model}",
-                fn (Builder $query) => $query->where('model_id', '!=', $dto->excluded->id),
-            );
+            $query->where('model_id', '!=', $dto->excluded->id);
         }
 
         return $query

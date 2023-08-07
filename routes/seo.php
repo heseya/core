@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\SeoMetadataController;
+use Domain\Seo\SeoMetadataController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('seo')->group(function (): void {

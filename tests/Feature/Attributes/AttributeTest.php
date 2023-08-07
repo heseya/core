@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Attributes;
 
-use App\Enums\MetadataType;
 use App\Models\Option;
+use Domain\Metadata\Enums\MetadataType;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;

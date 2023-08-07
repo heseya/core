@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\ProductSet\Dtos;
 
-use App\DTO\SeoMetadata\SeoMetadataDto;
 use App\Rules\Translations;
+use Domain\Seo\Dtos\SeoMetadataDto;
 use Spatie\LaravelData\Attributes\Validation\AlphaDash;
 use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\Max;

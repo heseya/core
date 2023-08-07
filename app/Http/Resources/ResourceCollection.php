@@ -2,7 +2,7 @@
 
 namespace App\Http\Resources;
 
-use App\Services\Contracts\SeoMetadataServiceContract;
+use Domain\Seo\SeoMetadataService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
@@ -16,8 +16,8 @@ class ResourceCollection extends \Heseya\Resource\ResourceCollection
      */
     public function with($request): array
     {
-        /** @var SeoMetadataServiceContract $seoMetadataService */
-        $seoMetadataService = App::make(SeoMetadataServiceContract::class);
+        /** @var SeoMetadataService $seoMetadataService */
+        $seoMetadataService = App::make(SeoMetadataService::class);
 
         return [
             'meta' => [

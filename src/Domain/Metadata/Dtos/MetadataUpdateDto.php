@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Metadata\Dtos;
 
-use App\Enums\MetadataType;
+use Domain\Metadata\Enums\MetadataType;
 use Spatie\LaravelData\Data;
 use Support\LaravelData\ExtendedData;
 

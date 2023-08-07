@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
-use App\Enums\MetadataType;
 use App\Enums\PaymentStatus;
 use App\Enums\ShippingType;
 use App\Enums\ValidationError;
@@ -26,6 +25,7 @@ use App\Services\Contracts\OrderServiceContract;
 use App\Services\OrderService;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Metadata\Enums\MetadataType;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;

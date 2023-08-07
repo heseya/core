@@ -41,7 +41,6 @@ use App\Services\Contracts\RoleServiceContract;
 use App\Services\Contracts\SavedAddressServiceContract;
 use App\Services\Contracts\SchemaCrudServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
-use App\Services\Contracts\SeoMetadataServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
 use App\Services\Contracts\ShippingMethodServiceContract;
 use App\Services\Contracts\ShippingTimeDateServiceContract;
@@ -80,7 +79,6 @@ use App\Services\RoleService;
 use App\Services\SavedAddressService;
 use App\Services\SchemaCrudService;
 use App\Services\SchemaService;
-use App\Services\SeoMetadataService;
 use App\Services\SettingsService;
 use App\Services\ShippingMethodService;
 use App\Services\ShippingTimeDateService;
@@ -120,7 +118,6 @@ class AppServiceProvider extends ServiceProvider
         ProductServiceContract::class => ProductService::class,
         WebHookServiceContract::class => WebHookService::class,
         EventServiceContract::class => EventService::class,
-        SeoMetadataServiceContract::class => SeoMetadataService::class,
         UrlServiceContract::class => UrlService::class,
         ItemServiceContract::class => ItemService::class,
         OneTimeSecurityCodeContract::class => OneTimeSecurityCodeService::class,

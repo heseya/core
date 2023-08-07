@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Enums\MetadataType;
 use App\Models\Product;
 use Domain\Currency\Currency;
+use Domain\Metadata\Enums\MetadataType;
 use Domain\ProductSet\Events\ProductSetCreated;
 use Domain\ProductSet\ProductSet;
 use Illuminate\Support\Facades\Event;

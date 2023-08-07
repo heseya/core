@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Seo;
 
-use App\Models\SeoMetadata;
+use Domain\Seo\Models\SeoMetadata;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Tests\TestCase;

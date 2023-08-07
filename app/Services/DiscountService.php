@@ -60,7 +60,6 @@ use App\Models\User;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
-use App\Services\Contracts\SeoMetadataServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
 use App\Services\Contracts\ShippingTimeDateServiceContract;
 use Brick\Math\Exception\MathException;
@@ -72,6 +71,7 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\ProductSet\ProductSet;
+use Domain\Seo\SeoMetadataService;
 use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
 use Illuminate\Database\Eloquent\Builder;
@@ -89,7 +89,7 @@ readonly class DiscountService implements DiscountServiceContract
     public function __construct(
         private MetadataServiceContract $metadataService,
         private SettingsServiceContract $settingsService,
-        private SeoMetadataServiceContract $seoMetadataService,
+        private SeoMetadataService $seoMetadataService,
         private ShippingTimeDateServiceContract $shippingTimeDateService,
         private ProductRepositoryContract $productRepository,
     ) {}

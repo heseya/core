@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Page\Dtos;
 
-use App\DTO\SeoMetadata\SeoMetadataDto;
 use App\Rules\Translations;
 use Domain\Metadata\Dtos\MetadataUpdateDto;
+use Domain\Seo\Dtos\SeoMetadataDto;
 use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\Validation\Rule;

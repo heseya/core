@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Enums\MetadataType;
 use Domain\Metadata\Casts\MetadataValue;
+use Domain\Metadata\Enums\MetadataType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 

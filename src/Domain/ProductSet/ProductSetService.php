@@ -7,12 +7,12 @@ namespace Domain\ProductSet;
 use App\Dtos\ProductsReorderDto;
 use App\Models\Product;
 use App\Services\Contracts\MetadataServiceContract;
-use App\Services\Contracts\SeoMetadataServiceContract;
 use Domain\ProductSet\Dtos\ProductSetCreateDto;
 use Domain\ProductSet\Dtos\ProductSetUpdateDto;
 use Domain\ProductSet\Events\ProductSetCreated;
 use Domain\ProductSet\Events\ProductSetDeleted;
 use Domain\ProductSet\Events\ProductSetUpdated;
+use Domain\Seo\SeoMetadataService;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -28,7 +28,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 final readonly class ProductSetService
 {
     public function __construct(
-        private SeoMetadataServiceContract $seoMetadataService,
+        private SeoMetadataService $seoMetadataService,
         private MetadataServiceContract $metadataService,
     ) {}
 

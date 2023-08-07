@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\MetadataType;
 use App\Models\App;
 use App\Models\Banner;
 use App\Models\Discount;
@@ -16,6 +15,7 @@ use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\User;
+use Domain\Metadata\Enums\MetadataType;
 use Domain\Page\Page;
 use Domain\ProductSet\ProductSet;
 use Tests\TestCase;

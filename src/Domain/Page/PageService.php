@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Page;
 
-use App\Services\Contracts\SeoMetadataServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
 use Domain\Metadata\MetadataService;
 use Domain\Page\Dtos\PageCreateDto;
@@ -12,6 +11,7 @@ use Domain\Page\Dtos\PageUpdateDto;
 use Domain\Page\Events\PageCreated;
 use Domain\Page\Events\PageDeleted;
 use Domain\Page\Events\PageUpdated;
+use Domain\Seo\SeoMetadataService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
@@ -22,7 +22,7 @@ final readonly class PageService
 {
     public function __construct(
         private MetadataService $metadataService,
-        private SeoMetadataServiceContract $seoMetadataService,
+        private SeoMetadataService $seoMetadataService,
         private TranslationServiceContract $translationService,
     ) {}
 

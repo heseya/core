@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Dtos\MetadataPersonalListDto;
-use App\Enums\MetadataType;
 use App\Http\Resources\MetadataResource;
 use App\Services\Contracts\MetadataServiceContract;
 use Domain\Metadata\Dtos\MetadataUpdateDto;
+use Domain\Metadata\Enums\MetadataType;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

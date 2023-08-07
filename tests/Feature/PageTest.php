@@ -2,22 +2,21 @@
 
 namespace Tests\Feature;
 
-use App\Enums\MetadataType;
 use App\Enums\ValidationError;
 use App\Listeners\WebHookEventListener;
-use App\Models\SeoMetadata;
 use App\Models\WebHook;
+use Domain\Metadata\Enums\MetadataType;
 use Domain\Page\Events\PageCreated;
 use Domain\Page\Events\PageDeleted;
 use Domain\Page\Events\PageUpdated;
 use Domain\Page\Page;
+use Domain\Seo\Models\SeoMetadata;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
 class PageTest extends TestCase
