@@ -1,0 +1,12 @@
+Currency:
+  type: object
+  properties:
+    name:
+      type: string
+      example: 'Polski Złoty'
+    code:
+      type: string
+      example: 'PLN'
+    decimal_places:
+      type: number
+      example: 2

@@ -18,7 +18,7 @@ Product:
       items:
         type: object
         properties:
-          value:
+          gross:
             type: string
             example: '9.99'
           currency:
@@ -30,7 +30,7 @@ Product:
       items:
         type: object
         properties:
-          value:
+          gross:
             type: string
             example: '9.99'
           currency:
@@ -42,7 +42,7 @@ Product:
       items:
         type: object
         properties:
-          value:
+          gross:
             type: string
             example: '9.99'
           currency:
@@ -54,7 +54,7 @@ Product:
       items:
         type: object
         properties:
-          value:
+          gross:
             type: string
             example: '9.99'
           currency:
@@ -66,7 +66,7 @@ Product:
       items:
         type: object
         properties:
-          value:
+          gross:
             type: string
             example: '9.99'
           currency:
@@ -218,7 +218,7 @@ ProductShort:
       items:
         type: object
         properties:
-          value:
+          gross:
             type: string
             example: '9.99'
           currency:
@@ -230,7 +230,7 @@ ProductShort:
       items:
         type: object
         properties:
-          value:
+          gross:
             type: string
             example: '9.99'
           currency:
@@ -242,7 +242,7 @@ ProductShort:
       items:
         type: object
         properties:
-          value:
+          gross:
             type: string
             example: '9.99'
           currency:
