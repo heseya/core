@@ -12,6 +12,7 @@ use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Domain\Page\Page;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\ProductSet\ProductSet;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -43,6 +44,7 @@ class MetadataService implements MetadataServiceContract
     {
         $className = match ($routeSegments[0]) {
             'pages' => Page::class,
+            'product-sets' => ProductSet::class,
             'sales', 'coupons' => Discount::class,
             'attributes' => $routeSegments[2] === 'options' ? AttributeOption::class : Attribute::class,
             default => '',

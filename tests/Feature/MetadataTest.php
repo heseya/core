@@ -181,7 +181,7 @@ class MetadataTest extends TestCase
     /**
      * @dataProvider dataProvider
      */
-    public function testAddMetadata($user, $data): void
+    public function testAddMetadata(string $user, array $data): void
     {
         $this->{$user}->givePermissionTo($data['role']);
 
@@ -208,7 +208,7 @@ class MetadataTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->patchJson(
             "/{$data['prefix_url']}/id:{$object->getKey()}/metadata",
-            $metadata
+            $metadata,
         );
 
         $response
@@ -219,7 +219,7 @@ class MetadataTest extends TestCase
     /**
      * @dataProvider dataProvider
      */
-    public function testAddMetadataPrivate($user, $data): void
+    public function testAddMetadataPrivate(string $user, array $data): void
     {
         $this->{$user}->givePermissionTo($data['role']);
 
@@ -255,7 +255,7 @@ class MetadataTest extends TestCase
     /**
      * @dataProvider dataProvider
      */
-    public function testUpdateMetadata($user, $data): void
+    public function testUpdateMetadata(string $user, array $data): void
     {
         $this->{$user}->givePermissionTo($data['role']);
 
@@ -297,7 +297,7 @@ class MetadataTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateMetadataSameKeys($user): void
+    public function testUpdateMetadataSameKeys(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
 
@@ -340,7 +340,7 @@ class MetadataTest extends TestCase
     /**
      * @dataProvider dataProvider
      */
-    public function testUpdateMetadataPrivate($user, $data): void
+    public function testUpdateMetadataPrivate(string $user, array $data): void
     {
         $this->{$user}->givePermissionTo($data['role']);
 
@@ -382,7 +382,7 @@ class MetadataTest extends TestCase
     /**
      * @dataProvider dataProvider
      */
-    public function testDeleteMetadata($user, $data): void
+    public function testDeleteMetadata(string $user, array $data): void
     {
         $this->{$user}->givePermissionTo($data['role']);
 
@@ -435,7 +435,7 @@ class MetadataTest extends TestCase
     /**
      * @dataProvider dataProvider
      */
-    public function testDeleteMetadataPrivate($user, $data): void
+    public function testDeleteMetadataPrivate(string $user, array $data): void
     {
         $this->{$user}->givePermissionTo($data['role']);
 
@@ -488,7 +488,7 @@ class MetadataTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexEmptyObject($user): void
+    public function testIndexEmptyObject(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show_details');
 
@@ -608,7 +608,7 @@ class MetadataTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testAddUserMetadataPersonal($user): void
+    public function testAddUserMetadataPersonal(string $user): void
     {
         $this->{$user}->givePermissionTo('users.edit');
         $model = User::factory()->create();
@@ -651,7 +651,7 @@ class MetadataTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateUserMetadataPersonal($user): void
+    public function testUpdateUserMetadataPersonal(string $user): void
     {
         $this->{$user}->givePermissionTo('users.edit');
         $model = User::factory()->create();
@@ -691,7 +691,7 @@ class MetadataTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteUserMetadataPersonal($user): void
+    public function testDeleteUserMetadataPersonal(string $user): void
     {
         $this->{$user}->givePermissionTo('users.edit');
         $model = User::factory()->create();

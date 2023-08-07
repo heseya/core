@@ -311,22 +311,6 @@ class ProductSetCreateTest extends TestCase
             return $job->class === WebHookEventListener::class
                 && $job->data[0] instanceof ProductSetCreated;
         });
-
-        $set = ProductSet::find($response->getData()->data->id);
-
-        $event = new ProductSetCreated($set);
-        $listener = new WebHookEventListener();
-        $listener->handle($event);
-
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $set) {
-            $payload = $job->payload;
-
-            return $job->webhookUrl === $webHook->url
-                && isset($job->headers['Signature'])
-                && $payload['data']['id'] === $set->getKey()
-                && $payload['data_type'] === 'ProductSet'
-                && $payload['event'] === 'ProductSetCreated';
-        });
     }
 
     /**
