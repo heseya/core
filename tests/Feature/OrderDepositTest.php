@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Dtos\PriceDto;
-use App\Enums\Currency;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
 use App\Models\Address;
@@ -19,6 +18,7 @@ use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
+use Domain\Currency\Currency;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;

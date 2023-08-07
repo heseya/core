@@ -2,13 +2,13 @@
 
 namespace Tests\Feature;
 
-use App\Enums\Currency;
 use App\Models\PriceRange;
 use App\Models\ShippingMethod;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
+use Domain\Currency\Currency;
 use Tests\TestCase;
 
 class ShippingMethodPriceRangesTest extends TestCase

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Enums;
+namespace Domain\Currency;
 
 use App\Enums\Traits\EnumTrait;
 

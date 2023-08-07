@@ -4,7 +4,6 @@ namespace Tests\Feature\Discounts;
 
 use App\Dtos\PriceDto;
 use App\Enums\ConditionType;
-use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\SchemaType;
@@ -23,6 +22,7 @@ use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
+use Domain\Currency\Currency;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Notification;

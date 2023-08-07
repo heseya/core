@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Dtos\PriceDto;
-use App\Enums\Currency;
 use App\Enums\Product\ProductPriceType;
 use App\Models\Media;
 use App\Models\Product;
@@ -14,6 +13,7 @@ use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
+use Domain\Currency\Currency;
 use Heseya\Dto\DtoException;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;

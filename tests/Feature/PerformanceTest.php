@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\Currency;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\MetadataType;
@@ -28,6 +27,7 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\Currency\Currency;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
