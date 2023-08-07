@@ -1,24 +1,24 @@
 <?php
 
-namespace App\Services;
+declare(strict_types=1);
 
-use App\DTO\Page\PageCreateDto;
-use App\DTO\Page\PageUpdateDto;
+namespace Domain\Page;
+
 use App\Events\PageCreated;
 use App\Events\PageDeleted;
 use App\Events\PageUpdated;
-use App\Models\Page;
 use App\Services\Contracts\MetadataServiceContract;
-use App\Services\Contracts\PageServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
+use Domain\Page\Dtos\PageCreateDto;
+use Domain\Page\Dtos\PageUpdateDto;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Spatie\LaravelData\Optional;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class PageService implements PageServiceContract
+final class PageService
 {
     public function __construct(
         protected SeoMetadataServiceContract $seoMetadataService,
@@ -33,6 +33,11 @@ class PageService implements PageServiceContract
         }
     }
 
+    /**
+     * @param array<string, string>|null $search
+     *
+     * @return LengthAwarePaginator<Page>
+     */
     public function getPaginated(?array $search): LengthAwarePaginator
     {
         $query = Page::query()
@@ -111,13 +116,6 @@ class PageService implements PageServiceContract
             }
             $page->slug .= '_' . $page->deleted_at;
             $page->save();
-        }
-    }
-
-    public function reorder(array $pages): void
-    {
-        foreach ($pages as $key => $id) {
-            Page::query()->where('id', $id)->update(['order' => $key]);
         }
     }
 }

@@ -39,7 +39,6 @@
   },
   "require-dev": {
     "barryvdh/laravel-ide-helper": "^2.12",
-    "captainhook/captainhook": "^5.14",
     "fakerphp/faker": "^v1.19",
     "heseya/demo": "^1.0",
     "laravel/pint": "^1.4",
@@ -82,7 +81,6 @@
   },
   "config": {
     "allow-plugins": {
-      "dealerdirect/phpcodesniffer-composer-installer": true,
       "php-http/discovery": true
     },
     "optimize-autoloader": true,

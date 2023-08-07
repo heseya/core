@@ -8,13 +8,13 @@ use App\Models\Banner;
 use App\Models\Discount;
 use App\Models\Item;
 use App\Models\Order;
-use App\Models\Page;
 use App\Models\ProductSet;
 use App\Models\Role;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\User;
+use Domain\Page\Page;
 use Tests\TestCase;
 
 class MetadataFilterTest extends TestCase

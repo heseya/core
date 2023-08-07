@@ -2,8 +2,8 @@
 
 namespace App\Events;
 
-use App\Http\Resources\PageResource;
-use App\Models\Page;
+use Domain\Page\Page;
+use Domain\Page\PageResource;
 
 abstract class PageEvent extends WebHookEvent
 {

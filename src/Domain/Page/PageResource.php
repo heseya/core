@@ -1,16 +1,23 @@
 <?php
 
-namespace App\Http\Resources;
+declare(strict_types=1);
 
+namespace Domain\Page;
+
+use App\Http\Resources\Resource;
+use App\Http\Resources\SeoMetadataResource;
 use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
-class PageResource extends Resource
+final class PageResource extends Resource
 {
     use GetAllTranslations;
     use MetadataResource;
 
+    /**
+     * @return array<string, string>
+     */
     public function base(Request $request): array
     {
         return array_merge([
@@ -25,6 +32,9 @@ class PageResource extends Resource
         );
     }
 
+    /**
+     * @return array<string, string|SeoMetadataResource>
+     */
     public function view(Request $request): array
     {
         return [

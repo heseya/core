@@ -1,22 +1,25 @@
 <?php
 
-namespace App\Http\Controllers;
+declare(strict_types=1);
 
-use App\DTO\Page\PageCreateDto;
-use App\DTO\Page\PageUpdateDto;
+namespace Domain\Page;
+
+use App\DTO\ReorderDto;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\PageIndexRequest;
 use App\Http\Requests\PageReorderRequest;
-use App\Http\Resources\PageResource;
-use App\Models\Page;
-use App\Services\Contracts\PageServiceContract;
+use App\Services\ReorderService;
+use Domain\Page\Dtos\PageCreateDto;
+use Domain\Page\Dtos\PageUpdateDto;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Response;
 
-class PageController extends Controller
+final class PageController extends Controller
 {
     public function __construct(
-        private readonly PageServiceContract $pageService,
+        private readonly PageService $pageService,
+        private readonly ReorderService $reorderService,
     ) {}
 
     public function index(PageIndexRequest $request): JsonResource
@@ -56,7 +59,11 @@ class PageController extends Controller
 
     public function reorder(PageReorderRequest $request): HttpResponse
     {
-        $this->pageService->reorder($request->input('pages'));
+        $dto = ReorderDto::from([
+            'ids' => $request->input('pages'),
+        ]);
+
+        $this->reorderService->reorderAndSave(Page::class, $dto);
 
         return Response::noContent();
     }

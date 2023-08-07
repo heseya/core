@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\ProductSet;
 use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
+use Domain\Page\PageResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
