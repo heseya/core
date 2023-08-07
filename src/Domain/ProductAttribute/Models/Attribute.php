@@ -24,6 +24,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $name
  * @property string $description
  * @property AttributeType $type
+ *
+ * @mixin IdeHelperAttribute
  */
 final class Attribute extends Model
 {

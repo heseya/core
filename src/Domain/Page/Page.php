@@ -21,6 +21,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
 
+/**
+ * @mixin IdeHelperPage
+ */
 final class Page extends Model implements SeoContract, SortableContract, Translatable
 {
     use HasCriteria;

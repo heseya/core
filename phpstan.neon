@@ -9,5 +9,8 @@ parameters:
     # The level 9 is the highest level
     level: 8
 
+    ignoreErrors:
+      - '#PHPDoc tag @mixin contains unknown class .*IdeHelper.*#'
+
     excludePaths:
       - ./src/Support/LaravelData/*

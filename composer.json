@@ -120,7 +120,7 @@
     ],
     "ide-helper": [
       "@php artisan ide-helper:generate -M",
-      "@php artisan ide-helper:models -M",
+      "@php artisan ide-helper:models --dir=\"app/Models\" --dir=\"src/Domain\" -M",
       "@php artisan ide-helper:meta"
     ],
     "normalize": [

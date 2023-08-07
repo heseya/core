@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property string $name
+ *
+ * @mixin IdeHelperAttributeOption
  */
 final class AttributeOption extends Model
 {
