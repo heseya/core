@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\ProductSet;
+use Domain\ProductSet\ProductSet;
 use Tests\TestCase;
 
 class FavouriteTest extends TestCase

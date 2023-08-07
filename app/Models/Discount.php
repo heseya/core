@@ -13,6 +13,7 @@ use App\Enums\DiscountType;
 use App\Models\Contracts\SeoContract;
 use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
+use Domain\ProductSet\ProductSet;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

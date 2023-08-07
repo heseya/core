@@ -1,19 +1,20 @@
 <?php
 
-namespace App\Http\Controllers;
+declare(strict_types=1);
 
-use App\DTO\ProductSet\ProductSetCreateDto;
-use App\DTO\ProductSet\ProductSetUpdateDto;
+namespace Domain\ProductSet;
+
 use App\Dtos\ProductsReorderDto;
-use App\Http\Requests\ProductSetAttachRequest;
-use App\Http\Requests\ProductSetIndexRequest;
-use App\Http\Requests\ProductSetProductReorderRequest;
-use App\Http\Requests\ProductSetReorderRequest;
+use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductResource;
-use App\Http\Resources\ProductSetParentResource;
-use App\Http\Resources\ProductSetResource;
-use App\Models\ProductSet;
-use App\Services\Contracts\ProductSetServiceContract;
+use Domain\ProductSet\Dtos\ProductSetCreateDto;
+use Domain\ProductSet\Dtos\ProductSetUpdateDto;
+use Domain\ProductSet\Requests\ProductSetAttachRequest;
+use Domain\ProductSet\Requests\ProductSetIndexRequest;
+use Domain\ProductSet\Requests\ProductSetProductReorderRequest;
+use Domain\ProductSet\Requests\ProductSetReorderRequest;
+use Domain\ProductSet\Resources\ProductSetParentResource;
+use Domain\ProductSet\Resources\ProductSetResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
@@ -22,7 +23,7 @@ use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 final class ProductSetController extends Controller
 {
     public function __construct(
-        private readonly ProductSetServiceContract $productSetService,
+        private readonly ProductSetService $productSetService,
     ) {}
 
     public function index(ProductSetIndexRequest $request): JsonResource

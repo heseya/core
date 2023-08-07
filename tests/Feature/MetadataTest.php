@@ -11,13 +11,13 @@ use App\Models\Media;
 use App\Models\Option;
 use App\Models\Order;
 use App\Models\Product;
-use App\Models\ProductSet;
 use App\Models\Role;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\User;
 use Domain\Page\Page;
+use Domain\ProductSet\ProductSet;
 use Tests\TestCase;
 
 class MetadataTest extends TestCase

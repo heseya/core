@@ -5,8 +5,8 @@ namespace Tests\Feature;
 use App\Enums\MetadataType;
 use App\Events\ProductSetCreated;
 use App\Models\Product;
-use App\Models\ProductSet;
 use Domain\Currency\Currency;
+use Domain\ProductSet\ProductSet;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 

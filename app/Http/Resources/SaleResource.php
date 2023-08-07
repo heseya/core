@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Models\Discount;
 use App\Traits\MetadataResource;
+use Domain\ProductSet\Resources\ProductSetResource;
 use Illuminate\Http\Request;
 
 /**

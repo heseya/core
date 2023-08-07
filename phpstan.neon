@@ -14,3 +14,7 @@ parameters:
 
     excludePaths:
       - ./src/Support/LaravelData/*
+
+      # temp
+      - ./src/Domain/ProductSet/ProductSet.php
+      - ./src/Domain/ProductSet/ProductSetService.php

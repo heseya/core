@@ -36,7 +36,6 @@ use App\Services\Contracts\PaymentServiceContract;
 use App\Services\Contracts\PermissionServiceContract;
 use App\Services\Contracts\PriceServiceContract;
 use App\Services\Contracts\ProductServiceContract;
-use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\Contracts\ProviderServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
 use App\Services\Contracts\RoleServiceContract;
@@ -77,7 +76,6 @@ use App\Services\PaymentService;
 use App\Services\PermissionService;
 use App\Services\PriceService;
 use App\Services\ProductService;
-use App\Services\ProductSetService;
 use App\Services\ProviderService;
 use App\Services\ReorderService;
 use App\Services\RoleService;
@@ -117,7 +115,6 @@ class AppServiceProvider extends ServiceProvider
         SchemaCrudServiceContract::class => SchemaCrudService::class,
         SettingsServiceContract::class => SettingsService::class,
         ShippingMethodServiceContract::class => ShippingMethodService::class,
-        ProductSetServiceContract::class => ProductSetService::class,
         UserServiceContract::class => UserService::class,
         RoleServiceContract::class => RoleService::class,
         PermissionServiceContract::class => PermissionService::class,

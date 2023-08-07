@@ -5,10 +5,11 @@ namespace App\Http\Resources;
 use App\Enums\VisibilityType;
 use App\Models\MediaAttachment;
 use App\Models\Product;
-use App\Models\ProductSet;
 use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
 use Domain\Page\PageResource;
+use Domain\ProductSet\ProductSet;
+use Domain\ProductSet\Resources\ProductSetResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 

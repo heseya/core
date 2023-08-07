@@ -32,6 +32,7 @@ use App\Traits\HasSeoMetadata;
 use App\Traits\Sortable;
 use Domain\Page\Page;
 use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductSet\ProductSet;
 use Heseya\Searchable\Criteria\Equals;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;

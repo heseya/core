@@ -1,11 +1,16 @@
 <?php
 
-namespace App\Http\Requests;
+declare(strict_types=1);
+
+namespace Domain\Page;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class PageIndexRequest extends FormRequest
+final class PageIndexRequest extends FormRequest
 {
+    /**
+     * @return array<string, string[]>
+     */
     public function rules(): array
     {
         return [

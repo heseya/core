@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\ProductSet;
 use App\Models\SeoMetadata;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\ProductSet\ProductSet;
 use Tests\TestCase;
 
 class ProductSetShowTest extends TestCase

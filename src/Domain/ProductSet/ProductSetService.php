@@ -1,18 +1,18 @@
 <?php
 
-namespace App\Services;
+declare(strict_types=1);
 
-use App\DTO\ProductSet\ProductSetCreateDto;
-use App\DTO\ProductSet\ProductSetUpdateDto;
+namespace Domain\ProductSet;
+
 use App\Dtos\ProductsReorderDto;
 use App\Events\ProductSetCreated;
 use App\Events\ProductSetDeleted;
 use App\Events\ProductSetUpdated;
 use App\Models\Product;
-use App\Models\ProductSet;
 use App\Services\Contracts\MetadataServiceContract;
-use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
+use Domain\ProductSet\Dtos\ProductSetCreateDto;
+use Domain\ProductSet\Dtos\ProductSetUpdateDto;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -25,7 +25,7 @@ use Illuminate\Validation\ValidationException;
 use Spatie\LaravelData\Optional;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-final readonly class ProductSetService implements ProductSetServiceContract
+final readonly class ProductSetService
 {
     public function __construct(
         private SeoMetadataServiceContract $seoMetadataService,

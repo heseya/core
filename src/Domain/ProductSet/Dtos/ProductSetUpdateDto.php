@@ -1,6 +1,8 @@
 <?php
 
-namespace App\DTO\ProductSet;
+declare(strict_types=1);
+
+namespace Domain\ProductSet\Dtos;
 
 use App\DTO\SeoMetadata\SeoMetadataDto;
 use App\Rules\Translations;
@@ -11,8 +13,13 @@ use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 
-class ProductSetUpdateDto extends Data
+final class ProductSetUpdateDto extends Data
 {
+    /**
+     * @param string[]|Optional $children_ids
+     * @param string[]|Optional $attributes
+     * @param array<string, array<string, string>> $translations
+     */
     public function __construct(
         #[AlphaDash, Max(255)]
         public readonly Optional|string|null $slug_suffix,
@@ -31,11 +38,14 @@ class ProductSetUpdateDto extends Data
         public readonly array $translations = [],
     ) {}
 
+    /**
+     * @return array<string, string[]>
+     */
     public static function rules(): array
     {
         return [
-            'translations.*.name' => ['string', 'max:255'],
-            'translations.*.description_html' => ['string', 'max:255'],
+            'translations.*.name' => ['sometimes', 'string', 'max:255'],
+            'translations.*.description_html' => ['sometimes', 'string', 'max:255'],
             'children_ids.*' => ['uuid', 'exists:product_sets,id'],
             'attributes.*' => ['uuid', 'exists:attributes,id'],
         ];

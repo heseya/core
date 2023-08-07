@@ -1,13 +1,15 @@
 <?php
 
-namespace App\Http\Requests;
+declare(strict_types=1);
+
+namespace Domain\ProductSet\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ProductSetReorderRequest extends FormRequest
+final class ProductSetReorderRequest extends FormRequest
 {
     /**
-     * Get the validation rules that apply to the request.
+     * @return array<string, string[]>
      */
     public function rules(): array
     {

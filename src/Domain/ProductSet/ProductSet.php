@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Models;
+declare(strict_types=1);
+
+namespace Domain\ProductSet;
 
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
@@ -9,7 +11,11 @@ use App\Criteria\ProductSetSearch;
 use App\Criteria\WhereInIds;
 use App\Enums\DiscountTargetType;
 use App\Models\Contracts\SeoContract;
+use App\Models\Discount;
 use App\Models\Interfaces\Translatable;
+use App\Models\Media;
+use App\Models\Model;
+use App\Models\Product;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasDiscounts;
 use App\Traits\HasMetadata;
@@ -33,7 +39,7 @@ use Spatie\Translatable\HasTranslations;
  *
  * @mixin IdeHelperProductSet
  */
-class ProductSet extends Model implements SeoContract, Translatable
+final class ProductSet extends Model implements SeoContract, Translatable
 {
     use HasCriteria;
     use HasDiscountConditions;
@@ -56,6 +62,9 @@ class ProductSet extends Model implements SeoContract, Translatable
         'cover_id',
     ];
 
+    /**
+     * @var string[]
+     */
     protected array $translatable = [
         'name',
         'description_html',
@@ -66,6 +75,9 @@ class ProductSet extends Model implements SeoContract, Translatable
         'public_parent' => 'boolean',
     ];
 
+    /**
+     * @var string[]
+     */
     protected array $criteria = [
         'name' => Like::class,
         'slug' => Like::class,
@@ -85,6 +97,9 @@ class ProductSet extends Model implements SeoContract, Translatable
         );
     }
 
+    /**
+     * @return BelongsTo<self, self>
+     */
     public function parent(): BelongsTo
     {
         return $this->belongsTo(self::class, 'parent_id');
@@ -112,6 +127,9 @@ class ProductSet extends Model implements SeoContract, Translatable
             ->orderBy('order', 'desc');
     }
 
+    /**
+     * @return HasMany<self>
+     */
     public function allChildren(): HasMany
     {
         return $this->children()->with([
@@ -123,11 +141,17 @@ class ProductSet extends Model implements SeoContract, Translatable
         ]);
     }
 
+    /**
+     * @return HasMany<self>
+     */
     public function children(): HasMany
     {
         return $this->hasMany(self::class, 'parent_id');
     }
 
+    /**
+     * @return BelongsToMany<Attribute>
+     */
     public function attributes(): BelongsToMany
     {
         return $this->belongsToMany(Attribute::class);
@@ -143,11 +167,17 @@ class ProductSet extends Model implements SeoContract, Translatable
         ]);
     }
 
+    /**
+     * @return HasMany<self>
+     */
     public function childrenPublic(): HasMany
     {
         return $this->children()->public();
     }
 
+    /**
+     * @return BelongsToMany<Product>
+     */
     public function products(): BelongsToMany
     {
         return $this
@@ -167,6 +197,9 @@ class ProductSet extends Model implements SeoContract, Translatable
         return $products->unique();
     }
 
+    /**
+     * @return HasOne<Media>
+     */
     public function media(): HasOne
     {
         return $this->hasOne(Media::class, 'id', 'cover_id');
@@ -200,7 +233,7 @@ class ProductSet extends Model implements SeoContract, Translatable
 
     protected static function booted(): void
     {
-        static::addGlobalScope(
+        self::addGlobalScope(
             'ordered',
             fn (Builder $builder) => $builder->orderBy('product_sets.order'),
         );

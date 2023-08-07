@@ -6,7 +6,6 @@ namespace Domain\Page;
 
 use App\DTO\ReorderDto;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\PageIndexRequest;
 use App\Http\Requests\PageReorderRequest;
 use App\Services\ReorderService;
 use Domain\Page\Dtos\PageCreateDto;

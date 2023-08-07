@@ -23,7 +23,6 @@ use App\Models\Option;
 use App\Models\Order;
 use App\Models\PriceRange;
 use App\Models\Product;
-use App\Models\ProductSet;
 use App\Models\Role;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
@@ -39,6 +38,7 @@ use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\ProductSet\ProductSet;
 use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -1660,10 +1660,10 @@ class OrderCreateTest extends TestCase
                 'email' => $this->email,
                 'shipping_method_id' => $this->shippingMethod->getKey(),
                 'billing_address' => $address + [
-                    'vat' => '',
+                    'vat' => null,
                 ],
                 'shipping_place' => $address + [
-                    'vat' => '',
+                    'vat' => null,
                 ],
                 'items' => [
                     [
@@ -1675,7 +1675,7 @@ class OrderCreateTest extends TestCase
             ->assertCreated();
 
         $this->assertDatabaseHas('addresses', $address + [
-            'vat' => '',
+            'vat' => null,
         ]);
     }
 

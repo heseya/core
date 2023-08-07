@@ -1,9 +1,12 @@
 <?php
 
-namespace App\DTO\ProductSet;
+declare(strict_types=1);
+
+namespace Domain\ProductSet\Dtos;
 
 use App\DTO\SeoMetadata\SeoMetadataDto;
 use App\Rules\Translations;
+use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\Validation\AlphaDash;
@@ -15,11 +18,21 @@ use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Support\Utils\Map;
 
-class ProductSetCreateDto extends Data
+final class ProductSetCreateDto extends Data
 {
+    /**
+     * @var Optional|MetadataUpdateDto[]
+     */
     #[Computed]
     public readonly array|Optional $metadata;
 
+    /**
+     * @param array<string, array<string, string>> $translations
+     * @param array<string, string>|Optional $metadata_public
+     * @param array<string, string>|Optional $metadata_private
+     * @param string[] $children_ids
+     * @param string[] $attributes
+     */
     public function __construct(
         #[Uuid]
         public readonly Optional|string $id,
@@ -49,6 +62,9 @@ class ProductSetCreateDto extends Data
         );
     }
 
+    /**
+     * @return array<string, string[]>
+     */
     public static function rules(): array
     {
         return [

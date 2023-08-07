@@ -37,7 +37,7 @@ class SavedAddressTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreate($user): void
+    public function testCreate(string $user): void
     {
         $this->{$user}->givePermissionTo('profile.addresses_manage');
 
@@ -80,7 +80,7 @@ class SavedAddressTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testNewDefault($user): void
+    public function testNewDefault(string $user): void
     {
         $this->{$user}->givePermissionTo('profile.addresses_manage');
 
@@ -146,7 +146,7 @@ class SavedAddressTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdate($user): void
+    public function testUpdate(string $user): void
     {
         $this->{$user}->givePermissionTo('profile.addresses_manage');
 
@@ -201,7 +201,7 @@ class SavedAddressTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateChangeDefault($user): void
+    public function testUpdateChangeDefault(string $user): void
     {
         $this->{$user}->givePermissionTo('profile.addresses_manage');
 
@@ -284,7 +284,7 @@ class SavedAddressTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateOtherUserSavedAddress($user): void
+    public function testUpdateOtherUserSavedAddress(string $user): void
     {
         $this->{$user}->givePermissionTo('profile.addresses_manage');
 
@@ -316,7 +316,7 @@ class SavedAddressTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateEmptyVat($user): void
+    public function testUpdateEmptyVat(string $user): void
     {
         $this->{$user}->givePermissionTo('profile.addresses_manage');
 
@@ -353,7 +353,7 @@ class SavedAddressTest extends TestCase
                 'zip' => '123',
                 'city' => 'testcity',
                 'country' => 'ts',
-                'vat' => '',
+                'vat' => null,
             ]);
     }
 
@@ -373,7 +373,7 @@ class SavedAddressTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDelete($user): void
+    public function testDelete(string $user): void
     {
         $this->{$user}->givePermissionTo('profile.addresses_manage');
 
@@ -396,7 +396,7 @@ class SavedAddressTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteDefault($user): void
+    public function testDeleteDefault(string $user): void
     {
         $this->{$user}->givePermissionTo('profile.addresses_manage');
 
@@ -417,7 +417,7 @@ class SavedAddressTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProfileHasDefaultDeliveryAndInvoiceAddresses($user): void
+    public function testProfileHasDefaultDeliveryAndInvoiceAddresses(string $user): void
     {
         $this->{$user}->givePermissionTo('profile.addresses_manage');
 

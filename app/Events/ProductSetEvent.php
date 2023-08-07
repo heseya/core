@@ -2,8 +2,8 @@
 
 namespace App\Events;
 
-use App\Http\Resources\ProductSetResource;
-use App\Models\ProductSet;
+use Domain\ProductSet\ProductSet;
+use Domain\ProductSet\Resources\ProductSetResource;
 
 abstract class ProductSetEvent extends WebHookEvent
 {

@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\ProductSet;
 use App\Models\SeoMetadata;
+use Domain\ProductSet\ProductSet;
 use Illuminate\Database\Seeder;
 
 class ProductSetSeeder extends Seeder

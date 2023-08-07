@@ -1,15 +1,22 @@
 <?php
 
-namespace App\Http\Resources;
+declare(strict_types=1);
 
+namespace Domain\ProductSet\Resources;
+
+use App\Http\Resources\MediaResource;
+use App\Http\Resources\Resource;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
-class ProductSetResource extends Resource
+final class ProductSetResource extends Resource
 {
     use MetadataResource;
 
+    /**
+     * @return array<string, mixed>
+     */
     public function base(Request $request): array
     {
         $children = Gate::denies('product_sets.show_hidden')
