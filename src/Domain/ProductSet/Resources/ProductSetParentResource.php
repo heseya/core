@@ -6,10 +6,10 @@ namespace Domain\ProductSet\Resources;
 
 use App\Http\Resources\MediaResource;
 use App\Http\Resources\Resource;
-use App\Http\Resources\SeoMetadataResource;
 use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
 use Domain\ProductAttribute\Resources\AttributeResource;
+use Domain\Seo\Resources\SeoMetadataResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 

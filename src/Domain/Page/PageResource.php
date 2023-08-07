@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Page;
 
 use App\Http\Resources\Resource;
-use App\Http\Resources\SeoMetadataResource;
 use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
+use Domain\Seo\Resources\SeoMetadataResource;
 use Illuminate\Http\Request;
 
 final class PageResource extends Resource
@@ -26,6 +26,7 @@ final class PageResource extends Resource
             'name' => $this->resource->name,
             'public' => $this->resource->public,
             'order' => $this->resource->order,
+            'published' => $this->resource->published,
             ...$request->boolean('with_translations') ? $this->getAllTranslations('pages.show_hidden') : [],
             ...$this->metadataResource('pages.show_metadata_private'),
         ];

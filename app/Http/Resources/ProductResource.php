@@ -10,6 +10,7 @@ use App\Traits\MetadataResource;
 use Domain\Page\PageResource;
 use Domain\ProductSet\ProductSet;
 use Domain\ProductSet\Resources\ProductSetResource;
+use Domain\Seo\Resources\SeoMetadataResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 

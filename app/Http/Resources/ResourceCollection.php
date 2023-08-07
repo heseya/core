@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Domain\Seo\Resources\SeoMetadataResource;
 use Domain\Seo\SeoMetadataService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;

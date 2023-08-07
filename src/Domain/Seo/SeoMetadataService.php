@@ -11,7 +11,6 @@ use App\Services\Contracts\TranslationServiceContract;
 use Domain\Seo\Dtos\SeoKeywordsDto;
 use Domain\Seo\Dtos\SeoMetadataDto;
 use Domain\Seo\Models\SeoMetadata;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;

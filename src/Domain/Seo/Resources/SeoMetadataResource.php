@@ -1,11 +1,15 @@
 <?php
 
-namespace App\Http\Resources;
+declare(strict_types=1);
 
+namespace Domain\Seo\Resources;
+
+use App\Http\Resources\MediaResource;
+use App\Http\Resources\Resource;
 use App\Traits\GetAllTranslations;
 use Illuminate\Http\Request;
 
-class SeoMetadataResource extends Resource
+final class SeoMetadataResource extends Resource
 {
     use GetAllTranslations;
 
@@ -22,6 +26,7 @@ class SeoMetadataResource extends Resource
             'twitter_card' => $this->resource->twitter_card,
             'no_index' => $this->resource->no_index,
             'header_tags' => $this->resource->header_tags,
+            'published' => $this->resource->published,
             ...$request->boolean('with_translations') ? $this->getAllTranslations() : [],
         ];
     }

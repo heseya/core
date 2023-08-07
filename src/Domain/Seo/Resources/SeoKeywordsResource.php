@@ -1,13 +1,19 @@
 <?php
 
-namespace App\Http\Resources;
+declare(strict_types=1);
 
+namespace Domain\Seo\Resources;
+
+use App\Http\Resources\Resource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
-class SeoKeywordsResource extends Resource
+final class SeoKeywordsResource extends Resource
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function base(Request $request): array
     {
         /** @var Collection<int, mixed> $resource */

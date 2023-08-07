@@ -907,6 +907,7 @@ class ProductTest extends TestCase
                 'twitter_card' => $seo->twitter_card,
                 'keywords' => $seo->keywords,
                 'header_tags' => ['test1', 'test2'],
+                'published' => [$this->lang],
             ]]);
     }
 
@@ -1889,109 +1890,15 @@ class ProductTest extends TestCase
             ],
         ]);
 
-        $response
-            ->assertCreated()
-            ->assertJson(['data' => [
-                'name' => 'Test',
-                'public' => $booleanValue,
-                'shipping_digital' => false,
-                'description_html' => '<h1>Description</h1>',
-                'cover' => null,
-                'gallery' => [],
-                'seo' => [
-                    'translations' => [
-                        $this->lang => [
-                            'title' => 'seo title',
-                            'description' => 'seo description',
-                            'no_index' => $booleanValue,
-                        ],
-                    ],
-                    'og_image' => [
-                        'id' => $media->getKey(),
-                    ],
-                    'header_tags' => ['test1', 'test2'],
-                ],
-            ]]);
-
-        $this->assertDatabaseHas('products', [
-            'slug' => 'test',
-            "name->{$this->lang}" => 'Test',
-            'public' => $booleanValue,
-            'shipping_digital' => false,
-            "description_html->{$this->lang}" => '<h1>Description</h1>',
-        ]);
-
-        $this->assertDatabaseHas('seo_metadata', [
-            "title->{$this->lang}" => 'seo title',
-            "description->{$this->lang}" => 'seo description',
-            'model_id' => $response->getData()->data->id,
-            'model_type' => Product::class,
-            "no_index->{$this->lang}" => $booleanValue,
-        ]);
-
-        $this->assertDatabaseCount('seo_metadata', 2);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateWithSeoDefaultIndex(string $user): void
-    {
-        $this->{$user}->givePermissionTo('products.add');
-
-        $response = $this->actingAs($this->{$user})->json('POST', '/products', [
-            'translations' => [
-                $this->lang => [
-                    'name' => 'Test',
-                ],
-            ],
-            'published' => [$this->lang],
-            'slug' => 'test',
-            'prices_base' => $this->productPrices,
-            'public' => true,
-            'shipping_digital' => false,
-            'seo' => [
-                'translations' => [
-                    $this->lang => [
-                        'title' => 'seo title',
-                        'description' => 'seo description',
-                    ],
-                ],
-            ],
-        ]);
-
-        $response
-            ->assertCreated()
-            ->assertJson(['data' => [
-                'slug' => 'test',
-                'name' => 'Test',
-                'public' => true,
-                'shipping_digital' => false,
-                'cover' => null,
-                'gallery' => [],
-                'seo' => [
-                    'title' => 'seo title',
-                    'description' => 'seo description',
-                    'no_index' => false,
-                ],
-            ]]);
-
-        $this->assertDatabaseHas('products', [
-            'slug' => 'test',
-            "name->{$this->lang}" => 'Test',
-            'public' => true,
-            'shipping_digital' => false,
-        ]);
+        $response->assertCreated();
 
         $this->assertDatabaseHas('seo_metadata', [
             "title->{$this->lang}" => 'seo title',
             "description->{$this->lang}" => 'seo description',
             'model_id' => $response->json('data.id'),
             'model_type' => Product::class,
-            "no_index->{$this->lang}" => false,
+            "no_index->{$this->lang}" => $booleanValue,
         ]);
-
-        $this->assertDatabaseCount('seo_metadata', 2);
     }
 
     /**

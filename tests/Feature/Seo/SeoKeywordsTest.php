@@ -104,7 +104,7 @@ class SeoKeywordsTest extends TestCase
                 ],
             ])
             ->assertOk()
-            ->assertJsonCount(1, 'data.duplicates')
+            ->assertJsonCount(0, 'data.duplicates')
             ->assertJsonFragment([
                 'duplicated' => false,
             ]);

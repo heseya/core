@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Domain\Seo;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\SeoKeywordsResource;
-use App\Http\Resources\SeoMetadataResource;
 use Domain\Seo\Dtos\SeoKeywordsDto;
 use Domain\Seo\Dtos\SeoMetadataDto;
+use Domain\Seo\Resources\SeoKeywordsResource;
+use Domain\Seo\Resources\SeoMetadataResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 

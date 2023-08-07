@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Domain\Seo\Resources\SeoMetadataResource;
 use Domain\Seo\SeoMetadataService;
 use Heseya\Resource\JsonResource;
 use Illuminate\Http\Request;

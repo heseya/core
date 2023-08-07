@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Support;
 
 use App\Http\Resources\LanguageResource;
-use App\Http\Resources\SeoMetadataResource;
+use Domain\Seo\Resources\SeoMetadataResource;
 use Domain\Seo\SeoMetadataService;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
