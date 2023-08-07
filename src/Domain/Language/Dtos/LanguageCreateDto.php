@@ -1,12 +1,14 @@
 <?php
 
-namespace App\DTO\Language;
+declare(strict_types=1);
+
+namespace Domain\Language\Dtos;
 
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Unique;
 use Spatie\LaravelData\Data;
 
-class LanguageCreateDto extends Data
+final class LanguageCreateDto extends Data
 {
     public function __construct(
         #[Max(16), Unique('languages')]

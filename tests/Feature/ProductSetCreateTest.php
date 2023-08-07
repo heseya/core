@@ -3,11 +3,11 @@
 namespace Tests\Feature;
 
 use App\Enums\MediaType;
-use App\Events\ProductSetCreated;
 use App\Listeners\WebHookEventListener;
 use App\Models\Media;
 use App\Models\WebHook;
 use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductSet\Events\ProductSetCreated;
 use Domain\ProductSet\ProductSet;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Bus;

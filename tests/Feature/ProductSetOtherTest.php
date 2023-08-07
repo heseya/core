@@ -2,16 +2,15 @@
 
 namespace Tests\Feature;
 
-use App\Events\ProductSetDeleted;
 use App\Listeners\WebHookEventListener;
 use App\Models\Product;
 use App\Models\SeoMetadata;
 use App\Models\WebHook;
+use Domain\ProductSet\Events\ProductSetDeleted;
 use Domain\ProductSet\ProductSet;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
-use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
 class ProductSetOtherTest extends TestCase

@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\LanguageController;
+use Domain\Language\LanguageController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('languages')->group(function (): void {

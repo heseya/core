@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Domain\ProductSet;
 
 use App\Dtos\ProductsReorderDto;
-use App\Events\ProductSetCreated;
-use App\Events\ProductSetDeleted;
-use App\Events\ProductSetUpdated;
 use App\Models\Product;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
 use Domain\ProductSet\Dtos\ProductSetCreateDto;
 use Domain\ProductSet\Dtos\ProductSetUpdateDto;
+use Domain\ProductSet\Events\ProductSetCreated;
+use Domain\ProductSet\Events\ProductSetDeleted;
+use Domain\ProductSet\Events\ProductSetUpdated;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;

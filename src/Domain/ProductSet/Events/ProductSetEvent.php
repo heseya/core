@@ -1,7 +1,10 @@
 <?php
 
-namespace App\Events;
+declare(strict_types=1);
 
+namespace Domain\ProductSet\Events;
+
+use App\Events\WebHookEvent;
 use Domain\ProductSet\ProductSet;
 use Domain\ProductSet\Resources\ProductSetResource;
 
@@ -20,6 +23,9 @@ abstract class ProductSetEvent extends WebHookEvent
         return !$this->productSet->public;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getDataContent(): array
     {
         return ProductSetResource::make($this->productSet)->resolve();

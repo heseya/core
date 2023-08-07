@@ -1,12 +1,14 @@
 <?php
 
-namespace App\Http\Controllers;
+declare(strict_types=1);
 
-use App\DTO\Language\LanguageCreateDto;
-use App\DTO\Language\LanguageUpdateDto;
+namespace Domain\Language;
+
+use App\Exceptions\StoreException;
+use App\Http\Controllers\Controller;
 use App\Http\Resources\LanguageResource;
-use App\Models\Language;
-use App\Services\Contracts\LanguageServiceContract;
+use Domain\Language\Dtos\LanguageCreateDto;
+use Domain\Language\Dtos\LanguageUpdateDto;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Config;
@@ -16,7 +18,7 @@ use Illuminate\Support\Facades\Response;
 final class LanguageController extends Controller
 {
     public function __construct(
-        private readonly LanguageServiceContract $languageService,
+        private readonly LanguageService $languageService,
     ) {}
 
     public function index(): JsonResource
@@ -39,6 +41,9 @@ final class LanguageController extends Controller
         );
     }
 
+    /**
+     * @throws StoreException
+     */
     public function update(Language $language, LanguageUpdateDto $dto): JsonResource
     {
         return LanguageResource::make(
@@ -46,6 +51,9 @@ final class LanguageController extends Controller
         );
     }
 
+    /**
+     * @throws StoreException
+     */
     public function destroy(Language $language): HttpResponse
     {
         $this->languageService->delete($language);

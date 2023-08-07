@@ -23,7 +23,6 @@ use App\Services\Contracts\EventServiceContract;
 use App\Services\Contracts\FavouriteServiceContract;
 use App\Services\Contracts\GoogleCategoryServiceContract;
 use App\Services\Contracts\ItemServiceContract;
-use App\Services\Contracts\LanguageServiceContract;
 use App\Services\Contracts\MediaAttachmentServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
@@ -63,7 +62,6 @@ use App\Services\EventService;
 use App\Services\FavouriteService;
 use App\Services\GoogleCategoryService;
 use App\Services\ItemService;
-use App\Services\LanguageService;
 use App\Services\MediaAttachmentService;
 use App\Services\MediaService;
 use App\Services\MetadataService;
@@ -125,7 +123,6 @@ class AppServiceProvider extends ServiceProvider
         SeoMetadataServiceContract::class => SeoMetadataService::class,
         UrlServiceContract::class => UrlService::class,
         ItemServiceContract::class => ItemService::class,
-        LanguageServiceContract::class => LanguageService::class,
         OneTimeSecurityCodeContract::class => OneTimeSecurityCodeService::class,
         TranslationServiceContract::class => TranslationService::class,
         SavedAddressServiceContract::class => SavedAddressService::class,

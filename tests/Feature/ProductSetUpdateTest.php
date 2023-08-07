@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Events\ProductSetUpdated;
 use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductSet\Events\ProductSetUpdated;
 use Domain\ProductSet\ProductSet;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;

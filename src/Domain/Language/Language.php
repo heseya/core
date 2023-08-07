@@ -1,14 +1,16 @@
 <?php
 
-namespace App\Models;
+declare(strict_types=1);
 
-use Illuminate\Database\Eloquent\Builder;
+namespace Domain\Language;
+
+use App\Models\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * @mixin IdeHelperLanguage
  */
-class Language extends Model
+final class Language extends Model
 {
     use HasFactory;
 
@@ -24,9 +26,8 @@ class Language extends Model
         'hidden' => 'boolean',
     ];
 
-    public function scopeDefault(Builder $query): self|null
+    public static function default(): self|null
     {
-        // @phpstan-ignore-next-line
-        return $query->where('default', true)->first();
+        return self::where('default', '=', true)->first();
     }
 }

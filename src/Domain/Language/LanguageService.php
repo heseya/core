@@ -1,18 +1,18 @@
 <?php
 
-namespace App\Services;
+declare(strict_types=1);
 
-use App\DTO\Language\LanguageCreateDto;
-use App\DTO\Language\LanguageUpdateDto;
+namespace Domain\Language;
+
 use App\Enums\ExceptionsEnums\Exceptions;
-use App\Events\LanguageCreated;
-use App\Events\LanguageDeleted;
-use App\Events\LanguageUpdated;
 use App\Exceptions\StoreException;
-use App\Models\Language;
-use App\Services\Contracts\LanguageServiceContract;
+use Domain\Language\Dtos\LanguageCreateDto;
+use Domain\Language\Dtos\LanguageUpdateDto;
+use Domain\Language\Events\LanguageCreated;
+use Domain\Language\Events\LanguageDeleted;
+use Domain\Language\Events\LanguageUpdated;
 
-class LanguageService implements LanguageServiceContract
+final class LanguageService
 {
     public function create(LanguageCreateDto $dto): Language
     {

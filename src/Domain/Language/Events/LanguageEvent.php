@@ -1,9 +1,12 @@
 <?php
 
-namespace App\Events;
+declare(strict_types=1);
 
+namespace Domain\Language\Events;
+
+use App\Events\WebHookEvent;
 use App\Http\Resources\LanguageResource;
-use App\Models\Language;
+use Domain\Language\Language;
 
 abstract class LanguageEvent extends WebHookEvent
 {
@@ -20,6 +23,9 @@ abstract class LanguageEvent extends WebHookEvent
         return !$this->language->hidden;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getDataContent(): array
     {
         return LanguageResource::make($this->language)->resolve();
