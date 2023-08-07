@@ -6,12 +6,14 @@ namespace Domain\ProductSet\Resources;
 
 use App\Http\Resources\MediaResource;
 use App\Http\Resources\Resource;
+use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 final class ProductSetResource extends Resource
 {
+    use GetAllTranslations;
     use MetadataResource;
 
     /**
@@ -23,7 +25,7 @@ final class ProductSetResource extends Resource
             ? $this->resource->childrenPublic
             : $this->resource->children;
 
-        return array_merge([
+        return [
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
             'slug' => $this->resource->slug,
@@ -34,6 +36,9 @@ final class ProductSetResource extends Resource
             'parent_id' => $this->resource->parent_id,
             'children_ids' => $children->map(fn ($child) => $child->getKey())->toArray(),
             'cover' => MediaResource::make($this->resource->media),
-        ], $this->metadataResource('product_sets.show_metadata_private'));
+            ...$this->metadataResource('product_sets.show_metadata_private'),
+            ...$request->boolean('with_translations') ?
+                $this->getAllTranslations('product_sets.show_hidden') : [],
+        ];
     }
 }

@@ -20,16 +20,15 @@ final class PageResource extends Resource
      */
     public function base(Request $request): array
     {
-        return array_merge([
+        return [
             'id' => $this->resource->getKey(),
             'slug' => $this->resource->slug,
             'name' => $this->resource->name,
             'public' => $this->resource->public,
             'order' => $this->resource->order,
-        ],
-            $request->boolean('with_translations') ? $this->getAllTranslations('pages.show_hidden') : [],
-            $this->metadataResource('pages.show_metadata_private')
-        );
+            ...$request->boolean('with_translations') ? $this->getAllTranslations('pages.show_hidden') : [],
+            ...$this->metadataResource('pages.show_metadata_private'),
+        ];
     }
 
     /**

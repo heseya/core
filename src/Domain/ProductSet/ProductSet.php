@@ -62,9 +62,7 @@ final class ProductSet extends Model implements SeoContract, Translatable
         'cover_id',
     ];
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     protected array $translatable = [
         'name',
         'description_html',
@@ -75,9 +73,7 @@ final class ProductSet extends Model implements SeoContract, Translatable
         'public_parent' => 'boolean',
     ];
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     protected array $criteria = [
         'name' => Like::class,
         'slug' => Like::class,
