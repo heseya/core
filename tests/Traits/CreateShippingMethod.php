@@ -2,13 +2,13 @@
 
 namespace Tests\Traits;
 
-use App\Enums\Currency;
 use App\Enums\ShippingType;
 use App\Models\ShippingMethod;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
+use Domain\Currency\Currency;
 
 trait CreateShippingMethod
 {

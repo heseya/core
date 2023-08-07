@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Enums\Currency;
 use App\Enums\ShippingType;
 use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use Brick\Money\Money;
+use Domain\Currency\Currency;
 use Tests\TestCase;
 
 class OrderDigitalTest extends TestCase

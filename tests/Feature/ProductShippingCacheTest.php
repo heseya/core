@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Enums\Currency;
 use App\Models\Deposit;
 use App\Models\Item;
 use Carbon\Carbon;
+use Domain\Currency\Currency;
 use Tests\TestCase;
 
 class ProductShippingCacheTest extends TestCase

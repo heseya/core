@@ -3,12 +3,12 @@
 namespace App\Dtos;
 
 use App\Dtos\Contracts\InstantiateFromRequest;
-use App\Enums\Currency;
 use App\Http\Requests\ProductIndexRequest;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
+use Domain\Currency\Currency;
 use Heseya\Dto\Dto;
 use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
