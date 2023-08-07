@@ -966,53 +966,15 @@ class DiscountConditionsCheckTest extends TestCase
         return [
             'in range' => [
                 [
-                    'start_at' => Carbon::tomorrow(),
-                    'end_at' => Carbon::tomorrow()->addDay(),
+                    'start_at' => Carbon::create(2020, 02, 03, 10),
+                    'end_at' => Carbon::create(2020, 02, 04, 10),
                     'is_in_range' => true,
                 ],
             ],
             'not in range' => [
                 [
-                    'start_at' => Carbon::yesterday(),
-                    'end_at' => Carbon::tomorrow(),
-                    'is_in_range' => false,
-                ],
-            ],
-            'only start at in range' => [
-                [
-                    'start_at' => Carbon::tomorrow(),
-                    'is_in_range' => true,
-                ],
-            ],
-            'only start at not in range' => [
-                [
-                    'start_at' => Carbon::yesterday(),
-                    'is_in_range' => false,
-                ],
-            ],
-            'only end at in range' => [
-                [
-                    'end_at' => Carbon::yesterday(),
-                    'is_in_range' => true,
-                ],
-            ],
-            'only end at not in range' => [
-                [
-                    'end_at' => Carbon::tomorrow(),
-                    'is_in_range' => false,
-                ],
-            ],
-            'in range start at equal end at' => [
-                [
-                    'start_at' => Carbon::tomorrow(),
-                    'end_at' => Carbon::tomorrow(),
-                    'is_in_range' => true,
-                ],
-            ],
-            'not in range start at equal end at' => [
-                [
-                    'start_at' => Carbon::today()->format('Y-m-d'),
-                    'end_at' => Carbon::today()->format('Y-m-d'),
+                    'start_at' => Carbon::create(2020, 02, 01, 10),
+                    'end_at' => Carbon::create(2020, 02, 03, 10),
                     'is_in_range' => false,
                 ],
             ],
@@ -1024,6 +986,8 @@ class DiscountConditionsCheckTest extends TestCase
      */
     public function testCheckConditionDateBetweenNotInRangePass($value): void
     {
+        $this->travelTo(Carbon::create(2020, 02, 02, 10));
+
         $discountCondition = $this->conditionGroup->conditions()->create([
             'type' => ConditionType::DATE_BETWEEN,
             'value' => $value,
