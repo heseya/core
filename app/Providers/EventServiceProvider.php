@@ -20,9 +20,6 @@ use App\Events\OrderUpdated;
 use App\Events\OrderUpdatedPaid;
 use App\Events\OrderUpdatedShippingNumber;
 use App\Events\OrderUpdatedStatus;
-use App\Events\PageCreated;
-use App\Events\PageDeleted;
-use App\Events\PageUpdated;
 use App\Events\PasswordReset;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
@@ -57,6 +54,9 @@ use App\Observers\DepositObserver;
 use App\Observers\ItemProductObserver;
 use App\Observers\PaymentObserver;
 use App\Observers\SchemaObserver;
+use Domain\Page\Events\PageCreated;
+use Domain\Page\Events\PageDeleted;
+use Domain\Page\Events\PageUpdated;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductAttribute\Observers\AttributeOptionObserver;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -88,21 +88,6 @@ class EventServiceProvider extends ServiceProvider
         UserCreated::class => [
             UserCreatedListener::class,
         ],
-        UserDeleted::class => [
-            WebHookEventListener::class,
-        ],
-        UserUpdated::class => [
-            WebHookEventListener::class,
-        ],
-        LanguageCreated::class => [
-            WebHookEventListener::class,
-        ],
-        LanguageUpdated::class => [
-            WebHookEventListener::class,
-        ],
-        LanguageDeleted::class => [
-            WebHookEventListener::class,
-        ],
     ];
 
     /** @var array<class-string> */
@@ -115,6 +100,9 @@ class EventServiceProvider extends ServiceProvider
         ItemDeleted::class,
         ItemUpdated::class,
         ItemUpdatedQuantity::class,
+        LanguageCreated::class,
+        LanguageDeleted::class,
+        LanguageUpdated::class,
         NewLocalizationLoginAttempt::class,
         OrderCreated::class,
         OrderDocumentEvent::class,
@@ -122,22 +110,22 @@ class EventServiceProvider extends ServiceProvider
         OrderUpdatedPaid::class,
         OrderUpdatedShippingNumber::class,
         OrderUpdatedStatus::class,
-        SendOrderUrls::class,
         PageCreated::class,
         PageDeleted::class,
         PageUpdated::class,
         PasswordReset::class,
         ProductCreated::class,
         ProductDeleted::class,
+        ProductUpdated::class,
+        ProductPriceUpdated::class,
         ProductSetCreated::class,
         ProductSetDeleted::class,
         ProductSetUpdated::class,
-        ProductUpdated::class,
-        ProductPriceUpdated::class,
         SaleCreated::class,
         SaleDeleted::class,
         SaleUpdated::class,
         SendOrderDocument::class,
+        SendOrderUrls::class,
         SuccessfulLoginAttempt::class,
         TfaInit::class,
         TfaRecoveryCodesChanged::class,

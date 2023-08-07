@@ -1,18 +1,19 @@
 <?php
 
-namespace App\Events;
+declare(strict_types=1);
 
+namespace Domain\Page\Events;
+
+use App\Events\WebHookEvent;
 use Domain\Page\Page;
 use Domain\Page\PageResource;
 
 abstract class PageEvent extends WebHookEvent
 {
-    protected Page $page;
-
-    public function __construct(Page $page)
-    {
+    public function __construct(
+        protected Page $page,
+    ) {
         parent::__construct();
-        $this->page = $page;
     }
 
     public function isHidden(): bool
@@ -20,6 +21,9 @@ abstract class PageEvent extends WebHookEvent
         return !$this->page->public;
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function getDataContent(): array
     {
         return PageResource::make($this->page)->resolve();

@@ -4,26 +4,26 @@ declare(strict_types=1);
 
 namespace Domain\Page;
 
-use App\Events\PageCreated;
-use App\Events\PageDeleted;
-use App\Events\PageUpdated;
-use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
+use Domain\Metadata\MetadataService;
 use Domain\Page\Dtos\PageCreateDto;
 use Domain\Page\Dtos\PageUpdateDto;
+use Domain\Page\Events\PageCreated;
+use Domain\Page\Events\PageDeleted;
+use Domain\Page\Events\PageUpdated;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Spatie\LaravelData\Optional;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-final class PageService
+final readonly class PageService
 {
     public function __construct(
-        protected SeoMetadataServiceContract $seoMetadataService,
-        protected MetadataServiceContract $metadataService,
-        protected TranslationServiceContract $translationService,
+        private MetadataService $metadataService,
+        private SeoMetadataServiceContract $seoMetadataService,
+        private TranslationServiceContract $translationService,
     ) {}
 
     public function authorize(Page $page): void
@@ -76,7 +76,7 @@ final class PageService
         }
 
         if (!($dto->metadata instanceof Optional)) {
-            $this->metadataService->sync($page, $dto->metadata);
+            $this->metadataService->sync(Page::class, $page->getKey(), $dto->metadata);
         }
 
         PageCreated::dispatch($page);

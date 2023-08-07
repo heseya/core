@@ -47,14 +47,14 @@ final readonly class MetadataService
     /**
      * @param class-string $class
      */
-    private function processMetadata(string $class, string $id, MetadataUpdateDto $dto): void
+    private function processMetadata(string $class, string $model_id, MetadataUpdateDto $dto): void
     {
         if ($dto->value === null) {
-            $this->repository->delete($id, $dto->name);
+            $this->repository->delete($model_id, $dto->name);
 
             return;
         }
 
-        $this->repository->updateOrCreate($class, $id, $dto);
+        $this->repository->updateOrCreate($class, $model_id, $dto);
     }
 }
