@@ -9,9 +9,12 @@ class SeoMetadataResource extends Resource
 {
     use GetAllTranslations;
 
+    /**
+     * @return array<string, mixed>
+     */
     public function base(Request $request): array
     {
-        $data = [
+        return [
             'title' => $this->resource->title,
             'description' => $this->resource->description,
             'keywords' => $this->resource->keywords,
@@ -19,11 +22,7 @@ class SeoMetadataResource extends Resource
             'twitter_card' => $this->resource->twitter_card,
             'no_index' => $this->resource->no_index,
             'header_tags' => $this->resource->header_tags,
+            ...$request->boolean('with_translations') ? $this->getAllTranslations() : [],
         ];
-
-        return array_merge(
-            $data,
-            $request->boolean('with_translations') ? $this->getAllTranslations() : []
-        );
     }
 }

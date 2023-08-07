@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Order\Controllers;
 
+use App\DTO\ReorderDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
 use App\Exceptions\Error;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StatusIndexRequest;
-use App\Http\Requests\StatusReorderRequest;
 use App\Models\Status;
+use App\Services\Contracts\ReorderServiceContract;
 use App\Services\Contracts\StatusServiceContract;
 use Domain\Order\Dtos\OrderStatusCreateDto;
+use Domain\Order\Dtos\OrderStatusIndexDto;
+use Domain\Order\Dtos\OrderStatusReorderDto;
 use Domain\Order\Dtos\OrderStatusUpdateDto;
 use Domain\Order\Resources\OrderStatusResource;
 use Illuminate\Http\JsonResponse;
@@ -24,12 +26,13 @@ final class OrderStatusController extends Controller
 {
     public function __construct(
         private readonly StatusServiceContract $statusService,
+        private readonly ReorderServiceContract $reorderService,
     ) {}
 
-    public function index(StatusIndexRequest $request): JsonResource
+    public function index(OrderStatusIndexDto $dto): JsonResource
     {
         return OrderStatusResource::collection(
-            Status::searchByCriteria($request->validated())
+            Status::searchByCriteria($dto->toArray())
                 ->with(['metadata', 'metadataPrivate'])
                 ->orderBy('order')
                 ->get(),
@@ -50,15 +53,6 @@ final class OrderStatusController extends Controller
         );
     }
 
-    public function reorder(StatusReorderRequest $request): HttpResponse
-    {
-        foreach ($request->input('statuses') as $key => $id) {
-            Status::query()->where('id', $id)->update(['order' => $key]);
-        }
-
-        return Response::noContent();
-    }
-
     /**
      * @throws ClientException
      */
@@ -76,6 +70,15 @@ final class OrderStatusController extends Controller
         }
 
         $this->statusService->destroy($status);
+
+        return Response::noContent();
+    }
+
+    public function reorder(OrderStatusReorderDto $request): HttpResponse
+    {
+        $dto = new ReorderDto($request->statuses);
+
+        $this->reorderService->reorderAndSave(Status::class, $dto);
 
         return Response::noContent();
     }

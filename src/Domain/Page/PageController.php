@@ -58,9 +58,7 @@ final class PageController extends Controller
 
     public function reorder(PageReorderRequest $request): HttpResponse
     {
-        $dto = ReorderDto::from([
-            'ids' => $request->input('pages'),
-        ]);
+        $dto = new ReorderDto($request->input('pages'));
 
         $this->reorderService->reorderAndSave(Page::class, $dto);
 
