@@ -1,23 +1,26 @@
 <?php
 
-namespace App\Http\Controllers;
+declare(strict_types=1);
 
-use App\DTO\OrderStatus\OrderStatusCreateDto;
-use App\DTO\OrderStatus\OrderStatusUpdateDto;
+namespace Domain\Order\Controllers;
+
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
 use App\Exceptions\Error;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StatusIndexRequest;
 use App\Http\Requests\StatusReorderRequest;
-use App\Http\Resources\StatusResource;
 use App\Models\Status;
 use App\Services\Contracts\StatusServiceContract;
+use Domain\Order\Dtos\OrderStatusCreateDto;
+use Domain\Order\Dtos\OrderStatusUpdateDto;
+use Domain\Order\Resources\OrderStatusResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Response;
 
-class StatusController extends Controller
+final class OrderStatusController extends Controller
 {
     public function __construct(
         private readonly StatusServiceContract $statusService,
@@ -25,9 +28,9 @@ class StatusController extends Controller
 
     public function index(StatusIndexRequest $request): JsonResource
     {
-        return StatusResource::collection(
+        return OrderStatusResource::collection(
             Status::searchByCriteria($request->validated())
-                ->with(['metadata'])
+                ->with(['metadata', 'metadataPrivate'])
                 ->orderBy('order')
                 ->get(),
         );
@@ -35,14 +38,14 @@ class StatusController extends Controller
 
     public function store(OrderStatusCreateDto $dto): JsonResource
     {
-        return StatusResource::make(
+        return OrderStatusResource::make(
             $this->statusService->store($dto)
         );
     }
 
     public function update(Status $status, OrderStatusUpdateDto $dto): JsonResource
     {
-        return StatusResource::make(
+        return OrderStatusResource::make(
             $this->statusService->update($status, $dto),
         );
     }

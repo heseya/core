@@ -2,9 +2,9 @@
 
 namespace App\Services\Contracts;
 
-use App\DTO\OrderStatus\OrderStatusCreateDto;
-use App\DTO\OrderStatus\OrderStatusUpdateDto;
 use App\Models\Status;
+use Domain\Order\Dtos\OrderStatusCreateDto;
+use Domain\Order\Dtos\OrderStatusUpdateDto;
 
 interface StatusServiceContract
 {

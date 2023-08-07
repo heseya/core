@@ -1,8 +1,11 @@
 <?php
 
-namespace App\DTO\OrderStatus;
+declare(strict_types=1);
+
+namespace Domain\Order\Dtos;
 
 use App\Rules\Translations;
+use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -14,9 +17,16 @@ use Support\Utils\Map;
 
 final class OrderStatusCreateDto extends Data
 {
+    /** @var Optional|MetadataUpdateDto[] */
     #[Computed]
     public readonly array|Optional $metadata;
 
+    /**
+     * @param array<string, array<string, string>> $translations
+     * @param string[] $published
+     * @param string[]|Optional $metadata_public
+     * @param string[]|Optional $metadata_private
+     */
     public function __construct(
         #[Rule(new Translations(['name', 'description']))]
         public readonly array $translations,
@@ -38,6 +48,9 @@ final class OrderStatusCreateDto extends Data
         );
     }
 
+    /**
+     * @return array<string, string[]>
+     */
     public static function rules(): array
     {
         return [
