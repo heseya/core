@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Enums\AttributeType;
-use App\Models\Attribute;
+use Domain\ProductAttribute\Enums\AttributeType;
+use Domain\ProductAttribute\Models\Attribute;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -12,7 +12,7 @@ class AttributeFactory extends Factory
     /**
      * The name of the factory's corresponding model.
      *
-     * @var string
+     * @var class-string<Attribute>
      */
     protected $model = Attribute::class;
 

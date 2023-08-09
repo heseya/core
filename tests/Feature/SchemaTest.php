@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Enums\MetadataType;
 use App\Enums\SchemaType;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Schema;
+use Domain\Metadata\Enums\MetadataType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
@@ -52,7 +52,7 @@ class SchemaTest extends TestCase
 
         Schema::factory()->count(5)->create();
 
-        $response = $this->actingAs($this->{$user})->getJson('/schemas?translations');
+        $response = $this->actingAs($this->{$user})->getJson('/schemas?with_translations=1');
 
         $response
             ->assertOk()

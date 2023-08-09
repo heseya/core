@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Page;
-use App\Models\SeoMetadata;
+use Domain\Page\Page;
+use Domain\Seo\Models\SeoMetadata;
 use Illuminate\Database\Seeder;
 
 class PageSeeder extends Seeder

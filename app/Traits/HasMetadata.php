@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-use App\Models\Metadata;
+use Domain\Metadata\Models\Metadata;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 trait HasMetadata

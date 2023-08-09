@@ -2,9 +2,9 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Language;
 use App\Traits\GetPreferredLanguage;
 use Closure;
+use Domain\Language\Language;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
@@ -13,16 +13,11 @@ class AcceptLanguage
 {
     use GetPreferredLanguage;
 
-    /**
-     * Handle an incoming request.
-     *
-     * @param Request $request
-     */
-    public function handle($request, Closure $next): mixed
+    public function handle(Request $request, Closure $next): mixed
     {
         $language = $this->getPreferredLanguage(
             $request->header('Accept-Language'),
-            Language::where('hidden', false)->get(),
+            Language::query()->where('hidden', false)->get(),
         );
 
         Config::set('language.model', $language);

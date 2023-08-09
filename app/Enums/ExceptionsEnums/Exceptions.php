@@ -99,6 +99,7 @@ enum Exceptions: string
     case CLIENT_DELETE_DEFAULT_LANGUAGE = 'You cannot delete the default language.';
     case CLIENT_NO_DEFAULT_LANGUAGE = 'There must be at least one language.';
 
+    case CLIENT_CANNOT_DELETE_MODEL = 'Cannot delete model';
     case CLIENT_OPTION_NOT_RELATED_TO_ATTRIBUTE = 'Option is not related to provided attribute';
 
     case SERVER_CDN_ERROR = 'CDN responded with an error';

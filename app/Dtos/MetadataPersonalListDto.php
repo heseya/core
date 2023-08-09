@@ -2,9 +2,9 @@
 
 namespace App\Dtos;
 
-use App\DTO\Metadata\MetadataPersonalDto;
 use App\Dtos\Contracts\InstantiateFromRequest;
-use App\Enums\MetadataType;
+use Domain\Metadata\Dtos\MetadataPersonalDto;
+use Domain\Metadata\Enums\MetadataType;
 use Heseya\Dto\Dto;
 use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Http\FormRequest;

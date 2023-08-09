@@ -2,8 +2,8 @@
 
 namespace App\Traits;
 
-use App\Models\AttributeOption;
 use App\Models\Discount;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Request;

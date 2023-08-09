@@ -2,21 +2,26 @@
 
 namespace App\Services;
 
-use App\DTO\Metadata\MetadataDto;
-use App\DTO\Metadata\MetadataPersonalDto;
 use App\Dtos\MetadataPersonalListDto;
-use App\Models\Model;
+use App\Models\Discount;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\MetadataServiceContract;
+use Domain\Metadata\Dtos\MetadataPersonalDto;
+use Domain\Metadata\Dtos\MetadataUpdateDto;
+use Domain\Page\Page;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\ProductSet\ProductSet;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class MetadataService implements MetadataServiceContract
 {
-    public function sync(Model|Role $model, array $metadata): void
+    public function sync(Model $model, array $metadata): void
     {
         foreach ($metadata as $meta) {
             if ($meta instanceof MetadataPersonalDto) {
@@ -27,29 +32,36 @@ class MetadataService implements MetadataServiceContract
         }
     }
 
-    public function updateOrCreate(Model|Role $model, MetadataDto $dto): void
+    public function updateOrCreate(Model $model, MetadataUpdateDto $dto): void
     {
         $this->processMetadata($model, $dto, $dto->public ? 'metadata' : 'metadataPrivate');
     }
 
-    public function returnModel(array $routeSegments): Model|Role|null
+    /**
+     * @param string[] $routeSegments
+     */
+    public function returnModel(array $routeSegments): Model|null
     {
-        $segments = Collection::make($routeSegments);
-        $segment = $segments->first();
-
-        $class = match ($segment) {
-            'sales', 'coupons' => 'discounts',
-            'attributes' => $this->isAttributeOption($segments->toArray()) ? 'attribute_options' : 'attributes',
-            default => $segment,
+        $className = match ($routeSegments[0]) {
+            'pages' => Page::class,
+            'product-sets' => ProductSet::class,
+            'sales', 'coupons' => Discount::class,
+            'attributes' => $routeSegments[2] === 'options' ? AttributeOption::class : Attribute::class,
+            default => '',
         };
-        $className = 'App\\Models\\' . Str::studly(Str::singular($class));
+
+        if (class_exists($className)) {
+            return new $className();
+        }
+
+        $className = 'App\\Models\\' . Str::studly(Str::singular($routeSegments[0]));
 
         if (class_exists($className)) {
             // @phpstan-ignore-next-line
             return new $className();
         }
 
-        $className = 'App\\Models\\' . Str::studly($class);
+        $className = 'App\\Models\\' . Str::studly($routeSegments[0]);
 
         if (class_exists($className)) {
             // @phpstan-ignore-next-line
@@ -86,14 +98,9 @@ class MetadataService implements MetadataServiceContract
         return $user->metadataPersonal;
     }
 
-    private function isAttributeOption(array $segments): bool
-    {
-        return $segments[2] === 'options';
-    }
-
     private function processMetadata(
         Model|Role $model,
-        MetadataDto|MetadataPersonalDto $dto,
+        MetadataPersonalDto|MetadataUpdateDto $dto,
         string $relation,
     ): void {
         /** @var Builder $query */

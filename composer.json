@@ -39,7 +39,6 @@
   },
   "require-dev": {
     "barryvdh/laravel-ide-helper": "^2.12",
-    "captainhook/captainhook": "^5.14",
     "fakerphp/faker": "^v1.19",
     "heseya/demo": "^1.0",
     "laravel/pint": "^1.4",
@@ -82,7 +81,6 @@
   },
   "config": {
     "allow-plugins": {
-      "dealerdirect/phpcodesniffer-composer-installer": true,
       "php-http/discovery": true
     },
     "optimize-autoloader": true,
@@ -122,7 +120,7 @@
     ],
     "ide-helper": [
       "@php artisan ide-helper:generate -M",
-      "@php artisan ide-helper:models -M",
+      "@php artisan ide-helper:models --dir=\"app/Models\" --dir=\"src/Domain\" -M",
       "@php artisan ide-helper:meta"
     ],
     "normalize": [
@@ -132,7 +130,8 @@
       "@stan"
     ],
     "pint": [
-      "./vendor/bin/pint"
+      "./vendor/bin/pint ./src --config ./pint.json",
+      "./vendor/bin/pint ./app --config ./pint-app.json"
     ],
     "pre-commit": [
       "@style",
@@ -160,7 +159,8 @@
       "@php artisan db:seed --class=\"Database\\Seeders\\InitSeeder\""
     ],
     "stan": [
-      "./vendor/bin/phpstan analyse --memory-limit=2G"
+      "./vendor/bin/phpstan analyse -c ./phpstan.neon --memory-limit=2G",
+      "./vendor/bin/phpstan analyse -c ./phpstan-app.neon --memory-limit=2G"
     ],
     "style": [
       "@normalize",

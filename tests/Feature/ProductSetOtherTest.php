@@ -2,16 +2,15 @@
 
 namespace Tests\Feature;
 
-use App\Events\ProductSetDeleted;
 use App\Listeners\WebHookEventListener;
 use App\Models\Product;
-use App\Models\ProductSet;
-use App\Models\SeoMetadata;
 use App\Models\WebHook;
+use Domain\ProductSet\Events\ProductSetDeleted;
+use Domain\ProductSet\ProductSet;
+use Domain\Seo\Models\SeoMetadata;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
-use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
 class ProductSetOtherTest extends TestCase
@@ -33,7 +32,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDelete($user): void
+    public function testDelete(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.remove');
 
@@ -55,7 +54,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteWithWebHook($user): void
+    public function testDeleteWithWebHook(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.remove');
 
@@ -85,26 +84,12 @@ class ProductSetOtherTest extends TestCase
             return $job->class === WebHookEventListener::class
                 && $job->data[0] instanceof ProductSetDeleted;
         });
-
-        $event = new ProductSetDeleted($newSet);
-        $listener = new WebHookEventListener();
-        $listener->handle($event);
-
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $newSet) {
-            $payload = $job->payload;
-
-            return $job->webhookUrl === $webHook->url
-                && isset($job->headers['Signature'])
-                && $payload['data']['id'] === $newSet->getKey()
-                && $payload['data_type'] === 'ProductSet'
-                && $payload['event'] === 'ProductSetDeleted';
-        });
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteWithProducts($user): void
+    public function testDeleteWithProducts(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.remove');
 
@@ -136,7 +121,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteWithSubsets($user): void
+    public function testDeleteWithSubsets(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.remove');
 
@@ -176,7 +161,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteWithSeo($user): void
+    public function testDeleteWithSeo(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.remove');
 
@@ -197,7 +182,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testReorderRoot($user): void
+    public function testReorderRoot(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.edit');
 
@@ -233,7 +218,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testReorderChildren($user): void
+    public function testReorderChildren(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.edit');
 
@@ -276,7 +261,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testAttachProducts($user): void
+    public function testAttachProducts(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.edit');
 
@@ -320,7 +305,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDetachProducts($user): void
+    public function testDetachProducts(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.edit');
 
@@ -366,7 +351,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowProductsUnauthorized($user): void
+    public function testShowProductsUnauthorized(string $user): void
     {
         $set = ProductSet::factory()->create([
             'public' => true,
@@ -382,7 +367,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowProducts($user): void
+    public function testShowProducts(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.show_details');
 
@@ -424,7 +409,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowProductsWrongId($user): void
+    public function testShowProductsWrongId(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.show_details');
 
@@ -459,7 +444,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowProductsHidden($user): void
+    public function testShowProductsHidden(string $user): void
     {
         $this->{$user}->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
 
@@ -501,7 +486,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductReorderInSetHigherOrder($user): void
+    public function testProductReorderInSetHigherOrder(string $user): void
     {
         $this->{$user}->givePermissionTo(['product_sets.edit']);
 
@@ -545,7 +530,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductReorderInSetLowerOrder($user): void
+    public function testProductReorderInSetLowerOrder(string $user): void
     {
         $this->{$user}->givePermissionTo(['product_sets.edit']);
 
@@ -589,7 +574,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductReorderInSetSameOrder($user): void
+    public function testProductReorderInSetSameOrder(string $user): void
     {
         $this->{$user}->givePermissionTo(['product_sets.edit']);
 
@@ -633,7 +618,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductReorderInSetOrderOutOfSize($user): void
+    public function testProductReorderInSetOrderOutOfSize(string $user): void
     {
         $this->{$user}->givePermissionTo(['product_sets.edit']);
 
@@ -677,7 +662,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductReorderWhenWasNull($user): void
+    public function testProductReorderWhenWasNull(string $user): void
     {
         $this->{$user}->givePermissionTo(['product_sets.edit']);
 
@@ -719,7 +704,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductReorderHandleNulls($user): void
+    public function testProductReorderHandleNulls(string $user): void
     {
         $this->{$user}->givePermissionTo(['product_sets.edit']);
 

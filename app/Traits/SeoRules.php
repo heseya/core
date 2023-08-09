@@ -2,8 +2,8 @@
 
 namespace App\Traits;
 
-use App\Enums\TwitterCardType;
 use App\Rules\Translations;
+use Domain\Seo\Enums\TwitterCardType;
 use Illuminate\Validation\Rules\Enum;
 
 trait SeoRules

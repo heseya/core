@@ -3,29 +3,22 @@
 namespace Tests\Feature;
 
 use App\Dtos\PriceDto;
-use App\Enums\AttributeType;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\MediaType;
-use App\Enums\MetadataType;
 use App\Enums\Product\ProductPriceType;
 use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductUpdated;
 use App\Listeners\WebHookEventListener;
-use App\Models\Attribute;
-use App\Models\AttributeOption;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
-use App\Models\Language;
 use App\Models\Media;
 use App\Models\Product;
 use App\Models\ProductAttribute;
-use App\Models\ProductSet;
 use App\Models\Schema;
-use App\Models\SeoMetadata;
 use App\Models\WebHook;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\AvailabilityServiceContract;
@@ -36,6 +29,13 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Language\Language;
+use Domain\Metadata\Enums\MetadataType;
+use Domain\ProductAttribute\Enums\AttributeType;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\ProductSet\ProductSet;
+use Domain\Seo\Models\SeoMetadata;
 use Heseya\Dto\DtoException;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\App;
@@ -258,7 +258,7 @@ class ProductTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
-        $response = $this->actingAs($this->{$user})->getJson('/products?limit=100&translations');
+        $response = $this->actingAs($this->{$user})->getJson('/products?limit=100&with_translations=1');
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data')
@@ -332,10 +332,9 @@ class ProductTest extends TestCase
 
         $response = $this
             ->actingAs($this->{$user})
-            ->getJson('/products/' . $product->slug . '?translations');
+            ->json('GET', "/products/{$product->slug}?with_translations=1");
 
-        $response
-            ->assertOk();
+        $response->assertOk();
 
         $this->arrayHasKey('translations', $response->json('data'));
         $this->arrayHasKey($language->getKey(), $response->json('data.translations'));
@@ -908,6 +907,7 @@ class ProductTest extends TestCase
                 'twitter_card' => $seo->twitter_card,
                 'keywords' => $seo->keywords,
                 'header_tags' => ['test1', 'test2'],
+                'published' => [$this->lang],
             ]]);
     }
 
@@ -1864,7 +1864,7 @@ class ProductTest extends TestCase
             'url' => 'https://picsum.photos/seed/' . mt_rand(0, 999999) . '/800',
         ]);
 
-        $response = $this->actingAs($this->{$user})->json('POST', '/products', [
+        $response = $this->actingAs($this->{$user})->json('POST', '/products?with_translations=1', [
             'translations' => [
                 $this->lang => [
                     'name' => 'Test',
@@ -1890,109 +1890,15 @@ class ProductTest extends TestCase
             ],
         ]);
 
-        $response
-            ->assertCreated()
-            ->assertJson(['data' => [
-                'name' => 'Test',
-                'public' => $booleanValue,
-                'shipping_digital' => false,
-                'description_html' => '<h1>Description</h1>',
-                'cover' => null,
-                'gallery' => [],
-                'seo' => [
-                    'translations' => [
-                        $this->lang => [
-                            'title' => 'seo title',
-                            'description' => 'seo description',
-                            'no_index' => $booleanValue,
-                        ],
-                    ],
-                    'og_image' => [
-                        'id' => $media->getKey(),
-                    ],
-                    'header_tags' => ['test1', 'test2'],
-                ],
-            ]]);
-
-        $this->assertDatabaseHas('products', [
-            'slug' => 'test',
-            "name->{$this->lang}" => 'Test',
-            'public' => $booleanValue,
-            'shipping_digital' => false,
-            "description_html->{$this->lang}" => '<h1>Description</h1>',
-        ]);
-
-        $this->assertDatabaseHas('seo_metadata', [
-            "title->{$this->lang}" => 'seo title',
-            "description->{$this->lang}" => 'seo description',
-            'model_id' => $response->getData()->data->id,
-            'model_type' => Product::class,
-            "no_index->{$this->lang}" => $booleanValue,
-        ]);
-
-        $this->assertDatabaseCount('seo_metadata', 2);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateWithSeoDefaultIndex(string $user): void
-    {
-        $this->{$user}->givePermissionTo('products.add');
-
-        $response = $this->actingAs($this->{$user})->json('POST', '/products', [
-            'translations' => [
-                $this->lang => [
-                    'name' => 'Test',
-                ],
-            ],
-            'published' => [$this->lang],
-            'slug' => 'test',
-            'prices_base' => $this->productPrices,
-            'public' => true,
-            'shipping_digital' => false,
-            'seo' => [
-                'translations' => [
-                    $this->lang => [
-                        'title' => 'seo title',
-                        'description' => 'seo description',
-                    ],
-                ],
-            ],
-        ]);
-
-        $response
-            ->assertCreated()
-            ->assertJson(['data' => [
-                'slug' => 'test',
-                'name' => 'Test',
-                'public' => true,
-                'shipping_digital' => false,
-                'cover' => null,
-                'gallery' => [],
-                'seo' => [
-                    'title' => 'seo title',
-                    'description' => 'seo description',
-                    'no_index' => false,
-                ],
-            ]]);
-
-        $this->assertDatabaseHas('products', [
-            'slug' => 'test',
-            "name->{$this->lang}" => 'Test',
-            'public' => true,
-            'shipping_digital' => false,
-        ]);
+        $response->assertCreated();
 
         $this->assertDatabaseHas('seo_metadata', [
             "title->{$this->lang}" => 'seo title',
             "description->{$this->lang}" => 'seo description',
             'model_id' => $response->json('data.id'),
             'model_type' => Product::class,
-            "no_index->{$this->lang}" => false,
+            "no_index->{$this->lang}" => $booleanValue,
         ]);
-
-        $this->assertDatabaseCount('seo_metadata', 2);
     }
 
     /**

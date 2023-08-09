@@ -18,7 +18,7 @@ class SeoMetadataDto extends Dto implements InstantiateFromRequest
     private Missing|string|null $model_type;
     private bool|Missing $no_index;
     private array|Missing|null $header_tags;
-    /** @var array<string, SeoMetadataTranslationDto> */
+    /** @var array<string, array<string, string>> */
     public array $translations;
     /** @var array<string> */
     private array $published;

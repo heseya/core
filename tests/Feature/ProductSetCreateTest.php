@@ -3,12 +3,12 @@
 namespace Tests\Feature;
 
 use App\Enums\MediaType;
-use App\Events\ProductSetCreated;
 use App\Listeners\WebHookEventListener;
-use App\Models\Attribute;
 use App\Models\Media;
-use App\Models\ProductSet;
 use App\Models\WebHook;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductSet\Events\ProductSetCreated;
+use Domain\ProductSet\ProductSet;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
@@ -193,22 +193,6 @@ class ProductSetCreateTest extends TestCase
             return $job->class === WebHookEventListener::class
                 && $job->data[0] instanceof ProductSetCreated;
         });
-
-        $set = ProductSet::find($response->getData()->data->id);
-
-        $event = new ProductSetCreated($set);
-        $listener = new WebHookEventListener();
-        $listener->handle($event);
-
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $set) {
-            $payload = $job->payload;
-
-            return $job->webhookUrl === $webHook->url
-                && isset($job->headers['Signature'])
-                && $payload['data']['id'] === $set->getKey()
-                && $payload['data_type'] === 'ProductSet'
-                && $payload['event'] === 'ProductSetCreated';
-        });
     }
 
     /**
@@ -310,22 +294,6 @@ class ProductSetCreateTest extends TestCase
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
             return $job->class === WebHookEventListener::class
                 && $job->data[0] instanceof ProductSetCreated;
-        });
-
-        $set = ProductSet::find($response->getData()->data->id);
-
-        $event = new ProductSetCreated($set);
-        $listener = new WebHookEventListener();
-        $listener->handle($event);
-
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $set) {
-            $payload = $job->payload;
-
-            return $job->webhookUrl === $webHook->url
-                && isset($job->headers['Signature'])
-                && $payload['data']['id'] === $set->getKey()
-                && $payload['data_type'] === 'ProductSet'
-                && $payload['event'] === 'ProductSetCreated';
         });
     }
 

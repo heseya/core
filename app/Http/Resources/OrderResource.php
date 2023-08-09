@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Models\User;
 use App\Traits\MetadataResource;
+use Domain\Order\Resources\OrderStatusResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -24,7 +25,7 @@ class OrderResource extends Resource
             'shipping_price_initial' => $this->resource->shipping_price_initial,
             'shipping_price' => $this->resource->shipping_price,
             'comment' => $this->resource->comment,
-            'status' => $this->resource->status ? StatusResource::make($this->resource->status) : null,
+            'status' => $this->resource->status ? OrderStatusResource::make($this->resource->status) : null,
             'shipping_method' => $this->resource->shippingMethod ?
                 ShippingMethodResource::make($this->resource->shippingMethod) : null,
             'digital_shipping_method' => $this->resource->digitalShippingMethod ?

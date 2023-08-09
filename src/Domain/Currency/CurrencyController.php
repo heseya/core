@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Support\ResourceDto;
 
-class CurrencyController extends Controller
+final class CurrencyController extends Controller
 {
     /**
      * @throws UnknownCurrencyException

@@ -17,18 +17,18 @@ use App\Models\Price;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Repositories\Contracts\ProductRepositoryContract;
-use App\Services\Contracts\AttributeServiceContract;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
-use App\Services\Contracts\SeoMetadataServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
 use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
 use Domain\Currency\Currency;
+use Domain\ProductAttribute\Services\AttributeService;
+use Domain\Seo\SeoMetadataService;
 use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
 use Illuminate\Support\Collection;
@@ -39,10 +39,10 @@ final readonly class ProductService implements ProductServiceContract
     public function __construct(
         private MediaServiceContract $mediaService,
         private SchemaServiceContract $schemaService,
-        private SeoMetadataServiceContract $seoMetadataService,
+        private SeoMetadataService $seoMetadataService,
         private AvailabilityServiceContract $availabilityService,
         private MetadataServiceContract $metadataService,
-        private AttributeServiceContract $attributeService,
+        private AttributeService $attributeService,
         private DiscountServiceContract $discountService,
         private ProductRepositoryContract $productRepository,
         private TranslationServiceContract $translationService,

@@ -4,9 +4,6 @@ namespace Tests\Feature;
 
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
-use App\Enums\MetadataType;
-use App\Models\Attribute;
-use App\Models\AttributeOption;
 use App\Models\Banner;
 use App\Models\BannerMedia;
 use App\Models\Country;
@@ -18,7 +15,6 @@ use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\PriceRange;
 use App\Models\Product;
-use App\Models\ProductSet;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
@@ -28,6 +24,10 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Metadata\Enums\MetadataType;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\ProductSet\ProductSet;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -104,7 +104,7 @@ class PerformanceTest extends TestCase
             ->getJson('/attributes')
             ->assertOk();
 
-        $this->assertQueryCountLessThan(11);
+        $this->assertQueryCountLessThan(9);
     }
 
     public function testShowPerformanceAttribute2500(): void
@@ -160,7 +160,7 @@ class PerformanceTest extends TestCase
             ->getJson('/attributes/id:' . $attribute->getKey())
             ->assertOk();
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(7);
     }
 
     public function testIndexPerformanceBanner100(): void

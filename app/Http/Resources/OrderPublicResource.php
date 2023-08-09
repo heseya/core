@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Traits\MetadataResource;
+use Domain\Order\Resources\OrderStatusResource;
 use Illuminate\Http\Request;
 
 class OrderPublicResource extends Resource
@@ -14,7 +15,7 @@ class OrderPublicResource extends Resource
         return array_merge([
             'id' => $this->resource->getKey(),
             'code' => $this->resource->code,
-            'status' => StatusResource::make($this->resource->status),
+            'status' => OrderStatusResource::make($this->resource->status),
             'paid' => $this->resource->paid,
             'payable' => $this->resource->payable,
             'cart_total_initial' => $this->resource->cart_total_initial,

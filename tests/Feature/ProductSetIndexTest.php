@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\ProductSet;
+use Domain\ProductSet\ProductSet;
 use Illuminate\Support\Collection;
 use Tests\TestCase;
 use Tests\Traits\JsonQueryCounter;

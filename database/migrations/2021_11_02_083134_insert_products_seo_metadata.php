@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\Product;
-use App\Models\SeoMetadata;
+use Domain\Seo\Models\SeoMetadata;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;

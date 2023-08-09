@@ -2,7 +2,7 @@
 
 namespace App\Rules;
 
-use App\Models\Language;
+use Domain\Language\Language;
 use Illuminate\Contracts\Validation\Rule;
 
 class Translations implements Rule

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Domain\ProductSet\ProductSet;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

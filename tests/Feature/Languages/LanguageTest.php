@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Languages;
 
-use App\Events\LanguageCreated;
-use App\Events\LanguageDeleted;
-use App\Events\LanguageUpdated;
-use App\Models\Language;
 use App\Models\Product;
 use App\Models\WebHook;
+use Domain\Language\Events\LanguageCreated;
+use Domain\Language\Events\LanguageDeleted;
+use Domain\Language\Events\LanguageUpdated;
+use Domain\Language\Language;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
