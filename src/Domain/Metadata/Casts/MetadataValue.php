@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Metadata\Casts;
 
-use App\Models\Metadata;
 use Domain\Metadata\Enums\MetadataType;
+use Domain\Metadata\Models\Metadata;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
 

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Metadata;
 
-use App\Models\Metadata;
 use Domain\Metadata\Dtos\MetadataDto;
-use Domain\Metadata\Dtos\MetadataUpdateDto;
+use Domain\Metadata\Models\Metadata;
+use Illuminate\Support\Str;
 use Spatie\LaravelData\DataCollection;
 
 final readonly class MetadataRepository
@@ -27,15 +27,14 @@ final readonly class MetadataRepository
     }
 
     /**
-     * @param class-string $class
+     * @param MetadataDto[] $dtos
      */
-    public function updateOrCreate(string $class, string $id, MetadataUpdateDto $dto): void
+    public function upsert(array $dtos): void
     {
-        Metadata::query()->updateOrCreate([
-            'name' => $dto->name,
-            'model_id' => $id,
-            'model_type' => $class,
-        ], $dto->toArray());
+        Metadata::query()->upsert(
+            array_map(fn ($dto) => [...$dto->toArray(), 'id' => Str::uuid()], $dtos),
+            ['name', 'model_id', 'model_type'],
+        );
     }
 
     /**

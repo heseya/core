@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Metadata;
 
+use Domain\Metadata\Dtos\MetadataDto;
 use Domain\Metadata\Dtos\MetadataUpdateDto;
 
 final readonly class MetadataService
@@ -41,6 +42,7 @@ final readonly class MetadataService
      */
     public function sync(string $class, string $model_id, array $metadata): void
     {
+        $updated = [];
         $deleted = [];
 
         foreach ($metadata as $dto) {
@@ -49,7 +51,18 @@ final readonly class MetadataService
                 continue;
             }
 
-            $this->repository->updateOrCreate($class, $model_id, $dto);
+            $updated[] = new MetadataDto(
+                $class,
+                $model_id,
+                $dto->name,
+                $dto->value,
+                $dto->public,
+                $dto->value_type,
+            );
+        }
+
+        if (count($updated) > 0) {
+            $this->repository->upsert($updated);
         }
 
         if (count($deleted) > 0) {

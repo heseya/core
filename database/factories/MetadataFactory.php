@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Metadata;
 use Domain\Metadata\Enums\MetadataType;
+use Domain\Metadata\Models\Metadata;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class MetadataFactory extends Factory

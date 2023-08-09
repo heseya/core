@@ -290,8 +290,7 @@ class MetadataTest extends TestCase
             ->assertOk()
             ->assertJsonFragment(['data' => [
                 $metadata->name => 'new super value',
-            ],
-            ]);
+            ]]);
     }
 
     /**
