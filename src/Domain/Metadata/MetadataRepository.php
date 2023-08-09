@@ -34,6 +34,7 @@ final readonly class MetadataRepository
         Metadata::query()->upsert(
             array_map(fn ($dto) => [...$dto->toArray(), 'id' => Str::uuid()], $dtos),
             ['name', 'model_id', 'model_type'],
+            ['value', 'value_type', 'public'],
         );
     }
 
