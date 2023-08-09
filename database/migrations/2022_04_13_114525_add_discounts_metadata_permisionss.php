@@ -15,7 +15,7 @@ return new class extends Migration {
 
         Permission::create(['name' => 'coupons.show_metadata_private', 'display_name' => 'Możliwość wyświetlania prywatnych metadanych kuponów']);
 
-        $owner = Role::where('type', '=', RoleType::OWNER)->firstOrFail();
+        $owner = Role::where('type', '=', RoleType::OWNER->value)->firstOrFail();
         $owner->givePermissionTo('coupons.show_metadata_private');
         $owner->save();
     }
@@ -27,7 +27,7 @@ return new class extends Migration {
             'Możliwość wyświetlania prywatnych metadanych kuponów',
         ]);
 
-        $owner = Role::where('type', '=', RoleType::OWNER)->firstOrFail();
+        $owner = Role::where('type', '=', RoleType::OWNER->value)->firstOrFail();
         $owner->revokePermissionTo('coupons.show_metadata_private');
         $owner->save();
 

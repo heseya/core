@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 /**
- * @property ConditionType $type;
+ * @property ConditionType $type
  *
  * @mixin IdeHelperDiscountCondition
  */

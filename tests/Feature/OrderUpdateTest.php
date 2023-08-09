@@ -794,7 +794,7 @@ class OrderUpdateTest extends TestCase
             'id' => $order->getKey(),
             'invoice_requested' => true,
             'shipping_place' => $order->shipping_place,
-            'shipping_type' => ShippingType::ADDRESS,
+            'shipping_type' => ShippingType::ADDRESS->value,
             'shipping_address_id' => $this->addressDelivery->getKey(),
         ]);
 
@@ -841,7 +841,7 @@ class OrderUpdateTest extends TestCase
             'invoice_requested' => true,
             'shipping_address_id' => $pointAddress->getKey(),
             'shipping_place' => null,
-            'shipping_type' => ShippingType::POINT,
+            'shipping_type' => ShippingType::POINT->value,
         ]);
 
         $this->assertDatabaseHas('addresses', [
@@ -883,7 +883,7 @@ class OrderUpdateTest extends TestCase
             'invoice_requested' => true,
             'shipping_address_id' => null,
             'shipping_place' => 'Testowy numer domu w testowym mieście',
-            'shipping_type' => ShippingType::POINT_EXTERNAL,
+            'shipping_type' => ShippingType::POINT_EXTERNAL->value,
         ]);
 
         Event::assertDispatched(OrderUpdated::class);

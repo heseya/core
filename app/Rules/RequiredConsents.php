@@ -16,7 +16,7 @@ readonly class RequiredConsents implements ValidationRule
         if (!$consents->every(
             fn ($consent) => array_key_exists($consent, $value) && $value[$consent]
         )) {
-            $fail(Exceptions::CLIENT_NOT_ACCEPTED_ALL_REQUIRED_CONSENTS);
+            $fail(Exceptions::CLIENT_NOT_ACCEPTED_ALL_REQUIRED_CONSENTS->value);
         }
     }
 }

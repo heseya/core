@@ -241,8 +241,8 @@ class PaymentMethodTest extends TestCase
             ->postJson('/payment-methods', $payment_method);
 
         $response
-            ->assertStatus(Exceptions::getCode(Exceptions::CLIENT_USERS_NO_ACCESS))
-            ->assertJsonFragment(['key' => Exceptions::coerce(Exceptions::CLIENT_USERS_NO_ACCESS)->key]);
+            ->assertStatus(Exceptions::CLIENT_USERS_NO_ACCESS->getCode())
+            ->assertJsonFragment(['key' => Exceptions::CLIENT_USERS_NO_ACCESS->name]);
     }
 
     public function testUpdateUnauthorized(): void
@@ -288,13 +288,14 @@ class PaymentMethodTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJson(['data' => [
-                'id' => $this->payment_method->id,
-                'name' => $this->payment_method->name,
-                'public' => $this->payment_method->public,
-                'icon' => $this->payment_method->icon,
-                'url' => $this->payment_method->url,
-            ],
+            ->assertJson([
+                'data' => [
+                    'id' => $this->payment_method->id,
+                    'name' => $this->payment_method->name,
+                    'public' => $this->payment_method->public,
+                    'icon' => $this->payment_method->icon,
+                    'url' => $this->payment_method->url,
+                ],
             ]);
     }
 
@@ -312,8 +313,8 @@ class PaymentMethodTest extends TestCase
             $payment_method,
         );
         $response
-            ->assertStatus(Exceptions::getCode(Exceptions::CLIENT_USERS_NO_ACCESS))
-            ->assertJsonFragment(['key' => Exceptions::coerce(Exceptions::CLIENT_USERS_NO_ACCESS)->key]);
+            ->assertStatus(Exceptions::CLIENT_USERS_NO_ACCESS->getCode())
+            ->assertJsonFragment(['key' => Exceptions::CLIENT_USERS_NO_ACCESS->name]);
     }
 
     public function testDeleteUnauthorized(): void
@@ -339,7 +340,7 @@ class PaymentMethodTest extends TestCase
             ->deleteJson('/payment-methods/id:' . $this->payment_method->getKey());
 
         $response
-            ->assertStatus(Exceptions::getCode(Exceptions::CLIENT_USERS_NO_ACCESS))
-            ->assertJsonFragment(['key' => Exceptions::coerce(Exceptions::CLIENT_USERS_NO_ACCESS)->key]);
+            ->assertStatus(Exceptions::CLIENT_USERS_NO_ACCESS->getCode())
+            ->assertJsonFragment(['key' => Exceptions::CLIENT_USERS_NO_ACCESS->name]);
     }
 }

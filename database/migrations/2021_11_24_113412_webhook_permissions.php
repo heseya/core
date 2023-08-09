@@ -19,7 +19,7 @@ class WebhookPermissions extends Migration
         // Events
         Permission::create(['name' => 'events.show', 'display_name' => 'Dostęp do listy eventów']);
 
-        $owner = Role::where('type', RoleType::OWNER)->first();
+        $owner = Role::where('type', RoleType::OWNER->value)->first();
         $owner->givePermissionTo([
             'webhooks.show',
             'webhooks.show_details',
@@ -33,7 +33,7 @@ class WebhookPermissions extends Migration
 
     public function down(): void
     {
-        $owner = Role::where('type', RoleType::OWNER)->first();
+        $owner = Role::where('type', RoleType::OWNER->value)->first();
         $owner->revokePermissionTo([
             'webhooks.show',
             'webhooks.show_details',

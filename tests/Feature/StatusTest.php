@@ -212,7 +212,7 @@ final class StatusTest extends TestCase
                 $data,
             )
             ->assertStatus(422)
-            ->assertJsonFragment(['key' => Exceptions::getKey(Exceptions::CLIENT_STATUS_USED)]);
+            ->assertJsonFragment(['key' => Exceptions::CLIENT_STATUS_USED->name]);
 
         $this->assertDatabaseHas('statuses', [
             'id' => $this->status_model->getKey(),
@@ -313,7 +313,7 @@ final class StatusTest extends TestCase
             ->deleteJson('/statuses/id:' . $this->status_model->getKey())
             ->assertStatus(422)
             ->assertJsonFragment([
-                'key' => Exceptions::getKey(Exceptions::CLIENT_STATUS_USED),
+                'key' => Exceptions::CLIENT_STATUS_USED->name,
             ]);
     }
 

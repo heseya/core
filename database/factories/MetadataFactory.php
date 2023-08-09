@@ -23,7 +23,7 @@ class MetadataFactory extends Factory
         return [
             'name' => $this->faker->word,
             'value' => $this->faker->word,
-            'value_type' => MetadataType::getRandomValue(),
+            'value_type' => MetadataType::getRandomInstance(),
             'public' => $this->faker->boolean,
         ];
     }

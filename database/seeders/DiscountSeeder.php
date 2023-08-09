@@ -64,7 +64,7 @@ class DiscountSeeder extends Seeder
              * @var Money $appliedDiscount
              * @var array $update
              */
-            [$appliedDiscount, $update] = match ($discount->target_type->value) {
+            [$appliedDiscount, $update] = match ($discount->target_type) {
                 DiscountTargetType::ORDER_VALUE => $this
                     ->calcOrderDiscounts(
                         'cart_total',

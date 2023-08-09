@@ -41,7 +41,7 @@ class DiscountFactory extends Factory
             'type' => $type,
             'value' => $type->is(DiscountType::PERCENTAGE) ? mt_rand(1, 18) * 5 : $this->faker->randomFloat(2, 5, 40),
             'priority' => $this->faker->randomDigit(),
-            'target_type' => DiscountTargetType::getRandomValue(),
+            'target_type' => DiscountTargetType::getRandomInstance(),
             'target_is_allow_list' => $this->faker->boolean,
         ];
     }

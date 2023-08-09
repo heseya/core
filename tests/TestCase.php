@@ -67,7 +67,7 @@ abstract class TestCase extends BaseTestCase
     {
         $token = $this->tokenService->createToken(
             $user,
-            new TokenType(TokenType::ACCESS),
+            TokenType::ACCESS,
             Str::uuid()->toString(),
         );
 

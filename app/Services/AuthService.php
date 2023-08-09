@@ -63,7 +63,7 @@ class AuthService implements AuthServiceContract
 
         $token = Auth::claims([
             'iss' => Config::get('app.url'),
-            'typ' => TokenType::ACCESS,
+            'typ' => TokenType::ACCESS->value,
             'jti' => $uuid,
         ])->attempt([
             'email' => $email,
@@ -88,7 +88,7 @@ class AuthService implements AuthServiceContract
 
         Auth::claims([
             'iss' => Config::get('app.url'),
-            'typ' => TokenType::ACCESS,
+            'typ' => TokenType::ACCESS->value,
             'jti' => $uuid,
         ]);
         Auth::login($user);
@@ -109,7 +109,7 @@ class AuthService implements AuthServiceContract
         $payload = $this->tokenService->payload($refreshToken);
 
         if (
-            $payload?->get('typ') !== TokenType::REFRESH
+            $payload?->get('typ') !== TokenType::REFRESH->value
             || Token::where('id', $payload->get('jti'))->where('invalidated', true)->exists()
         ) {
             throw new ClientException(Exceptions::CLIENT_INVALID_TOKEN);
@@ -126,17 +126,17 @@ class AuthService implements AuthServiceContract
 
         $token = $this->tokenService->createToken(
             $user,
-            new TokenType(TokenType::ACCESS),
+            TokenType::ACCESS,
             $uuid,
         );
         $identityToken = $user instanceof App ? null : $this->tokenService->createToken(
             $user,
-            new TokenType(TokenType::IDENTITY),
+            TokenType::IDENTITY,
             $uuid,
         );
         $refreshToken = $this->tokenService->createToken(
             $user,
-            new TokenType(TokenType::REFRESH),
+            TokenType::REFRESH,
             $uuid,
         );
 
@@ -205,7 +205,7 @@ class AuthService implements AuthServiceContract
         $user = $this->tokenService->getUser($identityToken);
         $isIdentityToken = $this->tokenService->isTokenType(
             $identityToken,
-            new TokenType(TokenType::IDENTITY),
+            TokenType::IDENTITY,
         );
 
         if (!($user instanceof User) || !$isIdentityToken) {
@@ -221,7 +221,7 @@ class AuthService implements AuthServiceContract
             'name' => 'Unauthenticated',
         ]);
 
-        $roles = Role::where('type', RoleType::UNAUTHENTICATED)->get();
+        $roles = Role::where('type', RoleType::UNAUTHENTICATED->value)->get();
         $user->setRelation('roles', $roles);
         $user->setAttribute('id', null);
 
@@ -241,7 +241,7 @@ class AuthService implements AuthServiceContract
         $user = Auth::user();
         $this->checkIsTFA($user);
 
-        return match ($dto->getType()) {
+        return match (TFAType::tryFrom($dto->getType())) {
             TFAType::APP => $this->googleTFA(),
             TFAType::EMAIL => $this->emailTFA(),
             default => throw new ClientException(Exceptions::CLIENT_INVALID_TFA_TYPE),
@@ -314,7 +314,7 @@ class AuthService implements AuthServiceContract
             $fields['phone_country'] = $phone->getCountry();
         }
 
-        $authenticated = Role::query()->where('type', RoleType::AUTHENTICATED)->first();
+        $authenticated = Role::query()->where('type', RoleType::AUTHENTICATED->value)->first();
         $roleModels = Role::query()->whereIn('id', $dto->roles)->get();
 
         $nonRegistrationRoles = $roleModels->filter(fn (Role $role) => !$role->is_registration_role);
@@ -401,7 +401,7 @@ class AuthService implements AuthServiceContract
             TfaSecurityCodeEvent::dispatch(Auth::user(), $code);
             Auth::user()->notify(new TFASecurityCode($code));
         }
-        throw new ClientException(Exceptions::CLIENT_TFA_REQUIRED, 403, simpleLogs: true, errorArray: ['type' => Auth::user()?->tfa_type]);
+        throw new ClientException(Exceptions::CLIENT_TFA_REQUIRED, simpleLogs: true, errorArray: ['type' => Auth::user()?->tfa_type]);
     }
 
     private function checkIsValidTFA(string $code): void
@@ -535,7 +535,7 @@ class AuthService implements AuthServiceContract
         ]);
 
         return [
-            'type' => TFAType::APP,
+            'type' => TFAType::APP->value,
             'secret' => $secret,
             'qr_code_url' => $qr_code_url,
         ];
@@ -559,7 +559,7 @@ class AuthService implements AuthServiceContract
         $user->notify(new TFAInitialization($code));
 
         return [
-            'type' => TFAType::EMAIL,
+            'type' => TFAType::EMAIL->value,
         ];
     }
 
@@ -587,12 +587,12 @@ class AuthService implements AuthServiceContract
         $user = Auth::user();
         $identityToken = $this->tokenService->createToken(
             $user,
-            new TokenType(TokenType::IDENTITY),
+            TokenType::IDENTITY,
             $uuid,
         );
         $refreshToken = $this->tokenService->createToken(
             $user,
-            new TokenType(TokenType::REFRESH),
+            TokenType::REFRESH,
             $uuid,
         );
 

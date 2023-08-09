@@ -18,7 +18,7 @@ return new class extends Migration {
             'display_name' => 'Dostęp do szczegółów metod płatności',
         ]);
 
-        Role::where('type', RoleType::OWNER)
+        Role::where('type', RoleType::OWNER->value)
             ->firstOrFail()
             ->givePermissionTo('payment_methods.show_details');
 
@@ -34,11 +34,11 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Role::where('type', RoleType::OWNER)
+        Role::where('type', RoleType::OWNER->value)
             ->firstOrFail()
             ->revokePermissionTo('payment_methods.show_details');
 
-        Permission::delete();
+        Permission::findByName('payment_methods.show_details')->delete();
 
         Schema::table('payment_methods', function (Blueprint $table): void {
             $table->dropColumn('icon');

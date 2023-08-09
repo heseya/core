@@ -17,7 +17,7 @@ return new class extends Migration {
             'description' => 'Pozwala na tworzenie i zarządzanie webhookami odpowiadającymi za przesyłanie linków do przywracania hasła użytkownikom',
         ]);
 
-        $owner = Role::where('type', RoleType::OWNER)->first();
+        $owner = Role::where('type', RoleType::OWNER->value)->first();
         $owner->givePermissionTo([
             'webhooks.password',
         ]);
@@ -29,7 +29,7 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        $owner = Role::where('type', RoleType::OWNER)->first();
+        $owner = Role::where('type', RoleType::OWNER->value)->first();
         $owner->revokePermissionTo([
             'webhooks.password',
         ]);

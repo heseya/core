@@ -76,6 +76,7 @@ use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -127,7 +128,7 @@ readonly class DiscountService implements DiscountServiceContract
             CouponCreated::dispatch($discount);
         } else {
             CalculateDiscount::dispatchIf(
-                $discount->target_type->is(DiscountTargetType::PRODUCTS),
+                $discount->target_type === DiscountTargetType::PRODUCTS,
                 $discount,
             );
             SaleCreated::dispatch($discount);
@@ -182,7 +183,7 @@ readonly class DiscountService implements DiscountServiceContract
                 CouponDeleted::dispatch($discount);
             } else {
                 CalculateDiscount::dispatchIf(
-                    $discount->active && $discount->target_type->is(DiscountTargetType::PRODUCTS),
+                    $discount->active && $discount->target_type === DiscountTargetType::PRODUCTS,
                     $discount,
                 );
                 SaleDeleted::dispatch($discount);
@@ -202,18 +203,16 @@ readonly class DiscountService implements DiscountServiceContract
             $discount->value = $discount->pivot->value;
         }
 
-        if ($discount->type->is(DiscountType::PERCENTAGE)) {
+        if ($discount->type === DiscountType::PERCENTAGE) {
             // It's debatable which rounding mode we use based on context
             // This fits with current tests
             return $value->multipliedBy($discount->value / 100, RoundingMode::HALF_DOWN);
         }
 
-        if ($discount->type->is(DiscountType::AMOUNT)) {
+        if ($discount->type === DiscountType::AMOUNT) {
             // TODO: This should use discount currency and check if the currency matches
             return Money::of($discount->value, $value->getCurrency());
         }
-
-        throw new ClientException(Exceptions::CLIENT_DISCOUNT_TYPE_NOT_SUPPORTED, errorArray: ['type' => $discount->type]);
     }
 
     /**
@@ -226,27 +225,19 @@ readonly class DiscountService implements DiscountServiceContract
         ?CartOrderDto $dto = null,
         float $cartValue = 0,
     ): bool {
-        return match ($condition->type->value) {
-            ConditionType::ORDER_VALUE => $this->checkConditionOrderValue($condition, $cartValue),
-            ConditionType::USER_IN_ROLE => $this->checkConditionUserInRole($condition),
-            ConditionType::USER_IN => $this->checkConditionUserIn($condition),
-            ConditionType::PRODUCT_IN_SET => $this->checkConditionProductInSet(
-                $condition,
-                $dto?->getProductIds() ?? []
-            ),
-            ConditionType::PRODUCT_IN => $this->checkConditionProductIn($condition, $dto?->getProductIds() ?? []),
+        return match ($condition->type) {
+            ConditionType::CART_LENGTH => $this->checkConditionCartLength($condition, $dto?->getCartLength() ?? 0),
+            ConditionType::COUPONS_COUNT => $this->checkConditionCouponsCount($condition, is_array($dto?->getCoupons()) ? count($dto->getCoupons()) : 0),
             ConditionType::DATE_BETWEEN => $this->checkConditionDateBetween($condition),
-            ConditionType::TIME_BETWEEN => $this->checkConditionTimeBetween($condition),
             ConditionType::MAX_USES => $this->checkConditionMaxUses($condition),
             ConditionType::MAX_USES_PER_USER => $this->checkConditionMaxUsesPerUser($condition),
+            ConditionType::ORDER_VALUE => $this->checkConditionOrderValue($condition, $cartValue),
+            ConditionType::PRODUCT_IN => $this->checkConditionProductIn($condition, $dto?->getProductIds() ?? []),
+            ConditionType::PRODUCT_IN_SET => $this->checkConditionProductInSet($condition, $dto?->getProductIds() ?? []),
+            ConditionType::TIME_BETWEEN => $this->checkConditionTimeBetween($condition),
+            ConditionType::USER_IN => $this->checkConditionUserIn($condition),
+            ConditionType::USER_IN_ROLE => $this->checkConditionUserInRole($condition),
             ConditionType::WEEKDAY_IN => $this->checkConditionWeekdayIn($condition),
-            ConditionType::CART_LENGTH => $this->checkConditionCartLength($condition, $dto?->getCartLength() ?? 0),
-            ConditionType::COUPONS_COUNT => $this->checkConditionCouponsCount(
-                $condition,
-                $dto?->getCoupons() !== null && (!$dto->getCoupons() instanceof Missing)
-                    ? count($dto->getCoupons()) : 0,
-            ),
-            default => false,
         };
     }
 
@@ -293,9 +284,9 @@ readonly class DiscountService implements DiscountServiceContract
     public function calcOrderProductsAndTotalDiscounts(Order $order, OrderDto $orderDto): Order
     {
         return $this->calcOrderDiscounts($order, $orderDto, [
-            DiscountTargetType::fromValue(DiscountTargetType::PRODUCTS),
-            DiscountTargetType::fromValue(DiscountTargetType::CHEAPEST_PRODUCT),
-            DiscountTargetType::fromValue(DiscountTargetType::ORDER_VALUE),
+            DiscountTargetType::PRODUCTS,
+            DiscountTargetType::CHEAPEST_PRODUCT,
+            DiscountTargetType::ORDER_VALUE,
         ]);
     }
 
@@ -306,7 +297,7 @@ readonly class DiscountService implements DiscountServiceContract
     public function calcOrderShippingDiscounts(Order $order, OrderDto $orderDto): Order
     {
         return $this->calcOrderDiscounts($order, $orderDto, [
-            DiscountTargetType::fromValue(DiscountTargetType::SHIPPING_PRICE),
+            DiscountTargetType::SHIPPING_PRICE,
         ]);
     }
 
@@ -597,18 +588,17 @@ readonly class DiscountService implements DiscountServiceContract
     {
         $refreshedOrder = $order->fresh();
         if (
-            ($discount->target_type->value === DiscountTargetType::ORDER_VALUE
-                || $discount->target_type->value === DiscountTargetType::SHIPPING_PRICE)
-            && $refreshedOrder?->discounts->count() === 0) {
+            in_array($discount->target_type, [DiscountTargetType::ORDER_VALUE, DiscountTargetType::SHIPPING_PRICE])
+            && $refreshedOrder?->discounts->count() === 0
+        ) {
             $order = $this->roundProductPrices($order);
         }
 
-        return match ($discount->target_type->value) {
-            DiscountTargetType::PRODUCTS => $this->applyDiscountOnOrderProducts($order, $discount),
-            DiscountTargetType::ORDER_VALUE => $this->applyDiscountOnOrderValue($order, $discount),
-            DiscountTargetType::SHIPPING_PRICE => $this->applyDiscountOnOrderShipping($order, $discount),
+        return match ($discount->target_type) {
             DiscountTargetType::CHEAPEST_PRODUCT => $this->applyDiscountOnOrderCheapestProduct($order, $discount),
-            default => throw new StoreException('Unsupported discount target type'),
+            DiscountTargetType::ORDER_VALUE => $this->applyDiscountOnOrderValue($order, $discount),
+            DiscountTargetType::PRODUCTS => $this->applyDiscountOnOrderProducts($order, $discount),
+            DiscountTargetType::SHIPPING_PRICE => $this->applyDiscountOnOrderShipping($order, $discount),
         };
     }
 
@@ -636,16 +626,13 @@ readonly class DiscountService implements DiscountServiceContract
         $sales = Discount::query()
             ->whereNull('code')
             ->where('active', '=', true)
-            ->where('target_type', '=', DiscountTargetType::PRODUCTS)
+            ->where('target_type', '=', DiscountTargetType::PRODUCTS->value)
             ->where(
                 fn (Builder $query) => $query
                     ->whereHas('conditionGroups', function ($query): void {
                         $query
                             ->whereHas('conditions', function ($query): void {
-                                $query
-                                    ->where('type', ConditionType::DATE_BETWEEN)
-                                    ->orWhere('type', ConditionType::TIME_BETWEEN)
-                                    ->orWhere('type', ConditionType::WEEKDAY_IN);
+                                $query->whereIn('type', [ConditionType::DATE_BETWEEN->value, ConditionType::TIME_BETWEEN->value, ConditionType::WEEKDAY_IN->value]);
                             });
                     })
                     ->orWhereDoesntHave('conditionGroups')
@@ -656,7 +643,7 @@ readonly class DiscountService implements DiscountServiceContract
         return $sales->filter(function ($sale): bool {
             foreach ($sale->conditionGroups as $conditionGroup) {
                 foreach ($conditionGroup->conditions as $condition) {
-                    $result = match ($condition->type->value) {
+                    $result = match ($condition->type) {
                         ConditionType::DATE_BETWEEN => $this->checkConditionDateBetween($condition),
                         ConditionType::TIME_BETWEEN => $this->checkConditionTimeBetween($condition),
                         ConditionType::WEEKDAY_IN => $this->checkConditionWeekdayIn($condition),
@@ -677,13 +664,16 @@ readonly class DiscountService implements DiscountServiceContract
         $conditionsGroups = $discount->conditionGroups;
         foreach ($conditionsGroups as $conditionGroup) {
             foreach ($conditionGroup->conditions as $condition) {
-                if ($condition->type->in(
-                    [
-                        ConditionType::DATE_BETWEEN,
-                        ConditionType::TIME_BETWEEN,
-                        ConditionType::WEEKDAY_IN,
-                    ]
-                )) {
+                if (
+                    in_array(
+                        $condition->type,
+                        [
+                            ConditionType::DATE_BETWEEN,
+                            ConditionType::TIME_BETWEEN,
+                            ConditionType::WEEKDAY_IN,
+                        ]
+                    )
+                ) {
                     return true;
                 }
             }
@@ -694,9 +684,11 @@ readonly class DiscountService implements DiscountServiceContract
 
     public function checkDiscountTimeConditions(Discount $discount): bool
     {
+        /** @var ConditionGroup $conditionGroup */
         foreach ($discount->conditionGroups as $conditionGroup) {
+            /** @var DiscountCondition $condition */
             foreach ($conditionGroup->conditions as $condition) {
-                $result = match ($condition->type->value) {
+                $result = match ($condition->type) {
                     ConditionType::DATE_BETWEEN => $this->checkConditionDateBetween($condition),
                     ConditionType::TIME_BETWEEN => $this->checkConditionTimeBetween($condition),
                     ConditionType::WEEKDAY_IN => $this->checkConditionWeekdayIn($condition),
@@ -873,7 +865,7 @@ readonly class DiscountService implements DiscountServiceContract
 
     private function checkDiscountTarget(Discount $discount, CartDto $cart): bool
     {
-        if ($discount->target_type->is(DiscountTargetType::PRODUCTS)) {
+        if ($discount->target_type === DiscountTargetType::PRODUCTS) {
             if ($discount->target_is_allow_list) {
                 /** @var CartItemDto $item */
                 foreach ($cart->getItems() as $item) {
@@ -891,7 +883,7 @@ readonly class DiscountService implements DiscountServiceContract
             }
         }
 
-        if ($discount->target_type->is(DiscountTargetType::SHIPPING_PRICE)) {
+        if ($discount->target_type === DiscountTargetType::SHIPPING_PRICE) {
             if ($discount->target_is_allow_list) {
                 return $discount->shippingMethods->contains(fn ($value): bool => $value->getKey() === $cart->getShippingMethodId());
             }
@@ -900,7 +892,7 @@ readonly class DiscountService implements DiscountServiceContract
         }
 
         return in_array(
-            $discount->target_type->value,
+            $discount->target_type,
             [DiscountTargetType::ORDER_VALUE, DiscountTargetType::CHEAPEST_PRODUCT]
         );
     }
@@ -1057,7 +1049,7 @@ readonly class DiscountService implements DiscountServiceContract
      */
     private function checkConditionForProduct(DiscountCondition $condition, bool $checkForCurrentUser): bool
     {
-        return match ($condition->type->value) {
+        return match ($condition->type) {
             // ignore discount dependant on cart state
             ConditionType::ORDER_VALUE => false,
             // ignore discount dependant on cart state
@@ -1074,8 +1066,6 @@ readonly class DiscountService implements DiscountServiceContract
             ConditionType::CART_LENGTH => false,
             // For product price cache assume no promo codes used
             ConditionType::COUPONS_COUNT => $this->checkConditionCouponsCount($condition, 0),
-            // don't add default false, better to crash site than got unexpected behaviour
-            default => throw new ServerException('Unknown condition type: ' . $condition->type->value),
         };
     }
 
@@ -1288,12 +1278,11 @@ readonly class DiscountService implements DiscountServiceContract
      */
     private function applyDiscountOnCart(Discount $discount, CartDto $cartDto, CartResource $cart): CartResource
     {
-        return match ($discount->target_type->value) {
+        return match ($discount->target_type) {
             DiscountTargetType::PRODUCTS => $this->applyDiscountOnCartItems($discount, $cartDto, $cart),
             DiscountTargetType::ORDER_VALUE => $this->applyDiscountOnCartTotal($discount, $cart),
             DiscountTargetType::SHIPPING_PRICE => $this->applyDiscountOnCartShipping($discount, $cartDto, $cart),
             DiscountTargetType::CHEAPEST_PRODUCT => $this->applyDiscountOnCartCheapestItem($discount, $cart),
-            default => throw new StoreException('Unknown discount target type'),
         };
     }
 
@@ -1436,6 +1425,8 @@ readonly class DiscountService implements DiscountServiceContract
      */
     private function getActiveSalesAndCoupons(array|Missing $couponIds, array $targetTypes = []): Collection
     {
+        $targetTypesValues = Arr::map($targetTypes, fn (DiscountTargetType $type) => $type->value);
+
         // Get all active discounts
         $salesQuery = Discount::query()
             ->where('active', '=', true)
@@ -1449,8 +1440,8 @@ readonly class DiscountService implements DiscountServiceContract
                 'conditionGroups',
                 'conditionGroups.conditions',
             ]);
-        if (count($targetTypes)) {
-            $salesQuery = $salesQuery->whereIn('target_type', $targetTypes);
+        if (count($targetTypesValues)) {
+            $salesQuery = $salesQuery->whereIn('target_type', $targetTypesValues);
         }
         $sales = $salesQuery->get();
 
@@ -1472,8 +1463,8 @@ readonly class DiscountService implements DiscountServiceContract
                 'conditionGroups',
                 'conditionGroups.conditions',
             ]);
-        if (count($targetTypes)) {
-            $couponsQuery = $couponsQuery->whereIn('target_type', $targetTypes);
+        if (count($targetTypesValues)) {
+            $couponsQuery = $couponsQuery->whereIn('target_type', $targetTypesValues);
         }
         $coupons = $couponsQuery->get();
 
@@ -1481,14 +1472,16 @@ readonly class DiscountService implements DiscountServiceContract
         return $this->sortDiscounts($sales->merge($coupons));
     }
 
+    /**
+     * @param Collection<array-key, Discount> $discounts
+     */
     private function sortDiscounts(Collection $discounts): Collection
     {
         // Sortowanie zniżek w kolejności naliczania (Target type ASC, Discount type ASC, Priority DESC)
         return $discounts->sortBy([
-            fn ($a, $b) => DiscountTargetType::getPriority($a->target_type)
-                <=> DiscountTargetType::getPriority($b->target_type),
-            fn ($a, $b) => DiscountType::getPriority($a->type) <=> DiscountType::getPriority($b->type),
-            fn ($a, $b) => $b->priority <=> $a->priority,
+            fn (Discount $a, Discount $b) => $a->target_type->getPriority() <=> $b->target_type->getPriority(),
+            fn (Discount $a, Discount $b) => $a->type->getPriority() <=> $b->type->getPriority(),
+            fn (Discount $a, Discount $b) => $b->priority <=> $a->priority,
         ]);
     }
 
@@ -1835,7 +1828,7 @@ readonly class DiscountService implements DiscountServiceContract
         return Discount::query()
             ->whereNull('code')
             ->where('active', '=', true)
-            ->where('target_type', '=', DiscountTargetType::PRODUCTS)
+            ->where('target_type', '=', DiscountTargetType::PRODUCTS->value)
             ->where('target_is_allow_list', '=', false)
             ->with(['products', 'productSets', 'productSets.products'])
             ->get();

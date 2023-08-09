@@ -312,7 +312,7 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test 4',
             'public' => false,
-            'shipping_type' => ShippingType::ADDRESS,
+            'shipping_type' => ShippingType::ADDRESS->value,
         ];
 
         $response = $this->actingAs($this->{$user})->postJson(
@@ -339,7 +339,7 @@ class ShippingMethodTest extends TestCase
             'public' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
-            'shipping_type' => ShippingType::ADDRESS,
+            'shipping_type' => ShippingType::ADDRESS->value,
         ];
 
         $price_ranges = [];
@@ -388,7 +388,7 @@ class ShippingMethodTest extends TestCase
             'block_list' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
-            'shipping_type' => ShippingType::ADDRESS,
+            'shipping_type' => ShippingType::ADDRESS->value,
         ];
 
         $response = $this->actingAs($this->{$user})
@@ -434,7 +434,7 @@ class ShippingMethodTest extends TestCase
             'block_list' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
-            'shipping_type' => ShippingType::ADDRESS,
+            'shipping_type' => ShippingType::ADDRESS->value,
             'metadata' => [
                 'attributeMeta' => 'attributeValue',
             ],
@@ -464,7 +464,7 @@ class ShippingMethodTest extends TestCase
             'block_list' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
-            'shipping_type' => ShippingType::ADDRESS,
+            'shipping_type' => ShippingType::ADDRESS->value,
             'metadata_private' => [
                 'attributeMetaPriv' => 'attributeValue',
             ],
@@ -494,7 +494,7 @@ class ShippingMethodTest extends TestCase
             'block_list' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
-            'shipping_type' => ShippingType::ADDRESS,
+            'shipping_type' => ShippingType::ADDRESS->value,
         ];
 
         $response = $this->actingAs($this->{$user})
@@ -525,7 +525,7 @@ class ShippingMethodTest extends TestCase
                 'block_list' => false,
                 'shipping_time_min' => 3,
                 'shipping_time_max' => 2,
-                'shipping_type' => ShippingType::ADDRESS,
+                'shipping_type' => ShippingType::ADDRESS->value,
                 'price_ranges' => $this->priceRanges,
             ]);
 
@@ -545,7 +545,7 @@ class ShippingMethodTest extends TestCase
             'block_list' => true,
             'shipping_time_min' => 2,
             'shipping_time_max' => 2,
-            'shipping_type' => ShippingType::ADDRESS,
+            'shipping_type' => ShippingType::ADDRESS->value,
         ];
 
         $response = $this->actingAs($this->{$user})
@@ -578,7 +578,7 @@ class ShippingMethodTest extends TestCase
             'block_list' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
-            'shipping_type' => ShippingType::POINT,
+            'shipping_type' => ShippingType::POINT->value,
         ];
         $shipping_points = [
             'shipping_points' => [
@@ -603,7 +603,7 @@ class ShippingMethodTest extends TestCase
             ->assertCreated()
             ->assertJson(['data' => $shipping_method])
             ->assertJsonCount(2, 'data.shipping_points')
-            ->assertJsonFragment(['shipping_type' => ShippingType::POINT]);
+            ->assertJsonFragment(['shipping_type' => ShippingType::POINT->value]);
 
         $this
             ->assertDatabaseHas('shipping_methods', $shipping_method + [
@@ -661,7 +661,7 @@ class ShippingMethodTest extends TestCase
         $response = $this->actingAs($this->{$user})
             ->patchJson('/shipping-methods/id:' . $shippingMethod->getKey(), [
                 'name' => 'test',
-                'shipping_type' => ShippingType::ADDRESS,
+                'shipping_type' => ShippingType::ADDRESS->value,
                 'shipping_points' => [
                     [
                         'id' => $address->getKey(),
@@ -677,7 +677,7 @@ class ShippingMethodTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonFragment(['shipping_type' => ShippingType::ADDRESS])
+            ->assertJsonFragment(['shipping_type' => ShippingType::ADDRESS->value])
             ->assertJsonCount(2, 'data.shipping_points');
 
         $this

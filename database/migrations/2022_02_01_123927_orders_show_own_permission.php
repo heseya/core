@@ -11,14 +11,14 @@ class OrdersShowOwnPermission extends Migration
     {
         Permission::create(['name' => 'orders.show_own', 'display_name' => 'Dostęp do listy zamówień zalogowanego użytkownika']);
 
-        $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
+        $owner = Role::where('type', RoleType::OWNER->value)->firstOrFail();
         $owner->givePermissionTo(['orders.show_own']);
         $owner->save();
     }
 
     public function down(): void
     {
-        $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
+        $owner = Role::where('type', RoleType::OWNER->value)->firstOrFail();
         $owner->revokePermissionTo(['orders.show_own']);
         $owner->save();
 

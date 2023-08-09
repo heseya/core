@@ -17,7 +17,7 @@ class SeoPermissions extends Migration
         $events->display_name = 'Dostęp do listy wydarzeń';
         $events->save();
 
-        $owner = Role::where('type', RoleType::OWNER)->first();
+        $owner = Role::where('type', RoleType::OWNER->value)->first();
         $owner->givePermissionTo([
             'seo.show',
             'seo.edit',
@@ -27,7 +27,7 @@ class SeoPermissions extends Migration
 
     public function down(): void
     {
-        $owner = Role::where('type', RoleType::OWNER)->first();
+        $owner = Role::where('type', RoleType::OWNER->value)->first();
         $owner->givePermissionTo([
             'seo.show',
             'seo.edit',

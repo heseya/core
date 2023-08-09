@@ -17,7 +17,7 @@ return new class extends Migration {
             'description' => 'Uprawnienie pozwalające na dodawanie, edycje i blokowanie możliwości logowania się przez zewnętrznych dostawców jak Google, Apple itp.',
         ]);
 
-        $owner = Role::where('type', '=', RoleType::OWNER)->firstOrFail();
+        $owner = Role::where('type', '=', RoleType::OWNER->value)->firstOrFail();
         $owner->givePermissionTo('auth.providers.manage');
         $owner->save();
     }
@@ -27,7 +27,7 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        $owner = Role::where('type', '=', RoleType::OWNER)->firstOrFail();
+        $owner = Role::where('type', '=', RoleType::OWNER->value)->firstOrFail();
         $owner->revokePermissionTo('auth.providers.manage');
         $owner->save();
 

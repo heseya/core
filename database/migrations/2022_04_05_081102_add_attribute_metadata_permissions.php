@@ -10,14 +10,14 @@ return new class extends Migration {
     {
         Permission::create(['name' => 'attributes.show_metadata_private', 'display_name' => 'Możliwość wyświetlania prywatnych metadanych atrybutów oraz opcji atrybutów']);
 
-        $owner = Role::query()->where('type', '=', RoleType::OWNER)->firstOrFail();
+        $owner = Role::query()->where('type', '=', RoleType::OWNER->value)->firstOrFail();
         $owner->givePermissionTo('attributes.show_metadata_private');
         $owner->save();
     }
 
     public function down(): void
     {
-        $owner = Role::query()->where('type', '=', RoleType::OWNER)->firstOrFail();
+        $owner = Role::query()->where('type', '=', RoleType::OWNER->value)->firstOrFail();
         $owner->revokePermissionTo('attributes.show_metadata_private');
         $owner->save();
 

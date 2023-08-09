@@ -14,7 +14,7 @@ class AddMetadataPermissions extends Migration
         Permission::create(['name' => 'products.show_metadata_private', 'display_name' => 'Możliwość wyświetlania prywatnych metadanych produktów']);
         Permission::create(['name' => 'users.show_metadata_private', 'display_name' => 'Możliwość wyświetlania prywatnych metadanych użytkowników']);
 
-        $owner = Role::query()->where('type', '=', RoleType::OWNER)->firstOrFail();
+        $owner = Role::query()->where('type', '=', RoleType::OWNER->value)->firstOrFail();
         $owner->givePermissionTo([
             'orders.show_metadata_private',
             'pages.show_metadata_private',
@@ -26,7 +26,7 @@ class AddMetadataPermissions extends Migration
 
     public function down(): void
     {
-        $owner = Role::query()->where('type', '=', RoleType::OWNER)->firstOrFail();
+        $owner = Role::query()->where('type', '=', RoleType::OWNER->value)->firstOrFail();
         $owner->revokePermissionTo([
             'orders.show_metadata_private',
             'pages.show_metadata_private',

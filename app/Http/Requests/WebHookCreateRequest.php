@@ -26,7 +26,7 @@ class WebHookCreateRequest extends FormRequest
     {
         $validator->sometimes('secret', ['required'], function ($input) {
             foreach ($input->events ?? [] as $event) {
-                if (in_array($event, EventType::$securedEvents)) {
+                if (in_array(EventType::tryFrom($event), EventType::SECURED_EVENTS)) {
                     return true;
                 }
             }
@@ -36,7 +36,7 @@ class WebHookCreateRequest extends FormRequest
 
         $validator->sometimes('url', [new HttpsRule()], function ($input) {
             foreach ($input->events ?? [] as $event) {
-                if (in_array($event, EventType::$securedEvents)) {
+                if (in_array(EventType::tryFrom($event), EventType::SECURED_EVENTS)) {
                     return true;
                 }
             }

@@ -9,15 +9,23 @@ use Throwable;
 
 class StoreException extends Exception
 {
+    protected Exceptions|string $exception;
+
     public function __construct(
-        string $message = '',
-        int $code = 0,
+        Exceptions|string $exception,
         ?Throwable $previous = null,
         protected bool $simpleLogs = false,
         private readonly array $errorArray = [],
     ) {
-        parent::__construct($message, $code, $previous);
-        $this->code = Exceptions::getCode($message);
+        $this->exception = is_string($exception)
+            ? Exceptions::coerce($exception) ?? $exception
+            : $exception;
+
+        parent::__construct(
+            $this->exception instanceof Exceptions ? $this->exception->value : $this->exception,
+            $this->exception instanceof Exceptions ? $this->exception->getCode() : 422,
+            $previous
+        );
     }
 
     public function isSimpleLogs(): bool
@@ -29,10 +37,10 @@ class StoreException extends Exception
     {
         Log::error(
             $this::class
-            . '(code: ' . $this->getCode()
-            . '): ' . $this->getMessage()
-            . ' at ' . $this->getFile()
-            . ':(' . $this->getLine() . ')'
+                . '(code: ' . $this->getCode()
+                . '): ' . $this->getMessage()
+                . ' at ' . $this->getFile()
+                . ':(' . $this->getLine() . ')'
         );
     }
 
@@ -43,6 +51,8 @@ class StoreException extends Exception
 
     public function getKey(): string
     {
-        return Exceptions::fromValue($this->getMessage())->key ?? '';
+        return $this->exception instanceof Exceptions
+            ? $this->exception->name
+            : '';
     }
 }

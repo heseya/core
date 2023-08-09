@@ -83,7 +83,7 @@ class MediaUpdateTest extends TestCase
                 'slug' => 'Test slug',
             ])
             ->assertJsonFragment([
-                'key' => Exceptions::getKey(Exceptions::CDN_NOT_ALLOWED_TO_CHANGE_ALT),
+                'key' => Exceptions::CDN_NOT_ALLOWED_TO_CHANGE_ALT->name,
             ]);
     }
 

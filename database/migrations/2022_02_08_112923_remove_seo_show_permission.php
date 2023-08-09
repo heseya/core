@@ -22,13 +22,13 @@ class RemoveSeoShowPermission extends Migration
     {
         Permission::create(['name' => 'seo.show', 'display_name' => 'Dostęp do ustawień SEO sklepu']);
 
-        $owner = Role::find('type', RoleType::OWNER);
+        $owner = Role::find('type', RoleType::OWNER->value);
         $owner->givePermissionTo([
             'seo.show',
         ]);
         $owner->save();
 
-        $unauthenticated = Role::find('type', RoleType::UNAUTHENTICATED);
+        $unauthenticated = Role::find('type', RoleType::UNAUTHENTICATED->value);
         $unauthenticated->givePermissionTo([
             'seo.show',
         ]);
