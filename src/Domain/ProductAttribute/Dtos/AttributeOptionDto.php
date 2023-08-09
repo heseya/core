@@ -7,18 +7,20 @@ namespace Domain\ProductAttribute\Dtos;
 use App\Rules\Translations;
 use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Domain\ProductAttribute\Enums\AttributeType;
+use Domain\ProductAttribute\Models\Attribute;
 use Spatie\LaravelData\Attributes\Computed;
+use Spatie\LaravelData\Attributes\FromRouteParameter;
+use Spatie\LaravelData\Attributes\FromRouteParameterProperty;
 use Spatie\LaravelData\Attributes\MapInputName;
-use Spatie\LaravelData\Attributes\Validation\AlphaDash;
-use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Regex;
+use Spatie\LaravelData\Attributes\Validation\RequiredIf;
 use Spatie\LaravelData\Attributes\Validation\Rule;
-use Spatie\LaravelData\Attributes\Validation\Unique;
 use Spatie\LaravelData\Attributes\Validation\Uuid;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Support\Utils\Map;
 
-final class AttributeCreateDto extends Data
+final class AttributeOptionDto extends Data
 {
     /** @var Optional|MetadataUpdateDto[] */
     #[Computed]
@@ -31,20 +33,19 @@ final class AttributeCreateDto extends Data
      */
     public function __construct(
         #[Uuid]
-        public readonly Optional|string $id,
-        #[Rule(new Translations(['name']))]
-        public readonly array $translations,
-        #[Max(255)]
-        public readonly string $description,
-        #[Max(255), AlphaDash, Unique('attributes')]
-        public readonly string $slug,
-        public readonly AttributeType $type,
-        public readonly bool $global,
-        public readonly bool $sortable,
-
+        public Optional|string $id,
+        #[Rule([new Translations(['name'])]), RequiredIf('attribute.type', AttributeType::SINGLE_OPTION->value)]
+        public readonly ?array $translations,
+        #[Regex('/^\d{1,6}(\.\d{1,2}|)$/')]
+        public readonly float|Optional|null $value_number,
+        public readonly Optional|string|null $value_date,
         #[MapInputName('metadata')]
         public readonly array|Optional $metadata_public,
         public readonly array|Optional $metadata_private,
+        #[FromRouteParameterProperty('attribute', 'id')]
+        public readonly Optional|string $attribute_id,
+        #[FromRouteParameter('attribute')]
+        public readonly Attribute|Optional|null $attribute,
     ) {
         $this->metadata = Map::toMetadata(
             $this->metadata_public,

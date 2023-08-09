@@ -8,6 +8,7 @@ use App\Criteria\AttributeOptionSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\WhereInIds;
+use App\Models\Interfaces\Translatable;
 use App\Models\Model;
 use App\Traits\HasMetadata;
 use Heseya\Searchable\Criteria\Like;
@@ -15,17 +16,19 @@ use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Translatable\HasTranslations;
 
 /**
  * @property string $name
  *
  * @mixin IdeHelperAttributeOption
  */
-final class AttributeOption extends Model
+final class AttributeOption extends Model implements Translatable
 {
     use HasCriteria;
     use HasFactory;
     use HasMetadata;
+    use HasTranslations;
     use SoftDeletes;
 
     protected $fillable = [
@@ -36,6 +39,11 @@ final class AttributeOption extends Model
         'value_date',
         'attribute_id',
         'order',
+    ];
+
+    /** @var string[] */
+    protected array $translatable = [
+        'name',
     ];
 
     protected $casts = [

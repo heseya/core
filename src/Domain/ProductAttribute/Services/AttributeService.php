@@ -44,7 +44,7 @@ final readonly class AttributeService
      */
     public function update(string $id, AttributeUpdateDto $dto): void
     {
-        if ($this->repository->update($id, $dto) === 0) {
+        if (!$this->repository->update($id, $dto)) {
             throw new ClientException(Exceptions::CLIENT_CANNOT_DELETE_MODEL);
         }
     }
