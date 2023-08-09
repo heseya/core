@@ -38,11 +38,14 @@ final readonly class MetadataRepository
         ], $dto->toArray());
     }
 
-    public function delete(string $id, string $name): void
+    /**
+     * @param string[] $names
+     */
+    public function deleteBatch(string $model_id, array $names): void
     {
         Metadata::query()
-            ->where('model_id', '=', $id)
-            ->where('name', '=', $name)
+            ->where('model_id', '=', $model_id)
+            ->whereIn('name', $names)
             ->delete();
     }
 }
