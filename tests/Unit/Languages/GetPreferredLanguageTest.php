@@ -2,8 +2,8 @@
 
 namespace Tests\Unit\Languages;
 
-use App\Models\Language;
 use App\Traits\GetPreferredLanguage;
+use Domain\Language\Language;
 use Illuminate\Support\Collection;
 use Tests\TestCase;
 

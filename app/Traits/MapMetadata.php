@@ -2,9 +2,9 @@
 
 namespace App\Traits;
 
-use App\DTO\Metadata\MetadataDto;
-use App\DTO\Metadata\MetadataPersonalDto;
-use App\Enums\MetadataType;
+use Domain\Metadata\Dtos\MetadataPersonalDto;
+use Domain\Metadata\Dtos\MetadataUpdateDto;
+use Domain\Metadata\Enums\MetadataType;
 use Heseya\Dto\Missing;
 use Illuminate\Http\Request;
 
@@ -27,7 +27,7 @@ trait MapMetadata
 
         if (array_key_exists('metadata', $data)) {
             foreach ($data['metadata'] as $key => $value) {
-                $metadata[] = new MetadataDto(
+                $metadata[] = new MetadataUpdateDto(
                     $key,
                     $value,
                     true,
@@ -38,7 +38,7 @@ trait MapMetadata
 
         if (array_key_exists('metadata_private', $data)) {
             foreach ($data['metadata_private'] as $key => $value) {
-                $metadata[] = new MetadataDto(
+                $metadata[] = new MetadataUpdateDto(
                     $key,
                     $value,
                     false,

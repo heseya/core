@@ -1,12 +1,12 @@
 <?php
 
-use App\Models\Language;
 use App\Models\Option;
-use App\Models\Page;
 use App\Models\Product;
 use App\Models\Schema;
-use App\Models\SeoMetadata;
 use App\Models\Status;
+use Domain\Language\Language;
+use Domain\Page\Page;
+use Domain\Seo\Models\SeoMetadata;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema as DbSchema;

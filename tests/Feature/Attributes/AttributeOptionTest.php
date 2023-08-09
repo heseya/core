@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Attributes;
 
-use App\Models\Attribute;
-use App\Models\AttributeOption;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Tests\TestCase;
 
 class AttributeOptionTest extends TestCase

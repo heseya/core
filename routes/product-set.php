@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\FavouriteController;
 use App\Http\Controllers\MetadataController;
-use App\Http\Controllers\ProductSetController;
+use Domain\ProductSet\ProductSetController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('product-sets')->group(function (): void {

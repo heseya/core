@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Products;
 
-use App\Models\Page;
 use App\Services\Contracts\ProductServiceContract;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Domain\Currency\Currency;
+use Domain\Page\Page;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;

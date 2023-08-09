@@ -2,7 +2,7 @@
 
 namespace App\Dtos;
 
-use App\Http\Requests\ProductSetProductReorderRequest;
+use Domain\ProductSet\Requests\ProductSetProductReorderRequest;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;

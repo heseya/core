@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-use App\Models\Language;
+use Domain\Language\Language;
 use Illuminate\Support\Collection;
 
 trait GetPreferredLanguage

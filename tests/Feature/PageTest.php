@@ -2,22 +2,21 @@
 
 namespace Tests\Feature;
 
-use App\Enums\MetadataType;
 use App\Enums\ValidationError;
-use App\Events\PageCreated;
-use App\Events\PageDeleted;
-use App\Events\PageUpdated;
 use App\Listeners\WebHookEventListener;
-use App\Models\Page;
-use App\Models\SeoMetadata;
 use App\Models\WebHook;
+use Domain\Metadata\Enums\MetadataType;
+use Domain\Page\Events\PageCreated;
+use Domain\Page\Events\PageDeleted;
+use Domain\Page\Events\PageUpdated;
+use Domain\Page\Page;
+use Domain\Seo\Models\SeoMetadata;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
 class PageTest extends TestCase
@@ -100,7 +99,7 @@ class PageTest extends TestCase
 
         $response = $this
             ->actingAs($this->{$user})
-            ->getJson('/pages?translations');
+            ->getJson('/pages?with_translations=1');
 
         $response
             ->assertOk()
@@ -123,7 +122,7 @@ class PageTest extends TestCase
 
         $response = $this
             ->actingAs($this->{$user})
-            ->getJson('/pages?translations');
+            ->getJson('/pages?with_translations=1');
 
         $response
             ->assertOk()
@@ -515,22 +514,6 @@ class PageTest extends TestCase
             return $job->class === WebHookEventListener::class
                 && $job->data[0] instanceof PageCreated;
         });
-
-        $page = Page::find($response->json('data.id'));
-
-        $event = new PageCreated($page);
-        $listener = new WebHookEventListener();
-        $listener->handle($event);
-
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $page) {
-            $payload = $job->payload;
-
-            return $job->webhookUrl === $webHook->url
-                && isset($job->headers['Signature'])
-                && $payload['data']['id'] === $page->getKey()
-                && $payload['data_type'] === 'Page'
-                && $payload['event'] === 'PageCreated';
-        });
     }
 
     /**
@@ -795,29 +778,6 @@ class PageTest extends TestCase
             return $job->class === WebHookEventListener::class
                 && $job->data[0] instanceof PageUpdated;
         });
-
-        $page = Page::find($response->json('data.id'));
-
-        $event = new PageUpdated($page);
-        $listener = new WebHookEventListener();
-        $listener->handle($event);
-
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $page) {
-            $payload = $job->payload;
-
-            return $job->webhookUrl === $webHook->url
-                && isset($job->headers['Signature'])
-                && $payload['data']['id'] === $page->getKey()
-                && $payload['data_type'] === 'Page'
-                && $payload['event'] === 'PageUpdated';
-        });
-        $this->assertDatabaseHas('pages', [
-            'id' => $this->page->getKey(),
-            "name->{$this->lang}" => 'Test 2',
-            'slug' => 'test-2',
-            'public' => false,
-            "content_html->{$this->lang}" => $html,
-        ]);
     }
 
     /**

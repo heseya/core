@@ -20,11 +20,17 @@ class Kernel extends ConsoleKernel
 
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->job(new CheckActiveSales())->everyThirtyMinutes();
+        $schedule->job(new CheckActiveSales())
+            ->everyThirtyMinutes()
+            ->sentryMonitor();
 
         // every hour at minute 43.
-        $schedule->job(new StopShippingUnlimitedStockDateJob())->cron('43 * * * *');
+        $schedule->job(new StopShippingUnlimitedStockDateJob())
+            ->cron('43 * * * *')
+            ->sentryMonitor();
 
-        $schedule->job(new GoogleCategoryJob())->weekly();
+        $schedule->job(new GoogleCategoryJob())
+            ->weekly()
+            ->sentryMonitor();
     }
 }

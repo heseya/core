@@ -30,36 +30,6 @@ trait JsonQueryCounter
         return parent::json($method, $uri, $data, $headers, $options);
     }
 
-    public function assertNoQueriesExecuted(?Closure $closure = null): void
-    {
-        if ($closure) {
-            self::trackQueries();
-
-            $closure();
-        }
-
-        $this->assertQueryCountMatches(0);
-
-        if ($closure) {
-            DB::flushQueryLog();
-        }
-    }
-
-    public function assertQueryCountMatches(int $count, ?Closure $closure = null): void
-    {
-        if ($closure) {
-            self::trackQueries();
-
-            $closure();
-        }
-
-        $this->assertEquals($count, self::getQueryCount());
-
-        if ($closure) {
-            DB::flushQueryLog();
-        }
-    }
-
     public function assertQueryCountLessThan(int $count, ?Closure $closure = null): void
     {
         if ($closure) {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Domain\ProductSet\Resources\ProductSetResource;
 use Illuminate\Http\Request;
 
 class ConditionResource extends Resource

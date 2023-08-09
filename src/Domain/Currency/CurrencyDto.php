@@ -6,7 +6,7 @@ namespace Domain\Currency;
 
 use Spatie\LaravelData\Data;
 
-class CurrencyDto extends Data
+final class CurrencyDto extends Data
 {
     public function __construct(
         public string $name,

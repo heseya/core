@@ -1,6 +1,11 @@
 {
   "preset": "symfony",
   "rules": {
+    "declare_strict_types": true,
+    "strict_comparison": true,
+    "php_unit_strict": true,
+    "strict_param": true,
+    "final_class": true,
     "not_operator_with_space": false,
     "nullable_type_declaration_for_default_null_value": false,
     "simplified_null_return": true,

@@ -2,8 +2,8 @@
 
 namespace App\Traits;
 
-use App\Models\Metadata;
-use App\Models\MetadataPersonal;
+use Domain\Metadata\Models\Metadata;
+use Domain\Metadata\Models\MetadataPersonal;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 

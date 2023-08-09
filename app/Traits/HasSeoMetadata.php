@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-use App\Models\SeoMetadata;
+use Domain\Seo\Models\SeoMetadata;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 trait HasSeoMetadata

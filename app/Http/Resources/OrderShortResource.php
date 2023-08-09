@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Traits\MetadataResource;
+use Domain\Order\Resources\OrderStatusResource;
 use Illuminate\Http\Request;
 
 class OrderShortResource extends Resource
@@ -14,7 +15,7 @@ class OrderShortResource extends Resource
         return array_merge([
             'id' => $this->resource->getKey(),
             'code' => $this->resource->code,
-            'status' => StatusResource::make($this->resource->status),
+            'status' => OrderStatusResource::make($this->resource->status),
             'paid' => $this->resource->paid,
             'summary' => $this->resource->summary,
             'created_at' => $this->resource->created_at,

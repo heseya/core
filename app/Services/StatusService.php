@@ -2,8 +2,6 @@
 
 namespace App\Services;
 
-use App\DTO\OrderStatus\OrderStatusCreateDto;
-use App\DTO\OrderStatus\OrderStatusUpdateDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
 use App\Exceptions\PublishingException;
@@ -11,6 +9,8 @@ use App\Models\Status;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\StatusServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
+use Domain\Order\Dtos\OrderStatusCreateDto;
+use Domain\Order\Dtos\OrderStatusUpdateDto;
 use Spatie\LaravelData\Optional;
 
 readonly class StatusService implements StatusServiceContract

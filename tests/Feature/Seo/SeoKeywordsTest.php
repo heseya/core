@@ -3,11 +3,11 @@
 namespace Tests\Feature\Seo;
 
 use App\Models\Product;
-use App\Models\SeoMetadata;
 use App\Services\Contracts\ProductServiceContract;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
+use Domain\Seo\Models\SeoMetadata;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
@@ -44,79 +44,71 @@ class SeoKeywordsTest extends TestCase
             ]);
     }
 
-    // TODO: fix this somehow
-    //    /**
-    //     * @dataProvider authProvider
-    //     */
-    //    public function testCheckKeywordsDuplicates(string $user): void
-    //    {
-    //        /** @var SeoMetadata $seo */
-    //        $seo = SeoMetadata::factory()->make([
-    //            'keywords' => [
-    //                $this->lang => ['test', 'test1'],
-    //            ],
-    //        ]);
-    //
-    //        /** @var Product $product */
-    //        $product = Product::factory()->create();
-    //        $product->seo()->save($seo);
-    //
-    //        $this->{$user}->givePermissionTo('seo.edit');
-    //        $this
-    //            ->actingAs($this->{$user})
-    //            ->json('POST', '/seo/check', [
-    //                'keywords' => ['test', 'test1'],
-    //            ])->assertOk()->assertJsonFragment(['data' => [
-    //                'duplicated' => true,
-    //                'duplicates' => [
-    //                    [
-    //                        'id' => $product->getKey(),
-    //                        'model_type' => Str::afterLast($product::class, '\\'),
-    //                    ],
-    //                ],
-    //            ]]);
-    //    }
-    //
-    //    /**
-    //     * @dataProvider authProvider
-    //     */
-    //    public function testCheckKeywordsDuplicatesWithExcluded(string $user): void
-    //    {
-    //        /** @var SeoMetadata $seo */
-    //        $seo = SeoMetadata::factory()->make()->setTranslation('keywords', $this->lang, ['PHP', 'Laravel', 'Java']);
-    //
-    //        /** @var Product $product */
-    //        $product = Product::factory([
-    //            'public' => true,
-    //        ])->create();
-    //        $product->seo()->save($seo);
-    //
-    //        $product2 = Product::factory([
-    //            'public' => true,
-    //        ])->create();
-    //
-    //        $this->{$user}->givePermissionTo('seo.edit');
-    //        $this
-    //            ->actingAs($this->{$user})
-    //            ->json('POST', '/seo/check', [
-    //                'keywords' => ['test', 'test1'],
-    //                'excluded' => [
-    //                    'id' => $product->getKey(),
-    //                    'model' => 'Product',
-    //                ],
-    //            ])
-    //            ->assertOk()
-    //            ->assertJsonCount(1, 'data.duplicates')
-    //            ->assertJsonFragment(['data' => [
-    //                'duplicated' => true,
-    //                'duplicates' => [
-    //                    [
-    //                        'id' => $product2->getKey(),
-    //                        'model_type' => Str::afterLast($product2::class, '\\'),
-    //                    ],
-    //                ],
-    //            ]]);
-    //    }
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCheckKeywordsDuplicates(string $user): void
+    {
+        /** @var SeoMetadata $seo */
+        $seo = SeoMetadata::factory()->make([
+            'keywords' => [
+                $this->lang => ['test', 'test1'],
+            ],
+        ]);
+
+        /** @var Product $product */
+        $product = Product::factory()->create();
+        $product->seo()->save($seo);
+
+        $this->{$user}->givePermissionTo('seo.edit');
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/seo/check', [
+                'keywords' => ['test', 'test1'],
+            ])
+            ->assertOk()
+            ->assertJsonFragment(['duplicated' => true])
+            ->assertJsonFragment([
+                'duplicates' => [
+                    [
+                        'id' => $product->getKey(),
+                        'model_type' => Str::afterLast($product::class, '\\'),
+                    ],
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCheckKeywordsDuplicatesWithExcluded(string $user): void
+    {
+        /** @var SeoMetadata $seo */
+        $seo = SeoMetadata::factory()->make();
+        $seo->setTranslation('keywords', $this->lang, ['PHP', 'Laravel', 'Java']);
+
+        /** @var Product $product */
+        $product = Product::factory([
+            'public' => true,
+        ])->create();
+        $product->seo()->save($seo);
+
+        $this->{$user}->givePermissionTo('seo.edit');
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/seo/check', [
+                'keywords' => ['test', 'test1'],
+                'excluded' => [
+                    'id' => $product->getKey(),
+                    'model' => 'Product',
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonCount(0, 'data.duplicates')
+            ->assertJsonFragment([
+                'duplicated' => false,
+            ]);
+    }
 
     /**
      * @dataProvider authProvider

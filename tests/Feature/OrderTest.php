@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
-use App\Enums\MetadataType;
 use App\Enums\PaymentStatus;
 use App\Enums\ShippingType;
 use App\Enums\ValidationError;
@@ -26,6 +25,7 @@ use App\Services\Contracts\OrderServiceContract;
 use App\Services\OrderService;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Metadata\Enums\MetadataType;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
@@ -567,19 +567,29 @@ class OrderTest extends TestCase
 
         $status = Status::factory()->create();
 
-        $from = Carbon::yesterday()->addHour();
-        $to = Carbon::tomorrow()->subHour();
+        $now = Carbon::create(2020, 02, 02, 10);
+
+        $this->travelTo($now);
+
+        $from = $now->subHour();
+        $to = $now->addHour();
 
         Order::factory([
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'status_id' => $status->getKey(),
-            'created_at' => Carbon::yesterday(),
+            'created_at' => $now->subDay(),
         ])->create();
 
         Order::factory([
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'status_id' => $status->getKey(),
-            'created_at' => Carbon::tomorrow(),
+            'created_at' => $now->addDay(),
+        ])->create();
+
+        $order = Order::factory([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+            'created_at' => $now->subMinutes(30),
         ])->create();
 
         $response = $this
@@ -592,7 +602,7 @@ class OrderTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonFragment(['id' => $this->order->getKey()]);
+            ->assertJsonFragment(['id' => $order->getKey()]);
     }
 
     /**

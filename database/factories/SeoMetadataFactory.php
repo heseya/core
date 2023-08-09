@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\SeoMetadata;
+use Domain\Seo\Models\SeoMetadata;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\App;
 
