@@ -14,6 +14,7 @@ final class ConsentUpdateDto extends Data
 {
     /**
      * @param array<string, array<string, string>>|Optional $translations
+     * @param string[] $published
      */
     public function __construct(
         #[Uuid]
@@ -21,5 +22,6 @@ final class ConsentUpdateDto extends Data
         #[Rule(new Translations(['name', 'description_html']))]
         public readonly array|Optional $translations,
         public readonly bool|Optional $required,
+        public readonly array|Optional $published,
     ) {}
 }

@@ -30,6 +30,7 @@ final class Consent extends Model implements Translatable
         'name',
         'description_html',
         'required',
+        'published',
     ];
 
     /** @var string[] */
@@ -40,6 +41,7 @@ final class Consent extends Model implements Translatable
 
     protected $casts = [
         'required' => 'boolean',
+        'published' => 'array',
     ];
 
     /**

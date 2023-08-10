@@ -114,6 +114,9 @@ class ConsentTest extends TestCase
                 ],
             ],
             'required' => false,
+            'published' => [
+                $this->lang,
+            ]
         ]);
 
         $response->assertCreated();
