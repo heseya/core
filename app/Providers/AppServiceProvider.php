@@ -9,13 +9,11 @@ use App\Services\AppService;
 use App\Services\AuthService;
 use App\Services\AvailabilityService;
 use App\Services\BannerService;
-use App\Services\ConsentService;
 use App\Services\Contracts\AnalyticsServiceContract;
 use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\BannerServiceContract;
-use App\Services\Contracts\ConsentServiceContract;
 use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\DocumentServiceContract;
@@ -127,7 +125,6 @@ class AppServiceProvider extends ServiceProvider
         DocumentServiceContract::class => DocumentService::class,
         MetadataServiceContract::class => MetadataService::class,
         SortServiceContract::class => SortService::class,
-        ConsentServiceContract::class => ConsentService::class,
         BannerServiceContract::class => BannerService::class,
         UserLoginAttemptServiceContract::class => UserLoginAttemptService::class,
         StatusServiceContract::class => StatusService::class,

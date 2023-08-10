@@ -1,26 +1,29 @@
 <?php
 
-namespace App\Services;
+namespace Domain\Consent\Services;
 
-use App\Dtos\ConsentDto;
-use App\Models\Consent;
-use App\Models\ConsentUser;
 use App\Models\User;
-use App\Services\Contracts\ConsentServiceContract;
+use Domain\Consent\Dtos\ConsentCreateDto;
+use Domain\Consent\Dtos\ConsentUpdateDto;
+use Domain\Consent\Models\Consent;
+use Domain\Consent\Models\ConsentUser;
+use Domain\Consent\Repositories\ConsentRepository;
 use Illuminate\Support\Collection;
 
-class ConsentService implements ConsentServiceContract
+final readonly class ConsentService
 {
-    public function store(ConsentDto $dto): Consent
+    public function __construct(
+        private readonly ConsentRepository $consentRepository
+    ) {}
+
+    public function store(ConsentCreateDto $dto): Consent
     {
-        return Consent::create($dto->toArray());
+        return $this->consentRepository->create($dto);
     }
 
-    public function update(Consent $consent, ConsentDto $dto): Consent
+    public function update(Consent $consent, ConsentUpdateDto $dto): Consent
     {
-        $consent->update($dto->toArray());
-
-        return $consent;
+        return $this->consentRepository->update($consent->getKey(), $dto);
     }
 
     public function destroy(Consent $consent): void
@@ -28,6 +31,9 @@ class ConsentService implements ConsentServiceContract
         $consent->delete();
     }
 
+    /**
+     * @param array<string, bool> $consents
+     */
     public function syncUserConsents(User $user, array $consents): void
     {
         foreach ($consents as $key => $consent) {
@@ -35,6 +41,9 @@ class ConsentService implements ConsentServiceContract
         }
     }
 
+    /**
+     * @param Collection<string, bool>|null $consents
+     */
     public function updateUserConsents(?Collection $consents, User $user): void
     {
         if ($consents?->isNotEmpty()) {

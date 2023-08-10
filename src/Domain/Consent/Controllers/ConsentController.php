@@ -1,20 +1,20 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace Domain\Consent\Controllers;
 
-use App\Dtos\ConsentDto;
-use App\Http\Requests\ConsentStoreRequest;
-use App\Http\Requests\ConsentUpdateRequest;
+use App\Http\Controllers\Controller;
 use App\Http\Resources\ConsentResource;
-use App\Models\Consent;
-use App\Services\Contracts\ConsentServiceContract;
+use Domain\Consent\Dtos\ConsentCreateDto;
+use Domain\Consent\Dtos\ConsentUpdateDto;
+use Domain\Consent\Models\Consent;
+use Domain\Consent\Services\ConsentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
 
 class ConsentController extends Controller
 {
-    public function __construct(private ConsentServiceContract $consentService) {}
+    public function __construct(private readonly ConsentService $consentService) {}
 
     public function show(Consent $consent): JsonResource
     {
@@ -26,18 +26,16 @@ class ConsentController extends Controller
         return ConsentResource::collection(Consent::all());
     }
 
-    public function store(ConsentStoreRequest $request): JsonResource
+    public function store(ConsentCreateDto $dto): JsonResource
     {
-        $consentDto = ConsentDto::instantiateFromRequest($request);
-        $consent = $this->consentService->store($consentDto);
+        $consent = $this->consentService->store($dto);
 
         return ConsentResource::make($consent);
     }
 
-    public function update(Consent $consent, ConsentUpdateRequest $request): JsonResource
+    public function update(Consent $consent, ConsentUpdateDto $dto): JsonResource
     {
-        $consentDto = ConsentDto::instantiateFromRequest($request);
-        $consent = $this->consentService->update($consent, $consentDto);
+        $consent = $this->consentService->update($consent, $dto);
 
         return ConsentResource::make($consent);
     }

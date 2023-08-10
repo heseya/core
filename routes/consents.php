@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\ConsentController;
+use Domain\Consent\Controllers\ConsentController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('consents')->group(function (): void {
