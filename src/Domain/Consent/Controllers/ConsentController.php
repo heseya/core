@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\Consent\Controllers;
 
 use App\Http\Controllers\Controller;
@@ -12,7 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
 
-class ConsentController extends Controller
+final class ConsentController extends Controller
 {
     public function __construct(private readonly ConsentService $consentService) {}
 

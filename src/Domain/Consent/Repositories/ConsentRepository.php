@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\Consent\Repositories;
 
 use Domain\Consent\Dtos\ConsentCreateDto;
@@ -19,6 +21,7 @@ final readonly class ConsentRepository
         }
 
         $consent->save();
+
         return $consent;
     }
 
@@ -35,6 +38,7 @@ final readonly class ConsentRepository
         }
 
         $consent->save();
+
         return $consent;
     }
 }

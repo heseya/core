@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\Consent\Models;
 
 use App\Models\Interfaces\Translatable;
@@ -12,7 +14,7 @@ use Spatie\Translatable\HasTranslations;
 /**
  * @mixin IdeHelperConsent
  */
-class Consent extends Model implements Translatable
+final class Consent extends Model implements Translatable
 {
     use HasFactory;
     use HasTranslations;
