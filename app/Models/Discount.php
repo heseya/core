@@ -81,6 +81,25 @@ class Discount extends Model implements AuditableContract
         return $this->morphedByMany(Order::class, 'model', 'order_discounts');
     }
 
+    public function ordersWithUses(): Builder
+    {
+        $orders = $this->orders->pluck('id');
+        $productIds = $this->allProductsIds();
+        $discountId = $this->getKey();
+        $usesOrders = Order::query()
+            ->with(['products', 'products.discounts', 'products.product'])
+            ->whereHas('products.discounts', static function (Builder $query) use ($discountId): void {
+                $query->where('id', $discountId);
+            })
+            ->whereHas('products.product', static function (Builder $query) use($productIds): void {
+                $query->whereIn('id',  $productIds);
+            })
+            ->whereNotIn('id', $orders)
+            ->pluck('id');
+
+        return Order::query()->whereIn('id', [...$orders, ...$usesOrders]);
+    }
+
     public function products(): MorphToMany
     {
         return $this->morphedByMany(

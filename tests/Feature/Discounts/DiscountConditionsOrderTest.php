@@ -19,10 +19,11 @@ class DiscountConditionsOrderTest extends TestCase
     use RefreshDatabase;
 
     private ConditionGroup $conditionGroup;
+    private Discount $discount;
     private $shippingMethod;
     private $product;
-    protected array $items;
-    protected array $address;
+    private array $items;
+    private array $address;
 
     public function setUp(): void
     {
@@ -51,22 +52,29 @@ class DiscountConditionsOrderTest extends TestCase
             'phone' => '+48123123123',
             'country' => 'PL',
         ];
+
+        $this->discount = Discount::factory()->create([
+            'code' => null,
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+        ]);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testDecrementingMaxUsesCondition($user): void
+    public function testCountingMaxUsesCondition($user): void
     {
+        $this->discount->refresh();
+        $this->assertEquals(0, $this->discount->uses);
+
         $this->$user->givePermissionTo('orders.add');
 
-        $discount = Discount::factory()->create([
-            'type' => DiscountType::PERCENTAGE,
-            'target_type' => DiscountTargetType::ORDER_VALUE,
-            'value' => 15,
-        ]);
+        $this->discount->products()->attach($this->product->getKey());
+        $this->discount->conditionGroups()->attach($this->conditionGroup);
 
-        $discount->conditionGroups()->attach($this->conditionGroup);
         $this->conditionGroup->conditions()->create([
             'type' => ConditionType::MAX_USES,
             'value' => [
@@ -80,36 +88,21 @@ class DiscountConditionsOrderTest extends TestCase
             'billing_address' => $this->address,
             'shipping_place' => $this->address,
             'items' => $this->items,
-            'coupons' => [
-                $discount->code,
-            ],
         ])->assertCreated();
 
-        $condition = $this->conditionGroup->conditions()->first();
-        $condition->refresh();
-        $this->assertEquals(['max_uses' => 0], $condition->value);
+        $this->discount->refresh();
+        $this->assertEquals(1, $this->discount->uses);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testDecrementingMaxUsesConditionLimitReached($user): void
+    public function testCountingMaxUsesConditionLimitReached($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->discount->refresh();
+        $this->assertEquals(0, $this->discount->uses);
 
-        $discount = Discount::factory()->create([
-            'type' => DiscountType::PERCENTAGE,
-            'target_type' => DiscountTargetType::ORDER_VALUE,
-            'value' => 15,
-        ]);
-
-        $discount->conditionGroups()->attach($this->conditionGroup);
-        $this->conditionGroup->conditions()->create([
-            'type' => ConditionType::MAX_USES,
-            'value' => [
-                'max_uses' => 0,
-            ],
-        ]);
+        $this->testCountingMaxUsesCondition($user);
 
         $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
@@ -117,26 +110,21 @@ class DiscountConditionsOrderTest extends TestCase
             'billing_address' => $this->address,
             'shipping_place' => $this->address,
             'items' => $this->items,
-            'coupons' => [
-                $discount->code,
-            ],
-        ])->assertUnprocessable();
+        ])->assertCreated();
+
+        $this->discount->refresh();
+        $this->assertEquals(1, $this->discount->uses);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testDecrementingMaxUsesPerUserCondition($user): void
+    public function testCountingMaxUsesPerUserCondition($user): void
     {
         $this->$user->givePermissionTo('orders.add');
 
-        $discount = Discount::factory()->create([
-            'type' => DiscountType::PERCENTAGE,
-            'target_type' => DiscountTargetType::ORDER_VALUE,
-            'value' => 15,
-        ]);
-
-        $discount->conditionGroups()->attach($this->conditionGroup);
+        $this->discount->products()->attach($this->product->getKey());
+        $this->discount->conditionGroups()->attach($this->conditionGroup);
         $this->conditionGroup->conditions()->create([
             'type' => ConditionType::MAX_USES_PER_USER,
             'value' => [
@@ -150,14 +138,10 @@ class DiscountConditionsOrderTest extends TestCase
             'billing_address' => $this->address,
             'shipping_place' => $this->address,
             'items' => $this->items,
-            'coupons' => [
-                $discount->code,
-            ],
         ])->assertCreated();
 
-        $condition = $this->conditionGroup->conditions()->first();
-        $condition->refresh();
-        $this->assertEquals(['max_uses' => 1], $condition->value);
+        $this->discount->refresh();
+        $this->assertEquals(1, $this->discount->uses);
 
         $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
@@ -165,10 +149,10 @@ class DiscountConditionsOrderTest extends TestCase
             'billing_address' => $this->address,
             'shipping_place' => $this->address,
             'items' => $this->items,
-            'coupons' => [
-                $discount->code,
-            ],
-        ])->assertUnprocessable();
+        ])->assertCreated();
+
+        $this->discount->refresh();
+        $this->assertEquals(1, $this->discount->uses);
 
         $otherUser = $this->user = User::factory()->create();
         $otherUser->givePermissionTo('orders.add');
@@ -180,12 +164,9 @@ class DiscountConditionsOrderTest extends TestCase
             'billing_address' => $this->address,
             'shipping_place' => $this->address,
             'items' => $this->items,
-            'coupons' => [
-                $discount->code,
-            ],
         ])->assertCreated();
 
-        $condition->refresh();
-        $this->assertEquals(['max_uses' => 0], $condition->value);
+        $this->discount->refresh();
+        $this->assertEquals(2, $this->discount->uses);
     }
 }

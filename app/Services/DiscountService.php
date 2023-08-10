@@ -743,7 +743,6 @@ readonly class DiscountService implements DiscountServiceContract
         foreach ($discounts as $discount) {
             if ($this->checkConditionGroups($discount, $orderDto, $order->cart_total)) {
                 $order = $this->applyDiscountOnOrder($discount, $order);
-                $this->decrementUsageDiscount($discount);
             } elseif (
                 ($discount->code === null && in_array($discount->getKey(), $sales)) ||
                 $discount->code !== null
@@ -1460,7 +1459,7 @@ readonly class DiscountService implements DiscountServiceContract
     {
         $conditionDto = MaxUsesConditionDto::fromArray($condition->value + ['type' => $condition->type]);
 
-        return $condition->conditionGroup?->discounts()->first()?->orders()->count() < $conditionDto->getMaxUses();
+        return $condition->conditionGroup?->discounts()->first()?->ordersWithUses()->count() < $conditionDto->getMaxUses();
     }
 
     private function checkConditionMaxUsesPerUser(DiscountCondition $condition): bool
@@ -1472,7 +1471,7 @@ readonly class DiscountService implements DiscountServiceContract
                 ->conditionGroup
                 ?->discounts()
                 ->first()
-                ?->orders()
+                ?->ordersWithUses()
                 ->whereHasMorph('buyer', [User::class, App::class], function (Builder $query): void {
                     $query->where('buyer_id', Auth::id());
                 })
@@ -1552,23 +1551,5 @@ readonly class DiscountService implements DiscountServiceContract
             // @phpstan-ignore-next-line
             Product::query()->whereIn('id', $products->pluck('id'))->searchable();
         });
-    }
-
-    private function decrementUsageDiscount(Discount $discount): void
-    {
-        // @var $conditionGroup ConditionGroup
-        foreach ($discount->conditionGroups as $conditionGroup) {
-            // @var $condition DiscountCondition
-            foreach ($conditionGroup->conditions as $condition) {
-                if ($condition->type->notIn([ConditionType::MAX_USES, ConditionType::MAX_USES_PER_USER])) {
-                    continue;
-                }
-
-                $value = $condition->value;
-                $value['max_uses'] = $value['max_uses'] - 1;
-                $condition->value = $value;
-                $condition->save();
-            }
-        }
     }
 }
