@@ -14,6 +14,7 @@ use Spatie\LaravelData\Attributes\FromRouteParameterProperty;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\Validation\Regex;
 use Spatie\LaravelData\Attributes\Validation\RequiredIf;
+use Spatie\LaravelData\Attributes\Validation\RequiredWith;
 use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Attributes\Validation\Uuid;
 use Spatie\LaravelData\Data;
@@ -30,6 +31,7 @@ final class AttributeOptionDto extends Data
      * @param array<string, array<string, string>> $translations
      * @param string[]|Optional $metadata_public
      * @param string[]|Optional $metadata_private
+     * @param string[] $published
      */
     public function __construct(
         #[Uuid]
@@ -46,6 +48,8 @@ final class AttributeOptionDto extends Data
         public readonly Optional|string $attribute_id,
         #[FromRouteParameter('attribute')]
         public readonly Attribute|Optional|null $attribute,
+        #[RequiredWith('translations')]
+        public readonly ?array $published,
     ) {
         $this->metadata = Map::toMetadata(
             $this->metadata_public,

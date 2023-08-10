@@ -49,6 +49,7 @@ final class Attribute extends Model implements Translatable
         'global',
         'sortable',
         'order',
+        'published',
     ];
 
     /** @var string[] */
@@ -62,6 +63,7 @@ final class Attribute extends Model implements Translatable
         'sortable' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'published' => 'array',
     ];
 
     /** @var string[] */

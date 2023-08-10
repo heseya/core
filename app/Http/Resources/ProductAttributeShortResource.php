@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Domain\ProductAttribute\Resources\AttributeOptionResource;
 use Illuminate\Http\Request;
 
 class ProductAttributeShortResource extends Resource

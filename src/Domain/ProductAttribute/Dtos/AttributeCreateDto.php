@@ -26,6 +26,7 @@ final class AttributeCreateDto extends Data
 
     /**
      * @param array<string, array<string, string>> $translations
+     * @param string[] $published
      * @param string[]|Optional $metadata_public
      * @param string[]|Optional $metadata_private
      */
@@ -41,6 +42,7 @@ final class AttributeCreateDto extends Data
         public readonly AttributeType $type,
         public readonly bool $global,
         public readonly bool $sortable,
+        public readonly array $published,
 
         #[MapInputName('metadata')]
         public readonly array|Optional $metadata_public,

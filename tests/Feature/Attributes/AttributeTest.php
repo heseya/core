@@ -48,6 +48,9 @@ class AttributeTest extends TestCase
                     'name' => 'new attribute',
                 ],
             ],
+            'published' => [
+                $this->lang,
+            ],
         ]);
         $this->attributeData['name'] = 'new attribute';
         $this->newAttribute['options'] = [
@@ -64,6 +67,9 @@ class AttributeTest extends TestCase
                 $this->lang => [
                     'name' => 'new option',
                 ],
+            ],
+            'published' => [
+                $this->lang,
             ],
         ]);
         $this->optionData['name'] = 'new option';
@@ -574,6 +580,9 @@ class AttributeTest extends TestCase
                     'name' => $name,
                 ],
             ],
+            'published' => [
+                $this->lang,
+            ],
         ];
 
         $this
@@ -954,6 +963,7 @@ class AttributeTest extends TestCase
             'type' => AttributeType::NUMBER,
         ])->create();
         unset($this->newOption['translations']);
+        unset($this->newOption['published']);
         unset($this->optionData['name']);
 
         $this
@@ -975,7 +985,6 @@ class AttributeTest extends TestCase
         $attribute = Attribute::factory([
             'type' => AttributeType::SINGLE_OPTION,
         ])->create();
-//        unset($this->newOption['translations'][$this->lang]['name']);
         unset($this->newOption['translations']);
 
         $this
@@ -1035,6 +1044,9 @@ class AttributeTest extends TestCase
                             'name' => 'Test ' . $this->option->name,
                         ],
                     ],
+                    'published' => [
+                        $this->lang,
+                    ],
                 ], $optionUpdate)
             )
             ->assertOk()
@@ -1064,6 +1076,9 @@ class AttributeTest extends TestCase
                         $this->lang => [
                             'name' => 'Test ' . $this->option->name,
                         ],
+                    ],
+                    'published' => [
+                        $this->lang,
                     ],
                 ], $optionUpdate)
             )

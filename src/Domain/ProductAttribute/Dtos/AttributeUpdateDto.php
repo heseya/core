@@ -17,6 +17,7 @@ final class AttributeUpdateDto extends Data
 {
     /**
      * @param array<string, array<string, string>> $translations
+     * @param string[] $published
      */
     public function __construct(
         #[Rule(new Translations(['name']))]
@@ -27,6 +28,7 @@ final class AttributeUpdateDto extends Data
         public readonly Optional|string $slug,
         public readonly bool|Optional $global,
         public readonly bool|Optional $sortable,
+        public readonly array $published,
     ) {}
 
     /**
