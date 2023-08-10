@@ -362,7 +362,7 @@ class UserTest extends TestCase
             'is_tfa_active' => false,
         ])->create();
 
-        $consent = Consent::factory()->create(['required' => false]);
+        $consent = Consent::factory()->create(['required' => false, 'published' => [$this->lang]]);
 
         $otherUser->consents()->save($consent, ['value' => true]);
 
@@ -385,6 +385,9 @@ class UserTest extends TestCase
                         'description_html' => $consent->description_html,
                         'required' => $consent->required,
                         'value' => true,
+                        'published' => [
+                            $this->lang,
+                        ],
                     ],
                 ],
                 'birthday_date' => null,
@@ -409,7 +412,7 @@ class UserTest extends TestCase
             'is_tfa_active' => false,
         ])->create();
 
-        $consent = Consent::factory()->create(['required' => false]);
+        $consent = Consent::factory()->create(['required' => false, 'published' => [$this->lang]]);
 
         $otherUser->consents()->save($consent, ['value' => true]);
 
@@ -432,6 +435,9 @@ class UserTest extends TestCase
                         'description_html' => $consent->description_html,
                         'required' => $consent->required,
                         'value' => true,
+                        'published' => [
+                            $this->lang,
+                        ],
                     ],
                 ],
                 'birthday_date' => null,
