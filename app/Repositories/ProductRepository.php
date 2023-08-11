@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Dtos\PriceDto;
-use App\Dtos\ProductSearchDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\Product\ProductPriceType;
 use App\Exceptions\ServerException;
@@ -13,22 +12,40 @@ use App\Models\Price;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use Domain\Currency\Currency;
+use Domain\Product\ProductSearchDto;
 use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
 
 class ProductRepository implements ProductRepositoryContract
 {
     public function search(ProductSearchDto $dto): LengthAwarePaginator
     {
-        $query = Product::searchByCriteria($dto->toArray())
-            ->with(['attributes', 'metadata', 'media', 'tags', 'items', 'pricesBase', 'pricesMin', 'pricesMax', 'pricesMinInitial', 'pricesMaxInitial'])
-            ->sort($dto->getSort());
+        $query = Product::searchByCriteria($dto->except('sort')->toArray())
+            ->with(['attributes', 'metadata', 'media', 'tags', 'items', 'pricesBase', 'pricesMin', 'pricesMax', 'pricesMinInitial', 'pricesMaxInitial']);
 
         if (Gate::denies('products.show_hidden')) {
             $query->where('products.public', true);
+        }
+
+        if (is_string($dto->sort)) {
+            if (Str::contains($dto->sort, 'price_min')) {
+                $query->withMin([
+                    'pricesMin as price_min' => fn (Builder $subquery) => $subquery->where('currency', $dto->getCurrency()->getCurrencyCode()),
+                ], 'value');
+            }
+            if (Str::contains($dto->sort, 'price_max')) {
+                $query->withMax([
+                    'pricesMax as price_max' => fn (Builder $subquery) => $subquery->where('currency', $dto->getCurrency()->getCurrencyCode()),
+                ], 'value');
+            }
+            $query->sort($dto->sort);
+        } else {
+            $query->sort();
         }
 
         return $query->paginate(Config::get('pagination.per_page'));
