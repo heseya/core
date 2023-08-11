@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\ProductAttribute\Resources;
 
 use App\Http\Resources\Resource;
+use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
@@ -15,6 +16,7 @@ use Illuminate\Http\Request;
  */
 final class AttributeResource extends Resource
 {
+    use GetAllTranslations;
     use MetadataResource;
 
     /**
@@ -38,6 +40,8 @@ final class AttributeResource extends Resource
             'type' => $this->resource->type,
             'global' => $this->resource->global,
             'sortable' => $this->resource->sortable,
+            'published' => $this->resource->published,
+            ...$request->boolean('with_translations') ? $this->getAllTranslations() : [],
         ], $this->metadataResource('attributes.show_metadata_private'));
     }
 }

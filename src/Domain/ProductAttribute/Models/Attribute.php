@@ -8,6 +8,7 @@ use App\Criteria\AttributeSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\WhereInIds;
+use App\Models\Interfaces\Translatable;
 use App\Models\Model;
 use App\Models\Product;
 use App\Models\ProductAttribute;
@@ -18,6 +19,7 @@ use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Translatable\HasTranslations;
 
 /**
  * @property mixed $pivot
@@ -27,11 +29,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @mixin IdeHelperAttribute
  */
-final class Attribute extends Model
+final class Attribute extends Model implements Translatable
 {
     use HasCriteria;
     use HasFactory;
     use HasMetadata;
+    use HasTranslations;
 
     protected $fillable = [
         'id',
@@ -46,6 +49,12 @@ final class Attribute extends Model
         'global',
         'sortable',
         'order',
+        'published',
+    ];
+
+    /** @var string[] */
+    protected array $translatable = [
+        'name',
     ];
 
     protected $casts = [
@@ -54,6 +63,7 @@ final class Attribute extends Model
         'sortable' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'published' => 'array',
     ];
 
     /** @var string[] */

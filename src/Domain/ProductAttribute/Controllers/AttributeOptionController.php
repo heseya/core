@@ -5,16 +5,15 @@ declare(strict_types=1);
 namespace Domain\ProductAttribute\Controllers;
 
 use App\DTO\ReorderDto;
-use App\Dtos\AttributeOptionDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AttributeOptionIndexRequest;
-use App\Http\Requests\AttributeOptionRequest;
-use App\Http\Resources\AttributeOptionResource;
 use App\Services\Contracts\ReorderServiceContract;
+use Domain\ProductAttribute\Dtos\AttributeOptionDto;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\ProductAttribute\Resources\AttributeOptionResource;
 use Domain\ProductAttribute\Services\AttributeOptionService;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response as HttpResponse;
@@ -41,26 +40,20 @@ final class AttributeOptionController extends Controller
         );
     }
 
-    public function store(Attribute $attribute, AttributeOptionRequest $request): JsonResource
+    public function store(Attribute $attribute, AttributeOptionDto $dto): JsonResource
     {
-        $attributeOption = $this->attributeOptionService->create(
-            $attribute->getKey(),
-            AttributeOptionDto::instantiateFromRequest($request)
-        );
+        $attributeOption = $this->attributeOptionService->create($dto);
 
         return AttributeOptionResource::make($attributeOption);
     }
 
-    public function update(Attribute $attribute, AttributeOption $option, AttributeOptionRequest $request): JsonResource
+    public function update(Attribute $attribute, AttributeOption $option, AttributeOptionDto $dto): JsonResource
     {
-        if (!$request->has('id')) {
-            $request->merge(['id' => $option->getKey()]);
+        if (!$dto->id) {
+            $dto->id = $option->getKey();
         }
 
-        $attributeOption = $this->attributeOptionService->updateOrCreate(
-            $attribute->getKey(),
-            AttributeOptionDto::instantiateFromRequest($request)
-        );
+        $attributeOption = $this->attributeOptionService->updateOrCreate($dto);
 
         return AttributeOptionResource::make($attributeOption);
     }

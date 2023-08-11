@@ -17,17 +17,31 @@ final readonly class AttributeRepository
 
     public function create(AttributeCreateDto $dto): Attribute
     {
-        return Attribute::query()->create($dto->toArray());
+        /** @var Attribute $attribute */
+        $attribute = Attribute::query()->make($dto->toArray());
+
+        foreach ($dto->translations as $lang => $translation) {
+            $attribute->setLocale($lang)->fill($translation);
+        }
+        $attribute->save();
+
+        return $attribute;
     }
 
     /**
      * Update given model, returns number of rows affected.
      */
-    public function update(string $id, AttributeUpdateDto $dto): int
+    public function update(string $id, AttributeUpdateDto $dto): bool
     {
-        return Attribute::query()
-            ->where('id', '=', $id)
-            ->update($dto->toArray());
+        /** @var Attribute $attribute */
+        $attribute = Attribute::query()->where('id', '=', $id)->first();
+
+        foreach ($dto->translations as $lang => $translation) {
+            $attribute->setLocale($lang)->fill($translation);
+        }
+        $attribute->fill($dto->toArray());
+
+        return $attribute->save();
     }
 
     public function delete(string $id): void

@@ -2136,10 +2136,14 @@ class ProductTest extends TestCase
         $option = $attribute->options()->create([
             'index' => 1,
         ]);
+        $option->setLocale($this->lang)->fill(['name' => 'first option']);
+        $option->save();
 
         $option2 = $attribute->options()->create([
             'index' => 1,
         ]);
+        $option2->setLocale($this->lang)->fill(['name' => 'second option']);
+        $option2->save();
 
         $response = $this
             ->actingAs($this->{$user})
