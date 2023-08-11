@@ -1,16 +1,23 @@
 <?php
 
-namespace App\Models;
+declare(strict_types=1);
 
+namespace Domain\Consent\Models;
+
+use App\Models\Interfaces\Translatable;
+use App\Models\Model;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Spatie\Translatable\HasTranslations;
 
 /**
  * @mixin IdeHelperConsent
  */
-class Consent extends Model
+final class Consent extends Model implements Translatable
 {
     use HasFactory;
+    use HasTranslations;
 
     /**
      * The table associated with the model.
@@ -23,12 +30,23 @@ class Consent extends Model
         'name',
         'description_html',
         'required',
+        'published',
+    ];
+
+    /** @var string[] */
+    protected array $translatable = [
+        'name',
+        'description_html',
     ];
 
     protected $casts = [
         'required' => 'boolean',
+        'published' => 'array',
     ];
 
+    /**
+     * @return BelongsToMany<User>
+     */
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class)
