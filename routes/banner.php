@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\BannerController;
 use App\Http\Controllers\MetadataController;
+use Domain\Banner\Controllers\BannerController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('banners')->group(function (): void {

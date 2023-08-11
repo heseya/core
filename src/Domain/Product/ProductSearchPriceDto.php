@@ -12,7 +12,7 @@ use Spatie\LaravelData\Optional;
 use Support\DtoCasts\CurrencyCast;
 use Support\DtoCasts\MoneyCast;
 
-class ProductSearchPriceDto extends Data
+final class ProductSearchPriceDto extends Data
 {
     public function __construct(
         #[WithCast(MoneyCast::class)]

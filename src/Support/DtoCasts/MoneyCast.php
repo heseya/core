@@ -11,7 +11,7 @@ use Spatie\LaravelData\Casts\Cast;
 use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\Support\DataProperty;
 
-class MoneyCast implements Cast
+final class MoneyCast implements Cast
 {
     public function __construct(
         public string $currency_field = 'currency',

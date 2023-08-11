@@ -1,14 +1,20 @@
 <?php
 
-namespace App\Http\Resources;
+declare(strict_types=1);
 
+namespace Domain\Banner\Resources;
+
+use App\Http\Resources\Resource;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
-class BannerResource extends Resource
+final class BannerResource extends Resource
 {
     use MetadataResource;
 
+    /**
+     * @return array<string, mixed>
+     */
     public function base(Request $request): array
     {
         return array_merge([
