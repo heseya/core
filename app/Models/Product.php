@@ -115,10 +115,9 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'available',
         'attribute.*',
         'set.*',
-
         //        'price',
-        //        'price_min',
-        //        'price_max',
+        'price_min',
+        'price_max',
     ];
 
     protected array $criteria = [

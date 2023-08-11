@@ -3,9 +3,9 @@
 namespace App\Repositories\Contracts;
 
 use App\Dtos\PriceDto;
-use App\Dtos\ProductSearchDto;
 use App\Enums\Product\ProductPriceType;
 use Domain\Currency\Currency;
+use Domain\Product\ProductSearchDto;
 use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Dtos\MediaAttachmentDto;
 use App\Dtos\MediaAttachmentUpdateDto;
 use App\Dtos\ProductCreateDto;
-use App\Dtos\ProductSearchDto;
 use App\Dtos\ProductUpdateDto;
 use App\Http\Requests\MediaAttachmentCreateRequest;
 use App\Http\Requests\MediaAttachmentUpdateRequest;
@@ -23,6 +22,7 @@ use App\Services\Contracts\ProductServiceContract;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
+use Domain\Product\ProductSearchDto;
 use Heseya\Dto\DtoException;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response as HttpResponse;
@@ -47,7 +47,7 @@ final class ProductController extends Controller
     public function index(ProductIndexRequest $request): JsonResource
     {
         $products = $this->productRepository->search(
-            ProductSearchDto::instantiateFromRequest($request),
+            ProductSearchDto::from($request),
         );
 
         /** @var ResourceCollection $products */
