@@ -23,6 +23,7 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Language\Language;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Notification;
@@ -422,6 +423,7 @@ class DiscountOrderTest extends TestCase
             'type' => SchemaType::STRING,
             'required' => true,
             'price' => 0,
+            'published' => [$this->lang],
         ]);
 
         $sale = Discount::factory()->create([
@@ -490,7 +492,8 @@ class DiscountOrderTest extends TestCase
                 ->where('order_id', $order->getKey())
                 ->where('product_id', $this->product->getKey())
                 ->where('price', 85.5)
-                ->pluck('id'),
+                ->first()
+                ->getKey(),
         ]);
         $this->assertDatabaseHas('order_schemas', [
             'name' => 'test',

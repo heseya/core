@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use Domain\ProductSet\ProductSet;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 
 class ProductSetFactory extends Factory
@@ -28,6 +29,7 @@ class ProductSetFactory extends Factory
             'public' => $this->faker->boolean,
             'public_parent' => true,
             'description_html' => '<p>' . $this->faker->sentence(10) . '</p>',
+            'published' => [App::getLocale()],
         ];
     }
 }
