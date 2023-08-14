@@ -13,7 +13,7 @@ use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Support\DtoCasts\ArrayWrapCast;
 
-class ProductSearchDto extends Data
+final class ProductSearchDto extends Data
 {
     public function __construct(
         public Optional|string|null $sort,
