@@ -8,8 +8,13 @@ use Spatie\LaravelData\Casts\Cast;
 use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\Support\DataProperty;
 
-class ArrayWrapCast implements Cast
+final class ArrayWrapCast implements Cast
 {
+    /**
+     * @param string[] $context
+     *
+     * @return string[]|Optional
+     */
     public function cast(DataProperty $property, mixed $value, array $context): array|Optional
     {
         return match (true) {
