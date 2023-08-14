@@ -10,8 +10,11 @@ use Spatie\LaravelData\Casts\Cast;
 use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\Support\DataProperty;
 
-class CurrencyCast implements Cast
+final class CurrencyCast implements Cast
 {
+    /**
+     * @param string[] $context
+     */
     public function cast(DataProperty $property, mixed $value, array $context): Currency|Optional
     {
         if ($value === null) {
