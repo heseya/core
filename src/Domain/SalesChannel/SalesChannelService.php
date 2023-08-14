@@ -32,7 +32,7 @@ final readonly class SalesChannelService
         return $this->salesChannelRepository->update($id, $dto);
     }
 
-    public function delete(string $id)
+    public function delete(string $id): void
     {
         $this->salesChannelRepository->delete($id);
     }
