@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Dtos\PriceDto;
+use App\Enums\Product\ProductPriceType;
 use App\Enums\SchemaType;
 use App\Models\Deposit;
 use App\Models\Item;
@@ -9,11 +11,18 @@ use App\Models\Media;
 use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
+use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\ProductServiceContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
+use Domain\Currency\Currency;
 use Domain\Language\Language;
 use Domain\ProductSet\ProductSet;
 use Domain\Seo\Models\SeoMetadata;
+use Heseya\Dto\DtoException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
@@ -23,11 +32,17 @@ class ProductSeeder extends Seeder
 {
     /**
      * Run the database seeds.
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function run(): void
     {
         /** @var ProductServiceContract $productService */
         $productService = App::make(ProductServiceContract::class);
+        $productRepository = App::make(ProductRepositoryContract::class);
         $language = Language::query()->where('default', false)->firstOrFail()->getKey();
 
         $products = Product::factory()->count(100)
@@ -60,7 +75,7 @@ class ProductSeeder extends Seeder
 
         $categories->each(fn ($set) => $this->seo($set, $language));
 
-        $products->each(function ($product, $index) use ($sets, $brands, $categories, $productService, $language): void {
+        $products->each(function ($product, $index) use ($productService, $productRepository, $sets, $brands, $categories, $language): void {
             if (mt_rand(0, 1)) {
                 $this->schemas($product, $language);
             }
@@ -81,6 +96,15 @@ class ProductSeeder extends Seeder
             $product->refresh();
             $this->translations($product, $language);
             $product->save();
+
+            $prices = array_map(fn (Currency $currency) => new PriceDto(
+                Money::of(round(mt_rand(500, 6000), -2), $currency->value),
+            ), Currency::cases());
+
+            $productRepository->setProductPrices($product->getKey(), [
+                ProductPriceType::PRICE_BASE->value => $prices,
+            ]);
+
             $productService->updateMinMaxPrices($product);
         });
 

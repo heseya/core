@@ -42,12 +42,15 @@ class ShippingMethodSeeder extends Seeder
      */
     private function addPaymentMethods(ShippingMethod $shippingMethod): void
     {
-        $currency = Currency::DEFAULT->value;
+        $price_ranges = array_map(function (Currency $currency) {
+            return [
+                'start' => Money::zero($currency->value),
+                'value' => Money::of(mt_rand(500, 2000) / 100.0, $currency->value),
+            ];
+        }, Currency::cases());
+
         $paymentMethods = PaymentMethod::factory()->count(mt_rand(1, 3))->create();
         $shippingMethod->paymentMethods()->sync($paymentMethods);
-        $shippingMethod->priceRanges()->create([
-            'start' => Money::zero($currency),
-            'value' => Money::of(mt_rand(500, 2000) / 100.0, $currency),
-        ]);
+        $shippingMethod->priceRanges()->createMany($price_ranges);
     }
 }
