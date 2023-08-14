@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\SalesChannel\Controllers;
 
-use App\Exceptions\ClientException;
 use App\Http\Controllers\Controller;
-use Domain\Order\Dtos\OrderStatusUpdateDto;
 use Domain\SalesChannel\Dtos\SalesChannelCreateDto;
+use Domain\SalesChannel\Dtos\SalesChannelUpdateDto;
 use Domain\SalesChannel\Resources\SalesChannelResource;
 use Domain\SalesChannel\SalesChannelService;
 use Illuminate\Http\JsonResponse;
@@ -34,19 +33,18 @@ final class SalesChannelController extends Controller
         );
     }
 
-    public function update(string $id, OrderStatusUpdateDto $dto): SalesChannelResource
+    public function update(string $id, SalesCHannelUpdateDto $dto): SalesChannelResource
     {
+        $this->salesChannelService->update($id, $dto);
+
         return new SalesChannelResource(
-            $this->salesChannelService->update($id, $dto),
+            $this->salesChannelService->show($id),
         );
     }
 
-    /**
-     * @throws ClientException
-     */
     public function destroy(string $id): HttpResponse|JsonResponse
     {
-        $this->salesChannelService->destroy($id);
+        $this->salesChannelService->delete($id);
 
         return Response::noContent();
     }

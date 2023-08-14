@@ -93,10 +93,6 @@ Product:
       description: 'Google product category identification number'
       type: number
       example: 2271
-    vat_rate:
-      description: 'Value represent tax value'
-      type: number
-      example: 23
     shipping_time:
       type: integer
       example: 5

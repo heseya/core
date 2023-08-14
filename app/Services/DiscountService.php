@@ -1236,7 +1236,7 @@ readonly class DiscountService implements DiscountServiceContract
                     'name' => $product->name,
                     'base_price_initial' => $product->price,
                     'base_price' => $product->price,
-                    'vat_rate' => $product->vat_rate,
+                    'vat_rate' => 0, // TODO: add VAT form sales channel
                 ]);
 
                 foreach ($product->schemas as $schema) {

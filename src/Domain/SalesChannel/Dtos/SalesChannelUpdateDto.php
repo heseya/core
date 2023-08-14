@@ -13,7 +13,7 @@ use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Support\Enum\Status;
 
-final class SalesChannelCreateDto extends Data
+final class SalesChannelUpdateDto extends Data
 {
     /**
      * @param array<string, array<string, string>> $translations
@@ -22,13 +22,13 @@ final class SalesChannelCreateDto extends Data
         #[Uuid]
         public readonly Optional|string $id,
         #[Rule(new Translations(['name']))]
-        public readonly array $translations,
+        public readonly array|Optional $translations,
         #[AlphaDash]
-        public readonly string $slug,
-        public readonly Status $status,
+        public readonly Optional|string $slug,
+        public readonly Optional|Status $status,
 
         // TODO: remove temp field
         #[Numeric]
-        public readonly string $vat_rate,
+        public readonly Optional|string $vat_rate,
     ) {}
 }
