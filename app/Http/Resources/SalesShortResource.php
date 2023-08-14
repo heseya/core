@@ -11,7 +11,8 @@ class SalesShortResource extends Resource
         return [
             'id' => $this->resource->id,
             'name' => $this->resource->name,
-            'value' => round($this->resource->value, 2, PHP_ROUND_HALF_UP),
+            'percentage' => $this->resource->percentage,
+            'amounts' => PriceResource::collection($this->resource->amounts),
         ];
     }
 }

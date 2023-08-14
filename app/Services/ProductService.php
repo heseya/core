@@ -70,8 +70,10 @@ final readonly class ProductService implements ProductServiceContract
 
         DB::commit();
 
-        /** @var PriceDto $priceMin */
-        // @var PriceDto $priceMax
+        /**
+         * @var PriceDto $priceMin
+         * @var PriceDto $priceMax
+         */
         [[$priceMin], [$priceMax]] = $this->productRepository::getProductPrices($product->getKey(), [
             ProductPriceType::PRICE_MIN,
             ProductPriceType::PRICE_MAX,
@@ -100,8 +102,10 @@ final readonly class ProductService implements ProductServiceContract
     {
         $currency = Currency::DEFAULT;
 
-        /** @var PriceDto $oldPriceMin */
-        // @var PriceDto $oldPriceMax
+        /**
+         * @var PriceDto $oldPriceMin
+         * @var PriceDto $oldPriceMax
+         */
         [[$oldPriceMin], [$oldPriceMax]] = $this->productRepository::getProductPrices($product->getKey(), [
             ProductPriceType::PRICE_MIN,
             ProductPriceType::PRICE_MAX,
@@ -121,8 +125,10 @@ final readonly class ProductService implements ProductServiceContract
 
         DB::commit();
 
-        /** @var PriceDto $priceMin */
-        // @var PriceDto $priceMax
+        /**
+         * @var PriceDto $priceMin
+         * @var PriceDto $priceMax
+         */
         [[$priceMin], [$priceMax]] = $this->productRepository::getProductPrices($product->getKey(), [
             ProductPriceType::PRICE_MIN,
             ProductPriceType::PRICE_MAX,

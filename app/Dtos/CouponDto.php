@@ -7,6 +7,10 @@ use App\Http\Requests\CouponCreateRequest;
 use App\Http\Requests\CouponUpdateRequest;
 use App\Http\Requests\SaleCreateRequest;
 use App\Traits\MapMetadata;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -14,20 +18,40 @@ final class CouponDto extends SaleDto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    protected Missing|string $code;
-    protected array|Missing $metadata;
+    public readonly Missing|string $code;
+    public readonly array|Missing $metadata;
 
+    public function __construct(...$data)
+    {
+        if (!($data['percentage'] instanceof Missing || $data['amounts'] instanceof Missing)) {
+            throw new DtoException("Can't have both percentage and amount discounts");
+        }
+
+        parent::__construct(...$data);
+    }
+
+    /**
+     * @throws RoundingNecessaryException
+     * @throws DtoException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
     public static function instantiateFromRequest(
         CouponCreateRequest|CouponUpdateRequest|FormRequest|SaleCreateRequest $request
     ): self {
+        $amounts = $request->has('amounts') ? array_map(
+            fn ($data) => PriceDto::fromData(...$data),
+            $request->input('amounts'),
+        ) : new Missing();
+
         return new self(
             code: $request->input('code', new Missing()),
             name: $request->input('name', new Missing()),
             slug: $request->input('slug', new Missing()),
             description: $request->input('description', new Missing()),
             description_html: $request->input('description_html', new Missing()),
-            value: $request->input('value', new Missing()),
-            type: $request->input('type', new Missing()),
+            percentage: $request->input('percentage') ?? new Missing(),
+            amounts: $amounts,
             priority: $request->input('priority', new Missing()),
             target_type: $request->input('target_type', new Missing()),
             target_is_allow_list: $request->input('target_is_allow_list', new Missing()),
@@ -39,10 +63,5 @@ final class CouponDto extends SaleDto implements InstantiateFromRequest
             metadata: self::mapMetadata($request),
             seo: $request->has('seo') ? SeoMetadataDto::instantiateFromRequest($request) : new Missing(),
         );
-    }
-
-    public function getCode(): Missing|string
-    {
-        return $this->code;
     }
 }

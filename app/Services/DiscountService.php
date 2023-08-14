@@ -58,6 +58,7 @@ use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\DiscountRepository;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
@@ -92,6 +93,7 @@ readonly class DiscountService implements DiscountServiceContract
         private SeoMetadataService $seoMetadataService,
         private ShippingTimeDateServiceContract $shippingTimeDateService,
         private ProductRepositoryContract $productRepository,
+        private DiscountRepository $discountRepository,
     ) {}
 
     public function index(CouponIndexDto|SaleIndexDto $dto): LengthAwarePaginator
@@ -102,8 +104,17 @@ readonly class DiscountService implements DiscountServiceContract
             ->paginate(Config::get('pagination.per_page'));
     }
 
+    /**
+     * @throws ClientException
+     */
     public function store(CouponDto|SaleDto $dto): Discount
     {
+        $hasAmounts = !($dto->amounts instanceof Missing);
+
+        if (!$hasAmounts && $dto->percentage instanceof Missing) {
+            throw new ClientException("You need either percentage or amount values for the discount value");
+        }
+
         /** @var Discount $discount */
         $discount = Discount::query()->create($dto->toArray());
 
@@ -124,6 +135,10 @@ readonly class DiscountService implements DiscountServiceContract
             $this->seoMetadataService->createOrUpdateFor($discount, $dto->getSeo());
         }
 
+        if ($hasAmounts) {
+            $this->discountRepository->setDiscountAmounts($discount->getKey(), $dto->amounts);
+        }
+
         if ($dto instanceof CouponDto) {
             CouponCreated::dispatch($discount);
         } else {
@@ -139,7 +154,16 @@ readonly class DiscountService implements DiscountServiceContract
 
     public function update(Discount $discount, CouponDto|SaleDto $dto): Discount
     {
-        $discount->update($dto->toArray());
+        $discount->fill($dto->toArray());
+
+        $hasPercentage = !($dto->percentage instanceof Missing);
+        $hasAmounts = !($dto->amounts instanceof Missing);
+
+        if (!$hasPercentage && $hasAmounts) {
+            $discount->percentage = null;
+        }
+
+        $discount->save();
 
         if (!$dto->getTargetProducts() instanceof Missing) {
             $discount->products()->sync($dto->getTargetProducts());
@@ -163,6 +187,12 @@ readonly class DiscountService implements DiscountServiceContract
 
         if (!($dto->getSeo() instanceof Missing)) {
             $this->seoMetadataService->createOrUpdateFor($discount, $dto->getSeo());
+        }
+
+        if ($hasAmounts) {
+            $this->discountRepository->setDiscountAmounts($discount->getKey(), $dto->amounts);
+        } else if ($hasPercentage) {
+            $discount->amounts()->delete();
         }
 
         if ($dto instanceof CouponDto) {
@@ -191,8 +221,33 @@ readonly class DiscountService implements DiscountServiceContract
         }
     }
 
+
     /**
-     * @throws ClientException
+     * EVERYTHING BELLOW THIS LINE IS SHIT -----------------------------
+     */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /**
      * @throws MathException
      * @throws UnknownCurrencyException
      */
@@ -461,7 +516,6 @@ readonly class DiscountService implements DiscountServiceContract
      * @throws UnknownCurrencyException
      * @throws ClientException
      * @throws NumberFormatException
-     * @throws ServerException
      * @throws DtoException
      */
     public function applyDiscountOnProduct(
@@ -1275,6 +1329,7 @@ readonly class DiscountService implements DiscountServiceContract
      * @throws MathException
      * @throws UnknownCurrencyException
      * @throws StoreException
+     * @throws MoneyMismatchException
      */
     private function applyDiscountOnCart(Discount $discount, CartDto $cartDto, CartResource $cart): CartResource
     {
