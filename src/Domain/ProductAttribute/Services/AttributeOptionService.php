@@ -4,45 +4,36 @@ declare(strict_types=1);
 
 namespace Domain\ProductAttribute\Services;
 
-use App\Dtos\AttributeOptionDto;
 use App\Services\Contracts\MetadataServiceContract;
+use Domain\ProductAttribute\Dtos\AttributeOptionDto;
 use Domain\ProductAttribute\Models\AttributeOption;
-use Heseya\Dto\Missing;
+use Domain\ProductAttribute\Repositories\AttributeOptionRepository;
+use Spatie\LaravelData\Optional;
 
 final readonly class AttributeOptionService
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
+        private AttributeOptionRepository $attributeOptionRepository,
     ) {}
 
-    public function create(string $attributeId, AttributeOptionDto $dto): AttributeOption
+    public function create(AttributeOptionDto $dto): AttributeOption
     {
-        $data = array_merge(
-            [
-                'index' => AttributeOption::withTrashed()->where('attribute_id', '=', $attributeId)->count() + 1,
-                'attribute_id' => $attributeId,
-            ],
-            $dto->toArray(),
-        );
+        $attributeOption = $this->attributeOptionRepository->create($dto);
 
-        /** @var AttributeOption $attributeOption */
-        $attributeOption = AttributeOption::query()->create($data);
-
-        if (!($dto->getMetadata() instanceof Missing)) {
-            $this->metadataService->sync($attributeOption, $dto->getMetadata());
+        if (!($dto->metadata instanceof Optional)) {
+            $this->metadataService->sync($attributeOption, $dto->metadata);
         }
 
         return $attributeOption;
     }
 
-    public function updateOrCreate(string $attributeId, AttributeOptionDto $dto): AttributeOption
+    public function updateOrCreate(AttributeOptionDto $dto): AttributeOption
     {
-        if ($dto->id !== null && !$dto->id instanceof Missing) {
-            /** @var AttributeOption $attributeOption */
-            $attributeOption = AttributeOption::query()->findOrFail($dto->id);
-            $attributeOption->update($dto->toArray());
+        if ($dto->id !== null && !$dto->id instanceof Optional) {
+            $attributeOption = $this->attributeOptionRepository->update($dto->id, $dto);
         } else {
-            $attributeOption = $this->create($attributeId, $dto);
+            $attributeOption = $this->create($dto);
         }
 
         return $attributeOption;

@@ -3,8 +3,8 @@
 namespace App\Rules;
 
 use App\Enums\ExceptionsEnums\Exceptions;
-use App\Models\Consent;
 use Closure;
+use Domain\Consent\Models\Consent;
 use Illuminate\Contracts\Validation\ValidationRule;
 
 readonly class RequiredConsents implements ValidationRule

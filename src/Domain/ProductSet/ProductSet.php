@@ -71,6 +71,7 @@ final class ProductSet extends Model implements SeoContract, Translatable
     protected $casts = [
         'public' => 'boolean',
         'public_parent' => 'boolean',
+        'published' => 'array',
     ];
 
     /** @var string[] */

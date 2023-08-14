@@ -27,12 +27,12 @@ use App\Notifications\ResetPassword;
 use App\Notifications\TFAInitialization;
 use App\Notifications\TFASecurityCode;
 use App\Services\Contracts\AuthServiceContract;
-use App\Services\Contracts\ConsentServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UserLoginAttemptServiceContract;
 use App\Services\Contracts\UserServiceContract;
+use Domain\Consent\Services\ConsentService;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -51,7 +51,7 @@ class AuthService implements AuthServiceContract
     public function __construct(
         protected TokenServiceContract $tokenService,
         protected OneTimeSecurityCodeContract $oneTimeSecurityCodeService,
-        protected ConsentServiceContract $consentService,
+        protected ConsentService $consentService,
         protected UserLoginAttemptServiceContract $userLoginAttemptService,
         protected UserServiceContract $userService,
         protected MetadataServiceContract $metadataService,
