@@ -11,6 +11,8 @@ use Domain\Language\Dtos\LanguageUpdateDto;
 use Domain\Language\Events\LanguageCreated;
 use Domain\Language\Events\LanguageDeleted;
 use Domain\Language\Events\LanguageUpdated;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 final class LanguageService
 {
@@ -21,6 +23,10 @@ final class LanguageService
 
         if ($dto->default === true) {
             $this->defaultSet($language);
+        }
+
+        if ($dto->hidden === true) {
+            $this->updateHiddenLanguagesCache($language->getKey());
         }
 
         LanguageCreated::dispatch($language);
@@ -43,6 +49,10 @@ final class LanguageService
             $this->defaultSet($language);
         }
 
+        if ($language->wasChanged('hidden')) {
+            $this->updateHiddenLanguagesCache($language->getKey());
+        }
+
         LanguageUpdated::dispatch($language);
 
         return $language;
@@ -61,9 +71,38 @@ final class LanguageService
             throw new StoreException(Exceptions::CLIENT_NO_DEFAULT_LANGUAGE);
         }
 
+        $this->updateHiddenLanguagesCache($language->getKey());
+
         LanguageDeleted::dispatch($language);
 
         $language->delete();
+    }
+
+    public function hiddenLanguages(): Collection
+    {
+        $hiddenLanguages = Cache::get('languages.hidden');
+        if (!$hiddenLanguages) {
+            $hiddenLanguages = Language::where('hidden', true)->pluck('id');
+            Cache::put('languages.hidden', $hiddenLanguages);
+        }
+        return $hiddenLanguages;
+    }
+
+    private function updateHiddenLanguagesCache(string $uuid): void
+    {
+        $hiddenLanguages = Cache::get('languages.hidden');
+        if ($hiddenLanguages) {
+            $key = $hiddenLanguages->search($uuid);
+            if ($key === false) {
+                $hiddenLanguages->push($uuid);
+            } else {
+                $hiddenLanguages->forget($key);
+            }
+        } else {
+            $hiddenLanguages = Collection::make([$uuid]);
+        }
+
+        Cache::put('languages.hidden', $hiddenLanguages);
     }
 
     private function defaultSet(Language $language): void

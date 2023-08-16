@@ -6,11 +6,12 @@ use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\WhereInIds;
 use App\Models\Interfaces\Translatable;
+use App\Traits\CustomHasTranslations;
 use App\Traits\HasMetadata;
+use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Spatie\Translatable\HasTranslations;
 
 /**
  * @property string $name
@@ -23,7 +24,9 @@ class Status extends Model implements Translatable
     use HasCriteria;
     use HasFactory;
     use HasMetadata;
-    use HasTranslations;
+    use CustomHasTranslations;
+
+    protected const HIDDEN_PERMISSION = 'statuses.show_hidden';
 
     protected $fillable = [
         'name',
@@ -57,6 +60,7 @@ class Status extends Model implements Translatable
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,
+        'published' => Like::class,
     ];
 
     public function orders(): HasMany

@@ -374,7 +374,7 @@ class ProductSearchDatabaseTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $productRef->getKey()]);
         // + 1 additional query per nesting level
-        $this->assertQueryCountLessThan(22);
+        $this->assertQueryCountLessThan(23);
     }
 
     /**

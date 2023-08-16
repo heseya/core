@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Language\Dtos;
 
-use Illuminate\Support\Optional;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Unique;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\Support\Validation\References\RouteParameterReference;
 
 final class LanguageUpdateDto extends Data

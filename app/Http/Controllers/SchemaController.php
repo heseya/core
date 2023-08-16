@@ -9,6 +9,7 @@ use App\Http\Requests\SchemaUpdateRequest;
 use App\Http\Resources\SchemaResource;
 use App\Models\Schema;
 use App\Services\Contracts\SchemaCrudServiceContract;
+use App\Traits\GetPublishedLanguageFilter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
@@ -17,13 +18,16 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 final class SchemaController extends Controller
 {
+    use GetPublishedLanguageFilter;
+
     public function __construct(
         private readonly SchemaCrudServiceContract $schemaService,
     ) {}
 
     public function index(IndexSchemaRequest $request): JsonResource
     {
-        $schemas = Schema::searchByCriteria($request->validated())->sort($request->input('sort'));
+        $schemas = Schema::searchByCriteria($request->validated() + $this->getPublishedLanguageFilter('schemas'))
+            ->sort($request->input('sort'));
 
         return SchemaResource::collection(
             $schemas->paginate(Config::get('pagination.per_page')),

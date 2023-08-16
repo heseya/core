@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Page;
 
 use App\Services\Contracts\TranslationServiceContract;
+use App\Traits\GetPublishedLanguageFilter;
 use Domain\Metadata\MetadataService;
 use Domain\Page\Dtos\PageCreateDto;
 use Domain\Page\Dtos\PageUpdateDto;
@@ -20,6 +21,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 final readonly class PageService
 {
+    use GetPublishedLanguageFilter;
+
     public function __construct(
         private MetadataService $metadataService,
         private SeoMetadataService $seoMetadataService,
@@ -44,7 +47,7 @@ final readonly class PageService
             ->whereDoesntHave('products')
             ->with(['seo', 'metadata'])
             ->orderBy('order')
-            ->searchByCriteria($search ?? []);
+            ->searchByCriteria($search ?? [] + $this->getPublishedLanguageFilter('pages'));
 
         if (!Auth::user()?->can('pages.show_hidden')) {
             $query->where('public', true);

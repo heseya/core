@@ -10,9 +10,9 @@ Route::prefix('products')->group(function (): void {
     Route::post('/', [ProductController::class, 'store'])
         ->middleware('can:products.add');
     Route::get('id:{product:id}', [ProductController::class, 'show'])
-        ->middleware('can:products.show_details');
+        ->middleware('can:products.show_details', 'published:product');
     Route::get('{product:slug}', [ProductController::class, 'show'])
-        ->middleware('can:products.show_details');
+        ->middleware('can:products.show_details', 'published:product');
     Route::patch('id:{product:id}', [ProductController::class, 'update'])
         ->middleware('can:products.edit');
     Route::patch('id:{product:id}/metadata', [MetadataController::class, 'updateOrCreate'])

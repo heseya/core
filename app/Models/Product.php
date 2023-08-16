@@ -24,6 +24,7 @@ use App\Models\Contracts\SeoContract;
 use App\Models\Contracts\SortableContract;
 use App\Models\Interfaces\Translatable;
 use App\SortColumnTypes\TranslatedColumn;
+use App\Traits\CustomHasTranslations;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasDiscounts;
 use App\Traits\HasMediaAttachments;
@@ -42,7 +43,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
-use Spatie\Translatable\HasTranslations;
 
 /**
  * @property string $name
@@ -61,9 +61,11 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     use HasMediaAttachments;
     use HasMetadata;
     use HasSeoMetadata;
-    use HasTranslations;
+    use CustomHasTranslations;
     use SoftDeletes;
     use Sortable;
+
+    protected const HIDDEN_PERMISSION = 'products.show_hidden';
 
     protected $fillable = [
         'id',
@@ -141,6 +143,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'shipping_digital' => Equals::class,
         'price_min' => PriceMinCap::class,
         'price_max' => PriceMaxCap::class,
+        'published' => Like::class,
     ];
 
     protected string $defaultSortBy = 'products.order';

@@ -3,11 +3,11 @@
 namespace App\Models;
 
 use App\Models\Interfaces\Translatable;
+use App\Traits\CustomHasTranslations;
 use App\Traits\HasMetadata;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Spatie\Translatable\HasTranslations;
 
 /**
  * @mixin IdeHelperOption
@@ -16,7 +16,9 @@ class Option extends Model implements Translatable
 {
     use HasFactory;
     use HasMetadata;
-    use HasTranslations;
+    use CustomHasTranslations;
+
+    protected const HIDDEN_PERMISSION = 'options.show_hidden';
 
     protected $fillable = [
         'name',

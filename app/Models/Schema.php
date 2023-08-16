@@ -12,8 +12,10 @@ use App\Models\Contracts\SortableContract;
 use App\Models\Interfaces\Translatable;
 use App\Rules\OptionAvailable;
 use App\SortColumnTypes\TranslatedColumn;
+use App\Traits\CustomHasTranslations;
 use App\Traits\HasMetadata;
 use App\Traits\Sortable;
+use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -23,7 +25,6 @@ use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use Spatie\Translatable\HasTranslations;
 
 /**
  * @property string $name
@@ -37,8 +38,10 @@ class Schema extends Model implements SortableContract, Translatable
     use HasCriteria;
     use HasFactory;
     use HasMetadata;
-    use HasTranslations;
+    use CustomHasTranslations;
     use Sortable;
+
+    protected const HIDDEN_PERMISSION = 'schemas.show_hidden';
 
     protected $fillable = [
         'type',
@@ -81,6 +84,7 @@ class Schema extends Model implements SortableContract, Translatable
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,
+        'published' => Like::class,
     ];
 
     protected array $sortable = [

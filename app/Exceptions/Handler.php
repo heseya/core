@@ -5,6 +5,8 @@ namespace App\Exceptions;
 use App\Enums\ErrorCode;
 use App\Enums\ValidationError;
 use App\Http\Resources\ErrorResource;
+use Domain\Language\Exceptions\TranslationException;
+use Domain\Language\Resources\TranslationExceptionResource;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
@@ -45,6 +47,9 @@ final class Handler extends ExceptionHandler
         MethodNotAllowedHttpException::class => ErrorCode::NOT_FOUND,
         ModelNotFoundException::class => ErrorCode::NOT_FOUND,
         TokenInvalidException::class => ErrorCode::NOT_FOUND,
+
+        // 406
+        TranslationException::class => ErrorCode::NOT_ACCEPTABLE,
 
         // 422
         ValidationException::class => ErrorCode::VALIDATION_ERROR,
@@ -87,6 +92,11 @@ final class Handler extends ExceptionHandler
                 }
 
                 return TFAExceptionResource::make($exception->toArray())
+                    ->response()
+                    ->setStatusCode($exception->getCode());
+            }
+            if (method_exists($exception, 'published')) {
+                return TranslationExceptionResource::make($exception->toArray())
                     ->response()
                     ->setStatusCode($exception->getCode());
             }
