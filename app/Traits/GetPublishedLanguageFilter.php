@@ -11,6 +11,7 @@ trait GetPublishedLanguageFilter
         if (!Config::get('translatable.fallback_locale')) {
             return [$table ? $table . '.published' : 'published' => Config::get('language.id')];
         }
+
         return [];
     }
 }

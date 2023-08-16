@@ -85,6 +85,7 @@ final class LanguageService
             $hiddenLanguages = Language::where('hidden', true)->pluck('id');
             Cache::put('languages.hidden', $hiddenLanguages);
         }
+
         return $hiddenLanguages;
     }
 

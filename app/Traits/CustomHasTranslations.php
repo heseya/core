@@ -25,7 +25,7 @@ trait CustomHasTranslations
         }
 
         $fallbackLocale = config('translatable.fallback_locale') ?? config('app.fallback_locale');
-        if (!is_null($fallbackLocale) && in_array($fallbackLocale, $translatedLocales)) {
+        if ($fallbackLocale !== null && in_array($fallbackLocale, $translatedLocales)) {
             return $fallbackLocale;
         }
 

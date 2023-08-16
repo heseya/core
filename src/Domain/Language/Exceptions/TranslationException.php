@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\Language\Exceptions;
 
 use App\Exceptions\StoreException;
@@ -9,13 +11,13 @@ use Domain\Language\Language;
 use Illuminate\Support\Collection;
 use Throwable;
 
-class TranslationException extends StoreException
+final class TranslationException extends StoreException
 {
     public function __construct(
         string $message = 'No content in selected language',
         ?Throwable $previous = null,
         bool $simpleLogs = false,
-        protected Model | null $model = null,
+        protected Model|null $model = null,
     ) {
         parent::__construct($message, $previous);
         $this->simpleLogs = $simpleLogs;
@@ -25,6 +27,7 @@ class TranslationException extends StoreException
     public function published(): Collection
     {
         $published = $this->model->published ?? [];
+
         return Language::whereIn('id', $published)->get();
     }
 

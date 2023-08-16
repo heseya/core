@@ -27,11 +27,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 final class Page extends Model implements SeoContract, SortableContract, Translatable
 {
+    use CustomHasTranslations;
     use HasCriteria;
     use HasFactory;
     use HasMetadata;
     use HasSeoMetadata;
-    use CustomHasTranslations;
     use SoftDeletes;
     use Sortable;
 

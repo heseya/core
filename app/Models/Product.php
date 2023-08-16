@@ -54,6 +54,7 @@ use Illuminate\Support\Collection;
  */
 class Product extends Model implements SeoContract, SortableContract, Translatable
 {
+    use CustomHasTranslations;
     use HasCriteria;
     use HasDiscountConditions;
     use HasDiscounts;
@@ -61,7 +62,6 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     use HasMediaAttachments;
     use HasMetadata;
     use HasSeoMetadata;
-    use CustomHasTranslations;
     use SoftDeletes;
     use Sortable;
 

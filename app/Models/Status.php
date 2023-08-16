@@ -21,10 +21,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Status extends Model implements Translatable
 {
+    use CustomHasTranslations;
     use HasCriteria;
     use HasFactory;
     use HasMetadata;
-    use CustomHasTranslations;
 
     protected const HIDDEN_PERMISSION = 'statuses.show_hidden';
 

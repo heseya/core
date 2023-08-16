@@ -35,10 +35,10 @@ use Illuminate\Validation\ValidationException;
  */
 class Schema extends Model implements SortableContract, Translatable
 {
+    use CustomHasTranslations;
     use HasCriteria;
     use HasFactory;
     use HasMetadata;
-    use CustomHasTranslations;
     use Sortable;
 
     protected const HIDDEN_PERMISSION = 'schemas.show_hidden';

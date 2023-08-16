@@ -14,9 +14,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class Option extends Model implements Translatable
 {
+    use CustomHasTranslations;
     use HasFactory;
     use HasMetadata;
-    use CustomHasTranslations;
 
     protected const HIDDEN_PERMISSION = 'options.show_hidden';
 
