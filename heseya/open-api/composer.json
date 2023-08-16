@@ -1,0 +1,22 @@
+{
+    "name": "heseya/open-api",
+    "description": "Open Api generator for Laravel",
+    "type": "library",
+    "license": "MIT",
+    "version": "1.0.0",
+    "autoload": {
+        "psr-4": {
+            "Heseya\\OpenApi\\": "src/"
+        }
+    },
+    "require": {
+        "laravel/framework": "^10.0"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Heseya\\OpenApi\\ServiceProvider"
+            ]
+        }
+    }
+}

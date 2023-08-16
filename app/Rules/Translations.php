@@ -10,7 +10,7 @@ class Translations implements Rule
     private string $error;
 
     public function __construct(
-        private readonly array $fields,
+        public readonly array $fields,
     ) {}
 
     /**

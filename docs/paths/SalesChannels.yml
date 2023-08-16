@@ -1,0 +1,26 @@
+SalesChannels:
+  post:
+    tags:
+      - SalesChannels
+    requestBody:
+      $ref: './../requests/SalesChannelCreateDto.json#/SalesChannelCreateDto'
+    responses:
+      201:
+        description: Created
+
+SalesChannelsId:
+  patch:
+    tags:
+      - SalesChannels
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      $ref: './../requests/SalesChannelUpdateDto.json#/SalesChannelUpdateDto'
+    responses:
+      200:
+        description: Ok
