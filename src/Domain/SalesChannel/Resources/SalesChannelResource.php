@@ -36,7 +36,7 @@ final class SalesChannelResource extends Resource
     public function view(Request $request): array
     {
         return [
-            'countries' => CountryResource::collection($this->resource->countries),
+            'country_codes' => $this->resource->countries()->pluck('code'),
         ];
     }
 }

@@ -19,8 +19,6 @@ final class SalesChannelUpdateDto extends Data
      * @param array<string, array<string, string>> $translations
      */
     public function __construct(
-        #[Uuid]
-        public readonly Optional|string $id,
         #[Rule(new Translations(['name']))]
         public readonly array|Optional $translations,
         #[AlphaDash]

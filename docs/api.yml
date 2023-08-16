@@ -328,6 +328,10 @@ paths:
     $ref: './paths/Wishlist.yml#/WishlistProduct'
   '/wishlist/id:{product_id}':
     $ref: './paths/Wishlist.yml#/WishlistProductParams'
+  '/sales-channels':
+    $ref: './paths/SalesChannels.yml#/SalesChannels'
+  '/sales-channels/id:{id}':
+    $ref: './paths/SalesChannels.yml#/SalesChannelsId'
 components:
   schemas:
     Error:
