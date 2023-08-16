@@ -26,8 +26,7 @@ final class AttributeOptionResource extends Resource
             'value_number' => $this->resource->value_number,
             'value_date' => $this->resource->value_date,
             'attribute_id' => $this->resource->attribute_id,
-            'published' => $this->resource->published,
-            ...$request->boolean('with_translations') ? $this->getAllTranslations() : [],
+            ...$request->boolean('with_translations') ? $this->getAllTranslations('attributes.show_hidden') : [],
         ], $this->metadataResource('attributes.show_metadata_private'));
     }
 }

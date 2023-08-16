@@ -31,12 +31,11 @@ final class AttributeOptionDto extends Data
      * @param array<string, array<string, string>> $translations
      * @param string[]|Optional $metadata_public
      * @param string[]|Optional $metadata_private
-     * @param string[] $published
      */
     public function __construct(
         #[Uuid]
         public Optional|string $id,
-        #[Rule([new Translations(['name'])]), RequiredIf('attribute.type', AttributeType::SINGLE_OPTION->value)]
+        #[Rule([new Translations(['name'])]), RequiredIf('attribute.type', [AttributeType::SINGLE_OPTION->value, AttributeType::MULTI_CHOICE_OPTION->value])]
         public readonly ?array $translations,
         #[Regex('/^\d{1,6}(\.\d{1,2}|)$/')]
         public readonly float|Optional|null $value_number,
@@ -48,8 +47,6 @@ final class AttributeOptionDto extends Data
         public readonly Optional|string $attribute_id,
         #[FromRouteParameter('attribute')]
         public readonly Attribute|Optional|null $attribute,
-        #[RequiredWith('translations')]
-        public readonly ?array $published,
     ) {
         $this->metadata = Map::toMetadata(
             $this->metadata_public,
