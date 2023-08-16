@@ -137,6 +137,7 @@ class AttributeTest extends TestCase
             'iso' => 'de',
             'hidden' => false,
         ]);
+        $name = $this->attribute->name;
         $this->attribute->setLocale($language->getKey())->fill([
             'name' => 'Neues Attribut',
         ]);
@@ -157,7 +158,7 @@ class AttributeTest extends TestCase
                 'metadata' => [],
                 'translations' => [
                     $this->lang => [
-                        'name' => $this->attribute->name,
+                        'name' => $name,
                     ],
                     $language->getKey() => [
                         'name' => 'Neues Attribut',
@@ -378,6 +379,7 @@ class AttributeTest extends TestCase
             'iso' => 'de',
             'hidden' => false,
         ]);
+        $name = $this->attribute->name;
         $this->attribute->setLocale($language->getKey())->fill([
             'name' => 'Neues Attribut',
         ]);
@@ -397,7 +399,7 @@ class AttributeTest extends TestCase
                 'metadata' => [],
                 'translations' => [
                     $this->lang => [
-                        'name' => $this->attribute->name,
+                        'name' => $name,
                     ],
                     $language->getKey() => [
                         'name' => 'Neues Attribut',
