@@ -151,7 +151,6 @@ class OrderCreateTest extends TestCase
 
         $this->product->update([
             'price' => 10,
-            'vat_rate' => 23,
         ]);
 
         $productQuantity = 20;
@@ -1690,7 +1689,6 @@ class OrderCreateTest extends TestCase
 
         $this->product->update([
             'price' => 10,
-            'vat_rate' => 23,
             'purchase_limit_per_user' => 10,
         ]);
 
@@ -1725,7 +1723,6 @@ class OrderCreateTest extends TestCase
 
         $this->product->update([
             'price' => 10,
-            'vat_rate' => 23,
             'purchase_limit_per_user' => 1,
         ]);
 
@@ -1782,7 +1779,6 @@ class OrderCreateTest extends TestCase
 
         $this->product->update([
             'price' => 10,
-            'vat_rate' => 23,
             'purchase_limit_per_user' => 1,
         ]);
 
@@ -1827,7 +1823,6 @@ class OrderCreateTest extends TestCase
 
         $this->product->update([
             'price' => 10,
-            'vat_rate' => 23,
             'purchase_limit_per_user' => 1,
         ]);
 
@@ -1873,7 +1868,6 @@ class OrderCreateTest extends TestCase
 
         $this->product->update([
             'price' => 10,
-            'vat_rate' => 23,
             'purchase_limit_per_user' => 1,
         ]);
 

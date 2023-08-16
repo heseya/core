@@ -1,16 +1,14 @@
 <?php
 
-use App\Http\Controllers\AppController;
-use App\Http\Controllers\MetadataController;
+use Domain\SalesChannel\Controllers\SalesChannelController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('sales-channels')->group(function (): void {
-    Route::get('/', [AppController::class, 'index'])
-        ->middleware('can:sales_channels.show');
-    Route::post('/', [AppController::class, 'store'])
+    Route::get('/', [SalesChannelController::class, 'index']);
+    Route::post('/', [SalesChannelController::class, 'store'])
         ->middleware('can:sales_channels.add');
-    Route::patch('/id:{id}', [AppController::class, 'update'])
+    Route::patch('/id:{id}', [SalesChannelController::class, 'update'])
         ->middleware('can:sales_channels.edit');
-    Route::delete('/id:{id}', [AppController::class, 'destroy'])
-        ->middleware('can:apps.remove');
+    Route::delete('/id:{id}', [SalesChannelController::class, 'destroy'])
+        ->middleware('can:sales_channels.remove');
 });

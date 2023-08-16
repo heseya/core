@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Domain\SalesChannel;
 
 use Domain\SalesChannel\Dtos\SalesChannelCreateDto;
+use Domain\SalesChannel\Dtos\SalesChannelIndexDto;
 use Domain\SalesChannel\Dtos\SalesChannelUpdateDto;
 use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Config;
+use Support\Enum\Status;
 
 final class SalesChannelRepository
 {
@@ -20,9 +22,19 @@ final class SalesChannelRepository
     /**
      * @return LengthAwarePaginator<SalesChannel>
      */
-    public function getAll(): LengthAwarePaginator
+    public function getAll(SalesChannelIndexDto $dto): LengthAwarePaginator
     {
-        return SalesChannel::query()
+        return SalesChannel::searchByCriteria($dto->toArray())
+            ->paginate(Config::get('pagination.per_page'));
+    }
+
+    /**
+     * @return LengthAwarePaginator<SalesChannel>
+     */
+    public function getAllPublic(SalesChannelIndexDto $dto): LengthAwarePaginator
+    {
+        return SalesChannel::searchByCriteria($dto->toArray())
+            ->where('status', '=', Status::ACTIVE)
             ->paginate(Config::get('pagination.per_page'));
     }
 

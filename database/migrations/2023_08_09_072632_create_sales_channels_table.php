@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Country;
 use Domain\Currency\Currency;
 use Domain\Language\Language;
 use Domain\SalesChannel\Models\SalesChannel;
@@ -20,18 +21,26 @@ return new class extends Migration
         });
 
         Schema::create('sales_channels', function (Blueprint $table) {
-            $table->uuid('id');
+            $table->uuid('id')->primary()->index();
             $table->text('name');
+            $table->string('vat_rate', 9);
             $table->string('slug', 32);
             $table->enum('status', array_map(fn ($enum) => $enum->value, Status::cases()));
             $table->boolean('countries_block_list');
             $table->string('default_currency', 9);
             $table->uuid('default_language_id');
             $table->timestamps();
-            $table->string('vat_rate', 9);
         });
 
-        SalesChannel::query()->create([
+        Schema::create('sales_channels_countries', function (Blueprint $table) {
+            $table->uuid('sales_channel_id')->index();
+            $table->string('country_code', 2)->index();
+
+            $table->primary(['sales_channel_id', 'country_code']);
+        });
+
+        /** @var SalesChannel $channel */
+        $channel = SalesChannel::query()->create([
             'name' => 'Default',
             'slug' => 'default',
             'status' => Status::ACTIVE->value,
@@ -40,6 +49,9 @@ return new class extends Migration
             'default_language_id' => Language::default()?->getKey(),
             'vat_rate' => '0',
         ]);
+
+        // add all countries to default sales channel
+        $channel->countries()->sync(Country::query()->pluck('code'));
     }
 
     /**

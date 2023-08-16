@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\SalesChannel\Resources;
 
+use App\Http\Resources\CountryResource;
 use App\Http\Resources\Resource;
 use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Http\Request;
@@ -26,6 +27,16 @@ final class SalesChannelResource extends Resource
             'countries_block_list' => $this->resource->countries_block_list,
             'default_currency' => $this->resource->default_currency,
             'default_language_id' => $this->resource->default_language_id,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function view(Request $request): array
+    {
+        return [
+            'countries' => CountryResource::collection($this->resource->countries),
         ];
     }
 }
