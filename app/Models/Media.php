@@ -7,6 +7,7 @@ use App\Criteria\WhereInIds;
 use App\Enums\MediaSource;
 use App\Enums\MediaType;
 use App\Traits\HasMetadata;
+use Domain\Banner\Models\BannerMedia;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
