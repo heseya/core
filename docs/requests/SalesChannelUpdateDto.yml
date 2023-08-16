@@ -22,3 +22,11 @@ SalesChannelUpdateDto:
               - hidden
           vat_rate:
             type: string
+          default_currency:
+            type: string
+            example: PLN
+          default_language_id:
+            type: string
+            format: uuid
+          countries:
+            type: array

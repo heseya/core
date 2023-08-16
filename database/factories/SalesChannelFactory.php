@@ -13,6 +13,8 @@ use Support\Enum\Status;
  */
 class SalesChannelFactory extends Factory
 {
+    protected $model = SalesChannel::class;
+
     /**
      * Define the model's default state.
      *
@@ -22,8 +24,8 @@ class SalesChannelFactory extends Factory
     {
         return [
             'name' => $this->faker->word,
-            'slug' => $this->faker->unique()->slug,
-            'status' => array_rand(Status::cases()),
+            'slug' => $this->faker->unique()->slug(2),
+            'status' => $this->faker->randomElement(Status::cases())->value,
             'countries_block_list' => false,
             'default_currency' => Currency::DEFAULT,
             'default_language_id' => Language::default(),

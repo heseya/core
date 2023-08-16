@@ -1,6 +1,9 @@
 <?php
 
+use App\Enums\RoleType;
 use App\Models\Country;
+use App\Models\Permission;
+use App\Models\Role;
 use Domain\Currency\Currency;
 use Domain\Language\Language;
 use Domain\SalesChannel\Models\SalesChannel;
@@ -52,6 +55,35 @@ return new class extends Migration
 
         // add all countries to default sales channel
         $channel->countries()->sync(Country::query()->pluck('code'));
+
+        Permission::create([
+            'name' => 'sales_channels.show_hidden',
+            'display_name' => 'Dostęp do nieaktywnych kanałów sprzedaży',
+        ]);
+        Permission::create([
+            'name' => 'sales_channels.add',
+            'display_name' => 'Możliwość dodawania kanałów sprzedaży',
+        ]);
+        Permission::create([
+            'name' => 'sales_channels.edit',
+            'display_name' => 'Możliwość aktualizacji kanałów sprzedaży',
+        ]);
+        Permission::create([
+            'name' => 'sales_channels.remove',
+            'display_name' => 'Możliwość usuwania kanałów sprzedaży',
+        ]);
+
+        /** @var Role $owner */
+        $owner = Role::query()
+            ->where('type', RoleType::OWNER->value)
+            ->firstOrFail();
+
+        $owner->givePermissionTo(
+            'sales_channels.show_hidden',
+            'sales_channels.add',
+            'sales_channels.edit',
+            'sales_channels.remove',
+        );
     }
 
     /**

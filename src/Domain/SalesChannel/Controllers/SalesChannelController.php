@@ -11,6 +11,7 @@ use Domain\SalesChannel\Dtos\SalesChannelUpdateDto;
 use Domain\SalesChannel\Resources\SalesChannelResource;
 use Domain\SalesChannel\SalesChannelService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
@@ -21,12 +22,19 @@ final class SalesChannelController extends Controller
         private readonly SalesChannelService $salesChannelService,
     ) {}
 
-    public function index(SalesChannelIndexDto $dto): SalesChannelResource
+    public function index(SalesChannelIndexDto $dto): JsonResource
     {
-        return new SalesChannelResource($this->salesChannelService->index(
+        return SalesChannelResource::collection($this->salesChannelService->index(
             $dto,
             Gate::denies('sales_channels.show_hidden'),
         ));
+    }
+
+    public function show(string $id): SalesChannelResource
+    {
+        return new SalesChannelResource(
+            $this->salesChannelService->show($id),
+        );
     }
 
     public function store(SalesChannelCreateDto $dto): SalesChannelResource
@@ -36,7 +44,7 @@ final class SalesChannelController extends Controller
         );
     }
 
-    public function update(string $id, SalesCHannelUpdateDto $dto): SalesChannelResource
+    public function update(string $id, SalesChannelUpdateDto $dto): SalesChannelResource
     {
         $this->salesChannelService->update($id, $dto);
 

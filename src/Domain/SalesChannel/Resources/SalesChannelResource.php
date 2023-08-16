@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\SalesChannel\Resources;
 
-use App\Http\Resources\CountryResource;
 use App\Http\Resources\Resource;
 use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Http\Request;
@@ -36,7 +35,7 @@ final class SalesChannelResource extends Resource
     public function view(Request $request): array
     {
         return [
-            'country_codes' => $this->resource->countries()->pluck('code'),
+            'country_codes' => $this->resource->countries->pluck('code'),
         ];
     }
 }
