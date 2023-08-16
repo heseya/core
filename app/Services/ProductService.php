@@ -12,6 +12,7 @@ use App\Events\ProductDeleted;
 use App\Events\ProductPriceUpdated;
 use App\Events\ProductUpdated;
 use App\Exceptions\PublishingException;
+use App\Exceptions\ServerException;
 use App\Models\Option;
 use App\Models\Price;
 use App\Models\Product;
@@ -171,6 +172,25 @@ final readonly class ProductService implements ProductServiceContract
         }
 
         DB::commit();
+    }
+
+    /**
+     * @throws DtoException
+     * @throws ServerException
+     */
+    public function updateProductsDiscounts(array $productIds): void
+    {
+        [$pricesMinInitial, $pricesMaxInitial] = $this->productRepository::getProductsPrices($productIds, [
+            ProductPriceType::PRICE_MIN_INITIAL,
+            ProductPriceType::PRICE_MAX_INITIAL,
+        ]);
+
+        $pricesDiscounted = $this->discountService->discountProductPrices(
+            $productIds,
+            $pricesMinInitial + $pricesMaxInitial,
+        );
+
+        $this->productRepository::setProductsPrices($pricesDiscounted);
     }
 
     /**

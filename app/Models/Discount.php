@@ -10,6 +10,7 @@ use App\Criteria\WhereHasCode;
 use App\Criteria\WhereInIds;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Models\Contracts\SeoContract;
 use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
 use Domain\ProductSet\ProductSet;
@@ -29,7 +30,7 @@ use Illuminate\Support\Collection;
  *
  * @mixin IdeHelperDiscount
  */
-class Discount extends Model
+class Discount extends Model implements SeoContract
 {
     use HasCriteria;
     use HasFactory;
@@ -112,6 +113,7 @@ class Discount extends Model
 
         return $products->unique();
     }
+
     public function amounts(): MorphMany
     {
         return $this->morphMany(Price::class, 'model');

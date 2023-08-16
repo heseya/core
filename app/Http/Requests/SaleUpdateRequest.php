@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Enums\DiscountTargetType;
-use App\Enums\DiscountType;
 use App\Rules\Price;
 use App\Rules\PricesEveryCurrency;
 use Brick\Math\BigDecimal;

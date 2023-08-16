@@ -49,7 +49,7 @@ class DiscountRepository
     {
         $amounts = Price::query()
             ->where('model_id', $discountId)
-            ->whereIn('price_type', 'amount');
+            ->where('price_type', 'amount');
 
         if ($currency !== null) {
             $amounts = $amounts->where('currency', $currency->value);

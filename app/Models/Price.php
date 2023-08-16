@@ -19,6 +19,11 @@ class Price extends Model
         'model_id',
         'model_type',
         'price_type',
+        'is_net',
+    ];
+
+    protected $casts = [
+        'is_net' => 'bool',
     ];
 
     public function value(): Attribute

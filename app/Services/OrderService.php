@@ -43,6 +43,9 @@ use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Exception;
@@ -67,6 +70,11 @@ final readonly class OrderService implements OrderServiceContract
         private ProductRepositoryContract $productRepository,
     ) {}
 
+    /**
+     * @throws UnknownCurrencyException
+     * @throws RoundingNecessaryException
+     * @throws NumberFormatException
+     */
     public function calcSummary(Order $order): float
     {
         // TODO: This needs to take order currency
@@ -276,8 +284,10 @@ final readonly class OrderService implements OrderServiceContract
             DB::rollBack();
 
             throw $exception;
-        } catch (Throwable) {
+        } catch (Throwable $e) {
             DB::rollBack();
+
+            dd($e);
 
             throw new ServerException(Exceptions::SERVER_TRANSACTION_ERROR);
         }

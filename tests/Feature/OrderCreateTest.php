@@ -29,6 +29,7 @@ use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\WebHook;
 use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\DiscountRepository;
 use App\Services\Contracts\ProductServiceContract;
 use BenSampo\Enum\Exceptions\InvalidEnumMemberException;
 use Brick\Math\Exception\MathException;
@@ -67,6 +68,8 @@ class OrderCreateTest extends TestCase
     private Money $productPrice;
     private ProductServiceContract $productService;
 
+    private DiscountRepository $discountRepository;
+
     /**
      * @throws UnknownCurrencyException
      * @throws RoundingNecessaryException
@@ -76,6 +79,8 @@ class OrderCreateTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
+
+        $this->discountRepository = App::make(DiscountRepository::class);
 
         $this->email = $this->faker->freeEmail;
 
@@ -806,8 +811,7 @@ class OrderCreateTest extends TestCase
         $discount = Discount::factory()->create([
             'description' => 'Testowy kupon',
             'code' => null,
-            'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'percentage' => '10',
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
         ]);
@@ -863,8 +867,7 @@ class OrderCreateTest extends TestCase
         $discount = Discount::factory()->create([
             'description' => 'Testowy kupon',
             'code' => 'S43SA2',
-            'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'percentage' => '10',
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
         ]);
@@ -929,8 +932,7 @@ class OrderCreateTest extends TestCase
         $discount = Discount::factory()->create([
             'description' => 'Testowy kupon',
             'code' => 'S43SA2',
-            'value' => 95,
-            'type' => DiscountType::PERCENTAGE,
+            'percentage' => '95',
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
         ]);
@@ -938,21 +940,31 @@ class OrderCreateTest extends TestCase
         $saleOrder = Discount::factory()->create([
             'description' => 'Testowy kupon',
             'name' => 'Kupon order',
-            'value' => 50,
-            'type' => DiscountType::AMOUNT,
+            'percentage' => null,
             'target_type' => DiscountTargetType::ORDER_VALUE,
             'target_is_allow_list' => true,
             'code' => null,
         ]);
 
+        $amounts = array_map(fn (Currency $currency) => new PriceDto(
+            Money::of(50, $currency->value),
+        ), Currency::cases());
+
+        $this->discountRepository::setDiscountAmounts($saleOrder->getKey(), $amounts);
+
         $couponShipping = Discount::factory()->create([
             'description' => 'Testowy kupon',
             'name' => 'Kupon shipping',
-            'value' => 15,
-            'type' => DiscountType::AMOUNT,
+            'percentage' => null,
             'target_type' => DiscountTargetType::SHIPPING_PRICE,
             'target_is_allow_list' => false,
         ]);
+
+        $amounts = array_map(fn (Currency $currency) => new PriceDto(
+            Money::of(15, $currency->value),
+        ), Currency::cases());
+
+        $this->discountRepository::setDiscountAmounts($couponShipping->getKey(), $amounts);
 
         $discount->products()->attach($product->getKey());
 
@@ -987,10 +999,10 @@ class OrderCreateTest extends TestCase
         $response->assertCreated()
             ->assertJsonFragment([
                 'cart_total_initial' => 150,
-                'cart_total' => 0,
+                'cart_total' => 0.01,
                 'shipping_price_initial' => 10,
-                'shipping_price' => 0,
-                'summary' => 0,
+                'shipping_price' => 0.01,
+                'summary' => 0.02,
             ]);
         $order = Order::find($response->getData()->data->id);
 
@@ -1009,13 +1021,13 @@ class OrderCreateTest extends TestCase
         $this->assertDatabaseHas('order_discounts', [
             'model_id' => $order->getKey(),
             'discount_id' => $saleOrder->getKey(),
-            'applied_discount' => 7.50, // discount -50, but price should be 7.50 when discount is applied
+            'applied_discount' => 7.49, // discount -50, but price should be 7.49 when discount is applied
         ]);
 
         $this->assertDatabaseHas('order_discounts', [
             'model_id' => $order->getKey(),
             'discount_id' => $couponShipping->getKey(),
-            'applied_discount' => 10, // discount -15, but shipping_price_initial is 10
+            'applied_discount' => 9.99, // discount -15, but shipping_price_initial is 9.99
         ]);
 
         Event::assertDispatched(OrderCreated::class);

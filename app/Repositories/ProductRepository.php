@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Dtos\PriceDto;
+use App\Dtos\PriceModelDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\Product\ProductPriceType;
 use App\Exceptions\ServerException;
@@ -80,6 +81,32 @@ class ProductRepository implements ProductRepositoryContract
     }
 
     /**
+     * @param PriceModelDto[] $prices
+     */
+    public static function setProductsPrices(array $prices): void
+    {
+        $rows = [];
+
+        foreach ($prices as $price) {
+            $rows[] = [
+                'id' => Uuid::uuid4(),
+                'model_id' => $price->model_id,
+                'model_type' => Product::class,
+                'price_type' => $price->price_type,
+                'currency' => $price->value->getCurrency()->getCurrencyCode(),
+                'value' => $price->value->getMinorAmount(),
+                'is_net' => false,
+            ];
+        }
+
+        Price::query()->upsert(
+            $rows,
+            ['model_id', 'price_type', 'currency'],
+            ['value', 'is_net'],
+        );
+    }
+
+    /**
      * @param ProductPriceType[] $priceTypes
      *
      * @return PriceDto[][]
@@ -99,6 +126,50 @@ class ProductRepository implements ProductRepositoryContract
 
         $groupedPrices = $prices->get()->reduce(function (array $carry, Price $price) {
             $carry[$price->price_type][] = new PriceDto($price->value);
+
+            return $carry;
+        }, []);
+
+        return array_map(
+            function (ProductPriceType $type) use ($groupedPrices) {
+                if (!array_key_exists($type->value, $groupedPrices)) {
+                    throw new ServerException(Exceptions::SERVER_NO_PRICE_MATCHING_CRITERIA);
+                }
+
+                return $groupedPrices[$type->value];
+            },
+            $priceTypes,
+        );
+    }
+
+    /**
+     * @param ProductPriceType[] $priceTypes
+     *
+     * @return PriceModelDto[][]
+     *
+     * @throws DtoException
+     * @throws ServerException
+     */
+    public static function getProductsPrices(array $productIds, array $priceTypes, ?Currency $currency = null): array
+    {
+        $prices = Price::query()
+            ->whereIn('model_id', $productIds)
+            ->whereIn('price_type', $priceTypes);
+
+        if ($currency !== null) {
+            $prices = $prices->where('currency', $currency->value);
+        }
+
+        // Maybe add some validation if all products are present
+
+        $groupedPrices = $prices->get()->reduce(function (array $carry, Price $price) {
+            $carry[$price->price_type][] = new PriceModelDto(
+                $price->value,
+                $price->model_id,
+                $price->model_type,
+                $price->price_type,
+                $price->is_net,
+            );
 
             return $carry;
         }, []);

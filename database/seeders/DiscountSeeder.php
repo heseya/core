@@ -86,8 +86,7 @@ class DiscountSeeder extends Seeder
             // TODO: Change to money with discounts rework
             $order->discounts()->attach($discount, [
                 'name' => $discount->name,
-                'value' => $discount->value,
-                'type' => $discount->type,
+                'percentage' => $discount->percentage,
                 'target_type' => $discount->target_type,
                 'applied_discount' => $appliedDiscount->getAmount()->toFloat(),
             ]);
@@ -103,8 +102,8 @@ class DiscountSeeder extends Seeder
      * @throws MoneyMismatchException
      * @throws MathException
      * @throws UnknownCurrencyException
-     * @throws ClientException
      * @throws NumberFormatException
+     * @throws ServerException
      */
     private function calcOrderDiscounts(
         string $field,

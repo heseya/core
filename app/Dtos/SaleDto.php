@@ -17,34 +17,31 @@ class SaleDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    public readonly Missing|string $name;
-    public readonly Missing|string|null $slug;
-    public readonly Missing|string|null $description;
-    public readonly Missing|string|null $description_html;
+    public function __construct(
+        public readonly Missing|string $name,
+        public readonly Missing|string|null $slug,
+        public readonly Missing|string|null $description,
+        public readonly Missing|string|null $description_html,
 
-    public readonly string|Missing $percentage;
-    /** @var PriceDto[] $amounts */
-    public readonly array|Missing $amounts;
+        public readonly Missing|string $percentage,
+        /** @var PriceDto[] */
+        public readonly array|Missing $amounts,
 
-    public readonly int|Missing $priority;
-    public readonly Missing|string $target_type;
-    public readonly bool|Missing $target_is_allow_list;
-    public readonly array|Missing $condition_groups;
-    public readonly array|Missing $target_products;
-    public readonly array|Missing $target_sets;
-    public readonly array|Missing $target_shipping_methods;
-    public readonly bool|Missing $active;
+        public readonly int|Missing $priority,
+        public readonly Missing|string $target_type,
+        public readonly bool|Missing $target_is_allow_list,
+        public readonly array|Missing $condition_groups,
+        public readonly array|Missing $target_products,
+        public readonly array|Missing $target_sets,
+        public readonly array|Missing $target_shipping_methods,
+        public readonly bool|Missing $active,
 
-    public readonly array|Missing $metadata;
-    public readonly Missing|SeoMetadataDto $seo;
-
-    public function __construct(...$data)
-    {
-        if (!($data['percentage'] instanceof Missing || $data['amounts'] instanceof Missing)) {
+        public readonly array|Missing $metadata,
+        public readonly Missing|SeoMetadataDto $seo,
+    ) {
+        if (!($percentage instanceof Missing || $amounts instanceof Missing)) {
             throw new DtoException("Can't have both percentage and amount discounts");
         }
-
-        parent::__construct(...$data);
     }
 
     /**

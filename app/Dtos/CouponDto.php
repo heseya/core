@@ -18,14 +18,13 @@ final class CouponDto extends SaleDto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    public readonly Missing|string $code;
-    public readonly array|Missing $metadata;
+    public readonly string|Missing $code;
 
     public function __construct(...$data)
     {
-        if (!($data['percentage'] instanceof Missing || $data['amounts'] instanceof Missing)) {
-            throw new DtoException("Can't have both percentage and amount discounts");
-        }
+        $this->code = $data['code'];
+
+        unset($data['code']);
 
         parent::__construct(...$data);
     }
@@ -46,6 +45,7 @@ final class CouponDto extends SaleDto implements InstantiateFromRequest
 
         return new self(
             code: $request->input('code', new Missing()),
+            metadata: self::mapMetadata($request),
             name: $request->input('name', new Missing()),
             slug: $request->input('slug', new Missing()),
             description: $request->input('description', new Missing()),
@@ -60,7 +60,6 @@ final class CouponDto extends SaleDto implements InstantiateFromRequest
             target_sets: $request->input('target_sets', new Missing()),
             target_shipping_methods: $request->input('target_shipping_methods', new Missing()),
             active: $request->input('active', new Missing()),
-            metadata: self::mapMetadata($request),
             seo: $request->has('seo') ? SeoMetadataDto::instantiateFromRequest($request) : new Missing(),
         );
     }
