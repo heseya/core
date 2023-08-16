@@ -140,6 +140,7 @@ class AttributeTest extends TestCase
         $this->attribute->setLocale($language->getKey())->fill([
             'name' => 'Neues Attribut',
         ]);
+        $this->attribute->save();
 
         $this
             ->actingAs($this->{$user})
@@ -380,6 +381,7 @@ class AttributeTest extends TestCase
         $this->attribute->setLocale($language->getKey())->fill([
             'name' => 'Neues Attribut',
         ]);
+        $this->attribute->save();
 
         $this
             ->actingAs($this->{$user})
