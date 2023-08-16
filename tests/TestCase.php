@@ -54,6 +54,10 @@ abstract class TestCase extends BaseTestCase
         ]);
 
         $this->application = Application::factory()->create();
+
+        $this->withHeaders([
+            'Accept-Language' => null,
+        ]);
     }
 
     protected function tearDown(): void

@@ -15,6 +15,17 @@ use Support\DtoCasts\ArrayWrapCast;
 
 final class ProductSearchDto extends Data
 {
+    /**
+     * @param string[]|Optional $ids
+     * @param string[]|Optional $sets
+     * @param string[]|Optional $sets_not
+     * @param string[]|Optional $tags
+     * @param string[]|Optional $tags_not
+     * @param string[]|Optional $attribute
+     * @param string[]|Optional $attribute_not
+     * @param string[]|Optional $metadata
+     * @param string[]|Optional $metadata_public
+     */
     public function __construct(
         public Optional|string|null $sort,
         public Optional|string|null $search,
@@ -46,17 +57,15 @@ final class ProductSearchDto extends Data
         public Optional|ProductSearchPriceDto $price,
     ) {
         $this->sort = is_string($sort)
-            ? Str::replace(
-                [
+            ? Str::of($sort)
+                ->replace([
                     'price:asc',
                     'price:desc',
-                ],
-                [
+                ], [
                     'price_min:asc',
                     'price_max:desc',
-                ],
-                $sort
-            )
+                ])
+                ->toString()
             : null;
     }
 

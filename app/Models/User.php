@@ -17,6 +17,8 @@ use App\Traits\HasMetadata;
 use App\Traits\HasWebHooks;
 use App\Traits\HasWishlist;
 use App\Traits\Sortable;
+use Domain\Consent\Models\Consent;
+use Domain\Consent\Models\ConsentUser;
 use Domain\Metadata\Models\MetadataPersonal;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;

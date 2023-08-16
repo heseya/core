@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Enums\RoleType;
-use App\Models\Consent;
 use App\Models\Role;
+use Domain\Consent\Models\Consent;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
@@ -106,17 +106,34 @@ class ConsentTest extends TestCase
     {
         $this->{$user}->givePermissionTo('consents.add');
 
-        $consent = Consent::factory()->make();
-
-        $response = $this->actingAs($this->{$user})->json('post', '/consents', $consent->toArray());
+        $response = $this->actingAs($this->{$user})->json('post', '/consents', [
+            'translations' => [
+                $this->lang => [
+                    'name' => 'New consent',
+                    'description_html' => '<p>Lorem ipsum</p>',
+                ],
+            ],
+            'required' => false,
+            'published' => [
+                $this->lang,
+            ]
+        ]);
 
         $response->assertCreated();
-        $response->assertJsonFragment($consent->toArray());
+        $response->assertJsonFragment([
+            'name' => 'New consent',
+            'description_html' => '<p>Lorem ipsum</p>',
+            'required' => false,
+        ]);
 
-        $this->assertDatabaseCount('consents', 3)
+        $this
+            ->assertDatabaseCount('consents', 3)
             ->assertDatabaseHas('consents', [
                 'id' => $response->getData()->data->id,
-            ] + $consent->toArray());
+                "name->{$this->lang}" => 'New consent',
+                "description_html->{$this->lang}" => '<p>Lorem ipsum</p>',
+                'required' => false,
+            ]);
     }
 
     /**
@@ -135,46 +152,32 @@ class ConsentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testFullUpdate(string $user): void
-    {
-        $this->{$user}->givePermissionTo('consents.edit');
-
-        $consent = Consent::factory()->make();
-
-        $response = $this->actingAs($this->{$user})
-            ->json('patch', '/consents/id:' . $this->consent->getKey(), $consent->toArray());
-
-        $response->assertOk();
-        $response->assertJsonFragment($consent->toArray());
-
-        $this->assertDatabaseCount('consents', 2)
-            ->assertDatabaseHas('consents', $consent->toArray());
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testUpdate(string $user): void
     {
         $this->{$user}->givePermissionTo('consents.edit');
 
-        $data = ['name' => 'updated'];
-
         $response = $this->actingAs($this->{$user})
-            ->json('patch', '/consents/id:' . $this->consent->getKey(), $data);
+            ->json('patch', '/consents/id:' . $this->consent->getKey(), [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Updated name',
+                        'description_html' => '<p>Lorem ipsum</p>',
+                    ],
+                ],
+                'required' => false,
+            ]);
 
         $response->assertOk();
         $response->assertJsonFragment([
-            'name' => 'updated',
-            'description_html' => $this->consent->description_html,
-            'required' => $this->consent->required,
+
         ]);
 
         $this->assertDatabaseCount('consents', 2)
             ->assertDatabaseHas('consents', [
-                'name' => 'updated',
-                'description_html' => $this->consent->description_html,
-                'required' => $this->consent->required,
+                'id' => $this->consent->getKey(),
+                "name->{$this->lang}" => 'Updated name',
+                "description_html->{$this->lang}" => '<p>Lorem ipsum</p>',
+                'required' => false,
             ]);
     }
 

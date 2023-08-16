@@ -17,6 +17,9 @@ final class MoneyCast implements Cast
         public string $currency_field = 'currency',
     ) {}
 
+    /**
+     * @param string[] $context
+     */
     public function cast(DataProperty $property, mixed $value, array $context): Money|Optional
     {
         if ($value === null) {

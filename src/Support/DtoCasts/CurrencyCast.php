@@ -12,6 +12,9 @@ use Spatie\LaravelData\Support\DataProperty;
 
 final class CurrencyCast implements Cast
 {
+    /**
+     * @param string[] $context
+     */
     public function cast(DataProperty $property, mixed $value, array $context): Currency|Optional
     {
         if ($value === null) {
