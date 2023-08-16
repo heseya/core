@@ -43,6 +43,12 @@ BannerMedia:
           min_screen_width:
             type: number
             example: 720
+    published:
+      type: array
+      items:
+        type: string
+        format: uuid
+        example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b'
 
 BannerUpdate:
   content:
