@@ -1,11 +1,18 @@
 <?php
 
-namespace App\Http\Resources;
+declare(strict_types=1);
 
+namespace Domain\Banner\Resources;
+
+use App\Http\Resources\MediaResource;
+use App\Http\Resources\Resource;
 use Illuminate\Http\Request;
 
-class ResponsiveMediaResource extends Resource
+final class ResponsiveMediaResource extends Resource
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function base(Request $request): array
     {
         return [

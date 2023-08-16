@@ -2,14 +2,20 @@
 
 namespace Database\Factories;
 
-use App\Models\BannerMedia;
+use Domain\Banner\Models\BannerMedia;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\App;
 
 /**
  * @extends Factory<BannerMedia>
  */
 class BannerMediaFactory extends Factory
 {
+    /**
+     * @var string
+     */
+    protected $model = BannerMedia::class;
+
     /**
      * Define the model's default state.
      *
@@ -25,6 +31,7 @@ class BannerMediaFactory extends Factory
             'title' => $this->faker->word,
             'subtitle' => $this->faker->word,
             'order' => $order,
+            'published' => [App::getLocale()],
         ];
     }
 }
