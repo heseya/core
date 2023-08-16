@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Interfaces\Translatable;
+use App\Models\Model;
 use Closure;
 use Domain\Language\Enums\LangFallbackType;
 use Domain\Language\Exceptions\TranslationException;
@@ -16,7 +18,9 @@ class PublishedTranslation
         $fallback = $langFallback ? LangFallbackType::coerce($request->input('lang_fallback')) : null;
 
         if (!$fallback || (!$fallback->is(LangFallbackType::DEFAULT) && !$fallback->is(LangFallbackType::ANY))) {
+            /** @var Model $model */
             $model = $request->route($model_key);
+            // @phpstan-ignore-next-line
             if (!in_array(Config::get('language.id'), $model->published)) {
                 throw new TranslationException(model: $model);
             }

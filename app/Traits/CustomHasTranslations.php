@@ -40,9 +40,11 @@ trait CustomHasTranslations
     {
         if (Auth::user() && Auth::user()->hasPermissionTo($this::HIDDEN_PERMISSION)) {
             // published and no published
+            /** @var Collection<int, string> $translations */
             $translations = $this->getTranslatedLocales($key);
         } else {
             // only published
+            /** @var array<int, string> $translations */
             $translations = $this->published ?? [];
         }
 
@@ -55,6 +57,6 @@ trait CustomHasTranslations
             $translations = Collection::make($translations)->diff($hiddenLanguages)->toArray();
         }
 
-        return $translations;
+        return $translations instanceof Collection ? $translations->toArray() : $translations;
     }
 }

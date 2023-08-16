@@ -24,6 +24,9 @@ final class TranslationException extends StoreException
         $this->code = 406;
     }
 
+    /**
+     * @return Collection<int, Language>
+     */
     public function published(): Collection
     {
         $published = $this->model->published ?? [];
@@ -31,6 +34,9 @@ final class TranslationException extends StoreException
         return Language::whereIn('id', $published)->get();
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function toArray(): array
     {
         return [

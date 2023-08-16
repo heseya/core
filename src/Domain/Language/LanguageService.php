@@ -78,6 +78,9 @@ final class LanguageService
         $language->delete();
     }
 
+    /**
+     * @return Collection<int, string>
+     */
     public function hiddenLanguages(): Collection
     {
         $hiddenLanguages = Cache::get('languages.hidden');

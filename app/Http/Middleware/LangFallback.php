@@ -25,7 +25,7 @@ class LangFallback
 
     private function configureFallback(bool $default, bool $fallback_any, ?string $iso = null): void
     {
-        $fallback_locale = $default ? Language::where('default', true)->first()->getKey() : null;
+        $fallback_locale = $default ? Language::where('default', true)->first()?->getKey() : null;
         Config::set('translatable.fallback_locale', $fallback_locale);
 
         Config::set('translatable.fallback_any', $fallback_any);

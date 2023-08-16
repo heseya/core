@@ -96,6 +96,10 @@ final class Handler extends ExceptionHandler
                     ->setStatusCode($exception->getCode());
             }
             if (method_exists($exception, 'published')) {
+                if (!($exception instanceof TranslationException)) {
+                    throw new Exception('$exception must be an instance of TranslationException');
+                }
+
                 return TranslationExceptionResource::make($exception->toArray())
                     ->response()
                     ->setStatusCode($exception->getCode());
