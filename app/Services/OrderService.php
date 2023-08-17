@@ -284,10 +284,8 @@ final readonly class OrderService implements OrderServiceContract
             DB::rollBack();
 
             throw $exception;
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             DB::rollBack();
-
-            dd($e);
 
             throw new ServerException(Exceptions::SERVER_TRANSACTION_ERROR);
         }

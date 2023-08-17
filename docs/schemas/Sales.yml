@@ -15,12 +15,20 @@ Sale:
       example: 'Black Weekend 2021'
     description_html:
       type: string
-    value:
-      type: number
-      example: 50
-    type:
+    percentage:
       type: string
-      enum: [ 'amount', 'percentage' ]
+      example: '50.0'
+    amounts:
+      type: array
+      items:
+        type: object
+        properties:
+          value:
+            type: string
+            example: '19.99'
+          currency:
+            type: string
+            example: 'PLN'
     priority:
       type: number
     uses:
