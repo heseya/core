@@ -128,7 +128,7 @@ class DiscountConditionsOrderTest extends TestCase
         $this->conditionGroup->conditions()->create([
             'type' => ConditionType::MAX_USES_PER_USER,
             'value' => [
-                'max_uses' => 2,
+                'max_uses' => 1,
             ],
         ]);
 
