@@ -1109,8 +1109,7 @@ class OrderCreateTest extends TestCase
         $discount = Discount::factory()->create([
             'description' => 'Testowy kupon',
             'code' => 'S43SA2',
-            'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'percentage' => '10',
             'target_type' => DiscountTargetType::ORDER_VALUE,
             'target_is_allow_list' => true,
         ]);
@@ -1165,8 +1164,7 @@ class OrderCreateTest extends TestCase
         $discount = Discount::factory()->create([
             'description' => 'Testowy kupon',
             'code' => 'S43SA2',
-            'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'percentage' => '10',
             'target_type' => DiscountTargetType::ORDER_VALUE,
             'target_is_allow_list' => true,
         ]);
@@ -1520,8 +1518,7 @@ class OrderCreateTest extends TestCase
         $discount = Discount::factory()->create([
             'description' => 'Testowy kupon',
             'code' => 'S43SA2',
-            'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'percentage' => '10',
             'target_type' => DiscountTargetType::ORDER_VALUE,
             'target_is_allow_list' => true,
             'active' => false,
@@ -1576,8 +1573,7 @@ class OrderCreateTest extends TestCase
         $discount = Discount::factory()->create([
             'description' => 'Testowy kupon',
             'code' => null,
-            'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'percentage' => '10',
             'target_type' => DiscountTargetType::ORDER_VALUE,
             'target_is_allow_list' => true,
             'active' => false,

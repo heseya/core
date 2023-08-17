@@ -61,20 +61,9 @@ SalesShortResource:
     name:
       type: string
       example: 'Black Week'
-    percentage:
-      type: string
-      example: '50.0'
-    amounts:
-      type: array
-      items:
-        type: object
-        properties:
-          value:
-            type: string
-            example: '19.99'
-          currency:
-            type: string
-            example: 'PLN'
+    value:
+      type: number
+      example: 50.0
 
 CouponShortResource:
   type: object

@@ -21,6 +21,7 @@ class ShippingMethodResource extends Resource
             'name' => $this->resource->name,
             'prices' => array_map(
                 fn (Money $price) => [
+                    'net' => $price->getAmount(),
                     'gross' => $price->getAmount(),
                     'currency' => $price->getCurrency()->getCurrencyCode(),
                 ],

@@ -16,62 +16,27 @@ Product:
       description: 'Base prices of the product excluding schemas'
       type: array
       items:
-        type: object
-        properties:
-          gross:
-            type: string
-            example: '9.99'
-          currency:
-            type: string
-            example: 'PLN'
+        $ref: './../schemas/Prices.yml#/PriceResource'
     prices_min:
       description: 'Min prices after applied all sales'
       type: array
       items:
-        type: object
-        properties:
-          gross:
-            type: string
-            example: '9.99'
-          currency:
-            type: string
-            example: 'PLN'
+        $ref: './../schemas/Prices.yml#/PriceResource'
     prices_max:
       description: 'Max prices after applied all sales'
       type: array
       items:
-        type: object
-        properties:
-          gross:
-            type: string
-            example: '9.99'
-          currency:
-            type: string
-            example: 'PLN'
+        $ref: './../schemas/Prices.yml#/PriceResource'
     prices_min_initial:
       description: 'Minimum available product prices accounting for schemas'
       type: array
       items:
-        type: object
-        properties:
-          gross:
-            type: string
-            example: '9.99'
-          currency:
-            type: string
-            example: 'PLN'
+        $ref: './../schemas/Prices.yml#/PriceResource'
     prices_max_initial:
       description: 'Maximum available product prices accounting for schemas'
       type: array
       items:
-        type: object
-        properties:
-          gross:
-            type: string
-            example: '9.99'
-          currency:
-            type: string
-            example: 'PLN'
+        $ref: './../schemas/Prices.yml#/PriceResource'
     public:
       description: 'Whether product is not set to be hidden.'
       type: boolean
@@ -212,38 +177,17 @@ ProductShort:
       description: 'Base prices of the product excluding schemas'
       type: array
       items:
-        type: object
-        properties:
-          gross:
-            type: string
-            example: '9.99'
-          currency:
-            type: string
-            example: 'PLN'
+        $ref: './../schemas/Prices.yml#/PriceResource'
     prices_min:
       description: 'Min prices after applied all sales'
       type: array
       items:
-        type: object
-        properties:
-          gross:
-            type: string
-            example: '9.99'
-          currency:
-            type: string
-            example: 'PLN'
+        $ref: './../schemas/Prices.yml#/PriceResource'
     prices_max:
       description: 'Max prices after applied all sales'
       type: array
       items:
-        type: object
-        properties:
-          gross:
-            type: string
-            example: '9.99'
-          currency:
-            type: string
-            example: 'PLN'
+        $ref: './../schemas/Prices.yml#/PriceResource'
     public:
       description: 'Whether product is not set to be hidden.'
       type: boolean

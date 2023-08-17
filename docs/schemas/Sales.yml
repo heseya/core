@@ -18,17 +18,6 @@ Sale:
     percentage:
       type: string
       example: '50.0'
-    amounts:
-      type: array
-      items:
-        type: object
-        properties:
-          value:
-            type: string
-            example: '19.99'
-          currency:
-            type: string
-            example: 'PLN'
     priority:
       type: number
     uses:
@@ -45,11 +34,25 @@ Sale:
     metadata_private:
       $ref: './../schemas/Metadata.yml#/Metadata'
 
+SaleIndex:
+  type: object
+  allOf:
+    - $ref: '#/Sale'
+    - properties:
+        amounts:
+          type: array
+          items:
+            $ref: './../schemas/Prices.yml#/PriceResource'
+
 SaleShow:
   type: object
   allOf:
     - $ref: '#/Sale'
     - properties:
+        amounts:
+          type: array
+          items:
+            $ref: './../schemas/Prices.yml#/PriceResource'
         seo:
           $ref: './Seo.yml#/SeoView'
         condition_groups:
@@ -74,6 +77,17 @@ SaleUpdate:
   allOf:
     - $ref: '#/Sale'
     - properties:
+        amounts:
+          type: array
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                example: '19.99'
+              currency:
+                type: string
+                example: 'PLN'
         seo:
           $ref: './Seo.yml#/SeoStore'
         condition_groups:
