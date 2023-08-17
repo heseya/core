@@ -805,10 +805,12 @@ class DiscountTest extends TestCase
                 'public' => true,
                 'prices_min' => [[
                     'currency' => $this->currency->value,
+                    'net' => "{$minPriceDiscounted}.00",
                     'gross' => "{$minPriceDiscounted}.00",
                 ]],
                 'prices_max' => [[
                     'currency' => $this->currency->value,
+                    'net' => "{$maxPriceDiscounted}.00",
                     'gross' => "{$maxPriceDiscounted}.00",
                 ]],
             ])
@@ -899,10 +901,12 @@ class DiscountTest extends TestCase
                 'public' => true,
                 'prices_min' => [[
                     'currency' => $this->currency->value,
+                    'net' => "{$minPriceDiscounted}.00",
                     'gross' => "{$minPriceDiscounted}.00",
                 ]],
                 'prices_max' => [[
                     'currency' => $this->currency->value,
+                    'net' => "{$maxPriceDiscounted}.00",
                     'gross' => "{$maxPriceDiscounted}.00",
                 ]],
             ])

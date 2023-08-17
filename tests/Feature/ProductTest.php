@@ -1005,22 +1005,27 @@ class ProductTest extends TestCase
                 'id' => $this->saleProduct->getKey(),
                 'name' => $this->saleProduct->name,
                 'prices_base' => [[
+                    'net' => '3000.00',
                     'gross' => '3000.00',
                     'currency' => Currency::DEFAULT->value,
                 ]],
                 'prices_min_initial' => [[
+                    'net' => '2500.00',
                     'gross' => '2500.00',
                     'currency' => Currency::DEFAULT->value,
                 ]],
                 'prices_max_initial' => [[
+                    'net' => '3500.00',
                     'gross' => '3500.00',
                     'currency' => Currency::DEFAULT->value,
                 ]],
                 'prices_min' => [[
+                    'net' => '2250.00',
                     'gross' => '2250.00',
                     'currency' => Currency::DEFAULT->value,
                 ]],
                 'prices_max' => [[
+                    'net' => '3150.00',
                     'gross' => '3150.00',
                     'currency' => Currency::DEFAULT->value,
                 ]],
@@ -1102,22 +1107,27 @@ class ProductTest extends TestCase
                 'id' => $this->saleProduct->getKey(),
                 'name' => $this->saleProduct->name,
                 'prices_base' => [[
+                    'net' => '3000.00',
                     'gross' => '3000.00',
                     'currency' => Currency::DEFAULT->value,
                 ]],
                 'prices_min_initial' => [[
+                    'net' => '2500.00',
                     'gross' => '2500.00',
                     'currency' => Currency::DEFAULT->value,
                 ]],
                 'prices_max_initial' => [[
+                    'net' => '3500.00',
                     'gross' => '3500.00',
                     'currency' => Currency::DEFAULT->value,
                 ]],
                 'prices_min' => [[
+                    'net' => '2137.50',
                     'gross' => '2137.50',
                     'currency' => Currency::DEFAULT->value,
                 ]],
                 'prices_max' => [[
+                    'net' => '2992.50',
                     'gross' => '2992.50',
                     'currency' => Currency::DEFAULT->value,
                 ]],
@@ -1204,22 +1214,27 @@ class ProductTest extends TestCase
                 'id' => $this->saleProduct->getKey(),
                 'name' => $this->saleProduct->name,
                 'prices_base' => [[
+                    'net' => '3000.00',
                     'gross' => '3000.00',
                     'currency' => Currency::DEFAULT->value,
                 ]],
                 'prices_min_initial' => [[
+                    'net' => '2500.00',
                     'gross' => '2500.00',
                     'currency' => Currency::DEFAULT->value,
                 ]],
                 'prices_max_initial' => [[
+                    'net' => '3500.00',
                     'gross' => '3500.00',
                     'currency' => Currency::DEFAULT->value,
                 ]],
                 'prices_min' => [[
+                    'net' => '2250.00',
                     'gross' => '2250.00',
                     'currency' => Currency::DEFAULT->value,
                 ]],
                 'prices_max' => [[
+                    'net' => '3150.00',
                     'gross' => '3150.00',
                     'currency' => Currency::DEFAULT->value,
                 ]],

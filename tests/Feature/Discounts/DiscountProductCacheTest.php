@@ -39,8 +39,7 @@ class DiscountProductCacheTest extends TestCase
         $discount = [
             'name' => 'Discount',
             'description' => 'Test discount',
-            'value' => 50,
-            'type' => DiscountType::PERCENTAGE,
+            'percentage' => '50',
             'priority' => 1,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => false,
@@ -103,8 +102,7 @@ class DiscountProductCacheTest extends TestCase
         $discount = [
             'name' => 'Discount',
             'description' => 'Test discount',
-            'value' => 50,
-            'type' => DiscountType::PERCENTAGE,
+            'percentage' => '50',
             'priority' => 1,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => false,
@@ -170,8 +168,7 @@ class DiscountProductCacheTest extends TestCase
         $discount = [
             'name' => 'Discount',
             'description' => 'Test discount',
-            'value' => 50,
-            'type' => DiscountType::PERCENTAGE,
+            'percentage' => '50',
             'priority' => 1,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => false,
