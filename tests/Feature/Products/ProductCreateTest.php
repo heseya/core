@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Products;
 
-use App\Services\Contracts\ProductServiceContract;
+use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
@@ -62,8 +62,8 @@ class ProductCreateTest extends TestCase
      */
     public function testUpdateDescriptions(string $user): void
     {
-        /** @var ProductServiceContract $productService */
-        $productService = App::make(ProductServiceContract::class);
+        /** @var ProductService $productService */
+        $productService = App::make(ProductService::class);
         $product = $productService->create(FakeDto::productCreateDto());
         $page = Page::factory()->create();
 
@@ -72,8 +72,9 @@ class ProductCreateTest extends TestCase
             ->actingAs($this->{$user})
             ->json('PATCH', "/products/id:{$product->getKey()}", [
                 'descriptions' => [$page->getKey()],
-            ])
-            ->assertOk()
+            ]);
+
+        $response->assertOk()
             ->assertJsonPath('data.descriptions.0.id', $page->getKey());
 
         $this->assertDatabaseHas('product_page', [

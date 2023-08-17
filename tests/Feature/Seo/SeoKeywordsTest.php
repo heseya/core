@@ -3,7 +3,7 @@
 namespace Tests\Feature\Seo;
 
 use App\Models\Product;
-use App\Services\Contracts\ProductServiceContract;
+use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
@@ -37,6 +37,7 @@ class SeoKeywordsTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->json('POST', '/seo/check', ['keywords' => ['test', 'test1']])
+            ->assertValid()
             ->assertOk()
             ->assertJsonFragment([
                 'duplicated' => false,
@@ -66,6 +67,7 @@ class SeoKeywordsTest extends TestCase
             ->json('POST', '/seo/check', [
                 'keywords' => ['test', 'test1'],
             ])
+            ->assertValid()
             ->assertOk()
             ->assertJsonFragment(['duplicated' => true])
             ->assertJsonFragment([
@@ -103,6 +105,7 @@ class SeoKeywordsTest extends TestCase
                     'model' => 'Product',
                 ],
             ])
+            ->assertValid()
             ->assertOk()
             ->assertJsonCount(0, 'data.duplicates')
             ->assertJsonFragment([
@@ -120,12 +123,12 @@ class SeoKeywordsTest extends TestCase
      */
     public function testUpdateProduct(string $user): void
     {
-        /** @var ProductServiceContract $productService */
-        $productService = App::make(ProductServiceContract::class);
+        /** @var ProductService $productService */
+        $productService = App::make(ProductService::class);
         $product = $productService->create(FakeDto::productCreateDto());
 
         $this->{$user}->givePermissionTo('products.edit');
-        $this
+        $response = $this
             ->actingAs($this->{$user})
             ->json('PATCH', "/products/id:{$product->getKey()}", ['seo' => [
                 'translations' => [
@@ -136,8 +139,11 @@ class SeoKeywordsTest extends TestCase
                     ],
                 ],
                 'header_tags' => ['meta' => ['name' => 'description', 'content' => 'My amazing site.']],
+                'published' => [$this->lang],
             ]])
-            ->assertOk();
+            ->assertValid();
+
+        $response->assertOk();
 
         $this->assertDatabaseHas('seo_metadata', [
             "title->{$this->lang}" => 'product-title',

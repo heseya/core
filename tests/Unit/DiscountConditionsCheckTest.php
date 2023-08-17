@@ -3,7 +3,6 @@
 namespace Unit;
 
 use App\Dtos\CartDto;
-use App\Dtos\PriceDto;
 use App\Enums\ConditionType;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
@@ -12,12 +11,13 @@ use App\Models\Role;
 use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Services\Contracts\DiscountServiceContract;
-use App\Services\Contracts\ProductServiceContract;
+use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
 use Domain\ProductSet\ProductSet;
 use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -38,6 +38,8 @@ class DiscountConditionsCheckTest extends TestCase
     private ShippingMethod $shippingMethod;
     private Product $product;
     private ProductSet $set;
+    private string $currency;
+    private ProductService $productService;
 
     /**
      * @throws DtoException
@@ -56,10 +58,10 @@ class DiscountConditionsCheckTest extends TestCase
         $this->shippingMethod = ShippingMethod::factory()->create();
 
         $this->currency = Currency::DEFAULT->value;
-        $this->productService = App::make(ProductServiceContract::class);
+        $this->productService = App::make(ProductService::class);
 
         $this->product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [new PriceDto(Money::of(20, $this->currency))],
+            'prices_base' => [PriceDto::from(Money::of(20, $this->currency))],
             'public' => true,
         ]));
 
@@ -139,7 +141,7 @@ class DiscountConditionsCheckTest extends TestCase
         $this->discount->conditionGroups()->attach($this->prepareNewConditionGroup());
 
         $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [new PriceDto(Money::of(60, $this->currency))],
+            'prices_base' => [PriceDto::from(Money::of(60, $this->currency))],
             'public' => true,
         ]));
 
@@ -179,7 +181,7 @@ class DiscountConditionsCheckTest extends TestCase
         $this->discount->conditionGroups()->attach($this->prepareNewConditionGroup());
 
         $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [new PriceDto(Money::of(60, $this->currency))],
+            'prices_base' => [PriceDto::from(Money::of(60, $this->currency))],
             'public' => true,
         ]));
 

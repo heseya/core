@@ -2,17 +2,20 @@
 
 namespace App\Services;
 
-use App\DTO\ProductSchema\OptionDto;
+use App\Enums\Product\ProductPriceType;
 use App\Models\Option;
 use App\Models\Schema;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\OptionServiceContract;
+use Domain\ProductSchema\Dtos\OptionDto;
+use Domain\ProductSchema\OptionRepository;
 use Spatie\LaravelData\Optional;
 
 final readonly class OptionService implements OptionServiceContract
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
+        private OptionRepository $optionRepository,
     ) {}
 
     /**
@@ -47,9 +50,13 @@ final readonly class OptionService implements OptionServiceContract
                 $option->items()->sync($optionItem->items);
             }
 
-            if (!($optionItem->metadata instanceof Optional)) {
-                $this->metadataService->sync($option, $optionItem->metadata);
+            if (!($optionItem->metadata_computed instanceof Optional)) {
+                $this->metadataService->sync($option, $optionItem->metadata_computed);
             }
+
+            $this->optionRepository->setOptionPrices($option->getKey(), [
+                ProductPriceType::PRICE_BASE->value => $optionItem->prices->items(),
+            ]);
 
             $keep[] = $option->getKey();
         }

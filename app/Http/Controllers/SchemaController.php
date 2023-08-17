@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Dtos\SchemaDto;
 use App\Http\Requests\IndexSchemaRequest;
 use App\Http\Requests\SchemaStoreRequest;
 use App\Http\Requests\SchemaUpdateRequest;
 use App\Http\Resources\SchemaResource;
 use App\Models\Schema;
 use App\Services\Contracts\SchemaCrudServiceContract;
+use Domain\ProductSchema\Dtos\SchemaCreateDto;
+use Domain\ProductSchema\Dtos\SchemaUpdateDto;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
@@ -33,7 +34,7 @@ final class SchemaController extends Controller
     public function store(SchemaStoreRequest $request): JsonResource
     {
         return SchemaResource::make($this->schemaService->store(
-            SchemaDto::instantiateFromRequest($request)
+            SchemaCreateDto::from($request)
         ));
     }
 
@@ -46,7 +47,7 @@ final class SchemaController extends Controller
     {
         return SchemaResource::make($this->schemaService->update(
             $schema,
-            SchemaDto::instantiateFromRequest($request)
+            SchemaUpdateDto::from($request)
         ));
     }
 

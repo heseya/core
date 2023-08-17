@@ -29,8 +29,12 @@ class PriceRange extends Model
         return self::priceAttribute('value');
     }
 
-    private static function priceAttribute(string $attributeName): Attribute
+    private static function priceAttribute(?string $attributeName = null): Attribute
     {
+        if ($attributeName === null) {
+            return Attribute::make(get: fn () => null);
+        }
+
         return Attribute::make(
             get: fn (mixed $value, array $attributes): Money => Money::ofMinor(
                 $attributes[$attributeName],

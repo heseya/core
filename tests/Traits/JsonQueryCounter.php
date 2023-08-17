@@ -20,11 +20,11 @@ trait JsonQueryCounter
     public static function trackQueries(): void
     {
         DB::enableQueryLog();
+        DB::flushQueryLog();
     }
 
     public function json($method, $uri, array $data = [], array $headers = [], $options = 0)
     {
-        static::getQueryCount();
         static::trackQueries();
 
         return parent::json($method, $uri, $data, $headers, $options);

@@ -1,7 +1,7 @@
 SalesChannels:
   get:
     tags:
-      - SalesChannels
+      - Sales Channels
     parameters:
       - name: country
         in: query
@@ -22,7 +22,9 @@ SalesChannels:
                     $ref: ./../schemas/SalesChannel.yml#/SalesChannel
   post:
     tags:
-      - SalesChannels
+      - Sales Channels
+    security:
+      - BearerAuth: [ sales_channels.add ]
     requestBody:
       $ref: ./../requests/SalesChannelCreateDto.yml#/SalesChannelCreateDto
     responses:
@@ -36,12 +38,12 @@ SalesChannels:
                 data:
                   type: array
                   items:
-                    $ref: ./../schemas/SalesChannel.yml#/SalesChannelView
+                    $ref: ./../schemas/SalesChannel.yml#/SalesChannel
 
 SalesChannelsId:
   get:
     tags:
-      - SalesChannels
+      - Sales Channels
     parameters:
       - name: id
         in: path
@@ -60,10 +62,12 @@ SalesChannelsId:
                 data:
                   type: array
                   items:
-                    $ref: ./../schemas/SalesChannel.yml#/SalesChannelView
+                    $ref: ./../schemas/SalesChannel.yml#/SalesChannel
   patch:
     tags:
-      - SalesChannels
+      - Sales Channels
+    security:
+      - BearerAuth: [ sales_channels.edit ]
     parameters:
       - name: id
         in: path
@@ -84,11 +88,13 @@ SalesChannelsId:
                 data:
                   type: array
                   items:
-                    $ref: ./../schemas/SalesChannel.yml#/SalesChannelView
+                    $ref: ./../schemas/SalesChannel.yml#/SalesChannel
 
   delete:
     tags:
-      - SalesChannels
+      - Sales Channels
+    security:
+      - BearerAuth: [ sales_channels.remove ]
     parameters:
       - name: id
         in: path

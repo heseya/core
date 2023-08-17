@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Product;
+namespace Domain\Product\Dtos;
 
 use Brick\Money\Currency;
 use Brick\Money\Money;
@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
-use Support\DtoCasts\ArrayWrapCast;
+use Support\LaravelData\Casts\ArrayWrapCast;
 
 final class ProductSearchDto extends Data
 {

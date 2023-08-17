@@ -5,20 +5,24 @@ namespace Tests\Unit;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Services\AnalyticsService;
 use App\Services\Contracts\AnalyticsServiceContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\App;
 use Tests\TestCase;
 
 class AnalyticsServiceTest extends TestCase
 {
     use RefreshDatabase;
 
+    private AnalyticsService $analyticsService;
+
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->analyticsService = app(AnalyticsServiceContract::class);
+        $this->analyticsService = App::make(AnalyticsServiceContract::class);
     }
 
     public function testGetPaymentsOverPeriod(): void

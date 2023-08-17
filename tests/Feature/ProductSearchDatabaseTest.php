@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Dtos\PriceDto;
+use Domain\Price\Dtos\PriceDto;
 use App\Enums\Product\ProductPriceType;
 use App\Models\Media;
 use App\Models\Product;
@@ -613,25 +613,25 @@ class ProductSearchDatabaseTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
-        $productRepository::setProductPrices($product->getKey(), [
-            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(100, $currency->value))],
-            ProductPriceType::PRICE_MAX->value => [new PriceDto(Money::of(200, $currency->value))],
+        $productRepository->setProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(100, $currency->value))],
+            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(200, $currency->value))],
         ]);
 
         $product2 = Product::factory()->create([
             'public' => true,
         ]);
-        $productRepository::setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(300, $currency->value))],
-            ProductPriceType::PRICE_MAX->value => [new PriceDto(Money::of(1000, $currency->value))],
+        $productRepository->setProductPrices($product2->getKey(), [
+            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(300, $currency->value))],
+            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(1000, $currency->value))],
         ]);
 
         $product3 = Product::factory()->create([
             'public' => true,
         ]);
-        $productRepository::setProductPrices($product3->getKey(), [
-            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(10, $currency->value))],
-            ProductPriceType::PRICE_MAX->value => [new PriceDto(Money::of(10, $currency->value))],
+        $productRepository->setProductPrices($product3->getKey(), [
+            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(10, $currency->value))],
+            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(10, $currency->value))],
         ]);
 
         $this
