@@ -16,6 +16,7 @@ use App\Models\Interfaces\Translatable;
 use App\Models\Media;
 use App\Models\Model;
 use App\Models\Product;
+use App\Traits\CustomHasTranslations;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasDiscounts;
 use App\Traits\HasMetadata;
@@ -41,14 +42,16 @@ use Spatie\Translatable\HasTranslations;
  */
 final class ProductSet extends Model implements SeoContract, Translatable
 {
+    use CustomHasTranslations;
     use HasCriteria;
     use HasDiscountConditions;
     use HasDiscounts;
     use HasFactory;
     use HasMetadata;
     use HasSeoMetadata;
-    use HasTranslations;
     use SoftDeletes;
+
+    protected const HIDDEN_PERMISSION = 'product_sets.show_hidden';
 
     protected $fillable = [
         'id',
@@ -60,6 +63,7 @@ final class ProductSet extends Model implements SeoContract, Translatable
         'parent_id',
         'description_html',
         'cover_id',
+        'published',
     ];
 
     /** @var string[] */
@@ -84,6 +88,8 @@ final class ProductSet extends Model implements SeoContract, Translatable
         'metadata_private' => MetadataPrivateSearch::class,
         'parent_id' => ParentIdSearch::class,
         'ids' => WhereInIds::class,
+        'published' => Like::class,
+        'product_sets.published' => Like::class,
     ];
 
     public function getSlugOverrideAttribute(): bool

@@ -7,6 +7,7 @@ namespace Domain\ProductSet;
 use App\Dtos\ProductsReorderDto;
 use App\Models\Product;
 use App\Services\Contracts\MetadataServiceContract;
+use App\Traits\GetPublishedLanguageFilter;
 use Domain\ProductSet\Dtos\ProductSetCreateDto;
 use Domain\ProductSet\Dtos\ProductSetUpdateDto;
 use Domain\ProductSet\Events\ProductSetCreated;
@@ -27,6 +28,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 final readonly class ProductSetService
 {
+    use GetPublishedLanguageFilter;
+
     public function __construct(
         private SeoMetadataService $seoMetadataService,
         private MetadataServiceContract $metadataService,
@@ -44,7 +47,7 @@ final readonly class ProductSetService
 
     public function searchAll(array $attributes, bool $root): LengthAwarePaginator
     {
-        $query = ProductSet::searchByCriteria($attributes)
+        $query = ProductSet::searchByCriteria($attributes + $this->getPublishedLanguageFilter('product_sets'))
             ->with(['metadata', 'media', 'media.metadata']);
 
         if (Gate::denies('product_sets.show_hidden')) {
