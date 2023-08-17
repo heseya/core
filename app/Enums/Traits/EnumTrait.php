@@ -4,6 +4,8 @@ namespace App\Enums\Traits;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use ReflectionEnum;
+use Throwable;
 
 trait EnumTrait
 {
@@ -19,23 +21,33 @@ trait EnumTrait
 
     public static function fromName(string $name): static
     {
-        return constant(static::class . '::' . Str::upper($name));
+        $reflection = new ReflectionEnum(static::class);
+
+        $name = Str::upper($name);
+
+        return $reflection->getCase($name)->getValue(); // @phpstan-ignore-line
     }
 
     public static function tryFromName(string $name): ?static
     {
-        if (defined(static::class . '::' . Str::upper($name))) {
-            return static::fromName($name);
-        }
+        $reflection = new ReflectionEnum(static::class);
 
-        return null;
+        $name = Str::upper($name);
+
+        return $reflection->hasCase($name)            // @phpstan-ignore-line
+            ? $reflection->getCase($name)->getValue() // @phpstan-ignore-line
+            : null;                                   // @phpstan-ignore-line
     }
 
     public static function coerce(int|string $valueOrName): ?static
     {
-        return match (true) {
-            is_int($valueOrName) => static::tryFrom($valueOrName),
-            default => static::tryFrom($valueOrName) ?? static::tryFromName($valueOrName),
+        $reflection = new ReflectionEnum(static::class);
+        $backingType = (string) $reflection->getBackingType();
+
+        return match ($backingType) {
+            'int', 'integer' => is_int($valueOrName) ? static::tryFrom($valueOrName) : static::tryFromName($valueOrName),
+            'string' => is_string($valueOrName) ? static::tryFrom($valueOrName) ?? static::tryFromName($valueOrName) : null,
+            default => null,
         };
     }
 
@@ -56,10 +68,14 @@ trait EnumTrait
 
     public function is(int|self|string $value): bool
     {
-        return $this === match (true) {
-            is_string($value), is_int($value) => static::tryFrom($value),
-            default => $value,
-        };
+        try {
+            return $this === match (true) {
+                is_string($value), is_int($value) => static::tryFrom($value),
+                default => $value,
+            };
+        } catch (Throwable $th) {
+            return false;
+        }
     }
 
     public function jsonSerialize(): mixed

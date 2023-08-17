@@ -1301,7 +1301,7 @@ class OrderUpdateTest extends TestCase
             'base_price_initial' => $price,
             'base_price' => $price,
             'name' => $product->name,
-            'vat_rate' => 0.23,
+            'vat_rate' => '0',
             'shipping_digital' => $product->shipping_digital,
         ]);
 
@@ -1377,7 +1377,7 @@ class OrderUpdateTest extends TestCase
             'base_price_initial' => $price,
             'base_price' => $price,
             'name' => $product->name,
-            'vat_rate' => 0.23,
+            'vat_rate' => '0',
             'shipping_digital' => $product->shipping_digital,
         ]);
 

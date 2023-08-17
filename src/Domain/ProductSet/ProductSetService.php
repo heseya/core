@@ -114,8 +114,8 @@ final readonly class ProductSetService
             $this->seoMetadataService->createOrUpdateFor($set, $dto->seo);
         }
 
-        if (!($dto->metadata instanceof Optional)) {
-            $this->metadataService->sync($set, $dto->metadata);
+        if (!($dto->metadata_computed instanceof Optional)) {
+            $this->metadataService->sync($set, $dto->metadata_computed);
         }
 
         $set->refresh();

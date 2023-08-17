@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Dtos\PriceDto;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
@@ -16,6 +15,7 @@ use App\Listeners\WebHookEventListener;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
 use App\Models\Media;
+use App\Models\Price;
 use App\Models\Product;
 use App\Models\ProductAttribute;
 use App\Models\Schema;
@@ -23,7 +23,8 @@ use App\Models\WebHook;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
-use App\Services\Contracts\ProductServiceContract;
+use App\Services\ProductService;
+use App\Services\SchemaCrudService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
@@ -31,6 +32,7 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Language\Language;
 use Domain\Metadata\Enums\MetadataType;
+use Domain\Price\Dtos\PriceDto;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
@@ -60,9 +62,10 @@ class ProductTest extends TestCase
     private Product $saleProduct;
     private array $productPrices;
 
-    private ProductServiceContract $productService;
+    private ProductService $productService;
     private DiscountServiceContract $discountService;
     private ProductRepositoryContract $productRepository;
+    private SchemaCrudService $schemaCrudService;
 
     /**
      * @throws UnknownCurrencyException
@@ -76,9 +79,10 @@ class ProductTest extends TestCase
 
         $this->currency = Currency::DEFAULT;
 
-        $this->productService = App::make(ProductServiceContract::class);
+        $this->productService = App::make(ProductService::class);
         $this->discountService = App::make(DiscountServiceContract::class);
         $this->productRepository = App::make(ProductRepositoryContract::class);
+        $this->schemaCrudService = App::make(SchemaCrudService::class);
 
         $this->productPrices = array_map(fn (Currency $currency) => [
             'value' => '100.00',
@@ -92,23 +96,26 @@ class ProductTest extends TestCase
             'shipping_digital' => false,
             'public' => true,
             'order' => 1,
-            'prices_base' => [new PriceDto(Money::of(100, $this->currency->value))],
+            'prices_base' => $this->productPrices,
         ]));
 
-        $schema = $this->product->schemas()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'name' => 'Rozmiar',
             'type' => SchemaType::SELECT,
-            'price' => 0,
+            'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
             'required' => true,
-        ]);
+        ]));
+        $this->product->schemas()->attach($schema->getKey());
 
         $this->travel(5)->hours();
 
         $l = $schema->options()->create([
             'name' => 'L',
-            'price' => 0,
             'order' => 2,
         ]);
+        $l->prices()->createMany(
+            Price::factory(['value' => 0])->prepareForCreateMany(),
+        );
 
         $l->items()->create([
             'name' => 'Koszulka L',
@@ -119,9 +126,11 @@ class ProductTest extends TestCase
 
         $xl = $schema->options()->create([
             'name' => 'XL',
-            'price' => 0,
             'order' => 1,
         ]);
+        $xl->prices()->createMany(
+            Price::factory(['value' => 0])->prepareForCreateMany(),
+        );
 
         $item = $xl->items()->create([
             'name' => 'Koszulka XL',
@@ -160,10 +169,6 @@ class ProductTest extends TestCase
             'id' => $this->product->getKey(),
             'name' => $this->product->name,
             'slug' => $this->product->slug,
-            'prices_base' => [[
-                'gross' => '100.00',
-                'currency' => 'PLN',
-            ]],
             'visible' => $this->product->public,
             'public' => (bool) $this->product->public,
             'available' => true,
@@ -209,12 +214,12 @@ class ProductTest extends TestCase
                     'type' => 'select',
                     'required' => true,
                     'available' => true,
-                    'price' => 0,
+                    //'prices' => [['value' => 0, 'currency' => $this->currency->value]],
                     'metadata' => [],
                     'options' => [
                         [
                             'name' => 'XL',
-                            'price' => 0,
+                            //'prices' => [['value' => 0, 'currency' => $this->currency->value]],
                             'disabled' => false,
                             'available' => true,
                             'items' => [[
@@ -225,7 +230,7 @@ class ProductTest extends TestCase
                         ],
                         [
                             'name' => 'L',
-                            'price' => 0,
+                            //'prices' => [['value' => 0, 'currency' => $this->currency->value]],
                             'disabled' => false,
                             'available' => false,
                             'items' => [[
@@ -245,10 +250,10 @@ class ProductTest extends TestCase
         $this->saleProduct = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository::setProductPrices($this->saleProduct->getKey(), [
-            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(3000, $this->currency->value))],
-            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(2500, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(3500, $this->currency->value))],
+        $this->productRepository->setProductPrices($this->saleProduct->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(3000, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(2500, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(3500, $this->currency->value))],
         ]);
     }
 
@@ -265,7 +270,13 @@ class ProductTest extends TestCase
             ->assertJsonCount(2, 'data')
             ->assertJson(['data' => [
                 $this->expected_short,
-            ]]);
+            ]])
+            ->assertJsonFragment([
+                [
+                    'gross' => '100.00',
+                    'currency' => 'PLN',
+                ],
+            ]);
 
         $this->assertArrayHasKey('translations', $response->json('data.0'));
         $this->assertIsArray($response->json('data.0.translations'));
@@ -300,6 +311,12 @@ class ProductTest extends TestCase
             ->assertJson([
                 'data' => [
                     0 => $this->expected_short,
+                ],
+            ])
+            ->assertJsonFragment([
+                [
+                    'gross' => '100.00',
+                    'currency' => 'PLN',
                 ],
             ]);
 
@@ -1263,7 +1280,6 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'prices_base' => $this->productPrices,
             'public' => true,
-            'vat_rate' => 23,
             'shipping_digital' => false,
             'translations' => [
                 $this->lang => [
@@ -1281,7 +1297,6 @@ class ProductTest extends TestCase
                 'slug' => 'test',
                 'name' => 'Test',
                 'public' => true,
-                'vat_rate' => 23,
                 'shipping_digital' => false,
                 'description_html' => '<h1>Description</h1>',
                 'description_short' => 'So called short description...',
@@ -1297,7 +1312,6 @@ class ProductTest extends TestCase
             'slug' => 'test',
             "name->{$this->lang}" => 'Test',
             'public' => true,
-            'vat_rate' => 23,
             'shipping_digital' => false,
             "description_html->{$this->lang}" => '<h1>Description</h1>',
             "description_short->{$this->lang}" => 'So called short description...',
@@ -1698,7 +1712,7 @@ class ProductTest extends TestCase
         Event::fake([ProductCreated::class]);
 
         /** @var Schema $schema */
-        $schema = Schema::factory()->create();
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto());
 
         $response = $this->actingAs($this->{$user})->postJson('/products', [
             'translations' => [
@@ -1798,7 +1812,7 @@ class ProductTest extends TestCase
             'url' => 'https://picsum.photos/seed/' . mt_rand(0, 999999) . '/800',
         ]);
 
-        $response = $this->actingAs($this->{$user})->json('POST', '/products?with_translations=1', [
+        $data = FakeDto::productCreateData([
             'translations' => [
                 $this->lang => [
                     'name' => 'Test',
@@ -1821,8 +1835,11 @@ class ProductTest extends TestCase
                 'og_image_id' => $media->getKey(),
                 'no_index' => $boolean,
                 'header_tags' => ['test1', 'test2'],
+                'published' => [$this->lang],
             ],
         ]);
+
+        $response = $this->actingAs($this->{$user})->json('POST', '/products?with_translations=1', $data);
 
         $response->assertCreated();
 
@@ -1843,13 +1860,14 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('products.add');
 
         $schemaPrice = 50;
-        $schema = Schema::factory()->create([
+
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => SchemaType::STRING,
             'required' => false,
-            'price' => $schemaPrice,
-        ]);
+            'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+        ]));
 
-        $response = $this->actingAs($this->{$user})->postJson('/products', [
+        $response = $this->actingAs($this->{$user})->postJson('/products', FakeDto::productCreateData([
             'name' => 'Test',
             'slug' => 'test',
             'prices_base' => $this->productPrices,
@@ -1865,7 +1883,7 @@ class ProductTest extends TestCase
                 ],
             ],
             'published' => [$this->lang],
-        ]);
+        ]));
 
         $response->assertCreated();
 
@@ -1896,11 +1914,11 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('products.add');
 
         $schemaPrice = 50;
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => SchemaType::STRING,
             'required' => true,
-            'price' => $schemaPrice,
-        ]);
+            'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+        ]));
 
         $response = $this->actingAs($this->{$user})->postJson('/products', [
             'translations' => [
@@ -2312,7 +2330,6 @@ class ProductTest extends TestCase
             'published' => [$this->lang],
             'slug' => 'updated',
             'public' => false,
-            'vat_rate' => 5,
         ])->assertOk();
 
         $this->assertDatabaseHas('products', [
@@ -2322,7 +2339,6 @@ class ProductTest extends TestCase
             "description_html->{$this->lang}" => '<h1>New description</h1>',
             "description_short->{$this->lang}" => 'New so called short description',
             'public' => false,
-            'vat_rate' => 5,
         ]);
     }
 
@@ -2370,9 +2386,10 @@ class ProductTest extends TestCase
 
         Queue::fake();
 
-        $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'slug' => 'updated',
         ]);
+        $response->assertOk();
 
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
             return $job->class === WebHookEventListener::class
@@ -2554,11 +2571,11 @@ class ProductTest extends TestCase
         $this->product->schemas()->detach();
 
         $schemaPrice = 50;
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 0,
             'required' => false,
-            'price' => $schemaPrice,
-        ]);
+            'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+        ]));
 
         $this->product->schemas()->attach($schema->getKey());
         $this->productService->updateMinMaxPrices($this->product);
@@ -2605,11 +2622,11 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('products.edit');
 
         $schemaPrice = 50;
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 0,
             'required' => false,
-            'price' => $schemaPrice,
-        ]);
+            'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+        ]));
 
         $this->product->schemas()->attach($schema->getKey());
         $this->productService->updateMinMaxPrices($this->product);
@@ -2648,27 +2665,27 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_BASE,
+            'price_type' => ProductPriceType::PRICE_BASE->value,
             'value' => $productNewPrice * 100,
         ]);
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MIN_INITIAL,
+            'price_type' => ProductPriceType::PRICE_MIN_INITIAL->value,
             'value' => $productNewPrice * 100,
         ]);
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MAX_INITIAL,
+            'price_type' => ProductPriceType::PRICE_MAX_INITIAL->value,
             'value' => ($productNewPrice + $schemaPrice) * 100,
         ]);
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MIN,
+            'price_type' => ProductPriceType::PRICE_MIN->value,
             'value' => ($productNewPrice - $saleValue) * 100,
         ]);
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MAX,
+            'price_type' => ProductPriceType::PRICE_MAX->value,
             'value' => ($productNewPrice + $schemaPrice - $saleValue) * 100,
         ]);
     }
@@ -2681,37 +2698,42 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('products.edit');
 
         $schemaPrice = 50;
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 0,
             'required' => true,
-            'price' => $schemaPrice,
-        ]);
+            'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+        ]));
 
         $this->product->schemas()->attach($schema->getKey());
         $this->productService->updateMinMaxPrices($this->product);
 
         $schemaNewPrice = 75;
-        $response = $this->actingAs($this->{$user})->patchJson('/schemas/id:' . $schema->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/schemas/id:' . $schema->getKey(), FakeDto::schemaData([
             'name' => 'Test Updated',
-            'price' => $schemaNewPrice,
+            'prices' => [['value' => $schemaNewPrice, 'currency' => Currency::DEFAULT->value]],
             'type' => 'string',
             'required' => false,
-        ]);
+        ]));
+
+        $response->assertValid()->assertOk();
 
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),
             'price_type' => ProductPriceType::PRICE_BASE,
             'value' => 100 * 100,
+            'currency' => $this->currency->value,
         ]);
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),
             'price_type' => ProductPriceType::PRICE_MIN,
             'value' => 100 * 100,
+            'currency' => $this->currency->value,
         ]);
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),
             'price_type' => ProductPriceType::PRICE_MAX,
             'value' => (100 + $schemaNewPrice) * 100,
+            'currency' => $this->currency->value,
         ]);
     }
 
@@ -2723,31 +2745,36 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('schemas.remove');
 
         $schemaPrice = 50;
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 0,
             'required' => true,
-            'price' => $schemaPrice,
-        ]);
+            'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+        ]));
 
         $this->product->schemas()->attach($schema->getKey());
+
         $this->productService->updateMinMaxPrices($this->product);
 
         $response = $this->actingAs($this->{$user})->deleteJson('/schemas/id:' . $schema->getKey());
+        $response->assertNoContent();
 
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_BASE,
+            'price_type' => ProductPriceType::PRICE_BASE->value,
             'value' => 100 * 100,
+            'currency' => $this->currency->value,
         ]);
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MIN,
+            'price_type' => ProductPriceType::PRICE_MIN->value,
             'value' => 100 * 100,
+            'currency' => $this->currency->value,
         ]);
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MAX,
+            'price_type' => ProductPriceType::PRICE_MAX->value,
             'value' => 100 * 100,
+            'currency' => $this->currency->value,
         ]);
     }
 
@@ -2849,6 +2876,7 @@ class ProductTest extends TestCase
 
         $response = $this->actingAs($this->{$user})
             ->deleteJson('/products/id:' . $this->product->getKey());
+        $response->assertNoContent();
 
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
             return $job->class === WebHookEventListener::class
@@ -2895,6 +2923,7 @@ class ProductTest extends TestCase
 
         $response = $this->actingAs($this->{$user})
             ->deleteJson('/products/id:' . $this->product->getKey());
+        $response->assertNoContent();
 
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
             return $job->class === WebHookEventListener::class
@@ -2928,9 +2957,9 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('schemas.remove');
 
         Schema::query()->delete();
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'name' => 'test schema',
-        ]);
+        ]));
 
         $this->product->schemas()->save($schema);
         $this->product->update(['has_schemas' => true]);
@@ -2951,9 +2980,9 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('products.edit');
 
         Schema::query()->delete();
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'name' => 'test schema',
-        ]);
+        ]));
 
         $this->actingAs($this->{$user})->json('patch', 'products/id:' . $this->product->getKey(), [
             'schemas' => [
@@ -2975,9 +3004,9 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('products.edit');
 
         Schema::query()->delete();
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'name' => 'test schema',
-        ]);
+        ]));
 
         $this->product->schemas()->save($schema);
 

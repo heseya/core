@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Dtos\MediaAttachmentDto;
 use App\Dtos\MediaAttachmentUpdateDto;
-use App\Dtos\ProductCreateDto;
-use App\Dtos\ProductUpdateDto;
 use App\Http\Requests\MediaAttachmentCreateRequest;
 use App\Http\Requests\MediaAttachmentUpdateRequest;
 use App\Http\Requests\ProductCreateRequest;
@@ -18,11 +16,13 @@ use App\Models\MediaAttachment;
 use App\Models\Product;
 use App\Repositories\ProductRepository;
 use App\Services\Contracts\MediaAttachmentServiceContract;
-use App\Services\Contracts\ProductServiceContract;
+use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
-use Domain\Product\ProductSearchDto;
+use Domain\Product\Dtos\ProductCreateDto;
+use Domain\Product\Dtos\ProductSearchDto;
+use Domain\Product\Dtos\ProductUpdateDto;
 use Heseya\Dto\DtoException;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response as HttpResponse;
@@ -33,7 +33,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 final class ProductController extends Controller
 {
     public function __construct(
-        private readonly ProductServiceContract $productService,
+        private readonly ProductService $productService,
         private readonly MediaAttachmentServiceContract $attachmentService,
         private readonly ProductRepository $productRepository,
     ) {}
@@ -68,7 +68,7 @@ final class ProductController extends Controller
     public function store(ProductCreateRequest $request): JsonResource
     {
         $product = $this->productService->create(
-            ProductCreateDto::instantiateFromRequest($request),
+            ProductCreateDto::from($request),
         );
 
         return ProductResource::make($product);
@@ -78,7 +78,7 @@ final class ProductController extends Controller
     {
         $product = $this->productService->update(
             $product,
-            ProductUpdateDto::instantiateFromRequest($request),
+            ProductUpdateDto::from($request),
         );
 
         return ProductResource::make($product);

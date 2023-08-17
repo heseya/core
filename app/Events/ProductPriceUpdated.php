@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use Brick\Money\Money;
+use Domain\Currency\Currency;
 use Illuminate\Support\Carbon;
 
 class ProductPriceUpdated extends WebHookEvent
@@ -15,6 +16,7 @@ class ProductPriceUpdated extends WebHookEvent
         private readonly ?Money $oldPriceMax,
         private readonly Money $newPriceMin,
         private readonly Money $newPriceMax,
+        private readonly Currency $currency = Currency::DEFAULT,
     ) {
         $this->updatedAt = Carbon::now()->toIso8601String();
         parent::__construct();
@@ -24,6 +26,7 @@ class ProductPriceUpdated extends WebHookEvent
     {
         return [
             'id' => $this->id,
+            'currency' => $this->currency->value,
             'old_price_min' => $this->oldPriceMin?->getAmount(),
             'old_price_max' => $this->oldPriceMax?->getAmount(),
             'new_price_min' => $this->newPriceMin->getAmount(),

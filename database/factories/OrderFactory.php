@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Order;
+use Domain\Currency\Currency;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class OrderFactory extends Factory
@@ -24,7 +25,7 @@ class OrderFactory extends Factory
         return [
             'code' => $this->faker->regexify('[A-Z0-9]{6}'),
             'email' => $this->faker->unique()->safeEmail,
-            'currency' => mt_rand(0, 9) < 1 ? $this->faker->currencyCode : 'PLN',
+            'currency' => Currency::getRandomValue(),
             'shipping_price_initial' => $shipping_price,
             'shipping_price' => $shipping_price,
             'comment' => mt_rand(0, 9) ? null : $this->faker->text,

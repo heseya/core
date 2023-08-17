@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Dtos\PriceDto;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
@@ -18,6 +17,7 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
@@ -59,9 +59,9 @@ class PricesTest extends TestCase
         ]);
         $priceMin1 = 2500;
         $priceMax1 = 3000;
-        $this->productRepository::setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of($priceMin1, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of($priceMax1, $this->currency->value))],
+        $this->productRepository->setProductPrices($product1->getKey(), [
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))],
         ]);
 
         $product2 = Product::factory()->create([
@@ -69,9 +69,9 @@ class PricesTest extends TestCase
         ]);
         $priceMin2 = 1000;
         $priceMax2 = 1500;
-        $this->productRepository::setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of($priceMin2, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of($priceMax2, $this->currency->value))],
+        $this->productRepository->setProductPrices($product2->getKey(), [
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin2, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax2, $this->currency->value))],
         ]);
 
         $this
@@ -155,9 +155,9 @@ class PricesTest extends TestCase
         ]);
         $priceMin1 = 2500;
         $priceMax1 = 3000;
-        $this->productRepository::setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of($priceMin1, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of($priceMax1, $this->currency->value))],
+        $this->productRepository->setProductPrices($product1->getKey(), [
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))],
         ]);
 
         $product2 = Product::factory()->create([
@@ -165,9 +165,9 @@ class PricesTest extends TestCase
         ]);
         $priceMin2 = 1000;
         $priceMax2 = 1500;
-        $this->productRepository::setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of($priceMin2, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of($priceMax2, $this->currency->value))],
+        $this->productRepository->setProductPrices($product2->getKey(), [
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin2, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax2, $this->currency->value))],
         ]);
 
         $discountRate = 0.5;
@@ -230,9 +230,9 @@ class PricesTest extends TestCase
         ]);
         $priceMin1 = 2500;
         $priceMax1 = 3000;
-        $this->productRepository::setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of($priceMin1, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of($priceMax1, $this->currency->value))],
+        $this->productRepository->setProductPrices($product1->getKey(), [
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))],
         ]);
 
         $product2 = Product::factory()->create([
@@ -240,9 +240,9 @@ class PricesTest extends TestCase
         ]);
         $priceMin2 = 1000;
         $priceMax2 = 1500;
-        $this->productRepository::setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of($priceMin2, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of($priceMax2, $this->currency->value))],
+        $this->productRepository->setProductPrices($product2->getKey(), [
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin2, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax2, $this->currency->value))],
         ]);
 
         $discountRate = 0.5;
@@ -318,9 +318,9 @@ class PricesTest extends TestCase
         ]);
         $priceMin1 = 2500;
         $priceMax1 = 3000;
-        $this->productRepository::setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of($priceMin1, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of($priceMax1, $this->currency->value))],
+        $this->productRepository->setProductPrices($product1->getKey(), [
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))],
         ]);
 
         $product2 = Product::factory()->create([
@@ -328,9 +328,9 @@ class PricesTest extends TestCase
         ]);
         $priceMin2 = 1000;
         $priceMax2 = 1500;
-        $this->productRepository::setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of($priceMin2, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of($priceMax2, $this->currency->value))],
+        $this->productRepository->setProductPrices($product2->getKey(), [
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin2, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax2, $this->currency->value))],
         ]);
 
         $discountRate = 0.5;
@@ -405,9 +405,9 @@ class PricesTest extends TestCase
         ]);
         $priceMin1 = 2500;
         $priceMax1 = 3000;
-        $this->productRepository::setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of($priceMin1, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of($priceMax1, $this->currency->value))],
+        $this->productRepository->setProductPrices($product1->getKey(), [
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))],
         ]);
 
         $product2 = Product::factory()->create([
@@ -415,9 +415,9 @@ class PricesTest extends TestCase
         ]);
         $priceMin2 = 1000;
         $priceMax2 = 1500;
-        $this->productRepository::setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of($priceMin2, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of($priceMax2, $this->currency->value))],
+        $this->productRepository->setProductPrices($product2->getKey(), [
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin2, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax2, $this->currency->value))],
         ]);
 
         $discountRate = 0.5;
@@ -494,9 +494,9 @@ class PricesTest extends TestCase
         ]);
         $priceMin1 = 2500;
         $priceMax1 = 3000;
-        $this->productRepository::setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of($priceMin1, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of($priceMax1, $this->currency->value))],
+        $this->productRepository->setProductPrices($product1->getKey(), [
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))],
         ]);
 
         $product2 = Product::factory()->create([
@@ -504,9 +504,9 @@ class PricesTest extends TestCase
         ]);
         $priceMin2 = 1000;
         $priceMax2 = 1500;
-        $this->productRepository::setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of($priceMin2, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of($priceMax2, $this->currency->value))],
+        $this->productRepository->setProductPrices($product2->getKey(), [
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin2, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax2, $this->currency->value))],
         ]);
 
         $discountRate = 0.5;
