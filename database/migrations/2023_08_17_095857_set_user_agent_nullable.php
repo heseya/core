@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('user_login_attempts', function (Blueprint $table): void {
-            $table->string('user_agent')->nullable()->change();
+            $table->string('user_agent', 1024)->nullable()->change();
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('user_login_attempts', function (Blueprint $table): void {
-            $table->string('user_agent')->change();
+            $table->string('user_agent', 1024)->change();
         });
     }
 };
