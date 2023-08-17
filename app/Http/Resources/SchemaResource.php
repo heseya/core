@@ -22,7 +22,7 @@ class SchemaResource extends Resource
             'type' => Str::lower($this->resource->type->name),
             'name' => $this->resource->name,
             'description' => $this->resource->description,
-            'price' => $this->resource->price,
+            'prices' => PriceResource::collection($this->resource->prices),
             'hidden' => $this->resource->hidden,
             'required' => $this->resource->required,
             'available' => $this->resource->available,

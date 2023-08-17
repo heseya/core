@@ -14,14 +14,25 @@ use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\User;
+use App\Services\SchemaCrudService;
 use Domain\Banner\Models\Banner;
 use Domain\Metadata\Enums\MetadataType;
 use Domain\Page\Page;
 use Domain\ProductSet\ProductSet;
+use Illuminate\Support\Facades\App as FacadesApp;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class MetadataTest extends TestCase
 {
+    private SchemaCrudService $schemaCrudService;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->schemaCrudService = FacadesApp::make(SchemaCrudService::class);
+    }
+
     public static function dataProvider(): array
     {
         return [
@@ -116,7 +127,8 @@ class MetadataTest extends TestCase
             ],
             'shipping methods as application' => [
                 'application',
-                ['model' => ShippingMethod::class,
+                [
+                    'model' => ShippingMethod::class,
                     'prefix_url' => 'shipping-methods',
                     'role' => 'shipping_methods.edit',
                 ],
@@ -190,7 +202,7 @@ class MetadataTest extends TestCase
 
         if ($data['model'] === Option::class) {
             $related = [
-                'schema_id' => Schema::factory()->create()->getKey(),
+                'schema_id' => $this->schemaCrudService->store(FakeDto::schemaDto())->getKey(),
             ];
         }
 
@@ -228,7 +240,7 @@ class MetadataTest extends TestCase
 
         if ($data['model'] === Option::class) {
             $related = [
-                'schema_id' => Schema::factory()->create()->getKey(),
+                'schema_id' => $this->schemaCrudService->store(FakeDto::schemaDto())->getKey(),
             ];
         }
 
@@ -264,7 +276,7 @@ class MetadataTest extends TestCase
 
         if ($data['model'] === Option::class) {
             $related = [
-                'schema_id' => Schema::factory()->create()->getKey(),
+                'schema_id' => $this->schemaCrudService->store(FakeDto::schemaDto())->getKey(),
             ];
         }
 
@@ -325,9 +337,10 @@ class MetadataTest extends TestCase
             ]
         )
             ->assertOk()
-            ->assertJsonFragment(['data' => [
-                $metadata->name => 'new super value',
-            ],
+            ->assertJsonFragment([
+                'data' => [
+                    $metadata->name => 'new super value',
+                ],
             ]);
 
         $this->assertDatabaseHas('metadata', array_merge($metadata2->toArray(), [
@@ -348,7 +361,7 @@ class MetadataTest extends TestCase
 
         if ($data['model'] === Option::class) {
             $related = [
-                'schema_id' => Schema::factory()->create()->getKey(),
+                'schema_id' => $this->schemaCrudService->store(FakeDto::schemaDto())->getKey(),
             ];
         }
 
@@ -372,9 +385,10 @@ class MetadataTest extends TestCase
             ]
         )
             ->assertOk()
-            ->assertJsonFragment(['data' => [
-                $metadata->name => 'new super value',
-            ],
+            ->assertJsonFragment([
+                'data' => [
+                    $metadata->name => 'new super value',
+                ],
             ]);
     }
 
@@ -390,7 +404,7 @@ class MetadataTest extends TestCase
 
         if ($data['model'] === Option::class) {
             $related = [
-                'schema_id' => Schema::factory()->create()->getKey(),
+                'schema_id' => $this->schemaCrudService->store(FakeDto::schemaDto())->getKey(),
             ];
         }
 
@@ -422,9 +436,10 @@ class MetadataTest extends TestCase
             ]
         )
             ->assertOk()
-            ->assertJsonFragment(['data' => [
-                $metadata1->name => $metadata1->value,
-            ],
+            ->assertJsonFragment([
+                'data' => [
+                    $metadata1->name => $metadata1->value,
+                ],
             ])
             ->assertJsonMissing([
                 $metadata2->name => $metadata2->value,
@@ -443,7 +458,7 @@ class MetadataTest extends TestCase
 
         if ($data['model'] === Option::class) {
             $related = [
-                'schema_id' => Schema::factory()->create()->getKey(),
+                'schema_id' => $this->schemaCrudService->store(FakeDto::schemaDto())->getKey(),
             ];
         }
 
@@ -475,9 +490,10 @@ class MetadataTest extends TestCase
             ]
         )
             ->assertOk()
-            ->assertJsonFragment(['data' => [
-                $metadata1->name => $metadata1->value,
-            ],
+            ->assertJsonFragment([
+                'data' => [
+                    $metadata1->name => $metadata1->value,
+                ],
             ])
             ->assertJsonMissing([
                 $metadata2->name => $metadata2->value,

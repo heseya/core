@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Services\Contracts\UrlServiceContract;
+use Illuminate\Support\Facades\App;
 use Tests\TestCase;
 
 class UrlServiceTest extends TestCase
@@ -13,7 +14,7 @@ class UrlServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->urlService = app(UrlServiceContract::class);
+        $this->urlService = App::make(UrlServiceContract::class);
     }
 
     public function testUrlNormalization(): void

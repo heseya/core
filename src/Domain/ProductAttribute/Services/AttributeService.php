@@ -32,8 +32,8 @@ final readonly class AttributeService
     {
         $attribute = $this->repository->create($dto);
 
-        if (!($dto->metadata instanceof Optional)) {
-            $this->metadataService->sync(Attribute::class, $attribute->getKey(), $dto->metadata);
+        if (!($dto->metadata_computed instanceof Optional)) {
+            $this->metadataService->sync(Attribute::class, $attribute->getKey(), $dto->metadata_computed);
         }
 
         return $attribute;

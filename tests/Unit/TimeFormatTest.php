@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Enums\Product\ProductPriceType;
 use App\Models\Address;
 use App\Models\App;
 use App\Models\Deposit;
@@ -187,7 +188,7 @@ class TimeFormatTest extends TestCase
         $price = Price::query()->create([
             'model_id' => 'model_id',
             'model_type' => 'model_type',
-            'price_type' => '',
+            'price_type' => ProductPriceType::PRICE_BASE,
             'value' => Money::of(10, Currency::DEFAULT->value),
         ]);
 

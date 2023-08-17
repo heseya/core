@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Dtos\PriceDto;
 use App\Enums\Product\ProductPriceType;
 use App\Enums\SchemaType;
 use App\Models\Deposit;
@@ -13,13 +12,14 @@ use App\Models\Product;
 use App\Models\Schema;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\AvailabilityServiceContract;
-use App\Services\Contracts\ProductServiceContract;
+use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Language\Language;
+use Domain\Price\Dtos\PriceDto;
 use Domain\ProductSet\ProductSet;
 use Domain\Seo\Models\SeoMetadata;
 use Heseya\Dto\DtoException;
@@ -40,9 +40,11 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
-        /** @var ProductServiceContract $productService */
-        $productService = App::make(ProductServiceContract::class);
+        /** @var ProductService $productService */
+        $productService = App::make(ProductService::class);
+        /** @var ProductRepositoryContract $productRepository */
         $productRepository = App::make(ProductRepositoryContract::class);
+
         $language = Language::query()->where('default', false)->firstOrFail()->getKey();
 
         $products = Product::factory()->count(100)
@@ -97,7 +99,7 @@ class ProductSeeder extends Seeder
             $this->translations($product, $language);
             $product->save();
 
-            $prices = array_map(fn (Currency $currency) => new PriceDto(
+            $prices = array_map(fn (Currency $currency) => PriceDto::from(
                 Money::of(round(mt_rand(500, 6000), -2), $currency->value),
             ), Currency::cases());
 
