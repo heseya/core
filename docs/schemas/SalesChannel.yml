@@ -9,6 +9,8 @@ SalesChannel:
     vat_rate:
       type: string
       example: '23'
+    slug:
+      type: string
     status:
       type: string
       enum:
@@ -23,12 +25,5 @@ SalesChannel:
       format: uuid
     country_block_list:
       type: boolean
-
-SalesChannelView:
-  type: object
-  allOf:
-    - $ref: '#/SalesChannel'
-    - properties:
-        country_codes:
-          type: array
-
+    country_codes:
+      type: array

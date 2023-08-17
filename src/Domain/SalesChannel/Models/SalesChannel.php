@@ -7,10 +7,13 @@ namespace Domain\SalesChannel\Models;
 use App\Models\Country;
 use App\Models\Interfaces\Translatable;
 use App\Models\Model;
+use Domain\Currency\Currency;
+use Domain\Language\Language;
 use Domain\SalesChannel\Criteria\CountrySearch;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Spatie\Translatable\HasTranslations;
 use Support\Enum\Status;
 
@@ -43,6 +46,7 @@ final class SalesChannel extends Model implements Translatable
 
     protected $casts = [
         'status' => Status::class,
+        'default_currency' => Currency::class,
         'countries_block_list' => 'bool',
     ];
 
@@ -50,6 +54,14 @@ final class SalesChannel extends Model implements Translatable
     protected array $criteria = [
         'country' => CountrySearch::class,
     ];
+
+    /**
+     * @return HasOne<Language>
+     */
+    public function defaultLanguage(): HasOne
+    {
+        return $this->hasOne(Language::class);
+    }
 
     /**
      * @return BelongsToMany<Country>

@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\SalesChannel\Resources;
 
+use App\Http\Resources\LanguageResource;
 use App\Http\Resources\Resource;
+use App\Traits\GetAllTranslations;
+use Domain\Currency\CurrencyDto;
 use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Http\Request;
 
@@ -13,6 +16,8 @@ use Illuminate\Http\Request;
  */
 final class SalesChannelResource extends Resource
 {
+    use GetAllTranslations;
+
     /**
      * @return array<string, string[]>
      */
@@ -24,18 +29,10 @@ final class SalesChannelResource extends Resource
             'slug' => $this->resource->slug,
             'status' => $this->resource->status,
             'countries_block_list' => $this->resource->countries_block_list,
-            'default_currency' => $this->resource->default_currency,
-            'default_language_id' => $this->resource->default_language_id,
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function view(Request $request): array
-    {
-        return [
+            'default_currency' => CurrencyDto::from($this->resource->default_currency),
+            'default_language' => new LanguageResource($this->resource->defaultLanguage),
             'country_codes' => $this->resource->countries->pluck('code'),
+            ...$request->boolean('with_translations') ? $this->getAllTranslations() : [],
         ];
     }
 }
