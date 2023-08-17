@@ -30,8 +30,6 @@ Product:
         format: uuid
     quantity_step:
       type: number
-    vat_rate:
-      type: number
     shipping_digital:
       description: 'Whether product is digital and not delivered by physical means'
       type: boolean

@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Dtos\PriceDto;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
@@ -20,12 +19,14 @@ use App\Models\Role;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
-use App\Services\Contracts\ProductServiceContract;
+use App\Services\ProductService;
+use App\Services\SchemaCrudService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
 use Domain\ProductSet\ProductSet;
 use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -52,8 +53,9 @@ class CartTest extends TestCase
     private Option $option;
     private Option $option2;
     private Item $item;
-    private ProductServiceContract $productService;
+    private ProductService $productService;
     private Currency $currency;
+    private SchemaCrudService $schemaCrudService;
 
     /**
      * @throws UnknownCurrencyException
@@ -72,8 +74,10 @@ class CartTest extends TestCase
             'shipping_type' => ShippingType::ADDRESS,
         ]);
 
-        $this->productService = App::make(ProductServiceContract::class);
+        $this->productService = App::make(ProductService::class);
         $this->currency = Currency::DEFAULT;
+
+        $this->schemaCrudService = App::make(SchemaCrudService::class);
 
         /** @var PriceRange $lowRange */
         $lowRange = PriceRange::query()->create([
@@ -91,32 +95,39 @@ class CartTest extends TestCase
 
         $this->product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(4600.0, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(4600.0, $this->currency->value))],
         ]));
 
         $this->productWithSchema = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(100.0, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(100.0, $this->currency->value))],
         ]));
-        $this->schema = Schema::factory()->create([
+
+        $this->schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 'select',
-            'price' => 0,
+            'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
             'hidden' => false,
             'required' => false,
-        ]);
+            'options' => [
+                [
+                    'name' => 'XL',
+                    'prices' =>  [PriceDto::from(Money::of(0, $this->currency->value))],
+                ],
+                [
+                    'name' => 'L',
+                    'prices' =>  [PriceDto::from(Money::of(100, $this->currency->value))],
+                ],
+            ]
+        ]));
+
         $this->productWithSchema->schemas()->sync([$this->schema->getKey()]);
 
-        $this->option = $this->schema->options()->create([
-            'name' => 'XL',
-            'price' => 0,
-        ]);
+        $this->option = $this->schema->options->where('name', 'XL')->first();
+
         $this->item = Item::factory()->create();
         $this->option->items()->sync([$this->item->getKey()]);
 
-        $this->option2 = $this->schema->options()->create([
-            'name' => 'L',
-            'price' => 100,
-        ]);
+        $this->option2 = $this->schema->options->where('name', 'L')->first();
 
         $this->digitalProduct = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
@@ -208,7 +219,7 @@ class CartTest extends TestCase
         ]);
 
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 9200,
                 'cart_total' => 9200,
@@ -259,7 +270,7 @@ class CartTest extends TestCase
         ]);
 
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 300,
                 'cart_total' => 300,
@@ -354,7 +365,7 @@ class CartTest extends TestCase
         $discountCode2 = $coupon ? ['code' => $discount->code] : [];
 
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 9200,
                 'cart_total' => 8280,
@@ -411,7 +422,7 @@ class CartTest extends TestCase
         ]);
 
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 9200,
                 'cart_total' => 9200,
@@ -569,7 +580,7 @@ class CartTest extends TestCase
         ]);
 
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 9200,
                 'cart_total' => 7780,
@@ -673,7 +684,7 @@ class CartTest extends TestCase
                     $couponShipping->code,
                 ],
             ])
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 4600,
                 'cart_total' => 0,
@@ -731,7 +742,7 @@ class CartTest extends TestCase
         $discountCode2 = $coupon ? ['code' => $data['discount']->code] : [];
 
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 9200,
                 'cart_total' => 8280,
@@ -814,7 +825,7 @@ class CartTest extends TestCase
         $discountCode2 = $coupon ? ['code' => $discount->code] : [];
 
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 9200,
                 'cart_total' => 8073,
@@ -904,7 +915,7 @@ class CartTest extends TestCase
         $discountCode2 = $coupon ? ['code' => $discount->code] : [];
 
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 9200,
                 'cart_total' => 0,
@@ -941,17 +952,17 @@ class CartTest extends TestCase
 
         $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(10.0, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(10.0, $this->currency->value))],
         ]));
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 'string',
-            'price' => 20,
+            'prices' => [PriceDto::from(Money::of(20.0, $this->currency->value))],
             'hidden' => false,
-        ]);
+        ]));
         $product->schemas()->save($schema);
         $product2 = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(100.0, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(100.0, $this->currency->value))],
         ]));
         $sale = Discount::factory()->create([
             'type' => DiscountType::AMOUNT,
@@ -982,7 +993,8 @@ class CartTest extends TestCase
         ]);
 
         $response
-            ->assertOk()
+            ->assertValid()
+            ->assertValid()->assertOk()
             ->assertJsonFragment(['summary' => 108.11]); // (10 (price) - 20 (discount)) + 100 + 8.11 (shipping)
     }
 
@@ -995,16 +1007,21 @@ class CartTest extends TestCase
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
+        $productDto = FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(10.0, $this->currency->value))],
-        ]));
-        $schema = Schema::factory()->create([
+            'prices_base' => [PriceDto::from(Money::of(10.0, $this->currency->value))],
+        ]);
+        $product = $this->productService->create($productDto);
+
+        $schemaDto = FakeDto::schemaDto([
             'type' => 'string',
-            'price' => 20,
+            'prices' => [PriceDto::from(Money::of(20.0, $this->currency->value))],
             'hidden' => false,
         ]);
+        $schema = $this->schemaCrudService->store($schemaDto);
+
         $product->schemas()->save($schema);
+
         $sale = Discount::factory()->create([
             'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::PRODUCTS,
@@ -1028,9 +1045,9 @@ class CartTest extends TestCase
             ],
         ]);
 
-        $response
-            ->assertOk()
-            ->assertJsonFragment(['summary' => 23.11]); // 3*((10(price) +20(schema)) -20(discount)) +8.11(shipping)
+        $response->assertValid()
+            ->assertValid()->assertOk()
+            ->assertJsonFragment(['summary' => 23.11]); // 3*((10(price) +20(schema)) -25(discount)) +8.11(shipping)
     }
 
     /**
@@ -1057,7 +1074,7 @@ class CartTest extends TestCase
                 $coupon2->code,
             ],
         ])
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonCount(2, 'data.coupons');
     }
 
@@ -1085,7 +1102,7 @@ class CartTest extends TestCase
                 $coupon2->code,
             ],
         ])
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonCount(1, 'data.coupons')
             ->assertJsonMissing([
                 'id' => $couponWithLimit->getKey(),
@@ -1117,7 +1134,7 @@ class CartTest extends TestCase
                 $coupon2->code,
             ],
         ])
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonCount(1, 'data.coupons')
             ->assertJsonMissing([
                 'id' => $couponWithLimit->getKey(),
@@ -1149,7 +1166,7 @@ class CartTest extends TestCase
                 $coupon2->code,
             ],
         ])
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonCount(2, 'data.coupons');
     }
 
@@ -1166,7 +1183,7 @@ class CartTest extends TestCase
 
         $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(4601.0, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(4601.0, $this->currency->value))],
         ]));
 
         $discountApplied = Discount::factory()->create([
@@ -1217,7 +1234,7 @@ class CartTest extends TestCase
 
         // Yes those new values are accurate, old ones were wrong
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 9202,
                 'cart_total' => 8074.76,
@@ -1255,7 +1272,7 @@ class CartTest extends TestCase
 
         $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(45.0, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(45.0, $this->currency->value))],
         ]));
 
         $discountApplied = Discount::factory()->create([
@@ -1307,7 +1324,7 @@ class CartTest extends TestCase
         $discountCode2 = $coupon ? ['code' => $discountApplied2->code] : [];
 
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 90,
                 'cart_total' => 83.48,
@@ -1354,7 +1371,7 @@ class CartTest extends TestCase
 
         $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(4600.0, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(4600.0, $this->currency->value))],
         ]));
         $product->items()->attach($item->getKey(), ['required_quantity' => 100]);
 
@@ -1371,7 +1388,7 @@ class CartTest extends TestCase
         ]);
 
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'shipping_time' => null,
                 'shipping_date' => $shipping_date,
@@ -1393,7 +1410,7 @@ class CartTest extends TestCase
 
         $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(4600.0, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(4600.0, $this->currency->value))],
         ]));
 
         Deposit::factory([
@@ -1418,7 +1435,7 @@ class CartTest extends TestCase
         ]);
 
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'shipping_time' => null,
                 'shipping_date' => $shippingDate,
@@ -1437,7 +1454,7 @@ class CartTest extends TestCase
         ]);
 
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'shipping_time' => null,
                 'shipping_date' => null,
@@ -1471,7 +1488,7 @@ class CartTest extends TestCase
         ]);
 
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'shipping_time' => null,
                 'shipping_date' => $shippingDate2,
@@ -1494,11 +1511,11 @@ class CartTest extends TestCase
 
         $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(4600.0, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(4600.0, $this->currency->value))],
         ]));
         $product2 = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(4600.0, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(4600.0, $this->currency->value))],
         ]));
 
         Deposit::factory([
@@ -1546,7 +1563,7 @@ class CartTest extends TestCase
         ]);
 
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'shipping_time' => null,
                 'shipping_date' => $shippingDate,
@@ -1573,7 +1590,7 @@ class CartTest extends TestCase
         ]);
 
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'shipping_time' => 4,
                 'shipping_date' => null,
@@ -1598,7 +1615,7 @@ class CartTest extends TestCase
         ]);
 
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'shipping_time' => null,
                 'shipping_date' => null,
@@ -1633,7 +1650,7 @@ class CartTest extends TestCase
         ]);
 
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 0,
                 'cart_total' => 0,
@@ -1676,7 +1693,7 @@ class CartTest extends TestCase
         ]);
 
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 0,
                 'cart_total' => 0,
@@ -1721,7 +1738,7 @@ class CartTest extends TestCase
         ]);
 
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 200,
                 'cart_total' => 200,
@@ -1821,7 +1838,7 @@ class CartTest extends TestCase
         $discountCode2 = $coupon ? ['code' => $discount->code] : [];
 
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment(
                 [
                     'cart_total_initial' => 4600,
@@ -1898,7 +1915,7 @@ class CartTest extends TestCase
                 ],
             ],
         ])
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 9200,
                 'cart_total' => 9200,
@@ -1987,7 +2004,7 @@ class CartTest extends TestCase
         $discountCode = $coupon ? ['code' => $discount->code] : [];
 
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment(
                 [
                     'cart_total_initial' => 9200,
@@ -2033,7 +2050,7 @@ class CartTest extends TestCase
                 ],
             ],
         ])
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 9200,
                 'cart_total' => 9200,
@@ -2073,7 +2090,7 @@ class CartTest extends TestCase
                 ],
             ],
         ])
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 4600,
                 'cart_total' => 4600,
@@ -2128,7 +2145,7 @@ class CartTest extends TestCase
 
         $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(1000.0, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(1000.0, $this->currency->value))],
         ]));
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
@@ -2148,7 +2165,7 @@ class CartTest extends TestCase
                 ],
             ],
         ])
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 1000,
                 'cart_total' => 1000,
@@ -2209,7 +2226,7 @@ class CartTest extends TestCase
                 ],
             ],
         ])
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 0,
                 'cart_total' => 0,
@@ -2257,7 +2274,7 @@ class CartTest extends TestCase
                 ],
             ],
         ])
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 4600,
                 'cart_total' => 4600,
@@ -2302,7 +2319,7 @@ class CartTest extends TestCase
                 ],
             ],
         ])
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 0,
                 'cart_total' => 0,
@@ -2354,7 +2371,7 @@ class CartTest extends TestCase
                 ],
             ],
         ])
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 4600,
                 'cart_total' => 4600,
@@ -2402,7 +2419,7 @@ class CartTest extends TestCase
             ],
         ]);
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 100,
                 'cart_total' => 100,
@@ -2442,7 +2459,7 @@ class CartTest extends TestCase
                 ],
             ],
         ])
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 4600,
                 'cart_total' => 4600,
@@ -2518,7 +2535,7 @@ class CartTest extends TestCase
     {
         $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(49.0, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(49.0, $this->currency->value))],
         ]));
 
         $set = ProductSet::factory()->create([
@@ -2607,7 +2624,7 @@ class CartTest extends TestCase
         ]);
 
         $response
-            ->assertOk()
+            ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 4600,
                 'cart_total' => 4600,

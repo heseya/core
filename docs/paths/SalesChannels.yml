@@ -1,0 +1,107 @@
+SalesChannels:
+  get:
+    tags:
+      - Sales Channels
+    parameters:
+      - name: country
+        in: query
+        required: false
+        schema:
+          type: string
+    responses:
+      200:
+        description: Ok
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: ./../schemas/SalesChannel.yml#/SalesChannel
+  post:
+    tags:
+      - Sales Channels
+    security:
+      - BearerAuth: [ sales_channels.add ]
+    requestBody:
+      $ref: ./../requests/SalesChannelCreateDto.yml#/SalesChannelCreateDto
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: ./../schemas/SalesChannel.yml#/SalesChannel
+
+SalesChannelsId:
+  get:
+    tags:
+      - Sales Channels
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      200:
+        description: Ok
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: ./../schemas/SalesChannel.yml#/SalesChannel
+  patch:
+    tags:
+      - Sales Channels
+    security:
+      - BearerAuth: [ sales_channels.edit ]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      $ref: ./../requests/SalesChannelUpdateDto.yml#/SalesChannelUpdateDto
+    responses:
+      200:
+        description: Ok
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: ./../schemas/SalesChannel.yml#/SalesChannel
+
+  delete:
+    tags:
+      - Sales Channels
+    security:
+      - BearerAuth: [ sales_channels.remove ]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      204:
+        description: Deleted

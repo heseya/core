@@ -2,12 +2,14 @@
 
 namespace App\Repositories\Contracts;
 
-use App\Dtos\PriceDto;
 use App\Enums\Product\ProductPriceType;
 use Domain\Currency\Currency;
-use Domain\Product\ProductSearchDto;
+use Domain\Price\Dtos\PriceDto;
+use Domain\Product\Dtos\ProductSearchDto;
 use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Collection;
 
 /** @see \App\Repositories\ProductRepository */
 interface ProductRepositoryContract
@@ -17,14 +19,14 @@ interface ProductRepositoryContract
     /**
      * @param array<string, PriceDto[]> $priceMatrix
      */
-    public static function setProductPrices(string $productId, array $priceMatrix): void;
+    public function setProductPrices(string $productId, array $priceMatrix): void;
 
     /**
      * @param ProductPriceType[] $priceTypes
      *
-     * @return PriceDto[][]
+     * @return Collection|EloquentCollection<string,Collection<int,PriceDto>|EloquentCollection<int,PriceDto>>
      *
      * @throws DtoException
      */
-    public static function getProductPrices(string $productId, array $priceTypes, ?Currency $currency = null): array;
+    public function getProductPrices(string $productId, array $priceTypes, ?Currency $currency = null): Collection|EloquentCollection;
 }

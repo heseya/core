@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Dtos\PriceDto;
 use App\Enums\Product\ProductPriceType;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryContract;
@@ -11,6 +10,7 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
@@ -51,35 +51,35 @@ class ProductSortTest extends TestCase
         $product1 = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository::setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_MAX->value => [new PriceDto(Money::of(13, $this->currency->value))],
-            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(3, $this->currency->value))],
+        $this->productRepository->setProductPrices($product1->getKey(), [
+            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(13, $this->currency->value))],
+            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(3, $this->currency->value))],
         ]);
-        $this->productRepository::setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_MAX->value => [new PriceDto(Money::of(11, Currency::EUR->toCurrencyInstance()))],
-            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(1, Currency::EUR->toCurrencyInstance()))],
+        $this->productRepository->setProductPrices($product1->getKey(), [
+            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(11, Currency::EUR->toCurrencyInstance()))],
+            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(1, Currency::EUR->toCurrencyInstance()))],
         ]);
         $product2 = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository::setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_MAX->value => [new PriceDto(Money::of(12, $this->currency->value))],
-            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(2, $this->currency->value))],
+        $this->productRepository->setProductPrices($product2->getKey(), [
+            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(12, $this->currency->value))],
+            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(2, $this->currency->value))],
         ]);
-        $this->productRepository::setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_MAX->value => [new PriceDto(Money::of(12, Currency::EUR->toCurrencyInstance()))],
-            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(2, Currency::EUR->toCurrencyInstance()))],
+        $this->productRepository->setProductPrices($product2->getKey(), [
+            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(12, Currency::EUR->toCurrencyInstance()))],
+            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(2, Currency::EUR->toCurrencyInstance()))],
         ]);
         $product3 = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository::setProductPrices($product3->getKey(), [
-            ProductPriceType::PRICE_MAX->value => [new PriceDto(Money::of(11, $this->currency->value))],
-            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(1, $this->currency->value))],
+        $this->productRepository->setProductPrices($product3->getKey(), [
+            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(11, $this->currency->value))],
+            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(1, $this->currency->value))],
         ]);
-        $this->productRepository::setProductPrices($product3->getKey(), [
-            ProductPriceType::PRICE_MAX->value => [new PriceDto(Money::of(13, Currency::EUR->toCurrencyInstance()))],
-            ProductPriceType::PRICE_MIN->value => [new PriceDto(Money::of(3, Currency::EUR->toCurrencyInstance()))],
+        $this->productRepository->setProductPrices($product3->getKey(), [
+            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(13, Currency::EUR->toCurrencyInstance()))],
+            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(3, Currency::EUR->toCurrencyInstance()))],
         ]);
 
         $response = $this

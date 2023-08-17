@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\Contracts\UrlServiceContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\App as FacadesApp;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -25,7 +26,7 @@ class AppInstallTest extends TestCase
     {
         parent::setUp();
 
-        $this->urlService = app(UrlServiceContract::class);
+        $this->urlService = FacadesApp::make(UrlServiceContract::class);
         $this->url = $this->urlService->normalizeUrl($this->url);
     }
 

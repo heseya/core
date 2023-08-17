@@ -4,13 +4,24 @@ namespace Tests\Feature;
 
 use App\Models\Item;
 use App\Models\Product;
-use App\Models\Schema;
+use App\Services\SchemaCrudService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\App;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class ProductFilterTest extends TestCase
 {
     use RefreshDatabase;
+
+    private SchemaCrudService $schemaCrudService;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->schemaCrudService = App::make(SchemaCrudService::class);
+    }
 
     /**
      * @dataProvider authProvider
@@ -43,7 +54,7 @@ class ProductFilterTest extends TestCase
         $this->{$user}->givePermissionTo(['products.show', 'products.show_hidden']);
 
         $productWithoutSchemas = Product::factory()->create();
-        $schema = Schema::factory()->create();
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto());
 
         /** @var Product $productWithSchemas */
         $productWithSchemas = Product::factory()->create();

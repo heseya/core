@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Discounts;
 
-use App\Dtos\PriceDto;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
@@ -15,6 +14,7 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
@@ -69,10 +69,10 @@ class DiscountProductCacheTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository::setProductPrices($product->getKey(), [
-            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of($priceMin, $this->currency->value))],
-            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of($priceMin, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of($priceMax, $this->currency->value))],
+        $this->productRepository->setProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of($priceMin, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax, $this->currency->value))],
         ]);
 
         $response = $this
@@ -140,10 +140,10 @@ class DiscountProductCacheTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository::setProductPrices($product->getKey(), [
-            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of($priceMin, $this->currency->value))],
-            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of($priceMin, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of($priceMax, $this->currency->value))],
+        $this->productRepository->setProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of($priceMin, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax, $this->currency->value))],
         ]);
 
         $response = $this
@@ -210,10 +210,10 @@ class DiscountProductCacheTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository::setProductPrices($product->getKey(), [
-            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of($priceMin, $this->currency->value))],
-            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of($priceMin, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of($priceMax, $this->currency->value))],
+        $this->productRepository->setProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of($priceMin, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax, $this->currency->value))],
         ]);
 
         $response = $this

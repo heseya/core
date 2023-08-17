@@ -17,7 +17,7 @@ final class MetadataPersonalDto extends Data
         #[Max(255), AlphaDash]
         public readonly string $name,
         public readonly bool|float|int|string|null $value,
-        #[WithCast(EnumCast::class)]
+        #[WithCast(EnumCast::class, MetadataType::class)]
         public readonly MetadataType $value_type,
     ) {}
 }

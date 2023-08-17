@@ -47,6 +47,7 @@ enum Exceptions: string
     case CLIENT_ONLY_OWNER_GRANTS_OWNER_ROLE = 'Only owner can grant the owner role';
     case CLIENT_ONLY_OWNER_REMOVES_OWNER_ROLE = 'Only owner can remove the owner role';
     case CLIENT_ONE_OWNER_REMAINS = 'There must always be at least one Owner left';
+    case CLIENT_ONE_SALES_CHANNEL_REMAINS = 'There must always be at least one sales channel left';
     case CLIENT_DELETE_WHEN_RELATION_EXISTS = 'Element can\'t be deleted, because it has relations';
 
     case CLIENT_ORDER_EDIT_ERROR = 'Error in order update transaction. Check order and addresses data';
@@ -101,6 +102,8 @@ enum Exceptions: string
 
     case CLIENT_CANNOT_DELETE_MODEL = 'Cannot delete model';
     case CLIENT_OPTION_NOT_RELATED_TO_ATTRIBUTE = 'Option is not related to provided attribute';
+
+    case SERVER_NO_DEFAULT_SALES_CHANNEL = 'No default sales channel';
 
     case SERVER_CDN_ERROR = 'CDN responded with an error';
     case SERVER_ERROR = 'Server responded with an error';

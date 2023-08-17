@@ -78,8 +78,8 @@ final readonly class PageService
             $this->seoMetadataService->createOrUpdateFor($page, $dto->seo);
         }
 
-        if (!($dto->metadata instanceof Optional)) {
-            $this->metadataService->sync(Page::class, $page->getKey(), $dto->metadata);
+        if (!($dto->metadata_computed instanceof Optional)) {
+            $this->metadataService->sync(Page::class, $page->getKey(), $dto->metadata_computed);
         }
 
         PageCreated::dispatch($page);

@@ -154,9 +154,10 @@ class PageTest extends TestCase
             ])
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJson(['data' => [
-                0 => $this->expected,
-            ],
+            ->assertJson([
+                'data' => [
+                    0 => $this->expected,
+                ],
             ]);
 
         $this->assertQueryCountLessThan(11);
@@ -266,11 +267,13 @@ class PageTest extends TestCase
             ->getJson('/pages/id:' . $this->page->getKey());
         $response
             ->assertOk()
-            ->assertJson(['data' => $this->expected_view +
-                ['metadata_private' => [
-                    $privateMetadata->name => $privateMetadata->value,
-                ],
-                ],
+            ->assertJson([
+                'data' => $this->expected_view +
+                    [
+                        'metadata_private' => [
+                            $privateMetadata->name => $privateMetadata->value,
+                        ],
+                    ],
             ]);
     }
 

@@ -49,6 +49,7 @@ use Illuminate\Support\Collection;
  * @property string $description_html
  * @property string $description_short
  * @property mixed $pivot
+ * @property Collection<int, Price> $pricesBase
  *
  * @mixin IdeHelperProduct
  */
@@ -76,7 +77,6 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'public',
         'quantity_step',
         'google_product_category',
-        'vat_rate',
         'available',
         'order',
         'shipping_time',
@@ -100,7 +100,6 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'available' => 'bool',
         'quantity_step' => 'float',
         'published' => 'array',
-        'vat_rate' => 'float',
         'has_schemas' => 'bool',
         'quantity' => 'float',
         'shipping_digital' => 'bool',

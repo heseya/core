@@ -15,11 +15,13 @@ use App\SortColumnTypes\TranslatedColumn;
 use App\Traits\CustomHasTranslations;
 use App\Traits\HasMetadata;
 use App\Traits\Sortable;
+use Domain\Currency\Currency;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Validator;
@@ -30,6 +32,7 @@ use Illuminate\Validation\ValidationException;
  * @property string $name
  * @property string $description
  * @property SchemaType $type
+ * @property Collection<int, Price> $prices
  *
  * @mixin IdeHelperSchema
  */
@@ -47,7 +50,6 @@ class Schema extends Model implements SortableContract, Translatable
         'type',
         'name',
         'description',
-        'price',
         'hidden',
         'required',
         'max',
@@ -68,7 +70,6 @@ class Schema extends Model implements SortableContract, Translatable
     ];
 
     protected $casts = [
-        'price' => 'float',
         'hidden' => 'bool',
         'required' => 'bool',
         'available' => 'bool',
@@ -196,7 +197,17 @@ class Schema extends Model implements SortableContract, Translatable
         return $this->belongsToMany(Product::class, 'product_schemas');
     }
 
-    public function getPrice(mixed $value, array $schemas): float
+    public function prices(): MorphMany
+    {
+        return $this->morphMany(Price::class, 'model');
+    }
+
+    public function getPriceForCurrency(Currency $currency = Currency::DEFAULT): float
+    {
+        return $this->prices->where('currency', $currency->value)->firstOrFail()->value->getAmount()->toFloat();
+    }
+
+    public function getPrice(mixed $value, array $schemas, Currency $currency = Currency::DEFAULT): float
     {
         $schemaKeys = Collection::make($schemas)->keys();
 
@@ -204,7 +215,7 @@ class Schema extends Model implements SortableContract, Translatable
             return 0.0;
         }
 
-        return $this->getUsedPrice($value, $schemas);
+        return $this->getUsedPrice($value, $schemas, $currency);
     }
 
     public function usedBySchemas(): BelongsToMany
@@ -227,10 +238,8 @@ class Schema extends Model implements SortableContract, Translatable
         );
     }
 
-    private function getUsedPrice(mixed $value, array $schemas): float
+    private function getUsedPrice(mixed $value, array $schemas, Currency $currency = Currency::DEFAULT): float
     {
-        $price = $this->price;
-
         if (!$this->required && $value === null) {
             return 0;
         }
@@ -246,20 +255,23 @@ class Schema extends Model implements SortableContract, Translatable
             return 0;
         }
 
-        if ($this->type->is(SchemaType::SELECT)) {
-            $option = $this->options()->findOrFail($value);
+        if ($this->type->is(SchemaType::MULTIPLY_SCHEMA)) {
+            /** @var Schema $usedSchema */
+            $usedSchema = $this->usedSchemas()->firstOrFail();
 
-            $price += $option->price;
+            return $value * $usedSchema->getUsedPrice($schemas[$usedSchema->getKey()], $schemas, $currency);
+        }
+
+        $price = $this->getPriceForCurrency($currency);
+
+        if ($this->type->is(SchemaType::SELECT)) {
+            /** @var Option $option */
+            $option = $this->options()->findOrFail($value);
+            $price += $option->getPriceForCurrency($currency);
         }
 
         if ($this->type->is(SchemaType::MULTIPLY)) {
             $price *= (float) $value;
-        }
-
-        if ($this->type->is(SchemaType::MULTIPLY_SCHEMA)) {
-            /** @var Schema $usedSchema */
-            $usedSchema = $this->usedSchemas()->firstOrFail();
-            $price = $value * $usedSchema->getUsedPrice($schemas[$usedSchema->getKey()], $schemas);
         }
 
         return $price;

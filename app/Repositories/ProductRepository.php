@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Dtos\PriceDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\Product\ProductPriceType;
 use App\Exceptions\ServerException;
@@ -13,18 +12,24 @@ use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Traits\GetPublishedLanguageFilter;
 use Domain\Currency\Currency;
-use Domain\Product\ProductSearchDto;
+use Domain\Price\Dtos\PriceDto;
+use Domain\Price\PriceRepository;
+use Domain\Product\Dtos\ProductSearchDto;
 use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
-use Ramsey\Uuid\Uuid;
+use Support\Dtos\ModelIdentityDto;
 
 class ProductRepository implements ProductRepositoryContract
 {
     use GetPublishedLanguageFilter;
+
+    public function __construct(private PriceRepository $priceRepository) {}
 
     public function search(ProductSearchDto $dto): LengthAwarePaginator
     {
@@ -57,64 +62,31 @@ class ProductRepository implements ProductRepositoryContract
     /**
      * @param PriceDto[][] $priceMatrix
      */
-    public static function setProductPrices(string $productId, array $priceMatrix): void
+    public function setProductPrices(string $productId, array $priceMatrix): void
     {
-        $rows = [];
-
-        foreach ($priceMatrix as $type => $prices) {
-            foreach ($prices as $price) {
-                $rows[] = [
-                    'id' => Uuid::uuid4(),
-                    'model_id' => $productId,
-                    'model_type' => Product::class,
-                    'price_type' => $type,
-                    'currency' => $price->value->getCurrency()->getCurrencyCode(),
-                    'value' => $price->value->getMinorAmount(),
-                    'is_net' => false,
-                ];
-            }
-        }
-
-        Price::query()->upsert(
-            $rows,
-            ['model_id', 'price_type', 'currency'],
-            ['value', 'is_net'],
-        );
+        $this->priceRepository->setModelPrices(new ModelIdentityDto($productId, Product::class), $priceMatrix);
     }
 
     /**
      * @param ProductPriceType[] $priceTypes
      *
-     * @return PriceDto[][]
+     * @return Collection|EloquentCollection<string,Collection<int,PriceDto>|EloquentCollection<int,PriceDto>>
      *
      * @throws DtoException
      * @throws ServerException
      */
-    public static function getProductPrices(string $productId, array $priceTypes, ?Currency $currency = null): array
+    public function getProductPrices(string $productId, array $priceTypes, ?Currency $currency = null): Collection|EloquentCollection
     {
-        $prices = Price::query()
-            ->where('model_id', $productId)
-            ->whereIn('price_type', $priceTypes);
+        $prices = $this->priceRepository->getModelPrices(new ModelIdentityDto($productId, Product::class), $priceTypes, $currency);
 
-        if ($currency !== null) {
-            $prices = $prices->where('currency', $currency->value);
+        $groupedPrices = $prices->mapToGroups(fn (Price $price) => [$price->price_type->value => PriceDto::from($price)]);
+
+        foreach ($priceTypes as $type) {
+            if (!$groupedPrices->has($type->value)) {
+                throw new ServerException(Exceptions::SERVER_NO_PRICE_MATCHING_CRITERIA);
+            }
         }
 
-        $groupedPrices = $prices->get()->reduce(function (array $carry, Price $price) {
-            $carry[$price->price_type][] = new PriceDto($price->value);
-
-            return $carry;
-        }, []);
-
-        return array_map(
-            function (ProductPriceType $type) use ($groupedPrices) {
-                if (!array_key_exists($type->value, $groupedPrices)) {
-                    throw new ServerException(Exceptions::SERVER_NO_PRICE_MATCHING_CRITERIA);
-                }
-
-                return $groupedPrices[$type->value];
-            },
-            $priceTypes,
-        );
+        return $groupedPrices;
     }
 }
