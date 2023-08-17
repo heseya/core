@@ -29,6 +29,6 @@ final class SeoMetadataDto extends Data
         public readonly bool|Optional $no_index,
         public readonly array|Optional|null $header_tags,
         /** @var array<string> */
-        public readonly array $published,
+        public readonly array $published = [],
     ) {}
 }

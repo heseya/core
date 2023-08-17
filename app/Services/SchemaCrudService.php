@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Dtos\SchemaDto;
+use App\Enums\Product\ProductPriceType;
 use App\Exceptions\PublishingException;
 use App\Models\Option;
 use App\Models\Product;
@@ -10,10 +10,13 @@ use App\Models\Schema;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\OptionServiceContract;
-use App\Services\Contracts\ProductServiceContract;
 use App\Services\Contracts\SchemaCrudServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
-use Heseya\Dto\Missing;
+use Domain\ProductSchema\Dtos\SchemaCreateDto;
+use Domain\ProductSchema\Dtos\SchemaDto;
+use Domain\ProductSchema\SchemaRepository;
+use Spatie\LaravelData\DataCollection;
+use Spatie\LaravelData\Optional;
 
 final readonly class SchemaCrudService implements SchemaCrudServiceContract
 {
@@ -21,8 +24,9 @@ final readonly class SchemaCrudService implements SchemaCrudServiceContract
         private AvailabilityServiceContract $availabilityService,
         private MetadataServiceContract $metadataService,
         private OptionServiceContract $optionService,
-        private ProductServiceContract $productService,
+        private ProductService $productService,
         private TranslationServiceContract $translationService,
+        private SchemaRepository $schemaRepository,
     ) {}
 
     /**
@@ -30,43 +34,9 @@ final readonly class SchemaCrudService implements SchemaCrudServiceContract
      */
     public function store(SchemaDto $dto): Schema
     {
-        $schema = new Schema($dto->toArray());
+        $schema = new Schema();
 
-        foreach ($dto->translations as $lang => $translations) {
-            $schema->setLocale($lang)->fill($translations);
-        }
-
-        $this->translationService->checkPublished($schema, ['name']);
-
-        $schema->save();
-
-        if (!$dto->getOptions() instanceof Missing && $dto->getOptions() !== null) {
-            $this->optionService->sync($schema, $dto->getOptions());
-            $schema->refresh();
-        }
-
-        $this->translationService->checkPublishedRelations($schema, ['options' => ['name']]);
-
-        if (!$dto->getUsedSchemas() instanceof Missing && $dto->getUsedSchemas() !== null) {
-            foreach ($dto->getUsedSchemas() as $input) {
-                $used_schema = Schema::query()->findOrFail($input);
-
-                $schema->usedSchemas()->attach($used_schema);
-            }
-
-            $schema->refresh();
-        }
-
-        if (!($dto->getMetadata() instanceof Missing)) {
-            $this->metadataService->sync($schema, $dto->getMetadata());
-        }
-
-        $schema->options->each(
-            fn (Option $option) => $this->availabilityService->calculateOptionAvailability($option),
-        );
-        $this->availabilityService->calculateSchemaAvailability($schema);
-
-        return $schema;
+        return $this->update($schema, $dto);
     }
 
     /**
@@ -76,36 +46,60 @@ final readonly class SchemaCrudService implements SchemaCrudServiceContract
     {
         $schema->fill($dto->toArray());
 
-        foreach ($dto->translations as $lang => $translations) {
-            $schema->setLocale($lang)->fill($translations);
+        if (is_array($dto->translations)) {
+            foreach ($dto->translations as $lang => $translations) {
+                $schema->setLocale($lang)->fill($translations);
+            }
+        }
+
+        if (!$schema->exists) {
+            $this->translationService->checkPublished($schema, ['name']);
         }
 
         $schema->save();
 
-        if (!$dto->getOptions() instanceof Missing) {
-            $this->optionService->sync($schema, $dto->getOptions());
+        if ($dto->options instanceof DataCollection) {
+            $this->optionService->sync($schema, $dto->options->items());
             $schema->refresh();
         }
 
-        $this->translationService->checkPublished($schema, ['name']);
+        if ($schema->wasRecentlyCreated) {
+            $this->translationService->checkPublishedRelations($schema, ['options' => ['name']]);
+        } else {
+            $this->translationService->checkPublished($schema, ['name']);
+        }
 
-        if (!$dto->getUsedSchemas() instanceof Missing) {
+        if (!$dto->used_schemas instanceof Optional) {
             $schema->usedSchemas()->detach();
+        }
 
-            $usedSchemas = $dto->getUsedSchemas() !== null ? $dto->getUsedSchemas() : [];
-            foreach ($usedSchemas as $input) {
+        if (is_array($dto->used_schemas)) {
+            foreach ($dto->used_schemas as $input) {
                 $used_schema = Schema::query()->findOrFail($input);
-
                 $schema->usedSchemas()->attach($used_schema);
             }
         }
 
-        $schema->products->each(
-            fn (Product $product) => $this->productService->updateMinMaxPrices($product),
-        );
+        if ($dto instanceof SchemaCreateDto && !($dto->metadata_computed instanceof Optional)) {
+            $this->metadataService->sync($schema, $dto->metadata_computed);
+        }
+
+        if ($dto->prices instanceof DataCollection) {
+            $this->schemaRepository->setSchemaPrices($schema->getKey(), [
+                ProductPriceType::PRICE_BASE->value => $dto->prices->items(),
+            ]);
+        }
+
+        if (!$schema->wasRecentlyCreated) {
+            $schema->products->each(
+                fn (Product $product) => $this->productService->updateMinMaxPrices($product),
+            );
+        }
+
         $schema->options->each(
             fn (Option $option) => $this->availabilityService->calculateOptionAvailability($option),
         );
+
         $this->availabilityService->calculateSchemaAvailability($schema);
 
         return $schema;

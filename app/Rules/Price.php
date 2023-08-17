@@ -81,7 +81,11 @@ readonly class Price implements ValidationRule
         $amount = $value[$amountKey];
 
         if (!is_string($amount)) {
-            $fail("The :attribute {$amountKey} must be a decimal string");
+            $type = gettype($amount);
+
+            $fail("The :attribute {$amountKey} must be a decimal string, {$type} found");
+
+            return;
         }
 
         $money = null;

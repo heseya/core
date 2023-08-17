@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Domain\Product;
+namespace Domain\Product\Dtos;
 
 use Brick\Money\Currency;
 use Brick\Money\Money;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
-use Support\DtoCasts\CurrencyCast;
-use Support\DtoCasts\MoneyCast;
+use Support\LaravelData\Casts\CurrencyCast;
+use Support\LaravelData\Casts\MoneyCast;
 
 final class ProductSearchPriceDto extends Data
 {

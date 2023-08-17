@@ -2,17 +2,22 @@
 
 namespace Tests\Utils;
 
-use App\Dtos\PriceDto;
 use App\Dtos\PriceRangeDto;
-use App\Dtos\ProductCreateDto;
 use App\Dtos\ShippingMethodCreateDto;
+use App\Models\Schema;
+use Brick\Math\BigDecimal;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
+use Domain\Product\Dtos\ProductCreateDto;
+use Domain\ProductSchema\Dtos\SchemaDto;
+use Domain\ProductSchema\Dtos\SchemaUpdateDto;
 use Faker\Generator;
 use Heseya\Dto\DtoException;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 
@@ -53,22 +58,29 @@ final readonly class FakeDto
      * @throws RoundingNecessaryException
      * @throws UnknownCurrencyException
      */
-    public static function productCreateDto(array $data = []): ProductCreateDto
+    public static function productCreateData(array $data = []): array
+    {
+        $keys = array_keys($data);
+        return Arr::only(self::productCreateDto($data, true), $keys);
+    }
+
+    /**
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
+     */
+    public static function productCreateDto(array $data = [], bool $returnArray = false): ProductCreateDto|array
     {
         $faker = App::make(Generator::class);
         $name = $faker->sentence(mt_rand(1, 3));
         $description = $faker->sentence(10);
 
-        $price = new PriceDto(
-            Money::of(
-                round(mt_rand(500, 6000), -2),
-                Currency::DEFAULT->value,
-            )
-        );
+        $data['prices_base'] = self::generatePricesInAllCurrencies($data['prices_base'] ?? []);
 
         $langId = App::getLocale();
 
-        return new ProductCreateDto(...$data + [
+        $data = $data + [
             'translations' => [
                 $langId => [
                     'name' => $name,
@@ -80,7 +92,86 @@ final readonly class FakeDto
             'slug' => Str::slug($name) . '-' . mt_rand(1, 99999),
             'public' => $faker->boolean,
             'shipping_digital' => false,
-            'prices_base' => [$price],
-        ]);
+        ];
+
+        if ($returnArray) {
+            return $data;
+        }
+
+        return ProductCreateDto::from($data);
+    }
+
+    public static function schemaData(array $data = []): array
+    {
+        $keys = array_keys($data);
+        return Arr::only(self::schemaDto($data, true), $keys);
+    }
+
+    public static function schemaDto(array $data = [], bool $returnArray = false): SchemaDto|array
+    {
+        $data['prices'] = self::generatePricesInAllCurrencies($data['prices'] ?? []);
+
+        $data = $data + Schema::factory()->definition();
+
+        $langId = App::getLocale();
+
+        $data['translations'][$langId]['name'] = $data['translations'][$langId]['name'] ?? $data['name'];
+        $data['translations'][$langId]['description'] = $data['translations'][$langId]['description'] ?? $data['description'];
+
+        if (array_key_exists('options', $data)) {
+            foreach ($data['options'] as &$option) {
+                $option['translations'][$langId]['name'] = $option['translations'][$langId]['name'] ?? $option['name'] ?? Str::random(4);
+
+                $option['prices'] = self::generatePricesInAllCurrencies($option['prices'] ?? []);
+            }
+        }
+
+        if ($returnArray) {
+            return $data;
+        }
+
+        return SchemaUpdateDto::from($data);
+    }
+
+    /**
+     * @param array<int,PriceDto>|array<int,array<string,int|string>> $data 
+     * 
+     * @return array<int,array<string,int|string>>
+     */
+    public static function generatePricesInAllCurrencies(array $data = [], BigDecimal|int|float|null $amount = null): array
+    {
+        $prices = [];
+        $usedCurrencies = [];
+        /** @var PriceDto|array $price */
+        foreach ($data as $price) {
+            if (is_array($price) && Arr::has($price, ['value', 'currency'])) {
+                $price = PriceDto::from($price);
+            }
+            if ($price instanceof PriceDto) {
+                $amount = $amount ?? $price->value->getAmount();
+                $usedCurrencies[] = $price->currency;
+                $prices[] = [
+                    'value' => $price->value->getAmount(),
+                    'currency' => $price->currency->value,
+                ];
+            }
+        }
+
+        $amount = $amount ?? 0;
+
+        foreach (Currency::cases() as $case) {
+            if (!in_array($case, $usedCurrencies)) {
+                $price = PriceDto::from([
+                    'value' => $amount,
+                    'currency' => $case->value,
+                ]);
+                $prices[] = [
+                    'value' => $price->value->getAmount(),
+                    'currency' => $price->currency->value,
+                ];
+            }
+        }
+
+        return $prices;
     }
 }

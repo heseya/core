@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Dtos\PriceDto;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
 use App\Models\Address;
@@ -13,12 +12,14 @@ use App\Models\Product;
 use App\Models\Schema;
 use App\Models\Status;
 use App\Services\Contracts\AvailabilityServiceContract;
-use App\Services\Contracts\ProductServiceContract;
+use App\Services\ProductService;
+use App\Services\SchemaCrudService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
@@ -40,8 +41,10 @@ class OrderDepositTest extends TestCase
     private array $request;
     private array $addressExpected;
 
-    private ProductServiceContract $productService;
+    private ProductService $productService;
     private Currency $currency;
+
+    private SchemaCrudService $schemaCrudService;
 
     /**
      * @throws UnknownCurrencyException
@@ -57,24 +60,29 @@ class OrderDepositTest extends TestCase
 
         Event::fake([OrderCreated::class, OrderUpdatedStatus::class]);
 
-        $this->productService = App::make(ProductServiceContract::class);
+        $this->productService = App::make(ProductService::class);
+        $this->schemaCrudService  = App::make(SchemaCrudService::class);
+
         $this->currency = Currency::DEFAULT;
         $this->product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(100.00, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(100.00, $this->currency->value))],
         ]));
 
-        $this->schema = Schema::factory()->create([
+        $this->schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 'select',
-            'price' => 0,
+            'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
             'hidden' => false,
             'required' => true,
-        ]);
+            'options' => [
+                [
+                    'name' => 'XL',
+                    'prices' =>  [PriceDto::from(Money::of(0, $this->currency->value))],
+                ],
+            ]
+        ]));
         $this->product->schemas()->sync([$this->schema->getKey()]);
-        $this->option = $this->schema->options()->create([
-            'name' => 'XL',
-            'price' => 0,
-        ]);
+        $this->option = $this->schema->options->where('name', 'XL')->first();
         $this->item = Item::factory()->create();
         $this->option->items()->sync([$this->item->getKey()]);
         $this->address = Address::factory()->create();
@@ -254,16 +262,22 @@ class OrderDepositTest extends TestCase
      */
     public function testCantCreateOrderWithoutMultipleItems($user): void
     {
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 'select',
-            'price' => 0,
+            'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
             'hidden' => false,
-        ]);
+            'options' => [
+                [
+                    'name' => 'XL',
+                    'prices' =>  [PriceDto::from(Money::of(0, $this->currency->value))],
+                ],
+            ]
+        ]));
+
         $this->product->schemas()->sync([$schema->getKey()]);
-        $option = $schema->options()->create([
-            'name' => 'XL',
-            'price' => 0,
-        ]);
+
+        $option = $schema->options->where('name', 'XL')->first();
+
         $option->items()->sync([$this->item->getKey()]);
 
         $this->item->deposits()->create([
@@ -386,7 +400,7 @@ class OrderDepositTest extends TestCase
 
         $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(100.00, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(100.00, $this->currency->value))],
         ]));
 
         $product->items()->attach($this->item->getKey(), ['required_quantity' => 1]);
@@ -449,7 +463,7 @@ class OrderDepositTest extends TestCase
         ]);
 
         /** @var AvailabilityServiceContract $service */
-        $service = app(AvailabilityServiceContract::class);
+        $service = App::make(AvailabilityServiceContract::class);
         $service->calculateItemAvailability($this->item);
 
         $this->assertDatabaseHas('products', [
@@ -665,7 +679,7 @@ class OrderDepositTest extends TestCase
 
         $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(100.00, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(100.00, $this->currency->value))],
         ]));
 
         $product->items()->attach($this->item->getKey(), ['required_quantity' => 1]);

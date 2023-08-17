@@ -21,12 +21,20 @@ Schema:
       type: string
       example: Size
     description:
-      description: 'Short description, no html or md allowed'
+      description: "Short description, no html or md allowed"
       type: string
-    price:
+    prices:
       description: "Additional price the customer will have to pay after selecting the option (can be negative)"
-      type: number
-      example: 9.99
+      type: array
+      items:
+        type: object
+        properties:
+          gross:
+            type: string
+            example: "9.99"
+          currency:
+            type: string
+            example: "PLN"
     hidden:
       type: boolean
     required:
@@ -49,11 +57,11 @@ Schema:
     shipping_date:
       type: string
       format: date-time
-      example: '2021-09-13T11:11'
+      example: "2021-09-13T11:11"
     options:
       type: array
       items:
-        $ref: '#/Option'
+        $ref: "#/Option"
     used_schemas:
       description: "Array of schema id's given schema uses e.g.\n     *   multiply_schema type uses one schema of which price it miltiplies"
       type: array
@@ -70,15 +78,23 @@ Option:
     name:
       type: string
       example: XL
-    price:
-      description: 'Additional price the customer will have to pay after selecting this option (can be negative)'
-      type: number
-      example: 3.99
+    prices:
+      description: "Additional price the customer will have to pay after selecting this option (can be negative)"
+      type: array
+      items:
+        type: object
+        properties:
+          gross:
+            type: string
+            example: "9.99"
+          currency:
+            type: string
+            example: "PLN"
     disabled:
-      description: 'Shows if the option has been disabled manually'
+      description: "Shows if the option has been disabled manually"
       type: boolean
     available:
-      description: 'Shows whether the option is available for purchase (in stock and not disabled)'
+      description: "Shows whether the option is available for purchase (in stock and not disabled)"
       type: boolean
     shipping_time:
       type: integer
@@ -86,33 +102,33 @@ Option:
     shipping_date:
       type: string
       format: date-time
-      example: '2021-09-13T11:11'
+      example: "2021-09-13T11:11"
     items:
       type: array
       items:
-        $ref: './Items.yml#/Item'
+        $ref: "./Items.yml#/Item"
 
 SchemaMetadata:
   allOf:
-    - $ref: '#/Schema'
+    - $ref: "#/Schema"
     - properties:
         options:
           type: array
           items:
-            $ref: '#/OptionMetadata'
+            $ref: "#/OptionMetadata"
         metadata:
-          $ref: './../schemas/Metadata.yml#/Metadata'
+          $ref: "./../schemas/Metadata.yml#/Metadata"
         metadata_private:
-          $ref: './../schemas/Metadata.yml#/Metadata'
+          $ref: "./../schemas/Metadata.yml#/Metadata"
 
 OptionMetadata:
   allOf:
-    - $ref: '#/Option'
+    - $ref: "#/Option"
     - properties:
         metadata:
-          $ref: './../schemas/Metadata.yml#/Metadata'
+          $ref: "./../schemas/Metadata.yml#/Metadata"
         metadata_private:
-          $ref: './../schemas/Metadata.yml#/Metadata'
+          $ref: "./../schemas/Metadata.yml#/Metadata"
 
 SchemaRequest:
   type: object
@@ -133,9 +149,18 @@ SchemaRequest:
       example: Size
     description:
       type: string
-    price:
-      type: number
-      example: 9.99
+    prices:
+      description: "Additional price the customer will have to pay after selecting the option (can be negative)"
+      type: array
+      items:
+        type: object
+        properties:
+          gross:
+            type: string
+            example: "9.99"
+          currency:
+            type: string
+            example: "PLN"
     hidden:
       type: boolean
     required:
@@ -158,7 +183,7 @@ SchemaRequest:
     shipping_date:
       type: string
       format: date-time
-      example: '2021-09-13T11:11'
+      example: "2021-09-13T11:11"
     options:
       type: array
       items:
@@ -166,12 +191,20 @@ SchemaRequest:
           name:
             type: string
             example: XL
-          price:
-            description: 'Additional price the customer will have to pay after selecting this option (can be negative)'
-            type: number
-            example: 3.99
+          prices:
+            description: "Additional price the customer will have to pay after selecting this option (can be negative)"
+            type: array
+            items:
+              type: object
+              properties:
+                gross:
+                  type: string
+                  example: "9.99"
+                currency:
+                  type: string
+                  example: "PLN"
           disabled:
-            description: 'Shows if the option has been disabled manually'
+            description: "Shows if the option has been disabled manually"
             type: boolean
           items:
             type: array
@@ -207,10 +240,18 @@ SchemaShort:
     name:
       type: string
       example: Size
-    price:
+    prices:
       description: "Additional price the customer will have to pay after selecting the option (can be negative)"
-      type: number
-      example: 9.99
+      type: array
+      items:
+        type: object
+        properties:
+          gross:
+            type: string
+            example: "9.99"
+          currency:
+            type: string
+            example: "PLN"
     hidden:
       type: boolean
     required:

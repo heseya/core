@@ -16,7 +16,7 @@ class OptionResource extends Resource
         $data = [
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
-            'price' => $this->resource->price,
+            'prices' => PriceResource::collection($this->resource->prices),
             'disabled' => $this->resource->disabled,
             'available' => $this->resource->available,
             'shipping_time' => $this->resource->shipping_time,

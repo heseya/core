@@ -15,6 +15,7 @@ use App\Models\Contracts\SortableContract;
 use App\Traits\HasMetadata;
 use App\Traits\HasOrderDiscount;
 use App\Traits\Sortable;
+use Domain\Currency\Currency;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -96,6 +97,7 @@ class Order extends Model implements SortableContract
     protected $casts = [
         'paid' => 'boolean',
         'invoice_requested' => 'boolean',
+        'currency' => Currency::class,
     ];
 
     /**
