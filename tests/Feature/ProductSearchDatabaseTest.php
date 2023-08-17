@@ -1397,7 +1397,7 @@ class ProductSearchDatabaseTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testSortByAttribute($user): void
+    public function testSortByAttribute(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show');
 
