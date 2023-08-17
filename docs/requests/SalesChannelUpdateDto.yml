@@ -32,3 +32,5 @@ SalesChannelUpdateDto:
             format: uuid
           countries:
             type: array
+            items:
+              type: string

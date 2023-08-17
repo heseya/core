@@ -42,6 +42,7 @@ final class SalesChannelsCrudTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->json('GET', "/sales-channels/id:{$channel->getKey()}")
+            ->dd()
             ->assertOk()
             ->assertJsonFragment(['id' => $channel->getKey()]);
     }

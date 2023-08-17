@@ -18,12 +18,14 @@ SalesChannel:
         - active
         - hidden
     default_currency:
-      type: string
-      example: PLN
-    default_language_id:
-      type: string
-      format: uuid
+      type: object
+      $ref: ./Currencies.yml#/Currency
+    default_language:
+      type: object
+      $ref: ./Languages.yml#/Language
     countries_block_list:
       type: boolean
     country_codes:
       type: array
+      items:
+        type: string
