@@ -49,6 +49,7 @@ use Spatie\Translatable\HasTranslations;
  * @property string $description_html
  * @property string $description_short
  * @property mixed $pivot
+ * @property Collection<int, Price> $pricesBase
  *
  * @mixin IdeHelperProduct
  */

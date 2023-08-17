@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Dtos\PriceDto;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
@@ -21,15 +20,17 @@ use App\Models\Discount;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Order;
+use App\Models\Price;
 use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\Role;
-use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\WebHook;
 use App\Repositories\Contracts\ProductRepositoryContract;
-use App\Services\Contracts\ProductServiceContract;
+use App\Repositories\ProductRepository;
+use App\Services\ProductService;
+use App\Services\SchemaCrudService;
 use BenSampo\Enum\Exceptions\InvalidEnumMemberException;
 use Brick\Math\Exception\MathException;
 use Brick\Math\Exception\NumberFormatException;
@@ -38,6 +39,7 @@ use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
 use Domain\ProductSet\ProductSet;
 use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -65,7 +67,10 @@ class OrderCreateTest extends TestCase
 
     private Currency $currency;
     private Money $productPrice;
-    private ProductServiceContract $productService;
+    private ProductService $productService;
+
+    private SchemaCrudService $schemaCrudService;
+    private ProductRepository $productRepository;
 
     /**
      * @throws UnknownCurrencyException
@@ -78,6 +83,8 @@ class OrderCreateTest extends TestCase
         parent::setUp();
 
         $this->email = $this->faker->freeEmail;
+
+        $this->productRepository = App::make(ProductRepository::class);
 
         $this->shippingMethod = ShippingMethod::factory()->create([
             'public' => true,
@@ -106,12 +113,19 @@ class OrderCreateTest extends TestCase
         /** @var ProductRepositoryContract $productRepository */
         $productRepository = App::make(ProductRepositoryContract::class);
         $this->currency = Currency::DEFAULT;
-        [[$priceDto]] = $productRepository::getProductPrices($this->product->getKey(), [
+
+        $productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
+        ]);
+
+        $prices = $productRepository->getProductPrices($this->product->getKey(), [
             ProductPriceType::PRICE_BASE,
         ], $this->currency);
-        $this->productPrice = $priceDto->value;
 
-        $this->productService = App::make(ProductServiceContract::class);
+        $this->productPrice = $prices->get(ProductPriceType::PRICE_BASE->value)?->first()?->value;
+
+        $this->productService = App::make(ProductService::class);
+        $this->schemaCrudService = App::make(SchemaCrudService::class);
     }
 
     public function testCreateOrderUnauthorized(): void
@@ -149,8 +163,10 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $this->product->update([
-            'price' => 10,
+        $this->productPrice = Money::of(10, $this->currency->value);
+
+        $this->productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
         ]);
 
         $productQuantity = 20;
@@ -174,6 +190,7 @@ class OrderCreateTest extends TestCase
         $shippingPrice = $this->shippingMethod->getPrice(
             $this->productPrice->multipliedBy($productQuantity),
         );
+
         $summary = $this->productPrice
             ->multipliedBy($productQuantity)
             ->plus($shippingPrice);
@@ -214,8 +231,8 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $this->product->update([
-            'price' => 10,
+        $this->productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
         ]);
 
         $productQuantity = 20;
@@ -254,8 +271,8 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $this->product->update([
-            'price' => 10,
+        $this->productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
         ]);
 
         $productQuantity = 20;
@@ -301,7 +318,7 @@ class OrderCreateTest extends TestCase
 
         $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::zero($this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::zero($this->currency->value))],
         ]));
 
         $productQuantity = 1;
@@ -369,10 +386,6 @@ class OrderCreateTest extends TestCase
         ]);
 
         Event::fake([OrderCreated::class]);
-
-        $this->product->update([
-            'price' => 10,
-        ]);
 
         $productQuantity = 20;
 
@@ -482,16 +495,13 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 'string',
-            'price' => 10,
+            'prices' => [['value' => 10, 'currency' => $this->currency->value]],
             'hidden' => false,
-        ]);
+        ]));
 
         $this->product->schemas()->sync([$schema->getKey()]);
-        $this->product->update([
-            'price' => 100,
-        ]);
 
         $productQuantity = 2;
 
@@ -578,28 +588,28 @@ class OrderCreateTest extends TestCase
             'quantity' => 100,
         ]);
 
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 'select',
-            'price' => 10,
+            'prices_base' => [['value' => 10, 'currency' => Currency::DEFAULT->value]],
             'hidden' => false,
-        ]);
+        ]));
 
         $option = Option::factory()->create([
             'name' => 'A',
-            'price' => 10,
             'disabled' => false,
             'order' => 0,
             'schema_id' => $schema->getKey(),
         ]);
+
+        $option->prices()->createMany(
+            Price::factory(['value' => 1000])->prepareForCreateMany()
+        );
 
         $option->items()->sync([
             $item->getKey(),
         ]);
 
         $this->product->schemas()->sync([$schema->getKey()]);
-        $this->product->update([
-            'price' => 100,
-        ]);
 
         $productQuantity = 2;
 
@@ -678,16 +688,13 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 'string',
-            'price' => 10,
+            'prices' => [['value' => 10, 'currency' => $this->currency->value]],
             'hidden' => true,
-        ]);
+        ]));
 
         $this->product->schemas()->sync([$schema->getKey()]);
-        $this->product->update([
-            'price' => 100,
-        ]);
 
         $productQuantity = 2;
 
@@ -752,16 +759,13 @@ class OrderCreateTest extends TestCase
         Event::fake([OrderCreated::class]);
 
         $schemaPrice = 10;
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => SchemaType::STRING->name,
-            'price' => $schemaPrice,
+            'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
             'required' => false, // Important!
-        ]);
+        ]));
 
         $this->product->schemas()->sync([$schema->getKey()]);
-        $this->product->update([
-            'price' => $this->productPrice->getAmount()->toFloat(),
-        ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => 'test@example.com',
@@ -922,7 +926,7 @@ class OrderCreateTest extends TestCase
 
         $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(150, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(150, $this->currency->value))],
         ]));
 
         $discount = Discount::factory()->create([
@@ -1062,8 +1066,8 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $this->product->update([
-            'price' => 10,
+        $this->productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
         ]);
 
         $this
@@ -1208,15 +1212,16 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 'string',
-            'price' => 10,
+            'prices' => [['value' => 10, 'currency' => $this->currency->value]],
             'hidden' => false,
-        ]);
+        ]));
 
         $this->product->schemas()->sync([$schema->getKey()]);
-        $this->product->update([
-            'price' => 100,
+
+        $this->productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 100),
         ]);
 
         $productQuantity = 2;
@@ -1271,11 +1276,11 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 'string',
-            'price' => 10,
+            'prices' => [['value' => 10, 'currency' => $this->currency->value]],
             'hidden' => false,
-        ]);
+        ]));
 
         $this->product->schemas()->sync([$schema->getKey()]);
         $this->product->update([
@@ -1338,11 +1343,11 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 'string',
-            'price' => 10,
+            'prices' => [['value' => 10, 'currency' => $this->currency->value]],
             'hidden' => false,
-        ]);
+        ]));
 
         $this->product->schemas()->sync([$schema->getKey()]);
         $this->product->update([
@@ -1401,11 +1406,11 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 'string',
-            'price' => 10,
+            'prices' => [['value' => 10, 'currency' => $this->currency->value]],
             'hidden' => false,
-        ]);
+        ]));
 
         $this->product->schemas()->sync([$schema->getKey()]);
         $this->product->update([
@@ -1454,11 +1459,11 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 'string',
-            'price' => 10,
+            'prices' => [['value' => 10, 'currency' => $this->currency->value]],
             'hidden' => false,
-        ]);
+        ]));
 
         $this->product->schemas()->sync([$schema->getKey()]);
         $this->product->update([
@@ -1705,8 +1710,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => $productQuantity,
                 ],
             ],
-        ])
-            ->assertUnprocessable()
+        ])->assertUnprocessable()
             ->assertJsonFragment([
                 'message' => Exceptions::PRODUCT_PURCHASE_LIMIT,
             ]);

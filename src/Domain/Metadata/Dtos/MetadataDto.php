@@ -21,7 +21,7 @@ final class MetadataDto extends Data
         public readonly string $name,
         public readonly bool|float|int|string|null $value,
         public readonly bool $public,
-        #[WithCast(EnumCast::class)]
+        #[WithCast(EnumCast::class, MetadataType::class)]
         public readonly MetadataType $value_type,
     ) {}
 }

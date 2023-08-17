@@ -21,8 +21,8 @@ final readonly class AttributeOptionService
     {
         $attributeOption = $this->attributeOptionRepository->create($dto);
 
-        if (!($dto->metadata instanceof Optional)) {
-            $this->metadataService->sync($attributeOption, $dto->metadata);
+        if (!($dto->metadata_computed instanceof Optional)) {
+            $this->metadataService->sync($attributeOption, $dto->metadata_computed);
         }
 
         return $attributeOption;

@@ -2,12 +2,12 @@
 
 namespace Database\Factories;
 
-use App\Dtos\PriceDto;
 use App\Enums\Product\ProductPriceType;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
@@ -44,7 +44,7 @@ class ProductFactory extends Factory
             /** @var ProductRepositoryContract $productRepository */
             $productRepository = App::make(ProductRepositoryContract::class);
 
-            $price = new PriceDto(Money::of(
+            $price = PriceDto::from(Money::of(
                 round(mt_rand(500, 6000), -2),
                 Currency::DEFAULT->value,
             ));

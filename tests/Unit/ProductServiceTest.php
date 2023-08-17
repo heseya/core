@@ -2,16 +2,17 @@
 
 namespace Tests\Unit;
 
-use App\Dtos\PriceDto;
 use App\Enums\SchemaType;
 use App\Models\Product;
 use App\Models\Schema;
-use App\Services\Contracts\ProductServiceContract;
+use App\Services\ProductService;
+use App\Services\SchemaCrudService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
@@ -19,11 +20,12 @@ use Tests\Utils\FakeDto;
 
 class ProductServiceTest extends TestCase
 {
-    private ProductServiceContract $productService;
+    private ProductService $productService;
 
     private static Currency $currency = Currency::DEFAULT;
     private static int $price = 10;
     private Product $product;
+    private SchemaCrudService $schemaCrudService;
 
     /**
      * @throws RoundingNecessaryException
@@ -35,11 +37,12 @@ class ProductServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->productService = App::make(ProductServiceContract::class);
+        $this->productService = App::make(ProductService::class);
+        $this->schemaCrudService = App::make(SchemaCrudService::class);
 
         // @var Product $product
         $this->product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [new PriceDto(Money::of(self::$price, Currency::DEFAULT->value))],
+            'prices_base' => [PriceDto::fromMoney(Money::of(self::$price, self::$currency->value))],
         ]));
     }
 
@@ -53,8 +56,8 @@ class ProductServiceTest extends TestCase
     {
         $this->assertEquals(
             [
-                [new PriceDto(Money::of(self::$price, self::$currency->value))],
-                [new PriceDto(Money::of(self::$price, self::$currency->value))],
+                PriceDto::fromMoney(Money::of(self::$price, self::$currency->value)),
+                PriceDto::fromMoney(Money::of(self::$price, self::$currency->value)),
             ],
             $this->productService->getMinMaxPrices($this->product),
         );
@@ -75,24 +78,30 @@ class ProductServiceTest extends TestCase
         return [
             'optional schema' => array_merge(
                 $base,
-                [SchemaType::STRING, false, [
-                    [new PriceDto(Money::of(self::$price, self::$currency->value))],
-                    [new PriceDto(Money::of(self::$price + $schemaPrice, self::$currency->value))],
-                ]]
+                [
+                    SchemaType::STRING,
+                    false,
+                    PriceDto::fromMoney(Money::of(self::$price, self::$currency->value)),
+                    PriceDto::fromMoney(Money::of(self::$price + $schemaPrice, self::$currency->value)),
+                ]
             ),
             'boolean schema' => array_merge(
                 $base,
-                [SchemaType::BOOLEAN, true, [
-                    [new PriceDto(Money::of(self::$price, self::$currency->value))],
-                    [new PriceDto(Money::of(self::$price + $schemaPrice, self::$currency->value))],
-                ]],
+                [
+                    SchemaType::BOOLEAN,
+                    true,
+                    PriceDto::fromMoney(Money::of(self::$price, self::$currency->value)),
+                    PriceDto::fromMoney(Money::of(self::$price + $schemaPrice, self::$currency->value)),
+                ],
             ),
             'required schema' => array_merge(
                 $base,
-                [SchemaType::STRING, true, [
-                    [new PriceDto(Money::of(self::$price + $schemaPrice, self::$currency->value))],
-                    [new PriceDto(Money::of(self::$price + $schemaPrice, self::$currency->value))],
-                ]],
+                [
+                    SchemaType::STRING,
+                    true,
+                    PriceDto::fromMoney(Money::of(self::$price + $schemaPrice, self::$currency->value)),
+                    PriceDto::fromMoney(Money::of(self::$price + $schemaPrice, self::$currency->value)),
+                ],
             ),
         ];
     }
@@ -104,21 +113,24 @@ class ProductServiceTest extends TestCase
         float $schemaPrice,
         SchemaType $type,
         bool $required,
-        array $minmax,
+        PriceDto $min,
+        PriceDto $max,
     ): void {
-        $this->product->schemas()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'name' => 'Test',
-            'type' => $type,
-            'price' => $schemaPrice,
+            'type' => $type->value,
+            'prices' => [PriceDto::from(Money::of($schemaPrice, self::$currency->value))],
             'required' => $required,
-        ]);
+        ]));
 
-        $this->product->load('schemas');
+        $this->product->schemas()->attach($schema->getKey());
 
-        $this->assertEquals(
-            $minmax,
-            $this->productService->getMinMaxPrices($this->product),
-        );
+        $this->product->refresh()->load('schemas');
+
+        $calculated = $this->productService->getMinMaxPrices($this->product, self::$currency);
+
+        $this->assertTrue($calculated[0]->value->getAmount()->isEqualTo($min->value->getAmount()));
+        $this->assertTrue($calculated[1]->value->getAmount()->isEqualTo($max->value->getAmount()));
     }
 
     /**
@@ -140,15 +152,15 @@ class ProductServiceTest extends TestCase
             'optional' => array_merge($base, [
                 false,
                 [
-                    [new PriceDto(Money::of(self::$price, self::$currency->value))],
-                    [new PriceDto(Money::of(self::$price + $schemaPrice + $optionPriceHighest, self::$currency->value))],
+                    PriceDto::fromMoney(Money::of(self::$price, self::$currency->value)),
+                    PriceDto::fromMoney(Money::of(self::$price + $schemaPrice + $optionPriceHighest, self::$currency->value)),
                 ],
             ]),
             'required' => array_merge($base, [
                 true,
                 [
-                    [new PriceDto(Money::of(self::$price + $schemaPrice + $optionPriceLowest, self::$currency->value))],
-                    [new PriceDto(Money::of(self::$price + $schemaPrice + $optionPriceHighest, self::$currency->value))],
+                    PriceDto::fromMoney(Money::of(self::$price + $schemaPrice + $optionPriceLowest, self::$currency->value)),
+                    PriceDto::fromMoney(Money::of(self::$price + $schemaPrice + $optionPriceHighest, self::$currency->value)),
                 ],
             ]),
         ];
@@ -166,26 +178,28 @@ class ProductServiceTest extends TestCase
         array $minmax,
     ): void {
         /** @var Schema $schema */
-        $schema = $this->product->schemas()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'name' => 'Test',
             'type' => SchemaType::SELECT,
-            'price' => $schemaPrice,
+            'prices' => [PriceDto::from(Money::of($schemaPrice, self::$currency->value))],
             'required' => $required,
-        ]);
+            'options' => [
+                [
+                    'name' => 'opt1',
+                    'prices' => [PriceDto::from(Money::of($optionPriceLowest, self::$currency->value))],
+                ],
+                [
+                    'name' => 'opt2',
+                    'prices' => [PriceDto::from(Money::of($optionPriceMedium, self::$currency->value))],
+                ],
+                [
+                    'name' => 'opt3',
+                    'prices' => [PriceDto::from(Money::of($optionPriceHighest, self::$currency->value))],
+                ],
+            ]
+        ]));
 
-        $schema->options()->create([
-            'name' => 'opt1',
-            'price' => $optionPriceLowest,
-        ]);
-        $schema->options()->create([
-            'name' => 'opt2',
-            'price' => $optionPriceMedium,
-        ]);
-        $schema->options()->create([
-            'name' => 'opt3',
-            'price' => $optionPriceHighest,
-        ]);
-
+        $this->product->schemas()->attach($schema->getKey());
         $this->product->load('schemas');
 
         $this->assertEquals(
@@ -212,16 +226,16 @@ class ProductServiceTest extends TestCase
             'optional' => array_merge($base, [
                 false,
                 [
-                    [new PriceDto(Money::of(self::$price, self::$currency->value))],
-                    [new PriceDto(Money::of(self::$price + $schemaPrice * $schemaMax, self::$currency->value))],
+                    PriceDto::fromMoney(Money::of(self::$price, self::$currency->value)),
+                    PriceDto::fromMoney(Money::of(self::$price + $schemaPrice * $schemaMax, self::$currency->value)),
                 ],
             ]),
             'required' => array_merge($base, [
                 true,
                 [
-                    [new PriceDto(Money::of(self::$price + $schemaPrice * $schemaMin, self::$currency->value))],
-                    [new PriceDto(Money::of(self::$price + $schemaPrice * $schemaMax, self::$currency->value))],
-                ],
+                    PriceDto::fromMoney(Money::of(self::$price + $schemaPrice * $schemaMin, self::$currency->value)),
+                    PriceDto::fromMoney(Money::of(self::$price + $schemaPrice * $schemaMax, self::$currency->value))
+                ]
             ]),
         ];
     }
@@ -236,20 +250,23 @@ class ProductServiceTest extends TestCase
         bool $required,
         array $minmax,
     ): void {
-        $this->product->schemas()->create([
+        /** @var Schema $schema */
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'name' => 'Test',
             'type' => SchemaType::MULTIPLY,
-            'price' => $schemaPrice,
+            'prices' => [PriceDto::from(Money::of($schemaPrice, self::$currency->value))],
             'min' => $schemaMin,
             'max' => $schemaMax,
             'required' => $required,
-        ]);
+        ]));
+
+        $this->product->schemas()->attach($schema->getKey());
 
         $this->product->load('schemas');
 
         $this->assertEquals(
             $minmax,
-            $this->productService->getMinMaxPrices($this->product),
+            $this->productService->getMinMaxPrices($this->product)
         );
     }
 
@@ -271,15 +288,15 @@ class ProductServiceTest extends TestCase
             'optional' => array_merge($base, [
                 false,
                 [
-                    [new PriceDto(Money::of(self::$price, self::$currency->value))],
-                    [new PriceDto(Money::of(self::$price + $schemaBasePrice * $schemaMax, self::$currency->value))],
+                    PriceDto::fromMoney(Money::of(self::$price, self::$currency->value)),
+                    PriceDto::fromMoney(Money::of(self::$price + $schemaBasePrice * $schemaMax, self::$currency->value)),
                 ],
             ]),
             'required' => array_merge($base, [
                 true,
                 [
-                    [new PriceDto(Money::of(self::$price + $schemaBasePrice * $schemaMin, self::$currency->value))],
-                    [new PriceDto(Money::of(self::$price + $schemaBasePrice * $schemaMax, self::$currency->value))],
+                    PriceDto::fromMoney(Money::of(self::$price + $schemaBasePrice * $schemaMin, self::$currency->value)),
+                    PriceDto::fromMoney(Money::of(self::$price + $schemaBasePrice * $schemaMax, self::$currency->value)),
                 ],
             ]),
         ];
@@ -296,21 +313,25 @@ class ProductServiceTest extends TestCase
         array $minmax,
     ): void {
         /** @var Schema $baseSchema */
-        $baseSchema = $this->product->schemas()->create([
+        $baseSchema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'name' => 'Test',
             'type' => SchemaType::STRING,
-            'price' => $schemaBasePrice,
+            'prices' => [PriceDto::from(Money::of($schemaBasePrice, self::$currency->value))],
             'required' => true,
-        ]);
+        ]));
+
+        $this->product->schemas()->attach($baseSchema->getKey());
 
         /** @var Schema $multiplySchema */
-        $multiplySchema = $this->product->schemas()->create([
+        $multiplySchema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'name' => 'Test2',
             'type' => SchemaType::MULTIPLY_SCHEMA,
             'min' => $schemaMin,
             'max' => $schemaMax,
             'required' => $required,
-        ]);
+        ]));
+
+        $this->product->schemas()->attach($multiplySchema->getKey());
 
         $multiplySchema->usedSchemas()->attach($baseSchema);
 
@@ -331,35 +352,45 @@ class ProductServiceTest extends TestCase
     public function testMinMaxPricesMultipleSchemas(): void
     {
         $schema1Price = 5;
-        $this->product->schemas()->create([
+
+        /** @var Schema $schema */
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'name' => 'Test',
             'type' => SchemaType::STRING,
-            'price' => $schema1Price,
+            'prices' => [PriceDto::from(Money::of($schema1Price, self::$currency->value))],
             'required' => true,
-        ]);
+        ]));
+
+        $this->product->schemas()->attach($schema);
 
         $schema2Price = 7;
-        $this->product->schemas()->create([
+        /** @var Schema $schema2 */
+        $schema2 = $this->schemaCrudService->store(FakeDto::schemaDto([
             'name' => 'Test2',
             'type' => SchemaType::NUMERIC,
-            'price' => $schema2Price,
+            'prices' => [PriceDto::from(Money::of($schema2Price, self::$currency->value))],
             'required' => false,
-        ]);
+        ]));
+
+        $this->product->schemas()->attach($schema2);
 
         $schema3Price = 10;
-        $this->product->schemas()->create([
+        /** @var Schema $schema3 */
+        $schema3 = $this->schemaCrudService->store(FakeDto::schemaDto([
             'name' => 'Test3',
             'type' => SchemaType::BOOLEAN,
-            'price' => $schema3Price,
+            'prices' => [PriceDto::from(Money::of($schema3Price, self::$currency->value))],
             'required' => false,
-        ]);
+        ]));
+
+        $this->product->schemas()->attach($schema3);
 
         $this->product->load('schemas');
 
         $this->assertEquals(
             [
-                [new PriceDto(Money::of(self::$price + $schema1Price, self::$currency->value))],
-                [new PriceDto(Money::of(self::$price + $schema1Price + $schema2Price + $schema3Price, self::$currency->value))],
+                PriceDto::fromMoney(Money::of(self::$price + $schema1Price, self::$currency->value)),
+                PriceDto::fromMoney(Money::of(self::$price + $schema1Price + $schema2Price + $schema3Price, self::$currency->value)),
             ],
             $this->productService->getMinMaxPrices($this->product),
         );

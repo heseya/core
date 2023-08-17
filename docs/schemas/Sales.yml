@@ -23,8 +23,6 @@ Sale:
       enum: [ 'amount', 'percentage' ]
     priority:
       type: number
-    uses:
-      type: number
     target_type:
       type: string
       enum: [ 'order-value', 'products', 'shipping-price', 'cheapest-product' ]
@@ -42,6 +40,8 @@ SaleShow:
   allOf:
     - $ref: '#/Sale'
     - properties:
+        uses:
+          type: number
         seo:
           $ref: './Seo.yml#/SeoView'
         condition_groups:

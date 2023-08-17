@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Support\DtoCasts;
+namespace Support\LaravelData\Casts;
 
 use Brick\Money\Currency;
 use Domain\Currency\Currency as CurrencyEnum;

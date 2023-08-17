@@ -9,6 +9,7 @@ use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Domain\Seo\Dtos\SeoMetadataDto;
 use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\MapInputName;
+use Spatie\LaravelData\Attributes\MapOutputName;
 use Spatie\LaravelData\Attributes\Validation\AlphaDash;
 use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -24,7 +25,8 @@ final class ProductSetCreateDto extends Data
      * @var Optional|MetadataUpdateDto[]
      */
     #[Computed]
-    public readonly array|Optional $metadata;
+    #[MapOutputName('metadata')]
+    public readonly array|Optional $metadata_computed;
 
     /**
      * @param array<string, array<string, string>> $translations
@@ -56,7 +58,7 @@ final class ProductSetCreateDto extends Data
         public readonly array $children_ids = [],
         public readonly array $attributes = [],
     ) {
-        $this->metadata = Map::toMetadata(
+        $this->metadata_computed = Map::toMetadata(
             $this->metadata_public,
             $this->metadata_private,
         );

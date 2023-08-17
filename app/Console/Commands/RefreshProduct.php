@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Product;
-use App\Services\Contracts\ProductServiceContract;
+use App\Services\ProductService;
 use Illuminate\Console\Command;
 
 class RefreshProduct extends Command
@@ -37,7 +37,7 @@ class RefreshProduct extends Command
             return 0;
         }
 
-        $productService = app(ProductServiceContract::class);
+        $productService = app(ProductService::class);
         $productService->updateMinMaxPrices($product);
 
         $this->info('Done.');

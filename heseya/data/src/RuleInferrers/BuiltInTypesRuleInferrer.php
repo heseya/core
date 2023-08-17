@@ -3,6 +3,8 @@
 namespace Heseya\Data\RuleInferrers;
 
 use BackedEnum;
+use Heseya\Data\Contracts\CoerceableEnum;
+use Heseya\Data\Validation\EnumValueOrKey;
 use Spatie\LaravelData\Attributes\Validation\ArrayType;
 use Spatie\LaravelData\Attributes\Validation\BooleanType;
 use Spatie\LaravelData\Attributes\Validation\Enum;
@@ -41,7 +43,11 @@ class BuiltInTypesRuleInferrer implements RuleInferrer
         }
 
         if ($enumClass = $property->type->findAcceptedTypeForBaseType(BackedEnum::class)) {
-            $rules->add(new Enum($enumClass));
+            if (is_a($enumClass, CoerceableEnum::class, true)) {
+                $rules->add(new EnumValueOrKey($enumClass));
+            } else {
+                $rules->add(new Enum($enumClass));
+            }
         }
 
         return $rules;

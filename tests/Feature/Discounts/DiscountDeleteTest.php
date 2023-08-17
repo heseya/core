@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Discounts;
 
-use App\Dtos\PriceDto;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\Product\ProductPriceType;
@@ -16,6 +15,7 @@ use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\DiscountServiceContract;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
 use Domain\ProductSet\ProductSet;
 use Heseya\Dto\DtoException;
 use Illuminate\Events\CallQueuedListener;
@@ -227,10 +227,10 @@ class DiscountDeleteTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository::setProductPrices($product->getKey(), [
-            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(100, $this->currency->value))],
-            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(100, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(200, $this->currency->value))],
+        $this->productRepository->setProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(100, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(100, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(200, $this->currency->value))],
         ]);
 
         $discount->products()->attach($product);
@@ -285,10 +285,10 @@ class DiscountDeleteTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository::setProductPrices($product->getKey(), [
-            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(100, $this->currency->value))],
-            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(100, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(200, $this->currency->value))],
+        $this->productRepository->setProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(100, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(100, $this->currency->value))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(200, $this->currency->value))],
         ]);
 
         $parentSet = ProductSet::factory()->create(['public' => true]);

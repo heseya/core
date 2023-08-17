@@ -4,12 +4,20 @@ namespace App\Models;
 
 use App\Models\Interfaces\Translatable;
 use App\Traits\HasMetadata;
+use Database\Factories\OptionFactory;
+use Domain\Currency\Currency;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Spatie\Translatable\HasTranslations;
 
 /**
+ * @property Collection<int, Price> $prices
+ *
+ * @method static OptionFactory factory()
+ *
  * @mixin IdeHelperOption
  */
 class Option extends Model implements Translatable
@@ -20,7 +28,6 @@ class Option extends Model implements Translatable
 
     protected $fillable = [
         'name',
-        'price',
         'disabled',
         'schema_id',
         'order',
@@ -34,7 +41,6 @@ class Option extends Model implements Translatable
     ];
 
     protected $casts = [
-        'price' => 'float',
         'disabled' => 'bool',
         'available' => 'bool',
     ];
@@ -49,5 +55,15 @@ class Option extends Model implements Translatable
     public function schema(): BelongsTo
     {
         return $this->belongsTo(Schema::class);
+    }
+
+    public function prices(): MorphMany
+    {
+        return $this->morphMany(Price::class, 'model');
+    }
+
+    public function getPriceForCurrency(Currency $currency = Currency::DEFAULT): float
+    {
+        return $this->prices->where('currency', $currency->value)->firstOrFail()->value->getAmount()->toFloat();
     }
 }

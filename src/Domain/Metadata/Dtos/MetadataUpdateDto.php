@@ -7,6 +7,8 @@ namespace Domain\Metadata\Dtos;
 use Domain\Metadata\Enums\MetadataType;
 use Spatie\LaravelData\Attributes\Validation\AlphaDash;
 use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 use Support\LaravelData\ExtendedData;
 
@@ -19,6 +21,7 @@ final class MetadataUpdateDto extends Data
         public readonly string $name,
         public readonly bool|float|int|string|null $value,
         public readonly bool $public,
+        #[WithCast(EnumCast::class, MetadataType::class)]
         public readonly MetadataType $value_type,
     ) {}
 }

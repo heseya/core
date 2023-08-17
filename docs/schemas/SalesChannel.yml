@@ -9,6 +9,8 @@ SalesChannel:
     vat_rate:
       type: string
       example: '23'
+    slug:
+      type: string
     status:
       type: string
       enum:
@@ -16,19 +18,14 @@ SalesChannel:
         - active
         - hidden
     default_currency:
-      type: string
-      example: PLN
-    default_language_id:
-      type: string
-      format: uuid
-    country_block_list:
+      type: object
+      $ref: ./Currencies.yml#/Currency
+    default_language:
+      type: object
+      $ref: ./Languages.yml#/Language
+    countries_block_list:
       type: boolean
-
-SalesChannelView:
-  type: object
-  allOf:
-    - $ref: '#/SalesChannel'
-    - properties:
-        country_codes:
-          type: array
-
+    country_codes:
+      type: array
+      items:
+        type: string

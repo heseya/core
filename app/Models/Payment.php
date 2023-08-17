@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\PaymentStatus;
+use Domain\Currency\Currency;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -18,6 +19,7 @@ class Payment extends Model
     protected $fillable = [
         'external_id',
         'method',
+        'currency',
         'amount',
         'redirect_url',
         'continue_url',
@@ -30,6 +32,7 @@ class Payment extends Model
     protected $casts = [
         'amount' => 'float',
         'status' => PaymentStatus::class,
+        'currency' => Currency::class,
     ];
 
     public function order(): BelongsTo

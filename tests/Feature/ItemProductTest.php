@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Item;
 use App\Models\Product;
-use App\Services\Contracts\ProductServiceContract;
+use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
@@ -33,8 +33,8 @@ class ItemProductTest extends TestCase
         Product::query()->delete();
         Item::query()->delete();
 
-        /** @var ProductServiceContract $productService */
-        $productService = App::make(ProductServiceContract::class);
+        /** @var ProductService $productService */
+        $productService = App::make(ProductService::class);
         $this->product = $productService->create(FakeDto::productCreateDto());
 
         $this->items = Item::factory()->count(3)->create();
@@ -184,7 +184,7 @@ class ItemProductTest extends TestCase
             ],
         ]);
 
-        $response
+        $response->assertValid()
             ->assertOk()
             ->assertJsonCount(1, 'data.items');
 
