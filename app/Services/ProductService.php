@@ -175,25 +175,6 @@ final readonly class ProductService implements ProductServiceContract
     }
 
     /**
-     * @throws DtoException
-     * @throws ServerException
-     */
-    public function updateProductsDiscounts(array $productIds): void
-    {
-        [$pricesMinInitial, $pricesMaxInitial] = $this->productRepository::getProductsPrices($productIds, [
-            ProductPriceType::PRICE_MIN_INITIAL,
-            ProductPriceType::PRICE_MAX_INITIAL,
-        ]);
-
-        $pricesDiscounted = $this->discountService->discountProductPrices(
-            $productIds,
-            $pricesMinInitial + $pricesMaxInitial,
-        );
-
-        $this->productRepository::setProductsPrices($pricesDiscounted);
-    }
-
-    /**
      * @return PriceDto[][]
      */
     public function getMinMaxPrices(Product $product): array

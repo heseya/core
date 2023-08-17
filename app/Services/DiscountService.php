@@ -222,64 +222,6 @@ readonly class DiscountService implements DiscountServiceContract
         }
     }
 
-    /**
-     * EVERYTHING BELLOW THIS LINE IS SHIT -----------------------------.
-     */
-    //    public function updateDiscountProductsPrices(Discount $discount, bool $updated): void
-    //    {
-    //        // I will try to remove this later
-    //        // If discount has conditions based on time, then must be added or removed from cache
-    //        $this->checkIsDiscountActive($discount);
-    //
-    //        if (!$updated && $discount->active) {
-    //            $productIds = $this->allDiscountProductsIds($discount);
-    //
-    //            $this->productService->updateProductsDiscounts($productIds);
-    //        }
-    //    }
-    //
-    //    /**
-    //     * @param string[] $productIds
-    //     * @param PriceModelDto[] $priceModelDtos
-    //     *
-    //     * @return PriceModelDto[]
-    //     */
-    //    public function discountProductPrices(array $productIds, array $priceModelDtos): array
-    //    {
-    //        $discounts = $this->getDiscountsForProducts();
-    //
-    //        foreach ($priceModelDtos as $priceDto) {
-    //            $productId = $priceDto->model_id;
-    //
-    //            $filteredDiscounts = $this->getDiscountsForProductId($productId, $discounts);
-    //
-    //
-    //        }
-    //    }
-    //
-    //    /**
-    //     * @return Discount[]
-    //     */
-    //    private function getDiscountsForProducts(): array
-    //    {
-    //        return Discount::query()
-    //            ->whereNull('code')
-    //            ->where('active', '=', true)
-    //            ->where('target_type', '=', DiscountTargetType::PRODUCTS->value)
-    //            ->with(['products', 'productSets', 'productSets.products'])
-    //            ->get();
-    //    }
-    //
-    //    /**
-    //     * @param Discount[] $discounts
-    //     *
-    //     * @return Discount[]
-    //     */
-    //    private function getDiscountsForProductId(string $productId, array $discounts): array
-    //    {
-    //
-    //    }
-
     private function getSalesWithBlockList(): Collection
     {
         return Discount::query()

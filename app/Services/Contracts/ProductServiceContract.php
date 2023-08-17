@@ -14,8 +14,6 @@ interface ProductServiceContract
 
     public function delete(Product $product): void;
 
-    public function updateProductsDiscounts(array $productIds): void;
-
     /**
      * Returns minimum and maximum possible product price in
      * array formatted as such: [minimum, maximum].
