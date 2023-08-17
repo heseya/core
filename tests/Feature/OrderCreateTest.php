@@ -156,7 +156,6 @@ class OrderCreateTest extends TestCase
 
         $this->product->update([
             'price' => 10,
-            'vat_rate' => 23,
         ]);
 
         $productQuantity = 20;
@@ -195,7 +194,7 @@ class OrderCreateTest extends TestCase
             'order_id' => $order->id,
             'product_id' => $this->product->getKey(),
             'quantity' => 20,
-            'vat_rate' => 23,
+            'vat_rate' => '0',
         ]);
 
         Event::assertDispatched(OrderCreated::class);
@@ -1702,7 +1701,6 @@ class OrderCreateTest extends TestCase
 
         $this->product->update([
             'price' => 10,
-            'vat_rate' => 23,
             'purchase_limit_per_user' => 10,
         ]);
 
@@ -1737,7 +1735,6 @@ class OrderCreateTest extends TestCase
 
         $this->product->update([
             'price' => 10,
-            'vat_rate' => 23,
             'purchase_limit_per_user' => 1,
         ]);
 
@@ -1794,7 +1791,6 @@ class OrderCreateTest extends TestCase
 
         $this->product->update([
             'price' => 10,
-            'vat_rate' => 23,
             'purchase_limit_per_user' => 1,
         ]);
 
@@ -1839,7 +1835,6 @@ class OrderCreateTest extends TestCase
 
         $this->product->update([
             'price' => 10,
-            'vat_rate' => 23,
             'purchase_limit_per_user' => 1,
         ]);
 
@@ -1885,7 +1880,6 @@ class OrderCreateTest extends TestCase
 
         $this->product->update([
             'price' => 10,
-            'vat_rate' => 23,
             'purchase_limit_per_user' => 1,
         ]);
 

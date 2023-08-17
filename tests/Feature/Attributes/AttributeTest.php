@@ -3,6 +3,7 @@
 namespace Tests\Feature\Attributes;
 
 use App\Models\Option;
+use Domain\Language\Language;
 use Domain\Metadata\Enums\MetadataType;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
@@ -118,6 +119,51 @@ class AttributeTest extends TestCase
                 'global' => $this->attribute->global,
                 'sortable' => $this->attribute->sortable,
                 'metadata' => [],
+            ])
+            ->assertJsonFragment($this->attributeData);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexWithTranslations(string $user): void
+    {
+        $this->{$user}->givePermissionTo('attributes.show');
+
+        $this->attributeData['global'] = !$this->attribute->global;
+        Attribute::query()->create($this->attributeData);
+        $language = Language::create([
+            'name' => 'Deutsch',
+            'iso' => 'de',
+            'hidden' => false,
+        ]);
+        $name = $this->attribute->name;
+        $this->attribute->setLocale($language->getKey())->fill([
+            'name' => 'Neues Attribut',
+        ]);
+        $this->attribute->save();
+
+        $this
+            ->actingAs($this->{$user})
+            ->getJson('/attributes?with_translations=1')
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'name' => $this->attribute->name,
+                'slug' => $this->attribute->slug,
+                'description' => $this->attribute->description,
+                'type' => $this->attribute->type,
+                'global' => $this->attribute->global,
+                'sortable' => $this->attribute->sortable,
+                'metadata' => [],
+                'translations' => [
+                    $this->lang => [
+                        'name' => $name,
+                    ],
+                    $language->getKey() => [
+                        'name' => 'Neues Attribut',
+                    ],
+                ],
             ])
             ->assertJsonFragment($this->attributeData);
     }
@@ -316,6 +362,49 @@ class AttributeTest extends TestCase
                 'type' => $this->attribute->type,
                 'global' => $this->attribute->global,
                 'sortable' => $this->attribute->sortable,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWithTranslations(string $user): void
+    {
+        $this->{$user}->givePermissionTo('attributes.show');
+
+        $this->attributeData['global'] = !$this->attribute->global;
+        Attribute::query()->create($this->attributeData);
+        $language = Language::create([
+            'name' => 'Deutsch',
+            'iso' => 'de',
+            'hidden' => false,
+        ]);
+        $name = $this->attribute->name;
+        $this->attribute->setLocale($language->getKey())->fill([
+            'name' => 'Neues Attribut',
+        ]);
+        $this->attribute->save();
+
+        $this
+            ->actingAs($this->{$user})
+            ->getJson('/attributes/id:' . $this->attribute->getKey() . '?with_translations=1')
+            ->assertOk()
+            ->assertJsonFragment([
+                'name' => $this->attribute->name,
+                'slug' => $this->attribute->slug,
+                'description' => $this->attribute->description,
+                'type' => $this->attribute->type,
+                'global' => $this->attribute->global,
+                'sortable' => $this->attribute->sortable,
+                'metadata' => [],
+                'translations' => [
+                    $this->lang => [
+                        'name' => $name,
+                    ],
+                    $language->getKey() => [
+                        'name' => 'Neues Attribut',
+                    ],
+                ],
             ]);
     }
 

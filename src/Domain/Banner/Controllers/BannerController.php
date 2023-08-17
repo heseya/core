@@ -1,22 +1,24 @@
 <?php
 
-namespace App\Http\Controllers;
+declare(strict_types=1);
 
-use App\Dtos\BannerDto;
+namespace Domain\Banner\Controllers;
+
+use App\Http\Controllers\Controller;
 use App\Http\Requests\BannerIndexRequest;
-use App\Http\Requests\BannerStoreRequest;
-use App\Http\Requests\BannerUpdateRequest;
-use App\Http\Resources\BannerResource;
-use App\Models\Banner;
-use App\Services\Contracts\BannerServiceContract;
+use Domain\Banner\Dtos\BannerCreateDto;
+use Domain\Banner\Dtos\BannerUpdateDto;
+use Domain\Banner\Models\Banner;
+use Domain\Banner\Resources\BannerResource;
+use Domain\Banner\Services\BannerService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
 
-class BannerController extends Controller
+final class BannerController extends Controller
 {
-    public function __construct(private BannerServiceContract $bannerService) {}
+    public function __construct(private readonly BannerService $bannerService) {}
 
     public function index(BannerIndexRequest $request): JsonResource
     {
@@ -35,23 +37,14 @@ class BannerController extends Controller
         return BannerResource::make($banner);
     }
 
-    public function store(BannerStoreRequest $request): JsonResource
+    public function store(BannerCreateDto $dto): JsonResource
     {
-        return BannerResource::make(
-            $this->bannerService->create(
-                BannerDto::instantiateFromRequest($request)
-            )
-        );
+        return BannerResource::make($this->bannerService->create($dto));
     }
 
-    public function update(Banner $banner, BannerUpdateRequest $request): JsonResource
+    public function update(Banner $banner, BannerUpdateDto $dto): JsonResource
     {
-        return BannerResource::make(
-            $this->bannerService->update(
-                $banner,
-                BannerDto::instantiateFromRequest($request)
-            )
-        );
+        return BannerResource::make($this->bannerService->update($banner, $dto));
     }
 
     public function destroy(Banner $banner): JsonResponse

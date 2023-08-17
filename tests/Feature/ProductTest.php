@@ -1263,7 +1263,6 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'prices_base' => $this->productPrices,
             'public' => true,
-            'vat_rate' => 23,
             'shipping_digital' => false,
             'translations' => [
                 $this->lang => [
@@ -1281,7 +1280,6 @@ class ProductTest extends TestCase
                 'slug' => 'test',
                 'name' => 'Test',
                 'public' => true,
-                'vat_rate' => 23,
                 'shipping_digital' => false,
                 'description_html' => '<h1>Description</h1>',
                 'description_short' => 'So called short description...',
@@ -1297,7 +1295,6 @@ class ProductTest extends TestCase
             'slug' => 'test',
             "name->{$this->lang}" => 'Test',
             'public' => true,
-            'vat_rate' => 23,
             'shipping_digital' => false,
             "description_html->{$this->lang}" => '<h1>Description</h1>',
             "description_short->{$this->lang}" => 'So called short description...',
@@ -2312,7 +2309,6 @@ class ProductTest extends TestCase
             'published' => [$this->lang],
             'slug' => 'updated',
             'public' => false,
-            'vat_rate' => 5,
         ])->assertOk();
 
         $this->assertDatabaseHas('products', [
@@ -2322,7 +2318,6 @@ class ProductTest extends TestCase
             "description_html->{$this->lang}" => '<h1>New description</h1>',
             "description_short->{$this->lang}" => 'New so called short description',
             'public' => false,
-            'vat_rate' => 5,
         ]);
     }
 

@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\Banner;
-use App\Models\BannerMedia;
 use App\Models\Media;
+use Domain\Banner\Models\Banner;
+use Domain\Banner\Models\BannerMedia;
 use Illuminate\Database\Eloquent\Collection;
 use Tests\TestCase;
 
@@ -14,6 +14,7 @@ class BannerTest extends TestCase
     public BannerMedia $bannerMedia;
     public array $newBanner = [];
     public array $newBannerMedia = [];
+    public array $newBannerMediaData = [];
     public array $medias = [];
     public Collection $media;
 
@@ -41,7 +42,19 @@ class BannerTest extends TestCase
 
         $this->newBanner = Banner::factory()->definition();
 
-        $this->newBannerMedia = BannerMedia::factory()->definition();
+        $this->newBannerMediaData = BannerMedia::factory()->definition();
+        $this->newBannerMedia = [
+            'translations' => [
+                $this->lang => [
+                    'title' => $this->newBannerMediaData['title'],
+                    'subtitle' => $this->newBannerMediaData['subtitle'],
+                ],
+            ],
+            'url' => $this->newBannerMediaData['url'],
+            'order' => $this->newBannerMediaData['order'],
+            'published' => [$this->lang],
+        ];
+
 
         $this->medias = [
             'media' => [
@@ -274,9 +287,9 @@ class BannerTest extends TestCase
                 'url' => $this->media[2]->url,
             ])
             ->assertJsonFragment([
-                'title' => $this->newBannerMedia['title'],
-                'subtitle' => $this->newBannerMedia['subtitle'],
-                'url' => $this->newBannerMedia['url'],
+                'title' => $this->newBannerMediaData['title'],
+                'subtitle' => $this->newBannerMediaData['subtitle'],
+                'url' => $this->newBannerMediaData['url'],
             ]);
     }
 
@@ -288,7 +301,7 @@ class BannerTest extends TestCase
         $this->{$user}->givePermissionTo('banners.add');
         $this
             ->actingAs($this->{$user})
-            ->postJson('/banners', $this->newBanner + ['banner_media' => [$this->medias]])
+            ->postJson('/banners', $this->newBanner + ['banner_media' => []])
             ->assertCreated();
     }
 
@@ -378,7 +391,7 @@ class BannerTest extends TestCase
     {
         $this->{$user}->givePermissionTo('banners.add');
 
-        unset($this->newBanner['url']);
+        unset($this->newBanner['slug']);
 
         $this
             ->actingAs($this->{$user})
@@ -400,8 +413,12 @@ class BannerTest extends TestCase
         ];
 
         $bannerMedia = [
-            'title' => 'changed title',
-            'subtitle' => 'new subtitle',
+            'translations' => [
+                $this->lang => [
+                    'title' => 'changed title',
+                    'subtitle' => 'new subtitle',
+                ],
+            ],
             'url' => 'https://picsum.photos/200',
         ];
 
@@ -471,7 +488,8 @@ class BannerTest extends TestCase
 
         $response = $this
             ->actingAs($this->{$user})
-            ->patchJson("/banners/id:{$this->banner->getKey()}", $banner);
+            ->patchJson("/banners/id:{$this->banner->getKey()}", $banner)
+            ->assertOk();
 
         $response
             ->assertJson(['data' => [
@@ -512,7 +530,11 @@ class BannerTest extends TestCase
             ->patchJson("/banners/id:{$this->banner->getKey()}", [
                 'banner_media' => [
                     [
-                        'title' => 'test',
+                        'translations' => [
+                            $this->lang => [
+                                'title' => 'test',
+                            ],
+                        ],
                         'media' => [
                             ['min_screen_width' => 150, 'media' => $media->getKey()],
                         ],
@@ -559,7 +581,7 @@ class BannerTest extends TestCase
             ->assertDatabaseHas('banner_media', [
                 'id' => $data->banner_media[0]->id,
                 'url' => $data->banner_media[0]->url,
-                'title' => $data->banner_media[0]->title,
+                "title->{$this->lang}" => $data->banner_media[0]->title,
             ]);
     }
 

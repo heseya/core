@@ -1,0 +1,32 @@
+SalesChannelUpdateDto:
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          translations:
+            type: object
+            properties:
+              lang_uuid:
+                type: object
+                properties:
+                  name:
+                    type: string
+          slug:
+            type: string
+          status:
+            type: string
+            enum:
+              - inactive
+              - active
+              - hidden
+          vat_rate:
+            type: string
+          default_currency:
+            type: string
+            example: PLN
+          default_language_id:
+            type: string
+            format: uuid
+          countries:
+            type: array
