@@ -33,7 +33,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use Spatie\Translatable\HasTranslations;
 
 /**
  * @property mixed $pivot
