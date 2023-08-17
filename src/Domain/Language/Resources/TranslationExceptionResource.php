@@ -19,6 +19,7 @@ final class TranslationExceptionResource extends Resource
     {
         /** @var Collection<int, mixed> $resource */
         $resource = $this->resource;
+
         return Collection::make($resource)->toArray();
     }
 }

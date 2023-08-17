@@ -85,6 +85,7 @@ class Schema extends Model implements SortableContract, Translatable
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,
         'published' => Like::class,
+        'schemas.published' => Like::class,
     ];
 
     protected array $sortable = [

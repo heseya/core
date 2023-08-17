@@ -61,6 +61,7 @@ class Status extends Model implements Translatable
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,
         'published' => Like::class,
+        'statuses.published' => Like::class,
     ];
 
     public function orders(): HasMany

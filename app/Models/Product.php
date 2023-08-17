@@ -144,6 +144,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'price_min' => PriceMinCap::class,
         'price_max' => PriceMaxCap::class,
         'published' => Like::class,
+        'products.published' => Like::class,
     ];
 
     protected string $defaultSortBy = 'products.order';

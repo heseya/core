@@ -70,6 +70,7 @@ final class Page extends Model implements SeoContract, SortableContract, Transla
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,
         'published' => Like::class,
+        'pages.published' => Like::class,
     ];
 
     /**
