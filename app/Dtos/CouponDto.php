@@ -18,9 +18,9 @@ final class CouponDto extends SaleDto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    public readonly string|Missing $code;
+    public readonly Missing|string $code;
 
-    public function __construct(...$data)
+    public function __construct(mixed ...$data)
     {
         $this->code = $data['code'];
 

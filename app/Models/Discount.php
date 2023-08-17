@@ -66,6 +66,11 @@ class Discount extends Model implements SeoContract
         'ids' => WhereInIds::class,
     ];
 
+    public function getUsesAttribute(): int
+    {
+        return $this->orders->count();
+    }
+
     public function orders(): MorphToMany
     {
         return $this->morphedByMany(Order::class, 'model', 'order_discounts');

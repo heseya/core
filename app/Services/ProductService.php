@@ -12,7 +12,6 @@ use App\Events\ProductDeleted;
 use App\Events\ProductPriceUpdated;
 use App\Events\ProductUpdated;
 use App\Exceptions\PublishingException;
-use App\Exceptions\ServerException;
 use App\Models\Option;
 use App\Models\Price;
 use App\Models\Product;

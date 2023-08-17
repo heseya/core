@@ -110,9 +110,7 @@ readonly class DiscountService implements DiscountServiceContract
      */
     public function store(CouponDto|SaleDto $dto): Discount
     {
-        $hasAmounts = !($dto->amounts instanceof Missing);
-
-        if (!$hasAmounts && $dto->percentage instanceof Missing) {
+        if ($dto->amounts instanceof Missing && $dto->percentage instanceof Missing) {
             throw new ClientException('You need either percentage or amount values for the discount value');
         }
 
@@ -136,7 +134,7 @@ readonly class DiscountService implements DiscountServiceContract
             $this->seoMetadataService->createOrUpdateFor($discount, $dto->getSeo());
         }
 
-        if ($hasAmounts) {
+        if (!($dto->amounts instanceof Missing)) {
             $this->discountRepository->setDiscountAmounts($discount->getKey(), $dto->amounts);
         }
 
@@ -157,10 +155,7 @@ readonly class DiscountService implements DiscountServiceContract
     {
         $discount->fill($dto->toArray());
 
-        $hasPercentage = !($dto->percentage instanceof Missing);
-        $hasAmounts = !($dto->amounts instanceof Missing);
-
-        if (!$hasPercentage && $hasAmounts) {
+        if ($dto->percentage instanceof Missing && !($dto->amounts instanceof Missing)) {
             $discount->percentage = null;
         }
 
@@ -190,9 +185,9 @@ readonly class DiscountService implements DiscountServiceContract
             $this->seoMetadataService->createOrUpdateFor($discount, $dto->getSeo());
         }
 
-        if ($hasAmounts) {
+        if (!($dto->amounts instanceof Missing)) {
             $this->discountRepository->setDiscountAmounts($discount->getKey(), $dto->amounts);
-        } elseif ($hasPercentage) {
+        } elseif (!($dto->percentage instanceof Missing)) {
             $discount->amounts()->delete();
         }
 
