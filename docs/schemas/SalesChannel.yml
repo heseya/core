@@ -23,7 +23,7 @@ SalesChannel:
     default_language_id:
       type: string
       format: uuid
-    country_block_list:
+    countries_block_list:
       type: boolean
     country_codes:
       type: array

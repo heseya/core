@@ -22,6 +22,8 @@ SalesChannelUpdateDto:
               - hidden
           vat_rate:
             type: string
+          countries_block_list:
+            type: boolean
           default_currency:
             type: string
             example: PLN

@@ -30,6 +30,8 @@ SalesChannelCreateDto:
           default_language_id:
             type: string
             format: uuid
+          countries_block_list:
+            type: boolean
           countries:
             type: array
         required:
@@ -37,6 +39,7 @@ SalesChannelCreateDto:
           - slug
           - status
           - vat_rate
+          - countries_block_list
           - default_currency
           - default_language_id
           - countries
