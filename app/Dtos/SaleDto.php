@@ -13,31 +13,31 @@ class SaleDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    protected Missing|string $name;
-    protected Missing|string|null $slug;
-    protected Missing|string|null $description;
-    protected Missing|string|null $description_html;
-    protected float|Missing $value;
-    protected Missing|string $type;
-    protected int|Missing $priority;
-    protected Missing|string $target_type;
-    protected bool|Missing $target_is_allow_list;
-    protected array|Missing $condition_groups;
-    protected array|Missing $target_products;
-    protected array|Missing $target_sets;
-    protected array|Missing $target_shipping_methods;
-    protected bool|Missing $active;
+    public function __construct(
+        readonly public array $translations,
+        readonly public array $published,
+        readonly public Missing|string|null $slug,
+        readonly public float|Missing $value,
+        readonly public Missing|string $type,
+        readonly public int|Missing $priority,
+        readonly public Missing|string $target_type,
+        readonly public bool|Missing $target_is_allow_list,
+        readonly public array|Missing $condition_groups,
+        readonly public array|Missing $target_products,
+        readonly public array|Missing $target_sets,
+        readonly public array|Missing $target_shipping_methods,
+        readonly public bool|Missing $active,
 
-    protected array|Missing $metadata;
-    protected Missing|SeoMetadataDto $seo;
+        readonly public array|Missing $metadata,
+        readonly public Missing|SeoMetadataDto $seo,
+    ) {}
 
     public static function instantiateFromRequest(FormRequest|SaleCreateRequest $request): self
     {
         return new self(
-            name: $request->input('name', new Missing()),
+            translations: $request->input('translations', []),
+            published: $request->input('published', []),
             slug: $request->input('slug', new Missing()),
-            description: $request->input('description', new Missing()),
-            description_html: $request->input('description_html', new Missing()),
             value: $request->input('value', new Missing()),
             type: $request->input('type', new Missing()),
             priority: $request->input('priority', new Missing()),
@@ -51,16 +51,6 @@ class SaleDto extends Dto implements InstantiateFromRequest
             metadata: self::mapMetadata($request),
             seo: $request->has('seo') ? SeoMetadataDto::instantiateFromRequest($request) : new Missing(),
         );
-    }
-
-    public function getName(): Missing|string
-    {
-        return $this->name;
-    }
-
-    public function getDescription(): Missing|string|null
-    {
-        return $this->description;
     }
 
     public function getValue(): float|Missing

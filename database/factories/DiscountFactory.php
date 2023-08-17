@@ -6,6 +6,7 @@ use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Models\Discount;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\App;
 
 class DiscountFactory extends Factory
 {
@@ -43,6 +44,7 @@ class DiscountFactory extends Factory
             'priority' => $this->faker->randomDigit(),
             'target_type' => DiscountTargetType::getRandomInstance(),
             'target_is_allow_list' => $this->faker->boolean,
+            'published' => [App::getLocale()],
         ];
     }
 }

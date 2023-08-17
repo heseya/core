@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Models\Discount;
 use Domain\Language\LanguageService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
@@ -38,7 +39,12 @@ trait CustomHasTranslations
 
     private function getAvailableTranslations(string $key): array
     {
-        if (Auth::user() && Auth::user()->hasPermissionTo($this::HIDDEN_PERMISSION)) {
+        if ($this instanceof Discount) {
+            $permission = $this->code !== null ? 'coupons.show_hidden' : 'sales.show_hidden';
+        } else {
+            $permission = $this::HIDDEN_PERMISSION;
+        }
+        if (Auth::user() && Auth::user()->hasPermissionTo($permission)) {
             // published and no published
             /** @var Collection<int, string> $translations */
             $translations = $this->getTranslatedLocales($key);

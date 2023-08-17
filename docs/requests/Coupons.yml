@@ -4,7 +4,7 @@ CouponStore:
       schema:
         required:
           - code
-          - name
+          - translations
           - type
           - value
           - priority
@@ -20,7 +20,6 @@ CouponUpdate:
       schema:
         required:
           - code
-          - name
           - type
           - value
           - priority

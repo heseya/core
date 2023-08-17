@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Rules\Translations;
 use Illuminate\Validation\Rules\Enum;
 
 class SaleUpdateRequest extends SaleCreateRequest
@@ -14,7 +15,7 @@ class SaleUpdateRequest extends SaleCreateRequest
     public function rules(): array
     {
         return array_merge(parent::rules(), [
-            'name' => ['filled', 'string', 'max:255'],
+            'translations' => ['sometimes', new Translations(['name', 'description_html', 'description'])],
             'value' => ['numeric', 'gte:0'],
             'type' => [new Enum(DiscountType::class)],
             'priority' => ['integer'],

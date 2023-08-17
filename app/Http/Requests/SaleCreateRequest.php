@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Rules\Translations;
 use App\Traits\MetadataRules;
 use App\Traits\SeoRules;
 use Illuminate\Contracts\Validation\Validator;
@@ -22,10 +23,8 @@ class SaleCreateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'translations' => ['required', new Translations(['name', 'description_html', 'description'])],
             'slug' => ['nullable', 'string', 'max:128', 'alpha_dash'],
-            'description' => ['nullable', 'string', 'max:255'],
-            'description_html' => ['nullable', 'string'],
             'value' => ['required', 'numeric', 'gte:0'],
             'type' => ['required', new Enum(DiscountType::class)],
             'priority' => ['required', 'integer'],

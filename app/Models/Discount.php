@@ -11,6 +11,8 @@ use App\Criteria\WhereInIds;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Models\Contracts\SeoContract;
+use App\Models\Interfaces\Translatable;
+use App\Traits\CustomHasTranslations;
 use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
 use Domain\ProductSet\ProductSet;
@@ -29,8 +31,9 @@ use Illuminate\Support\Collection;
  *
  * @mixin IdeHelperDiscount
  */
-class Discount extends Model implements SeoContract
+class Discount extends Model implements SeoContract, Translatable
 {
+    use CustomHasTranslations;
     use HasCriteria;
     use HasFactory;
     use HasMetadata;
@@ -49,6 +52,14 @@ class Discount extends Model implements SeoContract
         'target_is_allow_list',
         'priority',
         'active',
+        'published',
+    ];
+
+    /** @var string[] */
+    protected array $translatable = [
+        'name',
+        'description',
+        'description_html',
     ];
 
     protected $casts = [
@@ -56,6 +67,7 @@ class Discount extends Model implements SeoContract
         'target_type' => DiscountTargetType::class,
         'target_is_allow_list' => 'boolean',
         'active' => 'boolean',
+        'published' => 'array',
     ];
 
     protected array $criteria = [
@@ -67,6 +79,8 @@ class Discount extends Model implements SeoContract
         'coupon' => WhereHasCode::class,
         'for_role' => ForRoleDiscountSearch::class,
         'ids' => WhereInIds::class,
+        'published' => Like::class,
+        'discounts.published' => Like::class,
     ];
 
     public function getUsesAttribute(): int

@@ -302,7 +302,11 @@ class PerformanceTest extends TestCase
         $sale->productSets()->attach($set->getKey());
 
         $this->actingAs($this->user)->json('POST', '/sales', [
-            'name' => 'promocja -10% priority 0',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'promocja -10% priority 0',
+                ],
+            ],
             'type' => DiscountType::PERCENTAGE,
             'value' => 10,
             'priority' => 0,

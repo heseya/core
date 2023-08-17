@@ -18,7 +18,11 @@ class DiscountSeoTest extends TestCase
         $response = $this
             ->actingAs($this->{$user})
             ->json('POST', '/sales', [
-                'name' => 'Sale',
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Sale',
+                    ],
+                ],
                 'type' => DiscountType::PERCENTAGE,
                 'value' => 10,
                 'priority' => 1,

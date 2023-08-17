@@ -37,8 +37,12 @@ class DiscountProductCacheTest extends TestCase
         $this->user->givePermissionTo('sales.add');
 
         $discount = [
-            'name' => 'Discount',
-            'description' => 'Test discount',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Discount',
+                    'description' => 'Test discount',
+                ],
+            ],
             'value' => 50,
             'type' => DiscountType::PERCENTAGE,
             'priority' => 1,
@@ -101,8 +105,12 @@ class DiscountProductCacheTest extends TestCase
         $this->user->givePermissionTo('sales.add');
 
         $discount = [
-            'name' => 'Discount',
-            'description' => 'Test discount',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Discount',
+                    'description' => 'Test discount',
+                ],
+            ],
             'value' => 50,
             'type' => DiscountType::PERCENTAGE,
             'priority' => 1,
@@ -168,8 +176,12 @@ class DiscountProductCacheTest extends TestCase
         $this->user->givePermissionTo('sales.add');
 
         $discount = [
-            'name' => 'Discount',
-            'description' => 'Test discount',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Discount',
+                    'description' => 'Test discount',
+                ],
+            ],
             'value' => 50,
             'type' => DiscountType::PERCENTAGE,
             'priority' => 1,
