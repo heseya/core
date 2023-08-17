@@ -20,7 +20,7 @@ class PublishedTranslation
             /** @var Model $model */
             $model = $request->route($model_key);
             // @phpstan-ignore-next-line
-            if (!in_array(Config::get('language.id'), $model->published)) {
+            if ($model->published && is_array($model->published) && !in_array(Config::get('language.id'), $model->published)) {
                 throw new TranslationException(model: $model);
             }
         }
