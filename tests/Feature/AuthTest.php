@@ -157,6 +157,33 @@ class AuthTest extends TestCase
         return [$this->user, $attempt, new SuccessfulLoginAttempt($attempt)];
     }
 
+    public function testSuccessfulLoginAttemptWithoutUserAgent(): array
+    {
+        $this->user->preferences()->update([
+            'successful_login_attempt_alert' => true,
+        ]);
+
+        Event::fake([SuccessfulLoginAttempt::class]);
+
+        $this
+            ->actingAs($this->user)
+            ->withHeaders([
+                'User-Agent' => null
+            ])
+            ->postJson('/login', [
+                'email' => $this->user->email,
+                'password' => $this->password,
+            ])
+            ->assertOk()
+            ->assertJsonStructure(['data' => $this->expected]);
+
+        $attempt = UserLoginAttempt::where('user_id', $this->user->id)->latest()->first();
+
+        Event::assertDispatched(SuccessfulLoginAttempt::class);
+
+        return [$this->user, $attempt, new SuccessfulLoginAttempt($attempt)];
+    }
+
     /**
      * @depends testSuccessfulLoginAttempt
      */
