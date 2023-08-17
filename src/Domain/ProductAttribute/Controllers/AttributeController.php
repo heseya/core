@@ -8,6 +8,7 @@ use App\DTO\ReorderDto;
 use App\Exceptions\ClientException;
 use App\Http\Controllers\Controller;
 use App\Services\Contracts\ReorderServiceContract;
+use App\Traits\GetPublishedLanguageFilter;
 use Domain\ProductAttribute\Dtos\AttributeCreateDto;
 use Domain\ProductAttribute\Dtos\AttributeIndexDto;
 use Domain\ProductAttribute\Dtos\AttributeUpdateDto;
@@ -22,6 +23,8 @@ use Illuminate\Support\Facades\Response;
 
 final class AttributeController extends Controller
 {
+    use GetPublishedLanguageFilter;
+
     public function __construct(
         private readonly AttributeService $attributeService,
         private readonly ReorderServiceContract $reorderService,
@@ -30,7 +33,7 @@ final class AttributeController extends Controller
     public function index(AttributeIndexDto $dto): JsonResource
     {
         return AttributeResource::collection(
-            Attribute::searchByCriteria($dto->toArray())
+            Attribute::searchByCriteria($dto->toArray() + $this->getPublishedLanguageFilter('attributes'))
                 ->with(['metadata', 'metadataPrivate'])
                 ->orderBy('order')
                 ->paginate(Config::get('pagination.per_page')),

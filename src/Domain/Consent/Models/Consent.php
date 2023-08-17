@@ -7,6 +7,7 @@ namespace Domain\Consent\Models;
 use App\Models\Interfaces\Translatable;
 use App\Models\Model;
 use App\Models\User;
+use App\Traits\CustomHasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Spatie\Translatable\HasTranslations;
@@ -16,8 +17,10 @@ use Spatie\Translatable\HasTranslations;
  */
 final class Consent extends Model implements Translatable
 {
+    use CustomHasTranslations;
     use HasFactory;
-    use HasTranslations;
+
+    protected const HIDDEN_PERMISSION = 'consents.show_hidden';
 
     /**
      * The table associated with the model.
