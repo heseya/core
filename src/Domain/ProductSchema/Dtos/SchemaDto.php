@@ -37,6 +37,7 @@ abstract class SchemaDto extends Data
      * @param string[]|Optional $metadata_public
      * @param string[]|Optional $metadata_private
      * @param array<string,string[]>|Optional $translations
+     * @param array<int, string> $published
      */
     public function __construct(
         #[WithCast(EnumCoerceCast::class)]
@@ -58,6 +59,7 @@ abstract class SchemaDto extends Data
         public readonly array|Optional $metadata_public,
         public readonly array|Optional $metadata_private,
         public array|Optional $translations = [],
+        public array|Optional $published = [],
     ) {
         $this->metadata_computed = Map::toMetadata($metadata_public, $metadata_private);
     }
