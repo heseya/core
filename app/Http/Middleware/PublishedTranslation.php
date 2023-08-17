@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Interfaces\Translatable;
 use App\Models\Model;
 use Closure;
 use Domain\Language\Enums\LangFallbackType;

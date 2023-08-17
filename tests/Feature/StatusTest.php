@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Models\Order;
 use App\Models\Status;
+use Domain\Language\Enums\LangFallbackType;
 use Tests\TestCase;
 
 final class StatusTest extends TestCase
@@ -46,7 +47,7 @@ final class StatusTest extends TestCase
     {
         $this->{$user}->givePermissionTo('statuses.show');
 
-        $response = $this->actingAs($this->{$user})->getJson('/statuses');
+        $response = $this->actingAs($this->{$user})->json('GET', '/statuses', ['lang_fallback' => LangFallbackType::ANY]);
         $response
             ->assertOk()
             ->assertJsonCount(4, 'data') // default statuses from migration + the one created now
