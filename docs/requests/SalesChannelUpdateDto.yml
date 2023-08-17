@@ -22,14 +22,14 @@ SalesChannelUpdateDto:
               - hidden
           vat_rate:
             type: string
-          countries_block_list:
-            type: boolean
           default_currency:
             type: string
             example: PLN
           default_language_id:
             type: string
             format: uuid
+          countries_block_list:
+            type: boolean
           countries:
             type: array
             items:
