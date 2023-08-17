@@ -42,7 +42,7 @@ final class SalesChannelResource extends Resource
             'countries_block_list' => $this->resource->countries_block_list,
             'default_currency' => $currencyDto,
             'default_language' => new LanguageResource($this->resource->defaultLanguage),
-            'country_codes' => $this->resource->countries->pluck('code'),
+            'countries' => $this->resource->countries->pluck('code'),
             ...$request->boolean('with_translations') ? $this->getAllTranslations() : [],
         ];
     }
