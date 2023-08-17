@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\SalesChannel;
 
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Exceptions\ClientException;
 use Domain\SalesChannel\Dtos\SalesChannelCreateDto;
 use Domain\SalesChannel\Dtos\SalesChannelIndexDto;
 use Domain\SalesChannel\Dtos\SalesChannelUpdateDto;
@@ -82,8 +84,15 @@ final class SalesChannelRepository
         $channel->save();
     }
 
+    /**
+     * @throws ClientException
+     */
     public function delete(string $id): void
     {
+        if (SalesChannel::query()->count() <= 1) {
+            throw new ClientException(Exceptions::CLIENT_ONE_SALES_CHANNEL_REMAINS);
+        }
+
         SalesChannel::query()
             ->where('id', '=', $id)
             ->delete();
