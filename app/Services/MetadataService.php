@@ -7,6 +7,7 @@ use App\Models\Discount;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\MetadataServiceContract;
+use Domain\Banner\Models\Banner;
 use Domain\Metadata\Dtos\MetadataPersonalDto;
 use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Domain\Page\Page;
@@ -47,6 +48,7 @@ class MetadataService implements MetadataServiceContract
             'product-sets' => ProductSet::class,
             'sales', 'coupons' => Discount::class,
             'attributes' => $routeSegments[2] === 'options' ? AttributeOption::class : Attribute::class,
+            'banners' => Banner::class,
             default => '',
         };
 

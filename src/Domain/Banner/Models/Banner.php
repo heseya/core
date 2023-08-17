@@ -1,10 +1,13 @@
 <?php
 
-namespace App\Models;
+declare(strict_types=1);
+
+namespace Domain\Banner\Models;
 
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\WhereInIds;
+use App\Models\Model;
 use App\Traits\HasMetadata;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
@@ -14,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * @mixin IdeHelperBanner
  */
-class Banner extends Model
+final class Banner extends Model
 {
     use HasCriteria;
     use HasFactory;
@@ -30,6 +33,7 @@ class Banner extends Model
         'active' => 'boolean',
     ];
 
+    /** @var string[] */
     protected array $criteria = [
         'slug' => Like::class,
         'metadata' => MetadataSearch::class,
@@ -37,6 +41,9 @@ class Banner extends Model
         'ids' => WhereInIds::class,
     ];
 
+    /**
+     * @return HasMany<BannerMedia>
+     */
     public function bannerMedia(): HasMany
     {
         return $this->hasMany(BannerMedia::class, 'banner_id')

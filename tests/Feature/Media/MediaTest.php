@@ -4,11 +4,11 @@ namespace Tests\Feature\Media;
 
 use App\Enums\MediaAttachmentType;
 use App\Enums\MediaType;
-use App\Models\Banner;
-use App\Models\BannerMedia;
 use App\Models\Media;
 use App\Models\Order;
 use App\Models\Product;
+use Domain\Banner\Models\Banner;
+use Domain\Banner\Models\BannerMedia;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
