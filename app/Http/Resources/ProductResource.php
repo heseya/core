@@ -39,7 +39,6 @@ class ProductResource extends Resource
             'available' => $this->resource->available,
             'quantity_step' => $this->resource->quantity_step,
             'google_product_category' => $this->resource->google_product_category,
-            'vat_rate' => $this->resource->vat_rate,
             'shipping_time' => $this->resource->shipping_time,
             'shipping_date' => $this->resource->shipping_date,
             'cover' => MediaResource::make($this->resource->media->first()),

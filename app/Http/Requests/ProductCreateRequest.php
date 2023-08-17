@@ -47,7 +47,6 @@ class ProductCreateRequest extends FormRequest implements MetadataRequestContrac
 
                 'quantity_step' => ['numeric'],
                 'order' => ['numeric'],
-                'vat_rate' => ['numeric', 'min:0', 'max:100'],
                 'purchase_limit_per_user' => ['nullable', 'numeric', 'min:0'],
 
                 'media' => ['array'],

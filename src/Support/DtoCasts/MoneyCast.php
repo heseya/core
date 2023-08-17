@@ -26,7 +26,9 @@ final class MoneyCast implements Cast
             return new Optional();
         }
 
-        $currency = Currency::from(Arr::get($context, $this->currency_field, Currency::DEFAULT->value))->toCurrencyInstance();
+        $currency = Currency::from(
+            Arr::get($context, $this->currency_field, Currency::DEFAULT->value),
+        )->toCurrencyInstance();
 
         return Money::of($value, $currency);
     }

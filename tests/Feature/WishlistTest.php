@@ -40,7 +40,6 @@ class WishlistTest extends TestCase
                 'available',
                 'quantity_step',
                 'google_product_category',
-                'vat_rate',
                 'shipping_time',
                 'shipping_date',
                 'cover',

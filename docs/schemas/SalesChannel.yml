@@ -1,0 +1,34 @@
+SalesChannel:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string
+    vat_rate:
+      type: string
+      example: '23'
+    status:
+      type: string
+      enum:
+        - inactive
+        - active
+        - hidden
+    default_currency:
+      type: string
+      example: PLN
+    default_language_id:
+      type: string
+      format: uuid
+    country_block_list:
+      type: boolean
+
+SalesChannelView:
+  type: object
+  allOf:
+    - $ref: '#/SalesChannel'
+    - properties:
+        country_codes:
+          type: array
+

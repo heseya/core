@@ -1,0 +1,101 @@
+SalesChannels:
+  get:
+    tags:
+      - SalesChannels
+    parameters:
+      - name: country
+        in: query
+        required: false
+        schema:
+          type: string
+    responses:
+      200:
+        description: Ok
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: ./../schemas/SalesChannel.yml#/SalesChannel
+  post:
+    tags:
+      - SalesChannels
+    requestBody:
+      $ref: ./../requests/SalesChannelCreateDto.yml#/SalesChannelCreateDto
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: ./../schemas/SalesChannel.yml#/SalesChannelView
+
+SalesChannelsId:
+  get:
+    tags:
+      - SalesChannels
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      200:
+        description: Ok
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: ./../schemas/SalesChannel.yml#/SalesChannelView
+  patch:
+    tags:
+      - SalesChannels
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      $ref: ./../requests/SalesChannelUpdateDto.yml#/SalesChannelUpdateDto
+    responses:
+      200:
+        description: Ok
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: ./../schemas/SalesChannel.yml#/SalesChannelView
+
+  delete:
+    tags:
+      - SalesChannels
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      204:
+        description: Deleted
