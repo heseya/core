@@ -38,6 +38,7 @@ final class SalesChannelResource extends Resource
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
             'slug' => $this->resource->slug,
+            'vat_rate' => $this->resource->vat_rate,
             'status' => $this->resource->status,
             'countries_block_list' => $this->resource->countries_block_list,
             'default_currency' => $currencyDto,
