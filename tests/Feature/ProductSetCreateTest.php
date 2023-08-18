@@ -113,6 +113,49 @@ class ProductSetCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateWithEmptyChildrenAndAttributes(string $user): void
+    {
+        Event::fake([ProductSetCreated::class]);
+
+        $defaults = [
+            'public' => true,
+            'slug' => 'test',
+        ];
+
+        $this->{$user}->givePermissionTo('product_sets.add');
+        $this
+            ->actingAs($this->{$user})
+            ->postJson('/product-sets', [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                    ],
+                ],
+                'published' => [$this->lang],
+                'public' => true,
+                'slug_suffix' => 'test',
+                'slug_override' => false,
+                'attributes' => [],
+                'children_ids' => [],
+            ])
+            ->assertCreated()
+            ->assertJson(['data' => $defaults + [
+                'slug_override' => false,
+                'slug_suffix' => 'test',
+                'parent' => null,
+            ]]);
+
+        $this->assertDatabaseHas('product_sets', $defaults + [
+            "name->{$this->lang}" => 'Test',
+            'parent_id' => null,
+        ]);
+
+        Event::assertDispatched(ProductSetCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateWithUuid(string $user): void
     {
         $id = Uuid::uuid4()->toString();
