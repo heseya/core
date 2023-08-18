@@ -949,7 +949,7 @@ class OrderCreateTest extends TestCase
             'code' => null,
         ]);
 
-        $amounts = array_map(fn (Currency $currency) => new PriceDto(
+        $amounts = array_map(fn (Currency $currency) => PriceDto::fromMoney(
             Money::of(50, $currency->value),
         ), Currency::cases());
 
@@ -963,7 +963,7 @@ class OrderCreateTest extends TestCase
             'target_is_allow_list' => false,
         ]);
 
-        $amounts = array_map(fn (Currency $currency) => new PriceDto(
+        $amounts = array_map(fn (Currency $currency) => PriceDto::fromMoney(
             Money::of(15, $currency->value),
         ), Currency::cases());
 

@@ -61,6 +61,10 @@ class DiscountRepository
             throw new ServerException(Exceptions::SERVER_NO_PRICE_MATCHING_CRITERIA);
         }
 
-        return $amountDtos->toArray();
+        return $amountDtos->reduce(function (array $carry, PriceDto $dto) {
+            $carry[] = $dto;
+
+            return $carry;
+        }, []);
     }
 }

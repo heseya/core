@@ -273,6 +273,7 @@ class ProductTest extends TestCase
             ]])
             ->assertJsonFragment([
                 [
+                    'net' => '100.00',
                     'gross' => '100.00',
                     'currency' => 'PLN',
                 ],
@@ -315,6 +316,7 @@ class ProductTest extends TestCase
             ])
             ->assertJsonFragment([
                 [
+                    'net' => '100.00',
                     'gross' => '100.00',
                     'currency' => 'PLN',
                 ],
