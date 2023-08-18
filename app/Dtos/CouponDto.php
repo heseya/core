@@ -7,9 +7,7 @@ use App\Http\Requests\CouponCreateRequest;
 use App\Http\Requests\CouponUpdateRequest;
 use App\Http\Requests\SaleCreateRequest;
 use App\Traits\MapMetadata;
-use Brick\Math\Exception\NumberFormatException;
-use Brick\Math\Exception\RoundingNecessaryException;
-use Brick\Money\Exception\UnknownCurrencyException;
+use Domain\Price\Dtos\PriceDto;
 use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
@@ -30,16 +28,13 @@ final class CouponDto extends SaleDto implements InstantiateFromRequest
     }
 
     /**
-     * @throws RoundingNecessaryException
      * @throws DtoException
-     * @throws UnknownCurrencyException
-     * @throws NumberFormatException
      */
     public static function instantiateFromRequest(
         CouponCreateRequest|CouponUpdateRequest|FormRequest|SaleCreateRequest $request
     ): self {
         $amounts = $request->has('amounts') ? array_map(
-            fn ($data) => PriceDto::fromData(...$data),
+            fn ($data) => PriceDto::from($data),
             $request->input('amounts'),
         ) : new Missing();
 

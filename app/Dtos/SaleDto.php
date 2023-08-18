@@ -5,9 +5,7 @@ namespace App\Dtos;
 use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\SaleCreateRequest;
 use App\Traits\MapMetadata;
-use Brick\Math\Exception\NumberFormatException;
-use Brick\Math\Exception\RoundingNecessaryException;
-use Brick\Money\Exception\UnknownCurrencyException;
+use Domain\Price\Dtos\PriceDto;
 use Heseya\Dto\Dto;
 use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
@@ -45,15 +43,12 @@ class SaleDto extends Dto implements InstantiateFromRequest
     }
 
     /**
-     * @throws RoundingNecessaryException
      * @throws DtoException
-     * @throws UnknownCurrencyException
-     * @throws NumberFormatException
      */
     public static function instantiateFromRequest(FormRequest|SaleCreateRequest $request): self
     {
         $amounts = $request->has('amounts') ? array_map(
-            fn ($data) => PriceDto::fromData(...$data),
+            fn ($data) => PriceDto::from(...$data),
             $request->input('amounts'),
         ) : new Missing();
 

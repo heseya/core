@@ -113,7 +113,7 @@ return new class extends Migration {
             'id' => Str::uuid(),
             'model_id' => $modelId,
             'model_type' => Discount::class,
-            'price_type' => 'value',
+            'price_type' => 'amount',
             'value' => Money::of($value, $currency, roundingMode: RoundingMode::HALF_UP)->getMinorAmount(),
             'currency' => $currency,
         ]);

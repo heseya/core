@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Dtos\PriceDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ServerException;
 use App\Models\Discount;
 use App\Models\Price;
 use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
 use Ramsey\Uuid\Uuid;
 
 class DiscountRepository
@@ -55,7 +55,7 @@ class DiscountRepository
             $amounts = $amounts->where('currency', $currency->value);
         }
 
-        $amountDtos = $amounts->get()->map(fn (Price $price) => new PriceDto($price->value));
+        $amountDtos = $amounts->get()->map(fn (Price $price) => PriceDto::fromModel($price));
 
         if ($amountDtos->isEmpty()) {
             throw new ServerException(Exceptions::SERVER_NO_PRICE_MATCHING_CRITERIA);

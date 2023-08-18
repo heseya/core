@@ -550,7 +550,7 @@ readonly class DiscountService implements DiscountServiceContract
                     );
 
                     if (!$minPrice->value->isEqualTo($minimalProductPrice)) {
-                        $minPrices[$index] = new PriceDto(
+                        $minPrices[$index] = PriceDto::fromMoney(
                             $this->calcProductPriceDiscount($sale, $minPrice->value, $minimalProductPrice),
                         );
                     }
@@ -563,7 +563,7 @@ readonly class DiscountService implements DiscountServiceContract
                     );
 
                     if (!$maxPrice->value->isEqualTo($minimalProductPrice)) {
-                        $maxPrices[$index] = new PriceDto(
+                        $maxPrices[$index] = PriceDto::fromMoney(
                             $this->calcProductPriceDiscount($sale, $maxPrice->value, $minimalProductPrice),
                         );
                     }
@@ -583,8 +583,13 @@ readonly class DiscountService implements DiscountServiceContract
     /**
      * @param array<DiscountTargetType> $targetTypes
      *
-     * @throws StoreException
+     * @return Order
      * @throws ClientException
+     * @throws MathException
+     * @throws MoneyMismatchException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     private function calcOrderDiscounts(Order $order, OrderDto $orderDto, array $targetTypes = []): Order
     {
@@ -988,7 +993,6 @@ readonly class DiscountService implements DiscountServiceContract
 
                 $product = $newProduct;
             }
-
 
             $price = $product->price ?? 0;
 
@@ -1805,7 +1809,7 @@ readonly class DiscountService implements DiscountServiceContract
 
         if (!$startAt instanceof Missing && !$endAt instanceof Missing) {
             return $actualDate
-                    ->between($startAt, $endAt) === $conditionDto->isIsInRange();
+                ->between($startAt, $endAt) === $conditionDto->isIsInRange();
         }
 
         if (!$startAt instanceof Missing) {
@@ -1862,14 +1866,14 @@ readonly class DiscountService implements DiscountServiceContract
 
         if (Auth::user()) {
             return $condition
-                    ->conditionGroup
-                    ?->discounts()
-                    ->first()
-                    ?->orders()
-                    ->whereHasMorph('buyer', [User::class, App::class], function (Builder $query): void {
-                        $query->where('buyer_id', Auth::id());
-                    })
-                    ->count() < $conditionDto->getMaxUses();
+                ->conditionGroup
+                ?->discounts()
+                ->first()
+                ?->orders()
+                ->whereHasMorph('buyer', [User::class, App::class], function (Builder $query): void {
+                    $query->where('buyer_id', Auth::id());
+                })
+                ->count() < $conditionDto->getMaxUses();
         }
 
         return false;
