@@ -43,6 +43,18 @@ Attributes:
           items:
             type: string
             format: uuid
+      - name: lang_fallback
+        in: query
+        description: "Determines what data will be returned if it does not occur in the selected language. The default option is 'none'. If 'none' then items that do not have the given translation will not be returned. If 'default', missing translations will be replaced in the default API language. 'Any' means that missing translations will be replaced with the first available translation for the item."
+        required: false
+        schema:
+          type: string
+          enum: [ 'none', 'any', 'default' ]
+      - name: with_translations
+        in: query
+        required: false
+        schema:
+          type: boolean
     summary: 'list attributes'
     responses:
       200:
@@ -89,6 +101,18 @@ AttributesParams:
         required: true
         schema:
           type: integer
+      - name: lang_fallback
+        in: query
+        description: "Determines what data will be returned if it does not occur in the selected language. The default option is 'none'. If 'none' then items that do not have the given translation will not be returned. If 'default', missing translations will be replaced in the default API language. 'Any' means that missing translations will be replaced with the first available translation for the item."
+        required: false
+        schema:
+          type: string
+          enum: [ 'none', 'any', 'default' ]
+      - name: with_translations
+        in: query
+        required: false
+        schema:
+          type: boolean
     responses:
       200:
         description: Success
@@ -177,6 +201,18 @@ AttributeOption:
           items:
             type: string
             format: uuid
+      - name: lang_fallback
+        in: query
+        description: "Determines what data will be returned if it does not occur in the selected language. The default option is 'none'. If 'none' then items that do not have the given translation will not be returned. If 'default', missing translations will be replaced in the default API language. 'Any' means that missing translations will be replaced with the first available translation for the item."
+        required: false
+        schema:
+          type: string
+          enum: [ 'none', 'any', 'default' ]
+      - name: with_translations
+        in: query
+        required: false
+        schema:
+          type: boolean
     responses:
       200:
         description: Success

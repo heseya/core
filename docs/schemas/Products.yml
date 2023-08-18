@@ -120,6 +120,27 @@ Product:
     has_schemas:
       description: 'Does product has any attached schema'
       type: boolean
+    translations:
+      type: array
+      description: 'Translation table for languages. Array key is language UUID'
+      items:
+        type: object
+        properties:
+          name:
+            description: 'Product name'
+            type: string
+            example: 'Shirt'
+          description_html:
+            description: 'HTML formatted text'
+            type: string
+            example: '<h1>Lorem ipsum dolor sit amet</h1>'
+          description_short:
+            type: string
+    published:
+      type: array
+      items:
+        type: string
+        format: uuid
 
 ProductView:
   type: object

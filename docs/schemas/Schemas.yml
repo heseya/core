@@ -68,6 +68,22 @@ Schema:
       items:
         type: string
         example: used-schema-ids
+    translations:
+      type: array
+      description: 'Translation table for languages. Array key is language UUID'
+      items:
+        type: object
+        properties:
+          name:
+            type: string
+            example: Size
+          description:
+            type: string
+    published:
+      type: array
+      items:
+        type: string
+        format: uuid
 
 Option:
   type: object
@@ -107,6 +123,20 @@ Option:
       type: array
       items:
         $ref: "./Items.yml#/Item"
+    translations:
+      type: array
+      description: 'Translation table for languages. Array key is language UUID'
+      items:
+        type: object
+        properties:
+          name:
+            type: string
+            example: XL
+    published:
+      type: array
+      items:
+        type: string
+        format: uuid
 
 SchemaMetadata:
   allOf:
@@ -144,11 +174,6 @@ SchemaRequest:
         - file
         - multiply
         - multiply_schema
-    name:
-      type: string
-      example: Size
-    description:
-      type: string
     prices:
       description: "Additional price the customer will have to pay after selecting the option (can be negative)"
       type: array
@@ -188,9 +213,6 @@ SchemaRequest:
       type: array
       items:
         properties:
-          name:
-            type: string
-            example: XL
           prices:
             description: "Additional price the customer will have to pay after selecting this option (can be negative)"
             type: array
@@ -213,7 +235,37 @@ SchemaRequest:
                 id:
                   type: string
                   format: uuid
+          translations:
+            type: array
+            description: 'Translation table for languages. Array key is language UUID'
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: XL
+          published:
+            type: array
+            items:
+              type: string
+              format: uuid
     used_schemas:
+      type: array
+      items:
+        type: string
+        format: uuid
+    translations:
+      type: array
+      description: 'Translation table for languages. Array key is language UUID'
+      items:
+        type: object
+        properties:
+          name:
+            type: string
+            example: Size
+          description:
+            type: string
+    published:
       type: array
       items:
         type: string
