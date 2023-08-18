@@ -583,7 +583,6 @@ readonly class DiscountService implements DiscountServiceContract
     /**
      * @param array<DiscountTargetType> $targetTypes
      *
-     * @return Order
      * @throws ClientException
      * @throws MathException
      * @throws MoneyMismatchException

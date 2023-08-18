@@ -2,12 +2,12 @@
 
 namespace Database\Factories;
 
-use App\Dtos\PriceDto;
 use App\Enums\DiscountTargetType;
 use App\Models\Discount;
 use App\Repositories\DiscountRepository;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\App;
 
@@ -54,7 +54,7 @@ class DiscountFactory extends Factory
             $discountRepository = App::make(DiscountRepository::class);
 
             if ($discount->percentage === null) {
-                $amounts = array_map(fn (Currency $currency) => new PriceDto(
+                $amounts = array_map(fn (Currency $currency) => PriceDto::fromMoney(
                     Money::of(mt_rand(500, 2000) / 100.0, $currency->value),
                 ), Currency::cases());
 
