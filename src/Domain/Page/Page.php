@@ -12,27 +12,30 @@ use App\Models\Contracts\SortableContract;
 use App\Models\Interfaces\Translatable;
 use App\Models\Model;
 use App\Models\Product;
+use App\Traits\CustomHasTranslations;
 use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
 use App\Traits\Sortable;
+use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Translatable\HasTranslations;
 
 /**
  * @mixin IdeHelperPage
  */
 final class Page extends Model implements SeoContract, SortableContract, Translatable
 {
+    use CustomHasTranslations;
     use HasCriteria;
     use HasFactory;
     use HasMetadata;
     use HasSeoMetadata;
-    use HasTranslations;
     use SoftDeletes;
     use Sortable;
+
+    protected const HIDDEN_PERMISSION = 'pages.show_hidden';
 
     protected $fillable = [
         'order',
@@ -66,6 +69,8 @@ final class Page extends Model implements SeoContract, SortableContract, Transla
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,
+        'published' => Like::class,
+        'pages.published' => Like::class,
     ];
 
     /**

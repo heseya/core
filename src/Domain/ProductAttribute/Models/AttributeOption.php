@@ -10,13 +10,13 @@ use App\Criteria\MetadataSearch;
 use App\Criteria\WhereInIds;
 use App\Models\Interfaces\Translatable;
 use App\Models\Model;
+use App\Traits\CustomHasTranslations;
 use App\Traits\HasMetadata;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Translatable\HasTranslations;
 
 /**
  * @property string $name
@@ -25,11 +25,13 @@ use Spatie\Translatable\HasTranslations;
  */
 final class AttributeOption extends Model implements Translatable
 {
+    use CustomHasTranslations;
     use HasCriteria;
     use HasFactory;
     use HasMetadata;
-    use HasTranslations;
     use SoftDeletes;
+
+    protected const HIDDEN_PERMISSION = 'attributes.show_hidden';
 
     protected $fillable = [
         'id',

@@ -10,6 +10,7 @@ use App\Exceptions\ServerException;
 use App\Models\Price;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Traits\GetPublishedLanguageFilter;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\PriceRepository;
@@ -26,11 +27,13 @@ use Support\Dtos\ModelIdentityDto;
 
 class ProductRepository implements ProductRepositoryContract
 {
+    use GetPublishedLanguageFilter;
+
     public function __construct(private PriceRepository $priceRepository) {}
 
     public function search(ProductSearchDto $dto): LengthAwarePaginator
     {
-        $query = Product::searchByCriteria($dto->except('sort')->toArray())
+        $query = Product::searchByCriteria($dto->except('sort')->toArray() + $this->getPublishedLanguageFilter('products'))
             ->with(['attributes', 'metadata', 'media', 'tags', 'items', 'pricesBase', 'pricesMin', 'pricesMax', 'pricesMinInitial', 'pricesMaxInitial']);
 
         if (Gate::denies('products.show_hidden')) {

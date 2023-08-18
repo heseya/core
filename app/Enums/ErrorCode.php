@@ -16,6 +16,7 @@ enum ErrorCode: string
     case UNAUTHORIZED = 'Unauthorized';
     case UNPROCESSABLE_ENTITY = 'Unprocessable entity';
     case VALIDATION_ERROR = 'Validation error';
+    case NOT_ACCEPTABLE = 'Not acceptable';
 
     public function getCode(): int
     {
@@ -25,6 +26,7 @@ enum ErrorCode: string
             self::FORBIDDEN => 403,
             self::NOT_FOUND => 404,
             self::UNAUTHORIZED => 401,
+            self::NOT_ACCEPTABLE => 406,
             self::UNPROCESSABLE_ENTITY, self::VALIDATION_ERROR => 422,
             default => 500,
         };

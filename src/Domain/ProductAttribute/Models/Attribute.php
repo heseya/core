@@ -12,14 +12,15 @@ use App\Models\Interfaces\Translatable;
 use App\Models\Model;
 use App\Models\Product;
 use App\Models\ProductAttribute;
+use App\Traits\CustomHasTranslations;
 use App\Traits\HasMetadata;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductSet\ProductSet;
+use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Spatie\Translatable\HasTranslations;
 
 /**
  * @property mixed $pivot
@@ -31,10 +32,12 @@ use Spatie\Translatable\HasTranslations;
  */
 final class Attribute extends Model implements Translatable
 {
+    use CustomHasTranslations;
     use HasCriteria;
     use HasFactory;
     use HasMetadata;
-    use HasTranslations;
+
+    protected const HIDDEN_PERMISSION = 'attributes.show_hidden';
 
     protected $fillable = [
         'id',
@@ -73,6 +76,8 @@ final class Attribute extends Model implements Translatable
         'metadata_private' => MetadataPrivateSearch::class,
         'search' => AttributeSearch::class,
         'ids' => WhereInIds::class,
+        'published' => Like::class,
+        'attribute.published' => Like::class,
     ];
 
     /**

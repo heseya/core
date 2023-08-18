@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Interfaces\Translatable;
+use App\Traits\CustomHasTranslations;
 use App\Traits\HasMetadata;
 use Database\Factories\OptionFactory;
 use Domain\Currency\Currency;
@@ -11,7 +12,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Spatie\Translatable\HasTranslations;
 
 /**
  * @property Collection<int, Price> $prices
@@ -22,9 +22,11 @@ use Spatie\Translatable\HasTranslations;
  */
 class Option extends Model implements Translatable
 {
+    use CustomHasTranslations;
     use HasFactory;
     use HasMetadata;
-    use HasTranslations;
+
+    protected const HIDDEN_PERMISSION = 'options.show_hidden';
 
     protected $fillable = [
         'name',
