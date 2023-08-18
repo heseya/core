@@ -10,6 +10,7 @@ use App\Enums\Product\ProductPriceType;
 use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
+use App\Events\ProductPriceUpdated;
 use App\Events\ProductUpdated;
 use App\Listeners\WebHookEventListener;
 use App\Models\ConditionGroup;
@@ -1330,6 +1331,85 @@ class ProductTest extends TestCase
         $listener->handle($event);
 
         Queue::assertNotPushed(CallWebhookJob::class);
+    }
+
+    public function testCreatePriceUpdate(): array
+    {
+        $this->user->givePermissionTo('products.add');
+
+        Event::fake(ProductPriceUpdated::class);
+
+        $response = $this->actingAs($this->user)->postJson('/products', [
+            'slug' => 'test',
+            'prices_base' => $this->productPrices,
+            'public' => true,
+            'shipping_digital' => false,
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                    'description_html' => '<h1>Description</h1>',
+                    'description_short' => 'So called short description...',
+                ],
+            ],
+            'published' => [$this->lang],
+        ])
+            ->assertCreated();
+
+        /** @var Product $product */
+        $product = Product::where('id', $response->getData()->data->id)->first();
+
+        Event::assertDispatched(ProductPriceUpdated::class);
+
+        $productPrices = app(ProductRepositoryContract::class)->getProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_MIN,
+            ProductPriceType::PRICE_MAX,
+        ]);
+
+        $productPricesMin = $productPrices->get(ProductPriceType::PRICE_MIN->value);
+        $productPricesMax = $productPrices->get(ProductPriceType::PRICE_MAX->value);
+
+        return [$product, $productPricesMin, $productPricesMax, new ProductPriceUpdated($product->getKey(), null, null, $productPricesMin->toArray(), $productPricesMax->toArray())];
+    }
+
+    /**
+     * @depends testCreatePriceUpdate
+     */
+    public function testCreateProductPriceUpdateWebhookDispatch($payload): void
+    {
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ProductPriceUpdated',
+            ],
+            'model_type' => $this->user::class,
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Bus::fake();
+
+        [$product, $productPricesMin, $productPricesMax, $event] = $payload;
+
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $product, $productPricesMin, $productPricesMax) {
+            $payload = $job->payload;
+
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $product->getKey()
+                && $payload['data']['prices'][0]['currency'] === Currency::DEFAULT->value
+                && $payload['data']['prices'][0]['old_price_min'] === null
+                && $payload['data']['prices'][0]['old_price_max'] === null
+                && $payload['data']['prices'][0]['new_price_min'] === $productPricesMin
+                    ->where(fn (PriceDto $dto) => $dto->currency === Currency::DEFAULT)->first()->value->getAmount()
+                && $payload['data']['prices'][0]['new_price_max'] === $productPricesMax
+                    ->where(fn (PriceDto $dto) => $dto->currency === Currency::DEFAULT)->first()->value->getAmount()
+                && $payload['data_type'] === 'ProductPrices'
+                && $payload['event'] === 'ProductPriceUpdated';
+        });
     }
 
     /**
