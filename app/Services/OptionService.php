@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Enums\Product\ProductPriceType;
 use App\Models\Option;
 use App\Models\Schema;
 use App\Services\Contracts\MetadataServiceContract;
@@ -54,9 +53,7 @@ final readonly class OptionService implements OptionServiceContract
                 $this->metadataService->sync($option, $optionItem->metadata_computed);
             }
 
-            $this->optionRepository->setOptionPrices($option->getKey(), [
-                ProductPriceType::PRICE_BASE->value => $optionItem->prices->items(),
-            ]);
+            $this->optionRepository->setOptionPrices($option->getKey(), $optionItem->prices->items());
 
             $keep[] = $option->getKey();
         }

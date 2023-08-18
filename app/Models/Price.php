@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\Product\ProductPriceType;
 use Brick\Math\BigNumber;
 use Brick\Math\RoundingMode;
 use Brick\Money\AbstractMoney;
@@ -17,7 +16,6 @@ use Spatie\LaravelData\WithData;
 /**
  * @property Money $value
  * @property string $currency
- * @property ProductPriceType $price_type
  *
  * @method static PriceFactory factory()
  *
@@ -36,10 +34,6 @@ class Price extends Model
         'model_id',
         'model_type',
         'price_type',
-    ];
-
-    protected $casts = [
-        'price_type' => ProductPriceType::class,
     ];
 
     public function value(): Attribute
