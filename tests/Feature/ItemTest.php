@@ -978,6 +978,10 @@ class ItemTest extends TestCase
     {
         $this->{$user}->givePermissionTo('items.edit');
 
+        $this->item->deposits->first->update([
+            'shipping_time' => null,
+        ]);
+
         $time = 4;
         Deposit::factory()->create([
             'item_id' => $this->item->getKey(),
@@ -1176,10 +1180,12 @@ class ItemTest extends TestCase
             'item_id' => $item->getKey(),
             'quantity' => 2.0,
             'shipping_date' => $date,
+            'shipping_time' => null,
         ]);
         Deposit::factory()->create([
             'item_id' => $item->getKey(),
             'quantity' => 2.0,
+            'shipping_time' => null,
         ]);
         Deposit::factory()->create([
             'item_id' => $item->getKey(),

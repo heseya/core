@@ -1406,7 +1406,9 @@ class CartTest extends TestCase
 
         $shippingDate = Carbon::now()->startOfDay()->addDays(10)->toIso8601String();
 
-        $item = Item::factory()->create();
+        $item = Item::factory()->create([
+            'shipping_time' => null,
+        ]);
 
         $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
@@ -1416,6 +1418,7 @@ class CartTest extends TestCase
         Deposit::factory([
             'quantity' => 150,
             'shipping_date' => $shippingDate,
+            'shipping_time' => null,
         ])->create([
             'item_id' => $item->getKey(),
         ]);
@@ -1464,6 +1467,7 @@ class CartTest extends TestCase
 
         Deposit::factory([
             'quantity' => 150,
+            'shipping_time' => null,
             'shipping_date' => $shippingDate2,
         ])->create([
             'item_id' => $item->getKey(),
@@ -1506,8 +1510,12 @@ class CartTest extends TestCase
 
         $shippingDate = Carbon::now()->startOfDay()->addDays(10)->toIso8601String();
 
-        $item = Item::factory()->create();
-        $item2 = Item::factory()->create();
+        $item = Item::factory()->create([
+            'shipping_time' => null,
+        ]);
+        $item2 = Item::factory()->create([
+            'shipping_time' => null,
+        ]);
 
         $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
@@ -1521,6 +1529,7 @@ class CartTest extends TestCase
         Deposit::factory([
             'quantity' => 150,
             'shipping_date' => $shippingDate,
+            'shipping_time' => null,
         ])->create([
             'item_id' => $item->getKey(),
         ]);

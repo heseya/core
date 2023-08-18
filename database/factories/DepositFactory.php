@@ -21,6 +21,7 @@ class DepositFactory extends Factory
     {
         return [
             'quantity' => mt_rand(1, 20),
+            'shipping_time' => $this->faker->numberBetween(1, 7),
         ];
     }
 }
