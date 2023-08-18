@@ -73,7 +73,7 @@ class AnalyticsServiceTest extends TestCase
         $this->assertEquals([
             'total' => [
                 [
-                    'amount' => $amount->getAmount(),
+                    'amount' => $amount->getAmount()->toFloat(),
                     'count' => 3,
                     'currency' => $order->currency,
                 ]
@@ -191,14 +191,14 @@ class AnalyticsServiceTest extends TestCase
         $this->assertEquals([
             $labelOne => [
                 [
-                    'amount' => $amountG0->getAmount(),
+                    'amount' => $amountG0->getAmount()->toFloat(),
                     'count' => 2,
                     'currency' => $order->currency,
                 ]
             ],
             $labelTwo => [
                 [
-                    'amount' => $amountG1->getAmount(),
+                    'amount' => $amountG1->getAmount()->toFloat(),
                     'count' => 2,
                     'currency' => $order->currency,
                 ]

@@ -12,6 +12,7 @@ use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
+use Domain\Currency\Currency;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
@@ -469,6 +470,7 @@ class PaymentTest extends TestCase
         $response->assertJson([
             'data' => [
                 'amount' => 100,
+                'currency' => $this->order->currency,
                 'status' => PaymentStatus::PENDING->value,
                 'external_id' => 'test',
                 'method_id' => $paymentMethod->getKey(),
@@ -477,6 +479,7 @@ class PaymentTest extends TestCase
 
         $this->assertDatabaseHas('payments', [
             'amount' => 100,
+            'currency' => $this->order->currency,
             'status' => PaymentStatus::PENDING->value,
             'order_id' => $this->order->id,
             'external_id' => 'test',
@@ -591,6 +594,7 @@ class PaymentTest extends TestCase
                 'payment_id' => 'test',
                 'status' => PaymentStatus::SUCCESSFUL->value,
                 'amount' => 100,
+                'currency' => Currency::DEFAULT->value,
                 'redirect_url' => 'redirect_url',
                 'continue_url' => 'continue_url',
             ]),
@@ -608,15 +612,17 @@ class PaymentTest extends TestCase
             ['continue_url' => 'continue_url'],
         );
 
-        $response->assertJson([
-            'data' => [
-                'method_id' => $paymentMethod->getKey(),
-                'status' => PaymentStatus::SUCCESSFUL->value,
-                'amount' => 100,
-                'redirect_url' => 'redirect_url',
-                'continue_url' => 'continue_url',
-            ],
-        ])->assertCreated();
+        $response->assertValid()
+            ->assertCreated()
+            ->assertJson([
+                'data' => [
+                    'method_id' => $paymentMethod->getKey(),
+                    'status' => PaymentStatus::SUCCESSFUL->value,
+                    'amount' => 100,
+                    'redirect_url' => 'redirect_url',
+                    'continue_url' => 'continue_url',
+                ],
+            ]);
 
         $this->assertDatabaseHas('payments', [
             'id' => $response->getData()->data->id,

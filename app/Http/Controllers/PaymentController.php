@@ -74,9 +74,7 @@ class PaymentController extends Controller
         /** @var PaymentDto $dto */
         $dto = PaymentDto::instantiateFromRequest($request);
 
-        return PaymentResource::make(
-            Payment::query()->create($dto->toArray()),
-        );
+        return PaymentResource::make($this->paymentService->create($dto));
     }
 
     /**

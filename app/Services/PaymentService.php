@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Dtos\PaymentDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\PaymentStatus;
 use App\Exceptions\ClientException;
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Enum;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 final class PaymentService implements PaymentServiceContract
@@ -86,7 +88,7 @@ final class PaymentService implements PaymentServiceContract
         ]);
 
         if ($validator->fails()) {
-            throw new ServerException(Exceptions::SERVER_PAYMENT_MICROSERVICE_ERROR);
+            throw new ServerException(Exceptions::SERVER_PAYMENT_MICROSERVICE_ERROR, new ValidationException($validator));
         }
     }
 
@@ -129,5 +131,15 @@ final class PaymentService implements PaymentServiceContract
         }
 
         return $payment;
+    }
+
+    public function create(PaymentDto $dto): Payment
+    {
+        $order = Order::query()->findOrFail($dto->getOrderId());
+
+        return Payment::query()->create([
+            'currency' => $order->currency,
+            ...$dto->toArray()
+        ]);
     }
 }

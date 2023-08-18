@@ -51,11 +51,11 @@ class Payment extends Model
     public function amount(): Attribute
     {
         return Attribute::make(
-            get: fn (mixed $value, array $attributes): Money => Money::of(
+            get: fn (float|string $value, array $attributes): Money => Money::of(
                 $value,
                 $attributes['currency'],
             ),
-            set: fn (int|Money|string $value): array => match (true) {
+            set: fn (float|Money|string $value): array => match (true) {
                 $value instanceof Money => [
                     'amount' => $value->getAmount(),
                     'currency' => $value->getCurrency()->getCurrencyCode(),
