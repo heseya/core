@@ -28,7 +28,7 @@ class PayU implements PaymentMethod
                 $client_id . '&client_secret=' . $client_secret,
         )->throw();
 
-        $amount = round($payment->amount * 100, 0);
+        $amount = $payment->amount->getMinorAmount()->toInt();
 
         $response = Http::withToken($response['access_token'])->withOptions([
             'allow_redirects' => false,
@@ -37,7 +37,7 @@ class PayU implements PaymentMethod
             'customerIp' => '127.0.0.1',
             'merchantPosId' => Config::get('payu.pos_id'),
             'description' => 'Zamowienie nr ' . $payment->order->code,
-            'currencyCode' => $payment->order->currency,
+            'currencyCode' => $payment->currency->value,
             'totalAmount' => $amount,
             'extOrderId' => $payment->getKey(),
             'continueUrl' => $payment->continue_url,

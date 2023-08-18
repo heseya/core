@@ -17,6 +17,7 @@ class OrderModelTest extends TestCase
         $order->payments()->save(Payment::factory()->make([
             'amount' => $order->summary * 2,
             'status' => PaymentStatus::SUCCESSFUL,
+            'currency' => $order->currency,
         ]));
 
         $order->refresh();

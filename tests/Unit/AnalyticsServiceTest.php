@@ -35,26 +35,31 @@ class AnalyticsServiceTest extends TestCase
         $before = Payment::factory([
             'status' => PaymentStatus::SUCCESSFUL,
             'created_at' => $from->copy()->subDay(),
+            'currency' => $order->currency,
         ])->make();
 
         $onStart = Payment::factory([
             'status' => PaymentStatus::SUCCESSFUL,
             'created_at' => $from,
+            'currency' => $order->currency,
         ])->make();
 
         $during = Payment::factory([
             'status' => PaymentStatus::SUCCESSFUL,
             'created_at' => $from->copy()->addDays(15),
+            'currency' => $order->currency,
         ])->make();
 
         $onEnd = Payment::factory([
             'status' => PaymentStatus::SUCCESSFUL,
             'created_at' => $to->copy(),
+            'currency' => $order->currency,
         ])->make();
 
         $after = Payment::factory([
             'status' => PaymentStatus::SUCCESSFUL,
             'created_at' => $to->copy()->addDay(),
+            'currency' => $order->currency,
         ])->make();
 
         $order->payments()->save($before);
@@ -63,12 +68,15 @@ class AnalyticsServiceTest extends TestCase
         $order->payments()->save($onEnd);
         $order->payments()->save($after);
 
-        $amount = $onStart->amount + $during->amount + $onEnd->amount;
+        $amount = $onStart->amount->plus($during->amount)->plus($onEnd->amount);
 
         $this->assertEquals([
             'total' => [
-                'amount' => $amount,
-                'count' => 3,
+                [
+                    'amount' => $amount->getAmount(),
+                    'count' => 3,
+                    'currency' => $order->currency,
+                ]
             ],
         ], $this->analyticsService->getPaymentsOverPeriod($from, $to, 'total'));
     }
@@ -151,21 +159,25 @@ class AnalyticsServiceTest extends TestCase
         $oneG0 = Payment::factory([
             'status' => PaymentStatus::SUCCESSFUL,
             'created_at' => $groupOne0,
+            'currency' => $order->currency,
         ])->make();
 
         $twoG0 = Payment::factory([
             'status' => PaymentStatus::SUCCESSFUL,
             'created_at' => $groupOne1,
+            'currency' => $order->currency,
         ])->make();
 
         $oneG1 = Payment::factory([
             'status' => PaymentStatus::SUCCESSFUL,
             'created_at' => $groupTwo0,
+            'currency' => $order->currency,
         ])->make();
 
         $twoG1 = Payment::factory([
             'status' => PaymentStatus::SUCCESSFUL,
             'created_at' => $groupTwo1,
+            'currency' => $order->currency,
         ])->make();
 
         $order->payments()->save($oneG0);
@@ -173,17 +185,23 @@ class AnalyticsServiceTest extends TestCase
         $order->payments()->save($oneG1);
         $order->payments()->save($twoG1);
 
-        $amountG0 = $oneG0->amount + $twoG0->amount;
-        $amountG1 = $oneG1->amount + $twoG1->amount;
+        $amountG0 = $oneG0->amount->plus($twoG0->amount);
+        $amountG1 = $oneG1->amount->plus($twoG1->amount);
 
         $this->assertEquals([
             $labelOne => [
-                'amount' => $amountG0,
-                'count' => 2,
+                [
+                    'amount' => $amountG0->getAmount(),
+                    'count' => 2,
+                    'currency' => $order->currency,
+                ]
             ],
             $labelTwo => [
-                'amount' => $amountG1,
-                'count' => 2,
+                [
+                    'amount' => $amountG1->getAmount(),
+                    'count' => 2,
+                    'currency' => $order->currency,
+                ]
             ],
         ], $this->analyticsService->getPaymentsOverPeriod($groupOne0, $groupTwo1, $group));
     }

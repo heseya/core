@@ -105,9 +105,10 @@ class Order extends Model implements SortableContract
      */
     public function getPaidAmountAttribute(): float
     {
-        return $this->payments
-            ->where('status', PaymentStatus::SUCCESSFUL)
-            ->sum('amount');
+        return match ($this->relationLoaded('payments')) {
+            true => $this->payments->where('status', PaymentStatus::SUCCESSFUL)->sum(fn (Payment $payment) => $payment->amount->getAmount()->toFloat()),
+            false => $this->payments()->where('status', PaymentStatus::SUCCESSFUL->value)->sum('amount')
+        };
     }
 
     public function payments(): HasMany

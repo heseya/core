@@ -60,6 +60,7 @@ final class PaymentService implements PaymentServiceContract
                 'method_id' => $method->getKey(),
                 'status' => $response->json('status'),
                 'amount' => $response->json('amount'),
+                'currency' => $response->json('currency'),
                 'redirect_url' => $response->json('redirect_url'),
                 'continue_url' => $response->json('continue_url'),
             ],
@@ -78,6 +79,7 @@ final class PaymentService implements PaymentServiceContract
         $validator = Validator::make($response->json(), [
             'status' => ['required', new Enum(PaymentStatus::class)],
             'amount' => ['required', 'numeric'],
+            'currency' => ['required', 'string', new Enum(Currency::class)],
             'redirect_url' => ['nullable', 'string', 'max:1000'],
             'continue_url' => ['nullable', 'string', 'max:1000'],
         ]);
@@ -113,6 +115,7 @@ final class PaymentService implements PaymentServiceContract
         $payment = $order->payments()->create([
             'method' => $method->alias,
             'amount' => $order->summary - $order->paid_amount,
+            'currency' => $order->currency,
             'status' => PaymentStatus::PENDING,
             'continue_url' => $continueUrl,
         ]);

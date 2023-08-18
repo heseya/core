@@ -221,6 +221,7 @@ class PaymentTest extends TestCase
     {
         $payment = Payment::factory()->make([
             'status' => PaymentStatus::PENDING,
+            'currency' => $this->order->currency,
         ]);
 
         $this->order->payments()->save($payment);
@@ -251,6 +252,7 @@ class PaymentTest extends TestCase
 
         $payment = Payment::factory()->make([
             'status' => PaymentStatus::PENDING,
+            'currency' => $this->order->currency,
         ]);
 
         $this->order->payments()->save($payment);
@@ -302,18 +304,19 @@ class PaymentTest extends TestCase
         $response = $this->actingAs($this->{$user})
             ->postJson("/orders/{$code}/pay/offline");
 
+        $response->assertValid()
+            ->assertCreated();
+
         $payment = Payment::find($response->getData()->data->id);
 
-        $response
-            ->assertCreated()
-            ->assertJsonFragment([
-                'method' => 'offline',
-                'status' => PaymentStatus::SUCCESSFUL->value,
-                'amount' => $this->order->summary,
-                'date' => $payment->created_at,
-                'redirect_url' => null,
-                'continue_url' => null,
-            ]);
+        $response->assertJsonFragment([
+            'method' => 'offline',
+            'status' => PaymentStatus::SUCCESSFUL->value,
+            'amount' => $this->order->summary,
+            'date' => $payment->created_at,
+            'redirect_url' => null,
+            'continue_url' => null,
+        ]);
 
         $this->assertDatabaseHas('payments', [
             'order_id' => $this->order->getKey(),
@@ -345,6 +348,7 @@ class PaymentTest extends TestCase
             ->postJson("/orders/{$code}/pay/offline");
 
         $response
+            ->assertValid()
             ->assertCreated()
             ->assertJsonFragment([
                 'date' => Payment::find($response->getData()->data->id)->created_at,
@@ -364,6 +368,7 @@ class PaymentTest extends TestCase
             'method' => 'payu',
             'amount' => 1,
             'status' => PaymentStatus::SUCCESSFUL,
+            'currency' => $this->order->currency,
         ]);
 
         $code = $this->order->code;
@@ -424,21 +429,26 @@ class PaymentTest extends TestCase
 
         $payment = Payment::factory()->create([
             'order_id' => $this->order->getKey(),
+            'currency' => $this->order->currency,
         ]);
 
         $response = $this->actingAs($this->{$user})->json('GET', '/payments/id:' . $payment->getKey());
 
-        $response->assertJson([
+        $data = [
             'data' => [
                 'id' => $payment->getKey(),
                 'external_id' => $payment->external_id,
                 'method' => $payment->method,
                 'status' => $payment->status->value,
-                'amount' => $payment->amount,
+                'amount' => $payment->amount->getAmount()->toFloat(),
+                'currency' => $payment->currency->value,
                 'redirect_url' => $payment->redirect_url,
                 'continue_url' => $payment->continue_url,
             ],
-        ]);
+        ];
+
+        $response->assertOk();
+        $response->assertJson($data);
     }
 
     public function testStore(): void
@@ -502,6 +512,7 @@ class PaymentTest extends TestCase
         $payment = Payment::factory()->create([
             'method_id' => $paymentMethod->getKey(),
             'order_id' => $this->order->getKey(),
+            'currency' => $this->order->currency,
         ]);
 
         $response = $this->actingAs($this->appUser)->json('PATCH', '/payments/id:' . $payment->getKey(), [
@@ -539,6 +550,7 @@ class PaymentTest extends TestCase
         $payment = Payment::factory()->create([
             'method_id' => $paymentMethod->getKey(),
             'order_id' => $this->order->getKey(),
+            'currency' => $this->order->currency,
         ]);
 
         $response = $this->actingAs($this->appUser)->json('PATCH', '/payments/id:' . $payment->getKey(), [
@@ -560,6 +572,7 @@ class PaymentTest extends TestCase
         $payment = Payment::factory()->create([
             'method_id' => $paymentMethod->getKey(),
             'order_id' => $this->order->getKey(),
+            'currency' => $this->order->currency,
         ]);
 
         $response = $this->actingAs($this->appUser)->json('PATCH', '/payments/id:' . $payment->getKey(), [

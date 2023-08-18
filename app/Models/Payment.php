@@ -3,12 +3,16 @@
 namespace App\Models;
 
 use App\Enums\PaymentStatus;
+use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property PaymentStatus $status
+ * @property Money $amount
+ * @property Currency $currency
  *
  * @mixin IdeHelperPayment
  */
@@ -30,7 +34,6 @@ class Payment extends Model
     ];
 
     protected $casts = [
-        'amount' => 'float',
         'status' => PaymentStatus::class,
         'currency' => Currency::class,
     ];
@@ -43,5 +46,24 @@ class Payment extends Model
     public function paymentMethod(): BelongsTo
     {
         return $this->belongsTo(PaymentMethod::class, 'method_id');
+    }
+
+    public function amount(): Attribute
+    {
+        return Attribute::make(
+            get: fn (mixed $value, array $attributes): Money => Money::of(
+                $value,
+                $attributes['currency'],
+            ),
+            set: fn (int|Money|string $value): array => match (true) {
+                $value instanceof Money => [
+                    'amount' => $value->getAmount(),
+                    'currency' => $value->getCurrency()->getCurrencyCode(),
+                ],
+                default => [
+                    'amount' => $value,
+                ]
+            }
+        );
     }
 }

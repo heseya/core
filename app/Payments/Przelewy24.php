@@ -21,8 +21,8 @@ class Przelewy24 implements PaymentMethod
         $fields = [
             'sessionId' => (string) $payment->id,
             'merchantId' => (int) Config::get('przelewy24.merchant_id'),
-            'amount' => round($payment->amount * 100, 0),
-            'currency' => (string) $payment->order->currency,
+            'amount' => $payment->amount->getMinorAmount()->toInt(),
+            'currency' => (string) $payment->currency->value,
             'crc' => (string) Config::get('przelewy24.crc'),
         ];
 

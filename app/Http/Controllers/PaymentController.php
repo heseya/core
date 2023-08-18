@@ -53,6 +53,7 @@ class PaymentController extends Controller
             'method' => 'offline',
             'amount' => $order->summary - $order->paid_amount,
             'status' => PaymentStatus::SUCCESSFUL,
+            'currency' => $order->currency,
         ]);
 
         return PaymentResource::make($payment);

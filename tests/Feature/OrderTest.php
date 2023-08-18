@@ -174,13 +174,15 @@ class OrderTest extends TestCase
             ->getJson('/orders')
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonStructure(['data' => [
-                0 => $this->expected_full_structure,
-            ],
+            ->assertJsonStructure([
+                'data' => [
+                    0 => $this->expected_full_structure,
+                ],
             ])
-            ->assertJson(['data' => [
-                0 => $this->expected,
-            ],
+            ->assertJson([
+                'data' => [
+                    0 => $this->expected,
+                ],
             ]);
 
         $this->assertQueryCountLessThan(21);
@@ -204,13 +206,15 @@ class OrderTest extends TestCase
             ])
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonStructure(['data' => [
-                0 => $this->expected_full_structure,
-            ],
+            ->assertJsonStructure([
+                'data' => [
+                    0 => $this->expected_full_structure,
+                ],
             ])
-            ->assertJson(['data' => [
-                0 => $this->expected,
-            ],
+            ->assertJson([
+                'data' => [
+                    0 => $this->expected,
+                ],
             ]);
 
         $this->assertQueryCountLessThan(21);
@@ -311,15 +315,17 @@ class OrderTest extends TestCase
             ->json('GET', '/orders/my')
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonStructure(['data' => [
-                0 => $this->expected_full_structure,
-            ],
-            ])
-            ->assertJson(['data' => [
-                0 => [
-                    'id' => $order->getKey(),
+            ->assertJsonStructure([
+                'data' => [
+                    0 => $this->expected_full_structure,
                 ],
-            ],
+            ])
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'id' => $order->getKey(),
+                    ],
+                ],
             ])
             ->assertJsonMissing([
                 'id' => $order_another_user->getKey(),
@@ -376,13 +382,15 @@ class OrderTest extends TestCase
             ->json('GET', '/orders')
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonStructure(['data' => [
-                0 => $this->expected_full_structure,
-            ],
+            ->assertJsonStructure([
+                'data' => [
+                    0 => $this->expected_full_structure,
+                ],
             ])
-            ->assertJson(['data' => [
-                0 => $this->expected,
-            ],
+            ->assertJson([
+                'data' => [
+                    0 => $this->expected,
+                ],
             ]);
 
         $this->assertQueryCountLessThan(21);
@@ -409,23 +417,25 @@ class OrderTest extends TestCase
             ->json('GET', '/orders', ['status_id' => $status->getKey()])
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonStructure(['data' => [
-                0 => $this->expected_full_structure,
-            ],
+            ->assertJsonStructure([
+                'data' => [
+                    0 => $this->expected_full_structure,
+                ],
             ])
-            ->assertJson(['data' => [
-                0 => [
-                    'code' => $order->code,
-                    'status' => [
-                        'id' => $status->getKey(),
-                        'name' => $status->name,
-                        'color' => $status->color,
-                        'description' => $status->description,
-                        'hidden' => $status->hidden,
-                        'no_notifications' => $status->no_notifications,
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'code' => $order->code,
+                        'status' => [
+                            'id' => $status->getKey(),
+                            'name' => $status->name,
+                            'color' => $status->color,
+                            'description' => $status->description,
+                            'hidden' => $status->hidden,
+                            'no_notifications' => $status->no_notifications,
+                        ],
                     ],
                 ],
-            ],
             ]);
 
         $this->assertQueryCountLessThan(21);
@@ -472,6 +482,7 @@ class OrderTest extends TestCase
             'method' => 'payu',
             'amount' => $order1->summary,
             'status' => PaymentStatus::SUCCESSFUL,
+            'currency' => $order1->currency,
         ]);
 
         $orderId = $booleanValue ? $order1->getKey() : $this->order->getKey();
@@ -630,18 +641,20 @@ class OrderTest extends TestCase
             ->json('GET', '/orders', ['shipping_method_id' => $shippingMethod->getKey()])
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonStructure(['data' => [
-                0 => $this->expected_full_structure,
-            ],
+            ->assertJsonStructure([
+                'data' => [
+                    0 => $this->expected_full_structure,
+                ],
             ])
-            ->assertJson(['data' => [
-                0 => [
-                    'code' => $order->code,
-                    'shipping_method' => [
-                        'id' => $shippingMethod->getKey(),
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'code' => $order->code,
+                        'shipping_method' => [
+                            'id' => $shippingMethod->getKey(),
+                        ],
                     ],
                 ],
-            ],
             ]);
     }
 
@@ -670,19 +683,21 @@ class OrderTest extends TestCase
             ->json('GET', '/orders', ['digital_shipping_method_id' => $digitalShippingMethod->getKey()])
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonStructure(['data' => [
-                0 => $this->expected_full_structure,
-            ],
-            ])
-            ->assertJson(['data' => [
-                0 => [
-                    'code' => $order->code,
-                    'digital_shipping_method' => [
-                        'id' => $digitalShippingMethod->getKey(),
-                    ],
-                    'shipping_method' => null,
+            ->assertJsonStructure([
+                'data' => [
+                    0 => $this->expected_full_structure,
                 ],
-            ],
+            ])
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'code' => $order->code,
+                        'digital_shipping_method' => [
+                            'id' => $digitalShippingMethod->getKey(),
+                        ],
+                        'shipping_method' => null,
+                    ],
+                ],
             ]);
     }
 
@@ -729,21 +744,23 @@ class OrderTest extends TestCase
             ])
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonStructure(['data' => [
-                0 => $this->expected_full_structure,
-            ],
+            ->assertJsonStructure([
+                'data' => [
+                    0 => $this->expected_full_structure,
+                ],
             ])
-            ->assertJson(['data' => [
-                0 => [
-                    'code' => $order->code,
-                    'digital_shipping_method' => [
-                        'id' => $digitalShippingMethod->getKey(),
-                    ],
-                    'shipping_method' => [
-                        'id' => $shippingMethod->getKey(),
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'code' => $order->code,
+                        'digital_shipping_method' => [
+                            'id' => $digitalShippingMethod->getKey(),
+                        ],
+                        'shipping_method' => [
+                            'id' => $shippingMethod->getKey(),
+                        ],
                     ],
                 ],
-            ],
             ])
             ->assertJsonMissing([
                 'id' => $orderDigital->getKey(),
@@ -883,6 +900,7 @@ class OrderTest extends TestCase
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $summaryPaid,
             'status' => PaymentStatus::SUCCESSFUL,
+            'currency' => $this->order->currency,
         ]));
 
         $this
@@ -907,6 +925,7 @@ class OrderTest extends TestCase
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $this->order->summary * 2,
             'status' => PaymentStatus::SUCCESSFUL,
+            'currency' => $this->order->currency,
         ]));
 
         $this
@@ -1395,6 +1414,7 @@ class OrderTest extends TestCase
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $summaryPaid,
             'status' => PaymentStatus::SUCCESSFUL,
+            'currency' => $this->order->currency,
         ]));
 
         $response = $this->actingAs($this->{$user})
@@ -1417,6 +1437,7 @@ class OrderTest extends TestCase
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $this->order->summary / 2,
             'status' => PaymentStatus::SUCCESSFUL,
+            'currency' => $this->order->currency,
         ]));
 
         $response = $this->actingAs($this->{$user})
