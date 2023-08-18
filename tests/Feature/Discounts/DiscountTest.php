@@ -113,8 +113,8 @@ class DiscountTest extends TestCase
             ],
             [
                 'type' => ConditionType::DATE_BETWEEN,
-                'start_at' => Carbon::now()->toDateTimeString(),
-                'end_at' => Carbon::tomorrow()->toDateTimeString(),
+                'start_at' => Carbon::now()->toISOString(),
+                'end_at' => Carbon::tomorrow()->toISOString(),
                 'is_in_range' => true,
             ],
             [
@@ -1438,8 +1438,8 @@ class DiscountTest extends TestCase
             ->assertJsonFragment([
                 'type' => ConditionType::DATE_BETWEEN,
                 'is_in_range' => true,
-                'start_at' => '2022-04-15 12:44:40',
-                'end_at' => '2022-04-20 12:44:40',
+                'start_at' => '2022-04-15T12:44:40.130000Z',
+                'end_at' => '2022-04-20T12:44:40.130000Z',
             ]);
 
         $discountModel = Discount::find($response->getData()->data->id);
