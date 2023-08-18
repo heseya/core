@@ -13,6 +13,7 @@ use App\Payments\PayPal;
 use App\Payments\PayU;
 use App\Payments\Przelewy24;
 use App\Services\Contracts\PaymentServiceContract;
+use Domain\Currency\Currency;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
