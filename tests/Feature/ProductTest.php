@@ -496,6 +496,9 @@ class ProductTest extends TestCase
                         'children_ids' => [],
                         'cover' => null,
                         'metadata' => [],
+                        'published' => [
+                            $this->lang,
+                        ],
                     ],
                     [
                         'id' => $set2->getKey(),
@@ -509,6 +512,9 @@ class ProductTest extends TestCase
                         'children_ids' => [],
                         'cover' => null,
                         'metadata' => [],
+                        'published' => [
+                            $this->lang,
+                        ],
                     ],
                 ],
             ]);
@@ -552,6 +558,9 @@ class ProductTest extends TestCase
                         'children_ids' => [],
                         'cover' => null,
                         'metadata' => [],
+                        'published' => [
+                            $this->lang,
+                        ],
                     ],
                 ],
             ]);
@@ -595,6 +604,9 @@ class ProductTest extends TestCase
                         'children_ids' => [],
                         'cover' => null,
                         'metadata' => [],
+                        'published' => [
+                            $this->lang,
+                        ],
                     ],
                     [
                         'id' => $set2->getKey(),
@@ -608,6 +620,9 @@ class ProductTest extends TestCase
                         'children_ids' => [],
                         'cover' => null,
                         'metadata' => [],
+                        'published' => [
+                            $this->lang,
+                        ],
                     ],
                 ],
             ]);
@@ -671,6 +686,9 @@ class ProductTest extends TestCase
                             'source' => $media1->source->value,
                             'metadata' => [],
                         ],
+                        'published' => [
+                            $this->lang,
+                        ],
                     ],
                     [
                         'id' => $set2->getKey(),
@@ -691,6 +709,9 @@ class ProductTest extends TestCase
                             'alt' => $media2->alt,
                             'source' => $media2->source->value,
                             'metadata' => [],
+                        ],
+                        'published' => [
+                            $this->lang,
                         ],
                     ],
                 ],
