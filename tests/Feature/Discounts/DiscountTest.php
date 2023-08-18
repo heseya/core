@@ -1422,8 +1422,8 @@ class DiscountTest extends TestCase
                         [
                             'type' => ConditionType::DATE_BETWEEN,
                             'is_in_range' => true,
-                            'start_at' => '2022-04-15',
-                            'end_at' => '2022-04-20',
+                            'start_at' => '2022-04-15T12:44:40.130Z',
+                            'end_at' => '2022-04-20T12:44:40.130Z',
                         ],
                     ],
                 ],
