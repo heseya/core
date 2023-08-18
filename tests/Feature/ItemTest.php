@@ -10,21 +10,27 @@ use App\Listeners\WebHookEventListener;
 use App\Models\Deposit;
 use App\Models\Item;
 use App\Models\Product;
-use App\Models\Schema;
 use App\Models\WebHook;
+use App\Services\SchemaCrudService;
+use Domain\Currency\Currency;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Ramsey\Uuid\Uuid;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class ItemTest extends TestCase
 {
     private Item $item;
 
     private array $expected;
+
+    private SchemaCrudService $schemaCrudService;
+    private Currency $currency = Currency::DEFAULT;
 
     public function setUp(): void
     {
@@ -46,6 +52,8 @@ class ItemTest extends TestCase
             'quantity' => $this->item->quantity,
             'metadata' => [],
         ];
+
+        $this->schemaCrudService = App::make(SchemaCrudService::class);
     }
 
     public function testIndexUnauthorized(): void
@@ -137,14 +145,15 @@ class ItemTest extends TestCase
             ->assertOk()
             ->assertJsonMissing(['id' => $item_sold_out->getKey()])
             ->assertJsonCount(1, 'data')
-            ->assertJson(['data' => [
-                0 => [
-                    'id' => $this->item->getKey(),
-                    'name' => $this->item->name,
-                    'sku' => $this->item->sku,
-                    'quantity' => $this->item->quantity,
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'id' => $this->item->getKey(),
+                        'name' => $this->item->name,
+                        'sku' => $this->item->sku,
+                        'quantity' => $this->item->quantity,
+                    ],
                 ],
-            ],
             ]);
 
         $this->assertQueryCountLessThan(11);
@@ -353,35 +362,35 @@ class ItemTest extends TestCase
     {
         $this->{$user}->givePermissionTo('items.show_details');
 
-        $schema1 = Schema::factory()->create([
+        $schema1 = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 'select',
-            'price' => 0,
+            'prices' => [['value' => 0, 'currency' => $this->currency->value]],
             'hidden' => false,
             'required' => true,
-        ]);
+        ]));
 
         $option1 = $schema1->options()->create([
             'name' => 'XL',
-            'price' => 0,
+            'prices' => [['value' => 0, 'currency' => $this->currency->value]],
         ]);
         $option1->items()->sync([$this->item->getKey()]);
 
-        $schema2 = Schema::factory()->create([
+        $schema2 = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 'select',
-            'price' => 0,
+            'prices' => [['value' => 0, 'currency' => $this->currency->value]],
             'hidden' => false,
             'required' => false,
-        ]);
+        ]));
 
         $option2 = $schema2->options()->create([
             'name' => 'XL',
-            'price' => 0,
+            'prices' => [['value' => 0, 'currency' => $this->currency->value]],
         ]);
         $option2->items()->sync([$this->item->getKey()]);
 
         $option3 = $schema2->options()->create([
             'name' => 'XL',
-            'price' => 0,
+            'prices' => [['value' => 0, 'currency' => $this->currency->value]],
         ]);
         $option3->items()->sync([$this->item->getKey()]);
 
@@ -672,10 +681,11 @@ class ItemTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJson(['data' => [
-                'name' => 'Test 2',
-                'sku' => $this->item->sku,
-            ],
+            ->assertJson([
+                'data' => [
+                    'name' => 'Test 2',
+                    'sku' => $this->item->sku,
+                ],
             ]);
 
         $this->assertDatabaseHas('items', [
@@ -707,10 +717,11 @@ class ItemTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJson(['data' => [
-                'name' => $this->item->name,
-                'sku' => $item['sku'],
-            ],
+            ->assertJson([
+                'data' => [
+                    'name' => $this->item->name,
+                    'sku' => $item['sku'],
+                ],
             ]);
 
         $this->assertDatabaseHas('items', [

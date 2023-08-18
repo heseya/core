@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Support\DtoCasts;
+namespace Support\LaravelData\Casts;
 
 use Spatie\LaravelData\Casts\Cast;
 use Spatie\LaravelData\Optional;

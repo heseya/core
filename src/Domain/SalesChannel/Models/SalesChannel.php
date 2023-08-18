@@ -7,9 +7,11 @@ namespace Domain\SalesChannel\Models;
 use App\Models\Country;
 use App\Models\Interfaces\Translatable;
 use App\Models\Model;
+use Domain\Language\Language;
 use Domain\SalesChannel\Criteria\CountrySearch;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Spatie\Translatable\HasTranslations;
 use Support\Enum\Status;
@@ -50,6 +52,14 @@ final class SalesChannel extends Model implements Translatable
     protected array $criteria = [
         'country' => CountrySearch::class,
     ];
+
+    /**
+     * @return BelongsTo<Language, self>
+     */
+    public function defaultLanguage(): BelongsTo
+    {
+        return $this->belongsTo(Language::class);
+    }
 
     /**
      * @return BelongsToMany<Country>

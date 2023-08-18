@@ -20,8 +20,6 @@ Sale:
       example: '50.0'
     priority:
       type: number
-    uses:
-      type: number
     target_type:
       type: string
       enum: [ 'order-value', 'products', 'shipping-price', 'cheapest-product' ]
@@ -53,6 +51,8 @@ SaleShow:
           type: array
           items:
             $ref: './../schemas/Prices.yml#/PriceResource'
+        uses:
+          type: number
         seo:
           $ref: './Seo.yml#/SeoView'
         condition_groups:

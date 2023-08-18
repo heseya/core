@@ -4,8 +4,11 @@ namespace App\Http\Requests;
 
 use App\Enums\SchemaType;
 use App\Rules\EnumKey;
+use App\Rules\Price;
+use App\Rules\PricesEveryCurrency;
 use App\Rules\Translations;
 use App\Traits\MetadataRules;
+use Brick\Math\BigDecimal;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class SchemaStoreRequest extends FormRequest
@@ -28,7 +31,10 @@ final class SchemaStoreRequest extends FormRequest
                 'published.*' => ['uuid', 'exists:languages,id'],
 
                 'type' => ['required', 'string', new EnumKey(SchemaType::class)],
-                'price' => ['nullable', 'numeric'],
+
+                'prices' => ['required', new PricesEveryCurrency()],
+                'prices.*' => [new Price(['value'], min: BigDecimal::zero())],
+
                 'hidden' => ['nullable', 'boolean'],
                 'required' => ['nullable', 'boolean'],
                 'min' => ['nullable', 'numeric', 'min:-100000', 'max:100000'],
@@ -45,7 +51,9 @@ final class SchemaStoreRequest extends FormRequest
                 ],
                 'options.*.translations.*.name' => ['string', 'max:255'],
 
-                'options.*.price' => ['sometimes', 'required', 'numeric'],
+                'options.*.prices' => ['sometimes', 'required', new PricesEveryCurrency()],
+                'options.*.prices.*' => ['sometimes', 'required', new Price(['value'], min: BigDecimal::zero())],
+
                 'options.*.disabled' => ['sometimes', 'required', 'boolean'],
                 'options.*.metadata' => ['array'],
                 'options.*.metadata_private' => ['array'],

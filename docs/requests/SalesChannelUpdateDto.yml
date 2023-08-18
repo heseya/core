@@ -28,5 +28,9 @@ SalesChannelUpdateDto:
           default_language_id:
             type: string
             format: uuid
+          countries_block_list:
+            type: boolean
           countries:
             type: array
+            items:
+              type: string

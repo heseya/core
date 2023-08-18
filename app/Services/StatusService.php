@@ -35,8 +35,8 @@ readonly class StatusService implements StatusServiceContract
 
         $status->save();
 
-        if (!($dto->metadata instanceof Optional)) {
-            $this->metadataService->sync($status, $dto->metadata);
+        if (!($dto->metadata_computed instanceof Optional)) {
+            $this->metadataService->sync($status, $dto->metadata_computed);
         }
 
         return $status;
@@ -64,8 +64,8 @@ readonly class StatusService implements StatusServiceContract
 
         $status->save();
 
-        if (!($dto->metadata instanceof Optional)) {
-            $this->metadataService->sync($status, $dto->metadata);
+        if (!($dto->metadata_computed instanceof Optional)) {
+            $this->metadataService->sync($status, $dto->metadata_computed);
         }
 
         return $status;

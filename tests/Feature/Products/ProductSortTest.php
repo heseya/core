@@ -3,6 +3,7 @@
 namespace Tests\Feature\Products;
 
 use App\Models\Product;
+use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Tests\TestCase;
@@ -17,7 +18,9 @@ class ProductSortTest extends TestCase
         $this->{$user}->givePermissionTo('products.show');
 
         /** @var Attribute $attribute */
-        $attribute = Attribute::factory()->create();
+        $attribute = Attribute::factory()->create([
+            'type' => AttributeType::SINGLE_OPTION,
+        ]);
 
         $product1 = $this->createProductWithAttribute($attribute, '2023-12-12');
         $product2 = $this->createProductWithAttribute($attribute, '2023-05-05');

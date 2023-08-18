@@ -10,8 +10,17 @@ enum AttributeType: string
 {
     use EnumTrait;
 
-    case SINGLE_OPTION = 'single-option';
-    case MULTI_CHOICE_OPTION = 'multi-choice-option';
-    case NUMBER = 'number';
-    case DATE = 'date';
+    case SINGLE_OPTION = AttributeTypeValues::SINGLE_OPTION;
+    case MULTI_CHOICE_OPTION = AttributeTypeValues::MULTI_CHOICE_OPTION;
+    case NUMBER = AttributeTypeValues::NUMBER;
+    case DATE = AttributeTypeValues::DATE;
+
+    public function getOptionFieldByType(): string
+    {
+        return match ($this) {
+            self::SINGLE_OPTION, self::MULTI_CHOICE_OPTION => 'name',
+            self::NUMBER => 'value_number',
+            self::DATE => 'value_date',
+        };
+    }
 }

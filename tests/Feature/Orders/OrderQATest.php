@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Orders;
 
-use App\Dtos\PriceDto;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
@@ -12,12 +11,13 @@ use App\Models\Order;
 use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\ShippingMethod;
-use App\Services\Contracts\ProductServiceContract;
+use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
@@ -53,10 +53,10 @@ class OrderQATest extends TestCase
 
         $currency = Currency::DEFAULT->value;
 
-        /** @var ProductServiceContract $productService */
-        $productService = App::make(ProductServiceContract::class);
+        /** @var ProductService $productService */
+        $productService = App::make(ProductService::class);
         $this->product = $productService->create(FakeDto::productCreateDto([
-            'prices_base' => [new PriceDto(Money::of(100, $currency))],
+            'prices_base' => [PriceDto::from(Money::of(100, $currency))],
             'public' => true,
         ]));
 

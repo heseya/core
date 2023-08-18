@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Discounts;
 
-use App\Dtos\PriceDto;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
@@ -15,15 +14,15 @@ use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\PriceRange;
 use App\Models\Product;
-use App\Models\Schema;
 use App\Models\ShippingMethod;
-use App\Services\Contracts\ProductServiceContract;
+use App\Services\ProductService;
+use App\Services\SchemaCrudService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
-use Domain\Language\Language;
+use Domain\Price\Dtos\PriceDto;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Notification;
@@ -41,8 +40,10 @@ class DiscountOrderTest extends TestCase
     protected array $items;
     protected array $address;
 
-    private ProductServiceContract $productService;
+    private ProductService $productService;
     private Currency $currency;
+
+    private SchemaCrudService $schemaCrudService;
 
     /**
      * @throws UnknownCurrencyException
@@ -56,12 +57,12 @@ class DiscountOrderTest extends TestCase
 
         Notification::fake();
 
-        $this->productService = App::make(ProductServiceContract::class);
+        $this->productService = App::make(ProductService::class);
         $this->currency = Currency::DEFAULT;
 
         $this->product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(100, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(100, $this->currency->value))],
         ]));
 
         $this->shippingMethod = $this->createShippingMethod(10, ['shipping_type' => ShippingType::ADDRESS]);
@@ -79,6 +80,8 @@ class DiscountOrderTest extends TestCase
             'phone' => '+48123123123',
             'country' => 'PL',
         ];
+
+        $this->schemaCrudService = App::make(SchemaCrudService::class);
     }
 
     /**
@@ -275,17 +278,17 @@ class DiscountOrderTest extends TestCase
 
         $product1 = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(100, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(100, $this->currency->value))],
         ]));
 
         $product2 = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(200, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(200, $this->currency->value))],
         ]));
 
         $product3 = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(50, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(50, $this->currency->value))],
         ]));
 
         $sale1 = Discount::factory()->create([
@@ -418,13 +421,15 @@ class DiscountOrderTest extends TestCase
     {
         $this->{$user}->givePermissionTo('orders.add');
 
-        $schema = $this->product->schemas()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'name' => 'test',
             'type' => SchemaType::STRING,
             'required' => true,
-            'price' => 0,
+            'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
             'published' => [$this->lang],
-        ]);
+        ]));
+
+        $this->product->schemas()->attach($schema->getKey());
 
         $sale = Discount::factory()->create([
             'target_type' => DiscountTargetType::PRODUCTS,
@@ -542,7 +547,7 @@ class DiscountOrderTest extends TestCase
         $this->{$user}->givePermissionTo('orders.add');
         $product1 = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(5588.75, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(5588.75, $this->currency->value))],
         ]));
 
         $sale1 = Discount::factory()->create([
@@ -612,7 +617,7 @@ class DiscountOrderTest extends TestCase
         $this->{$user}->givePermissionTo('orders.add');
         $product1 = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(5588.75, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(5588.75, $this->currency->value))],
         ]));
 
         $sale1 = Discount::factory()->create([
@@ -668,13 +673,14 @@ class DiscountOrderTest extends TestCase
 
         $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(10, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(10, $this->currency->value))],
         ]));
 
-        $items = [[
-            'product_id' => $product->getKey(),
-            'quantity' => 3,
-        ],
+        $items = [
+            [
+                'product_id' => $product->getKey(),
+                'quantity' => 3,
+            ],
         ];
 
         $sale = Discount::factory()->create([
@@ -716,7 +722,7 @@ class DiscountOrderTest extends TestCase
 
         $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(10, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(10, $this->currency->value))],
         ]));
 
         $items = [
@@ -769,14 +775,14 @@ class DiscountOrderTest extends TestCase
 
         $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(10, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(10, $this->currency->value))],
         ]));
 
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 'string',
-            'price' => 20,
+            'prices' => [['value' => 20, 'currency' => $this->currency->value]],
             'hidden' => false,
-        ]);
+        ]));
 
         $product->schemas()->save($schema);
 
@@ -827,14 +833,14 @@ class DiscountOrderTest extends TestCase
 
         $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(10, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(10, $this->currency->value))],
         ]));
 
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => SchemaType::BOOLEAN,
-            'price' => 20,
+            'prices' => [['value' => 20, 'currency' => $this->currency->value]],
             'hidden' => false,
-        ]);
+        ]));
 
         $product->schemas()->sync([$schema->getKey()]);
 
@@ -885,14 +891,14 @@ class DiscountOrderTest extends TestCase
 
         $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(10, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(10, $this->currency->value))],
         ]));
 
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => SchemaType::BOOLEAN,
             'price' => 10,
             'hidden' => false,
-        ]);
+        ]));
 
         $product->schemas()->sync([$schema->getKey()]);
 
@@ -945,7 +951,7 @@ class DiscountOrderTest extends TestCase
 
         $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of(100, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(100, $this->currency->value))],
         ]));
 
         $itemData = [
@@ -1023,7 +1029,7 @@ class DiscountOrderTest extends TestCase
         $productPrice = 50;
         $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [new PriceDto(Money::of($productPrice, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of($productPrice, $this->currency->value))],
         ]));
 
         $shippingMethod = ShippingMethod::factory()

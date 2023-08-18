@@ -17,7 +17,6 @@ use App\Dtos\MaxUsesPerUserConditionDto;
 use App\Dtos\OrderDto;
 use App\Dtos\OrderProductDto;
 use App\Dtos\OrderValueConditionDto;
-use App\Dtos\PriceDto;
 use App\Dtos\ProductInConditionDto;
 use App\Dtos\ProductInSetConditionDto;
 use App\Dtos\ProductPriceDto;
@@ -71,6 +70,7 @@ use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
 use Domain\ProductSet\ProductSet;
 use Domain\Seo\SeoMetadataService;
 use Heseya\Dto\DtoException;
@@ -83,6 +83,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\ItemNotFoundException;
 use Illuminate\Support\Str;
 
 readonly class DiscountService implements DiscountServiceContract
@@ -350,18 +351,16 @@ readonly class DiscountService implements DiscountServiceContract
     public function calcCartDiscounts(CartDto $cart, Collection $products): CartResource
     {
         $discounts = $this->getActiveSalesAndCoupons($cart->getCoupons());
+
         /** @var ?ShippingMethod $shippingMethod */
-        $shippingMethod = null;
+        $shippingMethod = is_string($cart->getShippingMethodId())
+            ? ShippingMethod::query()->findOrFail($cart->getShippingMethodId())
+            : null;
+
         /** @var ?ShippingMethod $shippingMethodDigital */
-        $shippingMethodDigital = null;
-
-        if (!$cart->getShippingMethodId() instanceof Missing) {
-            $shippingMethod = ShippingMethod::query()->findOrFail($cart->getShippingMethodId());
-        }
-
-        if (!$cart->getDigitalShippingMethodId() instanceof Missing) {
-            $shippingMethodDigital = ShippingMethod::query()->findOrFail($cart->getDigitalShippingMethodId());
-        }
+        $shippingMethodDigital = is_string($cart->getDigitalShippingMethodId())
+            ? ShippingMethod::query()->findOrFail($cart->getDigitalShippingMethodId())
+            : null;
 
         /**
          * TODO: Cart needs currency.
@@ -378,19 +377,18 @@ readonly class DiscountService implements DiscountServiceContract
                 continue;
             }
 
-            /** @var PriceDto $priceDto */
-            [[$priceDto]] = $this->productRepository::getProductPrices($product->getKey(), [
+            $prices = $this->productRepository->getProductPrices($product->getKey(), [
                 ProductPriceType::PRICE_BASE,
             ], $currency);
 
-            $price = $priceDto->value;
+            $price = $prices->get(ProductPriceType::PRICE_BASE->value)?->firstOrFail()?->value ?? throw new ItemNotFoundException();
 
             foreach ($cartItem->getSchemas() as $schemaId => $value) {
                 /** @var Schema $schema */
                 $schema = $product->schemas()->findOrFail($schemaId);
 
                 $price = $price->plus(
-                    $schema->getPrice($value, $cartItem->getSchemas()),
+                    $schema->getPrice($value, $cartItem->getSchemas(), $currency),
                 );
             }
             $cartValue = $cartValue->plus($price->multipliedBy($cartItem->getQuantity()));
@@ -403,10 +401,11 @@ readonly class DiscountService implements DiscountServiceContract
         }
         $cartShippingTimeAndDate = $this->shippingTimeDateService->getTimeAndDateForCart($cart, $products);
 
-        $shippingPrice = $shippingMethod !== null ? $shippingMethod->getPrice($cartValue) : Money::zero($currency->value);
+        $shippingPrice = $shippingMethod?->getPrice($cartValue) ?? Money::zero($currency->value);
         $shippingPrice = $shippingPrice->plus(
-            $shippingMethodDigital !== null ? $shippingMethodDigital->getPrice($cartValue) : Money::zero($currency->value),
+            $shippingMethodDigital?->getPrice($cartValue) ?? Money::zero($currency->value),
         );
+
         $summary = $cartValue->plus($shippingPrice);
 
         $cartResource = new CartResource(
@@ -522,16 +521,21 @@ readonly class DiscountService implements DiscountServiceContract
         Product $product,
         Collection $salesWithBlockList,
         bool $calcForCurrentUser,
+        Currency $currency = Currency::DEFAULT,
     ): array {
         $sales = $this->sortDiscounts($product->allProductSales($salesWithBlockList));
 
-        [
-            $minPrices,
-            $maxPrices,
-        ] = $this->productRepository->getProductPrices($product->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL,
-            ProductPriceType::PRICE_MAX_INITIAL,
-        ]);
+        $prices = $this->productRepository->getProductPrices(
+            $product->getKey(),
+            [
+                ProductPriceType::PRICE_MIN_INITIAL,
+                ProductPriceType::PRICE_MAX_INITIAL,
+            ],
+            $currency
+        );
+
+        $minPrices = $prices->get(ProductPriceType::PRICE_MIN_INITIAL->value, collect());
+        $maxPrices = $prices->get(ProductPriceType::PRICE_MAX_INITIAL->value, collect());
 
         $minimalMonetaryValue = 1;
 
@@ -725,6 +729,7 @@ readonly class DiscountService implements DiscountServiceContract
      * @throws UnknownCurrencyException
      * @throws NumberFormatException
      * @throws DtoException
+     * @throws ServerException
      */
     public function applyDiscountOnProduct(
         Product $product,
@@ -734,12 +739,11 @@ readonly class DiscountService implements DiscountServiceContract
         // TODO: Get currency somehow
         $currency = Currency::DEFAULT;
 
-        /** @var PriceDto $priceDto */
-        [[$priceDto]] = $this->productRepository::getProductPrices($product->getKey(), [
+        $prices = $this->productRepository->getProductPrices($product->getKey(), [
             ProductPriceType::PRICE_BASE,
         ], $currency);
 
-        $price = $priceDto->value;
+        $price = $prices->get(ProductPriceType::PRICE_BASE->value, collect())->firstOrFail()->value;
 
         foreach ($orderProductDto->getSchemas() as $schemaId => $value) {
             /** @var Schema $schema */
@@ -765,11 +769,11 @@ readonly class DiscountService implements DiscountServiceContract
      * @throws NumberFormatException
      * @throws DtoException
      */
-    public function applyDiscountsOnProducts(Collection $products): void
+    public function applyDiscountsOnProducts(Collection $products, ?Currency $currency = null): void
     {
         $salesWithBlockList = $this->getSalesWithBlockList();
         foreach ($products as $product) {
-            $this->applyAllDiscountsOnProduct($product, $salesWithBlockList);
+            $this->applyAllDiscountsOnProduct($product, $salesWithBlockList, $currency);
         }
     }
 
@@ -868,18 +872,20 @@ readonly class DiscountService implements DiscountServiceContract
     }
 
     /**
-     * @throws MoneyMismatchException
-     * @throws ServerException
-     * @throws UnknownCurrencyException
-     * @throws RoundingNecessaryException
-     * @throws MathException
+     * @throws StoreException
      * @throws ClientException
      * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws StoreException
+     * @throws MoneyMismatchException
      * @throws DtoException
      */
     public function applyAllDiscountsOnProduct(
         Product $product,
         Collection $salesWithBlockList,
+        ?Currency $currency = null,
     ): void {
         [
             // @var PriceDto[] $minPricesDiscounted
@@ -887,7 +893,21 @@ readonly class DiscountService implements DiscountServiceContract
             // @var PriceDto[] $maxPricesDiscounted
             $maxPricesDiscounted,
             $productSales,
-        ] = $this->calcAllDiscountsOnProduct($product, $salesWithBlockList, false);
+        ] = $this->calcAllDiscountsOnProduct($product, $salesWithBlockList, false, $currency ?? Currency::DEFAULT);
+
+        // TODO: Remove this; this is a temporary solution fo testing
+        if ($currency === null) {
+            foreach (Currency::cases() as $case) {
+                if ($case !== Currency::DEFAULT) {
+                    if ($priceMin = $product->pricesMinInitial()->where('currency', $case->value)->latest()->first()) {
+                        $minPricesDiscounted[] = PriceDto::from($priceMin);
+                    }
+                    if ($priceMax = $product->pricesMaxInitial()->where('currency', $case->value)->latest()->first()) {
+                        $maxPricesDiscounted[] = PriceDto::from($priceMax);
+                    }
+                }
+            }
+        }
 
         $this->productRepository->setProductPrices($product->getKey(), [
             ProductPriceType::PRICE_MIN->value => $minPricesDiscounted,
@@ -969,6 +989,7 @@ readonly class DiscountService implements DiscountServiceContract
                 $product = $newProduct;
             }
 
+
             $price = $product->price ?? 0;
 
             if ($price !== $minimalProductPrice) {
@@ -982,16 +1003,6 @@ readonly class DiscountService implements DiscountServiceContract
         return $order;
     }
 
-    /**
-     * @throws StoreException
-     * @throws ClientException
-     * @throws NumberFormatException
-     * @throws RoundingNecessaryException
-     * @throws MathException
-     * @throws UnknownCurrencyException
-     * @throws StoreException
-     * @throws MoneyMismatchException
-     */
     private function applyDiscountOnCart(Discount $discount, CartDto $cartDto, CartResource $cart): CartResource
     {
         return match ($discount->target_type) {
@@ -1794,7 +1805,7 @@ readonly class DiscountService implements DiscountServiceContract
 
         if (!$startAt instanceof Missing && !$endAt instanceof Missing) {
             return $actualDate
-                ->between($startAt, $endAt) === $conditionDto->isIsInRange();
+                    ->between($startAt, $endAt) === $conditionDto->isIsInRange();
         }
 
         if (!$startAt instanceof Missing) {
@@ -1851,14 +1862,14 @@ readonly class DiscountService implements DiscountServiceContract
 
         if (Auth::user()) {
             return $condition
-                ->conditionGroup
-                ?->discounts()
-                ->first()
-                ?->orders()
-                ->whereHasMorph('buyer', [User::class, App::class], function (Builder $query): void {
-                    $query->where('buyer_id', Auth::id());
-                })
-                ->count() < $conditionDto->getMaxUses();
+                    ->conditionGroup
+                    ?->discounts()
+                    ->first()
+                    ?->orders()
+                    ->whereHasMorph('buyer', [User::class, App::class], function (Builder $query): void {
+                        $query->where('buyer_id', Auth::id());
+                    })
+                    ->count() < $conditionDto->getMaxUses();
         }
 
         return false;

@@ -2,7 +2,6 @@
 
 namespace Unit;
 
-use App\Dtos\PriceDto;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
@@ -11,12 +10,13 @@ use App\Models\ConditionGroup;
 use App\Models\Discount;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryContract;
-use App\Services\Contracts\DiscountServiceContract;
+use App\Services\DiscountService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
 use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -29,13 +29,13 @@ class ActiveSalesTest extends TestCase
 {
     use RefreshDatabase;
 
-    private DiscountServiceContract $discountService;
+    private DiscountService $discountService;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->discountService = App::make(DiscountServiceContract::class);
+        $this->discountService = App::make(DiscountService::class);
     }
 
     public static function conditionTypeProvider(): array
@@ -209,9 +209,9 @@ class ActiveSalesTest extends TestCase
             'public' => true,
         ]);
         $productRepository->setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(1000, $currency))],
-            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(1000, $currency))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(3500, $currency))],
+            ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(1000, $currency))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(1000, $currency))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(3500, $currency))],
         ]);
 
         $product2 = Product::factory()->create([
@@ -219,9 +219,9 @@ class ActiveSalesTest extends TestCase
             'public' => true,
         ]);
         $productRepository->setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(2500, $currency))],
-            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(2000, $currency))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(4000, $currency))],
+            ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(2500, $currency))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(2000, $currency))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(4000, $currency))],
         ]);
 
         $product3 = Product::factory()->create([
@@ -229,9 +229,9 @@ class ActiveSalesTest extends TestCase
             'public' => true,
         ]);
         $productRepository->setProductPrices($product3->getKey(), [
-            ProductPriceType::PRICE_BASE->value => [new PriceDto(Money::of(1500, $currency))],
-            ProductPriceType::PRICE_MIN_INITIAL->value => [new PriceDto(Money::of(1200, $currency))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [new PriceDto(Money::of(2000, $currency))],
+            ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(1500, $currency))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(1200, $currency))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(2000, $currency))],
         ]);
 
         $sale1 = Discount::factory()->create([
@@ -284,42 +284,42 @@ class ActiveSalesTest extends TestCase
 
         $sale2->conditionGroups()->attach($conditionGroup2);
 
-        $this->discountService->applyDiscountsOnProducts(Collection::make([$product1, $product2, $product3]));
-        Cache::put('sales.active', [$sale1->getKey()]);
+        $this->discountService->applyDiscountsOnProducts(Collection::make([$product1, $product2, $product3]), Currency::from($currency));
+        Cache::put('sales.active', collect([$sale1->getKey()]));
 
         $product1->refresh();
         $product2->refresh();
         $product3->refresh();
 
-        $this->assertEquals(800, $product1->pricesMin->first()->value->getAmount()->toInt());
-        $this->assertEquals(3300, $product1->pricesMax->first()->value->getAmount()->toInt());
+        $this->assertEquals(800, $product1->pricesMin()->where('currency', $currency)->first()->value->getAmount()->toInt());
+        $this->assertEquals(3300, $product1->pricesMax()->where('currency', $currency)->first()->value->getAmount()->toInt());
 
-        $this->assertEquals(2000, $product2->pricesMin->first()->value->getAmount()->toInt());
-        $this->assertEquals(4000, $product2->pricesMax->first()->value->getAmount()->toInt());
+        $this->assertEquals(2000, $product2->pricesMin()->where('currency', $currency)->first()->value->getAmount()->toInt());
+        $this->assertEquals(4000, $product2->pricesMax()->where('currency', $currency)->first()->value->getAmount()->toInt());
 
-        $this->assertEquals(1200, $product3->pricesMin->first()->value->getAmount()->toInt());
-        $this->assertEquals(2000, $product3->pricesMax->first()->value->getAmount()->toInt());
+        $this->assertEquals(1200, $product3->pricesMin()->where('currency', $currency)->first()->value->getAmount()->toInt());
+        $this->assertEquals(2000, $product3->pricesMax()->where('currency', $currency)->first()->value->getAmount()->toInt());
 
         Carbon::setTestNow('2022-04-21T12:00:00');
         $this->travelTo('2022-04-21T12:00:00');
         $this->artisan('schedule:run');
 
-        $product1->refresh();
-        $product2->refresh();
-        $product3->refresh();
-
-        $this->assertEquals(1000, $product1->pricesMin->first()->value->getAmount()->toInt());
-        $this->assertEquals(3500, $product1->pricesMax->first()->value->getAmount()->toInt());
-
-        $this->assertEquals(1700, $product2->pricesMin->first()->value->getAmount()->toInt());
-        $this->assertEquals(3700, $product2->pricesMax->first()->value->getAmount()->toInt());
-
-        $this->assertEquals(1200, $product3->pricesMin->first()->value->getAmount()->toInt());
-        $this->assertEquals(2000, $product3->pricesMax->first()->value->getAmount()->toInt());
-
         $activeSales = Cache::get('sales.active');
         $this->assertCount(1, $activeSales);
         $this->assertTrue($activeSales->contains($sale2->getKey()));
         $this->assertFalse($activeSales->contains($sale1->getKey()));
+
+        $product1->refresh();
+        $product2->refresh();
+        $product3->refresh();
+
+        $this->assertEquals(1000, $product1->pricesMin()->where('currency', $currency)->first()->value->getAmount()->toInt());
+        $this->assertEquals(3500, $product1->pricesMax()->where('currency', $currency)->first()->value->getAmount()->toInt());
+
+        $this->assertEquals(1700, $product2->pricesMin()->where('currency', $currency)->first()->value->getAmount()->toInt());
+        $this->assertEquals(3700, $product2->pricesMax()->where('currency', $currency)->first()->value->getAmount()->toInt());
+
+        $this->assertEquals(1200, $product3->pricesMin()->where('currency', $currency)->first()->value->getAmount()->toInt());
+        $this->assertEquals(2000, $product3->pricesMax()->where('currency', $currency)->first()->value->getAmount()->toInt());
     }
 }

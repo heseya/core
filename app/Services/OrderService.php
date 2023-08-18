@@ -10,7 +10,6 @@ use App\Dtos\OrderProductSearchDto;
 use App\Dtos\OrderProductUpdateDto;
 use App\Dtos\OrderProductUrlDto;
 use App\Dtos\OrderUpdateDto;
-use App\Dtos\PriceDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\Product\ProductPriceType;
 use App\Enums\SchemaType;
@@ -163,7 +162,7 @@ final readonly class OrderService implements OrderServiceContract
             $order = Order::query()->create(
                 [
                     'code' => $this->nameService->generate(),
-                    'currency' => 'PLN',
+                    'currency' => $currency->value,
                     'shipping_price_initial' => 0.0,
                     'shipping_price' => 0.0,
                     'cart_total_initial' => 0.0,
@@ -187,12 +186,11 @@ final readonly class OrderService implements OrderServiceContract
                     /** @var Product $product */
                     $product = $products->firstWhere('id', $item->getProductId());
 
-                    /** @var PriceDto $priceDto */
-                    [[$priceDto]] = $this->productRepository::getProductPrices($product->getKey(), [
+                    $prices = $this->productRepository->getProductPrices($product->getKey(), [
                         ProductPriceType::PRICE_BASE,
                     ], $currency);
 
-                    $price = $priceDto->value->getAmount()->toFloat();
+                    $price = $prices->get(ProductPriceType::PRICE_BASE->value)?->first()?->value->getAmount()->toFloat();
 
                     $orderProduct = new OrderProduct([
                         'product_id' => $item->getProductId(),
@@ -214,7 +212,7 @@ final readonly class OrderService implements OrderServiceContract
                     foreach ($item->getSchemas() as $schemaId => $value) {
                         /** @var Schema $schema */
                         $schema = $product->schemas()->findOrFail($schemaId);
-                        $price = $schema->getPrice($value, $item->getSchemas());
+                        $price = $schema->getPrice($value, $item->getSchemas(), $currency);
 
                         if ($schema->type === SchemaType::SELECT) {
                             /** @var Option $option */
@@ -284,10 +282,10 @@ final readonly class OrderService implements OrderServiceContract
             DB::rollBack();
 
             throw $exception;
-        } catch (Throwable) {
+        } catch (Throwable $throwable) {
             DB::rollBack();
 
-            throw new ServerException(Exceptions::SERVER_TRANSACTION_ERROR);
+            throw new ServerException(Exceptions::SERVER_TRANSACTION_ERROR, $throwable);
         }
     }
 

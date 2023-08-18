@@ -47,6 +47,7 @@ enum Exceptions: string
     case CLIENT_ONLY_OWNER_GRANTS_OWNER_ROLE = 'Only owner can grant the owner role';
     case CLIENT_ONLY_OWNER_REMOVES_OWNER_ROLE = 'Only owner can remove the owner role';
     case CLIENT_ONE_OWNER_REMAINS = 'There must always be at least one Owner left';
+    case CLIENT_ONE_SALES_CHANNEL_REMAINS = 'There must always be at least one sales channel left';
     case CLIENT_DELETE_WHEN_RELATION_EXISTS = 'Element can\'t be deleted, because it has relations';
 
     case CLIENT_ORDER_EDIT_ERROR = 'Error in order update transaction. Check order and addresses data';
