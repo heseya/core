@@ -72,6 +72,7 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\ProductSet\ProductSet;
+use Domain\SalesChannel\SalesChannelService;
 use Domain\Seo\SeoMetadataService;
 use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
@@ -95,6 +96,7 @@ readonly class DiscountService implements DiscountServiceContract
         private ShippingTimeDateServiceContract $shippingTimeDateService,
         private ProductRepositoryContract $productRepository,
         private DiscountRepository $discountRepository,
+        private SalesChannelService $salesChannelService,
     ) {}
 
     public function index(CouponIndexDto|SaleIndexDto $dto): LengthAwarePaginator
@@ -381,6 +383,7 @@ readonly class DiscountService implements DiscountServiceContract
                 ProductPriceType::PRICE_BASE,
             ], $currency);
 
+            /** @var Money $price */
             $price = $prices->get(ProductPriceType::PRICE_BASE->value)?->firstOrFail()?->value ?? throw new ItemNotFoundException();
 
             foreach ($cartItem->getSchemas() as $schemaId => $value) {
@@ -456,6 +459,8 @@ readonly class DiscountService implements DiscountServiceContract
                 $summary = $newSummary;
             }
         }
+
+        $cartResource = $this->salesChannelService->applyVatOnCartItems($cartResource);
 
         $cartResource->cart_total = round($cartResource->cart_total, 2, PHP_ROUND_HALF_UP);
         $cartResource->shipping_price = round($cartResource->shipping_price, 2, PHP_ROUND_HALF_UP);

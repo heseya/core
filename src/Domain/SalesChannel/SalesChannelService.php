@@ -4,47 +4,38 @@ declare(strict_types=1);
 
 namespace Domain\SalesChannel;
 
-use Domain\SalesChannel\Dtos\SalesChannelCreateDto;
-use Domain\SalesChannel\Dtos\SalesChannelIndexDto;
-use Domain\SalesChannel\Dtos\SalesChannelUpdateDto;
-use Domain\SalesChannel\Models\SalesChannel;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Exceptions\ClientException;
+use App\Models\CartItemResponse;
+use App\Models\CartResource;
+use Illuminate\Support\Facades\Cache;
 
 final readonly class SalesChannelService
 {
-    public function __construct(
-        private SalesChannelRepository $salesChannelRepository,
-    ) {}
-
-    public function show(string $id): SalesChannel
+    public function applyVatOnCartItems(CartResource $cart): CartResource
     {
-        return $this->salesChannelRepository->getOne($id);
-    }
+        $cart_total = 0;
 
-    /**
-     * @return LengthAwarePaginator<SalesChannel>
-     */
-    public function index(SalesChannelIndexDto $dto, bool $public_only): LengthAwarePaginator
-    {
-        if ($public_only) {
-            return $this->salesChannelRepository->getAllPublic($dto);
+        /** @var CartItemResponse $item */
+        foreach ($cart->items as $item) {
+            $item->price = $this->calcVat($item->price);
+            $item->price_discounted = $this->calcVat($item->price_discounted);
+            $cart_total += $item->price_discounted * $item->quantity;
         }
 
-        return $this->salesChannelRepository->getAll($dto);
+        $cart->cart_total = $cart_total;
+
+        return $cart;
     }
 
-    public function store(SalesChannelCreateDto $dto): SalesChannel
+    private function calcVat(float $price): float
     {
-        return $this->salesChannelRepository->store($dto);
-    }
+        $vat_rate = Cache::get('vat_rate');
 
-    public function update(string $id, SalesCHannelUpdateDto $dto): void
-    {
-        $this->salesChannelRepository->update($id, $dto);
-    }
+        if (!is_float($vat_rate)) {
+            throw new ClientException(Exceptions::CLIENT_SALES_CHANNEL_NOT_FOUND);
+        }
 
-    public function delete(string $id): void
-    {
-        $this->salesChannelRepository->delete($id);
+        return round($price + ($price * $vat_rate), 2, PHP_ROUND_HALF_UP);
     }
 }
