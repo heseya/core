@@ -4,6 +4,7 @@ namespace App\Dtos;
 
 use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\CartRequest;
+use Domain\Currency\Currency;
 use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
@@ -11,6 +12,7 @@ use Illuminate\Support\Collection;
 
 class CartDto extends CartOrderDto implements InstantiateFromRequest
 {
+    public readonly Currency $currency;
     private array $items;
     private array|Missing $coupons;
     private Missing|string $shipping_method_id;
@@ -22,6 +24,7 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
     public static function instantiateFromRequest(CartRequest|FormRequest $request): self
     {
         return new self(
+            currency: $request->enum('currency', Currency::class),
             items: self::prepareItems($request->input('items', [])),
             coupons: $request->input('coupons', new Missing()),
             shipping_method_id: $request->input('shipping_method_id', new Missing()),
@@ -35,6 +38,7 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
     public static function fromArray(array $array): self
     {
         return new self(
+            currency: Currency::from($array['currency']),
             items: self::prepareItems($array['items']),
             coupons: $array['coupons'],
             shipping_method_id: $array['shipping_method_id'],

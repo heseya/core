@@ -6,6 +6,7 @@ namespace Domain\Currency;
 
 use App\Enums\Traits\EnumTrait;
 use Brick\Money\Currency as CurrencyInstance;
+use Brick\Money\Exception\UnknownCurrencyException;
 
 enum Currency: string
 {
@@ -16,6 +17,9 @@ enum Currency: string
     case PLN = 'PLN';
     case EUR = 'EUR';
 
+    /**
+     * @throws UnknownCurrencyException
+     */
     public function toCurrencyInstance(): CurrencyInstance
     {
         return CurrencyInstance::of($this->value);

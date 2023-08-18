@@ -15,9 +15,11 @@ use App\Models\Contracts\SortableContract;
 use App\Traits\HasMetadata;
 use App\Traits\HasOrderDiscount;
 use App\Traits\Sortable;
+use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -44,26 +46,27 @@ class Order extends Model implements SortableContract
     protected $fillable = [
         'code',
         'email',
-        'currency',
         'comment',
         'status_id',
         'shipping_method_id',
         'digital_shipping_method_id',
-        'shipping_price_initial',
-        'shipping_price',
         'shipping_number',
         'billing_address_id',
         'shipping_address_id',
         'created_at',
         'buyer_id',
         'buyer_type',
-        'summary',
         'paid',
-        'cart_total_initial',
-        'cart_total',
         'shipping_place',
         'invoice_requested',
         'shipping_type',
+
+        'currency',
+        'cart_total_initial',
+        'cart_total',
+        'shipping_price_initial',
+        'shipping_price',
+        'summary',
     ];
 
     protected array $criteria = [
@@ -88,6 +91,7 @@ class Order extends Model implements SortableContract
         'code',
         'created_at',
         'email',
+
         'summary',
     ];
 
@@ -99,6 +103,31 @@ class Order extends Model implements SortableContract
         'invoice_requested' => 'boolean',
         'currency' => Currency::class,
     ];
+
+    public function cart_total_initial(): Attribute
+    {
+        return self::priceAttributeTemplate('cart_total_initial');
+    }
+
+    public function cart_total(): Attribute
+    {
+        return self::priceAttributeTemplate('cart_total');
+    }
+
+    public function shipping_price_initial(): Attribute
+    {
+        return self::priceAttributeTemplate('shipping_price_initial');
+    }
+
+    public function shipping_price(): Attribute
+    {
+        return self::priceAttributeTemplate('shipping_price');
+    }
+
+    public function summary(): Attribute
+    {
+        return self::priceAttributeTemplate('summary');
+    }
 
     /**
      * Summary amount of paid.
@@ -201,5 +230,24 @@ class Order extends Model implements SortableContract
             'pl', 'en' => $country,
             default => Config::get('app.locale'),
         };
+    }
+
+    private static function priceAttributeTemplate(string $fieldName): Attribute
+    {
+        return Attribute::make(
+            get: fn (mixed $value, array $attributes): Money => Money::ofMinor(
+                $attributes[$fieldName],
+                $attributes['currency'],
+            ),
+            set: fn (int|Money|string $value): array => match (true) {
+                $value instanceof Money => [
+                    $fieldName => $value->getMinorAmount(),
+                    'currency' => $value->getCurrency()->getCurrencyCode(),
+                ],
+                default => [
+                    $fieldName => $value,
+                ]
+            }
+        );
     }
 }
