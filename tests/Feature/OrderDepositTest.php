@@ -20,6 +20,7 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\SalesChannel\Models\SalesChannel;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
@@ -437,6 +438,8 @@ class OrderDepositTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -498,6 +501,8 @@ class OrderDepositTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+        'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -553,6 +558,8 @@ class OrderDepositTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -713,6 +720,8 @@ class OrderDepositTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response

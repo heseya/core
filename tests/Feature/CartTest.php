@@ -28,6 +28,7 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\ProductSet\ProductSet;
+use Domain\SalesChannel\Models\SalesChannel;
 use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -150,6 +151,8 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response->assertForbidden();
@@ -172,6 +175,8 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response->assertUnprocessable();
@@ -194,6 +199,8 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response->assertUnprocessable();
@@ -216,6 +223,8 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -267,6 +276,8 @@ class CartTest extends TestCase
                     ],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -359,7 +370,9 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
-        ] + $coupons);
+        ] + $coupons, [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
+        ]);
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
         $discountCode1 = $coupon ? ['code' => $discountApplied->code] : [];
@@ -420,6 +433,8 @@ class CartTest extends TestCase
                     ],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -471,6 +486,8 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -579,6 +596,8 @@ class CartTest extends TestCase
                 $coupon->code,
                 $couponApplied->code,
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -717,6 +736,8 @@ class CartTest extends TestCase
                 'name' => $couponShipping->name,
                 'code' => $couponShipping->code,
                 'value' => 10, // discount -15, but shipping_price_initial is 10
+            ], [
+                'X-Sales-Channel' => SalesChannel::query()->value('id'),
             ]);
     }
 
@@ -739,7 +760,9 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
-        ] + $data['coupons']);
+        ] + $data['coupons'], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
+        ]);
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
         $discountCode1 = $coupon ? ['code' => $data['discountApplied']->code] : [];
@@ -820,7 +843,9 @@ class CartTest extends TestCase
                         ],
                     ],
                 ] + $coupons
-            );
+            , [
+                'X-Sales-Channel' => SalesChannel::query()->value('id'),
+            ]);
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
         $discountCode1 = $coupon ? ['code' => $productDiscount->code] : [];
@@ -910,7 +935,9 @@ class CartTest extends TestCase
                         ],
                     ],
                 ] + $coupons
-            );
+            , [
+                'X-Sales-Channel' => SalesChannel::query()->value('id'),
+            ]);
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
         $discountCode1 = $coupon ? ['code' => $productDiscount->code] : [];
@@ -997,6 +1024,8 @@ class CartTest extends TestCase
                     'quantity' => 1,
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -1052,6 +1081,8 @@ class CartTest extends TestCase
                     ],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response->assertValid()
@@ -1082,6 +1113,8 @@ class CartTest extends TestCase
                 $couponWithLimit->code,
                 $coupon2->code,
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ])
             ->assertValid()->assertOk()
             ->assertJsonCount(2, 'data.coupons');
@@ -1110,6 +1143,8 @@ class CartTest extends TestCase
                 $couponWithLimit->code,
                 $coupon2->code,
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ])
             ->assertValid()->assertOk()
             ->assertJsonCount(1, 'data.coupons')
@@ -1142,6 +1177,8 @@ class CartTest extends TestCase
                 $couponWithLimit->code,
                 $coupon2->code,
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ])
             ->assertValid()->assertOk()
             ->assertJsonCount(1, 'data.coupons')
@@ -1174,6 +1211,8 @@ class CartTest extends TestCase
                 $couponWithLimit->code,
                 $coupon2->code,
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ])
             ->assertValid()->assertOk()
             ->assertJsonCount(2, 'data.coupons');
@@ -1233,7 +1272,9 @@ class CartTest extends TestCase
                     ],
                 ],
             ] + $coupons,
-        );
+            [
+                'X-Sales-Channel' => SalesChannel::query()->value('id'),
+            ]);
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
         $discountCode = $coupon ? ['code' => $discountApplied->code] : [];
@@ -1322,7 +1363,9 @@ class CartTest extends TestCase
                     ],
                 ],
             ] + $coupons,
-        );
+            [
+                'X-Sales-Channel' => SalesChannel::query()->value('id'),
+            ]);
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
         $discountCode = $coupon ? ['code' => $discountApplied->code] : [];
@@ -1390,6 +1433,8 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -1440,6 +1485,8 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -1459,6 +1506,8 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -1494,6 +1543,8 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -1574,6 +1625,8 @@ class CartTest extends TestCase
                     ],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -1601,6 +1654,8 @@ class CartTest extends TestCase
                     ],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -1626,6 +1681,8 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -1661,6 +1718,8 @@ class CartTest extends TestCase
                     ],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -1704,6 +1763,8 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -1749,6 +1810,8 @@ class CartTest extends TestCase
                     ],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -1843,7 +1906,9 @@ class CartTest extends TestCase
                     ],
                 ],
             ] + $coupons
-        );
+        , [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
+        ]);
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
         $discountCode1 = $coupon ? ['code' => $discountApplied->code] : [];
@@ -1928,6 +1993,8 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
@@ -2011,7 +2078,9 @@ class CartTest extends TestCase
                     ],
                 ],
             ] + $coupons
-        );
+        , [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
+        ]);
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
         $discountCode = $coupon ? ['code' => $discount->code] : [];
@@ -2062,6 +2131,8 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
@@ -2102,6 +2173,8 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
@@ -2179,6 +2252,8 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
@@ -2240,6 +2315,8 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
@@ -2288,6 +2365,8 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
@@ -2333,6 +2412,8 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
@@ -2385,6 +2466,8 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
@@ -2432,6 +2515,8 @@ class CartTest extends TestCase
                     ],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
         $response
             ->assertValid()->assertOk()
@@ -2473,6 +2558,8 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
@@ -2635,6 +2722,8 @@ class CartTest extends TestCase
             'coupons' => [
                 $discountApplied->code,
             ],
+        ], [
+            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response

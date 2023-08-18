@@ -60,7 +60,6 @@ final class SalesChannelsTest extends TestCase
                         'cartitem_id' => '1',
                         'product_id' => $product->getKey(),
                         'quantity' => 2,
-                        'schemas' => [],
                     ],
                 ],
             ], [

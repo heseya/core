@@ -460,11 +460,15 @@ readonly class DiscountService implements DiscountServiceContract
             }
         }
 
-        $cartResource = $this->salesChannelService->applyVatOnCartItems($cartResource);
+        foreach ($cartResource->items as $item) {
+            $item->price = $this->salesChannelService->addVat($item->price);
+            $item->price_discounted = $this->salesChannelService->addVat($item->price_discounted);
+        }
 
-        $cartResource->cart_total = round($cartResource->cart_total, 2, PHP_ROUND_HALF_UP);
-        $cartResource->shipping_price = round($cartResource->shipping_price, 2, PHP_ROUND_HALF_UP);
-
+        $cartResource->cart_total = round(
+            $this->salesChannelService->addVat($cartResource->cart_total), 2,
+        );
+        $cartResource->shipping_price = round($cartResource->shipping_price, 2);
         $cartResource->summary = $cartResource->cart_total + $cartResource->shipping_price;
 
         return $cartResource;
