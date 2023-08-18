@@ -34,6 +34,7 @@ final class BannerService
                 foreach ($group->translations as $lang => $translation) {
                     $bannerMedia->setLocale($lang)->fill($translation);
                 }
+                $bannerMedia->fill(['published' => $group->published]);
                 $bannerMedia->save();
 
                 foreach ($group->media as $media) {
@@ -67,7 +68,7 @@ final class BannerService
 
                 if (!$bannerMedia) {
                     /** @var BannerMedia $bannerMedia */
-                    $bannerMedia = $banner->BannerMedia()->make([
+                    $bannerMedia = $banner->BannerMedia()->make($group->toArray() + [
                         'url' => $group->url,
                         'order' => $index + 1,
                     ]);
