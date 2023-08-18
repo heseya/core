@@ -25,7 +25,7 @@ SalesChannel:
       $ref: ./Languages.yml#/Language
     countries_block_list:
       type: boolean
-    country_codes:
+    countries:
       type: array
       items:
         type: string

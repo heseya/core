@@ -43,8 +43,7 @@ return new class extends Migration
         });
 
         /** @var SalesChannel $channel */
-        $channel = SalesChannel::query()->create([
-            'name' => 'Default',
+        $channel = SalesChannel::query()->make([
             'slug' => 'default',
             'status' => Status::ACTIVE->value,
             'countries_block_list' => false,
@@ -52,6 +51,13 @@ return new class extends Migration
             'default_language_id' => Language::default()?->getKey(),
             'vat_rate' => '0',
         ]);
+
+        foreach (Language::query()->get() as $language) {
+            $channel->setLocale($language->getKey())->fill([
+                'name' => 'Default',
+            ]);
+        }
+        $channel->save();
 
         // add all countries to default sales channel
         $channel->countries()->sync(Country::query()->pluck('code'));
