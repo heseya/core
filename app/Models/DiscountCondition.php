@@ -39,10 +39,10 @@ class DiscountCondition extends Model
 
         if ($this->type->is(ConditionType::DATE_BETWEEN)) {
             if (array_key_exists('start_at', $value)) {
-                $value['start_at'] = Carbon::parse($value['start_at'])->format('Y-m-d');
+                $value['start_at'] = Carbon::parse($value['start_at'])->toDateTimeString();
             }
             if (array_key_exists('end_at', $value)) {
-                $value['end_at'] = Carbon::parse($value['end_at'])->format('Y-m-d');
+                $value['end_at'] = Carbon::parse($value['end_at'])->toDateTimeString();
             }
         }
 
