@@ -94,7 +94,6 @@ readonly class DiscountService implements DiscountServiceContract
         private ShippingTimeDateServiceContract $shippingTimeDateService,
         private ProductRepositoryContract $productRepository,
         private DiscountRepository $discountRepository,
-        //        private ProductServiceContract $productService,
     ) {}
 
     public function index(CouponIndexDto|SaleIndexDto $dto): LengthAwarePaginator
