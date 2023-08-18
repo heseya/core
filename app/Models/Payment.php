@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\PaymentStatus;
+use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -54,6 +55,8 @@ class Payment extends Model
             get: fn (float|string $value, array $attributes): Money => Money::of(
                 $value,
                 $attributes['currency'],
+                null,
+                RoundingMode::HALF_EVEN,
             ),
             set: fn (float|Money|string $value): array => match (true) {
                 $value instanceof Money => [

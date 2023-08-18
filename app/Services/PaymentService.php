@@ -139,7 +139,7 @@ final class PaymentService implements PaymentServiceContract
 
         return Payment::query()->create([
             'currency' => $order->currency,
-            ...$dto->toArray()
+            ...$dto->toArray(),
         ]);
     }
 }

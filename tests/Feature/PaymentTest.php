@@ -470,7 +470,7 @@ class PaymentTest extends TestCase
         $response->assertJson([
             'data' => [
                 'amount' => 100,
-                'currency' => $this->order->currency,
+                'currency' => $this->order->currency->value,
                 'status' => PaymentStatus::PENDING->value,
                 'external_id' => 'test',
                 'method_id' => $paymentMethod->getKey(),
@@ -479,7 +479,7 @@ class PaymentTest extends TestCase
 
         $this->assertDatabaseHas('payments', [
             'amount' => 100,
-            'currency' => $this->order->currency,
+            'currency' => $this->order->currency->value,
             'status' => PaymentStatus::PENDING->value,
             'order_id' => $this->order->id,
             'external_id' => 'test',

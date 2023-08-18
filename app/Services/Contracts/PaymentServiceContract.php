@@ -10,5 +10,6 @@ use App\Models\PaymentMethod;
 interface PaymentServiceContract
 {
     public function getPayment(Order $order, PaymentMethod $paymentMethod, string $continueUrl): Payment;
+
     public function create(PaymentDto $dto): Payment;
 }
