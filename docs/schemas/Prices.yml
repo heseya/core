@@ -12,3 +12,16 @@ ProductPrice:
       description: 'Max price after applied all sales'
       type: number
       example: 19.99
+
+PriceResource:
+  type: object
+  properties:
+    net:
+      type: string
+      example: '19.99'
+    gross:
+      type: string
+      example: '23.99'
+    currency:
+      type: string
+      example: 'PLN'

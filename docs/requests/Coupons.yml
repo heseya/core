@@ -5,8 +5,6 @@ CouponStore:
         required:
           - code
           - name
-          - type
-          - value
           - priority
           - target_type
           - target_is_allow_list
@@ -21,8 +19,6 @@ CouponUpdate:
         required:
           - code
           - name
-          - type
-          - value
           - priority
           - target_type
           - target_is_allow_list

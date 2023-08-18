@@ -27,8 +27,8 @@ class DiscountSearchTest extends TestCase
         $this->user->givePermissionTo("{$kind}.show");
 
         $code = $kind === 'coupons' ? [] : ['code' => null];
-        $discount1 = Discount::factory()->create($code + ['name' => 'Discount 1', 'value' => 30]);
-        $discount2 = Discount::factory()->create($code + ['name' => 'Discount 2', 'value' => 15]);
+        $discount1 = Discount::factory()->create($code + ['name' => 'Discount 1', 'percentage' => '30']);
+        $discount2 = Discount::factory()->create($code + ['name' => 'Discount 2', 'percentage' => '15']);
 
         $this
             ->actingAs($this->user)
@@ -47,8 +47,8 @@ class DiscountSearchTest extends TestCase
         $this->user->givePermissionTo("{$kind}.show");
 
         $code = $kind === 'coupons' ? [] : ['code' => null];
-        $discount1 = Discount::factory()->create($code + ['name' => 'Discount 1', 'value' => 30]);
-        $discount2 = Discount::factory()->create($code + ['name' => 'Discount 2', 'value' => 15]);
+        $discount1 = Discount::factory()->create($code + ['name' => 'Discount 1', 'percentage' => '30']);
+        $discount2 = Discount::factory()->create($code + ['name' => 'Discount 2', 'percentage' => '15']);
 
         $this
             ->actingAs($this->user)
@@ -67,8 +67,8 @@ class DiscountSearchTest extends TestCase
         $this->user->givePermissionTo("{$kind}.show");
 
         $code = $kind === 'coupons' ? [] : ['code' => null];
-        $discount1 = Discount::factory()->create($code + ['name' => 'Discount 1', 'value' => 30]);
-        $discount2 = Discount::factory()->create($code + ['name' => 'Discount 2', 'value' => 15]);
+        $discount1 = Discount::factory()->create($code + ['name' => 'Discount 1', 'percentage' => '30']);
+        $discount2 = Discount::factory()->create($code + ['name' => 'Discount 2', 'percentage' => '15']);
 
         $this
             ->actingAs($this->user)

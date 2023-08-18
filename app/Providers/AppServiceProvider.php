@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\DiscountRepository;
 use App\Repositories\ProductRepository;
 use App\Services\AnalyticsService;
 use App\Services\AppService;
@@ -136,6 +137,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Repositories
         ProductRepositoryContract::class => ProductRepository::class,
+        DiscountRepository::class => DiscountRepository::class,
     ];
 
     /**

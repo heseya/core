@@ -5,8 +5,11 @@ namespace App\Http\Requests;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Rules\Price;
+use App\Rules\PricesEveryCurrency;
 use App\Traits\MetadataRules;
 use App\Traits\SeoRules;
+use Brick\Math\BigDecimal;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
@@ -26,8 +29,11 @@ class SaleCreateRequest extends FormRequest
             'slug' => ['nullable', 'string', 'max:128', 'alpha_dash'],
             'description' => ['nullable', 'string', 'max:255'],
             'description_html' => ['nullable', 'string'],
-            'value' => ['required', 'numeric', 'gte:0'],
-            'type' => ['required', new Enum(DiscountType::class)],
+
+            'percentage' => ['required_without:amounts', 'prohibits:amounts', 'numeric', 'string', 'gte:0'],
+            'amounts' => ['required_without:percentage', 'prohibits:percentage', new PricesEveryCurrency()],
+            'amounts.*' => [new Price(['value'], min: BigDecimal::zero())],
+
             'priority' => ['required', 'integer'],
             'target_type' => ['required', new Enum(DiscountTargetType::class)],
             'target_is_allow_list' => ['required', 'boolean'],
