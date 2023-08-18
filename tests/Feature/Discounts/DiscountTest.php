@@ -113,8 +113,8 @@ class DiscountTest extends TestCase
             ],
             [
                 'type' => ConditionType::DATE_BETWEEN,
-                'start_at' => Carbon::now(),
-                'end_at' => Carbon::tomorrow(),
+                'start_at' => Carbon::now()->format('Y-m-d'),
+                'end_at' => Carbon::tomorrow()->format('Y-m-d'),
                 'is_in_range' => true,
             ],
             [
