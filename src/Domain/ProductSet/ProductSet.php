@@ -60,6 +60,7 @@ final class ProductSet extends Model implements SeoContract, Translatable
         'parent_id',
         'description_html',
         'cover_id',
+        'published',
     ];
 
     /** @var string[] */
