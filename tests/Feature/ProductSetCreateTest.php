@@ -6,6 +6,7 @@ use App\Enums\MediaType;
 use App\Listeners\WebHookEventListener;
 use App\Models\Media;
 use App\Models\WebHook;
+use Domain\Language\Language;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductSet\Events\ProductSetCreated;
 use Domain\ProductSet\ProductSet;
@@ -88,6 +89,7 @@ class ProductSetCreateTest extends TestCase
                 'translations' => [
                     $this->lang => [
                         'name' => 'Test',
+                        'description_html' => null,
                     ],
                 ],
                 'published' => [$this->lang],

@@ -73,7 +73,7 @@ final class ProductSetCreateDto extends Data
     {
         return [
             'translations.*.name' => ['string', 'max:255'],
-            'translations.*.description_html' => ['string', 'max:255'],
+            'translations.*.description_html' => ['nullable', 'string', 'max:255'],
             'children_ids' => ['nullable'],
             'children_ids.*' => ['uuid', 'exists:product_sets,id'],
             'attributes' => ['nullable'],
