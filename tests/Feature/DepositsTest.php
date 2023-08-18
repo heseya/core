@@ -541,6 +541,7 @@ class DepositsTest extends TestCase
 
         $itemData = [
             'unlimited_stock_shipping_date' => Carbon::now()->addDays(10)->toIso8601String(),
+            'shipping_time' => null,
         ];
 
         $item = Item::factory()->create($itemData);
@@ -550,6 +551,7 @@ class DepositsTest extends TestCase
         $deposit1 = Deposit::factory()->create([
             'item_id' => $item->getKey(),
             'quantity' => 2.0,
+            'shipping_time' => null,
             'shipping_date' => Carbon::now()->startOfDay()->addDays(4)->toIso8601String(),
         ]);
         $item->refresh();
@@ -560,6 +562,7 @@ class DepositsTest extends TestCase
         $deposit2 = Deposit::factory()->create([
             'item_id' => $item->getKey(),
             'quantity' => 2.0,
+            'shipping_time' => null,
             'shipping_date' => Carbon::now()->startOfDay()->addDays(2)->toIso8601String(),
         ]);
         $item->refresh();
@@ -570,6 +573,7 @@ class DepositsTest extends TestCase
         $deposit3 = Deposit::factory()->create([
             'item_id' => $item->getKey(),
             'quantity' => 2.0,
+            'shipping_time' => null,
             'shipping_date' => Carbon::now()->startOfDay()->addDays(6)->toIso8601String(),
         ]);
         $item->refresh();

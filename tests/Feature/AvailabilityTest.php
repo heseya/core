@@ -92,9 +92,12 @@ class AvailabilityTest extends TestCase
         $this->product->schemas()->save($schema);
 
         /** @var Item $item */
-        $item = Item::factory()->create();
+        $item = Item::factory()->create([
+            'shipping_time' => null,
+        ]);
         $item->deposits()->create([
             'quantity' => 0,
+            'shipping_time' => null,
         ]);
 
         $option = Option::factory()->create([
