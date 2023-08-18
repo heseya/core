@@ -13,6 +13,7 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductSet\ProductSet;
@@ -1391,6 +1392,86 @@ class ProductSearchDatabaseTest extends TestCase
         $this->assertEquals($product1->getKey(), $data[2]->id);
         $this->assertEquals($product2->getKey(), $data[1]->id);
         $this->assertEquals($product3->getKey(), $data[0]->id);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSortByAttribute(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.show');
+
+        $products = Product::factory()->count(3)->create([
+            'public' => true,
+        ]);
+
+        $set = ProductSet::factory()->create([
+            'slug' => 'all-maritime',
+            'public' => true,
+        ]);
+        $set->products()->sync([
+            $products[0]->getKey() => ['order' => 1],
+            $products[1]->getKey() => ['order' => 2],
+            $products[2]->getKey() => ['order' => 3],
+        ]);
+
+        $attribute = Attribute::factory()->create([
+            'name' => 'Data wydania',
+            'slug' => 'data-wydania',
+            'sortable' => true,
+            'type' => AttributeType::DATE,
+        ]);
+
+        $option1 = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+            'value_date' => '2022-01-01',
+        ]);
+
+        $option2 = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+            'value_date' => '2023-02-01',
+        ]);
+
+        $option3 = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+            'value_date' => '2022-12-12',
+        ]);
+
+        $products[0]->attributes()->attach($attribute->getKey());
+        $products[0]->attributes->first()->pivot->options()->attach($option2->getKey());
+
+        $products[1]->attributes()->attach($attribute->getKey());
+        $products[1]->attributes->first()->pivot->options()->attach($option1->getKey());
+
+        $products[2]->attributes()->attach($attribute->getKey());
+        $products[2]->attributes->first()->pivot->options()->attach($option3->getKey());
+
+        $response = $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products', ['sets[]' => $set->slug, 'sort' => "attribute.{$attribute->getKey()}"]);
+        $response
+            ->assertOk()
+            ->assertJsonCount(3, 'data');
+
+        $data = $response->getData()->data;
+        $this->assertEquals($products[1]->getKey(), $data[0]->id); //01-01
+        $this->assertEquals($products[2]->getKey(), $data[1]->id); //12-12
+        $this->assertEquals($products[0]->getKey(), $data[2]->id); //23
+
+        $this->assertQueryCountLessThan(27);
+
+        // desc
+        $response = $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products', ['sets[]' => $set->slug, 'sort' => "attribute.{$attribute->getKey()}:desc"]);
+
+        $data = $response->getData()->data;
+        $this->assertEquals($products[0]->getKey(), $data[0]->id); //23
+        $this->assertEquals($products[2]->getKey(), $data[1]->id); //12-12
+        $this->assertEquals($products[1]->getKey(), $data[2]->id); //01-01
     }
 
     private function getProductsByParentSet(

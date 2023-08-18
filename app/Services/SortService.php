@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Rules\WhereIn;
 use App\Services\Contracts\SortServiceContract;
+use Domain\ProductAttribute\Repositories\AttributeRepository;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Validator;
@@ -12,6 +13,8 @@ use Illuminate\Validation\ValidationException;
 
 class SortService implements SortServiceContract
 {
+    public function __construct(private AttributeRepository $attributeRepository) {}
+
     /**
      * @throws ValidationException
      */
@@ -82,10 +85,13 @@ class SortService implements SortServiceContract
 
     private function addAttributeOrder(Builder $query, string $field, string $order): void
     {
-        $query->leftJoin('product_attribute', function (JoinClause $join) use ($field): void {
+        $attribute = $this->attributeRepository->getOne(Str::after($field, 'attribute.'));
+        $sortField = $attribute->type->getOptionFieldByType();
+
+        $query->leftJoin('product_attribute', function (JoinClause $join) use ($attribute): void {
             $join
                 ->on('product_attribute.product_id', 'products.id')
-                ->where('product_attribute.attribute_id', Str::after($field, 'attribute.'))
+                ->where('product_attribute.attribute_id', $attribute->getKey())
                 ->join('product_attribute_attribute_option', function (JoinClause $join): void {
                     $join
                         ->on('product_attribute_attribute_option.product_attribute_id', 'product_attribute.id')
@@ -95,7 +101,7 @@ class SortService implements SortServiceContract
                 });
         })
             ->addSelect('products.*')
-            ->addSelect('attribute_options.name AS attribute_order')
+            ->addSelect("attribute_options.{$sortField} AS attribute_order")
             ->orderBy('attribute_order', $order);
     }
 }
