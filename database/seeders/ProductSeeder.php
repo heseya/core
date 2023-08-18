@@ -20,6 +20,7 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Language\Language;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\PriceRepository;
 use Domain\ProductSet\ProductSet;
 use Domain\Seo\Models\SeoMetadata;
 use Heseya\Dto\DtoException;
@@ -27,6 +28,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
+use Tests\Utils\FakeDto;
 
 class ProductSeeder extends Seeder
 {
@@ -127,13 +129,18 @@ class ProductSeeder extends Seeder
     private function schemas(Product $product, string $language): void
     {
         /** @var Schema $schema */
-        $schema = Schema::factory()->create([
+        $schema = Schema::factory()->make([
             'type' => mt_rand(0, 6), // all types except multiply_schemas
         ]);
         $schemaTranslation = Schema::factory()->definition();
         $schema->setLocale($language)->fill(Arr::only($schemaTranslation, ['name', 'description']));
-        $schema->fill(['published' => array_merge($schema->published, [$language])]);
+        $schema->fill(['published' => array_merge($schema->published ?? [], [$language])]);
         $schema->save();
+
+        $priceRepository = App::make(PriceRepository::class);
+        $priceRepository->setModelPrices($schema, [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(),
+        ]);
 
         $product->schemas()->attach($schema->getKey());
 
@@ -141,11 +148,17 @@ class ProductSeeder extends Seeder
             /** @var Item $item */
             $item = Item::factory()->create();
             $item->deposits()->saveMany(Deposit::factory()->count(mt_rand(0, 2))->make());
-            $schema->options()->saveMany(Option::factory()->count(mt_rand(0, 4))->make())->each(function (Option $option) use ($language): void {
-                $optionTranslation = Option::factory()->definition();
-                $option->setLocale($language)->fill(Arr::only($optionTranslation, ['name']));
-                $option->save();
-            });
+            $schema
+                ->options()
+                ->saveMany(Option::factory()->count(mt_rand(0, 4))->make())
+                ->each(function (Option $option) use ($language, $priceRepository): void {
+                    $optionTranslation = Option::factory()->definition();
+                    $option->setLocale($language)->fill(Arr::only($optionTranslation, ['name']));
+                    $option->save();
+                    $priceRepository->setModelPrices($option, [
+                        ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(),
+                    ]);
+                });
         }
     }
 

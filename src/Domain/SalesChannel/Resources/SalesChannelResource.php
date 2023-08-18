@@ -38,11 +38,12 @@ final class SalesChannelResource extends Resource
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
             'slug' => $this->resource->slug,
+            'vat_rate' => $this->resource->vat_rate,
             'status' => $this->resource->status,
             'countries_block_list' => $this->resource->countries_block_list,
             'default_currency' => $currencyDto,
             'default_language' => new LanguageResource($this->resource->defaultLanguage),
-            'country_codes' => $this->resource->countries->pluck('code'),
+            'countries' => $this->resource->countries->pluck('code'),
             ...$request->boolean('with_translations') ? $this->getAllTranslations() : [],
         ];
     }
