@@ -12,14 +12,14 @@ use Support\Dtos\ModelIdentityDto;
 final class SchemaRepository
 {
     /**
-     * @param PriceDto[][] $priceMatrix
+     * @param PriceDto[] $prices
      */
-    public function setSchemaPrices(Schema|string $schema, array $priceMatrix): void
+    public function setSchemaPrices(Schema|string $schema, array $prices): void
     {
         if (is_string($schema)) {
             $schema = new ModelIdentityDto($schema, Schema::class);
         }
 
-        app(PriceRepository::class)->setModelPrices($schema, $priceMatrix);
+        app(PriceRepository::class)->setModelPrices($schema, ['schema' => $prices]);
     }
 }

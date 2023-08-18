@@ -26,8 +26,8 @@ class AppFactory extends Factory
         $name = $this->faker->name;
 
         return [
-            'url' => $this->faker->url,
-            'microfrontend_url' => $this->faker->url,
+            'url' => $this->faker->unique()->url,
+            'microfrontend_url' => $this->faker->unique()->url,
             'name' => $name,
             'slug' => Str::slug($name),
             'version' => mt_rand(0, 9) . '.' . mt_rand(0, 9) . '.' . mt_rand(0, 9),
