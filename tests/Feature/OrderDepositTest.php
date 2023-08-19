@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
+use App\Exceptions\PublishingException;
 use App\Models\Address;
 use App\Models\Item;
 use App\Models\Option;
@@ -52,6 +53,7 @@ class OrderDepositTest extends TestCase
      * @throws NumberFormatException
      * @throws RoundingNecessaryException
      * @throws DtoException
+     * @throws PublishingException
      */
     public function setUp(): void
     {
@@ -429,6 +431,7 @@ class OrderDepositTest extends TestCase
         ];
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -438,8 +441,6 @@ class OrderDepositTest extends TestCase
                     'schemas' => [],
                 ],
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -492,6 +493,7 @@ class OrderDepositTest extends TestCase
         ];
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -501,8 +503,6 @@ class OrderDepositTest extends TestCase
                     'schemas' => [],
                 ],
             ],
-        ], [
-        'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -549,6 +549,7 @@ class OrderDepositTest extends TestCase
         ];
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -558,8 +559,6 @@ class OrderDepositTest extends TestCase
                     'schemas' => [],
                 ],
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -711,6 +710,7 @@ class OrderDepositTest extends TestCase
         ];
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -720,8 +720,6 @@ class OrderDepositTest extends TestCase
                     'schemas' => [],
                 ],
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response

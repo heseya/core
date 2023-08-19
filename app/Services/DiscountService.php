@@ -350,7 +350,7 @@ readonly class DiscountService implements DiscountServiceContract
      * @throws UnknownCurrencyException
      * @throws DtoException
      */
-    public function calcCartDiscounts(CartDto $cart, Collection $products): CartResource
+    public function calcCartDiscounts(CartDto $cart, Collection $products, BigDecimal $vat_rate): CartResource
     {
         $discounts = $this->getActiveSalesAndCoupons($cart->getCoupons());
 
@@ -461,12 +461,12 @@ readonly class DiscountService implements DiscountServiceContract
         }
 
         foreach ($cartResource->items as $item) {
-            $item->price = $this->salesChannelService->addVat($item->price);
-            $item->price_discounted = $this->salesChannelService->addVat($item->price_discounted);
+            $item->price = $this->salesChannelService->addVat($item->price, $vat_rate);
+            $item->price_discounted = $this->salesChannelService->addVat($item->price_discounted, $vat_rate);
         }
 
         $cartResource->cart_total = round(
-            $this->salesChannelService->addVat($cartResource->cart_total), 2,
+            $this->salesChannelService->addVat($cartResource->cart_total, $vat_rate), 2,
         );
         $cartResource->shipping_price = round($cartResource->shipping_price, 2);
         $cartResource->summary = $cartResource->cart_total + $cartResource->shipping_price;

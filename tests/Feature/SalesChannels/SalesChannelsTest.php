@@ -54,6 +54,7 @@ final class SalesChannelsTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->json('POST', '/cart/process', [
+                'sales_channel_id' => $channel->getKey(),
                 'shipping_method_id' => $shipping_method->getKey(),
                 'items' => [
                     [
@@ -62,8 +63,6 @@ final class SalesChannelsTest extends TestCase
                         'quantity' => 2,
                     ],
                 ],
-            ], [
-                'X-Sales-Channel' => $channel->getKey(),
             ])
             ->assertOk()
             ->assertJsonFragment(['shipping_price' => 10]) // shipping price should remain the same

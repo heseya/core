@@ -6,21 +6,28 @@ namespace Domain\SalesChannel;
 
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
-use Illuminate\Support\Facades\Cache;
+use Brick\Math\BigDecimal;
+use Brick\Math\Exception\MathException;
+use Domain\SalesChannel\Models\SalesChannel;
 
 final readonly class SalesChannelService
 {
     /**
-     * @throws ClientException
+     * @throws MathException
      */
-    public function addVat(float $price): float
+    public function getVatRate(string $sales_channel_id): BigDecimal
     {
-        $vat_rate = Cache::get('vat_rate');
+        /** @var SalesChannel $sales_channel */
+        $sales_channel = SalesChannel::query()
+            ->where('id', '=', $sales_channel_id)
+            ->firstOr(fn () => throw new ClientException(Exceptions::CLIENT_SALES_CHANNEL_NOT_FOUND));
 
-        if (!is_float($vat_rate)) {
-            throw new ClientException(Exceptions::CLIENT_SALES_CHANNEL_NOT_FOUND);
-        }
+        return BigDecimal::of($sales_channel->vat_rate)->multipliedBy(0.01);
+    }
 
-        return $price + ($price * $vat_rate);
+    public function addVat(float $price, BigDecimal $vat_rate): float
+    {
+        // change to multipliedBy when price will be Money
+        return $price + ($price * $vat_rate->toFloat());
     }
 }

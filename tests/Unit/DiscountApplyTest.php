@@ -18,6 +18,7 @@ use App\Services\Contracts\DiscountServiceContract;
 use App\Services\OptionService;
 use App\Services\ProductService;
 use App\Services\SchemaCrudService;
+use Brick\Math\BigDecimal;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
@@ -252,7 +253,11 @@ class DiscountApplyTest extends TestCase
 
         $cartResource = $this
             ->discountService
-            ->calcCartDiscounts($cartDto, Collection::make([$product1, $product2, $product3]));
+            ->calcCartDiscounts(
+                $cartDto,
+                Collection::make([$product1, $product2, $product3]),
+                BigDecimal::zero(),
+            );
 
         $this->assertTrue($cartResource->cart_total === 162.0);
         $this->assertTrue($cartResource->summary === 182.0);

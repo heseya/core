@@ -495,13 +495,6 @@ CartProcess:
   post:
     tags:
       - Orders
-    parameters:
-      - in: header
-        name: X-Sales-Channel
-        schema:
-          type: string
-          format: uuid
-        required: true
     requestBody:
       $ref: './../requests/Cart.yml#/CartProcess'
     responses:

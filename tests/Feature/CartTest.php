@@ -142,6 +142,7 @@ class CartTest extends TestCase
     public function testCartProcessUnauthorized(): void
     {
         $response = $this->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -151,8 +152,6 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response->assertForbidden();
@@ -166,6 +165,7 @@ class CartTest extends TestCase
         $this->{$user}->givePermissionTo('cart.verify');
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'digital_shipping_method_id' => $this->digitalShippingMethod->getKey(),
             'items' => [
                 [
@@ -175,8 +175,6 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response->assertUnprocessable();
@@ -190,6 +188,7 @@ class CartTest extends TestCase
         $this->{$user}->givePermissionTo('cart.verify');
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -199,8 +198,6 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response->assertUnprocessable();
@@ -214,6 +211,7 @@ class CartTest extends TestCase
         $this->{$user}->givePermissionTo('cart.verify');
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -223,8 +221,6 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -257,6 +253,7 @@ class CartTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -276,8 +273,6 @@ class CartTest extends TestCase
                     ],
                 ],
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -361,6 +356,7 @@ class CartTest extends TestCase
         ] : [];
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -370,9 +366,7 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
-        ] + $coupons, [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
-        ]);
+        ] + $coupons);
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
         $discountCode1 = $coupon ? ['code' => $discountApplied->code] : [];
@@ -416,6 +410,7 @@ class CartTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -433,8 +428,6 @@ class CartTest extends TestCase
                     ],
                 ],
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -477,6 +470,7 @@ class CartTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -486,8 +480,6 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -575,6 +567,7 @@ class CartTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -596,8 +589,6 @@ class CartTest extends TestCase
                 $coupon->code,
                 $couponApplied->code,
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -693,6 +684,7 @@ class CartTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->postJson('/cart/process', [
+                'sales_channel_id' => SalesChannel::query()->value('id'),
                 'shipping_method_id' => $shippingMethod->getKey(),
                 'items' => [
                     [
@@ -736,8 +728,6 @@ class CartTest extends TestCase
                 'name' => $couponShipping->name,
                 'code' => $couponShipping->code,
                 'value' => 10, // discount -15, but shipping_price_initial is 10
-            ], [
-                'X-Sales-Channel' => SalesChannel::query()->value('id'),
             ]);
     }
 
@@ -751,6 +741,7 @@ class CartTest extends TestCase
         $data = $this->prepareDataForCouponTest($coupon);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -760,9 +751,7 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
-        ] + $data['coupons'], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
-        ]);
+        ] + $data['coupons']);
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
         $discountCode1 = $coupon ? ['code' => $data['discountApplied']->code] : [];
@@ -830,22 +819,18 @@ class CartTest extends TestCase
 
         $response = $this
             ->actingAs($this->{$user})
-            ->postJson(
-                '/cart/process',
-                [
-                    'shipping_method_id' => $this->shippingMethod->getKey(),
-                    'items' => [
-                        [
-                            'cartitem_id' => '1',
-                            'product_id' => $this->product->getKey(),
-                            'quantity' => 2,
-                            'schemas' => [],
-                        ],
+            ->postJson('/cart/process', [
+                'sales_channel_id' => SalesChannel::query()->value('id'),
+                'shipping_method_id' => $this->shippingMethod->getKey(),
+                'items' => [
+                    [
+                        'cartitem_id' => '1',
+                        'product_id' => $this->product->getKey(),
+                        'quantity' => 2,
+                        'schemas' => [],
                     ],
-                ] + $coupons
-            , [
-                'X-Sales-Channel' => SalesChannel::query()->value('id'),
-            ]);
+                ],
+            ] + $coupons);
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
         $discountCode1 = $coupon ? ['code' => $productDiscount->code] : [];
@@ -922,22 +907,18 @@ class CartTest extends TestCase
 
         $response = $this
             ->actingAs($this->{$user})
-            ->postJson(
-                '/cart/process',
-                [
-                    'shipping_method_id' => $this->shippingMethod->getKey(),
-                    'items' => [
-                        [
-                            'cartitem_id' => '1',
-                            'product_id' => $this->product->getKey(),
-                            'quantity' => 2,
-                            'schemas' => [],
-                        ],
+            ->postJson('/cart/process', [
+                'sales_channel_id' => SalesChannel::query()->value('id'),
+                'shipping_method_id' => $this->shippingMethod->getKey(),
+                'items' => [
+                    [
+                        'cartitem_id' => '1',
+                        'product_id' => $this->product->getKey(),
+                        'quantity' => 2,
+                        'schemas' => [],
                     ],
-                ] + $coupons
-            , [
-                'X-Sales-Channel' => SalesChannel::query()->value('id'),
-            ]);
+                ],
+            ] + $coupons);
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
         $discountCode1 = $coupon ? ['code' => $productDiscount->code] : [];
@@ -1008,6 +989,7 @@ class CartTest extends TestCase
         $sale->products()->attach($product->getKey());
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1024,8 +1006,6 @@ class CartTest extends TestCase
                     'quantity' => 1,
                 ],
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -1070,6 +1050,7 @@ class CartTest extends TestCase
         $sale->products()->attach($product->getKey());
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1081,8 +1062,6 @@ class CartTest extends TestCase
                     ],
                 ],
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response->assertValid()
@@ -1100,6 +1079,7 @@ class CartTest extends TestCase
         [$product, $couponWithLimit, $coupon2] = $this->prepareCouponWithProductInSetAndCountConditions(false, false);
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1112,10 +1092,7 @@ class CartTest extends TestCase
             'coupons' => [
                 $couponWithLimit->code,
                 $coupon2->code,
-            ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
-        ])
+            ]])
             ->assertValid()->assertOk()
             ->assertJsonCount(2, 'data.coupons');
     }
@@ -1130,6 +1107,7 @@ class CartTest extends TestCase
         [$product, $couponWithLimit, $coupon2] = $this->prepareCouponWithProductInSetAndCountConditions(true, false);
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1142,10 +1120,7 @@ class CartTest extends TestCase
             'coupons' => [
                 $couponWithLimit->code,
                 $coupon2->code,
-            ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
-        ])
+            ]])
             ->assertValid()->assertOk()
             ->assertJsonCount(1, 'data.coupons')
             ->assertJsonMissing([
@@ -1164,6 +1139,7 @@ class CartTest extends TestCase
         [$product, $couponWithLimit, $coupon2] = $this->prepareCouponWithProductInSetAndCountConditions(false, true);
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1176,10 +1152,7 @@ class CartTest extends TestCase
             'coupons' => [
                 $couponWithLimit->code,
                 $coupon2->code,
-            ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
-        ])
+            ]])
             ->assertValid()->assertOk()
             ->assertJsonCount(1, 'data.coupons')
             ->assertJsonMissing([
@@ -1198,6 +1171,7 @@ class CartTest extends TestCase
         [$product, $couponWithLimit, $coupon2] = $this->prepareCouponWithProductInSetAndCountConditions(true, true);
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1210,10 +1184,7 @@ class CartTest extends TestCase
             'coupons' => [
                 $couponWithLimit->code,
                 $coupon2->code,
-            ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
-        ])
+            ]])
             ->assertValid()->assertOk()
             ->assertJsonCount(2, 'data.coupons');
     }
@@ -1259,22 +1230,18 @@ class CartTest extends TestCase
             ],
         ] : [];
 
-        $response = $this->actingAs($this->{$user})->postJson(
-            '/cart/process',
-            [
-                'shipping_method_id' => $this->shippingMethod->getKey(),
-                'items' => [
-                    [
-                        'cartitem_id' => '1',
-                        'product_id' => $product->getKey(),
-                        'quantity' => 2,
-                        'schemas' => [],
-                    ],
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $product->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [],
                 ],
-            ] + $coupons,
-            [
-                'X-Sales-Channel' => SalesChannel::query()->value('id'),
-            ]);
+            ],
+        ] + $coupons);
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
         $discountCode = $coupon ? ['code' => $discountApplied->code] : [];
@@ -1350,22 +1317,18 @@ class CartTest extends TestCase
             ],
         ] : [];
 
-        $response = $this->actingAs($this->{$user})->postJson(
-            '/cart/process',
-            [
-                'shipping_method_id' => $this->shippingMethod->getKey(),
-                'items' => [
-                    [
-                        'cartitem_id' => '1',
-                        'product_id' => $product->getKey(),
-                        'quantity' => 2,
-                        'schemas' => [],
-                    ],
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $product->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [],
                 ],
-            ] + $coupons,
-            [
-                'X-Sales-Channel' => SalesChannel::query()->value('id'),
-            ]);
+            ],
+        ] + $coupons);
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
         $discountCode = $coupon ? ['code' => $discountApplied->code] : [];
@@ -1424,6 +1387,7 @@ class CartTest extends TestCase
         $product->items()->attach($item->getKey(), ['required_quantity' => 100]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1433,8 +1397,6 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -1476,6 +1438,7 @@ class CartTest extends TestCase
         $product->items()->attach($item->getKey(), ['required_quantity' => 100]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1485,8 +1448,6 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -1497,6 +1458,7 @@ class CartTest extends TestCase
             ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1506,8 +1468,6 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -1528,6 +1488,7 @@ class CartTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1543,8 +1504,6 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -1602,6 +1561,7 @@ class CartTest extends TestCase
         $product2->items()->attach($item2->getKey(), ['required_quantity' => 1]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1625,8 +1585,6 @@ class CartTest extends TestCase
                     ],
                 ],
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -1637,6 +1595,7 @@ class CartTest extends TestCase
             ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1654,8 +1613,6 @@ class CartTest extends TestCase
                     ],
                 ],
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -1666,6 +1623,7 @@ class CartTest extends TestCase
             ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1681,8 +1639,6 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -1707,6 +1663,7 @@ class CartTest extends TestCase
         $this->productWithSchema->items()->attach($this->item->getKey(), ['required_quantity' => 2]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1718,8 +1675,6 @@ class CartTest extends TestCase
                     ],
                 ],
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -1754,6 +1709,7 @@ class CartTest extends TestCase
         $this->product->items()->attach($this->item->getKey(), ['required_quantity' => 2]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1763,8 +1719,6 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -1799,6 +1753,7 @@ class CartTest extends TestCase
         $this->productWithSchema->items()->attach($this->item->getKey(), ['required_quantity' => 2]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1810,8 +1765,6 @@ class CartTest extends TestCase
                     ],
                 ],
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response
@@ -1893,22 +1846,18 @@ class CartTest extends TestCase
             ],
         ] : [];
 
-        $response = $this->actingAs($this->{$user})->postJson(
-            '/cart/process',
-            [
-                'shipping_method_id' => $this->shippingMethod->getKey(),
-                'items' => [
-                    [
-                        'cartitem_id' => '1',
-                        'product_id' => $this->product->getKey(),
-                        'quantity' => 1,
-                        'schemas' => [],
-                    ],
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
                 ],
-            ] + $coupons
-        , [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
-        ]);
+            ],
+        ] + $coupons);
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
         $discountCode1 = $coupon ? ['code' => $discountApplied->code] : [];
@@ -1984,6 +1933,7 @@ class CartTest extends TestCase
         $saleShippingMethod->shippingMethods()->attach($saleShippingMethod->getKey());
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1992,10 +1942,7 @@ class CartTest extends TestCase
                     'quantity' => 2,
                     'schemas' => [],
                 ],
-            ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
-        ])
+            ]])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 9200,
@@ -2065,22 +2012,18 @@ class CartTest extends TestCase
             ],
         ] : [];
 
-        $response = $this->actingAs($this->{$user})->postJson(
-            '/cart/process',
-            [
-                'shipping_method_id' => $this->shippingMethod->getKey(),
-                'items' => [
-                    [
-                        'cartitem_id' => '1',
-                        'product_id' => $this->product->getKey(),
-                        'quantity' => 2,
-                        'schemas' => [],
-                    ],
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [],
                 ],
-            ] + $coupons
-        , [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
-        ]);
+            ],
+        ] + $coupons);
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
         $discountCode = $coupon ? ['code' => $discount->code] : [];
@@ -2122,6 +2065,7 @@ class CartTest extends TestCase
         ]);
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2130,10 +2074,7 @@ class CartTest extends TestCase
                     'quantity' => 2,
                     'schemas' => [],
                 ],
-            ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
-        ])
+            ]])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 9200,
@@ -2164,6 +2105,7 @@ class CartTest extends TestCase
         ]);
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2172,10 +2114,7 @@ class CartTest extends TestCase
                     'quantity' => 2,
                     'schemas' => [],
                 ],
-            ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
-        ])
+            ]])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 4600,
@@ -2237,6 +2176,7 @@ class CartTest extends TestCase
         ]));
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2251,10 +2191,7 @@ class CartTest extends TestCase
                     'quantity' => 1,
                     'schemas' => [],
                 ],
-            ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
-        ])
+            ]])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 1000,
@@ -2306,6 +2243,7 @@ class CartTest extends TestCase
         ]);
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2314,10 +2252,7 @@ class CartTest extends TestCase
                     'quantity' => 1,
                     'schemas' => [],
                 ],
-            ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
-        ])
+            ]])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 0,
@@ -2356,6 +2291,7 @@ class CartTest extends TestCase
         ]);
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2364,10 +2300,7 @@ class CartTest extends TestCase
                     'quantity' => 1,
                     'schemas' => [],
                 ],
-            ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
-        ])
+            ]])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 4600,
@@ -2403,6 +2336,7 @@ class CartTest extends TestCase
         ]);
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2411,10 +2345,7 @@ class CartTest extends TestCase
                     'quantity' => 1,
                     'schemas' => [],
                 ],
-            ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
-        ])
+            ]])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 0,
@@ -2457,6 +2388,7 @@ class CartTest extends TestCase
         ]);
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2465,10 +2397,7 @@ class CartTest extends TestCase
                     'quantity' => 1,
                     'schemas' => [],
                 ],
-            ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
-        ])
+            ]])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 4600,
@@ -2498,6 +2427,7 @@ class CartTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2515,8 +2445,6 @@ class CartTest extends TestCase
                     ],
                 ],
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
         $response
             ->assertValid()->assertOk()
@@ -2549,6 +2477,7 @@ class CartTest extends TestCase
         ]);
 
         $this->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2557,10 +2486,7 @@ class CartTest extends TestCase
                     'quantity' => 2,
                     'schemas' => [],
                 ],
-            ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
-        ])
+            ]])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 4600,
@@ -2710,6 +2636,7 @@ class CartTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/cart/process', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2722,8 +2649,6 @@ class CartTest extends TestCase
             'coupons' => [
                 $discountApplied->code,
             ],
-        ], [
-            'X-Sales-Channel' => SalesChannel::query()->value('id'),
         ]);
 
         $response

@@ -16,6 +16,8 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
     private Missing|string $shipping_method_id;
     private Missing|string $digital_shipping_method_id;
 
+    public string $sales_channel_id;
+
     /**
      * @throws DtoException
      */
@@ -26,6 +28,7 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
             coupons: $request->input('coupons', new Missing()),
             shipping_method_id: $request->input('shipping_method_id', new Missing()),
             digital_shipping_method_id: $request->input('digital_shipping_method_id', new Missing()),
+            sales_channel_id: $request->input('sales_channel_id'),
         );
     }
 

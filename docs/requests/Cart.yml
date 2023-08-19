@@ -3,9 +3,13 @@ CartProcess:
     application/json:
       schema:
         required:
+          - sales_channel_id
           - items
         type: object
         properties:
+          sales_channel_id:
+            type: string
+            format: uuid
           items:
             description: 'List of products in cart'
             type: array
