@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\ShippingMethod;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\SalesChannel\Models\SalesChannel;
 use Tests\TestCase;
 
 class OrderDigitalTest extends TestCase
@@ -70,6 +71,7 @@ class OrderDigitalTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->json('POST', '/orders', [
+                'sales_channel_id' => SalesChannel::query()->value('id'),
                 'email' => 'test@example.com',
                 'digital_shipping_method_id' => $this->digitalShippingMethod->getKey(),
                 'billing_address' => $this->billingAddress,
@@ -100,6 +102,7 @@ class OrderDigitalTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->json('POST', '/orders', [
+                'sales_channel_id' => SalesChannel::query()->value('id'),
                 'email' => 'test@example.com',
                 'shipping_method_id' => $this->physicalShippingMethod->getKey(),
                 'digital_shipping_method_id' => $this->digitalShippingMethod->getKey(),
@@ -136,6 +139,7 @@ class OrderDigitalTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->json('POST', '/orders', [
+                'sales_channel_id' => SalesChannel::query()->value('id'),
                 'email' => 'test@example.com',
                 'digital_shipping_method_id' => $this->digitalShippingMethod->getKey(),
                 'billing_address' => $this->billingAddress,
@@ -164,6 +168,7 @@ class OrderDigitalTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->json('POST', '/orders', [
+                'sales_channel_id' => SalesChannel::query()->value('id'),
                 'email' => 'test@example.com',
                 'shipping_method_id' => $this->physicalShippingMethod->getKey(),
                 'billing_address' => $this->billingAddress,
@@ -193,6 +198,7 @@ class OrderDigitalTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->json('POST', '/orders', [
+                'sales_channel_id' => SalesChannel::query()->value('id'),
                 'email' => 'test@example.com',
                 'shipping_method_id' => $this->physicalShippingMethod->getKey(),
                 'digital_shipping_method_id' => $this->digitalShippingMethod->getKey(),
@@ -223,6 +229,7 @@ class OrderDigitalTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->json('POST', '/orders', [
+                'sales_channel_id' => SalesChannel::query()->value('id'),
                 'email' => 'test@example.com',
                 'shipping_method_id' => $this->physicalShippingMethod->getKey(),
                 'digital_shipping_method_id' => $this->digitalShippingMethod->getKey(),
