@@ -147,6 +147,7 @@ final class SalesChannelsTest extends TestCase
             'base_price' => 12.3,
             'base_price_initial' => 12.3,
             'quantity' => 2,
+            'vat_rate' => 23,
         ]);
     }
 }

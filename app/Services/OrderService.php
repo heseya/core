@@ -203,7 +203,7 @@ final readonly class OrderService implements OrderServiceContract
                         'base_price_initial' => $price,
                         'base_price' => $price,
                         'name' => $product->name,
-                        'vat_rate' => 0, // TODO: add VAT from channel here
+                        'vat_rate' => $vat_rate->multipliedBy(100)->toFloat(),
                         'shipping_digital' => $product->shipping_digital,
                     ]);
 
