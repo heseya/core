@@ -4,47 +4,30 @@ declare(strict_types=1);
 
 namespace Domain\SalesChannel;
 
-use Domain\SalesChannel\Dtos\SalesChannelCreateDto;
-use Domain\SalesChannel\Dtos\SalesChannelIndexDto;
-use Domain\SalesChannel\Dtos\SalesChannelUpdateDto;
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Exceptions\ClientException;
+use Brick\Math\BigDecimal;
+use Brick\Math\Exception\MathException;
 use Domain\SalesChannel\Models\SalesChannel;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final readonly class SalesChannelService
 {
-    public function __construct(
-        private SalesChannelRepository $salesChannelRepository,
-    ) {}
-
-    public function show(string $id): SalesChannel
-    {
-        return $this->salesChannelRepository->getOne($id);
-    }
-
     /**
-     * @return LengthAwarePaginator<SalesChannel>
+     * @throws MathException
      */
-    public function index(SalesChannelIndexDto $dto, bool $public_only): LengthAwarePaginator
+    public function getVatRate(string $sales_channel_id): BigDecimal
     {
-        if ($public_only) {
-            return $this->salesChannelRepository->getAllPublic($dto);
-        }
+        /** @var SalesChannel $sales_channel */
+        $sales_channel = SalesChannel::query()
+            ->where('id', '=', $sales_channel_id)
+            ->firstOr(fn () => throw new ClientException(Exceptions::CLIENT_SALES_CHANNEL_NOT_FOUND));
 
-        return $this->salesChannelRepository->getAll($dto);
+        return BigDecimal::of($sales_channel->vat_rate)->multipliedBy(0.01);
     }
 
-    public function store(SalesChannelCreateDto $dto): SalesChannel
+    public function addVat(float $price, BigDecimal $vat_rate): float
     {
-        return $this->salesChannelRepository->store($dto);
-    }
-
-    public function update(string $id, SalesCHannelUpdateDto $dto): void
-    {
-        $this->salesChannelRepository->update($id, $dto);
-    }
-
-    public function delete(string $id): void
-    {
-        $this->salesChannelRepository->delete($id);
+        // change to multipliedBy when price will be Money
+        return $price + ($price * $vat_rate->toFloat());
     }
 }

@@ -18,6 +18,7 @@ use App\Services\Contracts\DiscountServiceContract;
 use App\Services\OptionService;
 use App\Services\ProductService;
 use App\Services\SchemaCrudService;
+use Brick\Math\BigDecimal;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
@@ -25,6 +26,7 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\ProductSet\ProductSet;
+use Domain\SalesChannel\Models\SalesChannel;
 use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
@@ -222,6 +224,7 @@ class DiscountApplyTest extends TestCase
         ])->create();
 
         $cartDto = CartDto::fromArray([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
                     'cartitem_id' => 0,
@@ -252,7 +255,11 @@ class DiscountApplyTest extends TestCase
 
         $cartResource = $this
             ->discountService
-            ->calcCartDiscounts($cartDto, Collection::make([$product1, $product2, $product3]));
+            ->calcCartDiscounts(
+                $cartDto,
+                Collection::make([$product1, $product2, $product3]),
+                BigDecimal::zero(),
+            );
 
         $this->assertTrue($cartResource->cart_total === 162.0);
         $this->assertTrue($cartResource->summary === 182.0);

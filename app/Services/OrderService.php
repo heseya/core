@@ -47,6 +47,7 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\SalesChannel\SalesChannelService;
 use Exception;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -67,6 +68,7 @@ final readonly class OrderService implements OrderServiceContract
         private MetadataServiceContract $metadataService,
         private DepositServiceContract $depositService,
         private ProductRepositoryContract $productRepository,
+        private SalesChannelService $salesChannelService,
     ) {}
 
     /**
@@ -393,6 +395,8 @@ final readonly class OrderService implements OrderServiceContract
 
     public function cartProcess(CartDto $cartDto): CartResource
     {
+        $vat_rate = $this->salesChannelService->getVatRate($cartDto->sales_channel_id);
+
         // Lista tylko dostępnych produktów
         [$products, $items] = $this->itemService->checkCartItems($cartDto->getItems());
         $cartDto->setItems($items);
@@ -401,7 +405,7 @@ final readonly class OrderService implements OrderServiceContract
             $this->getDeliveryMethods($cartDto, $products, false);
         }
 
-        return $this->discountService->calcCartDiscounts($cartDto, $products);
+        return $this->discountService->calcCartDiscounts($cartDto, $products, $vat_rate);
     }
 
     public function processOrderProductUrls(OrderProductUpdateDto $dto, OrderProduct $product): OrderProduct
