@@ -19,6 +19,7 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\ProductSet\ProductSet;
+use Domain\SalesChannel\Models\SalesChannel;
 use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Arr;
@@ -79,6 +80,7 @@ class DiscountConditionsCheckTest extends TestCase
         $this->product->sets()->sync([$this->set->getKey()]);
 
         $cart = CartDto::fromArray([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
                     'cartitem_id' => 0,
@@ -108,6 +110,7 @@ class DiscountConditionsCheckTest extends TestCase
         $this->prepareConditionGroup();
 
         $cart = CartDto::fromArray([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
                     'cartitem_id' => 0,
@@ -148,6 +151,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product->sets()->sync([$this->set->getKey()]);
 
         $cart = CartDto::fromArray([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
                     'cartitem_id' => 0,
@@ -186,6 +190,7 @@ class DiscountConditionsCheckTest extends TestCase
         ]));
 
         $cart = CartDto::fromArray([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
                     'cartitem_id' => 0,
@@ -423,6 +428,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product2 = $this->productService->create(FakeDto::productCreateDto());
 
         $cart = CartDto::fromArray([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
                     'cartitem_id' => 0,
@@ -461,6 +467,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product2 = $this->productService->create(FakeDto::productCreateDto());
 
         $cart = CartDto::fromArray([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
                     'cartitem_id' => 0,
@@ -498,6 +505,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product2 = $this->productService->create(FakeDto::productCreateDto());
 
         $cart = CartDto::fromArray([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
                     'cartitem_id' => 0,
@@ -535,6 +543,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product2 = $this->productService->create(FakeDto::productCreateDto());
 
         $cart = CartDto::fromArray([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
                     'cartitem_id' => 0,
@@ -576,6 +585,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product->sets()->sync([$set1->getKey()]);
 
         $cart = CartDto::fromArray([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
                     'cartitem_id' => 0,
@@ -622,6 +632,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product->sets()->sync([$subChildrenSet->getKey()]);
 
         $cart = CartDto::fromArray([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
                     'cartitem_id' => 0,
@@ -662,6 +673,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product->sets()->sync([$set1->getKey()]);
 
         $cart = CartDto::fromArray([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
                     'cartitem_id' => 0,
@@ -708,6 +720,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product->sets()->sync([$subChildrenSet->getKey()]);
 
         $cart = CartDto::fromArray([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
                     'cartitem_id' => 0,
@@ -748,6 +761,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product->sets()->sync([$set1->getKey()]);
 
         $cart = CartDto::fromArray([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
                     'cartitem_id' => 0,
@@ -794,6 +808,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product->sets()->sync([$subChildrenSet->getKey()]);
 
         $cart = CartDto::fromArray([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
                     'cartitem_id' => 0,
@@ -834,6 +849,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product->sets()->sync([$set2->getKey()]);
 
         $cart = CartDto::fromArray([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
                     'cartitem_id' => 0,
@@ -879,6 +895,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product->sets()->sync([$subChildrenSet->getKey()]);
 
         $cart = CartDto::fromArray([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
                     'cartitem_id' => 0,
@@ -1213,6 +1230,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product2 = $this->productService->create(FakeDto::productCreateDto());
 
         $cart = CartDto::fromArray([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
                     'cartitem_id' => 0,
@@ -1290,6 +1308,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product2 = $this->productService->create(FakeDto::productCreateDto());
 
         $cart = CartDto::fromArray([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
                     'cartitem_id' => 0,
@@ -1395,6 +1414,7 @@ class DiscountConditionsCheckTest extends TestCase
         $coupons = Discount::factory()->count($quantity)->create();
 
         $cart = CartDto::fromArray([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
                     'cartitem_id' => 0,
@@ -1439,6 +1459,7 @@ class DiscountConditionsCheckTest extends TestCase
         Discount::factory()->create(['code' => null]);
 
         $cart = CartDto::fromArray([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
                     'cartitem_id' => 0,

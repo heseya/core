@@ -41,6 +41,7 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
             items: self::prepareItems($array['items']),
             coupons: $array['coupons'],
             shipping_method_id: $array['shipping_method_id'],
+            sales_channel_id: $array['sales_channel_id'],
         );
     }
 
