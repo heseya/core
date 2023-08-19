@@ -103,9 +103,10 @@ final readonly class OrderService implements OrderServiceContract
      */
     public function store(OrderDto $dto): Order
     {
-        DB::beginTransaction();
-
         $currency = Currency::DEFAULT;
+        $vat_rate = $this->salesChannelService->getVatRate($dto->sales_channel_id);
+
+        DB::beginTransaction();
 
         try {
             $items = $dto->getItems();
@@ -268,7 +269,32 @@ final readonly class OrderService implements OrderServiceContract
                     if (!$this->removeItemsFromWarehouse($orderProduct, $tempSchemaOrderProduct)) {
                         throw new OrderException(Exceptions::ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE);
                     }
+
+                    $orderProduct->base_price_initial = $this->salesChannelService->addVat(
+                        $orderProduct->base_price_initial,
+                        $vat_rate,
+                    );
+                    $orderProduct->base_price = $this->salesChannelService->addVat(
+                        $orderProduct->base_price,
+                        $vat_rate,
+                    );
                 }
+
+                $order->cart_total_initial = $this->salesChannelService->addVat(
+                    $order->cart_total_initial,
+                    $vat_rate,
+                );
+                $order->cart_total = $this->salesChannelService->addVat(
+                    $order->cart_total,
+                    $vat_rate,
+                );
+
+                // shipping price magic 🙈
+                $order->summary = $this->salesChannelService->addVat(
+                    $order->summary - $order->shipping_price,
+                    $vat_rate,
+                ) + $order->shipping_price;
+
                 $order->push();
             } catch (Throwable $exception) {
                 $order->delete();
