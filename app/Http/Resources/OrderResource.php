@@ -20,10 +20,10 @@ class OrderResource extends Resource
             'email' => $this->resource->email,
             'payable' => $this->resource->payable,
             'currency' => $this->resource->currency,
-            'summary' => $this->resource->summary,
-            'summary_paid' => $this->resource->paid_amount,
-            'shipping_price_initial' => $this->resource->shipping_price_initial,
-            'shipping_price' => $this->resource->shipping_price,
+            'summary' => $this->resource->summary->getAmount(),
+            'summary_paid' => $this->resource->paid_amount->getAmount(),
+            'shipping_price_initial' => $this->resource->shipping_price_initial->getAmount(),
+            'shipping_price' => $this->resource->shipping_price->getAmount(),
             'comment' => $this->resource->comment,
             'status' => $this->resource->status ? OrderStatusResource::make($this->resource->status) : null,
             'shipping_method' => $this->resource->shippingMethod ?
@@ -38,8 +38,8 @@ class OrderResource extends Resource
                 : $this->resource->shipping_place,
             'documents' => OrderDocumentResource::collection($this->resource->documents->pluck('pivot')),
             'paid' => $this->resource->paid,
-            'cart_total' => $this->resource->cart_total,
-            'cart_total_initial' => $this->resource->cart_total_initial,
+            'cart_total' => $this->resource->cart_total->getAmount(),
+            'cart_total_initial' => $this->resource->cart_total_initial->getAmount(),
             'created_at' => $this->resource->created_at,
         ], $this->metadataResource('orders.show_metadata_private'));
     }

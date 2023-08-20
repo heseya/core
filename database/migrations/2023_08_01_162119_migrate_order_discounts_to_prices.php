@@ -31,6 +31,7 @@ return new class extends Migration {
             }
 
             $amount = Money::of($orderDiscount->value, 'PLN', roundingMode: RoundingMode::HALF_UP);
+            $applied_discount = Money::of($orderDiscount->applied_discount, 'PLN', roundingMode: RoundingMode::HALF_UP);
 
             DB::table('order_discounts')
                 ->where('discount_id', $orderDiscount->discount_id)
@@ -38,6 +39,7 @@ return new class extends Migration {
                 ->update([
                     'value' => null,
                     'amount' => $amount->getMinorAmount(),
+                    'applied_discount' => $applied_discount->getMinorAmount(),
                     'currency' => $amount->getCurrency()->getCurrencyCode(),
                 ]);
         });
@@ -49,6 +51,7 @@ return new class extends Migration {
 
         Schema::table('order_discounts', function (Blueprint $table) {
             $table->decimal('percentage', 7, 4)->nullable()->change();
+            $table->decimal('applied_discount', 27, 0)->change();
         });
     }
 
@@ -59,6 +62,7 @@ return new class extends Migration {
         Schema::table('order_discounts', function (Blueprint $table) {
             $table->string('type', 255);
             $table->renameColumn('percentage', 'value');
+            $table->float('applied_discount', 19, 4)->change();
         });
 
         Schema::table('order_discounts', function (Blueprint $table) use ($valueColumn) {
@@ -66,12 +70,16 @@ return new class extends Migration {
         });
 
         DB::table('order_discounts')->orderBy('discount_id')->lazy()->each(function (object $orderDiscount) {
+            $amount = $orderDiscount->amount ? Money::of($orderDiscount->amount, $orderDiscount->currency) : null;
+            $applied_discount = Money::of($orderDiscount->applied_discount, $orderDiscount->currency);
+
             DB::table('order_discounts')
                 ->where('discount_id', $orderDiscount->discount_id)
                 ->where('model_id', $orderDiscount->model_id)
                 ->update([
-                    'type' => $orderDiscount->amount ? 'amount' : 'percentage',
-                    'value' => $orderDiscount->amount ?? $orderDiscount->value,
+                    'type' => $amount ? 'amount' : 'percentage',
+                    'value' => $amount?->getAmount() ?? $orderDiscount->value,
+                    'applied_discount' => $applied_discount->getAmount(),
                 ]);
         });
 

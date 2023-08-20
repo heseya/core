@@ -287,9 +287,9 @@ final readonly class OrderService implements OrderServiceContract
 
                 // shipping price magic 🙈
                 $order->summary = $this->salesChannelService->addVat(
-                    $order->summary - $order->shipping_price,
+                    $order->summary->plus($order->shipping_price),
                     $vat_rate,
-                ) + $order->shipping_price;
+                )->plus($order->shipping_price);
 
                 $order->push();
             } catch (Throwable $exception) {
@@ -308,6 +308,8 @@ final readonly class OrderService implements OrderServiceContract
             throw $exception;
         } catch (Throwable $throwable) {
             DB::rollBack();
+
+            dd($throwable);
 
             throw new ServerException(Exceptions::SERVER_TRANSACTION_ERROR, $throwable);
         }

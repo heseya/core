@@ -119,7 +119,7 @@ class DiscountSeeder extends Seeder
     ): array {
         $appliedDiscount = $discountService->calc($price, $discount);
         $appliedDiscount = $discountService->calcAppliedDiscount($price, $appliedDiscount, $minimalPrice);
-        
+
         $update = [
             $field => $price->minus($appliedDiscount),
         ];

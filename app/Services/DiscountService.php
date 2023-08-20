@@ -1237,7 +1237,7 @@ readonly class DiscountService implements DiscountServiceContract
                 'minimal_shipping_price',
             );
 
-            $order->shipping_price = $order->shipping_price->minus($appliedDiscount)->getAmount()->toFloat();
+            $order->shipping_price = $order->shipping_price->minus($appliedDiscount);
             $this->attachDiscount($order, $discount, $appliedDiscount);
         }
 
@@ -1251,17 +1251,21 @@ readonly class DiscountService implements DiscountServiceContract
     {
         $code = $discount->code !== null ? ['code' => $discount->code] : [];
 
-        [$dto] = $this->discountRepository::getDiscountAmounts($discount->getKey(), $object->currency);
+        $amount = null;
+        if ($discount->percentage === null) {
+            [$dto] = $this->discountRepository::getDiscountAmounts($discount->getKey(), $object->currency);
+            $amount = $dto->value;
+        }
 
         $object->discounts()->attach(
             $discount->getKey(),
             [
                 'name' => $discount->name,
-                'amount' => $dto->value->getMinorAmount(),
-                'currency' => $dto->value->getCurrency()->getCurrencyCode(),
+                'amount' => $amount?->getMinorAmount(),
+                'currency' => $object->currency,
                 'percentage' => $discount->percentage,
                 'target_type' => $discount->target_type,
-                'applied_discount' => $appliedDiscount,
+                'applied_discount' => $appliedDiscount->getMinorAmount(),
             ] + $code,
         );
     }

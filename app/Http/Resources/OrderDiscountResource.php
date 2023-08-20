@@ -22,6 +22,11 @@ class OrderDiscountResource extends Resource
             $this->resource->pivot->currency,
         ) : null;
 
+        $applied_discount = Money::ofMinor(
+            $this->resource->pivot->applied_discount,
+            $this->resource->pivot->currency,
+        );
+
         return [
             'discount' => $this->resource->code !== null
                 ? CouponResource::make($this)->baseOnly()
@@ -29,9 +34,9 @@ class OrderDiscountResource extends Resource
             'name' => $this->resource->pivot->name,
             'code' => $this->resource->pivot->code,
             'percentage' => $this->resource->pivot->percentage,
-            'amount' => $amount,
+            'amount' => $amount?->getAmount(),
             'target_type' => $this->resource->pivot->target_type,
-            'applied_discount' => $this->resource->pivot->applied_discount,
+            'applied_discount' => $applied_discount->getAmount(),
         ];
     }
 }
