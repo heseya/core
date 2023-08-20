@@ -288,6 +288,9 @@ class Schema extends Model implements SortableContract, Translatable
         }
 
         if ($this->type->is(SchemaType::MULTIPLY)) {
+            if ($value === null) {
+                return Money::zero($currency->value);
+            }
             $price = $price->multipliedBy($value);
         }
 

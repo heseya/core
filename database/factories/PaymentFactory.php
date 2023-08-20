@@ -12,7 +12,7 @@ class PaymentFactory extends Factory
     /**
      * The name of the factory's corresponding model.
      *
-     * @var string
+     * @var class-string<Payment>
      */
     protected $model = Payment::class;
 
@@ -21,14 +21,10 @@ class PaymentFactory extends Factory
      */
     public function definition(): array
     {
-        $currency = Currency::DEFAULT->value;
-        $price = Money::of(mt_rand(10, 1000), $currency);
-
         return [
             'external_id' => $this->faker->uuid,
             'method' => $this->faker->randomElement(['przelewy24', 'bluemedia', 'paynow']),
-            'amount' => $this->faker->randomFloat(2, 10, 1000),
-            'currency' => Currency::getRandomValue(),
+            'amount' => Money::of(mt_rand(10, 1000),  Currency::DEFAULT->value),
             'redirect_url' => 'https://heseya.com/pay',
             'continue_url' => 'https://store.heseya.com/done',
             'status' => $this->faker->randomElement(['pending', 'failed', 'successful']),
