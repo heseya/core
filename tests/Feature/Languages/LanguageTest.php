@@ -8,7 +8,9 @@ use Domain\Language\Events\LanguageCreated;
 use Domain\Language\Events\LanguageDeleted;
 use Domain\Language\Events\LanguageUpdated;
 use Domain\Language\Language;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
@@ -113,6 +115,29 @@ class LanguageTest extends TestCase
         ]);
 
         $this->assertEquals('es', Language::default()->iso);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateHidden($user): void
+    {
+        $this->$user->givePermissionTo('languages.add', 'languages.show_hidden');
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('POST', '/languages', [
+                'iso' => 'es',
+                'name' => 'Spain',
+                'hidden' => true,
+                'default' => false,
+            ])
+            ->assertCreated();
+
+        $hidden = $response->getData()->data->id;
+
+        $hiddenLanguages = Cache::get('languages.hidden');
+        $this->assertTrue($hiddenLanguages->contains($hidden));
     }
 
     /**
@@ -243,6 +268,60 @@ class LanguageTest extends TestCase
         Event::assertDispatched(LanguageUpdated::class);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateToHidden($user): void
+    {
+        $this->$user->givePermissionTo('languages.edit');
+
+        $language = Language::create([
+            'iso' => 'nl',
+            'name' => 'Netherland',
+            'hidden' => false,
+            'default' => false,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/languages/id:{$language->getKey()}", [
+                'hidden' => true,
+            ])
+            ->assertOk();
+
+        $hiddenLanguages = Cache::get('languages.hidden');
+
+        $this->assertTrue($hiddenLanguages->contains($language->getKey()));
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateToVisible($user): void
+    {
+        $this->$user->givePermissionTo('languages.edit');
+
+        $language = Language::create([
+            'iso' => 'nl',
+            'name' => 'Netherland',
+            'hidden' => true,
+            'default' => false,
+        ]);
+
+        Cache::put('languages.hidden', Collection::make([$language->getKey()]));
+
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/languages/id:{$language->getKey()}", [
+                'hidden' => false,
+            ])
+            ->assertOk();
+
+        $hiddenLanguages = Cache::get('languages.hidden');
+
+        $this->assertTrue(!$hiddenLanguages->contains($language->getKey()));
+    }
+
     public function testDeleteUnauthorized(): void
     {
         $this
@@ -315,6 +394,32 @@ class LanguageTest extends TestCase
             ->actingAs($this->{$user})
             ->json('DELETE', "/languages/id:{$this->language->getKey()}")
             ->assertUnprocessable();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteHidden($user): void
+    {
+        $this->$user->givePermissionTo('languages.remove');
+
+        $language = Language::create([
+            'iso' => 'nl',
+            'name' => 'Netherland',
+            'hidden' => false,
+            'default' => false,
+        ]);
+
+        Cache::put('languages.hidden', Collection::make([$language->getKey()]));
+
+        $this
+            ->actingAs($this->$user)
+            ->json('DELETE', "/languages/id:{$language->getKey()}")
+            ->assertNoContent();
+
+        $hiddenLanguages = Cache::get('languages.hidden');
+
+        $this->assertTrue(!$hiddenLanguages->contains($language->getKey()));
     }
 
     /**

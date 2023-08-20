@@ -29,6 +29,7 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\SalesChannel\Models\SalesChannel;
 use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -92,9 +93,12 @@ class AvailabilityTest extends TestCase
         $this->product->schemas()->save($schema);
 
         /** @var Item $item */
-        $item = Item::factory()->create();
+        $item = Item::factory()->create([
+            'shipping_time' => null,
+        ]);
         $item->deposits()->create([
             'quantity' => 0,
+            'shipping_time' => null,
         ]);
 
         $option = Option::factory()->create([
@@ -358,6 +362,7 @@ class AvailabilityTest extends TestCase
         $this->product->update(['available' => true]);
 
         $this->actingAs($this->{$user})->postJson('/orders', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'test@test.test',
             'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_place' => Address::factory()->create()->toArray(),
@@ -435,6 +440,7 @@ class AvailabilityTest extends TestCase
         $this->{$user}->givePermissionTo('orders.edit.status');
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'test@test.test',
             'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_place' => Address::factory()->create()->toArray(),
@@ -636,6 +642,7 @@ class AvailabilityTest extends TestCase
         ]);
 
         $this->actingAs($this->{$user})->postJson('/orders', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => $email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_place' => $address->toArray(),

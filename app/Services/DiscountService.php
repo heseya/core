@@ -28,7 +28,6 @@ use App\Dtos\UserInRoleConditionDto;
 use App\Dtos\WeekDayInConditionDto;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
-use App\Enums\DiscountType;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\Product\ProductPriceType;
 use App\Events\CouponCreated;
@@ -57,10 +56,12 @@ use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\DiscountRepository;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
 use App\Services\Contracts\ShippingTimeDateServiceContract;
+use Brick\Math\BigDecimal;
 use Brick\Math\Exception\MathException;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
@@ -71,6 +72,7 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\ProductSet\ProductSet;
+use Domain\SalesChannel\SalesChannelService;
 use Domain\Seo\SeoMetadataService;
 use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
@@ -93,6 +95,8 @@ readonly class DiscountService implements DiscountServiceContract
         private SeoMetadataService $seoMetadataService,
         private ShippingTimeDateServiceContract $shippingTimeDateService,
         private ProductRepositoryContract $productRepository,
+        private DiscountRepository $discountRepository,
+        private SalesChannelService $salesChannelService,
     ) {}
 
     public function index(CouponIndexDto|SaleIndexDto $dto): LengthAwarePaginator
@@ -103,8 +107,15 @@ readonly class DiscountService implements DiscountServiceContract
             ->paginate(Config::get('pagination.per_page'));
     }
 
+    /**
+     * @throws ClientException
+     */
     public function store(CouponDto|SaleDto $dto): Discount
     {
+        if ($dto->amounts instanceof Missing && $dto->percentage instanceof Missing) {
+            throw new ClientException('You need either percentage or amount values for the discount value');
+        }
+
         /** @var Discount $discount */
         $discount = Discount::query()->create($dto->toArray());
 
@@ -125,6 +136,10 @@ readonly class DiscountService implements DiscountServiceContract
             $this->seoMetadataService->createOrUpdateFor($discount, $dto->getSeo());
         }
 
+        if (!($dto->amounts instanceof Missing)) {
+            $this->discountRepository->setDiscountAmounts($discount->getKey(), $dto->amounts);
+        }
+
         if ($dto instanceof CouponDto) {
             CouponCreated::dispatch($discount);
         } else {
@@ -140,7 +155,13 @@ readonly class DiscountService implements DiscountServiceContract
 
     public function update(Discount $discount, CouponDto|SaleDto $dto): Discount
     {
-        $discount->update($dto->toArray());
+        $discount->fill($dto->toArray());
+
+        if ($dto->percentage instanceof Missing && !($dto->amounts instanceof Missing)) {
+            $discount->percentage = null;
+        }
+
+        $discount->save();
 
         if (!$dto->getTargetProducts() instanceof Missing) {
             $discount->products()->sync($dto->getTargetProducts());
@@ -164,6 +185,12 @@ readonly class DiscountService implements DiscountServiceContract
 
         if (!($dto->getSeo() instanceof Missing)) {
             $this->seoMetadataService->createOrUpdateFor($discount, $dto->getSeo());
+        }
+
+        if (!($dto->amounts instanceof Missing)) {
+            $this->discountRepository->setDiscountAmounts($discount->getKey(), $dto->amounts);
+        } elseif (!($dto->percentage instanceof Missing)) {
+            $discount->amounts()->delete();
         }
 
         if ($dto instanceof CouponDto) {
@@ -192,90 +219,104 @@ readonly class DiscountService implements DiscountServiceContract
         }
     }
 
+    private function getSalesWithBlockList(): Collection
+    {
+        return Discount::query()
+            ->whereNull('code')
+            ->where('active', '=', true)
+            ->where('target_type', '=', DiscountTargetType::PRODUCTS->value)
+            ->where('target_is_allow_list', '=', false)
+            ->with(['products', 'productSets', 'productSets.products'])
+            ->get();
+    }
+
+    private function allDiscountProductsIds(Discount $discount): Collection
+    {
+        $products = $discount->allProductsIds();
+
+        if (!$discount->target_is_allow_list) {
+            $products = Product::query()->whereNotIn('id', $products)->pluck('id');
+        }
+
+        // Return only ids of products, that should be discounted
+        return $products;
+    }
+
     /**
-     * @throws ClientException
      * @throws MathException
+     * @throws MoneyMismatchException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws ServerException
      * @throws UnknownCurrencyException
+     */
+    private function calcPrice(Money $price, string $productId, Discount $discount): Money
+    {
+        $minimalProductPrice = Money::ofMinor(1, $price->getCurrency());
+
+        if (!$price->isEqualTo($minimalProductPrice) && $this->checkIsProductInDiscount($productId, $discount)) {
+            $price = $price->minus($this->calc($price, $discount));
+            $price = Money::max($price, $minimalProductPrice);
+        }
+
+        return $price;
+    }
+
+    /**
+     * @throws MathException
+     * @throws ServerException
      */
     public function calc(Money $value, Discount $discount): Money
     {
-        if (isset($discount->pivot) && $discount->pivot->type !== null) {
-            $discount->type = $discount->pivot->type;
-            $discount->value = $discount->pivot->value;
+        $currency = Currency::tryFrom($value->getCurrency()->getCurrencyCode());
+
+        if ($currency === null) {
+            throw new ServerException(Exceptions::SERVER_PRICE_UNKNOWN_CURRENCY);
         }
 
-        if ($discount->type === DiscountType::PERCENTAGE) {
+        $percentage = $discount->pivot->percentage ?? $discount->percentage;
+
+        if ($percentage !== null) {
+            $percentage = BigDecimal::of($percentage)->dividedBy(100, roundingMode: RoundingMode::HALF_DOWN);
+
             // It's debatable which rounding mode we use based on context
             // This fits with current tests
-            return $value->multipliedBy($discount->value / 100, RoundingMode::HALF_DOWN);
+            $value = $value->multipliedBy($percentage, RoundingMode::HALF_DOWN);
+        } else {
+            [$amount] = $this->discountRepository::getDiscountAmounts($discount->getKey(), $currency);
+
+            $value = $amount->value;
         }
 
-        if ($discount->type === DiscountType::AMOUNT) {
-            // TODO: This should use discount currency and check if the currency matches
-            return Money::of($discount->value, $value->getCurrency());
-        }
+        return $value;
     }
 
     /**
-     * This executes for orders and cart.
-     *
-     * It needs to account for current session user and calculate personalized price
+     * @throws ServerException
+     * @throws MoneyMismatchException
+     * @throws UnknownCurrencyException
+     * @throws DtoException
+     * @throws RoundingNecessaryException
+     * @throws MathException
+     * @throws ClientException
+     * @throws NumberFormatException
      */
-    public function checkCondition(
-        DiscountCondition $condition,
-        ?CartOrderDto $dto = null,
-        float $cartValue = 0,
-    ): bool {
-        return match ($condition->type) {
-            ConditionType::CART_LENGTH => $this->checkConditionCartLength($condition, $dto?->getCartLength() ?? 0),
-            ConditionType::COUPONS_COUNT => $this->checkConditionCouponsCount($condition, is_array($dto?->getCoupons()) ? count($dto->getCoupons()) : 0),
-            ConditionType::DATE_BETWEEN => $this->checkConditionDateBetween($condition),
-            ConditionType::MAX_USES => $this->checkConditionMaxUses($condition),
-            ConditionType::MAX_USES_PER_USER => $this->checkConditionMaxUsesPerUser($condition),
-            ConditionType::ORDER_VALUE => $this->checkConditionOrderValue($condition, $cartValue),
-            ConditionType::PRODUCT_IN => $this->checkConditionProductIn($condition, $dto?->getProductIds() ?? []),
-            ConditionType::PRODUCT_IN_SET => $this->checkConditionProductInSet($condition, $dto?->getProductIds() ?? []),
-            ConditionType::TIME_BETWEEN => $this->checkConditionTimeBetween($condition),
-            ConditionType::USER_IN => $this->checkConditionUserIn($condition),
-            ConditionType::USER_IN_ROLE => $this->checkConditionUserInRole($condition),
-            ConditionType::WEEKDAY_IN => $this->checkConditionWeekdayIn($condition),
-        };
-    }
+    public function calculateDiscount(Discount $discount, bool $updated): void
+    {
+        // If discount has conditions based on time, then must be added or removed from cache
+        $this->checkIsDiscountActive($discount);
 
-    public function checkConditionGroup(
-        ConditionGroup $group,
-        CartOrderDto $dto,
-        float $cartValue,
-    ): bool {
-        foreach ($group->conditions as $condition) {
-            if (!$this->checkCondition($condition, $dto, $cartValue)) {
-                return false;
-            }
+        // Why do I need this
+        $salesWithBlockList = $this->getSalesWithBlockList();
+        $products = Collection::make();
+
+        // if job is called after update, then calculate discount for all products,
+        // because it may change the list of related products or target_is_allow_list value
+        if (!$updated && $discount->active) {
+            $products = $this->allDiscountProductsIds($discount);
         }
 
-        return true;
-    }
-
-    public function checkConditionGroups(
-        Discount $discount,
-        CartOrderDto $dto,
-        float $cartValue,
-    ): bool {
-        if (!$discount->active) {
-            return false;
-        }
-
-        if ($discount->conditionGroups->isEmpty()) {
-            return true;
-        }
-
-        foreach ($discount->conditionGroups as $conditionGroup) {
-            if ($this->checkConditionGroup($conditionGroup, $dto, $cartValue)) {
-                return true;
-            }
-        }
-
-        return false;
+        $this->applyDiscountsOnProductsLazy($products, $salesWithBlockList);
     }
 
     /**
@@ -309,7 +350,7 @@ readonly class DiscountService implements DiscountServiceContract
      * @throws UnknownCurrencyException
      * @throws DtoException
      */
-    public function calcCartDiscounts(CartDto $cart, Collection $products): CartResource
+    public function calcCartDiscounts(CartDto $cart, Collection $products, BigDecimal $vat_rate): CartResource
     {
         $discounts = $this->getActiveSalesAndCoupons($cart->getCoupons());
 
@@ -342,6 +383,7 @@ readonly class DiscountService implements DiscountServiceContract
                 ProductPriceType::PRICE_BASE,
             ], $currency);
 
+            /** @var Money $price */
             $price = $prices->get(ProductPriceType::PRICE_BASE->value)?->firstOrFail()?->value ?? throw new ItemNotFoundException();
 
             foreach ($cartItem->getSchemas() as $schemaId => $value) {
@@ -418,9 +460,15 @@ readonly class DiscountService implements DiscountServiceContract
             }
         }
 
-        $cartResource->cart_total = round($cartResource->cart_total, 2, PHP_ROUND_HALF_UP);
-        $cartResource->shipping_price = round($cartResource->shipping_price, 2, PHP_ROUND_HALF_UP);
+        foreach ($cartResource->items as $item) {
+            $item->price = $this->salesChannelService->addVat($item->price, $vat_rate);
+            $item->price_discounted = $this->salesChannelService->addVat($item->price_discounted, $vat_rate);
+        }
 
+        $cartResource->cart_total = round(
+            $this->salesChannelService->addVat($cartResource->cart_total, $vat_rate), 2,
+        );
+        $cartResource->shipping_price = round($cartResource->shipping_price, 2);
         $cartResource->summary = $cartResource->cart_total + $cartResource->shipping_price;
 
         return $cartResource;
@@ -454,14 +502,247 @@ readonly class DiscountService implements DiscountServiceContract
     }
 
     /**
+     * @throws UnknownCurrencyException
+     * @throws RoundingNecessaryException
+     * @throws NumberFormatException
+     * @throws MathException
+     * @throws MoneyMismatchException
+     */
+    public function calcAppliedDiscount(Money $price, Money $appliedDiscount, string $setting): Money
+    {
+        $minimalPrice = Money::ofMinor(1, $price->getCurrency());
+
+        $maximumDiscount = $price->minus($minimalPrice);
+
+        return $appliedDiscount->isGreaterThan($maximumDiscount) ? $maximumDiscount : $appliedDiscount;
+    }
+
+    /**
+     * @throws MoneyMismatchException
+     * @throws ServerException
+     * @throws UnknownCurrencyException
+     * @throws RoundingNecessaryException
+     * @throws MathException
+     * @throws NumberFormatException
+     * @throws DtoException
+     */
+    private function calcAllDiscountsOnProduct(
+        Product $product,
+        Collection $salesWithBlockList,
+        bool $calcForCurrentUser,
+        Currency $currency = Currency::DEFAULT,
+    ): array {
+        $sales = $this->sortDiscounts($product->allProductSales($salesWithBlockList));
+
+        $prices = $this->productRepository->getProductPrices(
+            $product->getKey(),
+            [
+                ProductPriceType::PRICE_MIN_INITIAL,
+                ProductPriceType::PRICE_MAX_INITIAL,
+            ],
+            $currency
+        );
+
+        $minPrices = $prices->get(ProductPriceType::PRICE_MIN_INITIAL->value, collect());
+        $maxPrices = $prices->get(ProductPriceType::PRICE_MAX_INITIAL->value, collect());
+
+        $minimalMonetaryValue = 1;
+
+        $productSales = Collection::make();
+
+        foreach ($sales as $sale) {
+            if ($this->checkConditionGroupsForProduct($sale, $calcForCurrentUser)) {
+                foreach ($minPrices as $index => $minPrice) {
+                    $minimalProductPrice = Money::ofMinor(
+                        $minimalMonetaryValue,
+                        $minPrice->value->getCurrency(),
+                    );
+
+                    if (!$minPrice->value->isEqualTo($minimalProductPrice)) {
+                        $minPrices[$index] = PriceDto::fromMoney(
+                            $this->calcProductPriceDiscount($sale, $minPrice->value, $minimalProductPrice),
+                        );
+                    }
+                }
+
+                foreach ($maxPrices as $index => $maxPrice) {
+                    $minimalProductPrice = Money::ofMinor(
+                        $minimalMonetaryValue,
+                        $maxPrice->value->getCurrency(),
+                    );
+
+                    if (!$maxPrice->value->isEqualTo($minimalProductPrice)) {
+                        $maxPrices[$index] = PriceDto::fromMoney(
+                            $this->calcProductPriceDiscount($sale, $maxPrice->value, $minimalProductPrice),
+                        );
+                    }
+                }
+
+                $productSales->push($sale);
+            }
+        }
+
+        return [
+            $minPrices,
+            $maxPrices,
+            $productSales,
+        ];
+    }
+
+    /**
+     * @param array<DiscountTargetType> $targetTypes
+     *
+     * @throws ClientException
+     * @throws MathException
+     * @throws MoneyMismatchException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
+     */
+    private function calcOrderDiscounts(Order $order, OrderDto $orderDto, array $targetTypes = []): Order
+    {
+        $coupons = $orderDto->getCoupons() instanceof Missing ? [] : $orderDto->getCoupons();
+        $sales = $orderDto->getSaleIds() instanceof Missing ? [] : $orderDto->getSaleIds();
+        $discounts = $this->getActiveSalesAndCoupons($coupons, $targetTypes);
+
+        /** @var Discount $discount */
+        foreach ($discounts as $discount) {
+            if ($this->checkConditionGroups($discount, $orderDto, $order->cart_total)) {
+                $order = $this->applyDiscountOnOrder($discount, $order);
+            } elseif (
+                ($discount->code === null && in_array($discount->getKey(), $sales))
+                || $discount->code !== null
+            ) {
+                [$type, $id] = $discount->code !== null ? ['coupon', $discount->code] : ['sale', $discount->getKey()];
+                throw new ClientException(Exceptions::CLIENT_CANNOT_APPLY_SELECTED_DISCOUNT_TYPE, errorArray: ['type' => $type, 'id' => $id]);
+            }
+        }
+
+        $refreshed = $order->fresh();
+        if ($refreshed?->discounts->count() === 0) {
+            $order = $this->roundProductPrices($order);
+        }
+
+        $order->cart_total = round($order->cart_total, 2, PHP_ROUND_HALF_UP);
+        $order->shipping_price = round($order->shipping_price, 2, PHP_ROUND_HALF_UP);
+        $order->summary = $order->cart_total + $order->shipping_price;
+        $order->paid = $order->summary <= 0;
+
+        return $order;
+    }
+
+    private function roundProductPrices(Order $order): Order
+    {
+        // If cheapest product has been split, it will not be returned by $order->products,
+        // and $order->products()->get() has products without discount, if order will be saved at this moment,
+        // all products in database should be updated, and split product will be returned by $order->products
+        $order->push();
+        $order->refresh();
+        $totalPrice = 0;
+        foreach ($order->products as $product) {
+            $product->price = round($product->price, 2, PHP_ROUND_HALF_UP);
+            $totalPrice += $product->price * $product->quantity;
+        }
+
+        $order->cart_total = round($totalPrice, 2, PHP_ROUND_HALF_UP);
+
+        return $order;
+    }
+
+    /**
+     * @throws MathException
+     * @throws MoneyMismatchException
+     * @throws ServerException
+     */
+    private function calcProductPriceDiscount(Discount $discount, Money $price, Money $minimalProductPrice): Money
+    {
+        $price = $price->minus($this->calc($price, $discount));
+
+        return Money::max($price, $minimalProductPrice);
+    }
+
+    /**
+     * @throws RoundingNecessaryException
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     * @throws MoneyMismatchException
+     * @throws ServerException
+     */
+    private function calcOrderProductDiscount(
+        OrderProduct $orderProduct,
+        Discount $discount,
+    ): void {
+        $price = Money::of(
+            $orderProduct->price,
+            Currency::DEFAULT->value,
+        );
+
+        $appliedDiscount = $this->calcAppliedDiscount(
+            $price,
+            $this->calc($price, $discount),
+            'minimal_product_price',
+        );
+
+        // TODO: Service shouldn't modify prices randomly
+        $orderProduct->price = $price->minus($appliedDiscount)->getAmount()->toFloat();
+
+        // TODO: Change to money
+        // Adding a discount to orderProduct
+        $this->attachDiscount($orderProduct, $discount, $appliedDiscount->getAmount()->toFloat());
+    }
+
+    /**
+     * @param Collection<array-key, Discount> $discounts
+     */
+    private function sortDiscounts(Collection $discounts): Collection
+    {
+        // Sortowanie zniżek w kolejności naliczania (Target type ASC, Discount type ASC, Priority DESC)
+        return $discounts->sortBy([
+            fn (Discount $a, Discount $b) => $a->target_type->getPriority() <=> $b->target_type->getPriority(),
+            fn (Discount $a, Discount $b) => ($a->percentage !== null ? 1 : 0) <=> ($b->percentage !== null ? 1 : 0),
+            fn (Discount $a, Discount $b) => $b->priority <=> $a->priority,
+        ]);
+    }
+
+    /**
+     * @throws MoneyMismatchException
+     * @throws ServerException
+     * @throws UnknownCurrencyException
+     * @throws RoundingNecessaryException
+     * @throws DtoException
+     * @throws MathException
+     * @throws ClientException
+     * @throws NumberFormatException
+     */
+    private function applyDiscountsOnProductsLazy(Collection $productIds, Collection $salesWithBlockList): void
+    {
+        $productQuery = Product::with([
+            'discounts',
+            'sets',
+            'sets.discounts',
+            'sets.parent',
+        ]);
+
+        if ($productIds->isNotEmpty()) {
+            $productQuery = $productQuery->whereIn('id', $productIds);
+        }
+
+        $productQuery->chunk(100, function ($products) use ($salesWithBlockList): void {
+            foreach ($products as $product) {
+                $this->applyAllDiscountsOnProduct($product, $salesWithBlockList);
+            }
+        });
+    }
+
+    /**
      * @throws RoundingNecessaryException
      * @throws MoneyMismatchException
      * @throws MathException
      * @throws UnknownCurrencyException
-     * @throws ClientException
      * @throws NumberFormatException
-     * @throws ServerException
      * @throws DtoException
+     * @throws ServerException
      */
     public function applyDiscountOnProduct(
         Product $product,
@@ -529,8 +810,7 @@ readonly class DiscountService implements DiscountServiceContract
      * @throws RoundingNecessaryException
      * @throws MathException
      * @throws UnknownCurrencyException
-     * @throws ClientException
-     * @throws NumberFormatException
+     * @throws MoneyMismatchException
      */
     public function applyDiscountOnOrderProduct(OrderProduct $orderProduct, Discount $discount): OrderProduct
     {
@@ -553,7 +833,6 @@ readonly class DiscountService implements DiscountServiceContract
      * @throws MathException
      * @throws UnknownCurrencyException
      * @throws NumberFormatException
-     * @throws ClientException
      */
     public function applyDiscountOnCartItem(
         Discount $discount,
@@ -580,7 +859,12 @@ readonly class DiscountService implements DiscountServiceContract
     }
 
     /**
-     * @throws StoreException
+     * @throws ClientException
+     * @throws MathException
+     * @throws MoneyMismatchException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function applyDiscountOnOrder(Discount $discount, Order $order): Order
     {
@@ -601,22 +885,365 @@ readonly class DiscountService implements DiscountServiceContract
     }
 
     /**
-     * @throws UnknownCurrencyException
-     * @throws RoundingNecessaryException
+     * @throws StoreException
+     * @throws ClientException
      * @throws NumberFormatException
+     * @throws RoundingNecessaryException
      * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws StoreException
+     * @throws MoneyMismatchException
+     * @throws DtoException
+     */
+    public function applyAllDiscountsOnProduct(
+        Product $product,
+        Collection $salesWithBlockList,
+        ?Currency $currency = null,
+    ): void {
+        [
+            // @var PriceDto[] $minPricesDiscounted
+            $minPricesDiscounted,
+            // @var PriceDto[] $maxPricesDiscounted
+            $maxPricesDiscounted,
+            $productSales,
+        ] = $this->calcAllDiscountsOnProduct($product, $salesWithBlockList, false, $currency ?? Currency::DEFAULT);
+
+        // TODO: Remove this; this is a temporary solution fo testing
+        if ($currency === null) {
+            foreach (Currency::cases() as $case) {
+                if ($case !== Currency::DEFAULT) {
+                    if ($priceMin = $product->pricesMinInitial()->where('currency', $case->value)->latest()->first()) {
+                        $minPricesDiscounted[] = PriceDto::from($priceMin);
+                    }
+                    if ($priceMax = $product->pricesMaxInitial()->where('currency', $case->value)->latest()->first()) {
+                        $maxPricesDiscounted[] = PriceDto::from($priceMax);
+                    }
+                }
+            }
+        }
+
+        $this->productRepository->setProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_MIN->value => $minPricesDiscounted,
+            ProductPriceType::PRICE_MAX->value => $maxPricesDiscounted,
+        ]);
+
+        // detach and attach only add 2 queries to database, sync add 1 query for every element in given array,
+        $product->sales()->detach();
+        $product->sales()->attach($productSales->pluck('id'));
+    }
+
+    /**
+     * @throws RoundingNecessaryException
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     * @throws ClientException
+     */
+    private function applyDiscountOnOrderProducts(Order $order, Discount $discount): Order
+    {
+        $cartValue = 0;
+
+        /** @var OrderProduct $product */
+        foreach ($order->products as $product) {
+            $product = $this->applyDiscountOnOrderProduct($product, $discount);
+            $cartValue += $product->price * $product->quantity;
+        }
+
+        $order->cart_total = $cartValue;
+
+        return $order;
+    }
+
+    /**
+     * @throws RoundingNecessaryException
+     * @throws MoneyMismatchException
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
+    private function applyDiscountOnOrderCheapestProduct(Order $order, Discount $discount): Order
+    {
+        /** @var OrderProduct $product */
+        $product = $order->products->sortBy([
+            ['price', 'asc'],
+            ['quantity', 'asc'],
+        ])->first();
+
+        if ($product !== null) {
+            $minimalProductPrice = $this->settingsService->getMinimalPrice('minimal_product_price');
+
+            if ($product->quantity > 1 && $product->price !== $minimalProductPrice) {
+                $product->update(['quantity' => $product->quantity - 1]);
+
+                /** @var OrderProduct $newProduct */
+                $newProduct = $order->products()->create([
+                    'product_id' => $product->product_id,
+                    'quantity' => 1,
+                    'price' => $product->price,
+                    'price_initial' => $product->price_initial,
+                    'name' => $product->name,
+                    'base_price_initial' => $product->price,
+                    'base_price' => $product->price,
+                    'vat_rate' => 0, // TODO: add VAT form sales channel
+                ]);
+
+                foreach ($product->schemas as $schema) {
+                    $newProduct->schemas()->create(
+                        $schema->only('name', 'value', 'price_initial', 'price'),
+                    );
+                }
+
+                $product->discounts->each(fn (Discount $discount) => $this->attachDiscount(
+                    $newProduct,
+                    $discount,
+                    $discount->pivot->applied_discount,
+                ));
+
+                $product = $newProduct;
+            }
+
+            $price = $product->price ?? 0;
+
+            if ($price !== $minimalProductPrice) {
+                $this->calcOrderProductDiscount($product, $discount);
+                $product->save();
+            }
+
+            $order->cart_total -= ($price - $product->price) * $product->quantity;
+        }
+
+        return $order;
+    }
+
+    private function applyDiscountOnCart(Discount $discount, CartDto $cartDto, CartResource $cart): CartResource
+    {
+        return match ($discount->target_type) {
+            DiscountTargetType::PRODUCTS => $this->applyDiscountOnCartItems($discount, $cartDto, $cart),
+            DiscountTargetType::ORDER_VALUE => $this->applyDiscountOnCartTotal($discount, $cart),
+            DiscountTargetType::SHIPPING_PRICE => $this->applyDiscountOnCartShipping($discount, $cartDto, $cart),
+            DiscountTargetType::CHEAPEST_PRODUCT => $this->applyDiscountOnCartCheapestItem($discount, $cart),
+        };
+    }
+
+    /**
+     * @throws RoundingNecessaryException
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
      * @throws MoneyMismatchException
      */
-    public function calcAppliedDiscount(Money $price, Money $appliedDiscount, string $setting): Money
-    {
-        $minimalPrice = Money::of(
-            $this->settingsService->getMinimalPrice($setting),
-            $price->getCurrency(),
+    private function applyDiscountOnCartShipping(
+        Discount $discount,
+        CartDto $cartDto,
+        CartResource $cartResource
+    ): CartResource {
+        $shippingPrice = Money::of(
+            $cartResource->shipping_price,
+            Currency::DEFAULT->value,
         );
 
-        $maximumDiscount = $price->minus($minimalPrice);
+        if (
+            in_array(
+                $cartDto->getShippingMethodId(),
+                $discount->shippingMethods->pluck('id')->toArray()
+            ) === $discount->target_is_allow_list
+        ) {
+            // TODO: Change this random assignment
+            $cartResource->shipping_price -= $this->calcAppliedDiscount(
+                $shippingPrice,
+                $this->calc($shippingPrice, $discount),
+                'minimal_shipping_price',
+            )->getAmount()->toFloat();
 
-        return $appliedDiscount->isGreaterThan($maximumDiscount) ? $maximumDiscount : $appliedDiscount;
+            $cartResource->shipping_price = round($cartResource->shipping_price, 2, PHP_ROUND_HALF_UP);
+        }
+
+        return $cartResource;
+    }
+
+    /**
+     * @throws RoundingNecessaryException
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     * @throws MoneyMismatchException
+     */
+    private function applyDiscountOnCartTotal(Discount $discount, CartResource $cartResource): CartResource
+    {
+        $cartTotal = Money::of(
+            $cartResource->cart_total,
+            Currency::DEFAULT->value,
+        );
+
+        // TODO: Change this random assignment
+        $cartResource->cart_total -= $this->calcAppliedDiscount(
+            $cartTotal,
+            $this->calc($cartTotal, $discount),
+            'minimal_order_price',
+        )->getAmount()->toFloat();
+        $cartResource->cart_total = round($cartResource->cart_total, 2, PHP_ROUND_HALF_UP);
+
+        return $cartResource;
+    }
+
+    /**
+     * @throws RoundingNecessaryException
+     * @throws MoneyMismatchException
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws ClientException
+     * @throws NumberFormatException
+     */
+    private function applyDiscountOnCartItems(Discount $discount, CartDto $cartDto, CartResource $cart): CartResource
+    {
+        $cartItems = [];
+        $cartValue = 0;
+
+        /** @var CartItemDto $item */
+        foreach ($cartDto->getItems() as $item) {
+            $cartItem = $cart->items->filter(fn ($value, $key) => $value->cartitem_id === $item->getCartItemId())->first();
+
+            if ($cartItem === null) {
+                continue;
+            }
+
+            $cartItem = $this->applyDiscountOnCartItem($discount, $item, $cart);
+
+            $cartItems[] = $cartItem;
+
+            $cartValue += $cartItem->price_discounted * $item->getQuantity();
+        }
+
+        $cart->items = Collection::make($cartItems);
+        $cart->cart_total = $cartValue;
+
+        return $cart;
+    }
+
+    /**
+     * @throws RoundingNecessaryException
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
+    private function applyDiscountOnCartCheapestItem(
+        Discount $discount,
+        CartResource $cart,
+    ): CartResource {
+        /** @var CartItemResponse $cartItem */
+        $cartItem = $cart->items->sortBy([
+            ['price_discounted', 'asc'],
+            ['quantity', 'asc'],
+        ])->first();
+
+        $minimalProductPrice = $this->settingsService->getMinimalPrice('minimal_product_price');
+
+        if ($cartItem->quantity > 1 && $cartItem->price_discounted !== $minimalProductPrice) {
+            $cart->items->first(fn ($value): bool => $value->cartitem_id === $cartItem->cartitem_id && $value->quantity === $cartItem->quantity)->quantity = $cartItem->quantity - 1;
+
+            $cartItem = new CartItemResponse(
+                $cartItem->cartitem_id,
+                $cartItem->price,
+                $cartItem->price_discounted,
+                1,
+            );
+            $cart->items->push($cartItem);
+        }
+
+        $price = $cartItem->price_discounted;
+        $priceAsMoney = Money::of($price, Currency::DEFAULT->value);
+
+        if ($price !== $minimalProductPrice) {
+            $newPrice = round($price - $this->calc($priceAsMoney, $discount)->getAmount()->toFloat(), 2, PHP_ROUND_HALF_UP);
+
+            $cartItem->price_discounted = max($newPrice, $minimalProductPrice);
+
+            $cart->cart_total -= ($price - $cartItem->price_discounted) * $cartItem->quantity;
+        }
+
+        return $cart;
+    }
+
+    /**
+     * @throws RoundingNecessaryException
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     * @throws MoneyMismatchException
+     */
+    private function applyDiscountOnOrderValue(Order $order, Discount $discount): Order
+    {
+        $cartTotal = Money::of(
+            $order->cart_total,
+            Currency::DEFAULT->value,
+        );
+
+        $appliedDiscount = $this->calcAppliedDiscount(
+            $cartTotal,
+            $this->calc($cartTotal, $discount),
+            'minimal_order_price',
+        );
+
+        // TODO: Service shouldn't modify prices randomly
+        $order->cart_total = $cartTotal->minus($appliedDiscount)->getAmount()->toFloat();
+
+        // TODO: Change to money
+        $this->attachDiscount($order, $discount, $appliedDiscount->getAmount()->toFloat());
+
+        return $order;
+    }
+
+    /**
+     * @throws RoundingNecessaryException
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     * @throws MoneyMismatchException
+     */
+    private function applyDiscountOnOrderShipping(Order $order, Discount $discount): Order
+    {
+        $shipping_price = Money::of(
+            $order->shipping_price,
+            Currency::DEFAULT->value,
+        );
+
+        if (
+            in_array(
+                $order->shipping_method_id,
+                $discount->shippingMethods->pluck('id')->toArray()
+            ) === $discount->target_is_allow_list
+        ) {
+            $appliedDiscount = $this->calcAppliedDiscount(
+                $shipping_price,
+                $this->calc($shipping_price, $discount),
+                'minimal_shipping_price',
+            );
+
+            // TODO: Service shouldn't modify prices randomly
+            $order->shipping_price = $shipping_price->minus($appliedDiscount)->getAmount()->toFloat();
+
+            // TODO: Change to money
+            $this->attachDiscount($order, $discount, $appliedDiscount->getAmount()->toFloat());
+        }
+
+        return $order;
+    }
+
+    private function attachDiscount(Order|OrderProduct $object, Discount $discount, float $appliedDiscount): void
+    {
+        $code = $discount->code !== null ? ['code' => $discount->code] : [];
+
+        // TODO: Attach prices with order rework
+
+        $object->discounts()->attach(
+            $discount->getKey(),
+            [
+                'name' => $discount->name,
+                'percentage' => $discount->percentage,
+                'target_type' => $discount->target_type,
+                'applied_discount' => $appliedDiscount,
+            ] + $code,
+        );
     }
 
     public function activeSales(): Collection
@@ -655,6 +1282,155 @@ readonly class DiscountService implements DiscountServiceContract
 
             return $sale->conditionGroups->isEmpty();
         });
+    }
+
+    /**
+     * @throws MoneyMismatchException
+     * @throws ServerException
+     * @throws UnknownCurrencyException
+     * @throws RoundingNecessaryException
+     * @throws DtoException
+     * @throws MathException
+     * @throws ClientException
+     * @throws NumberFormatException
+     */
+    public function checkActiveSales(): void
+    {
+        /** @var Collection<int, mixed> $activeSales */
+        $activeSales = Cache::get('sales.active', Collection::make());
+
+        $oldActiveSales = Collection::make($activeSales);
+
+        $activeSalesIds = $this->activeSales()->pluck('id');
+        $saleIds = $activeSalesIds
+            ->diff($oldActiveSales)
+            ->merge($oldActiveSales->diff($activeSalesIds));
+
+        $sales = Discount::query()
+            ->whereIn('id', $saleIds)
+            ->with(['products', 'productSets', 'productSets.products'])
+            ->get();
+
+        $products = Collection::make();
+
+        foreach ($sales as $sale) {
+            $products = $products->merge($this->allDiscountProductsIds($sale));
+        }
+
+        $products = $products->unique();
+        $this->applyDiscountsOnProductsLazy(
+            $products,
+            $this->getSalesWithBlockList(),
+        );
+
+        Cache::put('sales.active', $activeSalesIds);
+    }
+
+    /**
+     * @param array<DiscountTargetType> $targetTypes
+     */
+    private function getActiveSalesAndCoupons(array|Missing $couponIds, array $targetTypes = []): Collection
+    {
+        $targetTypesValues = Arr::map($targetTypes, fn (DiscountTargetType $type) => $type->value);
+
+        // Get all active discounts
+        $salesQuery = Discount::query()
+            ->where('active', '=', true)
+            ->whereNull('code')
+            ->with([
+                'orders',
+                'products',
+                'productSets',
+                'productSets.children',
+                'productSets.products',
+                'conditionGroups',
+                'conditionGroups.conditions',
+            ]);
+        if (count($targetTypesValues)) {
+            $salesQuery = $salesQuery->whereIn('target_type', $targetTypesValues);
+        }
+        $sales = $salesQuery->get();
+
+        // No coupons used
+        if ($couponIds instanceof Missing) {
+            return $this->sortDiscounts($sales);
+        }
+
+        // Get all active coupons
+        $couponsQuery = Discount::query()
+            ->where('active', '=', true)
+            ->whereIn('code', $couponIds)
+            ->with([
+                'orders',
+                'products',
+                'productSets',
+                'productSets.children',
+                'productSets.products',
+                'conditionGroups',
+                'conditionGroups.conditions',
+            ]);
+        if (count($targetTypesValues)) {
+            $couponsQuery = $couponsQuery->whereIn('target_type', $targetTypesValues);
+        }
+        $coupons = $couponsQuery->get();
+
+        // Posortowanie w kolejności do naliczania zniżek
+        return $this->sortDiscounts($sales->merge($coupons));
+    }
+
+    private function checkIsDiscountActive(Discount $discount): void
+    {
+        if ($this->checkDiscountHasTimeConditions($discount)) {
+            /** @var Collection<int, mixed> $activeSales */
+            $activeSales = Cache::get('sales.active', Collection::make());
+
+            if ($discount->active && $this->checkDiscountTimeConditions($discount)) {
+                if (!$activeSales->contains($discount->getKey())) {
+                    $activeSales->push($discount->getKey());
+                }
+            } else {
+                if ($activeSales->contains($discount->getKey())) {
+                    $activeSales = $activeSales->reject(
+                        fn ($value, $key) => $value === $discount->getKey(),
+                    );
+                }
+            }
+            Cache::put('sales.active', $activeSales);
+        }
+    }
+
+    private function checkDiscountTarget(Discount $discount, CartDto $cart): bool
+    {
+        if ($discount->target_type === DiscountTargetType::PRODUCTS) {
+            if ($discount->target_is_allow_list) {
+                /** @var CartItemDto $item */
+                foreach ($cart->getItems() as $item) {
+                    if ($discount->allProductsIds()->contains(fn ($value): bool => $value === $item->getProductId())) {
+                        return true;
+                    }
+                }
+            } else {
+                /** @var CartItemDto $item */
+                foreach ($cart->getItems() as $item) {
+                    if ($discount->allProductsIds()->doesntContain(fn ($value): bool => $value === $item->getProductId())) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        if ($discount->target_type === DiscountTargetType::SHIPPING_PRICE) {
+            if ($discount->target_is_allow_list) {
+                return $discount->shippingMethods->contains(fn ($value): bool => $value->getKey() === $cart->getShippingMethodId());
+            }
+
+            return $discount->shippingMethods->doesntContain(fn ($value): bool => $value->getKey() === $cart->getShippingMethodId());
+        }
+
+        return in_array(
+            $discount->target_type,
+            [DiscountTargetType::ORDER_VALUE, DiscountTargetType::CHEAPEST_PRODUCT]
+        );
     }
 
     public function checkDiscountHasTimeConditions(Discount $discount): bool
@@ -701,321 +1477,9 @@ readonly class DiscountService implements DiscountServiceContract
         return false;
     }
 
-    public function calculateDiscount(Discount $discount, bool $updated): void
-    {
-        // If discount has conditions based on time, then must be added or removed from cache
-        $this->checkIsDiscountActive($discount);
-
-        $salesWithBlockList = $this->getSalesWithBlockList();
-        $products = Collection::make();
-
-        // if job is called after update, then calculate discount for all products,
-        // because it may change the list of related products or target_is_allow_list value
-        if (!$updated && $discount->active) {
-            $products = $this->allDiscountProductsIds($discount);
-        }
-
-        $this->applyDiscountsOnProductsLazy($products, $salesWithBlockList);
-    }
-
     /**
-     * @throws MoneyMismatchException
-     * @throws ServerException
-     * @throws UnknownCurrencyException
-     * @throws RoundingNecessaryException
-     * @throws DtoException
-     * @throws MathException
-     * @throws ClientException
-     * @throws NumberFormatException
+     * Checked conditions.
      */
-    public function checkActiveSales(): void
-    {
-        /** @var Collection<int, mixed> $activeSales */
-        $activeSales = Cache::get('sales.active', Collection::make());
-
-        $oldActiveSales = Collection::make($activeSales);
-
-        $activeSalesIds = $this->activeSales()->pluck('id');
-        $saleIds = $activeSalesIds
-            ->diff($oldActiveSales)
-            ->merge($oldActiveSales->diff($activeSalesIds));
-
-        $sales = Discount::query()
-            ->whereIn('id', $saleIds)
-            ->with(['products', 'productSets', 'productSets.products'])
-            ->get();
-
-        $products = Collection::make();
-
-        foreach ($sales as $sale) {
-            $products = $products->merge($this->allDiscountProductsIds($sale));
-        }
-
-        $products = $products->unique();
-        $this->applyDiscountsOnProductsLazy(
-            $products,
-            $this->getSalesWithBlockList(),
-        );
-
-        Cache::put('sales.active', $activeSalesIds);
-    }
-
-    /**
-     * @throws MoneyMismatchException
-     * @throws ServerException
-     * @throws UnknownCurrencyException
-     * @throws RoundingNecessaryException
-     * @throws MathException
-     * @throws ClientException
-     * @throws NumberFormatException
-     * @throws DtoException
-     */
-    private function calcAllDiscountsOnProduct(
-        Product $product,
-        Collection $salesWithBlockList,
-        bool $calcForCurrentUser,
-        Currency $currency = Currency::DEFAULT,
-    ): array {
-        $sales = $this->sortDiscounts($product->allProductSales($salesWithBlockList));
-
-        $prices = $this->productRepository->getProductPrices(
-            $product->getKey(),
-            [
-                ProductPriceType::PRICE_MIN_INITIAL,
-                ProductPriceType::PRICE_MAX_INITIAL,
-            ],
-            $currency
-        );
-
-        $minPricesDiscounted = $prices->get(ProductPriceType::PRICE_MIN_INITIAL->value, collect());
-        $maxPricesDiscounted = $prices->get(ProductPriceType::PRICE_MAX_INITIAL->value, collect());
-
-        // TODO: Should have a minimum price for each currency
-        $minimalProductPriceSetting = $this->settingsService->getMinimalPrice('minimal_product_price', $currency);
-
-        $productSales = Collection::make();
-
-        foreach ($sales as $sale) {
-            if ($this->checkConditionGroupsForProduct($sale, $calcForCurrentUser)) {
-                foreach ($minPricesDiscounted as $key => $minPrice) {
-                    $minimalProductPrice = Money::of(
-                        $minimalProductPriceSetting,
-                        $minPrice->value->getCurrency(),
-                    );
-
-                    if (!$minPrice->value->isEqualTo($minimalProductPrice)) {
-                        $minPricesDiscounted[$key] = PriceDto::from(
-                            $this->calcProductPriceDiscount($sale, $minPrice->value, $minimalProductPrice),
-                        );
-                    }
-                }
-
-                foreach ($maxPricesDiscounted as $key => $maxPrice) {
-                    $minimalProductPrice = Money::of(
-                        $minimalProductPriceSetting,
-                        $maxPrice->value->getCurrency(),
-                    );
-
-                    if (!$maxPrice->value->isEqualTo($minimalProductPrice)) {
-                        $maxPricesDiscounted[$key] = PriceDto::from(
-                            $this->calcProductPriceDiscount($sale, $maxPrice->value, $minimalProductPrice),
-                        );
-                    }
-                }
-
-                $productSales->push($sale);
-            }
-        }
-
-        return [
-            $minPricesDiscounted,
-            $maxPricesDiscounted,
-            $productSales,
-        ];
-    }
-
-    /**
-     * @throws MoneyMismatchException
-     * @throws ServerException
-     * @throws UnknownCurrencyException
-     * @throws RoundingNecessaryException
-     * @throws MathException
-     * @throws ClientException
-     * @throws NumberFormatException
-     * @throws DtoException
-     */
-    public function applyAllDiscountsOnProduct(
-        Product $product,
-        Collection $salesWithBlockList,
-        ?Currency $currency = null,
-    ): void {
-        [
-            // @var PriceDto[] $minPricesDiscounted
-            $minPricesDiscounted,
-            // @var PriceDto[] $maxPricesDiscounted
-            $maxPricesDiscounted,
-            $productSales,
-        ] = $this->calcAllDiscountsOnProduct($product, $salesWithBlockList, false, $currency ?? Currency::DEFAULT);
-
-        // TODO: Remove this; this is a temporary solution fo testing
-        if ($currency === null) {
-            foreach (Currency::cases() as $case) {
-                if ($case !== Currency::DEFAULT) {
-                    if ($priceMin = $product->pricesMinInitial()->where('currency', $case->value)->latest()->first()) {
-                        $minPricesDiscounted[] = PriceDto::from($priceMin);
-                    }
-                    if ($priceMax = $product->pricesMaxInitial()->where('currency', $case->value)->latest()->first()) {
-                        $maxPricesDiscounted[] = PriceDto::from($priceMax);
-                    }
-                }
-            }
-        }
-
-        $this->productRepository->setProductPrices($product->getKey(), [
-            ProductPriceType::PRICE_MIN->value => $minPricesDiscounted,
-            ProductPriceType::PRICE_MAX->value => $maxPricesDiscounted,
-        ]);
-
-        // detach and attach only add 2 queries to database, sync add 1 query for every element in given array,
-        $product->sales()->detach();
-        $product->sales()->attach($productSales->pluck('id'));
-    }
-
-    private function checkDiscountTarget(Discount $discount, CartDto $cart): bool
-    {
-        if ($discount->target_type === DiscountTargetType::PRODUCTS) {
-            if ($discount->target_is_allow_list) {
-                /** @var CartItemDto $item */
-                foreach ($cart->getItems() as $item) {
-                    if ($discount->allProductsIds()->contains(fn ($value): bool => $value === $item->getProductId())) {
-                        return true;
-                    }
-                }
-            } else {
-                /** @var CartItemDto $item */
-                foreach ($cart->getItems() as $item) {
-                    if ($discount->allProductsIds()->doesntContain(fn ($value): bool => $value === $item->getProductId())) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        if ($discount->target_type === DiscountTargetType::SHIPPING_PRICE) {
-            if ($discount->target_is_allow_list) {
-                return $discount->shippingMethods->contains(fn ($value): bool => $value->getKey() === $cart->getShippingMethodId());
-            }
-
-            return $discount->shippingMethods->doesntContain(fn ($value): bool => $value->getKey() === $cart->getShippingMethodId());
-        }
-
-        return in_array(
-            $discount->target_type,
-            [DiscountTargetType::ORDER_VALUE, DiscountTargetType::CHEAPEST_PRODUCT]
-        );
-    }
-
-    /**
-     * @param array<DiscountTargetType> $targetTypes
-     *
-     * @throws StoreException
-     * @throws ClientException
-     */
-    private function calcOrderDiscounts(Order $order, OrderDto $orderDto, array $targetTypes = []): Order
-    {
-        $coupons = $orderDto->getCoupons() instanceof Missing ? [] : $orderDto->getCoupons();
-        $sales = $orderDto->getSaleIds() instanceof Missing ? [] : $orderDto->getSaleIds();
-        $discounts = $this->getActiveSalesAndCoupons($coupons, $targetTypes);
-
-        /** @var Discount $discount */
-        foreach ($discounts as $discount) {
-            if ($this->checkConditionGroups($discount, $orderDto, $order->cart_total)) {
-                $order = $this->applyDiscountOnOrder($discount, $order);
-            } elseif (
-                ($discount->code === null && in_array($discount->getKey(), $sales))
-                || $discount->code !== null
-            ) {
-                [$type, $id] = $discount->code !== null ? ['coupon', $discount->code] : ['sale', $discount->getKey()];
-                throw new ClientException(Exceptions::CLIENT_CANNOT_APPLY_SELECTED_DISCOUNT_TYPE, errorArray: ['type' => $type, 'id' => $id]);
-            }
-        }
-
-        $refreshed = $order->fresh();
-        if ($refreshed?->discounts->count() === 0) {
-            $order = $this->roundProductPrices($order);
-        }
-
-        $order->cart_total = round($order->cart_total, 2, PHP_ROUND_HALF_UP);
-        $order->shipping_price = round($order->shipping_price, 2, PHP_ROUND_HALF_UP);
-        $order->summary = $order->cart_total + $order->shipping_price;
-        $order->paid = $order->summary <= 0;
-
-        return $order;
-    }
-
-    private function allDiscountProductsIds(Discount $discount): Collection
-    {
-        $products = $discount->allProductsIds();
-
-        if (!$discount->target_is_allow_list) {
-            $products = Product::query()->whereNotIn('id', $products)->pluck('id');
-        }
-
-        // Return only ids of products, that should be discounted
-        return $products;
-    }
-
-    private function checkIsDiscountActive(Discount $discount): void
-    {
-        if ($this->checkDiscountHasTimeConditions($discount)) {
-            /** @var Collection<int, mixed> $activeSales */
-            $activeSales = Cache::get('sales.active', Collection::make());
-
-            if ($discount->active && $this->checkDiscountTimeConditions($discount)) {
-                if (!$activeSales->contains($discount->getKey())) {
-                    $activeSales->push($discount->getKey());
-                }
-            } else {
-                if ($activeSales->contains($discount->getKey())) {
-                    $activeSales = $activeSales->reject(
-                        fn ($value, $key) => $value === $discount->getKey(),
-                    );
-                }
-            }
-            Cache::put('sales.active', $activeSales);
-        }
-    }
-
-    private function roundProductPrices(Order $order): Order
-    {
-        // If cheapest product has been split, it will not be returned by $order->products,
-        // and $order->products()->get() has products without discount, if order will be saved at this moment,
-        // all products in database should be updated, and split product will be returned by $order->products
-        $order->push();
-        $order->refresh();
-        $totalPrice = 0;
-        foreach ($order->products as $product) {
-            $product->price = round($product->price, 2, PHP_ROUND_HALF_UP);
-            $totalPrice += $product->price * $product->quantity;
-        }
-
-        $order->cart_total = round($totalPrice, 2, PHP_ROUND_HALF_UP);
-
-        return $order;
-    }
-
-    /**
-     * @throws MathException
-     * @throws ClientException
-     * @throws MoneyMismatchException
-     * @throws UnknownCurrencyException
-     */
-    private function calcProductPriceDiscount(Discount $discount, Money $price, Money $minimalProductPrice): Money
-    {
-        $price = $price->minus($this->calc($price, $discount));
-
-        return Money::max($price, $minimalProductPrice);
-    }
 
     /**
      * Check if product have any valid condition group.
@@ -1088,442 +1552,65 @@ readonly class DiscountService implements DiscountServiceContract
     }
 
     /**
-     * @throws RoundingNecessaryException
-     * @throws MathException
-     * @throws UnknownCurrencyException
-     * @throws NumberFormatException
-     * @throws ClientException
-     * @throws MoneyMismatchException
+     * This executes for orders and cart.
+     *
+     * It needs to account for current session user and calculate personalized price
      */
-    private function calcOrderProductDiscount(
-        OrderProduct $orderProduct,
-        Discount $discount,
-    ): void {
-        $price = Money::of(
-            $orderProduct->price,
-            Currency::DEFAULT->value,
-        );
-
-        $appliedDiscount = $this->calcAppliedDiscount(
-            $price,
-            $this->calc($price, $discount),
-            'minimal_product_price',
-        );
-
-        // TODO: Service shouldn't modify prices randomly
-        $orderProduct->price = $price->minus($appliedDiscount)->getAmount()->toFloat();
-
-        // TODO: Change to money
-        // Adding a discount to orderProduct
-        $this->attachDiscount($orderProduct, $discount, $appliedDiscount->getAmount()->toFloat());
-    }
-
-    /**
-     * @throws RoundingNecessaryException
-     * @throws MathException
-     * @throws UnknownCurrencyException
-     * @throws NumberFormatException
-     * @throws ClientException
-     * @throws MoneyMismatchException
-     */
-    private function applyDiscountOnOrderValue(Order $order, Discount $discount): Order
-    {
-        $cartTotal = Money::of(
-            $order->cart_total,
-            Currency::DEFAULT->value,
-        );
-
-        $appliedDiscount = $this->calcAppliedDiscount(
-            $cartTotal,
-            $this->calc($cartTotal, $discount),
-            'minimal_order_price',
-        );
-
-        // TODO: Service shouldn't modify prices randomly
-        $order->cart_total = $cartTotal->minus($appliedDiscount)->getAmount()->toFloat();
-
-        // TODO: Change to money
-        $this->attachDiscount($order, $discount, $appliedDiscount->getAmount()->toFloat());
-
-        return $order;
-    }
-
-    /**
-     * @throws RoundingNecessaryException
-     * @throws MathException
-     * @throws UnknownCurrencyException
-     * @throws NumberFormatException
-     * @throws ClientException
-     * @throws MoneyMismatchException
-     */
-    private function applyDiscountOnOrderShipping(Order $order, Discount $discount): Order
-    {
-        $shipping_price = Money::of(
-            $order->shipping_price,
-            Currency::DEFAULT->value,
-        );
-
-        if (
-            in_array(
-                $order->shipping_method_id,
-                $discount->shippingMethods->pluck('id')->toArray()
-            ) === $discount->target_is_allow_list
-        ) {
-            $appliedDiscount = $this->calcAppliedDiscount(
-                $shipping_price,
-                $this->calc($shipping_price, $discount),
-                'minimal_shipping_price',
-            );
-
-            // TODO: Service shouldn't modify prices randomly
-            $order->shipping_price = $shipping_price->minus($appliedDiscount)->getAmount()->toFloat();
-
-            // TODO: Change to money
-            $this->attachDiscount($order, $discount, $appliedDiscount->getAmount()->toFloat());
-        }
-
-        return $order;
-    }
-
-    private function attachDiscount(Order|OrderProduct $object, Discount $discount, float $appliedDiscount): void
-    {
-        $code = $discount->code !== null ? ['code' => $discount->code] : [];
-
-        $object->discounts()->attach(
-            $discount->getKey(),
-            [
-                'name' => $discount->name,
-                'type' => $discount->type,
-                'value' => $discount->value,
-                'target_type' => $discount->target_type,
-                'applied_discount' => $appliedDiscount,
-            ] + $code,
-        );
-    }
-
-    /**
-     * @throws RoundingNecessaryException
-     * @throws MathException
-     * @throws UnknownCurrencyException
-     * @throws NumberFormatException
-     * @throws ClientException
-     */
-    private function applyDiscountOnOrderProducts(Order $order, Discount $discount): Order
-    {
-        $cartValue = 0;
-
-        /** @var OrderProduct $product */
-        foreach ($order->products as $product) {
-            $product = $this->applyDiscountOnOrderProduct($product, $discount);
-            $cartValue += $product->price * $product->quantity;
-        }
-
-        $order->cart_total = $cartValue;
-
-        return $order;
-    }
-
-    /**
-     * @throws RoundingNecessaryException
-     * @throws MoneyMismatchException
-     * @throws MathException
-     * @throws UnknownCurrencyException
-     * @throws ClientException
-     * @throws NumberFormatException
-     */
-    private function applyDiscountOnOrderCheapestProduct(Order $order, Discount $discount): Order
-    {
-        /** @var OrderProduct $product */
-        $product = $order->products->sortBy([
-            ['price', 'asc'],
-            ['quantity', 'asc'],
-        ])->first();
-
-        if ($product !== null) {
-            $minimalProductPrice = $this->settingsService->getMinimalPrice('minimal_product_price');
-
-            if ($product->quantity > 1 && $product->price !== $minimalProductPrice) {
-                $product->update(['quantity' => $product->quantity - 1]);
-
-                /** @var OrderProduct $newProduct */
-                $newProduct = $order->products()->create([
-                    'product_id' => $product->product_id,
-                    'quantity' => 1,
-                    'price' => $product->price,
-                    'price_initial' => $product->price_initial,
-                    'name' => $product->name,
-                    'base_price_initial' => $product->price,
-                    'base_price' => $product->price,
-                    'vat_rate' => 0, // TODO: add VAT form sales channel
-                ]);
-
-                foreach ($product->schemas as $schema) {
-                    $newProduct->schemas()->create(
-                        $schema->only('name', 'value', 'price_initial', 'price'),
-                    );
-                }
-
-                $product->discounts->each(fn (Discount $discount) => $this->attachDiscount(
-                    $newProduct,
-                    $discount,
-                    $discount->pivot->applied_discount,
-                ));
-
-                $product = $newProduct;
-            }
-
-            $price = $product->price ?? 0;
-
-            if ($price !== $minimalProductPrice) {
-                $this->calcOrderProductDiscount($product, $discount);
-                $product->save();
-            }
-
-            $order->cart_total -= ($price - $product->price) * $product->quantity;
-        }
-
-        return $order;
-    }
-
-    /**
-     * @throws StoreException
-     * @throws ClientException
-     * @throws NumberFormatException
-     * @throws RoundingNecessaryException
-     * @throws MathException
-     * @throws UnknownCurrencyException
-     * @throws StoreException
-     */
-    private function applyDiscountOnCart(Discount $discount, CartDto $cartDto, CartResource $cart): CartResource
-    {
-        return match ($discount->target_type) {
-            DiscountTargetType::PRODUCTS => $this->applyDiscountOnCartItems($discount, $cartDto, $cart),
-            DiscountTargetType::ORDER_VALUE => $this->applyDiscountOnCartTotal($discount, $cart),
-            DiscountTargetType::SHIPPING_PRICE => $this->applyDiscountOnCartShipping($discount, $cartDto, $cart),
-            DiscountTargetType::CHEAPEST_PRODUCT => $this->applyDiscountOnCartCheapestItem($discount, $cart),
+    public function checkCondition(
+        DiscountCondition $condition,
+        ?CartOrderDto $dto = null,
+        float $cartValue = 0,
+    ): bool {
+        return match ($condition->type) {
+            ConditionType::CART_LENGTH => $this->checkConditionCartLength($condition, $dto?->getCartLength() ?? 0),
+            ConditionType::COUPONS_COUNT => $this->checkConditionCouponsCount($condition, is_array($dto?->getCoupons()) ? count($dto->getCoupons()) : 0),
+            ConditionType::DATE_BETWEEN => $this->checkConditionDateBetween($condition),
+            ConditionType::MAX_USES => $this->checkConditionMaxUses($condition),
+            ConditionType::MAX_USES_PER_USER => $this->checkConditionMaxUsesPerUser($condition),
+            ConditionType::ORDER_VALUE => $this->checkConditionOrderValue($condition, $cartValue),
+            ConditionType::PRODUCT_IN => $this->checkConditionProductIn($condition, $dto?->getProductIds() ?? []),
+            ConditionType::PRODUCT_IN_SET => $this->checkConditionProductInSet($condition, $dto?->getProductIds() ?? []),
+            ConditionType::TIME_BETWEEN => $this->checkConditionTimeBetween($condition),
+            ConditionType::USER_IN => $this->checkConditionUserIn($condition),
+            ConditionType::USER_IN_ROLE => $this->checkConditionUserInRole($condition),
+            ConditionType::WEEKDAY_IN => $this->checkConditionWeekdayIn($condition),
         };
     }
 
-    /**
-     * @throws RoundingNecessaryException
-     * @throws MathException
-     * @throws UnknownCurrencyException
-     * @throws ClientException
-     * @throws NumberFormatException
-     * @throws MoneyMismatchException
-     */
-    private function applyDiscountOnCartShipping(
-        Discount $discount,
-        CartDto $cartDto,
-        CartResource $cartResource
-    ): CartResource {
-        $shippingPrice = Money::of(
-            $cartResource->shipping_price,
-            Currency::DEFAULT->value,
-        );
-
-        if (
-            in_array(
-                $cartDto->getShippingMethodId(),
-                $discount->shippingMethods->pluck('id')->toArray()
-            ) === $discount->target_is_allow_list
-        ) {
-            // TODO: Change this random assignment
-            $cartResource->shipping_price -= $this->calcAppliedDiscount(
-                $shippingPrice,
-                $this->calc($shippingPrice, $discount),
-                'minimal_shipping_price',
-            )->getAmount()->toFloat();
-
-            $cartResource->shipping_price = round($cartResource->shipping_price, 2, PHP_ROUND_HALF_UP);
-        }
-
-        return $cartResource;
-    }
-
-    /**
-     * @throws RoundingNecessaryException
-     * @throws MathException
-     * @throws UnknownCurrencyException
-     * @throws NumberFormatException
-     * @throws ClientException
-     * @throws MoneyMismatchException
-     */
-    private function applyDiscountOnCartTotal(Discount $discount, CartResource $cartResource): CartResource
-    {
-        $cartTotal = Money::of(
-            $cartResource->cart_total,
-            Currency::DEFAULT->value,
-        );
-
-        // TODO: Change this random assignment
-        $cartResource->cart_total -= $this->calcAppliedDiscount(
-            $cartTotal,
-            $this->calc($cartTotal, $discount),
-            'minimal_order_price',
-        )->getAmount()->toFloat();
-        $cartResource->cart_total = round($cartResource->cart_total, 2, PHP_ROUND_HALF_UP);
-
-        return $cartResource;
-    }
-
-    private function applyDiscountOnCartItems(Discount $discount, CartDto $cartDto, CartResource $cart): CartResource
-    {
-        $cartItems = [];
-        $cartValue = 0;
-
-        /** @var CartItemDto $item */
-        foreach ($cartDto->getItems() as $item) {
-            $cartItem = $cart->items->filter(fn ($value, $key) => $value->cartitem_id === $item->getCartItemId())->first();
-
-            if ($cartItem === null) {
-                continue;
+    public function checkConditionGroup(
+        ConditionGroup $group,
+        CartOrderDto $dto,
+        float $cartValue,
+    ): bool {
+        foreach ($group->conditions as $condition) {
+            if (!$this->checkCondition($condition, $dto, $cartValue)) {
+                return false;
             }
-
-            $cartItem = $this->applyDiscountOnCartItem($discount, $item, $cart);
-
-            $cartItems[] = $cartItem;
-
-            $cartValue += $cartItem->price_discounted * $item->getQuantity();
         }
 
-        $cart->items = Collection::make($cartItems);
-        $cart->cart_total = $cartValue;
-
-        return $cart;
+        return true;
     }
 
-    /**
-     * @throws RoundingNecessaryException
-     * @throws MathException
-     * @throws UnknownCurrencyException
-     * @throws NumberFormatException
-     * @throws ClientException
-     */
-    private function applyDiscountOnCartCheapestItem(
+    public function checkConditionGroups(
         Discount $discount,
-        CartResource $cart,
-    ): CartResource {
-        /** @var CartItemResponse $cartItem */
-        $cartItem = $cart->items->sortBy([
-            ['price_discounted', 'asc'],
-            ['quantity', 'asc'],
-        ])->first();
-
-        $minimalProductPrice = $this->settingsService->getMinimalPrice('minimal_product_price');
-
-        if ($cartItem->quantity > 1 && $cartItem->price_discounted !== $minimalProductPrice) {
-            $cart->items->first(fn ($value): bool => $value->cartitem_id === $cartItem->cartitem_id && $value->quantity === $cartItem->quantity)->quantity = $cartItem->quantity - 1;
-
-            $cartItem = new CartItemResponse(
-                $cartItem->cartitem_id,
-                $cartItem->price,
-                $cartItem->price_discounted,
-                1,
-            );
-            $cart->items->push($cartItem);
+        CartOrderDto $dto,
+        float $cartValue,
+    ): bool {
+        if (!$discount->active) {
+            return false;
         }
 
-        $price = $cartItem->price_discounted;
-        $priceAsMoney = Money::of($price, Currency::DEFAULT->value);
-
-        if ($price !== $minimalProductPrice) {
-            $newPrice = round($price - $this->calc($priceAsMoney, $discount)->getAmount()->toFloat(), 2, PHP_ROUND_HALF_UP);
-
-            $cartItem->price_discounted = max($newPrice, $minimalProductPrice);
-
-            $cart->cart_total -= ($price - $cartItem->price_discounted) * $cartItem->quantity;
+        if ($discount->conditionGroups->isEmpty()) {
+            return true;
         }
 
-        return $cart;
-    }
-
-    /**
-     * @param array<DiscountTargetType> $targetTypes
-     */
-    private function getActiveSalesAndCoupons(array|Missing $couponIds, array $targetTypes = []): Collection
-    {
-        $targetTypesValues = Arr::map($targetTypes, fn (DiscountTargetType $type) => $type->value);
-
-        // Get all active discounts
-        $salesQuery = Discount::query()
-            ->where('active', '=', true)
-            ->whereNull('code')
-            ->with([
-                'orders',
-                'products',
-                'productSets',
-                'productSets.children',
-                'productSets.products',
-                'conditionGroups',
-                'conditionGroups.conditions',
-            ]);
-        if (count($targetTypesValues)) {
-            $salesQuery = $salesQuery->whereIn('target_type', $targetTypesValues);
-        }
-        $sales = $salesQuery->get();
-
-        // No coupons used
-        if ($couponIds instanceof Missing) {
-            return $this->sortDiscounts($sales);
+        foreach ($discount->conditionGroups as $conditionGroup) {
+            if ($this->checkConditionGroup($conditionGroup, $dto, $cartValue)) {
+                return true;
+            }
         }
 
-        // Get all active coupons
-        $couponsQuery = Discount::query()
-            ->where('active', '=', true)
-            ->whereIn('code', $couponIds)
-            ->with([
-                'orders',
-                'products',
-                'productSets',
-                'productSets.children',
-                'productSets.products',
-                'conditionGroups',
-                'conditionGroups.conditions',
-            ]);
-        if (count($targetTypesValues)) {
-            $couponsQuery = $couponsQuery->whereIn('target_type', $targetTypesValues);
-        }
-        $coupons = $couponsQuery->get();
-
-        // Posortowanie w kolejności do naliczania zniżek
-        return $this->sortDiscounts($sales->merge($coupons));
-    }
-
-    /**
-     * @param Collection<array-key, Discount> $discounts
-     */
-    private function sortDiscounts(Collection $discounts): Collection
-    {
-        // Sortowanie zniżek w kolejności naliczania (Target type ASC, Discount type ASC, Priority DESC)
-        return $discounts->sortBy([
-            fn (Discount $a, Discount $b) => $a->target_type->getPriority() <=> $b->target_type->getPriority(),
-            fn (Discount $a, Discount $b) => $a->type->getPriority() <=> $b->type->getPriority(),
-            fn (Discount $a, Discount $b) => $b->priority <=> $a->priority,
-        ]);
-    }
-
-    /**
-     * @throws MoneyMismatchException
-     * @throws UnknownCurrencyException
-     * @throws RoundingNecessaryException
-     * @throws MathException
-     * @throws NumberFormatException
-     * @throws ClientException
-     */
-    private function calcPrice(Money $price, string $productId, Discount $discount): Money
-    {
-        $minimalProductPrice = Money::of(
-            $this->settingsService->getMinimalPrice('minimal_product_price'),
-            $price->getCurrency(),
-        );
-
-        if (!$price->isEqualTo($minimalProductPrice) && $this->checkIsProductInDiscount($productId, $discount)) {
-            $price = $price->minus($this->calc($price, $discount));
-            $price = Money::max($price, $minimalProductPrice);
-        }
-
-        return $price;
+        return false;
     }
 
     private function checkIsProductInDiscount(string $productId, Discount $discount): bool
@@ -1839,46 +1926,5 @@ readonly class DiscountService implements DiscountServiceContract
         }
 
         return false;
-    }
-
-    private function getSalesWithBlockList(): Collection
-    {
-        return Discount::query()
-            ->whereNull('code')
-            ->where('active', '=', true)
-            ->where('target_type', '=', DiscountTargetType::PRODUCTS->value)
-            ->where('target_is_allow_list', '=', false)
-            ->with(['products', 'productSets', 'productSets.products'])
-            ->get();
-    }
-
-    /**
-     * @throws MoneyMismatchException
-     * @throws ServerException
-     * @throws UnknownCurrencyException
-     * @throws RoundingNecessaryException
-     * @throws DtoException
-     * @throws MathException
-     * @throws ClientException
-     * @throws NumberFormatException
-     */
-    private function applyDiscountsOnProductsLazy(Collection $productIds, Collection $salesWithBlockList): void
-    {
-        $productQuery = Product::with([
-            'discounts',
-            'sets',
-            'sets.discounts',
-            'sets.parent',
-        ]);
-
-        if ($productIds->isNotEmpty()) {
-            $productQuery = $productQuery->whereIn('id', $productIds);
-        }
-
-        $productQuery->chunk(100, function ($products) use ($salesWithBlockList): void {
-            foreach ($products as $product) {
-                $this->applyAllDiscountsOnProduct($product, $salesWithBlockList);
-            }
-        });
     }
 }

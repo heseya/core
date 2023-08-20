@@ -15,13 +15,6 @@ class AddPriceMinMaxToProducts extends Migration
             $table->float('price_min', 19, 4)->nullable();
             $table->float('price_max', 19, 4)->nullable();
         });
-
-        /** @var ProductService $productService */
-        $productService = App::make(ProductService::class);
-
-        Product::chunk(100, fn ($products) => $products->each(
-            fn (Product $product) => $productService->updateMinMaxPrices($product),
-        ));
     }
 
     public function down(): void

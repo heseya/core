@@ -22,6 +22,7 @@ class ItemFactory extends Factory
         return [
             'name' => $this->faker->unique()->sentence(mt_rand(1, 3)),
             'sku' => $this->faker->unique()->regexify('[A-Z0-9]{4}'),
+            'shipping_time' => $this->faker->numberBetween(1, 7),
         ];
     }
 }

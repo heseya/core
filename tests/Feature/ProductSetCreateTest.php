@@ -6,6 +6,7 @@ use App\Enums\MediaType;
 use App\Listeners\WebHookEventListener;
 use App\Models\Media;
 use App\Models\WebHook;
+use Domain\Language\Language;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductSet\Events\ProductSetCreated;
 use Domain\ProductSet\ProductSet;
@@ -88,12 +89,56 @@ class ProductSetCreateTest extends TestCase
                 'translations' => [
                     $this->lang => [
                         'name' => 'Test',
+                        'description_html' => null,
                     ],
                 ],
                 'published' => [$this->lang],
                 'public' => true,
                 'slug_suffix' => 'test',
                 'slug_override' => false,
+            ])
+            ->assertCreated()
+            ->assertJson(['data' => $defaults + [
+                'slug_override' => false,
+                'slug_suffix' => 'test',
+                'parent' => null,
+            ]]);
+
+        $this->assertDatabaseHas('product_sets', $defaults + [
+            "name->{$this->lang}" => 'Test',
+            'parent_id' => null,
+        ]);
+
+        Event::assertDispatched(ProductSetCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithEmptyChildrenAndAttributes(string $user): void
+    {
+        Event::fake([ProductSetCreated::class]);
+
+        $defaults = [
+            'public' => true,
+            'slug' => 'test',
+        ];
+
+        $this->{$user}->givePermissionTo('product_sets.add');
+        $this
+            ->actingAs($this->{$user})
+            ->postJson('/product-sets', [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                    ],
+                ],
+                'published' => [$this->lang],
+                'public' => true,
+                'slug_suffix' => 'test',
+                'slug_override' => false,
+                'attributes' => [],
+                'children_ids' => [],
             ])
             ->assertCreated()
             ->assertJson(['data' => $defaults + [

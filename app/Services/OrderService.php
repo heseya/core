@@ -42,8 +42,12 @@ use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\SalesChannel\SalesChannelService;
 use Exception;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -64,8 +68,14 @@ final readonly class OrderService implements OrderServiceContract
         private MetadataServiceContract $metadataService,
         private DepositServiceContract $depositService,
         private ProductRepositoryContract $productRepository,
+        private SalesChannelService $salesChannelService,
     ) {}
 
+    /**
+     * @throws UnknownCurrencyException
+     * @throws RoundingNecessaryException
+     * @throws NumberFormatException
+     */
     public function calcSummary(Order $order): float
     {
         // TODO: This needs to take order currency
@@ -93,9 +103,10 @@ final readonly class OrderService implements OrderServiceContract
      */
     public function store(OrderDto $dto): Order
     {
-        DB::beginTransaction();
-
         $currency = Currency::DEFAULT;
+        $vat_rate = $this->salesChannelService->getVatRate($dto->sales_channel_id);
+
+        DB::beginTransaction();
 
         try {
             $items = $dto->getItems();
@@ -192,7 +203,7 @@ final readonly class OrderService implements OrderServiceContract
                         'base_price_initial' => $price,
                         'base_price' => $price,
                         'name' => $product->name,
-                        'vat_rate' => 0, // TODO: add VAT from channel here
+                        'vat_rate' => $vat_rate->multipliedBy(100)->toFloat(),
                         'shipping_digital' => $product->shipping_digital,
                     ]);
 
@@ -258,7 +269,32 @@ final readonly class OrderService implements OrderServiceContract
                     if (!$this->removeItemsFromWarehouse($orderProduct, $tempSchemaOrderProduct)) {
                         throw new OrderException(Exceptions::ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE);
                     }
+
+                    $orderProduct->base_price_initial = $this->salesChannelService->addVat(
+                        $orderProduct->base_price_initial,
+                        $vat_rate,
+                    );
+                    $orderProduct->base_price = $this->salesChannelService->addVat(
+                        $orderProduct->base_price,
+                        $vat_rate,
+                    );
                 }
+
+                $order->cart_total_initial = $this->salesChannelService->addVat(
+                    $order->cart_total_initial,
+                    $vat_rate,
+                );
+                $order->cart_total = $this->salesChannelService->addVat(
+                    $order->cart_total,
+                    $vat_rate,
+                );
+
+                // shipping price magic 🙈
+                $order->summary = $this->salesChannelService->addVat(
+                    $order->summary - $order->shipping_price,
+                    $vat_rate,
+                ) + $order->shipping_price;
+
                 $order->push();
             } catch (Throwable $exception) {
                 $order->delete();
@@ -385,6 +421,8 @@ final readonly class OrderService implements OrderServiceContract
 
     public function cartProcess(CartDto $cartDto): CartResource
     {
+        $vat_rate = $this->salesChannelService->getVatRate($cartDto->sales_channel_id);
+
         // Lista tylko dostępnych produktów
         [$products, $items] = $this->itemService->checkCartItems($cartDto->getItems());
         $cartDto->setItems($items);
@@ -393,7 +431,7 @@ final readonly class OrderService implements OrderServiceContract
             $this->getDeliveryMethods($cartDto, $products, false);
         }
 
-        return $this->discountService->calcCartDiscounts($cartDto, $products);
+        return $this->discountService->calcCartDiscounts($cartDto, $products, $vat_rate);
     }
 
     public function processOrderProductUrls(OrderProductUpdateDto $dto, OrderProduct $product): OrderProduct

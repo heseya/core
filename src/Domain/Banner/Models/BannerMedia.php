@@ -8,18 +8,20 @@ use App\Models\Interfaces\Translatable;
 use App\Models\Media;
 use App\Models\MediaBannerMedia;
 use App\Models\Model;
+use App\Traits\CustomHasTranslations;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Spatie\Translatable\HasTranslations;
 
 /**
  * @mixin IdeHelperBannerMedia
  */
 final class BannerMedia extends Model implements Translatable
 {
+    use CustomHasTranslations;
     use HasFactory;
-    use HasTranslations;
+
+    protected const HIDDEN_PERMISSION = 'banners.show_hidden';
 
     protected $fillable = [
         'title',

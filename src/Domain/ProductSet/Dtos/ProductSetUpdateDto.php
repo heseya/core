@@ -18,6 +18,7 @@ final class ProductSetUpdateDto extends Data
     /**
      * @param string[]|Optional $children_ids
      * @param string[]|Optional $attributes
+     * @param string[] $published
      * @param array<string, array<string, string>> $translations
      */
     public function __construct(
@@ -31,6 +32,7 @@ final class ProductSetUpdateDto extends Data
         public readonly Optional|string|null $cover_id,
         public readonly array|Optional $children_ids,
         public readonly array|Optional $attributes,
+        public readonly array|Optional $published,
 
         public readonly Optional|SeoMetadataDto $seo,
 

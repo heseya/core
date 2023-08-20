@@ -77,21 +77,13 @@ final class ProductService
         $productPricesMin = $productPrices->get(ProductPriceType::PRICE_MIN->value);
         $productPricesMax = $productPrices->get(ProductPriceType::PRICE_MAX->value);
 
-        foreach (Currency::cases() as $currency) {
-            $priceMin = $productPricesMin?->where(fn (PriceDto $dto) => $dto->currency === $currency)->first();
-            $priceMax = $productPricesMax?->where(fn (PriceDto $dto) => $dto->currency === $currency)->first();
-
-            if ($priceMin && $priceMax) {
-                ProductPriceUpdated::dispatch(
-                    $product->getKey(),
-                    null,
-                    null,
-                    $priceMin->value,
-                    $priceMax->value,
-                    $currency,
-                );
-            }
-        }
+        ProductPriceUpdated::dispatch(
+            $product->getKey(),
+            null,
+            null,
+            $productPricesMin->toArray(),
+            $productPricesMax->toArray(),
+        );
 
         ProductCreated::dispatch($product);
 
@@ -110,8 +102,8 @@ final class ProductService
             ProductPriceType::PRICE_MIN,
             ProductPriceType::PRICE_MAX,
         ]);
-        $oldPricesMin = $oldPrices->get(ProductPriceType::PRICE_MIN->value)->groupBy(fn (PriceDto $dto) => $dto->currency->value);
-        $oldPricesMax = $oldPrices->get(ProductPriceType::PRICE_MAX->value)->groupBy(fn (PriceDto $dto) => $dto->currency->value);
+        $oldPricesMin = $oldPrices->get(ProductPriceType::PRICE_MIN->value);
+        $oldPricesMax = $oldPrices->get(ProductPriceType::PRICE_MAX->value);
 
         DB::beginTransaction();
 
@@ -134,30 +126,16 @@ final class ProductService
             ProductPriceType::PRICE_MIN,
             ProductPriceType::PRICE_MAX,
         ]);
-        $newPricesMin = $newPrices->get(ProductPriceType::PRICE_MIN->value)->groupBy(fn (PriceDto $dto) => $dto->currency->value);
-        $newPricesMax = $newPrices->get(ProductPriceType::PRICE_MAX->value)->groupBy(fn (PriceDto $dto) => $dto->currency->value);
+        $newPricesMin = $newPrices->get(ProductPriceType::PRICE_MIN->value);
+        $newPricesMax = $newPrices->get(ProductPriceType::PRICE_MAX->value);
 
-        foreach (Currency::cases() as $currency) {
-            /** @var PriceDto|null $oldPriceMin */
-            $oldPriceMin = $oldPricesMin->get($currency->value)?->first();
-            /** @var PriceDto|null $oldPriceMax */
-            $oldPriceMax = $oldPricesMax->get($currency->value)?->first();
-            $priceMin = $newPricesMin->get($currency->value)?->firstOrFail();
-            $priceMax = $newPricesMax->get($currency->value)?->firstOrFail();
-
-            if (
-                $priceMin instanceof PriceDto && $priceMax instanceof PriceDto && (!$oldPriceMin?->value->isEqualTo($priceMin->value) || !$oldPriceMax?->value->isEqualTo($priceMax->value))
-            ) {
-                ProductPriceUpdated::dispatch(
-                    $product->getKey(),
-                    $oldPriceMin?->value,
-                    $oldPriceMax?->value,
-                    $priceMin->value,
-                    $priceMax->value,
-                    $currency
-                );
-            }
-        }
+        ProductPriceUpdated::dispatch(
+            $product->getKey(),
+            $oldPricesMin->toArray(),
+            $oldPricesMax->toArray(),
+            $newPricesMin->toArray(),
+            $newPricesMax->toArray(),
+        );
 
         ProductUpdated::dispatch($product);
 

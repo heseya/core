@@ -103,7 +103,7 @@ enum Exceptions: string
     case CLIENT_CANNOT_DELETE_MODEL = 'Cannot delete model';
     case CLIENT_OPTION_NOT_RELATED_TO_ATTRIBUTE = 'Option is not related to provided attribute';
 
-    case SERVER_NO_DEFAULT_SALES_CHANNEL = 'No default sales channel';
+    case CLIENT_SALES_CHANNEL_NOT_FOUND = 'Sales channel not defined or found';
 
     case SERVER_CDN_ERROR = 'CDN responded with an error';
     case SERVER_ERROR = 'Server responded with an error';
@@ -112,6 +112,7 @@ enum Exceptions: string
     case SERVER_PAYMENT_MICROSERVICE_ERROR = 'Payment service error.';
     case SERVER_SHIPPING_TYPE_NO_VALIDATION = 'Validation is not implemented for selected shipping type';
     case SERVER_NO_PRICE_MATCHING_CRITERIA = 'No price exists matching the given criteria';
+    case SERVER_PRICE_UNKNOWN_CURRENCY = 'Found price with unknown currency';
 
     case ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE = 'Not every item is available';
     case ORDER_SHIPPING_METHOD_TYPE_MISMATCH = 'Selected shipping methods don\'t match selected product types';

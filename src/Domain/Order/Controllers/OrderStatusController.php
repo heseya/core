@@ -12,6 +12,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Status;
 use App\Services\Contracts\ReorderServiceContract;
 use App\Services\Contracts\StatusServiceContract;
+use App\Traits\GetPublishedLanguageFilter;
 use Domain\Order\Dtos\OrderStatusCreateDto;
 use Domain\Order\Dtos\OrderStatusIndexDto;
 use Domain\Order\Dtos\OrderStatusReorderDto;
@@ -24,6 +25,8 @@ use Illuminate\Support\Facades\Response;
 
 final class OrderStatusController extends Controller
 {
+    use GetPublishedLanguageFilter;
+
     public function __construct(
         private readonly StatusServiceContract $statusService,
         private readonly ReorderServiceContract $reorderService,
@@ -32,7 +35,7 @@ final class OrderStatusController extends Controller
     public function index(OrderStatusIndexDto $dto): JsonResource
     {
         return OrderStatusResource::collection(
-            Status::searchByCriteria($dto->toArray())
+            Status::searchByCriteria($dto->toArray() + $this->getPublishedLanguageFilter('statuses'))
                 ->with(['metadata', 'metadataPrivate'])
                 ->orderBy('order')
                 ->get(),

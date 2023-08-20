@@ -9,7 +9,7 @@ use Domain\SalesChannel\Dtos\SalesChannelCreateDto;
 use Domain\SalesChannel\Dtos\SalesChannelIndexDto;
 use Domain\SalesChannel\Dtos\SalesChannelUpdateDto;
 use Domain\SalesChannel\Resources\SalesChannelResource;
-use Domain\SalesChannel\SalesChannelService;
+use Domain\SalesChannel\SalesChannelCrudService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response as HttpResponse;
@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Response;
 final class SalesChannelController extends Controller
 {
     public function __construct(
-        private readonly SalesChannelService $salesChannelService,
+        private readonly SalesChannelCrudService $salesChannelService,
     ) {}
 
     public function index(SalesChannelIndexDto $dto): JsonResource

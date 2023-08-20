@@ -5,7 +5,9 @@ namespace App\Dtos;
 use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\SaleCreateRequest;
 use App\Traits\MapMetadata;
+use Domain\Price\Dtos\PriceDto;
 use Heseya\Dto\Dto;
+use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -13,33 +15,50 @@ class SaleDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    protected Missing|string $name;
-    protected Missing|string|null $slug;
-    protected Missing|string|null $description;
-    protected Missing|string|null $description_html;
-    protected float|Missing $value;
-    protected Missing|string $type;
-    protected int|Missing $priority;
-    protected Missing|string $target_type;
-    protected bool|Missing $target_is_allow_list;
-    protected array|Missing $condition_groups;
-    protected array|Missing $target_products;
-    protected array|Missing $target_sets;
-    protected array|Missing $target_shipping_methods;
-    protected bool|Missing $active;
+    public function __construct(
+        public readonly Missing|string $name,
+        public readonly Missing|string|null $slug,
+        public readonly Missing|string|null $description,
+        public readonly Missing|string|null $description_html,
 
-    protected array|Missing $metadata;
-    protected Missing|SeoMetadataDto $seo;
+        public readonly Missing|string $percentage,
+        /** @var PriceDto[] */
+        public readonly array|Missing $amounts,
 
+        public readonly int|Missing $priority,
+        public readonly Missing|string $target_type,
+        public readonly bool|Missing $target_is_allow_list,
+        public readonly array|Missing $condition_groups,
+        public readonly array|Missing $target_products,
+        public readonly array|Missing $target_sets,
+        public readonly array|Missing $target_shipping_methods,
+        public readonly bool|Missing $active,
+
+        public readonly array|Missing $metadata,
+        public readonly Missing|SeoMetadataDto $seo,
+    ) {
+        if (!($percentage instanceof Missing || $amounts instanceof Missing)) {
+            throw new DtoException("Can't have both percentage and amount discounts");
+        }
+    }
+
+    /**
+     * @throws DtoException
+     */
     public static function instantiateFromRequest(FormRequest|SaleCreateRequest $request): self
     {
+        $amounts = $request->has('amounts') ? array_map(
+            fn ($data) => PriceDto::from(...$data),
+            $request->input('amounts'),
+        ) : new Missing();
+
         return new self(
             name: $request->input('name', new Missing()),
             slug: $request->input('slug', new Missing()),
             description: $request->input('description', new Missing()),
             description_html: $request->input('description_html', new Missing()),
-            value: $request->input('value', new Missing()),
-            type: $request->input('type', new Missing()),
+            percentage: $request->input('percentage') ?? new Missing(),
+            amounts: $amounts,
             priority: $request->input('priority', new Missing()),
             target_type: $request->input('target_type', new Missing()),
             target_is_allow_list: $request->input('target_is_allow_list', new Missing()),
@@ -56,36 +75,6 @@ class SaleDto extends Dto implements InstantiateFromRequest
     public function getName(): Missing|string
     {
         return $this->name;
-    }
-
-    public function getDescription(): Missing|string|null
-    {
-        return $this->description;
-    }
-
-    public function getValue(): float|Missing
-    {
-        return $this->value;
-    }
-
-    public function getType(): Missing|string
-    {
-        return $this->type;
-    }
-
-    public function getPriority(): int|Missing
-    {
-        return $this->priority;
-    }
-
-    public function getTargetType(): Missing|string
-    {
-        return $this->target_type;
-    }
-
-    public function getTargetIsAllowList(): bool|Missing
-    {
-        return $this->target_is_allow_list;
     }
 
     public function getConditionGroups(): array|Missing
@@ -106,11 +95,6 @@ class SaleDto extends Dto implements InstantiateFromRequest
     public function getTargetShippingMethods(): array|Missing
     {
         return $this->target_shipping_methods;
-    }
-
-    public function getActive(): bool|Missing
-    {
-        return $this->active;
     }
 
     public function getSeo(): Missing|SeoMetadataDto

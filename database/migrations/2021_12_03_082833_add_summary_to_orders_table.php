@@ -15,16 +15,6 @@ class AddSummaryToOrdersTable extends Migration
             $table->float('summary', 19, 4)->default(0);
             $table->boolean('paid')->default(false);
         });
-
-        /** @var OrderService $orderService */
-        $orderService = app(OrderServiceContract::class);
-
-        Order::chunk(100, fn ($order) => $order->each(
-            fn (Order $order) => $order->update([
-                'summary' => $orderService->calcSummary($order),
-                'paid' => $order->paid_amount >= $orderService->calcSummary($order),
-            ])
-        ));
     }
 
     public function down(): void

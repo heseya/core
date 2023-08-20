@@ -10,9 +10,9 @@ Route::prefix('pages')->group(function (): void {
     Route::post('/', [PageController::class, 'store'])
         ->middleware('can:pages.add');
     Route::get('/id:{page}', [PageController::class, 'show'])
-        ->middleware('can:pages.show_details');
+        ->middleware('can:pages.show_details', 'published:page');
     Route::get('/{page:slug}', [PageController::class, 'show'])
-        ->middleware('can:pages.show_details');
+        ->middleware('can:pages.show_details', 'published:page');
     Route::patch('/id:{page}', [PageController::class, 'update'])
         ->middleware('can:pages.edit');
     Route::patch('/id:{page}/metadata', [MetadataController::class, 'updateOrCreate'])

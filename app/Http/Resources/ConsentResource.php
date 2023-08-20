@@ -22,7 +22,7 @@ class ConsentResource extends Resource
             'description_html' => $this->resource->description_html,
             'required' => $this->resource->required,
             'published' => $this->resource->published,
-            ...$request->boolean('with_translations') ? $this->getAllTranslations() : [],
+            ...$request->boolean('with_translations') ? $this->getAllTranslations('consents.show_hidden') : [],
         ];
     }
 }

@@ -1,63 +1,99 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
 use Domain\Language\Language;
+use Domain\Metadata\Enums\MetadataType;
 use Domain\ProductSet\ProductSet;
 use Domain\Seo\Models\SeoMetadata;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
 
-class ProductSetSeeder extends Seeder
+final class ProductSetSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $language = Language::query()->where('default', false)->firstOrFail()->getKey();
-        ProductSet::factory()->count(20)->create()->each(function ($set) use ($language): void {
-            $rand = mt_rand(0, 4);
-            $this->seo($set, $language);
-            if ($rand === 0) {
-                $sets = ProductSet::factory([
-                    'parent_id' => $set->getKey(),
-                ])->count(mt_rand(1, 2))->create();
-                $sets->each(function ($newSet) use ($language) {
-                    $this->seo($newSet, $language);
-                    $this->translations($newSet, $language);
-                });
-            } elseif ($rand === 1) {
-                $raw = ProductSet::factory()->raw();
+        $languages = Language::all('iso', 'id');
 
-                $newSet = ProductSet::factory([
-                    'parent_id' => $set->getKey(),
-                    'name' => $raw['name'],
-                    'slug' => $set->slug . '-' . $raw['slug'],
-                ])->create();
-                $this->seo($newSet, $language);
-                $this->translations($newSet, $language);
-            }
-            $this->translations($set, $language);
-        });
+        /** @var ProductSet $rootCategory */
+        $rootCategory = ProductSet::factory()->create([
+            'public' => true,
+            'slug' => 'all',
+            'name' => [
+                $languages->where('iso', '=', 'pl')->value('id') => 'Kategorie',
+                $languages->where('iso', '=', 'en')->value('id') => 'Categories',
+            ],
+            'description_html' => [
+                $languages->where('iso', '=', 'pl')->value('id') => '<p>Głowna kategoria</p>',
+                $languages->where('iso', '=', 'en')->value('id') => '<p>Main category</p>',
+            ],
+            'published' => $languages->pluck('id'),
+        ]);
+        $rootCategory->metadata()->create([
+            'name' => 'nav',
+            'value' => true,
+            'value_type' => MetadataType::BOOLEAN,
+            'public' => true,
+        ]);
+        $this->seo($rootCategory, $languages);
+
+        for ($i = rand(20, 40); $i >= 0; $i--) {
+            /** @var ProductSet $category */
+            $category = ProductSet::factory()->create([
+                'parent_id' => $rootCategory->getKey(),
+            ]);
+            $this->translations($category, $languages);
+            $category->save();
+            $category->metadata()->create([
+                'name' => 'nav',
+                'value' => true,
+                'value_type' => MetadataType::BOOLEAN,
+                'public' => true,
+            ]);
+            $category->metadata()->create([
+                'name' => 'homepage',
+                'value' => true,
+                'value_type' => MetadataType::BOOLEAN,
+                'public' => true,
+            ]);
+            $this->seo($category, $languages);
+        }
     }
 
-    private function seo(ProductSet $set, string $language): void
+    /**
+     * @param Collection<int, Language> $languages
+     */
+    private function seo(ProductSet $set, Collection $languages): void
     {
         /** @var SeoMetadata $seo */
         $seo = SeoMetadata::factory()->create();
         $set->seo()->save($seo);
-        $seoTranslation = SeoMetadata::factory()->definition();
-        $seo->setLocale($language)->fill(Arr::only($seoTranslation, ['title', 'description', 'keywords', 'no_index']));
-        $seo->fill(['published' => array_merge($seo->published, [$language])]);
+        $attributes = Arr::only(
+            SeoMetadata::factory()->definition(),
+            ['title', 'description', 'keywords', 'no_index'],
+        );
+        foreach ($languages as $language) {
+            $seo->setLocale($language->getKey())->fill($attributes);
+        }
+        $seo->published = $languages->pluck('id')->toArray();
         $seo->save();
     }
 
-    private function translations(ProductSet $productSet, string $language): void
+    /**
+     * @param Collection<int, Language> $languages
+     */
+    private function translations(ProductSet $productSet, Collection $languages): void
     {
-        $translation = ProductSet::factory()->definition();
-        $productSet->setLocale($language)->fill(Arr::only($translation, ['name', 'description_html']));
-        $productSet->fill(['published' => array_merge($productSet->published, [$language])]);
-        $productSet->save();
+        $attributes = Arr::only(ProductSet::factory()->definition(), ['name', 'description_html']);
+        foreach ($languages as $language) {
+            $productSet->setLocale($language->getKey())->fill($attributes);
+        }
+        $productSet->published = $languages->pluck('id')->toArray();
     }
 }

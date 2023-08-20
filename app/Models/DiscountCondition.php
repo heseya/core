@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ConditionType;
+use Carbon\Carbon;
 use Domain\ProductSet\ProductSet;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
@@ -34,6 +35,15 @@ class DiscountCondition extends Model
                 fn (string $key) => (bool) $key,
                 mb_str_split(sprintf('%07d', decbin($value['weekday'])))
             );
+        }
+
+        if ($this->type->is(ConditionType::DATE_BETWEEN)) {
+            if (array_key_exists('start_at', $value)) {
+                $value['start_at'] = Carbon::parse($value['start_at'])->toISOString();
+            }
+            if (array_key_exists('end_at', $value)) {
+                $value['end_at'] = Carbon::parse($value['end_at'])->toISOString();
+            }
         }
 
         return $value;

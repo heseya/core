@@ -19,8 +19,7 @@ class DiscountSeoTest extends TestCase
             ->actingAs($this->{$user})
             ->json('POST', '/sales', [
                 'name' => 'Sale',
-                'type' => DiscountType::PERCENTAGE,
-                'value' => 10,
+                'percentage' => '10',
                 'priority' => 1,
                 'target_type' => DiscountTargetType::ORDER_VALUE,
                 'target_is_allow_list' => true,
