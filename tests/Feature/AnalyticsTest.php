@@ -66,7 +66,7 @@ class AnalyticsTest extends TestCase
 
         $response->assertOk()
             ->assertJsonFragment([
-                'amount' => 1000.0,
+                'amount' => '1000.00',
                 'count' => 1,
                 'currency' => $order->currency,
             ]);
@@ -134,7 +134,7 @@ class AnalyticsTest extends TestCase
 
         $response->assertOk()
             ->assertJsonFragment([
-                'amount' => 1000.0,
+                'amount' => '1000.00',
                 'count' => 2,
                 'currency' => $order->currency,
             ]);

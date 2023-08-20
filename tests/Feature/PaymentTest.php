@@ -115,7 +115,7 @@ class PaymentTest extends TestCase
             ->assertJsonFragment([
                 'method' => 'payu',
                 'status' => PaymentStatus::PENDING->value,
-                'amount' => $this->order->summary,
+                'amount' => "{$this->order->summary}.00",
                 'date' => $payment->created_at,
                 'redirect_url' => 'payment_url',
                 'continue_url' => 'continue_url',
@@ -212,7 +212,7 @@ class PaymentTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment([
                 'method' => 'payu',
-                'amount' => $this->order->summary,
+                'amount' => "{$this->order->summary}.00",
                 'redirect_url' => 'payment_url',
                 'continue_url' => 'continue_url',
             ]);
@@ -313,7 +313,7 @@ class PaymentTest extends TestCase
         $response->assertJsonFragment([
             'method' => 'offline',
             'status' => PaymentStatus::SUCCESSFUL->value,
-            'amount' => $this->order->summary,
+            'amount' => "{$this->order->summary}.00",
             'date' => $payment->created_at,
             'redirect_url' => null,
             'continue_url' => null,
@@ -383,7 +383,7 @@ class PaymentTest extends TestCase
             ->assertJsonFragment([
                 'method' => 'offline',
                 'status' => PaymentStatus::SUCCESSFUL->value,
-                'amount' => $amount,
+                'amount' => "{$amount}.00",
                 'date' => $payment->created_at,
                 'redirect_url' => null,
                 'continue_url' => null,
@@ -441,7 +441,7 @@ class PaymentTest extends TestCase
                 'external_id' => $payment->external_id,
                 'method' => $payment->method,
                 'status' => $payment->status->value,
-                'amount' => $payment->amount->getAmount()->toFloat(),
+                'amount' => $payment->amount->getAmount(),
                 'currency' => $payment->currency->value,
                 'redirect_url' => $payment->redirect_url,
                 'continue_url' => $payment->continue_url,
