@@ -29,6 +29,8 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
 
     private array|Missing $metadata;
 
+    public string $sales_channel_id;
+
     public static function instantiateFromRequest(FormRequest|OrderCreateRequest|OrderUpdateRequest $request): self
     {
         $orderProducts = $request->input('items', []);
@@ -56,6 +58,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
             metadata: self::mapMetadata($request),
             shipping_number: $request->input('shipping_number', new Missing()),
             invoice_requested: $request->input('invoice_requested', new Missing()),
+            sales_channel_id: $request->input('sales_channel_id'),
         );
     }
 

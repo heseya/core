@@ -12,6 +12,7 @@ class CartRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'sales_channel_id' => ['required', 'uuid'],
             'currency' => ['required', new Enum(Currency::class)],
 
             'shipping_method_id' => ['nullable', 'uuid'],

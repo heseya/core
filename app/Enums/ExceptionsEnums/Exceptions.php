@@ -103,7 +103,7 @@ enum Exceptions: string
     case CLIENT_CANNOT_DELETE_MODEL = 'Cannot delete model';
     case CLIENT_OPTION_NOT_RELATED_TO_ATTRIBUTE = 'Option is not related to provided attribute';
 
-    case SERVER_NO_DEFAULT_SALES_CHANNEL = 'No default sales channel';
+    case CLIENT_SALES_CHANNEL_NOT_FOUND = 'Sales channel not defined or found';
 
     case SERVER_CDN_ERROR = 'CDN responded with an error';
     case SERVER_ERROR = 'Server responded with an error';

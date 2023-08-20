@@ -20,6 +20,7 @@ use App\Models\DiscountCondition;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
+use Brick\Math\BigDecimal;
 use Brick\Money\Money;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -64,7 +65,7 @@ interface DiscountServiceContract
         CartResource $cart,
     ): CartItemResponse;
 
-    public function calcCartDiscounts(CartDto $cart, Collection $products): CartResource;
+    public function calcCartDiscounts(CartDto $cart, Collection $products, BigDecimal $vat_rate): CartResource;
 
     /**
      * @return ProductPriceDto[]

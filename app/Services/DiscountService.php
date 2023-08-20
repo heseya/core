@@ -72,6 +72,7 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\ProductSet\ProductSet;
+use Domain\SalesChannel\SalesChannelService;
 use Domain\Seo\SeoMetadataService;
 use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
@@ -95,6 +96,7 @@ readonly class DiscountService implements DiscountServiceContract
         private ShippingTimeDateServiceContract $shippingTimeDateService,
         private ProductRepositoryContract $productRepository,
         private DiscountRepository $discountRepository,
+        private SalesChannelService $salesChannelService,
     ) {}
 
     public function index(CouponIndexDto|SaleIndexDto $dto): LengthAwarePaginator
@@ -356,7 +358,7 @@ readonly class DiscountService implements DiscountServiceContract
      * @throws UnknownCurrencyException
      * @throws DtoException
      */
-    public function calcCartDiscounts(CartDto $cart, Collection $products): CartResource
+    public function calcCartDiscounts(CartDto $cart, Collection $products, BigDecimal $vat_rate): CartResource
     {
         $discounts = $this->getActiveSalesAndCoupons($cart->getCoupons());
 
@@ -463,9 +465,15 @@ readonly class DiscountService implements DiscountServiceContract
             }
         }
 
-        //        $cartResource->cart_total = round($cartResource->cart_total, 2, PHP_ROUND_HALF_UP);
-        //        $cartResource->shipping_price = round($cartResource->shipping_price, 2, PHP_ROUND_HALF_UP);
+        foreach ($cartResource->items as $item) {
+            $item->price = $this->salesChannelService->addVat($item->price, $vat_rate);
+            $item->price_discounted = $this->salesChannelService->addVat($item->price_discounted, $vat_rate);
+        }
 
+        $cartResource->cart_total = round(
+            $this->salesChannelService->addVat($cartResource->cart_total, $vat_rate), 2,
+        );
+        $cartResource->shipping_price = round($cartResource->shipping_price, 2);
         $cartResource->summary = $cartResource->cart_total->plus($cartResource->shipping_price);
 
         return $cartResource;
