@@ -88,7 +88,8 @@ Orders:
   post:
     tags:
       - Orders
-    summary: 'add new order'
+    security:
+      - BearerAuth: [ orders.add ]
     requestBody:
       $ref: './../requests/Orders.yml#/OrderCreate'
     responses:
@@ -495,6 +496,8 @@ CartProcess:
   post:
     tags:
       - Orders
+    security:
+      - BearerAuth: [ cart.verify ]
     requestBody:
       $ref: './../requests/Cart.yml#/CartProcess'
     responses:
