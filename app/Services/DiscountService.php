@@ -39,6 +39,7 @@ use App\Events\SaleUpdated;
 use App\Exceptions\ClientException;
 use App\Exceptions\ServerException;
 use App\Exceptions\StoreException;
+use App\Http\Resources\PriceResource;
 use App\Jobs\CalculateDiscount;
 use App\Models\App;
 use App\Models\CartItemResponse;
@@ -475,6 +476,8 @@ readonly class DiscountService implements DiscountServiceContract
     }
 
     /**
+     * @param Collection<int, Product> $products
+     *
      * @return ProductPriceDto[]
      */
     public function calcProductsListDiscounts(Collection $products): array
@@ -492,11 +495,10 @@ readonly class DiscountService implements DiscountServiceContract
                 true,
             );
 
-            // TODO: Fix this with multiple currencies
             return new ProductPriceDto(
                 $product->getKey(),
-                $minPriceDiscounted[0]->value->getAmount()->toFloat(),
-                $maxPriceDiscounted[0]->value->getAmount()->toFloat(),
+                PriceResource::collection($minPriceDiscounted),
+                PriceResource::collection($maxPriceDiscounted),
             );
         })->toArray();
     }

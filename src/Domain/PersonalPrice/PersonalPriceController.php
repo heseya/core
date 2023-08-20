@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\PersonalPrice;
 
+use App\Exceptions\ClientException;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\ProductPriceResource;
-use Illuminate\Http\Resources\Json\JsonResource;
+use Support\ResourceDto;
 
 final class PersonalPriceController extends Controller
 {
@@ -14,9 +14,12 @@ final class PersonalPriceController extends Controller
         private readonly PersonalPriceService $service,
     ) {}
 
-    public function productPrices(ProductPricesDto $dto): JsonResource
+    /**
+     * @throws ClientException
+     */
+    public function productPrices(ProductPricesDto $dto): ResourceDto
     {
-        return ProductPriceResource::collection(
+        return new ResourceDto(
             $this->service->calcProductsListDiscounts($dto),
         );
     }
