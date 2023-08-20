@@ -32,7 +32,7 @@ class Payment extends Model
 
     protected $casts = [
         'amount' => 'float',
-//        'amount' => MoneyCast::class,
+        //        'amount' => MoneyCast::class,
         'status' => PaymentStatus::class,
         'currency' => Currency::class,
     ];

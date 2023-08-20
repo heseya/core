@@ -232,7 +232,7 @@ final readonly class OrderService implements OrderServiceContract
                         $cartValueInitial = $cartValueInitial->plus($price->multipliedBy($item->getQuantity()));
                     }
 
-                    if ($schemaProductPrice) {
+                    if ($schemaProductPrice->isPositive()) {
                         $orderProduct->price = $schemaProductPrice->plus($orderProduct->price);
                         $orderProduct->price_initial = $schemaProductPrice->plus($orderProduct->price_initial);
                         $orderProduct->save();
@@ -308,8 +308,6 @@ final readonly class OrderService implements OrderServiceContract
             throw $exception;
         } catch (Throwable $throwable) {
             DB::rollBack();
-
-            dd($throwable);
 
             throw new ServerException(Exceptions::SERVER_TRANSACTION_ERROR, $throwable);
         }

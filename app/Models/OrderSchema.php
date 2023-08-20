@@ -3,9 +3,7 @@
 namespace App\Models;
 
 use App\Casts\MoneyCast;
-use Brick\Money\Money;
 use Domain\Currency\Currency;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
