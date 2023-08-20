@@ -184,19 +184,20 @@ OrderSummary:
     payable:
       type: boolean
     cart_total_initial:
-      type: number
-      example: 380.7
+      type: string
+      example: '380.7'
     cart_total:
-      type: number
-      example: 180.7
+      type: string
+      example: '180.7'
     shipping_price_initial:
-      type: number
-      example: 38.7
+      type: string
+      example: '38.7'
     shipping_price:
-      type: number
-      example: 18.7
+      type: string
+      example: '18.7'
     summary:
-      type: number
+      type: string
+      example: '18.7'
     shipping_method:
       $ref: './ShippingMethods.yml#/ShippingMethod'
     digital_shipping_method:
