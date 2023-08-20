@@ -14,6 +14,8 @@ use App\Payments\PayPal;
 use App\Payments\PayU;
 use App\Payments\Przelewy24;
 use App\Services\Contracts\PaymentServiceContract;
+use Brick\Math\Exception\MathException;
+use Brick\Money\Exception\MoneyMismatchException;
 use Domain\Currency\Currency;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Config;
@@ -27,6 +29,9 @@ final class PaymentService implements PaymentServiceContract
 {
     /**
      * @throws ClientException
+     * @throws MathException
+     * @throws MoneyMismatchException
+     * @throws ServerException
      */
     public function getPayment(Order $order, PaymentMethod $paymentMethod, string $continueUrl): Payment
     {
@@ -47,6 +52,9 @@ final class PaymentService implements PaymentServiceContract
             : $this->createPaymentLegacy($paymentMethod, $order, $continueUrl);
     }
 
+    /**
+     * @throws ServerException
+     */
     private function requestPaymentFromMicroservice(PaymentMethod $method, Order $order, string $continueUrl): Payment
     {
         $response = Http::post($method->url, [
@@ -94,6 +102,8 @@ final class PaymentService implements PaymentServiceContract
 
     /**
      * @throws ClientException
+     * @throws MathException
+     * @throws MoneyMismatchException
      *
      * @deprecated
      */
@@ -117,7 +127,7 @@ final class PaymentService implements PaymentServiceContract
          */
         $payment = $order->payments()->create([
             'method' => $method->alias,
-            'amount' => $order->summary->minus($order->paid_amount)->getAmount()->toFloat(),
+            'amount' => $order->summary->minus($order->paid_amount),
             'currency' => $order->currency,
             'status' => PaymentStatus::PENDING,
             'continue_url' => $continueUrl,
@@ -135,9 +145,10 @@ final class PaymentService implements PaymentServiceContract
 
     public function create(PaymentDto $dto): Payment
     {
+        /** @var Order $order */
         $order = Order::query()->findOrFail($dto->getOrderId());
 
-        return Payment::query()->create([
+        return Payment::create([
             'currency' => $order->currency,
             ...$dto->toArray(),
         ]);

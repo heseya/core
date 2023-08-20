@@ -14,7 +14,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    public readonly Currency $currency;
+    public Currency $currency;
     private Missing|string $email;
     private Missing|string|null $comment;
     private Missing|string $shipping_method_id;

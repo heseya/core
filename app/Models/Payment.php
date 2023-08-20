@@ -4,10 +4,8 @@ namespace App\Models;
 
 use App\Casts\MoneyCast;
 use App\Enums\PaymentStatus;
-use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -36,38 +34,24 @@ class Payment extends Model
     ];
 
     protected $casts = [
+        'amount' => MoneyCast::class,
         'status' => PaymentStatus::class,
         'currency' => Currency::class,
     ];
 
+    /**
+     * @return BelongsTo<Order, self>
+     */
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
+    /**
+     * @return BelongsTo<PaymentMethod, self>
+     */
     public function paymentMethod(): BelongsTo
     {
         return $this->belongsTo(PaymentMethod::class, 'method_id');
-    }
-
-    public function amount(): Attribute
-    {
-        return Attribute::make(
-            get: fn (float|string $value, array $attributes): Money => Money::of(
-                $value,
-                $attributes['currency'],
-                null,
-                RoundingMode::HALF_EVEN,
-            ),
-            set: fn (float|Money|string $value): array => match (true) {
-                $value instanceof Money => [
-                    'amount' => $value->getAmount(),
-                    'currency' => $value->getCurrency()->getCurrencyCode(),
-                ],
-                default => [
-                    'amount' => $value,
-                ]
-            }
-        );
     }
 }

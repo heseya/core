@@ -6,7 +6,9 @@ use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\PaymentStatus;
 use App\Exceptions\ClientException;
 use App\Models\Payment;
+use Brick\Math\Exception\MathException;
 use Exception;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -15,6 +17,10 @@ use Illuminate\Support\Facades\Response;
 
 class PayU implements PaymentMethod
 {
+    /**
+     * @throws RequestException
+     * @throws MathException
+     */
     public static function generateUrl(Payment $payment): array
     {
         $client_id = Config::get('payu.client_id');

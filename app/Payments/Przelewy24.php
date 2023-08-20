@@ -6,6 +6,7 @@ use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\PaymentStatus;
 use App\Exceptions\ClientException;
 use App\Models\Payment;
+use Brick\Math\Exception\MathException;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -16,13 +17,17 @@ class Przelewy24 implements PaymentMethod
 {
     private const API_VER = 'v1';
 
+    /**
+     * @throws MathException
+     * @throws Exception
+     */
     public static function generateUrl(Payment $payment): array
     {
         $fields = [
-            'sessionId' => (string) $payment->id,
+            'sessionId' => $payment->id,
             'merchantId' => (int) Config::get('przelewy24.merchant_id'),
             'amount' => $payment->amount->getMinorAmount()->toInt(),
-            'currency' => (string) $payment->currency->value,
+            'currency' => $payment->currency->value,
             'crc' => (string) Config::get('przelewy24.crc'),
         ];
 
@@ -52,11 +57,14 @@ class Przelewy24 implements PaymentMethod
         }
 
         return [
-            'redirect_url' => Config::get('przelewy24.url') . '/trnRequest/' .
-                $response['data']['token'],
+            'redirect_url' => Config::get('przelewy24.url') . '/trnRequest/' . $response['data']['token'],
         ];
     }
 
+    /**
+     * @throws MathException
+     * @throws ClientException
+     */
     public static function translateNotification(Request $request): mixed
     {
         Log::info('Received Przelewy24 notification', (array) $request->json());
@@ -70,14 +78,14 @@ class Przelewy24 implements PaymentMethod
             Log::error("Przelewy24 - Not found payments with ID: {$sessionId}");
             throw new ClientException(Exceptions::CLIENT_INVALID_PAYMENT);
         });
-        $amount = round($payment->amount * 100, 0);
+        $amount = $payment->amount->getMinorAmount()->toInt();
 
         $validated = $request->validate([
             'merchantId' => ['required', 'integer', 'in:' . Config::get('przelewy24.merchant_id')],
             'posId' => ['required', 'integer', 'in:' . Config::get('przelewy24.pos_id')],
             'amount' => ['required', 'integer', 'in:' . $amount],
             'originAmount' => ['required', 'integer', 'in:' . $amount],
-            'currency' => ['required', 'string', 'in:' . $payment->order->currency],
+            'currency' => ['required', 'string', 'in:' . $payment->currency->value],
             'orderId' => ['required', 'integer'],
             'methodId' => ['required', 'integer'],
             'statement' => ['required', 'string'],
