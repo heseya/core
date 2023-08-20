@@ -90,19 +90,4 @@ return [
         'value' => '',
         'public' => false,
     ],
-
-    'minimal_product_price' => [
-        'value' => 0,
-        'public' => false,
-    ],
-
-    'minimal_order_price' => [
-        'value' => 0,
-        'public' => false,
-    ],
-
-    'minimal_shipping_price' => [
-        'value' => 0,
-        'public' => false,
-    ],
 ];

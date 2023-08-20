@@ -117,7 +117,7 @@ final class PaymentService implements PaymentServiceContract
          */
         $payment = $order->payments()->create([
             'method' => $method->alias,
-            'amount' => $order->summary - $order->paid_amount,
+            'amount' => $order->summary->minus($order->paid_amount)->getAmount()->toFloat(),
             'currency' => $order->currency,
             'status' => PaymentStatus::PENDING,
             'continue_url' => $continueUrl,

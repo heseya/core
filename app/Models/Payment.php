@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Enums\PaymentStatus;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;

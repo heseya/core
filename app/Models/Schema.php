@@ -15,6 +15,9 @@ use App\SortColumnTypes\TranslatedColumn;
 use App\Traits\CustomHasTranslations;
 use App\Traits\HasMetadata;
 use App\Traits\Sortable;
+use Brick\Math\Exception\MathException;
+use Brick\Money\Exception\MoneyMismatchException;
+use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
@@ -98,6 +101,8 @@ class Schema extends Model implements SortableContract, Translatable
 
     /**
      * Check if user input is valid.
+     *
+     * @throws ValidationException
      */
     public function validate(mixed $value): void
     {
@@ -202,17 +207,21 @@ class Schema extends Model implements SortableContract, Translatable
         return $this->morphMany(Price::class, 'model');
     }
 
-    public function getPriceForCurrency(Currency $currency = Currency::DEFAULT): float
+    public function getPriceForCurrency(Currency $currency): Money
     {
-        return $this->prices->where('currency', $currency->value)->firstOrFail()->value->getAmount()->toFloat();
+        return $this->prices->where('currency', $currency->value)->firstOrFail()->value;
     }
 
-    public function getPrice(mixed $value, array $schemas, Currency $currency = Currency::DEFAULT): float
+    /**
+     * @throws MathException
+     * @throws MoneyMismatchException
+     */
+    public function getPrice(mixed $value, array $schemas, Currency $currency): Money
     {
         $schemaKeys = Collection::make($schemas)->keys();
 
         if ($this->usedBySchemas()->whereIn($this->getKeyName(), $schemaKeys)->exists()) {
-            return 0.0;
+            return Money::zero($currency->value);
         }
 
         return $this->getUsedPrice($value, $schemas, $currency);
@@ -238,28 +247,36 @@ class Schema extends Model implements SortableContract, Translatable
         );
     }
 
-    private function getUsedPrice(mixed $value, array $schemas, Currency $currency = Currency::DEFAULT): float
+    /**
+     * @throws MathException
+     * @throws MoneyMismatchException
+     */
+    private function getUsedPrice(mixed $value, array $schemas, Currency $currency): Money
     {
         if (!$this->required && $value === null) {
-            return 0;
+            return Money::zero($currency->value);
         }
 
         if (
             ($this->type->is(SchemaType::STRING) || $this->type->is(SchemaType::NUMERIC))
             && Str::length(trim($value)) === 0
         ) {
-            return 0;
+            return Money::zero($currency->value);
         }
 
         if ($this->type->is(SchemaType::BOOLEAN) && ((bool) $value) === false) {
-            return 0;
+            return Money::zero($currency->value);
         }
 
         if ($this->type->is(SchemaType::MULTIPLY_SCHEMA)) {
             /** @var Schema $usedSchema */
             $usedSchema = $this->usedSchemas()->firstOrFail();
 
-            return $value * $usedSchema->getUsedPrice($schemas[$usedSchema->getKey()], $schemas, $currency);
+            return $usedSchema->getUsedPrice(
+                $schemas[$usedSchema->getKey()],
+                $schemas,
+                $currency,
+            )->multipliedBy($value);
         }
 
         $price = $this->getPriceForCurrency($currency);
@@ -267,11 +284,11 @@ class Schema extends Model implements SortableContract, Translatable
         if ($this->type->is(SchemaType::SELECT)) {
             /** @var Option $option */
             $option = $this->options()->findOrFail($value);
-            $price += $option->getPriceForCurrency($currency);
+            $price = $price->plus($option->getPriceForCurrency($currency));
         }
 
         if ($this->type->is(SchemaType::MULTIPLY)) {
-            $price *= (float) $value;
+            $price = $price->multipliedBy($value);
         }
 
         return $price;

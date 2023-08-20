@@ -11,12 +11,13 @@ use App\Dtos\OrderUpdateDto;
 use App\Models\CartResource;
 use App\Models\Order;
 use App\Models\OrderProduct;
+use Brick\Money\Money;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 
 interface OrderServiceContract
 {
-    public function calcSummary(Order $order): float;
+    public function calcSummary(Order $order): Money;
 
     public function store(OrderDto $dto): Order;
 

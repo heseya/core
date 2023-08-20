@@ -8,7 +8,11 @@ OrderCreate:
           - items
           - billing_address
           - sales_channel_id
+          - currency
         properties:
+          currency:
+            type: string
+            example: 'PLN'
           email:
             type: string
             example: admin@example.com

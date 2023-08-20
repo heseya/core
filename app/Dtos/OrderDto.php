@@ -6,6 +6,7 @@ use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Traits\MapMetadata;
+use Domain\Currency\Currency;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -13,6 +14,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
 {
     use MapMetadata;
 
+    public readonly Currency $currency;
     private Missing|string $email;
     private Missing|string|null $comment;
     private Missing|string $shipping_method_id;
@@ -40,6 +42,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
         }
 
         return new self(
+            currency: $request->enum('currency', Currency::class),
             email: $request->input('email', new Missing()),
             comment: $request->input('comment', new Missing()),
             shipping_method_id: $request->input('shipping_method_id', new Missing()),

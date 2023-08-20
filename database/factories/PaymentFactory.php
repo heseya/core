@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Payment;
+use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -20,6 +21,9 @@ class PaymentFactory extends Factory
      */
     public function definition(): array
     {
+        $currency = Currency::DEFAULT->value;
+        $price = Money::of(mt_rand(10, 1000), $currency);
+
         return [
             'external_id' => $this->faker->uuid,
             'method' => $this->faker->randomElement(['przelewy24', 'bluemedia', 'paynow']),

@@ -3,7 +3,9 @@
 namespace App\Http\Requests;
 
 use App\Rules\ProductPublic;
+use Domain\Currency\Currency;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class CartRequest extends FormRequest
 {
@@ -11,6 +13,7 @@ class CartRequest extends FormRequest
     {
         return [
             'sales_channel_id' => ['required', 'uuid'],
+            'currency' => ['required', new Enum(Currency::class)],
 
             'shipping_method_id' => ['nullable', 'uuid'],
             'digital_shipping_method_id' => ['nullable', 'uuid'],

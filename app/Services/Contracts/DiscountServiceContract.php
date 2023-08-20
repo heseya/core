@@ -22,6 +22,7 @@ use App\Models\OrderProduct;
 use App\Models\Product;
 use Brick\Math\BigDecimal;
 use Brick\Money\Money;
+use Domain\Currency\Currency;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
@@ -39,18 +40,19 @@ interface DiscountServiceContract
 
     public function checkCondition(
         DiscountCondition $condition,
+        Money $cartValue,
         ?CartOrderDto $dto = null,
-        float $cartValue = 0
     ): bool;
 
-    public function checkConditionGroup(ConditionGroup $group, CartOrderDto $dto, float $cartValue): bool;
+    public function checkConditionGroup(ConditionGroup $group, CartOrderDto $dto, Money $cartValue): bool;
 
-    public function checkConditionGroups(Discount $discount, CartOrderDto $dto, float $cartValue): bool;
+    public function checkConditionGroups(Discount $discount, CartOrderDto $dto, Money $cartValue): bool;
 
     public function applyDiscountOnProduct(
         Product $product,
         OrderProductDto $orderProductDto,
-        Discount $discount
+        Discount $discount,
+        Currency $currency,
     ): OrderProduct;
 
     public function applyDiscountsOnProducts(Collection $products): void;

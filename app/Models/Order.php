@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\OrderSearch;
@@ -15,9 +16,11 @@ use App\Models\Contracts\SortableContract;
 use App\Traits\HasMetadata;
 use App\Traits\HasOrderDiscount;
 use App\Traits\Sortable;
+use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -44,26 +47,27 @@ class Order extends Model implements SortableContract
     protected $fillable = [
         'code',
         'email',
-        'currency',
         'comment',
         'status_id',
         'shipping_method_id',
         'digital_shipping_method_id',
-        'shipping_price_initial',
-        'shipping_price',
         'shipping_number',
         'billing_address_id',
         'shipping_address_id',
         'created_at',
         'buyer_id',
         'buyer_type',
-        'summary',
         'paid',
-        'cart_total_initial',
-        'cart_total',
         'shipping_place',
         'invoice_requested',
         'shipping_type',
+
+        'currency',
+        'cart_total_initial',
+        'cart_total',
+        'shipping_price_initial',
+        'shipping_price',
+        'summary',
     ];
 
     protected array $criteria = [
@@ -88,6 +92,7 @@ class Order extends Model implements SortableContract
         'code',
         'created_at',
         'email',
+
         'summary',
     ];
 
@@ -98,17 +103,27 @@ class Order extends Model implements SortableContract
         'paid' => 'boolean',
         'invoice_requested' => 'boolean',
         'currency' => Currency::class,
+        'cart_total_initial' => MoneyCast::class,
+        'cart_total' => MoneyCast::class,
+        'shipping_price_initial' => MoneyCast::class,
+        'shipping_price' => MoneyCast::class,
+        'summary' => MoneyCast::class,
     ];
 
     /**
      * Summary amount of paid.
      */
-    public function getPaidAmountAttribute(): float
+    public function getPaidAmountAttribute(): Money
     {
-        return match ($this->relationLoaded('payments')) {
-            true => $this->payments->where('status', PaymentStatus::SUCCESSFUL)->sum(fn (Payment $payment) => $payment->amount->getAmount()->toFloat()),
-            false => $this->payments()->where('status', PaymentStatus::SUCCESSFUL->value)->sum('amount')
-        };
+        return $this->payments
+            ->where('status', PaymentStatus::SUCCESSFUL)
+            ->reduce(
+                fn (Money $carry, Payment $payment) => $carry->plus(
+                    // TODO: This should use money in payment instead of floats
+                    Money::of($payment->amount, $this->currency->value),
+                ),
+                Money::zero($this->currency->value),
+            );
     }
 
     public function payments(): HasMany
@@ -140,7 +155,7 @@ class Order extends Model implements SortableContract
 
     public function isPaid(): bool
     {
-        return $this->paid_amount >= $this->summary;
+        return $this->paid_amount->isGreaterThanOrEqualTo($this->summary);
     }
 
     public function status(): BelongsTo
@@ -203,4 +218,23 @@ class Order extends Model implements SortableContract
             default => Config::get('app.locale'),
         };
     }
+
+    //    private static function priceAttributeTemplate(string $fieldName): Attribute
+    //    {
+    //        return Attribute::make(
+    //            get: fn (mixed $value, array $attributes): Money => Money::ofMinor(
+    //                $attributes[$fieldName],
+    //                $attributes['currency'],
+    //            ),
+    //            set: fn (int|Money|string $value): array => match (true) {
+    //                $value instanceof Money => [
+    //                    $fieldName => $value->getMinorAmount(),
+    //                    'currency' => $value->getCurrency()->getCurrencyCode(),
+    //                ],
+    //                default => [
+    //                    $fieldName => $value,
+    //                ]
+    //            }
+    //        );
+    //    }
 }

@@ -14,28 +14,29 @@ Order:
       type: boolean
     currency:
       type: string
-      example: PLN
+      example: 'PLN'
     comment:
       type: string
       example: 'asap plz'
     cart_total_initial:
-      type: number
-      example: 38.7
+      type: string
+      example: '38.7'
     cart_total:
-      type: number
-      example: 18.7
+      type: string
+      example: '18.7'
     shipping_price_initial:
-      type: number
-      example: 38.7
+      type: string
+      example: '38.7'
     shipping_price:
-      type: number
-      example: 18.7
+      type: string
+      example: '18.7'
     summary:
-      type: number
+      type: string
+      example: '199.99'
     summary_paid:
       description: 'Summary amount of paid.'
-      type: number
-      example: 199.99
+      type: string
+      example: '199.99'
     paid:
       type: boolean
     status:
@@ -72,10 +73,10 @@ OrderProduct:
       type: number
       example: '12.4'
     price:
-      type: number
+      type: string
       example: '199.99'
     price_initial:
-      type: number
+      type: string
       example: '299.99'
     schemas:
       type: array
@@ -111,18 +112,20 @@ OrderDiscount:
     code:
       type: string
       example: 'BLACK22'
-    type:
-      type: string
-      enum: ['amount', 'percentage']
     target_type:
       type: string
       enum: [ 'order-value', 'products', 'product-sets', 'shipping-price' ]
-    value:
-      type: number
-      example: 9.99
+    amount:
+      type: string
+      nullable: true
+      example: '9.99'
+    percentage:
+      type: string
+      nullable: true
+      example: '25.00'
     applied_discount:
-      type: number
-      example: 9.99
+      type: string
+      example: '9.99'
 
 OrderSchema:
   type: object

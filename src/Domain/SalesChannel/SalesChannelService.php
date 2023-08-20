@@ -8,6 +8,7 @@ use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
 use Brick\Math\BigDecimal;
 use Brick\Math\Exception\MathException;
+use Brick\Money\Money;
 use Domain\SalesChannel\Models\SalesChannel;
 
 final readonly class SalesChannelService
@@ -25,9 +26,11 @@ final readonly class SalesChannelService
         return BigDecimal::of($sales_channel->vat_rate)->multipliedBy(0.01);
     }
 
-    public function addVat(float $price, BigDecimal $vat_rate): float
+    /**
+     * @throws MathException
+     */
+    public function addVat(Money $price, BigDecimal $vat_rate): Money
     {
-        // change to multipliedBy when price will be Money
-        return $price + ($price * $vat_rate->toFloat());
+        return $price->multipliedBy($vat_rate->plus(1));
     }
 }

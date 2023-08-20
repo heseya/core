@@ -10,8 +10,8 @@ class CartItemResource extends Resource
     {
         return [
             'cartitem_id' => $this->resource->cartitem_id,
-            'price' => $this->resource->price,
-            'price_discounted' => $this->resource->price_discounted,
+            'price' => $this->resource->price->getAmount(),
+            'price_discounted' => $this->resource->price_discounted->getAmount(),
             'quantity' => (float) $this->resource->quantity,
         ];
     }
