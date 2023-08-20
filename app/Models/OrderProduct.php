@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Criteria\WhereHasBuyer;
 use App\Criteria\WhereOrderProductPaid;
 use App\Traits\HasOrderDiscount;
@@ -45,6 +46,10 @@ class OrderProduct extends Model
         'shipping_digital' => 'boolean',
         'is_delivered' => 'boolean',
         'currency' => Currency::class,
+        'base_price_initial' => MoneyCast::class,
+        'base_price' => MoneyCast::class,
+        'price_initial' => MoneyCast::class,
+        'price' => MoneyCast::class,
     ];
 
     protected array $criteria = [
@@ -58,26 +63,6 @@ class OrderProduct extends Model
     protected array $sortable = [
         'created_at',
     ];
-
-    public function base_price_initial(): Attribute
-    {
-        return self::priceAttributeTemplate('base_price_initial');
-    }
-
-    public function base_price(): Attribute
-    {
-        return self::priceAttributeTemplate('base_price');
-    }
-
-    public function price_initial(): Attribute
-    {
-        return self::priceAttributeTemplate('price_initial');
-    }
-
-    public function price(): Attribute
-    {
-        return self::priceAttributeTemplate('price');
-    }
 
     public function schemas(): HasMany
     {

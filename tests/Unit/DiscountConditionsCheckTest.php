@@ -97,7 +97,7 @@ class DiscountConditionsCheckTest extends TestCase
             $this->discountService->checkConditionGroup(
                 $this->conditionGroup,
                 $cart,
-                40.0,
+                Money::of(40.0, $this->currency),
             )
         );
     }
@@ -127,7 +127,7 @@ class DiscountConditionsCheckTest extends TestCase
             $this->discountService->checkConditionGroup(
                 $this->conditionGroup,
                 $cart,
-                40.0,
+                Money::of(40.0, $this->currency),
             )
         );
     }
@@ -168,7 +168,7 @@ class DiscountConditionsCheckTest extends TestCase
             $this->discountService->checkConditionGroups(
                 $this->discount,
                 $cart,
-                120.0,
+                Money::of(120.0, $this->currency),
             )
         );
     }
@@ -207,7 +207,7 @@ class DiscountConditionsCheckTest extends TestCase
             $this->discountService->checkConditionGroups(
                 $this->discount,
                 $cart,
-                120.0,
+                Money::of(120.0, $this->currency),
             )
         );
     }
@@ -224,7 +224,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition(condition: $discountCondition, cartValue: 50.00));
+        $this->assertTrue($this->discountService->checkCondition(condition: $discountCondition, cartValue: Money::of(50.0, $this->currency),));
     }
 
     public function testCheckConditionOrderValueNotInRangePass(): void
@@ -239,7 +239,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition(condition: $discountCondition, cartValue: 100.00));
+        $this->assertTrue($this->discountService->checkCondition(condition: $discountCondition, cartValue: Money::of(100.0, $this->currency),));
     }
 
     public function testCheckConditionOrderValueFail(): void
@@ -254,7 +254,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition(condition: $discountCondition, cartValue: 100.00));
+        $this->assertFalse($this->discountService->checkCondition(condition: $discountCondition, cartValue: Money::of(100.0, $this->currency),));
     }
 
     public function testCheckConditionOrderValueNotInRangeFail(): void
@@ -269,7 +269,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition(condition: $discountCondition, cartValue: 50.00));
+        $this->assertFalse($this->discountService->checkCondition(condition: $discountCondition, cartValue: Money::of(50.0, $this->currency),));
     }
 
     public function testCheckConditionUserInRolePass(): void
@@ -288,7 +288,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
     }
 
     public function testCheckConditionUserInRoleAllowListFalsePass(): void
@@ -308,7 +308,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
     }
 
     public function testCheckConditionUserInRoleFail(): void
@@ -326,7 +326,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition));
+        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
     }
 
     public function testCheckConditionUserInRoleAllowListFalseFail(): void
@@ -345,7 +345,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition));
+        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
     }
 
     public function testCheckConditionUserInPass(): void
@@ -362,7 +362,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
     }
 
     public function testCheckConditionUserInAllowListFalsePass(): void
@@ -379,7 +379,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
     }
 
     public function testCheckConditionUserInFail(): void
@@ -396,7 +396,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition));
+        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
     }
 
     public function testCheckConditionUserInAllowListFalseFail(): void
@@ -413,7 +413,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition));
+        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
     }
 
     /**
@@ -452,7 +452,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
     }
 
     /**
@@ -490,7 +490,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
     }
 
     /**
@@ -528,7 +528,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
     }
 
     /**
@@ -566,7 +566,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
     }
 
     /**
@@ -609,7 +609,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
     }
 
     /**
@@ -655,7 +655,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
     }
 
     /**
@@ -696,7 +696,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
     }
 
     /**
@@ -743,7 +743,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
     }
 
     /**
@@ -784,7 +784,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
     }
 
     /**
@@ -831,7 +831,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
     }
 
     /**
@@ -872,7 +872,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
     }
 
     /**
@@ -918,7 +918,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
     }
 
     public static function dateBetweenPassProvider(): array
@@ -977,7 +977,7 @@ class DiscountConditionsCheckTest extends TestCase
             'value' => $value,
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
     }
 
     public static function dateBetweenFailProvider(): array
@@ -1012,7 +1012,7 @@ class DiscountConditionsCheckTest extends TestCase
             'value' => $value,
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
     }
 
     public static function timeBetweenPassProvider(): array
@@ -1087,7 +1087,7 @@ class DiscountConditionsCheckTest extends TestCase
             'value' => $value,
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
     }
 
     public function testCheckConditionMaxUsesPass(): void
@@ -1099,7 +1099,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
     }
 
     public function testCheckConditionMaxUsesFail(): void
@@ -1111,7 +1111,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
     }
 
     public function testCheckConditionMaxUsesPerUserPass(): void
@@ -1124,7 +1124,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
     }
 
     public function testCheckConditionMaxUsesPerUserFail(): void
@@ -1137,7 +1137,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
     }
 
     public function testCheckConditionMaxUsesPerUserNoAuthUser(): void
@@ -1149,7 +1149,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
     }
 
     public function testCheckConditionWeekdayInPass(): void
@@ -1163,7 +1163,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
     }
 
     public function testCheckConditionWeekdayInFail(): void
@@ -1177,7 +1177,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
     }
 
     public static function cartLengthProviderPass(): array
@@ -1255,7 +1255,7 @@ class DiscountConditionsCheckTest extends TestCase
         ]);
 
         $this->assertTrue($cart->getCartLength() === $quantity1 + $quantity2);
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
     }
 
     public static function cartLengthProviderFail(): array
@@ -1333,7 +1333,7 @@ class DiscountConditionsCheckTest extends TestCase
         ]);
 
         $this->assertTrue($cart->getCartLength() === $quantity1 + $quantity2);
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
     }
 
     public static function couponsCountProvider(): array
@@ -1433,7 +1433,7 @@ class DiscountConditionsCheckTest extends TestCase
         ]);
 
         $this->assertTrue(count($cart->getCoupons()) === $quantity);
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, $cart) === $result);
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart) === $result);
     }
 
     public static function couponsCountWithSalesProvider(): array
@@ -1480,7 +1480,7 @@ class DiscountConditionsCheckTest extends TestCase
         ]);
 
         $this->assertEmpty($cart->getCoupons());
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, $cart) === $result);
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart) === $result);
     }
 
     private function prepareConditionGroup(): void

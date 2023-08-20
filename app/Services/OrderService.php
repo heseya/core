@@ -45,7 +45,6 @@ use App\Services\Contracts\OrderServiceContract;
 use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
-use Domain\Currency\Currency;
 use Domain\SalesChannel\SalesChannelService;
 use Exception;
 use Heseya\Dto\Missing;

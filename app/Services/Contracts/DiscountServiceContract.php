@@ -22,6 +22,7 @@ use App\Models\OrderProduct;
 use App\Models\Product;
 use Brick\Math\BigDecimal;
 use Brick\Money\Money;
+use Domain\Currency\Currency;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
@@ -50,7 +51,8 @@ interface DiscountServiceContract
     public function applyDiscountOnProduct(
         Product $product,
         OrderProductDto $orderProductDto,
-        Discount $discount
+        Discount $discount,
+        Currency $currency,
     ): OrderProduct;
 
     public function applyDiscountsOnProducts(Collection $products): void;

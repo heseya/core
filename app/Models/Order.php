@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\OrderSearch;
@@ -102,41 +103,27 @@ class Order extends Model implements SortableContract
         'paid' => 'boolean',
         'invoice_requested' => 'boolean',
         'currency' => Currency::class,
+        'cart_total_initial' => MoneyCast::class,
+        'cart_total' => MoneyCast::class,
+        'shipping_price_initial' => MoneyCast::class,
+        'shipping_price' => MoneyCast::class,
+        'summary' => MoneyCast::class,
     ];
-
-    public function cart_total_initial(): Attribute
-    {
-        return self::priceAttributeTemplate('cart_total_initial');
-    }
-
-    public function cart_total(): Attribute
-    {
-        return self::priceAttributeTemplate('cart_total');
-    }
-
-    public function shipping_price_initial(): Attribute
-    {
-        return self::priceAttributeTemplate('shipping_price_initial');
-    }
-
-    public function shipping_price(): Attribute
-    {
-        return self::priceAttributeTemplate('shipping_price');
-    }
-
-    public function summary(): Attribute
-    {
-        return self::priceAttributeTemplate('summary');
-    }
 
     /**
      * Summary amount of paid.
      */
-    public function getPaidAmountAttribute(): float
+    public function getPaidAmountAttribute(): Money
     {
         return $this->payments
             ->where('status', PaymentStatus::SUCCESSFUL)
-            ->sum('amount');
+            ->reduce(
+                fn (Money $carry, Payment $payment) => $carry->plus(
+                    // TODO: This should use money in payment instead of floats
+                    Money::of($payment->amount, $this->currency->value),
+                ),
+                Money::zero($this->currency->value),
+            );
     }
 
     public function payments(): HasMany
@@ -168,7 +155,7 @@ class Order extends Model implements SortableContract
 
     public function isPaid(): bool
     {
-        return $this->paid_amount >= $this->summary;
+        return $this->paid_amount->isGreaterThanOrEqualTo($this->summary);
     }
 
     public function status(): BelongsTo
@@ -232,22 +219,22 @@ class Order extends Model implements SortableContract
         };
     }
 
-    private static function priceAttributeTemplate(string $fieldName): Attribute
-    {
-        return Attribute::make(
-            get: fn (mixed $value, array $attributes): Money => Money::ofMinor(
-                $attributes[$fieldName],
-                $attributes['currency'],
-            ),
-            set: fn (int|Money|string $value): array => match (true) {
-                $value instanceof Money => [
-                    $fieldName => $value->getMinorAmount(),
-                    'currency' => $value->getCurrency()->getCurrencyCode(),
-                ],
-                default => [
-                    $fieldName => $value,
-                ]
-            }
-        );
-    }
+    //    private static function priceAttributeTemplate(string $fieldName): Attribute
+    //    {
+    //        return Attribute::make(
+    //            get: fn (mixed $value, array $attributes): Money => Money::ofMinor(
+    //                $attributes[$fieldName],
+    //                $attributes['currency'],
+    //            ),
+    //            set: fn (int|Money|string $value): array => match (true) {
+    //                $value instanceof Money => [
+    //                    $fieldName => $value->getMinorAmount(),
+    //                    'currency' => $value->getCurrency()->getCurrencyCode(),
+    //                ],
+    //                default => [
+    //                    $fieldName => $value,
+    //                ]
+    //            }
+    //        );
+    //    }
 }

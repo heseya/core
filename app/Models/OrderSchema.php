@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -26,34 +27,7 @@ class OrderSchema extends Model
 
     protected $casts = [
         'currency' => Currency::class,
+        'price_initial' => MoneyCast::class,
+        'price' => MoneyCast::class,
     ];
-
-    public function price_initial(): Attribute
-    {
-        return self::priceAttributeTemplate('price_initial');
-    }
-
-    public function price(): Attribute
-    {
-        return self::priceAttributeTemplate('price');
-    }
-
-    private static function priceAttributeTemplate(string $fieldName): Attribute
-    {
-        return Attribute::make(
-            get: fn (mixed $value, array $attributes): Money => Money::ofMinor(
-                $attributes[$fieldName],
-                $attributes['currency'],
-            ),
-            set: fn (int|Money|string $value): array => match (true) {
-                $value instanceof Money => [
-                    $fieldName => $value->getMinorAmount(),
-                    'currency' => $value->getCurrency()->getCurrencyCode(),
-                ],
-                default => [
-                    $fieldName => $value,
-                ]
-            }
-        );
-    }
 }
