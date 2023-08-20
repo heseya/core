@@ -2,11 +2,14 @@ Products:
   get:
     tags:
       - Prices
-    summary: 'list personal product prices'
+    summary: list personal product prices
+    security:
+      - BearerAuth: [ products.show ]
     parameters:
-      - name: 'ids[]'
+      - name: ids[]
         in: query
-        example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+        example: 5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557
+        required: true
         schema:
           type: array
           items:
@@ -22,5 +25,5 @@ Products:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Prices.yml#/ProductPrice'
+                    $ref: ./../schemas/Prices.yml#/ProductPrice
               type: object

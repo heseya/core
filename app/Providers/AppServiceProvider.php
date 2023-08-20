@@ -30,7 +30,6 @@ use App\Services\Contracts\OrderServiceContract;
 use App\Services\Contracts\PaymentMethodServiceContract;
 use App\Services\Contracts\PaymentServiceContract;
 use App\Services\Contracts\PermissionServiceContract;
-use App\Services\Contracts\PriceServiceContract;
 use App\Services\Contracts\ProviderServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
 use App\Services\Contracts\RoleServiceContract;
@@ -67,7 +66,6 @@ use App\Services\OrderService;
 use App\Services\PaymentMethodService;
 use App\Services\PaymentService;
 use App\Services\PermissionService;
-use App\Services\PriceService;
 use App\Services\ProviderService;
 use App\Services\ReorderService;
 use App\Services\RoleService;
@@ -131,7 +129,6 @@ class AppServiceProvider extends ServiceProvider
         FavouriteServiceContract::class => FavouriteService::class,
         PaymentMethodServiceContract::class => PaymentMethodService::class,
         PaymentServiceContract::class => PaymentService::class,
-        PriceServiceContract::class => PriceService::class,
         MediaAttachmentServiceContract::class => MediaAttachmentService::class,
         SilverboxServiceContract::class => SilverboxService::class,
 
