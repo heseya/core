@@ -32,8 +32,8 @@ class AnalyticsService implements AnalyticsServiceContract
         return $collection->reduceWithKeys(function (array $carry, $item, $key): array {
             $carry[$item['key']][] = [
                 'amount' => $item['amount'] instanceof Money
-                    ? $item['amount']->getAmount()->toFloat()
-                    : $item['amount'],
+                    ? $item['amount']->getAmount()
+                    : $item['amount'] . '',
                 'currency' => $item['currency'],
                 'count' => $item['count'],
             ];
