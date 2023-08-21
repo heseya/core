@@ -5,6 +5,7 @@ use Domain\ProductAttribute\Models\Attribute as AttributeAlias;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -23,10 +24,10 @@ return new class extends Migration
             $table->text('published')->nullable();
         });
 
-        AttributeAlias::chunk(100, fn ($statuses) => $statuses->each(
-            function (AttributeAlias $status) use ($lang): void {
-                $attr = $status->getAttributes();
-                $status
+        AttributeAlias::chunk(100, fn ($models) => $models->each(
+            function (AttributeAlias $model) use ($lang): void {
+                $attr = $model->getAttributes();
+                $model
                     ->setAttribute('published', [$lang])
                     ->setTranslation('name', $lang, $attr['name'])
                     ->setTranslation('description', $lang, $attr['description'])
@@ -34,20 +35,13 @@ return new class extends Migration
             },
         ));
 
-
         Schema::table('attribute_options', function (Blueprint $table) {
             $table->text('name')->change();
-            $table->text('published')->nullable();
         });
 
-        AttributeOption::chunk(100, fn ($statuses) => $statuses->each(
-            function (AttributeOption $status) use ($lang): void {
-                $attr = $status->getAttributes();
-                $status
-                    ->setTranslation('name', $lang, $attr['name'])
-                    ->save();
-            },
-        ));
+        AttributeOption::query()->update([
+            'name' => DB::raw("CONCAT(CONCAT('{\"{$lang}\":\"', name), '\"}')"),
+        ]);
     }
 
     /**

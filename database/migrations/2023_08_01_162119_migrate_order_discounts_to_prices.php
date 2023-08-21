@@ -21,7 +21,7 @@ return new class extends Migration {
         });
 
         DB::table('order_discounts')->orderBy('discount_id')->lazy()->each(function (object $orderDiscount) {
-            $id = Uuid::uuid4();
+            $id = Uuid::uuid4()->toString();
 
             DB::table('order_discounts')
                 ->where('discount_id', $orderDiscount->discount_id)
@@ -36,7 +36,7 @@ return new class extends Migration {
                 throw new Exception('Unknown discount type: ' . $orderDiscount->type);
             }
 
-            $this->insertPrice($orderDiscount->value, $orderDiscount->id);
+            $this->insertPrice($orderDiscount->value, $id);
 
             DB::table('order_discounts')
                 ->where('id', $id)
