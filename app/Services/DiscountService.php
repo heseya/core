@@ -61,6 +61,7 @@ use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
 use App\Services\Contracts\ShippingTimeDateServiceContract;
+use App\Traits\GetPublishedLanguageFilter;
 use Brick\Math\BigDecimal;
 use Brick\Math\Exception\MathException;
 use Brick\Math\Exception\NumberFormatException;
@@ -89,6 +90,8 @@ use Illuminate\Support\Str;
 
 readonly class DiscountService implements DiscountServiceContract
 {
+    use GetPublishedLanguageFilter;
+
     public function __construct(
         private MetadataServiceContract $metadataService,
         private SettingsServiceContract $settingsService,
@@ -101,7 +104,7 @@ readonly class DiscountService implements DiscountServiceContract
 
     public function index(CouponIndexDto|SaleIndexDto $dto): LengthAwarePaginator
     {
-        return Discount::searchByCriteria($dto->toArray())
+        return Discount::searchByCriteria($dto->toArray() + $this->getPublishedLanguageFilter('discounts'))
             ->orderBy('updated_at', 'DESC')
             ->with(['orders', 'products', 'productSets', 'conditionGroups', 'shippingMethods', 'metadata'])
             ->paginate(Config::get('pagination.per_page'));
@@ -117,7 +120,12 @@ readonly class DiscountService implements DiscountServiceContract
         }
 
         /** @var Discount $discount */
-        $discount = Discount::query()->create($dto->toArray());
+        $discount = Discount::query()->make($dto->toArray());
+
+        foreach ($dto->translations as $lang => $translation) {
+            $discount->setLocale($lang)->fill($translation);
+        }
+        $discount->save();
 
         $discount->products()->attach($dto->getTargetProducts());
         $discount->productSets()->attach($dto->getTargetSets());
@@ -161,6 +169,11 @@ readonly class DiscountService implements DiscountServiceContract
             $discount->percentage = null;
         }
 
+        $discount->save();
+
+        foreach ($dto->translations as $lang => $translation) {
+            $discount->setLocale($lang)->fill($translation);
+        }
         $discount->save();
 
         if (!$dto->getTargetProducts() instanceof Missing) {

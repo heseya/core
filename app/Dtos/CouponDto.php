@@ -41,10 +41,9 @@ final class CouponDto extends SaleDto implements InstantiateFromRequest
         return new self(
             code: $request->input('code', new Missing()),
             metadata: self::mapMetadata($request),
-            name: $request->input('name', new Missing()),
+            translations: $request->input('translations', []),
+            published: $request->input('published', []),
             slug: $request->input('slug', new Missing()),
-            description: $request->input('description', new Missing()),
-            description_html: $request->input('description_html', new Missing()),
             percentage: $request->input('percentage') ?? new Missing(),
             amounts: $amounts,
             priority: $request->input('priority', new Missing()),

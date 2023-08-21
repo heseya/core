@@ -44,6 +44,7 @@ class DiscountFactory extends Factory
             'priority' => $this->faker->randomDigit(),
             'target_type' => DiscountTargetType::getRandomInstance(),
             'target_is_allow_list' => $this->faker->boolean,
+            'published' => [App::getLocale()],
         ];
     }
 
