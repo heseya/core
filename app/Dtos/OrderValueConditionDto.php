@@ -7,15 +7,13 @@ use Heseya\Dto\Missing;
 
 class OrderValueConditionDto extends ConditionDto
 {
-    private Missing|Money $min_value;
-    private Missing|Money $max_value;
+    private Missing|float $min_value;
+    private Missing|float $max_value;
     private bool $include_taxes;
     private bool $is_in_range;
 
     public static function fromArray(array $array): self
     {
-        //        $minValue =
-
         return new self(
             type: $array['type'],
             min_value: array_key_exists('min_value', $array) ? $array['min_value'] : new Missing(),
@@ -25,12 +23,12 @@ class OrderValueConditionDto extends ConditionDto
         );
     }
 
-    public function getMinValue(): Missing|Money
+    public function getMinValue(): Missing|float
     {
         return $this->min_value;
     }
 
-    public function getMaxValue(): Missing|Money
+    public function getMaxValue(): Missing|float
     {
         return $this->max_value;
     }

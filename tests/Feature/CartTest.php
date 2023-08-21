@@ -142,6 +142,7 @@ class CartTest extends TestCase
     public function testCartProcessUnauthorized(): void
     {
         $response = $this->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -165,6 +166,7 @@ class CartTest extends TestCase
         $this->{$user}->givePermissionTo('cart.verify');
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'digital_shipping_method_id' => $this->digitalShippingMethod->getKey(),
             'items' => [
@@ -188,6 +190,7 @@ class CartTest extends TestCase
         $this->{$user}->givePermissionTo('cart.verify');
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -211,6 +214,7 @@ class CartTest extends TestCase
         $this->{$user}->givePermissionTo('cart.verify');
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -226,18 +230,18 @@ class CartTest extends TestCase
         $response
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 9200,
-                'cart_total' => 9200,
-                'shipping_price_initial' => 0,
-                'shipping_price' => 0,
-                'summary' => 9200,
+                'cart_total_initial' => '9200.00',
+                'cart_total' => '9200.00',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '9200.00',
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 4600,
-                'price_discounted' => 4600,
+                'price' => '4600.00',
+                'price_discounted' => '4600.00',
             ]);
     }
 
@@ -253,6 +257,7 @@ class CartTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -278,23 +283,23 @@ class CartTest extends TestCase
         $response
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 300,
-                'cart_total' => 300,
-                'shipping_price_initial' => 0,
-                'shipping_price' => 0,
-                'summary' => 300,
+                'cart_total_initial' => '300.00',
+                'cart_total' => '300.00',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '300.00',
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 100,
-                'price_discounted' => 100,
+                'price' => '100.00',
+                'price_discounted' => '100.00',
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '2',
-                'price' => 200,
-                'price_discounted' => 200,
+                'price' => '200.00',
+                'price_discounted' => '200.00',
             ]);
     }
 
@@ -356,6 +361,7 @@ class CartTest extends TestCase
         ] : [];
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -410,6 +416,7 @@ class CartTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -433,22 +440,22 @@ class CartTest extends TestCase
         $response
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 9200,
-                'cart_total' => 9200,
-                'shipping_price_initial' => 0,
-                'shipping_price' => 0,
-                'summary' => 9200,
+                'cart_total_initial' => '9200.00',
+                'cart_total' => '9200.00',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '9200.00',
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 4600,
-                'price_discounted' => 4600,
+                'price' => '4600.00',
+                'price_discounted' => '4600.00',
             ])->assertJsonMissing([
                 'cartitem_id' => '2',
-                'price' => 100,
-                'price_discounted' => 100,
+                'price' => '100.00',
+                'price_discounted' => '100.00',
             ]);
     }
 
@@ -470,6 +477,7 @@ class CartTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -741,6 +749,7 @@ class CartTest extends TestCase
         $data = $this->prepareDataForCouponTest($coupon);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -760,26 +769,26 @@ class CartTest extends TestCase
         $response
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 9200,
-                'cart_total' => 8280,
-                'shipping_price_initial' => 0,
-                'shipping_price' => 0,
-                'summary' => 8280,
+                'cart_total_initial' => '9200.00',
+                'cart_total' => '8280.00',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '8280.00',
             ] + $result)
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 4600,
-                'price_discounted' => 4600,
+                'price' => '4600.00',
+                'price_discounted' => '4600.00',
             ])
             ->assertJsonFragment([
                 'id' => $data['discountApplied']->getKey(),
                 'name' => $data['discountApplied']->name,
-                'value' => 920,
+                'value' => '920.00',
             ] + $discountCode1)
             ->assertJsonMissing([
                 'id' => $data['discount']->getKey(),
                 'name' => $data['discount']->name,
-                'value' => 100,
+                'value' => '100.00',
             ] + $discountCode2);
     }
 
@@ -820,6 +829,7 @@ class CartTest extends TestCase
         $response = $this
             ->actingAs($this->{$user})
             ->postJson('/cart/process', [
+                'currency' => $this->currency,
                 'sales_channel_id' => SalesChannel::query()->value('id'),
                 'shipping_method_id' => $this->shippingMethod->getKey(),
                 'items' => [
@@ -839,33 +849,33 @@ class CartTest extends TestCase
         $response
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 9200,
-                'cart_total' => 8073,
-                'shipping_price_initial' => 0,
-                'shipping_price' => 0,
-                'summary' => 8073,
+                'cart_total_initial' => '9200.00',
+                'cart_total' => '8073.00',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '8073.00',
             ] + $result)
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 4600,
-                'price_discounted' => 4140,
+                'price' => '4600.00',
+                'price_discounted' => '4140.00',
                 'quantity' => 1,
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 4600,
-                'price_discounted' => 3933,
+                'price' => '4600.00',
+                'price_discounted' => '3933.00',
                 'quantity' => 1,
             ])
             ->assertJsonFragment([
                 'id' => $productDiscount->getKey(),
                 'name' => $productDiscount->name,
-                'value' => 920,
+                'value' => '920.00',
             ] + $discountCode1)
             ->assertJsonFragment([
                 'id' => $discount->getKey(),
                 'name' => $discount->name,
-                'value' => 207,
+                'value' => '207.00',
             ] + $discountCode2);
     }
 
@@ -1079,6 +1089,7 @@ class CartTest extends TestCase
         [$product, $couponWithLimit, $coupon2] = $this->prepareCouponWithProductInSetAndCountConditions(false, false);
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -1107,6 +1118,7 @@ class CartTest extends TestCase
         [$product, $couponWithLimit, $coupon2] = $this->prepareCouponWithProductInSetAndCountConditions(true, false);
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -1139,6 +1151,7 @@ class CartTest extends TestCase
         [$product, $couponWithLimit, $coupon2] = $this->prepareCouponWithProductInSetAndCountConditions(false, true);
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -1171,6 +1184,7 @@ class CartTest extends TestCase
         [$product, $couponWithLimit, $coupon2] = $this->prepareCouponWithProductInSetAndCountConditions(true, true);
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -1231,6 +1245,7 @@ class CartTest extends TestCase
         ] : [];
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -1251,26 +1266,26 @@ class CartTest extends TestCase
         $response
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 9202,
-                'cart_total' => 8074.76,
-                'shipping_price_initial' => 0,
-                'shipping_price' => 0,
-                'summary' => 8074.76,
+                'cart_total_initial' => '9202.00',
+                'cart_total' => '8074.76',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '8074.76',
             ] + $result)
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 4601,
-                'price_discounted' => 4485.98,
+                'price' => '4601.00',
+                'price_discounted' => '4485.98',
             ])
             ->assertJsonFragment([
                 'id' => $discountApplied->getKey(),
                 'name' => $discountApplied->name,
-                'value' => 230.04,
+                'value' => '230.04',
             ] + $discountCode)
             ->assertJsonFragment([
                 'id' => $discountApplied2->getKey(),
                 'name' => $discountApplied2->name,
-                'value' => 897.2,
+                'value' => '897.20',
             ] + $discountCode2);
     }
 
@@ -1318,6 +1333,7 @@ class CartTest extends TestCase
         ] : [];
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -1337,31 +1353,31 @@ class CartTest extends TestCase
         $response
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 90,
-                'cart_total' => 83.48,
-                'shipping_price_initial' => 8.11,
-                'shipping_price' => 8.11,
-                'summary' => 91.59,
+                'cart_total_initial' => '90.00',
+                'cart_total' => '83.48',
+                'shipping_price_initial' => '8.11',
+                'shipping_price' => '8.11',
+                'summary' => '91.59',
             ] + $result)
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 45,
-                'price_discounted' => 45,
+                'price' => '45.00',
+                'price_discounted' => '45.00',
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 45,
-                'price_discounted' => 38.48,
+                'price' => '45.00',
+                'price_discounted' => '38.48',
             ])
             ->assertJsonFragment([
                 'id' => $discountApplied->getKey(),
                 'name' => $discountApplied->name,
-                'value' => 4.5,
+                'value' => '4.50',
             ] + $discountCode)
             ->assertJsonFragment([
                 'id' => $discountApplied2->getKey(),
                 'name' => $discountApplied2->name,
-                'value' => 2.02,
+                'value' => '2.02',
             ] + $discountCode2);
     }
 
@@ -1387,6 +1403,7 @@ class CartTest extends TestCase
         $product->items()->attach($item->getKey(), ['required_quantity' => 100]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -1438,6 +1455,7 @@ class CartTest extends TestCase
         $product->items()->attach($item->getKey(), ['required_quantity' => 100]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -1458,6 +1476,7 @@ class CartTest extends TestCase
             ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -1488,6 +1507,7 @@ class CartTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -1561,6 +1581,7 @@ class CartTest extends TestCase
         $product2->items()->attach($item2->getKey(), ['required_quantity' => 1]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -1595,6 +1616,7 @@ class CartTest extends TestCase
             ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -1623,6 +1645,7 @@ class CartTest extends TestCase
             ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -1663,6 +1686,7 @@ class CartTest extends TestCase
         $this->productWithSchema->items()->attach($this->item->getKey(), ['required_quantity' => 2]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -1680,18 +1704,18 @@ class CartTest extends TestCase
         $response
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 0,
-                'cart_total' => 0,
-                'shipping_price_initial' => 8.11,
-                'shipping_price' => 8.11,
-                'summary' => 8.11,
+                'cart_total_initial' => '0.00',
+                'cart_total' => '0.00',
+                'shipping_price_initial' => '8.11',
+                'shipping_price' => '8.11',
+                'summary' => '8.11',
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonMissing([
                 'cartitem_id' => '1',
-                'price' => 100,
-                'price_discounted' => 100,
+                'price' => '100.00',
+                'price_discounted' => '100.00',
             ]);
     }
 
@@ -1709,6 +1733,7 @@ class CartTest extends TestCase
         $this->product->items()->attach($this->item->getKey(), ['required_quantity' => 2]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -1724,18 +1749,18 @@ class CartTest extends TestCase
         $response
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 0,
-                'cart_total' => 0,
-                'shipping_price_initial' => 8.11,
-                'shipping_price' => 8.11,
-                'summary' => 8.11,
+                'cart_total_initial' => '0.00',
+                'cart_total' => '0.00',
+                'shipping_price_initial' => '8.11',
+                'shipping_price' => '8.11',
+                'summary' => '8.11',
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonMissing([
                 'cartitem_id' => '1',
-                'price' => 100,
-                'price_discounted' => 100,
+                'price' => '100.00',
+                'price_discounted' => '100.00',
             ]);
     }
 
@@ -1753,6 +1778,7 @@ class CartTest extends TestCase
         $this->productWithSchema->items()->attach($this->item->getKey(), ['required_quantity' => 2]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -1770,18 +1796,18 @@ class CartTest extends TestCase
         $response
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 200,
-                'cart_total' => 200,
-                'shipping_price_initial' => 8.11,
-                'shipping_price' => 8.11,
-                'summary' => 208.11,
+                'cart_total_initial' => '200.00',
+                'cart_total' => '200.00',
+                'shipping_price_initial' => '8.11',
+                'shipping_price' => '8.11',
+                'summary' => '208.11',
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 100,
-                'price_discounted' => 100,
+                'price' => '100.00',
+                'price_discounted' => '100.00',
             ]);
     }
 
@@ -1847,6 +1873,7 @@ class CartTest extends TestCase
         ] : [];
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -1867,30 +1894,30 @@ class CartTest extends TestCase
             ->assertValid()->assertOk()
             ->assertJsonFragment(
                 [
-                    'cart_total_initial' => 4600,
-                    'cart_total' => 4140,
-                    'shipping_price_initial' => 0,
-                    'shipping_price' => 0,
-                    'summary' => 4140,
+                    'cart_total_initial' => '4600.00',
+                    'cart_total' => '4140.00',
+                    'shipping_price_initial' => '0.00',
+                    'shipping_price' => '0.00',
+                    'summary' => '4140.00',
                 ] + $result
             )
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 4600,
-                'price_discounted' => 4140,
+                'price' => '4600.00',
+                'price_discounted' => '4140.00',
             ])
             ->assertJsonFragment(
                 [
                     'id' => $discountApplied->getKey(),
                     'name' => $discountApplied->name,
-                    'value' => 460,
+                    'value' => '460.00',
                 ] + $discountCode1
             )
             ->assertJsonMissing(
                 [
                     'id' => $discount->getKey(),
                     'name' => $discount->name,
-                    'value' => 0,
+                    'value' => '0.00',
                 ] + $discountCode2
             );
     }
@@ -2013,6 +2040,7 @@ class CartTest extends TestCase
         ] : [];
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -2032,23 +2060,23 @@ class CartTest extends TestCase
             ->assertValid()->assertOk()
             ->assertJsonFragment(
                 [
-                    'cart_total_initial' => 9200,
-                    'cart_total' => 9200,
-                    'shipping_price_initial' => 0,
-                    'shipping_price' => 0,
-                    'summary' => 9200,
+                    'cart_total_initial' => '9200.00',
+                    'cart_total' => '9200.00',
+                    'shipping_price_initial' => '0.00',
+                    'shipping_price' => '0.00',
+                    'summary' => '9200.00',
                 ] + $result
             )
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 4600,
-                'price_discounted' => 4600,
+                'price' => '4600.00',
+                'price_discounted' => '4600.00',
             ])
             ->assertJsonMissing(
                 [
                     'id' => $discount->getKey(),
                     'name' => $discount->name,
-                    'value' => 920,
+                    'value' => '920.00',
                 ] + $discountCode
             );
     }
@@ -2065,6 +2093,7 @@ class CartTest extends TestCase
         ]);
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -2077,18 +2106,18 @@ class CartTest extends TestCase
             ]])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 9200,
-                'cart_total' => 9200,
-                'shipping_price_initial' => 0,
-                'shipping_price' => 0,
-                'summary' => 9200,
+                'cart_total_initial' => '9200.00',
+                'cart_total' => '9200.00',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '9200.00',
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 4600,
-                'price_discounted' => 4600,
+                'price' => '4600.00',
+                'price_discounted' => '4600.00',
                 'quantity' => 2,
             ]);
     }
@@ -2105,6 +2134,7 @@ class CartTest extends TestCase
         ]);
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -2117,18 +2147,18 @@ class CartTest extends TestCase
             ]])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 4600,
-                'cart_total' => 4600,
-                'shipping_price_initial' => 0,
-                'shipping_price' => 0,
-                'summary' => 4600,
+                'cart_total_initial' => '4600.00',
+                'cart_total' => '4600.00',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '4600.00',
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 4600,
-                'price_discounted' => 4600,
+                'price' => '4600.00',
+                'price_discounted' => '4600.00',
             ]);
     }
 
@@ -2176,6 +2206,7 @@ class CartTest extends TestCase
         ]));
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -2194,28 +2225,28 @@ class CartTest extends TestCase
             ]])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 1000,
-                'cart_total' => 1000,
-                'shipping_price_initial' => 0,
-                'shipping_price' => 0,
-                'summary' => 1000,
+                'cart_total_initial' => '1000.00',
+                'cart_total' => '1000.00',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '1000.00',
                 'coupons' => [],
             ])
             ->assertJsonCount(1, 'data.items')
             ->assertJsonMissing([
                 'id' => $sale->getKey(),
                 'name' => $sale->name,
-                'value' => 300,
+                'value' => '300.00',
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '2',
-                'price' => 1000,
-                'price_discounted' => 1000,
+                'price' => '1000.00',
+                'price_discounted' => '1000.00',
             ])
             ->assertJsonMissing([
                 'cartitem_id' => '1',
-                'price' => 4600,
-                'price_discounted' => 4600,
+                'price' => '4600.00',
+                'price_discounted' => '4600.00',
             ]);
     }
 
@@ -2237,12 +2268,13 @@ class CartTest extends TestCase
         $order->products()->create([
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
-            'price_initial' => 4600,
-            'price' => 4600,
+            'price_initial' => Money::of(4600, $this->currency->value),
+            'price' => Money::of(4600, $this->currency->value),
             'name' => $this->product->name,
         ]);
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -2255,11 +2287,11 @@ class CartTest extends TestCase
             ]])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 0,
-                'cart_total' => 0,
-                'shipping_price_initial' => 8.11,
-                'shipping_price' => 8.11,
-                'summary' => 8.11,
+                'cart_total_initial' => '0.00',
+                'cart_total' => '0.00',
+                'shipping_price_initial' => '8.11',
+                'shipping_price' => '8.11',
+                'summary' => '8.11',
                 'coupons' => [],
                 'sales' => [],
                 'items' => [],
@@ -2285,12 +2317,13 @@ class CartTest extends TestCase
         $order->products()->create([
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
-            'price_initial' => 4600,
-            'price' => 4600,
+            'price_initial' => Money::of(4600, $this->currency->value),
+            'price' => Money::of(4600, $this->currency->value),
             'name' => $this->product->name,
         ]);
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -2303,11 +2336,11 @@ class CartTest extends TestCase
             ]])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 4600,
-                'cart_total' => 4600,
-                'shipping_price_initial' => 0,
-                'shipping_price' => 0,
-                'summary' => 4600,
+                'cart_total_initial' => '4600.00',
+                'cart_total' => '4600.00',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '4600.00',
             ])
             ->assertJsonCount(1, 'data.items');
     }
@@ -2326,8 +2359,8 @@ class CartTest extends TestCase
         $order->products()->create([
             'product_id' => $this->product->getKey(),
             'quantity' => 2,
-            'price_initial' => 4600,
-            'price' => 4600,
+            'price_initial' => Money::of(4600, $this->currency->value),
+            'price' => Money::of(4600, $this->currency->value),
             'name' => $this->product->name,
         ]);
 
@@ -2336,6 +2369,7 @@ class CartTest extends TestCase
         ]);
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -2348,11 +2382,11 @@ class CartTest extends TestCase
             ]])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 0,
-                'cart_total' => 0,
-                'shipping_price_initial' => 8.11,
-                'shipping_price' => 8.11,
-                'summary' => 8.11,
+                'cart_total_initial' => '0.00',
+                'cart_total' => '0.00',
+                'shipping_price_initial' => '8.11',
+                'shipping_price' => '8.11',
+                'summary' => '8.11',
                 'coupons' => [],
                 'sales' => [],
                 'items' => [],
@@ -2378,8 +2412,8 @@ class CartTest extends TestCase
         $order->products()->create([
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
-            'price_initial' => 4600,
-            'price' => 4600,
+            'price_initial' => Money::of(4600, $this->currency->value),
+            'price' => Money::of(4600, $this->currency->value),
             'name' => $this->product->name,
         ]);
 
@@ -2388,6 +2422,7 @@ class CartTest extends TestCase
         ]);
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -2400,18 +2435,18 @@ class CartTest extends TestCase
             ]])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 4600,
-                'cart_total' => 4600,
-                'shipping_price_initial' => 0,
-                'shipping_price' => 0,
-                'summary' => 4600,
+                'cart_total_initial' => '4600.00',
+                'cart_total' => '4600.00',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '4600.00',
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 4600,
-                'price_discounted' => 4600,
+                'price' => '4600.00',
+                'price_discounted' => '4600.00',
             ]);
     }
 
@@ -2427,6 +2462,7 @@ class CartTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -2449,18 +2485,18 @@ class CartTest extends TestCase
         $response
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 100,
-                'cart_total' => 100,
-                'shipping_price_initial' => 8.11,
-                'shipping_price' => 8.11,
-                'summary' => 108.11,
+                'cart_total_initial' => '100.00',
+                'cart_total' => '100.00',
+                'shipping_price_initial' => '8.11',
+                'shipping_price' => '8.11',
+                'summary' => '108.11',
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 100,
-                'price_discounted' => 100,
+                'price' => '100.00',
+                'price_discounted' => '100.00',
             ])
             ->assertJsonMissing([
                 'cartitem_id' => '2',
@@ -2477,6 +2513,7 @@ class CartTest extends TestCase
         ]);
 
         $this->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -2489,18 +2526,18 @@ class CartTest extends TestCase
             ]])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 4600,
-                'cart_total' => 4600,
-                'shipping_price_initial' => 0,
-                'shipping_price' => 0,
-                'summary' => 4600,
+                'cart_total_initial' => '4600.00',
+                'cart_total' => '4600.00',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '4600.00',
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 4600,
-                'price_discounted' => 4600,
+                'price' => '4600.00',
+                'price_discounted' => '4600.00',
             ]);
     }
 
@@ -2636,6 +2673,7 @@ class CartTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -2654,20 +2692,20 @@ class CartTest extends TestCase
         $response
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 4600,
-                'cart_total' => 4600,
-                'shipping_price_initial' => 0,
-                'shipping_price' => 0,
-                'summary' => 4600,
+                'cart_total_initial' => '4600.00',
+                'cart_total' => '4600.00',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '4600.00',
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 4600,
-                'price_discounted' => 4600,
+                'price' => '4600.00',
+                'price_discounted' => '4600.00',
             ])
             ->assertJsonFragment([
                 'id' => $discountApplied->getKey(),
-                'value' => 0,
+                'value' => '0.00',
             ]);
     }
 }

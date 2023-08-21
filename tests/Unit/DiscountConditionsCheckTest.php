@@ -39,7 +39,7 @@ class DiscountConditionsCheckTest extends TestCase
     private ShippingMethod $shippingMethod;
     private Product $product;
     private ProductSet $set;
-    private string $currency;
+    private Currency $currency;
     private ProductService $productService;
 
     /**
@@ -58,11 +58,11 @@ class DiscountConditionsCheckTest extends TestCase
         $this->conditionGroup = ConditionGroup::create();
         $this->shippingMethod = ShippingMethod::factory()->create();
 
-        $this->currency = Currency::DEFAULT->value;
+        $this->currency = Currency::DEFAULT;
         $this->productService = App::make(ProductService::class);
 
         $this->product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(20, $this->currency))],
+            'prices_base' => [PriceDto::from(Money::of(20, $this->currency->value))],
             'public' => true,
         ]));
 
@@ -80,6 +80,7 @@ class DiscountConditionsCheckTest extends TestCase
         $this->product->sets()->sync([$this->set->getKey()]);
 
         $cart = CartDto::fromArray([
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
@@ -97,7 +98,7 @@ class DiscountConditionsCheckTest extends TestCase
             $this->discountService->checkConditionGroup(
                 $this->conditionGroup,
                 $cart,
-                Money::of(40.0, $this->currency),
+                Money::of(40.0, $this->currency->value),
             )
         );
     }
@@ -110,6 +111,7 @@ class DiscountConditionsCheckTest extends TestCase
         $this->prepareConditionGroup();
 
         $cart = CartDto::fromArray([
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
@@ -127,7 +129,7 @@ class DiscountConditionsCheckTest extends TestCase
             $this->discountService->checkConditionGroup(
                 $this->conditionGroup,
                 $cart,
-                Money::of(40.0, $this->currency),
+                Money::of(40.0, $this->currency->value),
             )
         );
     }
@@ -144,13 +146,14 @@ class DiscountConditionsCheckTest extends TestCase
         $this->discount->conditionGroups()->attach($this->prepareNewConditionGroup());
 
         $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(60, $this->currency))],
+            'prices_base' => [PriceDto::from(Money::of(60, $this->currency->value))],
             'public' => true,
         ]));
 
         $product->sets()->sync([$this->set->getKey()]);
 
         $cart = CartDto::fromArray([
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
@@ -168,7 +171,7 @@ class DiscountConditionsCheckTest extends TestCase
             $this->discountService->checkConditionGroups(
                 $this->discount,
                 $cart,
-                Money::of(120.0, $this->currency),
+                Money::of(120.0, $this->currency->value),
             )
         );
     }
@@ -185,11 +188,12 @@ class DiscountConditionsCheckTest extends TestCase
         $this->discount->conditionGroups()->attach($this->prepareNewConditionGroup());
 
         $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(60, $this->currency))],
+            'prices_base' => [PriceDto::from(Money::of(60, $this->currency->value))],
             'public' => true,
         ]));
 
         $cart = CartDto::fromArray([
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
@@ -207,7 +211,7 @@ class DiscountConditionsCheckTest extends TestCase
             $this->discountService->checkConditionGroups(
                 $this->discount,
                 $cart,
-                Money::of(120.0, $this->currency),
+                Money::of(120.0, $this->currency->value),
             )
         );
     }
@@ -224,7 +228,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition(condition: $discountCondition, cartValue: Money::of(50.0, $this->currency),));
+        $this->assertTrue($this->discountService->checkCondition(condition: $discountCondition, cartValue: Money::of(50.0, $this->currency->value),));
     }
 
     public function testCheckConditionOrderValueNotInRangePass(): void
@@ -239,7 +243,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition(condition: $discountCondition, cartValue: Money::of(100.0, $this->currency),));
+        $this->assertTrue($this->discountService->checkCondition(condition: $discountCondition, cartValue: Money::of(100.0, $this->currency->value),));
     }
 
     public function testCheckConditionOrderValueFail(): void
@@ -254,7 +258,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition(condition: $discountCondition, cartValue: Money::of(100.0, $this->currency),));
+        $this->assertFalse($this->discountService->checkCondition(condition: $discountCondition, cartValue: Money::of(100.0, $this->currency->value),));
     }
 
     public function testCheckConditionOrderValueNotInRangeFail(): void
@@ -269,7 +273,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition(condition: $discountCondition, cartValue: Money::of(50.0, $this->currency),));
+        $this->assertFalse($this->discountService->checkCondition(condition: $discountCondition, cartValue: Money::of(50.0, $this->currency->value),));
     }
 
     public function testCheckConditionUserInRolePass(): void
@@ -288,7 +292,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
     }
 
     public function testCheckConditionUserInRoleAllowListFalsePass(): void
@@ -308,7 +312,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
     }
 
     public function testCheckConditionUserInRoleFail(): void
@@ -326,7 +330,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
+        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
     }
 
     public function testCheckConditionUserInRoleAllowListFalseFail(): void
@@ -345,7 +349,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
+        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
     }
 
     public function testCheckConditionUserInPass(): void
@@ -362,7 +366,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
     }
 
     public function testCheckConditionUserInAllowListFalsePass(): void
@@ -379,7 +383,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
     }
 
     public function testCheckConditionUserInFail(): void
@@ -396,7 +400,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
+        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
     }
 
     public function testCheckConditionUserInAllowListFalseFail(): void
@@ -413,7 +417,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
+        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
     }
 
     /**
@@ -428,6 +432,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product2 = $this->productService->create(FakeDto::productCreateDto());
 
         $cart = CartDto::fromArray([
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
@@ -452,7 +457,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
     }
 
     /**
@@ -467,6 +472,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product2 = $this->productService->create(FakeDto::productCreateDto());
 
         $cart = CartDto::fromArray([
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
@@ -490,7 +496,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
     }
 
     /**
@@ -505,6 +511,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product2 = $this->productService->create(FakeDto::productCreateDto());
 
         $cart = CartDto::fromArray([
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
@@ -528,7 +535,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
     }
 
     /**
@@ -543,6 +550,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product2 = $this->productService->create(FakeDto::productCreateDto());
 
         $cart = CartDto::fromArray([
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
@@ -566,7 +574,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
     }
 
     /**
@@ -585,6 +593,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product->sets()->sync([$set1->getKey()]);
 
         $cart = CartDto::fromArray([
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
@@ -609,7 +618,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
     }
 
     /**
@@ -632,6 +641,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product->sets()->sync([$subChildrenSet->getKey()]);
 
         $cart = CartDto::fromArray([
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
@@ -655,7 +665,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
     }
 
     /**
@@ -673,6 +683,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product->sets()->sync([$set1->getKey()]);
 
         $cart = CartDto::fromArray([
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
@@ -696,7 +707,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
     }
 
     /**
@@ -720,6 +731,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product->sets()->sync([$subChildrenSet->getKey()]);
 
         $cart = CartDto::fromArray([
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
@@ -743,7 +755,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
     }
 
     /**
@@ -761,6 +773,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product->sets()->sync([$set1->getKey()]);
 
         $cart = CartDto::fromArray([
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
@@ -784,7 +797,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
     }
 
     /**
@@ -808,6 +821,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product->sets()->sync([$subChildrenSet->getKey()]);
 
         $cart = CartDto::fromArray([
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
@@ -831,7 +845,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
     }
 
     /**
@@ -849,6 +863,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product->sets()->sync([$set2->getKey()]);
 
         $cart = CartDto::fromArray([
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
@@ -872,7 +887,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
     }
 
     /**
@@ -895,6 +910,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product->sets()->sync([$subChildrenSet->getKey()]);
 
         $cart = CartDto::fromArray([
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
@@ -918,7 +934,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
     }
 
     public static function dateBetweenPassProvider(): array
@@ -977,7 +993,7 @@ class DiscountConditionsCheckTest extends TestCase
             'value' => $value,
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
     }
 
     public static function dateBetweenFailProvider(): array
@@ -1012,7 +1028,7 @@ class DiscountConditionsCheckTest extends TestCase
             'value' => $value,
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
     }
 
     public static function timeBetweenPassProvider(): array
@@ -1087,7 +1103,7 @@ class DiscountConditionsCheckTest extends TestCase
             'value' => $value,
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
     }
 
     public function testCheckConditionMaxUsesPass(): void
@@ -1099,7 +1115,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
     }
 
     public function testCheckConditionMaxUsesFail(): void
@@ -1111,7 +1127,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
     }
 
     public function testCheckConditionMaxUsesPerUserPass(): void
@@ -1124,7 +1140,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
     }
 
     public function testCheckConditionMaxUsesPerUserFail(): void
@@ -1137,7 +1153,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
     }
 
     public function testCheckConditionMaxUsesPerUserNoAuthUser(): void
@@ -1149,7 +1165,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
     }
 
     public function testCheckConditionWeekdayInPass(): void
@@ -1163,7 +1179,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
     }
 
     public function testCheckConditionWeekdayInFail(): void
@@ -1177,7 +1193,7 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency)));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
     }
 
     public static function cartLengthProviderPass(): array
@@ -1230,6 +1246,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product2 = $this->productService->create(FakeDto::productCreateDto());
 
         $cart = CartDto::fromArray([
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
@@ -1255,7 +1272,7 @@ class DiscountConditionsCheckTest extends TestCase
         ]);
 
         $this->assertTrue($cart->getCartLength() === $quantity1 + $quantity2);
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
     }
 
     public static function cartLengthProviderFail(): array
@@ -1308,6 +1325,7 @@ class DiscountConditionsCheckTest extends TestCase
         $product2 = $this->productService->create(FakeDto::productCreateDto());
 
         $cart = CartDto::fromArray([
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
@@ -1333,7 +1351,7 @@ class DiscountConditionsCheckTest extends TestCase
         ]);
 
         $this->assertTrue($cart->getCartLength() === $quantity1 + $quantity2);
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart));
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
     }
 
     public static function couponsCountProvider(): array
@@ -1414,6 +1432,7 @@ class DiscountConditionsCheckTest extends TestCase
         $coupons = Discount::factory()->count($quantity)->create();
 
         $cart = CartDto::fromArray([
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
@@ -1433,7 +1452,7 @@ class DiscountConditionsCheckTest extends TestCase
         ]);
 
         $this->assertTrue(count($cart->getCoupons()) === $quantity);
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart) === $result);
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart) === $result);
     }
 
     public static function couponsCountWithSalesProvider(): array
@@ -1459,6 +1478,7 @@ class DiscountConditionsCheckTest extends TestCase
         Discount::factory()->create(['code' => null]);
 
         $cart = CartDto::fromArray([
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
@@ -1480,7 +1500,7 @@ class DiscountConditionsCheckTest extends TestCase
         ]);
 
         $this->assertEmpty($cart->getCoupons());
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency), $cart) === $result);
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart) === $result);
     }
 
     private function prepareConditionGroup(): void

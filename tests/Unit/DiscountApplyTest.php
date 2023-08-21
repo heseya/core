@@ -94,14 +94,22 @@ class DiscountApplyTest extends TestCase
             'schemas' => [],
         ]);
 
-        $this->cartItemResponse = new CartItemResponse(1, 120.0, 120.0, 1);
+        $this->cartItemResponse = new CartItemResponse(
+            1,
+            Money::of(120.0, $this->currency->value),
+            Money::of(120.0, $this->currency->value),
+            1,
+        );
 
         $this->cart = new CartResource(
             Collection::make([$this->cartItemResponse]),
             Collection::make([]),
             Collection::make([]),
-            120.0,
-            120.0,
+            Money::of(120.0, $this->currency->value),
+            Money::of(120.0, $this->currency->value),
+            Money::zero($this->currency->value),
+            Money::zero($this->currency->value),
+            Money::zero($this->currency->value),
         );
 
         $this->orderProductDto = OrderProductDto::fromArray([
@@ -128,7 +136,7 @@ class DiscountApplyTest extends TestCase
             'order_id' => $order->getKey(),
             'product_id' => $this->productToOrderProduct->getKey(),
             'quantity' => 1,
-            'price' => 120.0,
+            'price' => Money::of(120.0, $this->currency->value),
         ]);
 
         $this->shippingMethod = ShippingMethod::factory()->create(['public' => true]);
@@ -140,18 +148,18 @@ class DiscountApplyTest extends TestCase
         $this->shippingMethod->priceRanges()->save($lowRange);
 
         $this->order = Order::factory()->create([
-            'cart_total_initial' => 360.0,
-            'cart_total' => 360.0,
-            'shipping_price_initial' => 20.0,
-            'shipping_price' => 20.0,
+            'cart_total_initial' => Money::of(360.0, $this->currency->value),
+            'cart_total' => Money::of(360.0, $this->currency->value),
+            'shipping_price_initial' => Money::of(20.0, $this->currency->value),
+            'shipping_price' => Money::of(20.0, $this->currency->value),
             'shipping_method_id' => $this->shippingMethod->getKey(),
         ]);
 
         $this->order->products()->create([
             'product_id' => $this->product->getKey(),
             'quantity' => 3,
-            'price' => 120.00,
-            'price_initial' => 120.00,
+            'price' => Money::of(120.0, $this->currency->value),
+            'price_initial' => Money::of(120.0, $this->currency->value),
             'name' => $this->product->name,
         ]);
 
@@ -224,6 +232,7 @@ class DiscountApplyTest extends TestCase
         ])->create();
 
         $cartDto = CartDto::fromArray([
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [

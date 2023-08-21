@@ -1029,7 +1029,7 @@ readonly class DiscountService implements DiscountServiceContract
                 $product->discounts->each(fn (Discount $discount) => $this->attachDiscount(
                     $newProduct,
                     $discount,
-                    $discount->pivot->applied_discount,
+                    Money::ofMinor($discount->pivot->applied_discount, $discount->pivot->currency),
                 ));
 
                 $product = $newProduct;
@@ -1706,7 +1706,7 @@ readonly class DiscountService implements DiscountServiceContract
     {
         $conditionDto = OrderValueConditionDto::fromArray($condition->value + ['type' => $condition->type]);
 
-        // AAAAAAAAAAAAAAAAAAAAAAAA BRAK WALUT W WARUNKACH
+        // TODO: This needs to get currency support
 
         // TODO uwzględnić przy sprawdzaniu podatki $conditionDto->isIncludeTaxes()
         if (!$conditionDto->getMinValue() instanceof Missing && !$conditionDto->getMaxValue() instanceof Missing) {

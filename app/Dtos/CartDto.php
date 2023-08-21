@@ -41,7 +41,7 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
     public static function fromArray(array $array): self
     {
         return new self(
-            currency: Currency::from($array['currency']),
+            currency: $array['currency'],
             items: self::prepareItems($array['items']),
             coupons: $array['coupons'],
             shipping_method_id: $array['shipping_method_id'],
