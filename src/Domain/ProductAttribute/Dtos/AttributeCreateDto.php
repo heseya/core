@@ -37,10 +37,8 @@ final class AttributeCreateDto extends Data
     public function __construct(
         #[Uuid]
         public readonly Optional|string $id,
-        #[Rule(new Translations(['name']))]
+        #[Rule(new Translations(['name', 'description']))]
         public readonly array $translations,
-        #[Max(255)]
-        public readonly string $description,
         #[Max(255), AlphaDash, Unique('attributes')]
         public readonly string $slug,
         #[WithCast(EnumCast::class, AttributeType::class)]

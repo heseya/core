@@ -20,10 +20,8 @@ final class AttributeUpdateDto extends Data
      * @param string[] $published
      */
     public function __construct(
-        #[Rule(new Translations(['name']))]
+        #[Rule(new Translations(['name', 'description']))]
         public readonly array $translations,
-        #[Max(255)]
-        public readonly Optional|string $description,
         #[Max(255), AlphaDash, Unique('attributes')]
         public readonly Optional|string $slug,
         public readonly bool|Optional $global,
