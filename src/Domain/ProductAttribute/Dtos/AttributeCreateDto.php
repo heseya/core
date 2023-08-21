@@ -19,6 +19,7 @@ use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
+use Spatie\LaravelData\Support\Validation\ValidationContext;
 use Support\Utils\Map;
 
 final class AttributeCreateDto extends Data
@@ -37,10 +38,8 @@ final class AttributeCreateDto extends Data
     public function __construct(
         #[Uuid]
         public readonly Optional|string $id,
-        #[Rule(new Translations(['name']))]
+        #[Rule(new Translations(['name', 'description']))]
         public readonly array $translations,
-        #[Max(255)]
-        public readonly string $description,
         #[Max(255), AlphaDash, Unique('attributes')]
         public readonly string $slug,
         #[WithCast(EnumCast::class, AttributeType::class)]
@@ -57,5 +56,16 @@ final class AttributeCreateDto extends Data
             $this->metadata_public,
             $this->metadata_private,
         );
+    }
+
+    /**
+     * @return array<string, string[]>
+     */
+    public static function rules(ValidationContext $context): array
+    {
+        return [
+            'translations.*.name' => ['required', 'string', 'max:255'],
+            'translations.*.description' => ['sometimes', 'string', 'max:255'],
+        ];
     }
 }

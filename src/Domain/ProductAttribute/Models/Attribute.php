@@ -58,6 +58,7 @@ final class Attribute extends Model implements Translatable
     /** @var string[] */
     protected array $translatable = [
         'name',
+        'description',
     ];
 
     protected $casts = [

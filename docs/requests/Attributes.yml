@@ -17,14 +17,14 @@ Attribute:
                   description: 'Name of attribute'
                   type: string
                   example: 'Screen size'
+                description:
+                  description: 'Description of attribute'
+                  type: string
+                  example: 'Presented number is size of screen monitor'
           slug:
             description: 'Slug of name attribute'
             type: string
             example: 'screen-size'
-          description:
-            description: 'Description of attribute'
-            type: string
-            example: 'Presented number is size of screen monitor'
           min:
             description: 'Lowest value from options'
             type: integer
