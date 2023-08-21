@@ -16,6 +16,7 @@ use App\Traits\HasMetadata;
 use App\Traits\HasOrderDiscount;
 use App\Traits\Sortable;
 use Domain\Currency\Currency;
+use Domain\SalesChannel\Models\SalesChannel;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -64,6 +65,7 @@ class Order extends Model implements SortableContract
         'shipping_place',
         'invoice_requested',
         'shipping_type',
+        'sales_channel_id',
     ];
 
     protected array $criteria = [
@@ -201,5 +203,10 @@ class Order extends Model implements SortableContract
             'pl', 'en' => $country,
             default => Config::get('app.locale'),
         };
+    }
+
+    public function salesChannel(): HasOne
+    {
+        return $this->hasOne(SalesChannel::class, 'id', 'sales_channel_id');
     }
 }

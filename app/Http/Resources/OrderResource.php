@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use App\Models\User;
 use App\Traits\MetadataResource;
 use Domain\Order\Resources\OrderStatusResource;
+use Domain\SalesChannel\Resources\SalesChannelResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -41,6 +42,7 @@ class OrderResource extends Resource
             'cart_total' => $this->resource->cart_total,
             'cart_total_initial' => $this->resource->cart_total_initial,
             'created_at' => $this->resource->created_at,
+            'sales_channel' => SalesChannelResource::make($this->resource->salesChannel),
         ], $this->metadataResource('orders.show_metadata_private'));
     }
 
