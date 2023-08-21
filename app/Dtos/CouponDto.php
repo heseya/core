@@ -7,6 +7,8 @@ use App\Http\Requests\CouponCreateRequest;
 use App\Http\Requests\CouponUpdateRequest;
 use App\Http\Requests\SaleCreateRequest;
 use App\Traits\MapMetadata;
+use Domain\Price\Dtos\PriceDto;
+use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -25,16 +27,25 @@ final class CouponDto extends SaleDto implements InstantiateFromRequest
         parent::__construct(...$data);
     }
 
+    /**
+     * @throws DtoException
+     */
     public static function instantiateFromRequest(
         CouponCreateRequest|CouponUpdateRequest|FormRequest|SaleCreateRequest $request
     ): self {
+        $amounts = $request->has('amounts') ? array_map(
+            fn ($data) => PriceDto::from($data),
+            $request->input('amounts'),
+        ) : new Missing();
+
         return new self(
             code: $request->input('code', new Missing()),
+            metadata: self::mapMetadata($request),
             translations: $request->input('translations', []),
             published: $request->input('published', []),
             slug: $request->input('slug', new Missing()),
-            value: $request->input('value', new Missing()),
-            type: $request->input('type', new Missing()),
+            percentage: $request->input('percentage') ?? new Missing(),
+            amounts: $amounts,
             priority: $request->input('priority', new Missing()),
             target_type: $request->input('target_type', new Missing()),
             target_is_allow_list: $request->input('target_is_allow_list', new Missing()),
@@ -43,13 +54,7 @@ final class CouponDto extends SaleDto implements InstantiateFromRequest
             target_sets: $request->input('target_sets', new Missing()),
             target_shipping_methods: $request->input('target_shipping_methods', new Missing()),
             active: $request->input('active', new Missing()),
-            metadata: self::mapMetadata($request),
             seo: $request->has('seo') ? SeoMetadataDto::instantiateFromRequest($request) : new Missing(),
         );
-    }
-
-    public function getCode(): Missing|string
-    {
-        return $this->code;
     }
 }

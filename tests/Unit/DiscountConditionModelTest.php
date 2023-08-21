@@ -32,8 +32,8 @@ class DiscountConditionModelTest extends TestCase
             ConditionType::DATE_BETWEEN->value => [
                 ConditionType::DATE_BETWEEN,
                 [
-                    'start_at' => Carbon::yesterday()->toDateTimeString(),
-                    'end_at' => Carbon::tomorrow()->toDateTimeString(),
+                    'start_at' => Carbon::yesterday()->toISOString(),
+                    'end_at' => Carbon::tomorrow()->toISOString(),
                     'is_in_range' => false,
                 ],
             ],

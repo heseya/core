@@ -10,7 +10,7 @@ trait HasOrderDiscount
     public function discounts(): MorphToMany
     {
         return $this->morphToMany(Discount::class, 'model', 'order_discounts')
-            ->withPivot(['type', 'value', 'name', 'code', 'target_type', 'applied_discount'])
+            ->withPivot(['percentage', 'name', 'code', 'target_type', 'applied_discount'])
             ->withTrashed();
     }
 }

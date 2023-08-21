@@ -68,6 +68,9 @@ class ProductRelatedSetsTest extends TestCase
                     'children_ids' => [],
                     'cover' => null,
                     'metadata' => [],
+                    'published' => [
+                        $this->lang,
+                    ],
                 ],
                 [
                     'id' => $set2->getKey(),
@@ -81,6 +84,9 @@ class ProductRelatedSetsTest extends TestCase
                     'children_ids' => [],
                     'cover' => null,
                     'metadata' => [],
+                    'published' => [
+                        $this->lang,
+                    ],
                 ],
             ]]);
     }
@@ -118,6 +124,9 @@ class ProductRelatedSetsTest extends TestCase
                     'children_ids' => [],
                     'cover' => null,
                     'metadata' => [],
+                    'published' => [
+                        $this->lang,
+                    ],
                 ],
             ]]);
     }
@@ -155,6 +164,9 @@ class ProductRelatedSetsTest extends TestCase
                     'children_ids' => [],
                     'cover' => null,
                     'metadata' => [],
+                    'published' => [
+                        $this->lang,
+                    ],
                 ],
                 [
                     'id' => $set2->getKey(),
@@ -168,6 +180,9 @@ class ProductRelatedSetsTest extends TestCase
                     'children_ids' => [],
                     'cover' => null,
                     'metadata' => [],
+                    'published' => [
+                        $this->lang,
+                    ],
                 ],
             ]]);
     }

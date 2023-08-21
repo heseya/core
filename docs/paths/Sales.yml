@@ -49,7 +49,7 @@ Sales:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Sales.yml#/Sale'
+                    $ref: './../schemas/Sales.yml#/SaleIndex'
               type: object
     security:
       - BearerAuth: [ ]

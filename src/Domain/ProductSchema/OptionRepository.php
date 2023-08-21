@@ -12,14 +12,14 @@ use Support\Dtos\ModelIdentityDto;
 final class OptionRepository
 {
     /**
-     * @param PriceDto[][] $priceMatrix
+     * @param PriceDto[] $prices
      */
-    public function setOptionPrices(Option|string $option, array $priceMatrix): void
+    public function setOptionPrices(Option|string $option, array $prices): void
     {
         if (is_string($option)) {
             $option = new ModelIdentityDto($option, Option::class);
         }
 
-        app(PriceRepository::class)->setModelPrices($option, $priceMatrix);
+        app(PriceRepository::class)->setModelPrices($option, ['option' => $prices]);
     }
 }

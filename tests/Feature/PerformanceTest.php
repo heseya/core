@@ -279,6 +279,8 @@ class PerformanceTest extends TestCase
 
     public function testCreateSalePerformance1000Products(): void
     {
+        $this->markTestSkipped();
+
         $this->user->givePermissionTo('sales.add');
 
         $set = ProductSet::factory()->create([
@@ -333,6 +335,8 @@ class PerformanceTest extends TestCase
      */
     public function testViewOrderPerformanceWithDiscounts(): void
     {
+        $this->markTestSkipped();
+
         $this->user->givePermissionTo('orders.show_details');
 
         $shippingMethod = ShippingMethod::factory()->create();

@@ -7,12 +7,9 @@ SaleBase:
     slug:
       type: string
       example: 'promo-123'
-    value:
-      type: number
-      example: 50
-    type:
+    percentage:
       type: string
-      enum: [ 'amount', 'percentage' ]
+      example: '50.0'
     priority:
       type: number
     target_type:
@@ -61,11 +58,25 @@ Sale:
         description_html:
           type: string
 
+SaleIndex:
+  type: object
+  allOf:
+    - $ref: '#/Sale'
+    - properties:
+        amounts:
+          type: array
+          items:
+            $ref: './../schemas/Prices.yml#/PriceResource'
+
 SaleShow:
   type: object
   allOf:
     - $ref: '#/Sale'
     - properties:
+        amounts:
+          type: array
+          items:
+            $ref: './../schemas/Prices.yml#/PriceResource'
         uses:
           type: number
         seo:
@@ -92,6 +103,17 @@ SaleUpdate:
   allOf:
     - $ref: '#/SaleBase'
     - properties:
+        amounts:
+          type: array
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                example: '19.99'
+              currency:
+                type: string
+                example: 'PLN'
         seo:
           $ref: './Seo.yml#/SeoStore'
         condition_groups:

@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Enums\Product\ProductPriceType;
 use App\Exceptions\PublishingException;
 use App\Models\Option;
 use App\Models\Product;
@@ -85,9 +84,7 @@ final readonly class SchemaCrudService implements SchemaCrudServiceContract
         }
 
         if ($dto->prices instanceof DataCollection) {
-            $this->schemaRepository->setSchemaPrices($schema->getKey(), [
-                ProductPriceType::PRICE_BASE->value => $dto->prices->items(),
-            ]);
+            $this->schemaRepository->setSchemaPrices($schema->getKey(), $dto->prices->items());
         }
 
         if (!$schema->wasRecentlyCreated) {

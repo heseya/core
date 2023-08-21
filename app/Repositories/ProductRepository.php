@@ -79,7 +79,7 @@ class ProductRepository implements ProductRepositoryContract
     {
         $prices = $this->priceRepository->getModelPrices(new ModelIdentityDto($productId, Product::class), $priceTypes, $currency);
 
-        $groupedPrices = $prices->mapToGroups(fn (Price $price) => [$price->price_type->value => PriceDto::from($price)]);
+        $groupedPrices = $prices->mapToGroups(fn (Price $price) => [$price->price_type => PriceDto::from($price)]);
 
         foreach ($priceTypes as $type) {
             if (!$groupedPrices->has($type->value)) {

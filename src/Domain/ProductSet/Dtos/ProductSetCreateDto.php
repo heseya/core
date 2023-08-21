@@ -30,6 +30,7 @@ final class ProductSetCreateDto extends Data
 
     /**
      * @param array<string, array<string, string>> $translations
+     * @param string[] $published
      * @param array<string, string>|Optional $metadata_public
      * @param array<string, string>|Optional $metadata_private
      * @param string[] $children_ids
@@ -40,6 +41,7 @@ final class ProductSetCreateDto extends Data
         public readonly Optional|string $id,
         #[Rule(new Translations(['name', 'description_html']))]
         public readonly array $translations,
+        public readonly array $published,
         #[AlphaDash, Max(255)]
         public readonly string|null $slug_suffix,
         public readonly bool $slug_override,
@@ -71,8 +73,10 @@ final class ProductSetCreateDto extends Data
     {
         return [
             'translations.*.name' => ['string', 'max:255'],
-            'translations.*.description_html' => ['string', 'max:255'],
+            'translations.*.description_html' => ['nullable', 'string', 'max:255'],
+            'children_ids' => ['nullable'],
             'children_ids.*' => ['uuid', 'exists:product_sets,id'],
+            'attributes' => ['nullable'],
             'attributes.*' => ['uuid', 'exists:attributes,id'],
         ];
     }

@@ -41,6 +41,7 @@ final class ProductSetParentResource extends Resource
             'description_html' => $this->resource->description_html,
             'cover' => MediaResource::make($this->resource->media),
             'attributes' => AttributeResource::collection($this->resource->attributes),
+            'published' => $this->resource->published,
             ...$this->metadataResource('product_sets.show_metadata_private'),
             ...$request->boolean('with_translations') ?
                 $this->getAllTranslations('product_sets.show_hidden') : [],

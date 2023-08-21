@@ -48,6 +48,7 @@ final class SalesChannelCreateDto extends Data
     {
         return [
             'translations.*.name' => ['required', 'string', 'max:100'],
+            'countries' => ['nullable'],
             'countries.*' => ['string', 'exists:countries,code'],
         ];
     }

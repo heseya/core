@@ -3,8 +3,10 @@
 namespace App\Http\Requests;
 
 use App\Enums\DiscountTargetType;
-use App\Enums\DiscountType;
+use App\Rules\Price;
+use App\Rules\PricesEveryCurrency;
 use App\Rules\Translations;
+use Brick\Math\BigDecimal;
 use Illuminate\Validation\Rules\Enum;
 
 class SaleUpdateRequest extends SaleCreateRequest
@@ -16,8 +18,11 @@ class SaleUpdateRequest extends SaleCreateRequest
     {
         return array_merge(parent::rules(), [
             'translations' => ['sometimes', new Translations(['name', 'description_html', 'description'])],
-            'value' => ['numeric', 'gte:0'],
-            'type' => [new Enum(DiscountType::class)],
+
+            'percentage' => ['prohibits:amounts', 'numeric', 'string', 'gte:0'],
+            'amounts' => ['prohibits:percentage', new PricesEveryCurrency()],
+            'amounts.*' => [new Price(['value'], min: BigDecimal::zero())],
+
             'priority' => ['integer'],
             'target_type' => [new Enum(DiscountTargetType::class)],
             'target_is_allow_list' => ['boolean'],

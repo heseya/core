@@ -10,6 +10,8 @@ class CartRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'sales_channel_id' => ['required', 'uuid'],
+
             'shipping_method_id' => ['nullable', 'uuid'],
             'digital_shipping_method_id' => ['nullable', 'uuid'],
 

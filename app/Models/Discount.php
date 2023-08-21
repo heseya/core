@@ -20,6 +20,7 @@ use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
@@ -46,12 +47,11 @@ class Discount extends Model implements SeoContract, Translatable
         'description',
         'description_html',
         'code',
-        'value',
-        'type',
         'target_type',
         'target_is_allow_list',
         'priority',
         'active',
+        'percentage',
         'published',
     ];
 
@@ -61,15 +61,12 @@ class Discount extends Model implements SeoContract, Translatable
         'description',
         'description_html',
     ];
-
     protected $casts = [
-        'type' => DiscountType::class,
         'target_type' => DiscountTargetType::class,
         'target_is_allow_list' => 'boolean',
         'active' => 'boolean',
         'published' => 'array',
     ];
-
     protected array $criteria = [
         'description' => Like::class,
         'code' => Like::class,
@@ -134,5 +131,10 @@ class Discount extends Model implements SeoContract, Translatable
         }
 
         return $products->unique();
+    }
+
+    public function amounts(): MorphMany
+    {
+        return $this->morphMany(Price::class, 'model');
     }
 }

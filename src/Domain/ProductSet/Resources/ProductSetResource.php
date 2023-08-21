@@ -36,6 +36,7 @@ final class ProductSetResource extends Resource
             'parent_id' => $this->resource->parent_id,
             'children_ids' => $children->map(fn ($child) => $child->getKey())->toArray(),
             'cover' => MediaResource::make($this->resource->media),
+            'published' => $this->resource->published,
             ...$this->metadataResource('product_sets.show_metadata_private'),
             ...$request->boolean('with_translations') ?
                 $this->getAllTranslations('product_sets.show_hidden') : [],

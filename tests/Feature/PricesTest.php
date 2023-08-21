@@ -174,8 +174,7 @@ class PricesTest extends TestCase
         $sale = Discount::factory()->create([
             'description' => 'Testowa promocja',
             'name' => 'Testowa promocja',
-            'value' => $discountRate * 100,
-            'type' => DiscountType::PERCENTAGE,
+            'percentage' => $discountRate * 100 . '',
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
             'code' => null,
@@ -249,8 +248,7 @@ class PricesTest extends TestCase
         $sale = Discount::factory()->create([
             'description' => 'Testowa promocja',
             'name' => 'Testowa promocja',
-            'value' => $discountRate * 100,
-            'type' => DiscountType::PERCENTAGE,
+            'percentage' => $discountRate * 100 . '',
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
             'code' => null,
@@ -337,8 +335,7 @@ class PricesTest extends TestCase
         $sale = Discount::factory()->create([
             'description' => 'Testowa promocja',
             'name' => 'Testowa promocja',
-            'value' => $discountRate * 100,
-            'type' => DiscountType::PERCENTAGE,
+            'percentage' => $discountRate * 100 . '',
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
             'code' => null,
@@ -424,8 +421,7 @@ class PricesTest extends TestCase
         $sale = Discount::factory()->create([
             'description' => 'Testowa promocja',
             'name' => 'Testowa promocja',
-            'value' => $discountRate * 100,
-            'type' => DiscountType::PERCENTAGE,
+            'percentage' => $discountRate * 100 . '',
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
             'code' => null,
@@ -513,8 +509,7 @@ class PricesTest extends TestCase
         $sale = Discount::factory()->create([
             'description' => 'Testowa promocja',
             'name' => 'Testowa promocja',
-            'value' => $discountRate * 100,
-            'type' => DiscountType::PERCENTAGE,
+            'percentage' => $discountRate * 100 . '',
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
             'code' => null,

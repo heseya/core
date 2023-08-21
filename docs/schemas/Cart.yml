@@ -63,7 +63,7 @@ SalesShortResource:
       example: 'Black Week'
     value:
       type: number
-      example: 100
+      example: 50.0
 
 CouponShortResource:
   type: object

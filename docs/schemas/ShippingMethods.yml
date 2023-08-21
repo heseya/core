@@ -11,14 +11,7 @@ ShippingMethod:
       description: 'on index shows shipping prices for provided "cart_value" (for 0 by default)'
       type: array
       items:
-        type: object
-        properties:
-          gross:
-            type: string
-            example: '9.99'
-          currency:
-            type: string
-            example: 'PLN'
+        $ref: './../schemas/Prices.yml#/PriceResource'
     public:
       type: boolean
     block_list:

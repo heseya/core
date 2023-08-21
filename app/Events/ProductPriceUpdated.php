@@ -2,8 +2,8 @@
 
 namespace App\Events;
 
-use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 
 class ProductPriceUpdated extends WebHookEvent
@@ -12,11 +12,10 @@ class ProductPriceUpdated extends WebHookEvent
 
     public function __construct(
         private readonly string $id,
-        private readonly ?Money $oldPriceMin,
-        private readonly ?Money $oldPriceMax,
-        private readonly Money $newPriceMin,
-        private readonly Money $newPriceMax,
-        private readonly Currency $currency = Currency::DEFAULT,
+        private readonly ?array $oldPricesMin,
+        private readonly ?array $oldPricesMax,
+        private readonly array $newPricesMin,
+        private readonly array $newPricesMax,
     ) {
         $this->updatedAt = Carbon::now()->toIso8601String();
         parent::__construct();
@@ -24,13 +23,22 @@ class ProductPriceUpdated extends WebHookEvent
 
     public function getDataContent(): array
     {
+        $prices = [];
+        foreach (Currency::cases() as $currency) {
+            $prices[] = [
+                'currency' => $currency->value,
+                'old_price_min' => $this->oldPricesMin
+                    ? Arr::first($this->oldPricesMin, fn ($price) => $price['currency'] === $currency->value)['value']->getAmount() : null,
+                'old_price_max' => $this->oldPricesMax
+                    ? Arr::first($this->oldPricesMax, fn ($price) => $price['currency'] === $currency->value)['value']->getAmount() : null,
+                'new_price_min' => Arr::first($this->newPricesMin, fn ($price) => $price['currency'] === $currency->value)['value']->getAmount(),
+                'new_price_max' => Arr::first($this->newPricesMax, fn ($price) => $price['currency'] === $currency->value)['value']->getAmount(),
+            ];
+        }
+
         return [
             'id' => $this->id,
-            'currency' => $this->currency->value,
-            'old_price_min' => $this->oldPriceMin?->getAmount(),
-            'old_price_max' => $this->oldPriceMax?->getAmount(),
-            'new_price_min' => $this->newPriceMin->getAmount(),
-            'new_price_max' => $this->newPriceMax->getAmount(),
+            'prices' => $prices,
             'updated_at' => $this->updatedAt,
         ];
     }

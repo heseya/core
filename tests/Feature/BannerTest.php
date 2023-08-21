@@ -122,7 +122,7 @@ class BannerTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment($this->banner->only(['slug', 'name', 'active']))
-            ->assertJsonFragment($this->bannerMedia->only(['title', 'subtitle', 'url']))
+            ->assertJsonFragment($this->bannerMedia->only(['title', 'subtitle', 'url', 'published']))
             ->assertJsonFragment(['min_screen_width' => 100])
             ->assertJsonFragment(['min_screen_width' => 250])
             ->assertJsonFragment(['min_screen_width' => 400]);
@@ -165,7 +165,7 @@ class BannerTest extends TestCase
             ->getJson("/banners/id:{$this->banner->getKey()}")
             ->assertOk()
             ->assertJsonFragment($this->banner->only(['slug', 'name', 'active']))
-            ->assertJsonFragment($this->bannerMedia->only(['title', 'subtitle', 'url']))
+            ->assertJsonFragment($this->bannerMedia->only(['title', 'subtitle', 'url']) + ['published' => [$this->lang]])
             ->assertJsonFragment(['min_screen_width' => 100])
             ->assertJsonFragment(['min_screen_width' => 250])
             ->assertJsonFragment(['min_screen_width' => 400]);
@@ -212,7 +212,7 @@ class BannerTest extends TestCase
             ->getJson("/banners/{$this->banner->slug}")
             ->assertOk()
             ->assertJsonFragment($this->banner->only(['slug', 'name', 'active']))
-            ->assertJsonFragment($this->bannerMedia->only(['title', 'subtitle', 'url']))
+            ->assertJsonFragment($this->bannerMedia->only(['title', 'subtitle', 'url']) + ['published' => [$this->lang]])
             ->assertJsonFragment(['min_screen_width' => 100])
             ->assertJsonFragment(['min_screen_width' => 250])
             ->assertJsonFragment(['min_screen_width' => 400]);
@@ -290,6 +290,7 @@ class BannerTest extends TestCase
                 'title' => $this->newBannerMediaData['title'],
                 'subtitle' => $this->newBannerMediaData['subtitle'],
                 'url' => $this->newBannerMediaData['url'],
+                'published' => [$this->lang],
             ]);
     }
 
@@ -538,6 +539,9 @@ class BannerTest extends TestCase
                         'media' => [
                             ['min_screen_width' => 150, 'media' => $media->getKey()],
                         ],
+                        'published' => [
+                            $this->lang,
+                        ],
                     ],
                 ],
             ]);
@@ -561,6 +565,9 @@ class BannerTest extends TestCase
                                         'slug' => $media->slug,
                                     ],
                                 ],
+                            ],
+                            'published' => [
+                                $this->lang,
                             ],
                         ],
                     ],

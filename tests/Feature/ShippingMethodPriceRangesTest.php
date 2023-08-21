@@ -54,6 +54,7 @@ class ShippingMethodPriceRangesTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['prices' => [[
+                'net' => '10.00',
                 'gross' => '10.00',
                 'currency' => $currency,
             ]]]);

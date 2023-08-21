@@ -3,7 +3,6 @@
 namespace Tests\Feature\Discounts;
 
 use App\Enums\DiscountTargetType;
-use App\Enums\DiscountType;
 use App\Models\Discount;
 use Tests\TestCase;
 
@@ -23,8 +22,7 @@ class DiscountSeoTest extends TestCase
                         'name' => 'Sale',
                     ],
                 ],
-                'type' => DiscountType::PERCENTAGE,
-                'value' => 10,
+                'percentage' => '10',
                 'priority' => 1,
                 'target_type' => DiscountTargetType::ORDER_VALUE,
                 'target_is_allow_list' => true,
