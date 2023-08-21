@@ -140,7 +140,7 @@ class UpdateTranslatableColumns extends Migration
                 $status
                     ->setAttribute('published', [$lang])
                     ->setTranslation('name', $lang, $attr['name'])
-                    ->setTranslation('description_html', $lang, $attr['description_html'])
+                    ->setTranslation('description', $lang, $attr['description'])
                     ->save();
             },
         ));

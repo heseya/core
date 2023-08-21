@@ -19,10 +19,6 @@ return new class extends Migration {
             ->where('type', RoleType::OWNER->value)
             ->firstOrFail()
             ->givePermissionTo('attributes.show_hidden');
-
-        Schema::table('attribute_options', function (Blueprint $table) {
-            $table->dropColumn('published');
-        });
     }
 
     public function down(): void
@@ -35,9 +31,5 @@ return new class extends Migration {
         Permission::query()
             ->where('name', 'attributes.show_hidden')
             ->delete();
-
-        Schema::table('attribute_options', function (Blueprint $table) {
-            $table->text('published')->nullable();
-        });
     }
 };
