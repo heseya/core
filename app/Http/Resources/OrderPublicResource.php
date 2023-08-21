@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Traits\MetadataResource;
 use Domain\Order\Resources\OrderStatusResource;
+use Domain\SalesChannel\Resources\SalesChannelResource;
 use Illuminate\Http\Request;
 
 class OrderPublicResource extends Resource
@@ -27,6 +28,7 @@ class OrderPublicResource extends Resource
             'shipping_method' => ShippingMethodResource::make($this->resource->shippingMethod),
             'digital_shipping_method' => ShippingMethodResource::make($this->resource->digitalShippingMethod),
             'created_at' => $this->resource->created_at,
+            'sales_channel' => SalesChannelResource::make($this->resource->salesChannel),
         ], $this->metadataResource('orders.show_metadata_private'));
     }
 }
