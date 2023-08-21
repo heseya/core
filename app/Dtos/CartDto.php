@@ -12,7 +12,7 @@ use Illuminate\Support\Collection;
 
 class CartDto extends CartOrderDto implements InstantiateFromRequest
 {
-    public readonly Currency $currency;
+    public Currency $currency;
     private array $items;
     private array|Missing $coupons;
     private Missing|string $shipping_method_id;

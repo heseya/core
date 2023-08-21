@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Dtos\PaymentDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\PaymentStatus;
 use App\Exceptions\ClientException;
@@ -13,17 +14,24 @@ use App\Payments\PayPal;
 use App\Payments\PayU;
 use App\Payments\Przelewy24;
 use App\Services\Contracts\PaymentServiceContract;
+use Brick\Math\Exception\MathException;
+use Brick\Money\Exception\MoneyMismatchException;
+use Domain\Currency\Currency;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Enum;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 final class PaymentService implements PaymentServiceContract
 {
     /**
      * @throws ClientException
+     * @throws MathException
+     * @throws MoneyMismatchException
+     * @throws ServerException
      */
     public function getPayment(Order $order, PaymentMethod $paymentMethod, string $continueUrl): Payment
     {
@@ -44,6 +52,9 @@ final class PaymentService implements PaymentServiceContract
             : $this->createPaymentLegacy($paymentMethod, $order, $continueUrl);
     }
 
+    /**
+     * @throws ServerException
+     */
     private function requestPaymentFromMicroservice(PaymentMethod $method, Order $order, string $continueUrl): Payment
     {
         $response = Http::post($method->url, [
@@ -60,6 +71,7 @@ final class PaymentService implements PaymentServiceContract
                 'method_id' => $method->getKey(),
                 'status' => $response->json('status'),
                 'amount' => $response->json('amount'),
+                'currency' => $response->json('currency'),
                 'redirect_url' => $response->json('redirect_url'),
                 'continue_url' => $response->json('continue_url'),
             ],
@@ -78,17 +90,20 @@ final class PaymentService implements PaymentServiceContract
         $validator = Validator::make($response->json(), [
             'status' => ['required', new Enum(PaymentStatus::class)],
             'amount' => ['required', 'numeric'],
+            'currency' => ['required', 'string', new Enum(Currency::class)],
             'redirect_url' => ['nullable', 'string', 'max:1000'],
             'continue_url' => ['nullable', 'string', 'max:1000'],
         ]);
 
         if ($validator->fails()) {
-            throw new ServerException(Exceptions::SERVER_PAYMENT_MICROSERVICE_ERROR);
+            throw new ServerException(Exceptions::SERVER_PAYMENT_MICROSERVICE_ERROR, new ValidationException($validator));
         }
     }
 
     /**
      * @throws ClientException
+     * @throws MathException
+     * @throws MoneyMismatchException
      *
      * @deprecated
      */
@@ -112,7 +127,8 @@ final class PaymentService implements PaymentServiceContract
          */
         $payment = $order->payments()->create([
             'method' => $method->alias,
-            'amount' => $order->summary->minus($order->paid_amount)->getAmount()->toFloat(),
+            'amount' => $order->summary->minus($order->paid_amount),
+            'currency' => $order->currency,
             'status' => PaymentStatus::PENDING,
             'continue_url' => $continueUrl,
         ]);
@@ -125,5 +141,16 @@ final class PaymentService implements PaymentServiceContract
         }
 
         return $payment;
+    }
+
+    public function create(PaymentDto $dto): Payment
+    {
+        /** @var Order $order */
+        $order = Order::query()->findOrFail($dto->getOrderId());
+
+        return Payment::create([
+            'currency' => $order->currency,
+            ...$dto->toArray(),
+        ]);
     }
 }

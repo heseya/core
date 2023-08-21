@@ -16,6 +16,8 @@ use App\Models\Contracts\SortableContract;
 use App\Traits\HasMetadata;
 use App\Traits\HasOrderDiscount;
 use App\Traits\Sortable;
+use Brick\Math\Exception\MathException;
+use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Heseya\Searchable\Criteria\Like;
@@ -33,6 +35,9 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 
 /**
+ * @property Money $summary
+ * @property Currency $currency
+ *
  * @mixin IdeHelperOrder
  */
 class Order extends Model implements SortableContract
@@ -112,20 +117,23 @@ class Order extends Model implements SortableContract
 
     /**
      * Summary amount of paid.
+     *
+     * @throws MathException
+     * @throws MoneyMismatchException
      */
     public function getPaidAmountAttribute(): Money
     {
         return $this->payments
             ->where('status', PaymentStatus::SUCCESSFUL)
             ->reduce(
-                fn (Money $carry, Payment $payment) => $carry->plus(
-                    // TODO: This should use money in payment instead of floats
-                    Money::of($payment->amount, $this->currency->value),
-                ),
+                fn (Money $carry, Payment $payment) => $carry->plus($payment->amount),
                 Money::zero($this->currency->value),
             );
     }
 
+    /**
+     * @return HasMany<Payment>
+     */
     public function payments(): HasMany
     {
         return $this

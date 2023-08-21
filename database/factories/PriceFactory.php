@@ -4,13 +4,11 @@ namespace Database\Factories;
 
 use App\Enums\Product\ProductPriceType;
 use App\Models\Model;
-use App\Models\PaymentMethod;
 use App\Models\Price;
 use Domain\Currency\Currency;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Database\Eloquent\Factories\Sequence;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 class PriceFactory extends Factory
 {
@@ -43,10 +41,8 @@ class PriceFactory extends Factory
 
     public function forAllCurrencies(): static
     {
-        return $this->count(count(Currency::values()))
-            ->sequence(
-                fn (Sequence $sequence) => ['currency' => Currency::values()[$sequence->index]]
-            );
+        $sequences = Arr::map(Currency::values(), fn (string $currency) => ['currency' => $currency]);
+        return $this->forEachSequence(...$sequences);
     }
 
     /**

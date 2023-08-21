@@ -17,6 +17,8 @@ use App\Payments\PayPal;
 use App\Payments\PayU;
 use App\Payments\Przelewy24;
 use App\Services\Contracts\PaymentServiceContract;
+use Brick\Math\Exception\MathException;
+use Brick\Money\Exception\MoneyMismatchException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
@@ -24,7 +26,7 @@ use Illuminate\Support\Facades\Config;
 class PaymentController extends Controller
 {
     public function __construct(
-        private PaymentServiceContract $paymentService,
+        private readonly PaymentServiceContract $paymentService,
     ) {}
 
     public function pay(Order $order, PaymentMethod $paymentMethod, PayRequest $request): JsonResource
@@ -47,12 +49,17 @@ class PaymentController extends Controller
         return PaymentResource::make($payment);
     }
 
+    /**
+     * @throws MathException
+     * @throws MoneyMismatchException
+     */
     public function offlinePayment(Order $order): JsonResource
     {
         $payment = $order->payments()->create([
             'method' => 'offline',
-            'amount' => $order->summary - $order->paid_amount,
+            'amount' => $order->summary->minus($order->paid_amount),
             'status' => PaymentStatus::SUCCESSFUL,
+            'currency' => $order->currency,
         ]);
 
         return PaymentResource::make($payment);
@@ -73,9 +80,7 @@ class PaymentController extends Controller
         /** @var PaymentDto $dto */
         $dto = PaymentDto::instantiateFromRequest($request);
 
-        return PaymentResource::make(
-            Payment::query()->create($dto->toArray()),
-        );
+        return PaymentResource::make($this->paymentService->create($dto));
     }
 
     /**
