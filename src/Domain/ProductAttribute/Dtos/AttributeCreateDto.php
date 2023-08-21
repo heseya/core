@@ -19,6 +19,7 @@ use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
+use Spatie\LaravelData\Support\Validation\ValidationContext;
 use Support\Utils\Map;
 
 final class AttributeCreateDto extends Data
@@ -55,5 +56,16 @@ final class AttributeCreateDto extends Data
             $this->metadata_public,
             $this->metadata_private,
         );
+    }
+
+    /**
+     * @return array<string, string[]>
+     */
+    public static function rules(ValidationContext $context): array
+    {
+        return [
+            'translations.*.name' => ['required', 'string', 'max:255'],
+            'translations.*.description' => ['sometimes', 'string', 'max:255'],
+        ];
     }
 }

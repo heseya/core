@@ -36,6 +36,8 @@ final class AttributeUpdateDto extends Data
     {
         return [
             'type' => ['prohibited'],
+            'translations.*.name' => ['sometimes', 'string', 'max:255'],
+            'translations.*.description' => ['sometimes', 'string', 'max:255'],
         ];
     }
 }
