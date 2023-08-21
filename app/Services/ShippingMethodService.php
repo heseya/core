@@ -108,6 +108,7 @@ readonly class ShippingMethodService implements ShippingMethodServiceContract
             $shippingMethod->priceRanges()->firstOrCreate([
                 'start' => $range->start,
                 'value' => $range->value,
+                'currency' => $range->value->getCurrency(),
             ]);
         }
 
@@ -139,6 +140,7 @@ readonly class ShippingMethodService implements ShippingMethodServiceContract
                 $shippingMethod->priceRanges()->firstOrCreate([
                     'start' => $range->start,
                     'value' => $range->value,
+                    'currency' => $range->value->getCurrency(),
                 ]);
             }
         }
