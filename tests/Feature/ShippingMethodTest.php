@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\ShippingType;
+use App\Enums\ValidationError;
 use App\Models\Address;
 use App\Models\App;
 use App\Models\Order;
@@ -323,6 +324,91 @@ class ShippingMethodTest extends TestCase
         );
 
         $response->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateByPriceRangesStartZero($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.add');
+
+        $shipping_method = [
+            'name' => 'Test 4',
+            'public' => false,
+            'shipping_type' => ShippingType::DIGITAL->value,
+            'shipping_time_max' => 0,
+            'shipping_time_min' => 0,
+        ];
+
+        $this->actingAs($this->{$user})->postJson(
+            '/shipping-methods',
+            $shipping_method + [
+                'price_ranges' => [
+                    [
+                        'currency' => Currency::EUR->value,
+                        'start' => '0',
+                        'value' => '0',
+                    ],
+                    [
+                        'currency' => Currency::PLN->value,
+                        'start' => '0.00',
+                        'value' => '16.61',
+                    ],
+                ],
+            ],
+        )
+            ->assertCreated()
+            ->assertJsonFragment(['start' => [
+                'gross' => '0.00',
+                'currency' => Currency::EUR->value,
+            ]])
+            ->assertJsonFragment(['value' => [
+                'gross' => '0.00',
+                'currency' => Currency::EUR->value,
+            ]])
+            ->assertJsonFragment(['start' => [
+                'gross' => '0.00',
+                'currency' => Currency::PLN->value,
+            ]])
+            ->assertJsonFragment(['value' => [
+                'gross' => '16.61',
+                'currency' => Currency::PLN->value,
+            ]]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateByPriceRangesAsNumbers($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.add');
+
+        $shipping_method = [
+            'name' => 'Test 4',
+            'public' => false,
+            'shipping_type' => ShippingType::DIGITAL->value,
+            'shipping_time_max' => 0,
+            'shipping_time_min' => 0,
+        ];
+
+        $this->actingAs($this->{$user})->postJson(
+            '/shipping-methods',
+            $shipping_method + [
+                'price_ranges' => [
+                    [
+                        'currency' => Currency::DEFAULT->value,
+                        'start' => 0.0,
+                        'value' => 0.0,
+                    ],
+                ],
+            ],
+        )
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::PRICE,
+                'message' => 'The price_ranges.0 value must be a decimal string, integer found',
+            ]);
     }
 
     /**
@@ -780,6 +866,58 @@ class ShippingMethodTest extends TestCase
             'shipping_methods',
             $shipping_method + ['id' => $this->shipping_method->getKey()],
         );
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateByPriceRangesStartZero($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.edit');
+
+        $shipping_method = [
+            'name' => 'Test 2',
+            'public' => false,
+            'block_list' => false,
+        ];
+
+        $response = $this->actingAs($this->{$user})->patchJson(
+            '/shipping-methods/id:' . $this->shipping_method->getKey(),
+            $shipping_method + [
+                'price_ranges' => [
+                    [
+                        'currency' => Currency::EUR->value,
+                        'start' => '0',
+                        'value' => '0',
+                    ],
+                    [
+                        'currency' => Currency::PLN->value,
+                        'start' => '0.00',
+                        'value' => '16.61',
+                    ],
+                ],
+            ],
+        );
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => $shipping_method])
+            ->assertJsonFragment(['start' => [
+                'gross' => '0.00',
+                'currency' => Currency::EUR->value,
+            ]])
+            ->assertJsonFragment(['value' => [
+                'gross' => '0.00',
+                'currency' => Currency::EUR->value,
+            ]])
+            ->assertJsonFragment(['start' => [
+                'gross' => '0.00',
+                'currency' => Currency::PLN->value,
+            ]])
+            ->assertJsonFragment(['value' => [
+                'gross' => '16.61',
+                'currency' => Currency::PLN->value,
+            ]]);
     }
 
     /**

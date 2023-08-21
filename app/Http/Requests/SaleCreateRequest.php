@@ -7,6 +7,7 @@ use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Rules\Price;
 use App\Rules\PricesEveryCurrency;
+use App\Rules\Translations;
 use App\Traits\MetadataRules;
 use App\Traits\SeoRules;
 use Brick\Math\BigDecimal;
@@ -25,10 +26,8 @@ class SaleCreateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'translations' => ['required', new Translations(['name', 'description_html', 'description'])],
             'slug' => ['nullable', 'string', 'max:128', 'alpha_dash'],
-            'description' => ['nullable', 'string', 'max:255'],
-            'description_html' => ['nullable', 'string'],
 
             'percentage' => ['required_without:amounts', 'prohibits:amounts', 'numeric', 'string', 'gte:0'],
             'amounts' => ['required_without:percentage', 'prohibits:percentage', new PricesEveryCurrency()],

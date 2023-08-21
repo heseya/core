@@ -208,7 +208,7 @@ class DiscountTest extends TestCase
             ->assertOk()
             ->assertJsonCount(10, 'data');
 
-        $this->assertQueryCountLessThan(23);
+        $this->assertQueryCountLessThan(24);
     }
 
     /**
@@ -503,14 +503,21 @@ class DiscountTest extends TestCase
         Event::fake($event);
 
         $discount = [
-            'name' => 'Coupon',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Coupon',
+                    'description' => 'Test coupon',
+                    'description_html' => 'html',
+                ],
+            ],
             'slug' => 'slug',
-            'description' => 'Test coupon',
-            'description_html' => 'html',
             'percentage' => '10',
             'priority' => 1,
             'target_type' => DiscountTargetType::ORDER_VALUE,
             'target_is_allow_list' => true,
+            'published' => [
+                $this->lang,
+            ],
         ];
 
         if ($discountKind === 'coupons') {
@@ -534,6 +541,7 @@ class DiscountTest extends TestCase
             ->actingAs($this->{$user})
             ->json('POST', "/{$discountKind}", $discount + $conditions);
 
+        unset($discount['translations']);
         $response
             ->assertCreated()
             ->assertJsonFragment($discount)
@@ -543,8 +551,17 @@ class DiscountTest extends TestCase
             ]);
 
         $discountId = $response->json('data.id');
+        unset($discount['published']);
 
-        $this->assertDatabaseHas('discounts', $discount + ['id' => $discountId]);
+        $this->assertDatabaseHas(
+            'discounts',
+            $discount + [
+                'id' => $discountId,
+                "name->{$this->lang}" => 'Coupon',
+                "description->{$this->lang}" => 'Test coupon',
+                "description_html->{$this->lang}" => 'html',
+            ]
+        );
         $this->assertDatabaseCount('condition_groups', 1);
         $this->assertDatabaseHas('discount_condition_groups', ['discount_id' => $discountId]);
         $this->assertDatabaseCount('discount_conditions', 1);
@@ -618,8 +635,12 @@ class DiscountTest extends TestCase
         Event::fake($event);
 
         $discount = [
-            'name' => 'Kupon',
-            'description' => 'Testowy kupon',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Kupon',
+                    'description' => 'Testowy kupon',
+                ],
+            ],
             'percentage' => '10',
             'priority' => 1,
             'target_type' => DiscountTargetType::SHIPPING_PRICE,
@@ -637,9 +658,10 @@ class DiscountTest extends TestCase
             ->actingAs($this->{$user})
             ->json('POST', "/{$discountKind}", $discount);
 
+        unset($discount['translations']);
         $response
             ->assertCreated()
-            ->assertJsonFragment($discount);
+            ->assertJsonFragment($discount + ['name' => 'Kupon', 'description' => 'Testowy kupon']);
     }
 
     /**
@@ -654,8 +676,12 @@ class DiscountTest extends TestCase
         Event::fake($event);
 
         $discount = [
-            'name' => 'Kupon',
-            'description' => 'Testowy kupon',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Kupon',
+                    'description' => 'Testowy kupon',
+                ],
+            ],
             'percentage' => '10',
             'priority' => 1,
             'target_type' => DiscountTargetType::SHIPPING_PRICE,
@@ -673,9 +699,10 @@ class DiscountTest extends TestCase
             ->actingAs($this->{$user})
             ->json('POST', "/{$discountKind}", $discount);
 
+        unset($discount['translations']);
         $response
             ->assertCreated()
-            ->assertJsonFragment($discount);
+            ->assertJsonFragment($discount + ['name' => 'Kupon', 'description' => 'Testowy kupon']);
     }
 
     /**
@@ -690,8 +717,12 @@ class DiscountTest extends TestCase
         Event::fake($event);
 
         $discount = [
-            'name' => 'Kupon',
-            'description' => 'Testowy kupon',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Kupon',
+                    'description' => 'Testowy kupon',
+                ],
+            ],
             'percentage' => '10',
             'priority' => 1,
             'target_type' => DiscountTargetType::SHIPPING_PRICE,
@@ -714,9 +745,10 @@ class DiscountTest extends TestCase
             ->actingAs($this->{$user})
             ->json('POST', "/{$discountKind}", $discount + $shippingMethods);
 
+        unset($discount['translations']);
         $response
             ->assertCreated()
-            ->assertJsonFragment($discount)
+            ->assertJsonFragment($discount + ['name' => 'Kupon', 'description' => 'Testowy kupon'])
             ->assertJsonFragment([
                 'id' => $shippingMethod->getKey(),
                 'name' => $shippingMethod->name,
@@ -725,7 +757,14 @@ class DiscountTest extends TestCase
 
         $discountId = $response->getData()->data->id;
 
-        $this->assertDatabaseHas('discounts', $discount + ['id' => $discountId]);
+        $this->assertDatabaseHas(
+            'discounts',
+            $discount + [
+                'id' => $discountId,
+                "name->{$this->lang}" => 'Kupon',
+                "description->{$this->lang}" => 'Testowy kupon',
+            ]
+        );
         $this->assertDatabaseHas('model_has_discounts', [
             'discount_id' => $discountId,
             'model_type' => ShippingMethod::class,
@@ -758,8 +797,12 @@ class DiscountTest extends TestCase
         Event::fake($event);
 
         $discount = [
-            'name' => 'Kupon',
-            'description' => 'Testowy kupon',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Kupon',
+                    'description' => 'Testowy kupon',
+                ],
+            ],
             'percentage' => '10',
             'priority' => 1,
             'target_type' => DiscountTargetType::PRODUCTS,
@@ -796,9 +839,10 @@ class DiscountTest extends TestCase
             ->actingAs($this->{$user})
             ->json('POST', "/{$discountKind}", $discount + $data);
 
+        unset($discount['translations']);
         $response
             ->assertCreated()
-            ->assertJsonFragment($discount)
+            ->assertJsonFragment($discount + ['name' => 'Kupon', 'description' => 'Testowy kupon'])
             ->assertJsonFragment([
                 'id' => $product->getKey(),
                 'name' => $product->name,
@@ -853,8 +897,12 @@ class DiscountTest extends TestCase
         Event::fake($discountKind === 'coupons' ? CouponCreated::class : SaleCreated::class);
 
         $discount = [
-            'name' => 'Kupon',
-            'description' => 'Testowy kupon',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Kupon',
+                    'description' => 'Testowy kupon',
+                ],
+            ],
             'percentage' => '10',
             'priority' => 1,
             'target_type' => DiscountTargetType::PRODUCTS,
@@ -892,9 +940,10 @@ class DiscountTest extends TestCase
             ->actingAs($this->{$user})
             ->json('POST', "/{$discountKind}", $discount + $data);
 
+        unset($discount['translations']);
         $response
             ->assertCreated()
-            ->assertJsonFragment($discount)
+            ->assertJsonFragment($discount + ['name' => 'Kupon', 'description' => 'Testowy kupon'])
             ->assertJsonFragment([
                 'id' => $product->getKey(),
                 'name' => $product->name,
@@ -941,8 +990,12 @@ class DiscountTest extends TestCase
         Event::fake(SaleCreated::class);
 
         $discount = [
-            'name' => 'Kupon',
-            'description' => 'Testowy kupon',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Kupon',
+                    'description' => 'Testowy kupon',
+                ],
+            ],
             'percentage' => '10',
             'priority' => 1,
             'target_type' => DiscountTargetType::PRODUCTS,
@@ -983,9 +1036,10 @@ class DiscountTest extends TestCase
             ->actingAs($this->{$user})
             ->json('POST', '/sales', $discount + $data);
 
+        unset($discount['translations']);
         $response
             ->assertCreated()
-            ->assertJsonFragment($discount)
+            ->assertJsonFragment($discount + ['name' => 'Kupon', 'description' => 'Testowy kupon'])
             ->assertJsonFragment([
                 'id' => $parentSet->getKey(),
                 'name' => $parentSet->name,
@@ -1012,8 +1066,12 @@ class DiscountTest extends TestCase
         Event::fake(SaleCreated::class);
 
         $discount = [
-            'name' => 'Kupon',
-            'description' => 'Testowy kupon',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Kupon',
+                    'description' => 'Testowy kupon',
+                ],
+            ],
             'percentage' => '10',
             'priority' => 1,
             'target_type' => DiscountTargetType::PRODUCTS,
@@ -1055,9 +1113,10 @@ class DiscountTest extends TestCase
             ->actingAs($this->{$user})
             ->json('POST', '/sales', $discount + $data);
 
+        unset($discount['translations']);
         $response
             ->assertCreated()
-            ->assertJsonFragment($discount)
+            ->assertJsonFragment($discount + ['name' => 'Kupon', 'description' => 'Testowy kupon'])
             ->assertJsonFragment([
                 'id' => $parentSet->getKey(),
                 'name' => $parentSet->name,
@@ -1094,7 +1153,11 @@ class DiscountTest extends TestCase
         Queue::fake();
 
         $discount = [
-            'name' => 'Kupon',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Kupon',
+                ],
+            ],
             'percentage' => '10',
             'priority' => 1,
             'target_type' => DiscountTargetType::ORDER_VALUE,
@@ -1107,9 +1170,10 @@ class DiscountTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->json('POST', "/{$discountKind}", $discount + ['description' => '']);
 
+        unset($discount['translations']);
         $response
             ->assertCreated()
-            ->assertJsonFragment($discount);
+            ->assertJsonFragment($discount + ['name' => 'Kupon', 'description' => null]);
 
         $this->assertDatabaseHas('discounts', $discount + ['id' => $response->json('data.id')]);
     }
@@ -1126,7 +1190,11 @@ class DiscountTest extends TestCase
         Queue::fake();
 
         $discount = [
-            'name' => 'Kupon',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Kupon',
+                ],
+            ],
             'percentage' => '855',
             'priority' => 1,
             'target_type' => DiscountTargetType::ORDER_VALUE,
@@ -1155,7 +1223,11 @@ class DiscountTest extends TestCase
         Queue::fake();
 
         $discount = [
-            'name' => 'Kupon',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Kupon',
+                ],
+            ],
             'value' => 855,
             'type' => DiscountType::AMOUNT,
             'priority' => 1,
@@ -1169,9 +1241,10 @@ class DiscountTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->json('POST', "/{$discountKind}", $discount);
 
+        unset($discount['translations']);
         $response
             ->assertCreated()
-            ->assertJsonFragment($discount);
+            ->assertJsonFragment($discount + ['name' => 'Kupon']);
 
         $discountId = $response->getData()->data->id;
 
@@ -1188,7 +1261,11 @@ class DiscountTest extends TestCase
         Queue::fake();
 
         $discount = [
-            'name' => 'Kupon',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Kupon',
+                ],
+            ],
             'percentage' => '-10',
             'priority' => 1,
             'target_type' => DiscountTargetType::ORDER_VALUE,
@@ -1217,7 +1294,11 @@ class DiscountTest extends TestCase
         Queue::fake();
 
         $discount = [
-            'name' => 'Kupon',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Kupon',
+                ],
+            ],
             'value' => -10,
             'type' => DiscountType::AMOUNT,
             'priority' => 1,
@@ -1243,8 +1324,12 @@ class DiscountTest extends TestCase
         $this->{$user}->givePermissionTo("{$discountKind}.add");
 
         $discount = [
-            'name' => 'Kupon',
-            'description' => 'Testowy kupon',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Kupon',
+                    'description' => 'Testowy kupon',
+                ],
+            ],
             'percentage' => '10',
             'priority' => 1,
             'target_type' => DiscountTargetType::ORDER_VALUE,
@@ -1265,9 +1350,10 @@ class DiscountTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->json('POST', "/{$discountKind}", $discount + $conditions);
 
+        unset($discount['translations']);
         $response
             ->assertCreated()
-            ->assertJsonFragment($discount);
+            ->assertJsonFragment($discount + ['name' => 'Kupon', 'description' => 'Testowy kupon']);
 
         foreach ($this->conditions as $condition) {
             if (
@@ -1339,8 +1425,12 @@ class DiscountTest extends TestCase
         $this->{$user}->givePermissionTo("{$discountKind}.add");
 
         $discount = [
-            'name' => 'Kupon',
-            'description' => 'Testowy kupon',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Kupon',
+                    'description' => 'Testowy kupon',
+                ],
+            ],
             'percentage' => '10',
             'priority' => 1,
             'target_type' => DiscountTargetType::ORDER_VALUE,
@@ -1366,9 +1456,10 @@ class DiscountTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->json('POST', "/{$discountKind}", $discount + $conditions);
 
+        unset($discount['translations']);
         $response
             ->assertCreated()
-            ->assertJsonFragment($discount)
+            ->assertJsonFragment($discount + ['name' => 'Kupon', 'description' => 'Testowy kupon'])
             ->assertJsonFragment([
                 'type' => ConditionType::WEEKDAY_IN,
                 'weekday' => [false, true, false, false, true, true, false],
@@ -1403,8 +1494,12 @@ class DiscountTest extends TestCase
         $this->{$user}->givePermissionTo("{$discountKind}.add");
 
         $discount = [
-            'name' => 'Kupon',
-            'description' => 'Testowy kupon',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Kupon',
+                    'description' => 'Testowy kupon',
+                ],
+            ],
             'percentage' => '10',
             'priority' => 1,
             'target_type' => DiscountTargetType::ORDER_VALUE,
@@ -1432,9 +1527,10 @@ class DiscountTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->json('POST', "/{$discountKind}", $discount + $conditions);
 
+        unset($discount['translations']);
         $response
             ->assertCreated()
-            ->assertJsonFragment($discount)
+            ->assertJsonFragment($discount + ['name' => 'Kupon', 'description' => 'Testowy kupon'])
             ->assertJsonFragment([
                 'type' => ConditionType::DATE_BETWEEN,
                 'is_in_range' => true,
@@ -1521,8 +1617,12 @@ class DiscountTest extends TestCase
         $this->{$user}->givePermissionTo('sales.add');
 
         $discount = [
-            'name' => 'Sale',
-            'description' => 'Test sale',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Sale',
+                    'description' => 'Test sale',
+                ],
+            ],
             'percentage' => '10',
             'priority' => 1,
             'target_type' => DiscountTargetType::PRODUCTS,
@@ -1574,8 +1674,12 @@ class DiscountTest extends TestCase
         ]);
 
         $discount = [
-            'name' => 'Sale',
-            'description' => 'Test sale',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Sale',
+                    'description' => 'Test sale',
+                ],
+            ],
             'percentage' => '10',
             'priority' => 1,
             'target_type' => DiscountTargetType::PRODUCTS,
@@ -1628,8 +1732,12 @@ class DiscountTest extends TestCase
         $this->{$user}->givePermissionTo('sales.add');
 
         $discount = [
-            'name' => 'Sale',
-            'description' => 'Test sale',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Sale',
+                    'description' => 'Test sale',
+                ],
+            ],
             'percentage' => '10',
             'priority' => 1,
             'target_type' => DiscountTargetType::PRODUCTS,
@@ -1666,8 +1774,12 @@ class DiscountTest extends TestCase
         $this->{$user}->givePermissionTo("{$discountKind}.add");
 
         $discount = [
-            'name' => 'Kupon',
-            'description' => 'Testowy kupon',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Kupon',
+                    'description' => 'Testowy kupon',
+                ],
+            ],
             'percentage' => '10',
             'priority' => 1,
             'target_type' => DiscountTargetType::ORDER_VALUE,
@@ -1724,13 +1836,18 @@ class DiscountTest extends TestCase
         Event::fake($event);
 
         $response = $this->actingAs($this->{$user})->json('POST', "/{$discountKind}", [
-            'name' => 'Kupon',
-            'description' => 'Testowy kupon',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Kupon',
+                    'description' => 'Testowy kupon',
+                ],
+            ],
             'percentage' => '10',
             'priority' => 1,
             'target_type' => DiscountTargetType::ORDER_VALUE,
             'target_is_allow_list' => true,
-        ] + $code);
+        ] + $code)
+            ->assertCreated();
 
         Event::assertDispatched($event);
 
@@ -1798,24 +1915,6 @@ class DiscountTest extends TestCase
     /**
      * @dataProvider authWithDiscountProvider
      */
-    public function testUpdateEmptyName($user, $discountKind): void
-    {
-        $this->{$user}->givePermissionTo("{$discountKind}.edit");
-
-        $code = $discountKind === 'sales' ? ['code' => null] : [];
-        $discount = Discount::factory($code)->create();
-
-        $this
-            ->actingAs($this->{$user})
-            ->patchJson("/{$discountKind}/id:" . $discount->getKey(), [
-                'name' => '',
-            ])
-            ->assertUnprocessable();
-    }
-
-    /**
-     * @dataProvider authWithDiscountProvider
-     */
     public function testUpdateFull($user, $discountKind): void
     {
         $this->{$user}->givePermissionTo("{$discountKind}.edit");
@@ -1833,10 +1932,14 @@ class DiscountTest extends TestCase
         $discount->conditionGroups()->attach($conditionGroup);
 
         $discountNew = [
-            'name' => 'Kupon',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Kupon',
+                    'description' => 'Testowy kupon',
+                    'description_html' => 'html',
+                ],
+            ],
             'slug' => 'slug',
-            'description' => 'Testowy kupon',
-            'description_html' => 'html',
             'percentage' => '10',
             'priority' => 1,
             'target_type' => DiscountTargetType::PRODUCTS,
@@ -1860,9 +1963,16 @@ class DiscountTest extends TestCase
         $response = $this->actingAs($this->{$user})
             ->json('PATCH', "/{$discountKind}/id:" . $discount->getKey(), $discountNew + $conditions);
 
+        unset($discountNew['translations']);
         $response
             ->assertOk()
-            ->assertJsonFragment($discountNew + ['id' => $discount->getKey()])
+            ->assertJsonFragment(
+                $discountNew + [
+                    'id' => $discount->getKey(),
+                    'name' => 'Kupon',
+                    'description' => 'Testowy kupon',
+                    'description_html' => 'html',
+            ])
             ->assertJsonMissing($discountCondition->value);
 
         foreach ($this->conditions as $condition) {
@@ -1961,7 +2071,6 @@ class DiscountTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'id' => $discount->getKey(),
-                'description' => $discount->description,
                 'value' => 50,
                 'type' => $discount->type,
                 'metadata' => [],
@@ -1969,7 +2078,6 @@ class DiscountTest extends TestCase
 
         $this->assertDatabaseHas('discounts', [
             'id' => $discount->getKey(),
-            'description' => $discount->description,
             'value' => 50,
             'type' => $discount->type,
         ] + $code);
@@ -2144,8 +2252,12 @@ class DiscountTest extends TestCase
         $discountService->applyDiscountsOnProducts(Collection::make([$product1, $product2, $product3]));
 
         $discountNew = [
-            'name' => 'Kupon',
-            'description' => 'Testowy kupon',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Kupon',
+                    'description' => 'Testowy kupon',
+                ],
+            ],
             'value' => 10,
             'type' => DiscountType::AMOUNT,
             'priority' => 1,
@@ -2162,10 +2274,11 @@ class DiscountTest extends TestCase
         ];
 
         $response = $this->actingAs($this->{$user})
-            ->json('PATCH', '/sales/id:' . $discount->getKey(), $discountNew + $data);
+            ->json('PATCH', '/sales/id:' . $discount->getKey(), $discountNew + $data)
+            ->assertOk();
 
+        unset($discountNew['translations']);
         $response
-            ->assertOk()
             ->assertJsonFragment($discountNew + ['id' => $discount->getKey()])
             ->assertJsonFragment([
                 'id' => $product2->getKey(),
@@ -2324,11 +2437,12 @@ class DiscountTest extends TestCase
             ],
         ];
 
+        unset($discountData['name'], $discountData['description']);
         $response = $this->actingAs($this->{$user})
-            ->json('PATCH', '/sales/id:' . $discount->getKey(), $discountData + $data);
+            ->json('PATCH', '/sales/id:' . $discount->getKey(), $discountData + $data)
+            ->assertOk();
 
         $response
-            ->assertOk()
             ->assertJsonFragment($discountData + ['id' => $discount->getKey()])
             ->assertJsonFragment([
                 'id' => $product2->getKey(),
@@ -2432,8 +2546,12 @@ class DiscountTest extends TestCase
         ]);
 
         $discount = [
-            'name' => 'Sale',
-            'description' => 'Test sale',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Sale',
+                    'description' => 'Test sale',
+                ],
+            ],
             'percentage' => '10',
             'priority' => 1,
             'target_type' => DiscountTargetType::PRODUCTS,

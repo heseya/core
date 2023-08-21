@@ -16,10 +16,9 @@ class SaleDto extends Dto implements InstantiateFromRequest
     use MapMetadata;
 
     public function __construct(
-        public readonly Missing|string $name,
+        public readonly array $translations,
+        public readonly array $published,
         public readonly Missing|string|null $slug,
-        public readonly Missing|string|null $description,
-        public readonly Missing|string|null $description_html,
 
         public readonly Missing|string $percentage,
         /** @var PriceDto[] */
@@ -53,10 +52,9 @@ class SaleDto extends Dto implements InstantiateFromRequest
         ) : new Missing();
 
         return new self(
-            name: $request->input('name', new Missing()),
+            translations: $request->input('translations', []),
+            published: $request->input('published', []),
             slug: $request->input('slug', new Missing()),
-            description: $request->input('description', new Missing()),
-            description_html: $request->input('description_html', new Missing()),
             percentage: $request->input('percentage') ?? new Missing(),
             amounts: $amounts,
             priority: $request->input('priority', new Missing()),
@@ -70,11 +68,6 @@ class SaleDto extends Dto implements InstantiateFromRequest
             metadata: self::mapMetadata($request),
             seo: $request->has('seo') ? SeoMetadataDto::instantiateFromRequest($request) : new Missing(),
         );
-    }
-
-    public function getName(): Missing|string
-    {
-        return $this->name;
     }
 
     public function getConditionGroups(): array|Missing

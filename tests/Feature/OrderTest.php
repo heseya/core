@@ -145,6 +145,7 @@ class OrderTest extends TestCase
             'currency',
             'metadata',
             'billing_address',
+            'sales_channel',
         ];
 
         $this->expected_full_view_structure = $this->expected_full_structure + [
@@ -1457,8 +1458,9 @@ class OrderTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
+        $salesChannelId = SalesChannel::query()->value('id');
         $response = $this->actingAs($this->user)->json('POST', '/orders', [
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $salesChannelId,
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => [
@@ -1496,6 +1498,10 @@ class OrderTest extends TestCase
             ->assertJsonFragment([
                 'email' => $this->user->email,
                 'id' => $this->user->getKey(),
+            ])
+            ->assertJsonFragment([
+                'id' => $salesChannelId,
+                'name' => 'Default',
             ])
             ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
     }

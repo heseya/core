@@ -3,7 +3,6 @@
 namespace Tests\Feature\Discounts;
 
 use App\Enums\DiscountTargetType;
-use App\Enums\DiscountType;
 use App\Models\Discount;
 use Tests\TestCase;
 
@@ -18,7 +17,11 @@ class DiscountSeoTest extends TestCase
         $response = $this
             ->actingAs($this->{$user})
             ->json('POST', '/sales', [
-                'name' => 'Sale',
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Sale',
+                    ],
+                ],
                 'percentage' => '10',
                 'priority' => 1,
                 'target_type' => DiscountTargetType::ORDER_VALUE,

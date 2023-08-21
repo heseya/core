@@ -309,7 +309,11 @@ class PerformanceTest extends TestCase
         $sale->productSets()->attach($set->getKey());
 
         $this->actingAs($this->user)->json('POST', '/sales', [
-            'name' => 'promocja -10% priority 0',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'promocja -10% priority 0',
+                ],
+            ],
             'type' => DiscountType::PERCENTAGE,
             'value' => 10,
             'priority' => 0,
@@ -321,7 +325,7 @@ class PerformanceTest extends TestCase
         // Every product with discount +3 query to database (update, detach(sales), attach(sales))
         // 1000 products = +- 3137 queries, for 10000 +- 31130
         // This is even worse now since prices live in a separate table, now there is a +1 query for every product
-        $this->assertQueryCountLessThan(6128);
+        $this->assertQueryCountLessThan(6130);
     }
 
     /**
