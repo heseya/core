@@ -240,11 +240,14 @@ OrderProductPublic:
     quantity:
       type: number
       example: '12.4'
+    currency:
+      type: string
+      example: PLN
     price:
-      type: number
+      type: string
       example: '199.99'
     price_initial:
-      type: number
+      type: string
       example: '299.99'
     vat_rate:
       type: number

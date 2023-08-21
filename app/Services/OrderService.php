@@ -254,6 +254,7 @@ final readonly class OrderService implements OrderServiceContract
                     $digitalShippingMethod?->getPrice($order->cart_total) ?? Money::zero($currency->value),
                 );
 
+                // Always gross
                 $order->shipping_price_initial = $shippingPrice;
                 $order->shipping_price = $shippingPrice;
 
@@ -286,10 +287,7 @@ final readonly class OrderService implements OrderServiceContract
                 );
 
                 // shipping price magic 🙈
-                $order->summary = $this->salesChannelService->addVat(
-                    $order->summary->plus($order->shipping_price),
-                    $vat_rate,
-                )->plus($order->shipping_price);
+                $order->summary = $order->shipping_price->plus($order->cart_total);
 
                 $order->push();
             } catch (Throwable $exception) {

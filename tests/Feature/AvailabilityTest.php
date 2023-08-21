@@ -50,6 +50,7 @@ class AvailabilityTest extends TestCase
     private Product $product;
     private ShippingMethodServiceContract $shippingMethodService;
     private SchemaCrudService $schemaCrudService;
+    private Currency $currency;
 
     /**
      * @throws RoundingNecessaryException
@@ -73,6 +74,8 @@ class AvailabilityTest extends TestCase
 
         $this->shippingMethodService = App::make(ShippingMethodServiceContract::class);
         $this->schemaCrudService = App::make(SchemaCrudService::class);
+
+        $this->currency = Currency::DEFAULT;
     }
 
     /**
@@ -362,6 +365,7 @@ class AvailabilityTest extends TestCase
         $this->product->update(['available' => true]);
 
         $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'test@test.test',
             'shipping_method_id' => $shippingMethod->getKey(),
@@ -440,6 +444,7 @@ class AvailabilityTest extends TestCase
         $this->{$user}->givePermissionTo('orders.edit.status');
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'test@test.test',
             'shipping_method_id' => $shippingMethod->getKey(),
@@ -642,6 +647,7 @@ class AvailabilityTest extends TestCase
         ]);
 
         $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => $email,
             'shipping_method_id' => $shippingMethod->getKey(),

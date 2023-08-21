@@ -1086,15 +1086,15 @@ class SchemaTest extends TestCase
 
         $this->assertEquals(10, $colors->getPrice($red->getKey(), [
             $colors->getKey() => $red->getKey(),
-        ]));
+        ], $this->currency)->getAmount()->toFloat());
 
         $this->assertEquals(20, $colors->getPrice($green->getKey(), [
             $colors->getKey() => $green->getKey(),
-        ]));
+        ], $this->currency)->getAmount()->toFloat());
 
         $this->assertEquals(30, $colors->getPrice($blue->getKey(), [
             $colors->getKey() => $blue->getKey(),
-        ]));
+        ], $this->currency)->getAmount()->toFloat());
 
         /** @var Schema $multiplier */
         $multiplier = Schema::create([
@@ -1110,7 +1110,7 @@ class SchemaTest extends TestCase
         $value = mt_rand(10, 100) / 10;
         $this->assertEquals(10 * $value, $multiplier->getPrice($value, [
             $multiplier->getKey() => $value,
-        ]));
+        ], $this->currency)->getAmount()->toFloat());
     }
 
     public function testRelatedPrice(): void
@@ -1141,13 +1141,13 @@ class SchemaTest extends TestCase
         $this->assertEquals(0, $colors->getPrice($red->getKey(), [
             $colors->getKey() => $red->getKey(),
             $multiplier->getKey() => 2,
-        ]));
+        ], $this->currency)->getAmount()->toFloat());
 
         $value = mt_rand(10, 100) / 10;
         $this->assertEquals(10 * $value, $multiplier->getPrice($value, [
             $multiplier->getKey() => $value,
             $colors->getKey() => $red->getKey(),
-        ]));
+        ], $this->currency)->getAmount()->toFloat());
     }
 
     /**

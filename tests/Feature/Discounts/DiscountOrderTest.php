@@ -43,7 +43,6 @@ class DiscountOrderTest extends TestCase
 
     private ProductService $productService;
     private Currency $currency;
-
     private SchemaCrudService $schemaCrudService;
 
     /**
@@ -98,6 +97,7 @@ class DiscountOrderTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -111,7 +111,7 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => 95]); // 100 - 100 * 15% + 10 (delivery)
+            ->assertJsonFragment(['summary' => '95.00']); // 100 - 100 * 15% + 10 (delivery)
 
         $orderId = $response->getData()->data->id;
 
@@ -138,6 +138,7 @@ class DiscountOrderTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -151,7 +152,7 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => 60]); // 100 - 50 + 10 (delivery)
+            ->assertJsonFragment(['summary' => '60.00']); // 100 - 50 + 10 (delivery)
     }
 
     /**
@@ -169,6 +170,7 @@ class DiscountOrderTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -182,7 +184,7 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => 100]); // 100 - 100 * 10% + 10 (delivery)
+            ->assertJsonFragment(['summary' => '100.00']); // 100 - 100 * 10% + 10 (delivery)
 
         $orderId = $response->getData()->data->id;
 
@@ -220,6 +222,7 @@ class DiscountOrderTest extends TestCase
         $discount->conditionGroups()->attach($conditionGroup);
 
         $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -255,6 +258,7 @@ class DiscountOrderTest extends TestCase
         $discount->conditionGroups()->attach($conditionGroup);
 
         $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -359,6 +363,7 @@ class DiscountOrderTest extends TestCase
         $coupon->conditionGroups()->attach($conditionGroup2);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -390,7 +395,7 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => 542]);
+            ->assertJsonFragment(['summary' => '542.00']);
 
         $orderId = $response->getData()->data->id;
 
@@ -454,6 +459,7 @@ class DiscountOrderTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -472,7 +478,7 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => 185.5]); // 90 (first product) + 85,5 (second product) + 10 (delivery)
+            ->assertJsonFragment(['summary' => '185.50']); // 90 (first product) + 85,5 (second product) + 10 (delivery)
 
         $order = Order::query()->find($response->getData()->data->id);
 
@@ -487,13 +493,13 @@ class DiscountOrderTest extends TestCase
         $this->assertDatabaseHas('order_products', [
             'order_id' => $order->getKey(),
             'product_id' => $this->product->getKey(),
-            'price' => 85.5,
+            'price' => '8550',
         ]);
 
         $this->assertDatabaseHas('order_products', [
             'order_id' => $order->getKey(),
             'product_id' => $this->product->getKey(),
-            'price' => 90,
+            'price' => '9000',
         ]);
 
         $this->assertDatabaseHas('order_schemas', [
@@ -502,7 +508,7 @@ class DiscountOrderTest extends TestCase
             'order_product_id' => OrderProduct::query()
                 ->where('order_id', $order->getKey())
                 ->where('product_id', $this->product->getKey())
-                ->where('price', 85.5)
+                ->where('price', '8550')
                 ->first()
                 ->getKey(),
         ]);
@@ -512,7 +518,7 @@ class DiscountOrderTest extends TestCase
             'order_product_id' => OrderProduct::query()
                 ->where('order_id', $order->getKey())
                 ->where('product_id', $this->product->getKey())
-                ->where('price', 90)
+                ->where('price', '9000')
                 ->pluck('id'),
         ]);
 
@@ -522,21 +528,21 @@ class DiscountOrderTest extends TestCase
             'model_id' => $cheapestProduct->getKey(),
             'model_type' => OrderProduct::class,
             'discount_id' => $cheapestDiscount->getKey(),
-            'applied_discount' => 4.5,
+            'applied_discount' => '450',
         ]);
 
         $this->assertDatabaseHas('order_discounts', [
             'model_id' => $product->getKey(),
             'model_type' => OrderProduct::class,
             'discount_id' => $sale->getKey(),
-            'applied_discount' => 10,
+            'applied_discount' => '1000',
         ]);
 
         $this->assertDatabaseHas('order_discounts', [
             'model_id' => $cheapestProduct->getKey(),
             'model_type' => OrderProduct::class,
             'discount_id' => $sale->getKey(),
-            'applied_discount' => 10,
+            'applied_discount' => '1000',
         ]);
     }
 
@@ -583,6 +589,7 @@ class DiscountOrderTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -603,13 +610,13 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => 1817.6]);
+            ->assertJsonFragment(['summary' => '1817.60']);
 
         $orderId = $response->getData()->data->id;
 
         $this->assertDatabaseHas('orders', [
             'id' => $orderId,
-            'summary' => 1817.6,
+            'summary' => '181760',
         ]);
     }
 
@@ -637,6 +644,7 @@ class DiscountOrderTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -655,14 +663,14 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => 7275.38]);
+            ->assertJsonFragment(['summary' => '7275.38']);
 
         $orderId = $response->getData()->data->id;
 
         $this->assertDatabaseHas('order_products', [
             'order_id' => $orderId,
             'product_id' => $product1->getKey(),
-            'price' => 3632.69,
+            'price' => '363269',
             'quantity' => 2,
         ]);
     }
@@ -704,6 +712,7 @@ class DiscountOrderTest extends TestCase
         $sale->products()->attach($product);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -714,7 +723,7 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => 34]); // 3 * (10 - 2) + 10 (delivery)
+            ->assertJsonFragment(['summary' => '34.00']); // 3 * (10 - 2) + 10 (delivery)
     }
 
     /**
@@ -758,6 +767,7 @@ class DiscountOrderTest extends TestCase
         $sale->products()->attach($product);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -768,7 +778,7 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => 110]); // (10 (price) - 20 (discount)) + 100 + 10 (delivery)
+            ->assertJsonFragment(['summary' => '110.00']); // (10 (price) - 20 (discount)) + 100 + 10 (delivery)
     }
 
     /**
@@ -809,6 +819,7 @@ class DiscountOrderTest extends TestCase
         $sale->products()->attach($product);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address,
@@ -826,7 +837,7 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => 20]); // (10 + 20 - 20) + 10 (delivery)
+            ->assertJsonFragment(['summary' => '20.00']); // (10 + 20 - 20) + 10 (delivery)
     }
 
     /**
@@ -867,6 +878,7 @@ class DiscountOrderTest extends TestCase
         $sale->products()->attach($product);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -885,7 +897,7 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => 70]); // 3 * (30 - 10) + 10 (delivery)
+            ->assertJsonFragment(['summary' => '70.00']); // 3 * (30 - 10) + 10 (delivery)
     }
 
     /**
@@ -926,6 +938,7 @@ class DiscountOrderTest extends TestCase
         $sale->products()->attach($product);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -948,7 +961,7 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => 110]); // (20 (schema price) - 30 (discount)) + 100 + 10 (delivery)
+            ->assertJsonFragment(['summary' => '110.00']); // (20 (schema price) - 30 (discount)) + 100 + 10 (delivery)
     }
 
     /**
@@ -983,6 +996,7 @@ class DiscountOrderTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -998,20 +1012,20 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => 300]); // 100 * 2 + (100 - 10%) * 1 + 10 (delivery)
+            ->assertJsonFragment(['summary' => '300.00']); // 100 * 2 + (100 - 10%) * 1 + 10 (delivery)
 
         $order = Order::find($response->getData()->data->id);
 
         $this->assertDatabaseHas('order_products', [
             'order_id' => $order->getKey(),
             'product_id' => $product->getKey(),
-            'price' => 90,
+            'price' => '9000',
         ]);
 
         $this->assertDatabaseHas('order_products', [
             'order_id' => $order->getKey(),
             'product_id' => $product->getKey(),
-            'price' => 100,
+            'price' => '10000',
         ]);
 
         $this->assertDatabaseHas('deposits', [
@@ -1072,6 +1086,7 @@ class DiscountOrderTest extends TestCase
         $discount->products()->attach($product->getKey());
 
         $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'example@example.com',
             'shipping_method_id' => $shippingMethod->getKey(),
@@ -1094,7 +1109,7 @@ class DiscountOrderTest extends TestCase
         // Shipping price shouldn't be discounted if cart total after discounts doesn't fit in discounted range
         $this->assertDatabaseHas('orders', [
             'id' => $orderId,
-            'shipping_price' => $shippingPriceNonDiscounted,
+            'shipping_price' => $shippingPriceNonDiscounted * 100 . '',
         ]);
     }
 }

@@ -13,6 +13,8 @@ use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\WebHook;
+use Brick\Money\Money;
+use Domain\Currency\Currency;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Bus;
@@ -35,6 +37,8 @@ class OrderUpdateTest extends TestCase
     private Address $addressDelivery;
     private Address $addressInvoice;
     private Address $address;
+
+    private Currency $currency;
 
     public function setUp(): void
     {
@@ -64,6 +68,8 @@ class OrderUpdateTest extends TestCase
         $this->order->products()->save(
             OrderProduct::factory()->make(),
         );
+
+        $this->currency = Currency::DEFAULT;
     }
 
     public function testUpdateUnauthorized(): void
@@ -1013,8 +1019,8 @@ class OrderUpdateTest extends TestCase
         $orderProduct = $this->order->products()->create([
             'product_id' => $product->getKey(),
             'quantity' => 3,
-            'price' => 80.00,
-            'price_initial' => 80.00,
+            'price' => Money::of(80.00, $this->currency->value),
+            'price_initial' => Money::of(80.00, $this->currency->value),
             'name' => $product->name,
         ]);
 
@@ -1061,8 +1067,8 @@ class OrderUpdateTest extends TestCase
         $orderProduct = $this->order->products()->create([
             'product_id' => $product->getKey(),
             'quantity' => 3,
-            'price' => 80.00,
-            'price_initial' => 80.00,
+            'price' => Money::of(80.00, $this->currency->value),
+            'price_initial' => Money::of(80.00, $this->currency->value),
             'name' => $product->name,
         ]);
 
@@ -1131,8 +1137,8 @@ class OrderUpdateTest extends TestCase
         $order->products()->create([
             'product_id' => $product->getKey(),
             'quantity' => 3,
-            'price' => 80.00,
-            'price_initial' => 80.00,
+            'price' => Money::of(80.00, $this->currency->value),
+            'price_initial' => Money::of(80.00, $this->currency->value),
             'name' => $product->name,
             'shipping_digital' => true,
         ]);
@@ -1180,8 +1186,8 @@ class OrderUpdateTest extends TestCase
         $order->products()->create([
             'product_id' => $product->getKey(),
             'quantity' => 3,
-            'price' => 80.00,
-            'price_initial' => 80.00,
+            'price' => Money::of(80.00, $this->currency->value),
+            'price_initial' => Money::of(80.00, $this->currency->value),
             'name' => $product->name,
             'shipping_digital' => true,
         ]);
@@ -1215,8 +1221,8 @@ class OrderUpdateTest extends TestCase
         $orderProduct = $this->order->products()->create([
             'product_id' => $product->getKey(),
             'quantity' => 3,
-            'price' => 80.00,
-            'price_initial' => 80.00,
+            'price' => Money::of(80.00, $this->currency->value),
+            'price_initial' => Money::of(80.00, $this->currency->value),
             'name' => $product->name,
         ]);
 
@@ -1292,7 +1298,7 @@ class OrderUpdateTest extends TestCase
             'shipping_place' => 'external shipping place',
         ]);
 
-        $price = 1000;
+        $price = Money::of(1000.00, $this->currency->value);
         $orderProduct = new OrderProduct([
             'product_id' => $product->getKey(),
             'quantity' => 1,
@@ -1368,7 +1374,7 @@ class OrderUpdateTest extends TestCase
             'shipping_address_id' => $address->getKey(),
         ]);
 
-        $price = 1000;
+        $price = Money::of(1000.00, $this->currency->value);
         $orderProduct = new OrderProduct([
             'product_id' => $product->getKey(),
             'quantity' => 1,
