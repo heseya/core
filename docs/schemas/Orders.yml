@@ -65,6 +65,8 @@ Order:
       $ref: './../schemas/Metadata.yml#/Metadata'
     metadata_private:
       $ref: './../schemas/Metadata.yml#/Metadata'
+    sales_channel:
+      $ref: './SalesChannel.yml#/SalesChannel'
 
 OrderProduct:
   type: object
@@ -210,6 +212,8 @@ OrderSummary:
       $ref: './../schemas/Metadata.yml#/Metadata'
     metadata_private:
       $ref: './../schemas/Metadata.yml#/Metadata'
+    sales_channel:
+      $ref: './SalesChannel.yml#/SalesChannel'
   type: object
 
 OrderProductUrl:
