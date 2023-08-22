@@ -84,6 +84,7 @@ enum Exceptions: string
 
     case CLIENT_SHIPPING_METHOD_NOT_OWNER = 'This shipping method belongs to other application';
     case CLIENT_SHIPPING_METHOD_INVALID_TYPE = 'Shipping method or digital shipping method type is invalid';
+    case CLIENT_SHIPPING_METHOD_INVALID_COUNTRY = 'Selected shipping method not available for recipient country';
     case CLIENT_SHIPPING_METHOD_NOT_EXISTS = 'Shipping method does not exist.';
     case CLIENT_SHIPPING_POINT_NOT_EXISTS = 'Shipping point does not exists.';
     case CLIENT_SHIPPING_POINT_STRING = 'Shipping point should be string.';

@@ -8,6 +8,7 @@ use Brick\Money\Currency;
 use Brick\Money\Money;
 use Domain\Currency\Currency as CurrencyEnum;
 use Illuminate\Support\Str;
+use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -15,6 +16,12 @@ use Support\LaravelData\Casts\ArrayWrapCast;
 
 final class ProductSearchDto extends Data
 {
+    #[Computed]
+    public readonly ?string $price_sort_direction;
+
+    #[Computed]
+    public readonly ?string $price_sort_currency;
+
     /**
      * @param string[]|Optional $ids
      * @param string[]|Optional $sets
@@ -56,17 +63,20 @@ final class ProductSearchDto extends Data
         public array|Optional $metadata_public,
         public Optional|ProductSearchPriceDto $price,
     ) {
-        $this->sort = is_string($sort)
-            ? Str::of($sort)
-                ->replace([
-                    'price:asc',
-                    'price:desc',
-                ], [
-                    'price_min:asc',
-                    'price_max:desc',
-                ])
-                ->toString()
-            : null;
+        if ($this->sort instanceof Optional) {
+            $this->sort = null;
+        }
+        if ($match = Str::match('(price:.{3}:(?:asc|desc))', $this->sort ?? '')) {
+            $price_sort = explode(':', $match);
+            $this->price_sort_direction = $price_sort[0] . ':' . $price_sort[2];
+            $this->price_sort_currency = $price_sort[1];
+        } elseif ($match = Str::match('(price:(?:asc|desc))', $this->sort ?? '')) {
+            $this->price_sort_direction = $match;
+            $this->price_sort_currency = null;
+        } else {
+            $this->price_sort_direction = null;
+            $this->price_sort_currency = null;
+        }
     }
 
     public function toArray(): array

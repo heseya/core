@@ -2,19 +2,18 @@
 
 namespace App\SortColumnTypes;
 
-use Illuminate\Support\Facades\App;
+use Domain\Currency\Currency;
+use Illuminate\Validation\Rules\Enum;
 
-final class TranslatedColumn implements SortableColumn
+final class PriceColumn implements SortableColumn
 {
     public static function getColumnName(string $fieldName): string
     {
-        $localization = App::getLocale();
-
-        return "{$fieldName}->{$localization}";
+        return $fieldName;
     }
 
     public static function getValidationRules(string $fieldName): array
     {
-        return [];
+        return ['nullable', new Enum(Currency::class)];
     }
 }
