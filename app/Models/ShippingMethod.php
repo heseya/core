@@ -92,7 +92,26 @@ class ShippingMethod extends Model
 
     public function countries(): BelongsToMany
     {
-        return $this->belongsToMany(Country::class, 'shipping_method_country');
+        return $this->belongsToMany(
+            Country::class,
+            'shipping_method_country',
+            'shipping_method_id',
+            'country_code',
+            'id',
+            'code',
+            'shippingMethods',
+        );
+    }
+
+    public function isCountryBlocked(string $country): bool
+    {
+        if ($this->countries->count() === 0) {
+            return false;
+        }
+
+        return $this->block_list
+            ? $this->countries->contains('code', $country)
+            : !$this->countries->contains('code', $country);
     }
 
     public function shippingPoints(): BelongsToMany

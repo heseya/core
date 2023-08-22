@@ -39,7 +39,7 @@ final class ProductSetCreateDto extends Data
     public function __construct(
         #[Uuid]
         public readonly Optional|string $id,
-        #[Rule(new Translations(['name', 'description_html']))]
+        #[Rule(new Translations(['name']))]
         public readonly array $translations,
         public readonly array $published,
         #[AlphaDash, Max(255)]

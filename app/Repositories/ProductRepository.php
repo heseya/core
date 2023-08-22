@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Str;
+use Spatie\LaravelData\Optional;
 use Support\Dtos\ModelIdentityDto;
 
 class ProductRepository implements ProductRepositoryContract
@@ -40,20 +40,20 @@ class ProductRepository implements ProductRepositoryContract
             $query->where('products.public', true);
         }
 
-        if (is_string($dto->sort)) {
-            if (Str::contains($dto->sort, 'price_min')) {
+        if (is_string($dto->price_sort_direction)) {
+            if ($dto->price_sort_direction === 'price:asc') {
                 $query->withMin([
-                    'pricesMin as price_min' => fn (Builder $subquery) => $subquery->where('currency', $dto->getCurrency()->getCurrencyCode()),
+                    'pricesMin as price' => fn (Builder $subquery) => $subquery->where('currency', $dto->price_sort_currency ?? Currency::DEFAULT->value),
                 ], 'value');
             }
-            if (Str::contains($dto->sort, 'price_max')) {
+            if ($dto->price_sort_direction === 'price:desc') {
                 $query->withMax([
-                    'pricesMax as price_max' => fn (Builder $subquery) => $subquery->where('currency', $dto->getCurrency()->getCurrencyCode()),
+                    'pricesMax as price' => fn (Builder $subquery) => $subquery->where('currency', $dto->price_sort_currency ?? Currency::DEFAULT->value),
                 ], 'value');
             }
+        }
+        if (!$dto->sort instanceof Optional) {
             $query->sort($dto->sort);
-        } else {
-            $query->sort();
         }
 
         return $query->paginate(Config::get('pagination.per_page'));

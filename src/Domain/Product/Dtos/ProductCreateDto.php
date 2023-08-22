@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Product\Dtos;
 
+use App\Rules\Translations;
 use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Seo\Dtos\SeoMetadataDto;
@@ -11,6 +12,7 @@ use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\MapOutputName;
+use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\Optional;
@@ -66,6 +68,7 @@ final class ProductCreateDto extends Data
         #[MapInputName('metadata')]
         public readonly array|Optional $metadata_public,
         public readonly array|Optional $metadata_private,
+        #[Rule(new Translations(['name']))]
         public array $translations = [],
         public array $published = [],
     ) {

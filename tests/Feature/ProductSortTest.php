@@ -130,7 +130,7 @@ class ProductSortTest extends TestCase
 
         $response = $this
             ->actingAs($this->{$user})
-            ->json('GET', '/products', ['sort' => 'price:asc', 'price' => ['currency' => Currency::EUR->value]]);
+            ->json('GET', '/products', ['sort' => 'price:EUR:asc']);
 
         $response->assertOk()
             ->assertJson([
@@ -152,7 +152,7 @@ class ProductSortTest extends TestCase
 
         $response = $this
             ->actingAs($this->{$user})
-            ->json('GET', '/products', ['sort' => 'price:desc', 'price' => ['currency' => Currency::EUR->value]]);
+            ->json('GET', '/products', ['sort' => 'price:EUR:desc']);
 
         $response->assertOk()
             ->assertJson([

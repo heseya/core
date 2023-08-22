@@ -144,6 +144,19 @@ final readonly class OrderService implements OrderServiceContract
                     break;
             }
 
+            if ($shippingMethod) {
+                $country = null;
+                if ($shippingPlace instanceof AddressDto && is_string($shippingPlace->getCountry())) {
+                    $country = $shippingPlace->getCountry();
+                }
+                if ($shippingAddressId) {
+                    $country = Address::query()->where('id', $shippingAddressId)->first()?->country;
+                }
+                if ($country !== null && $shippingMethod->isCountryBlocked($country)) {
+                    throw new OrderException(Exceptions::CLIENT_SHIPPING_METHOD_INVALID_COUNTRY);
+                }
+            }
+
             if (!($dto->getBillingAddress() instanceof Missing)) {
                 $billingAddress = Address::query()->firstOrCreate($dto->getBillingAddress()->toArray());
             }
