@@ -1,11 +1,14 @@
 <?php
 
 use App\Enums\RoleType;
+use App\Models\Discount;
 use App\Models\Permission;
 use App\Models\Role;
+use Domain\Language\Language;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Support\Utils\Migrate;
 
 return new class extends Migration
 {
@@ -19,6 +22,14 @@ return new class extends Migration
             $table->text('description')->change();
             $table->text('published')->nullable();
         });
+
+        $lang = Language::query()->where('default', true)->value('id');
+
+        Discount::query()->update([
+            'name' => Migrate::lang('name', $lang),
+            'description' => Migrate::lang('description', $lang),
+            'published' => [$lang],
+        ]);
 
         Permission::create([
             'name' => 'coupons.show_hidden',

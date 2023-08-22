@@ -34,7 +34,7 @@ final class PageUpdateDto extends Data
     public function __construct(
         #[Rule(new Translations(['name', 'content_html']))]
         public readonly array|Optional $translations,
-        #[Unique('pages', ignore: new RouteParameterReference('page'), ignoreColumn: 'id')]
+        #[Unique('pages', ignore: new RouteParameterReference('page.id'), ignoreColumn: 'id')]
         public readonly Optional|string $slug,
         public readonly bool|Optional $public,
 

@@ -24,7 +24,7 @@ class CreateLanguagesTable extends Migration
             $table->timestamps();
         });
 
-        Language::create([
+        Language::query()->create([
             'iso' => 'pl',
             'name' => 'Polski',
             'default' => true,
@@ -36,7 +36,8 @@ class CreateLanguagesTable extends Migration
         Permission::create(['name' => 'languages.edit', 'display_name' => 'Możliwość edycji języków']);
         Permission::create(['name' => 'languages.remove', 'display_name' => 'Możliwość usuwania języków']);
 
-        $owner = Role::where('type', RoleType::OWNER->value)->first();
+        /** @var Role $owner */
+        $owner = Role::query()->where('type', RoleType::OWNER->value)->first();
         $owner->givePermissionTo([
             'languages.show_hidden',
             'languages.add',

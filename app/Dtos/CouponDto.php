@@ -34,7 +34,7 @@ final class CouponDto extends SaleDto implements InstantiateFromRequest
         CouponCreateRequest|CouponUpdateRequest|FormRequest|SaleCreateRequest $request
     ): self {
         $amounts = $request->has('amounts') ? array_map(
-            fn ($data) => PriceDto::from($data),
+            fn (array|PriceDto $amount) => $amount instanceof PriceDto ? $amount : PriceDto::from($amount),
             $request->input('amounts'),
         ) : new Missing();
 
