@@ -16,7 +16,7 @@ return new class extends Migration {
     public function up(): void
     {
         DB::table('products')->lazyById()->each(function (object $product): void {
-            $this->insertPrice('price', $product->price, $product->id);
+            $this->insertPrice('price_base', $product->price, $product->id);
             $this->insertPrice('price_min', $product->price_min, $product->id);
             $this->insertPrice('price_max', $product->price_max, $product->id);
             $this->insertPrice('price_min_initial', $product->price_min_initial, $product->id);
@@ -47,7 +47,7 @@ return new class extends Migration {
 
         DB::table('products')->lazyById()->each(function (object $discount): void {
             $data = [
-                'price' => $this->getPrice('price', $discount->id),
+                'price' => $this->getPrice('price_base', $discount->id),
                 'price_min' => $this->getPrice('price_min', $discount->id),
                 'price_max' => $this->getPrice('price_max', $discount->id),
                 'price_min_initial' => $this->getPrice('price_min_initial', $discount->id),
