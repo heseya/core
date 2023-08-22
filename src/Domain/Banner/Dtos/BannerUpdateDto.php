@@ -30,7 +30,7 @@ final class BannerUpdateDto extends Data
      * @param array<string, string>|Optional $metadata_private
      */
     public function __construct(
-        #[Unique('banners', ignore: new RouteParameterReference('banner'), ignoreColumn: 'id'), Max(255)]
+        #[Unique('banners', ignore: new RouteParameterReference('banner.id'), ignoreColumn: 'id'), Max(255)]
         public readonly Optional|string|null $slug,
         #[Max(255)]
         public readonly Optional|string|null $name,

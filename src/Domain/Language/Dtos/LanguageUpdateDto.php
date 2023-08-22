@@ -13,7 +13,7 @@ use Spatie\LaravelData\Support\Validation\References\RouteParameterReference;
 final class LanguageUpdateDto extends Data
 {
     public function __construct(
-        #[Max(16), Unique('languages', ignore: new RouteParameterReference('language'))]
+        #[Max(16), Unique('languages', ignore: new RouteParameterReference('language.id'), ignoreColumn: 'id')]
         public Optional|string $iso,
         #[Max(80)]
         public Optional|string $name,

@@ -6,6 +6,7 @@ namespace Domain\Banner\Dtos;
 
 use App\Rules\Translations;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Data;
@@ -20,6 +21,7 @@ final class BannerMediaUpdateDto extends Data
      * @param string[]|Optional $published
      */
     public function __construct(
+        #[Exists('banner_media', 'id')]
         public readonly Optional|string $id,
         #[Max(255)]
         public readonly string|null $url,
