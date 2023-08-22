@@ -60,6 +60,7 @@ use App\Repositories\DiscountRepository;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\ShippingTimeDateServiceContract;
+use App\Traits\GetPublishedLanguageFilter;
 use Brick\Math\BigDecimal;
 use Brick\Math\Exception\MathException;
 use Brick\Math\Exception\NumberFormatException;
@@ -88,6 +89,8 @@ use Illuminate\Support\Str;
 
 readonly class DiscountService implements DiscountServiceContract
 {
+    use GetPublishedLanguageFilter;
+
     public function __construct(
         private MetadataServiceContract $metadataService,
         private SeoMetadataService $seoMetadataService,
@@ -99,7 +102,7 @@ readonly class DiscountService implements DiscountServiceContract
 
     public function index(CouponIndexDto|SaleIndexDto $dto): LengthAwarePaginator
     {
-        return Discount::searchByCriteria($dto->toArray())
+        return Discount::searchByCriteria($dto->toArray() + $this->getPublishedLanguageFilter('discounts'))
             ->orderBy('updated_at', 'DESC')
             ->with(['orders', 'products', 'productSets', 'conditionGroups', 'shippingMethods', 'metadata'])
             ->paginate(Config::get('pagination.per_page'));
@@ -115,7 +118,12 @@ readonly class DiscountService implements DiscountServiceContract
         }
 
         /** @var Discount $discount */
-        $discount = Discount::query()->create($dto->toArray());
+        $discount = Discount::query()->make($dto->toArray());
+
+        foreach ($dto->translations as $lang => $translation) {
+            $discount->setLocale($lang)->fill($translation);
+        }
+        $discount->save();
 
         $discount->products()->attach($dto->getTargetProducts());
         $discount->productSets()->attach($dto->getTargetSets());
@@ -130,7 +138,7 @@ readonly class DiscountService implements DiscountServiceContract
             $this->metadataService->sync($discount, $dto->getMetadata());
         }
 
-        if (!($dto->getSeo() instanceof Missing)) {
+        if ($dto->getSeo() !== null && !($dto->getSeo() instanceof Missing)) {
             $this->seoMetadataService->createOrUpdateFor($discount, $dto->getSeo());
         }
 
@@ -161,6 +169,11 @@ readonly class DiscountService implements DiscountServiceContract
 
         $discount->save();
 
+        foreach ($dto->translations as $lang => $translation) {
+            $discount->setLocale($lang)->fill($translation);
+        }
+        $discount->save();
+
         if (!$dto->getTargetProducts() instanceof Missing) {
             $discount->products()->sync($dto->getTargetProducts());
         }
@@ -181,8 +194,11 @@ readonly class DiscountService implements DiscountServiceContract
             }
         }
 
-        if (!($dto->getSeo() instanceof Missing)) {
+        if ($dto->getSeo() !== null && !($dto->getSeo() instanceof Missing)) {
             $this->seoMetadataService->createOrUpdateFor($discount, $dto->getSeo());
+        } elseif ($dto->getSeo() === null && $discount->seo) {
+            $this->seoMetadataService->delete($discount->seo);
+            $discount->refresh();
         }
 
         if (!($dto->amounts instanceof Missing)) {

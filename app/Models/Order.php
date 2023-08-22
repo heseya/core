@@ -18,6 +18,7 @@ use App\Traits\HasOrderDiscount;
 use App\Traits\Sortable;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\SalesChannel\Models\SalesChannel;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -61,6 +62,7 @@ class Order extends Model implements SortableContract
         'shipping_place',
         'invoice_requested',
         'shipping_type',
+        'sales_channel_id',
 
         'currency',
         'cart_total_initial',
@@ -219,22 +221,8 @@ class Order extends Model implements SortableContract
         };
     }
 
-    //    private static function priceAttributeTemplate(string $fieldName): Attribute
-    //    {
-    //        return Attribute::make(
-    //            get: fn (mixed $value, array $attributes): Money => Money::ofMinor(
-    //                $attributes[$fieldName],
-    //                $attributes['currency'],
-    //            ),
-    //            set: fn (int|Money|string $value): array => match (true) {
-    //                $value instanceof Money => [
-    //                    $fieldName => $value->getMinorAmount(),
-    //                    'currency' => $value->getCurrency()->getCurrencyCode(),
-    //                ],
-    //                default => [
-    //                    $fieldName => $value,
-    //                ]
-    //            }
-    //        );
-    //    }
+    public function salesChannel(): HasOne
+    {
+        return $this->hasOne(SalesChannel::class, 'id', 'sales_channel_id');
+    }
 }

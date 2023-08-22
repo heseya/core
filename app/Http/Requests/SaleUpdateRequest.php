@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Enums\DiscountTargetType;
 use App\Rules\Price;
 use App\Rules\PricesEveryCurrency;
+use App\Rules\Translations;
 use Brick\Math\BigDecimal;
 use Illuminate\Validation\Rules\Enum;
 
@@ -16,7 +17,7 @@ class SaleUpdateRequest extends SaleCreateRequest
     public function rules(): array
     {
         return array_merge(parent::rules(), [
-            'name' => ['filled', 'string', 'max:255'],
+            'translations' => ['sometimes', new Translations(['name', 'description_html', 'description'])],
 
             'percentage' => ['prohibits:amounts', 'numeric', 'string', 'gte:0'],
             'amounts' => ['prohibits:percentage', new PricesEveryCurrency()],

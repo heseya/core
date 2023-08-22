@@ -179,8 +179,10 @@ class OrderCreateTest extends TestCase
         ]);
 
         $productQuantity = 20;
+        $salesChannelId = SalesChannel::query()->value('id');
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'sales_channel_id' => $salesChannelId,
             'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => $this->email,
@@ -195,7 +197,12 @@ class OrderCreateTest extends TestCase
             ],
         ]);
 
-        $response->assertCreated();
+        $response
+            ->assertCreated()
+            ->assertJsonFragment([
+                'id' => $salesChannelId,
+                'name' => 'Default',
+            ]);
         $order = $response->getData()->data;
 
         $shippingPrice = $this->shippingMethod->getPrice(
@@ -211,6 +218,7 @@ class OrderCreateTest extends TestCase
             'email' => $this->email,
             'shipping_price' => $shippingPrice->getMinorAmount(),
             'summary' => $summary->getMinorAmount(),
+            'sales_channel_id' => $salesChannelId,
         ]);
         $this->assertDatabaseHas('addresses', $this->address->toArray());
         $this->assertDatabaseHas('order_products', [

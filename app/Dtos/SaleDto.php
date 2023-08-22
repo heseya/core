@@ -16,10 +16,9 @@ class SaleDto extends Dto implements InstantiateFromRequest
     use MapMetadata;
 
     public function __construct(
-        public readonly Missing|string $name,
+        public readonly array $translations,
+        public readonly array $published,
         public readonly Missing|string|null $slug,
-        public readonly Missing|string|null $description,
-        public readonly Missing|string|null $description_html,
 
         public readonly Missing|string $percentage,
         /** @var PriceDto[] */
@@ -35,7 +34,7 @@ class SaleDto extends Dto implements InstantiateFromRequest
         public readonly bool|Missing $active,
 
         public readonly array|Missing $metadata,
-        public readonly Missing|SeoMetadataDto $seo,
+        public readonly Missing|SeoMetadataDto|null $seo,
     ) {
         if (!($percentage instanceof Missing || $amounts instanceof Missing)) {
             throw new DtoException("Can't have both percentage and amount discounts");
@@ -52,11 +51,13 @@ class SaleDto extends Dto implements InstantiateFromRequest
             $request->input('amounts'),
         ) : new Missing();
 
+        $seo = $request->has('seo')
+            ? ($request->input('seo') !== null ? SeoMetadataDto::instantiateFromRequest($request) : null) : new Missing();
+
         return new self(
-            name: $request->input('name', new Missing()),
+            translations: $request->input('translations', []),
+            published: $request->input('published', []),
             slug: $request->input('slug', new Missing()),
-            description: $request->input('description', new Missing()),
-            description_html: $request->input('description_html', new Missing()),
             percentage: $request->input('percentage') ?? new Missing(),
             amounts: $amounts,
             priority: $request->input('priority', new Missing()),
@@ -68,13 +69,8 @@ class SaleDto extends Dto implements InstantiateFromRequest
             target_shipping_methods: $request->input('target_shipping_methods', new Missing()),
             active: $request->input('active', new Missing()),
             metadata: self::mapMetadata($request),
-            seo: $request->has('seo') ? SeoMetadataDto::instantiateFromRequest($request) : new Missing(),
+            seo: $seo,
         );
-    }
-
-    public function getName(): Missing|string
-    {
-        return $this->name;
     }
 
     public function getConditionGroups(): array|Missing
@@ -97,7 +93,7 @@ class SaleDto extends Dto implements InstantiateFromRequest
         return $this->target_shipping_methods;
     }
 
-    public function getSeo(): Missing|SeoMetadataDto
+    public function getSeo(): Missing|SeoMetadataDto|null
     {
         return $this->seo;
     }
