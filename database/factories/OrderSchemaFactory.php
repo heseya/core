@@ -3,6 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\OrderSchema;
+use Brick\Money\Money;
+use Domain\Currency\Currency;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class OrderSchemaFactory extends Factory
@@ -19,11 +21,14 @@ class OrderSchemaFactory extends Factory
      */
     public function definition(): array
     {
-        $price = mt_rand(0, 1) ? 0 : $this->faker->numberBetween(0, 100);
+//        $currency = Currency::getRandomValue();
+        $currency = Currency::DEFAULT->value;
+        $price = Money::of(mt_rand(0, 1) ? 0 : $this->faker->numberBetween(0, 100), $currency);
 
         return [
             'name' => $this->faker->word,
             'value' => mt_rand(0, 1) ? $this->faker->sentence : (mt_rand(0, 1) ? $this->faker->boolean : $this->faker->randomNumber),
+            'currency' => $currency,
             'price' => $price,
             'price_initial' => $price,
         ];

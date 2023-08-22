@@ -15,7 +15,7 @@ class OrderModelTest extends TestCase
         $order = Order::factory()->create();
 
         $order->payments()->save(Payment::factory()->make([
-            'amount' => $order->summary * 2,
+            'amount' => $order->summary->multipliedBy(2)->getAmount()->toFloat(),
             'status' => PaymentStatus::SUCCESSFUL,
         ]));
 

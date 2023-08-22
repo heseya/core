@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Enums\PaymentStatus;
 use Domain\Currency\Currency;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -31,6 +32,7 @@ class Payment extends Model
 
     protected $casts = [
         'amount' => 'float',
+        //        'amount' => MoneyCast::class,
         'status' => PaymentStatus::class,
         'currency' => Currency::class,
     ];

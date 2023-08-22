@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Interfaces\Translatable;
 use App\Traits\CustomHasTranslations;
 use App\Traits\HasMetadata;
+use Brick\Money\Money;
 use Database\Factories\OptionFactory;
 use Domain\Currency\Currency;
 use Illuminate\Database\Eloquent\Collection;
@@ -64,8 +65,8 @@ class Option extends Model implements Translatable
         return $this->morphMany(Price::class, 'model');
     }
 
-    public function getPriceForCurrency(Currency $currency = Currency::DEFAULT): float
+    public function getPriceForCurrency(Currency $currency): Money
     {
-        return $this->prices->where('currency', $currency->value)->firstOrFail()->value->getAmount()->toFloat();
+        return $this->prices->where('currency', $currency->value)->firstOrFail()->value;
     }
 }

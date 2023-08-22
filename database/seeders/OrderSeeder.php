@@ -14,6 +14,7 @@ use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Services\Contracts\OrderServiceContract;
 use App\Services\OrderService;
+use Brick\Money\Money;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\App;
 
@@ -75,8 +76,10 @@ class OrderSeeder extends Seeder
                         $this->addProductsToOrder($order, false);
                     }
 
+                    $order = Order::query()->findOrFail($order->getKey());
+
                     $summary = $orderService->calcSummary($order);
-                    $cart_total = $summary - $order->shipping_price;
+                    $cart_total = $summary->plus($order->shipping_price);
 
                     $order->update([
                         'summary' => $summary,
@@ -101,15 +104,24 @@ class OrderSeeder extends Seeder
                     'shipping_digital' => $digital,
                 ]
             )
-            ->make();
+            ->make([
+                'currency' => $order->currency,
+            ]);
         $order->products()->saveMany($products);
 
-        $products->each(function ($product) use ($digital): void {
+        $products->each(function (OrderProduct $product) use ($digital): void {
             if (mt_rand(0, 3) === 0) {
-                $schemas = OrderSchema::factory()->count(mt_rand(1, 3))->make();
+                $schemas = OrderSchema::factory()->count(mt_rand(1, 3))->make([
+                    'currency' => $product->currency,
+                ]);
                 $product->schemas()->saveMany($schemas);
 
-                $sum = $product->price_initial + $schemas->sum('price');
+                $sum = $product->price_initial->plus(
+                    $product->schemas()->get()->reduce(
+                        fn (Money $carry, OrderSchema $schema) => $carry->plus($schema->price),
+                        Money::zero($product->currency->value),
+                    ),
+                );
                 $product->update([
                     'price_initial' => $sum,
                     'price' => $sum,

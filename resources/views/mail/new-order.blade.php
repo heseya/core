@@ -221,7 +221,7 @@
                                         </tr> @foreach ($order->products as $item) <tr style='border-bottom: 2px #244d8b solid; line-height: 38px;'>
                                             <td style="padding: 0 15px 0 0;">{{ $item->product->name }}</td>
                                             <td style="text-align: center; padding: 0 15px; width: 30px;">{{ $item->quantity }}</td>
-                                            <td style="text-align: center; padding: 0 0 0 15px; width: 25%;">{{ number_format($item->price, 2, '.', '') }} {{ $order->currency }}</td>
+                                            <td style="text-align: center; padding: 0 0 0 15px; width: 25%;">{{ $item->price->getAmount() }} {{ $order->currency }}</td>
                                         </tr> @endforeach
                                     </table>
                                 </td>
@@ -250,17 +250,17 @@
                                     <table cellpadding="0" cellspacing="0" width="100%" border="0" style="color:#000000;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:22px;table-layout:auto;width:100%;border:none;">
                                         <tr>
                                             <td style="width: 180px">@lang('mail.summary-products'):</td>
-                                            <td><b>{{ number_format($order->cart_total, 2, '.', '') }} {{ $order->currency }}</b></td>
+                                            <td><b>{{ $order->cart_total->getAmount() }} {{ $order->currency }}</b></td>
                                         </tr>
                                         <tr>
                                             <td style="width: 180px">@lang('mail.summary-delivery'):</td>
-                                            <td><b>{{ number_format($order->shipping_price, 2, '.', '') }} {{ $order->currency }}</b></td>
+                                            <td><b>{{ $order->shipping_price->getAmount() }} {{ $order->currency }}</b></td>
                                         </tr> @if ($order->cart_total_initial !== $order->cart_total) <tr>
                                             <td style="width: 180px">@lang('mail.summary-discount'):</td>
-                                            <td><b>{{ number_format($order->cart_total_initial - $order->cart_total, 2, '.', '') }} {{ $order->currency }}</b></td>
+                                            <td><b>{{ $order->cart_total_initial->minus($order->cart_total)->getAmount() }} {{ $order->currency }}</b></td>
                                         </tr> @endif <tr>
                                             <td style="width: 180px">@lang('mail.summary-paid'):</td>
-                                            <td><b>{{ number_format($order->summary, 2, '.', '') }} {{ $order->currency }}</b></td>
+                                            <td><b>{{ $order->summary->getAmount() }} {{ $order->currency }}</b></td>
                                         </tr>
                                     </table>
                                 </td>

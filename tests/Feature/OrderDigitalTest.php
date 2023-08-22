@@ -19,12 +19,13 @@ class OrderDigitalTest extends TestCase
     private ShippingMethod $physicalShippingMethod;
 
     private array $billingAddress;
+    private Currency $currency;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $currency = Currency::DEFAULT->value;
+        $this->currency = Currency::DEFAULT;
 
         $this->digitalProduct = Product::factory()->create([
             'public' => true,
@@ -34,8 +35,8 @@ class OrderDigitalTest extends TestCase
             'shipping_type' => ShippingType::DIGITAL,
         ]);
         $freeRange = PriceRange::query()->create([
-            'start' => Money::zero($currency),
-            'value' => Money::zero($currency),
+            'start' => Money::zero($this->currency->value),
+            'value' => Money::zero($this->currency->value),
         ]);
         $this->digitalShippingMethod->priceRanges()->save($freeRange);
 
@@ -46,8 +47,8 @@ class OrderDigitalTest extends TestCase
             'shipping_type' => ShippingType::ADDRESS,
         ]);
         $freeRange = PriceRange::query()->create([
-            'start' => Money::zero($currency),
-            'value' => Money::zero($currency),
+            'start' => Money::zero($this->currency->value),
+            'value' => Money::zero($this->currency->value),
         ]);
         $this->physicalShippingMethod->priceRanges()->save($freeRange);
 
@@ -71,6 +72,7 @@ class OrderDigitalTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->json('POST', '/orders', [
+                'currency' => $this->currency,
                 'sales_channel_id' => SalesChannel::query()->value('id'),
                 'email' => 'test@example.com',
                 'digital_shipping_method_id' => $this->digitalShippingMethod->getKey(),
@@ -102,6 +104,7 @@ class OrderDigitalTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->json('POST', '/orders', [
+                'currency' => $this->currency,
                 'sales_channel_id' => SalesChannel::query()->value('id'),
                 'email' => 'test@example.com',
                 'shipping_method_id' => $this->physicalShippingMethod->getKey(),
@@ -139,6 +142,7 @@ class OrderDigitalTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->json('POST', '/orders', [
+                'currency' => $this->currency,
                 'sales_channel_id' => SalesChannel::query()->value('id'),
                 'email' => 'test@example.com',
                 'digital_shipping_method_id' => $this->digitalShippingMethod->getKey(),
@@ -168,6 +172,7 @@ class OrderDigitalTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->json('POST', '/orders', [
+                'currency' => $this->currency,
                 'sales_channel_id' => SalesChannel::query()->value('id'),
                 'email' => 'test@example.com',
                 'shipping_method_id' => $this->physicalShippingMethod->getKey(),
@@ -198,6 +203,7 @@ class OrderDigitalTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->json('POST', '/orders', [
+                'currency' => $this->currency,
                 'sales_channel_id' => SalesChannel::query()->value('id'),
                 'email' => 'test@example.com',
                 'shipping_method_id' => $this->physicalShippingMethod->getKey(),
@@ -229,6 +235,7 @@ class OrderDigitalTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->json('POST', '/orders', [
+                'currency' => $this->currency,
                 'sales_channel_id' => SalesChannel::query()->value('id'),
                 'email' => 'test@example.com',
                 'shipping_method_id' => $this->physicalShippingMethod->getKey(),

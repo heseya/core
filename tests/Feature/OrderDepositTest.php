@@ -92,6 +92,7 @@ class OrderDepositTest extends TestCase
         $this->addressExpected = $this->address->only(['name', 'phone', 'address', 'zip', 'city', 'country', 'id']);
 
         $this->request = [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -186,16 +187,16 @@ class OrderDepositTest extends TestCase
         $orderProduct = $order->products()->create([
             'product_id' => $this->product->getKey(),
             'quantity' => 2,
-            'price_initial' => 100,
-            'price' => 100,
+            'price_initial' => Money::of(100, $this->currency->value),
+            'price' => Money::of(100, $this->currency->value),
             'name' => $this->product->name,
         ]);
         $orderProduct->schemas()->create([
             'order_product_id' => $orderProduct->getKey(),
             'name' => 'Size',
             'value' => 'XL',
-            'price_initial' => 0,
-            'price' => 0,
+            'price_initial' => Money::zero($this->currency->value),
+            'price' => Money::zero($this->currency->value),
         ]);
         $deposit = $orderProduct->deposits()->create([
             'order_product_id' => $orderProduct->getKey(),
@@ -418,6 +419,7 @@ class OrderDepositTest extends TestCase
 
         // first order 20 product
         $request = [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -433,6 +435,7 @@ class OrderDepositTest extends TestCase
         ];
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -481,6 +484,7 @@ class OrderDepositTest extends TestCase
 
         // second order 3 product
         $request = [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'test1@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -496,6 +500,7 @@ class OrderDepositTest extends TestCase
         ];
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -538,6 +543,7 @@ class OrderDepositTest extends TestCase
 
         // third order 1 product
         $request = [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'test1@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -553,6 +559,7 @@ class OrderDepositTest extends TestCase
         ];
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -615,16 +622,16 @@ class OrderDepositTest extends TestCase
         $orderProduct = $order->products()->create([
             'product_id' => $this->product->getKey(),
             'quantity' => 2,
-            'price_initial' => 100,
-            'price' => 100,
+            'price_initial' => Money::of(100, $this->currency->value),
+            'price' => Money::of(100, $this->currency->value),
             'name' => $this->product->name,
         ]);
         $orderProduct->schemas()->create([
             'order_product_id' => $orderProduct->getKey(),
             'name' => 'Size',
             'value' => 'XL',
-            'price_initial' => 0,
-            'price' => 0,
+            'price_initial' => Money::zero($this->currency->value),
+            'price' => Money::zero($this->currency->value),
         ]);
         $deposit = $orderProduct->deposits()->create([
             'order_product_id' => $orderProduct->getKey(),
@@ -700,6 +707,7 @@ class OrderDepositTest extends TestCase
         ]);
 
         $request = [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -715,6 +723,7 @@ class OrderDepositTest extends TestCase
         ];
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
+use Domain\Currency\Currency;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
@@ -14,8 +16,16 @@ class OrderSchema extends Model
     protected $fillable = [
         'name',
         'value',
+        'order_product_id',
+
+        'currency',
         'price_initial',
         'price',
-        'order_product_id',
+    ];
+
+    protected $casts = [
+        'currency' => Currency::class,
+        'price_initial' => MoneyCast::class,
+        'price' => MoneyCast::class,
     ];
 }

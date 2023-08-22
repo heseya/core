@@ -42,11 +42,9 @@ use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
-use Brick\Math\Exception\NumberFormatException;
-use Brick\Math\Exception\RoundingNecessaryException;
-use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Math\Exception\MathException;
+use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
-use Domain\Currency\Currency;
 use Domain\SalesChannel\SalesChannelService;
 use Exception;
 use Heseya\Dto\Missing;
@@ -72,28 +70,24 @@ final readonly class OrderService implements OrderServiceContract
     ) {}
 
     /**
-     * @throws UnknownCurrencyException
-     * @throws RoundingNecessaryException
-     * @throws NumberFormatException
+     * @throws MathException
+     * @throws MoneyMismatchException
      */
-    public function calcSummary(Order $order): float
+    public function calcSummary(Order $order): Money
     {
-        // TODO: This needs to take order currency
-        $currency = Currency::DEFAULT;
-
-        $value = 0;
+        $value = Money::zero($order->currency->value);
+        /** @var OrderProduct $item */
         foreach ($order->products as $item) {
-            $value += $item->price * $item->quantity;
+            $value = $value->plus($item->price->multipliedBy($item->quantity));
         }
 
-        $cartValue = Money::of($value, $currency->value);
         foreach ($order->discounts as $discount) {
-            $value -= $this->discountService->calc($cartValue, $discount)->getAmount()->toFloat();
+            $value = $value->minus($this->discountService->calc($value, $discount));
         }
 
-        $value = max($value, 0) + $order->shipping_price;
+        // return round($value, 2, PHP_ROUND_HALF_UP);
 
-        return round($value, 2, PHP_ROUND_HALF_UP);
+        return $order->shipping_price->plus(Money::max($value, Money::zero($order->currency->value)));
     }
 
     /**
@@ -103,7 +97,7 @@ final readonly class OrderService implements OrderServiceContract
      */
     public function store(OrderDto $dto): Order
     {
-        $currency = Currency::DEFAULT;
+        $currency = $dto->currency;
         $vat_rate = $this->salesChannelService->getVatRate($dto->sales_channel_id);
 
         DB::beginTransaction();
@@ -166,10 +160,11 @@ final readonly class OrderService implements OrderServiceContract
                 [
                     'code' => $this->nameService->generate(),
                     'currency' => $currency->value,
-                    'shipping_price_initial' => 0.0,
-                    'shipping_price' => 0.0,
-                    'cart_total_initial' => 0.0,
-                    'cart_total' => 0.0,
+                    'shipping_price_initial' => Money::zero($currency->value),
+                    'shipping_price' => Money::zero($currency->value),
+                    'cart_total_initial' => Money::zero($currency->value),
+                    'cart_total' => Money::zero($currency->value),
+                    'summary' => Money::zero($currency->value),
                     'status_id' => $status->getKey(),
                     'shipping_address_id' => $shippingAddressId,
                     'billing_address_id' => isset($billingAddress) ? $billingAddress->getKey() : null,
@@ -182,7 +177,7 @@ final readonly class OrderService implements OrderServiceContract
             );
 
             // Add products to order
-            $cartValueInitial = 0;
+            $cartValueInitial = Money::zero($currency->value);
             $tempSchemaOrderProduct = [];
             try {
                 foreach ($items as $item) {
@@ -193,11 +188,13 @@ final readonly class OrderService implements OrderServiceContract
                         ProductPriceType::PRICE_BASE,
                     ], $currency);
 
-                    $price = $prices->get(ProductPriceType::PRICE_BASE->value)?->first()?->value->getAmount()->toFloat();
+                    /** @var Money $price */
+                    $price = $prices->get(ProductPriceType::PRICE_BASE->value)->firstOrFail()->value;
 
                     $orderProduct = new OrderProduct([
                         'product_id' => $item->getProductId(),
                         'quantity' => $item->getQuantity(),
+                        'currency' => $order->currency,
                         'price_initial' => $price,
                         'price' => $price,
                         'base_price_initial' => $price,
@@ -208,9 +205,9 @@ final readonly class OrderService implements OrderServiceContract
                     ]);
 
                     $order->products()->save($orderProduct);
-                    $cartValueInitial += $price * $item->getQuantity();
+                    $cartValueInitial = $cartValueInitial->plus($price->multipliedBy($item->getQuantity()));
 
-                    $schemaProductPrice = 0;
+                    $schemaProductPrice = Money::zero($currency->value);
                     // Add schemas to products
                     foreach ($item->getSchemas() as $schemaId => $value) {
                         /** @var Schema $schema */
@@ -231,13 +228,13 @@ final readonly class OrderService implements OrderServiceContract
                             'price' => $price,
                         ]);
 
-                        $schemaProductPrice += $price;
-                        $cartValueInitial += $price * $item->getQuantity();
+                        $schemaProductPrice = $schemaProductPrice->plus($price);
+                        $cartValueInitial = $cartValueInitial->plus($price->multipliedBy($item->getQuantity()));
                     }
 
-                    if ($schemaProductPrice) {
-                        $orderProduct->price += $schemaProductPrice;
-                        $orderProduct->price_initial += $schemaProductPrice;
+                    if ($schemaProductPrice->isPositive()) {
+                        $orderProduct->price = $schemaProductPrice->plus($orderProduct->price);
+                        $orderProduct->price_initial = $schemaProductPrice->plus($orderProduct->price_initial);
                         $orderProduct->save();
                     }
                 }
@@ -252,14 +249,14 @@ final readonly class OrderService implements OrderServiceContract
                 // Apply discounts to order/products
                 $order = $this->discountService->calcOrderProductsAndTotalDiscounts($order, $dto);
 
-                $cartTotal = Money::of($order->cart_total, $currency->value);
-                $shippingPrice = $shippingMethod?->getPrice($cartTotal) ?? Money::zero($currency->value);
+                $shippingPrice = $shippingMethod?->getPrice($order->cart_total) ?? Money::zero($currency->value);
                 $shippingPrice = $shippingPrice->plus(
-                    $digitalShippingMethod?->getPrice($cartTotal) ?? Money::zero($currency->value),
+                    $digitalShippingMethod?->getPrice($order->cart_total) ?? Money::zero($currency->value),
                 );
 
-                $order->shipping_price_initial = $shippingPrice->getAmount()->toFloat();
-                $order->shipping_price = $shippingPrice->getAmount()->toFloat();
+                // Always gross
+                $order->shipping_price_initial = $shippingPrice;
+                $order->shipping_price = $shippingPrice;
 
                 // Apply discounts to order
                 $order = $this->discountService->calcOrderShippingDiscounts($order, $dto);
@@ -290,10 +287,7 @@ final readonly class OrderService implements OrderServiceContract
                 );
 
                 // shipping price magic 🙈
-                $order->summary = $this->salesChannelService->addVat(
-                    $order->summary - $order->shipping_price,
-                    $vat_rate,
-                ) + $order->shipping_price;
+                $order->summary = $order->shipping_price->plus($order->cart_total);
 
                 $order->push();
             } catch (Throwable $exception) {
@@ -419,6 +413,9 @@ final readonly class OrderService implements OrderServiceContract
             ->paginate(Config::get('pagination.per_page'));
     }
 
+    /**
+     * @throws OrderException
+     */
     public function cartProcess(CartDto $cartDto): CartResource
     {
         $vat_rate = $this->salesChannelService->getVatRate($cartDto->sales_channel_id);

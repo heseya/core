@@ -23,6 +23,7 @@ use App\Models\User;
 use App\Models\WebHook;
 use App\Services\Contracts\OrderServiceContract;
 use App\Services\OrderService;
+use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Metadata\Enums\MetadataType;
@@ -46,6 +47,7 @@ class OrderTest extends TestCase
     private array $expected_summary_structure;
     private array $expected_full_structure;
     private array $expected_full_view_structure;
+    private Currency $currency;
 
     public function setUp(): void
     {
@@ -53,11 +55,11 @@ class OrderTest extends TestCase
 
         Product::factory()->create();
 
-        $currency = Currency::DEFAULT->value;
+        $this->currency = Currency::DEFAULT;
         $this->shippingMethod = ShippingMethod::factory()->create();
         $freeRange = PriceRange::query()->create([
-            'start' => Money::zero($currency),
-            'value' => Money::zero($currency),
+            'start' => Money::zero($this->currency->value),
+            'value' => Money::zero($this->currency->value),
         ]);
         $this->shippingMethod->priceRanges()->save($freeRange);
 
@@ -73,16 +75,16 @@ class OrderTest extends TestCase
         $item_product = $this->order->products()->create([
             'product_id' => $product->getKey(),
             'quantity' => 10,
-            'price' => 247.47,
-            'price_initial' => 247.47,
+            'price' => Money::of(247.47, $this->currency->value),
+            'price_initial' => Money::of(247.47, $this->currency->value),
             'name' => $product->name,
         ]);
 
         $item_product->schemas()->create([
             'name' => 'Grawer',
             'value' => 'HESEYA',
-            'price' => 49.99,
-            'price_initial' => 49.99,
+            'price' => Money::of(49.99, $this->currency->value),
+            'price_initial' => Money::of(49.99, $this->currency->value),
         ]);
 
         $this->order->metadata()->create([
@@ -464,15 +466,15 @@ class OrderTest extends TestCase
         $order1->products()->create([
             'product_id' => $product->getKey(),
             'quantity' => 10,
-            'price' => 247.47,
-            'price_initial' => 247.47,
+            'price' => Money::of(247.47, $this->currency->value),
+            'price_initial' => Money::of(247.47, $this->currency->value),
             'name' => $product->name,
         ]);
 
         $order1->refresh();
         $order1->payments()->create([
             'method' => 'payu',
-            'amount' => $order1->summary,
+            'amount' => $order1->summary->getAmount()->toFloat(),
             'status' => PaymentStatus::SUCCESSFUL,
         ]);
 
@@ -880,10 +882,10 @@ class OrderTest extends TestCase
     {
         $this->{$user}->givePermissionTo('orders.show_details');
 
-        $summaryPaid = $this->order->summary * 2;
+        $summaryPaid = $this->order->summary->multipliedBy(2);
 
         $this->order->payments()->save(Payment::factory()->make([
-            'amount' => $summaryPaid,
+            'amount' => $summaryPaid->getAmount()->toFloat(),
             'status' => PaymentStatus::SUCCESSFUL,
         ]));
 
@@ -893,7 +895,7 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'paid' => true,
-                'summary_paid' => $summaryPaid,
+                'summary_paid' => $summaryPaid->getAmount(),
             ]);
 
         $this->assertQueryCountLessThan(34);
@@ -907,7 +909,7 @@ class OrderTest extends TestCase
         $this->{$user}->givePermissionTo('orders.show_summary');
 
         $this->order->payments()->save(Payment::factory()->make([
-            'amount' => $this->order->summary * 2,
+            'amount' => $this->order->summary->multipliedBy(2)->getAmount()->toFloat(),
             'status' => PaymentStatus::SUCCESSFUL,
         ]));
 
@@ -1393,10 +1395,10 @@ class OrderTest extends TestCase
     {
         $this->{$user}->givePermissionTo('orders.show_details');
 
-        $summaryPaid = $this->order->summary / 2;
+        $summaryPaid = $this->order->summary->dividedBy(2, RoundingMode::HALF_DOWN);
 
         $this->order->payments()->save(Payment::factory()->make([
-            'amount' => $summaryPaid,
+            'amount' => $summaryPaid->getAmount()->toFloat(),
             'status' => PaymentStatus::SUCCESSFUL,
         ]));
 
@@ -1405,7 +1407,7 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'paid' => false,
-                'summary_paid' => $summaryPaid,
+                'summary_paid' => $summaryPaid->getAmount(),
             ]);
     }
 
@@ -1417,7 +1419,7 @@ class OrderTest extends TestCase
         $this->{$user}->givePermissionTo('orders.show_summary');
 
         $this->order->payments()->save(Payment::factory()->make([
-            'amount' => $this->order->summary / 2,
+            'amount' => $this->order->summary->dividedBy(2, RoundingMode::HALF_DOWN)->getAmount()->toFloat(),
             'status' => PaymentStatus::SUCCESSFUL,
         ]));
 
@@ -1440,6 +1442,7 @@ class OrderTest extends TestCase
         $salesChannelId = SalesChannel::query()->value('id');
         $response = $this->actingAs($this->user)->json('POST', '/orders', [
             'sales_channel_id' => $salesChannelId,
+            'currency' => $this->currency,
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => [
@@ -1499,6 +1502,7 @@ class OrderTest extends TestCase
         Event::fake([OrderCreated::class]);
 
         $this->actingAs($this->{$user})->json('POST', '/orders', [
+            'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),

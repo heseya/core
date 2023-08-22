@@ -3,6 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\Payment;
+use Brick\Money\Money;
+use Domain\Currency\Currency;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class PaymentFactory extends Factory
@@ -19,10 +21,15 @@ class PaymentFactory extends Factory
      */
     public function definition(): array
     {
+        $currency = Currency::DEFAULT->value;
+        $price = Money::of(mt_rand(10, 1000), $currency);
+
         return [
             'external_id' => $this->faker->uuid,
             'method' => $this->faker->randomElement(['przelewy24', 'bluemedia', 'paynow']),
-            'amount' => mt_rand(10, 1000),
+//            'currency' => $currency,
+//            'amount' => $price,
+            'amount' => $price->getAmount()->toFloat(),
             'redirect_url' => 'https://heseya.com/pay',
             'continue_url' => 'https://store.heseya.com/done',
             'status' => $this->faker->randomElement(['pending', 'failed', 'successful']),

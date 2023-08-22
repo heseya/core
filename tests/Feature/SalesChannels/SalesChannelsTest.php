@@ -22,6 +22,8 @@ final class SalesChannelsTest extends TestCase
      */
     public function testCartProcess(string $user): void
     {
+        $currency = Currency::DEFAULT;
+
         /** @var SalesChannel $channel */
         $channel = SalesChannel::factory()->create([
             'vat_rate' => '23',
@@ -30,8 +32,8 @@ final class SalesChannelsTest extends TestCase
         /** @var ShippingMethod $shipping_method */
         $shipping_method = ShippingMethod::factory()->create();
         $shipping_method->priceRanges()->create([
-            'start' => Money::of(0, 'PLN'),
-            'value' => Money::of(10, 'PLN'),
+            'start' => Money::of(0, $currency->value),
+            'value' => Money::of(10, $currency->value),
         ]);
 
         /** @var ProductService $productService */
@@ -43,11 +45,11 @@ final class SalesChannelsTest extends TestCase
             'prices_base' => [
                 [
                     'value' => 10,
-                    'currency' => Currency::PLN,
+                    'currency' => $currency,
                 ],
                 [
                     'value' => 10,
-                    'currency' => Currency::EUR,
+                    'currency' => $currency,
                 ],
             ],
         ]));
@@ -56,6 +58,7 @@ final class SalesChannelsTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->json('POST', '/cart/process', [
+                'currency' => $currency,
                 'sales_channel_id' => $channel->getKey(),
                 'shipping_method_id' => $shipping_method->getKey(),
                 'items' => [
@@ -67,9 +70,9 @@ final class SalesChannelsTest extends TestCase
                 ],
             ])
             ->assertOk()
-            ->assertJsonFragment(['shipping_price' => 10]) // shipping price should remain the same
-            ->assertJsonFragment(['price_discounted' => 12.3]) // product price
-            ->assertJsonFragment(['summary' => 34.6]);
+            ->assertJsonFragment(['shipping_price' => '10.00']) // shipping price should remain the same
+            ->assertJsonFragment(['price_discounted' => '12.30']) // product price
+            ->assertJsonFragment(['summary' => '34.60']);
     }
 
     /**
@@ -78,6 +81,8 @@ final class SalesChannelsTest extends TestCase
     public function testOrderCreate(string $user): void
     {
         Mail::fake();
+
+        $currency = Currency::DEFAULT;
 
         /** @var SalesChannel $channel */
         $channel = SalesChannel::factory()->create([
@@ -89,8 +94,8 @@ final class SalesChannelsTest extends TestCase
             'shipping_type' => ShippingType::POINT_EXTERNAL,
         ]);
         $shipping_method->priceRanges()->create([
-            'start' => Money::of(0, 'PLN'),
-            'value' => Money::of(10, 'PLN'),
+            'start' => Money::of(0, $currency->value),
+            'value' => Money::of(10, $currency->value),
         ]);
 
         /** @var ProductService $productService */
@@ -102,11 +107,11 @@ final class SalesChannelsTest extends TestCase
             'prices_base' => [
                 [
                     'value' => 10,
-                    'currency' => Currency::PLN,
+                    'currency' => $currency,
                 ],
                 [
                     'value' => 10,
-                    'currency' => Currency::EUR,
+                    'currency' => $currency,
                 ],
             ],
         ]));
@@ -115,6 +120,7 @@ final class SalesChannelsTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->json('POST', '/orders', [
+                'currency' => $currency,
                 'email' => 'test@example.com',
                 'sales_channel_id' => $channel->getKey(),
                 'shipping_method_id' => $shipping_method->getKey(),
@@ -137,17 +143,17 @@ final class SalesChannelsTest extends TestCase
             ->assertCreated();
 
         $this->assertDatabaseHas('orders', [
-            'shipping_price' => 10, // shipping price should remain the same
-            'summary' => 34.6,
-            'cart_total' => 24.6, // without shipping
-            'cart_total_initial' => 24.6,
+            'shipping_price' => '1000', // shipping price should remain the same
+            'summary' => '3460',
+            'cart_total' => '2460', // without shipping
+            'cart_total_initial' => '2460',
         ]);
 
         $this->assertDatabaseHas('order_products', [
-            'base_price' => 12.3,
-            'base_price_initial' => 12.3,
+            'base_price' => '1230',
+            'base_price_initial' => '1230',
             'quantity' => 2,
-            'vat_rate' => 23,
+            'vat_rate' => '23.00',
         ]);
     }
 }

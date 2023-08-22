@@ -5,9 +5,11 @@ namespace Database\Seeders;
 use App\Enums\DiscountTargetType;
 use App\Exceptions\ClientException;
 use App\Exceptions\ServerException;
+use App\Exceptions\StoreException;
 use App\Models\Discount;
 use App\Models\Order;
 use App\Models\Product;
+use App\Repositories\DiscountRepository;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\DiscountService;
 use Brick\Math\Exception\MathException;
@@ -18,6 +20,7 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Language\Language;
+use Domain\Price\Dtos\PriceDto;
 use Heseya\Dto\DtoException;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
@@ -34,6 +37,7 @@ class DiscountSeeder extends Seeder
      * @throws NumberFormatException
      * @throws DtoException
      * @throws ServerException
+     * @throws StoreException
      */
     public function run(): void
     {
@@ -50,8 +54,6 @@ class DiscountSeeder extends Seeder
         $discountService = App::make(DiscountServiceContract::class);
         $discountService->applyDiscountsOnProducts(Product::all());
 
-        $currency = Currency::DEFAULT->value;
-
         foreach (Order::query()->inRandomOrder()->limit(30)->get() as $order) {
             /** @var Discount $discount */
             $discount = $discounts
@@ -64,9 +66,6 @@ class DiscountSeeder extends Seeder
                 )
                 ->random();
 
-            $cart_total = Money::of($order->cart_total, $currency);
-            $shipping_price = Money::of($order->shipping_price, $currency);
-
             /**
              * @var Money $appliedDiscount
              * @var array $update
@@ -77,7 +76,7 @@ class DiscountSeeder extends Seeder
                         'cart_total',
                         'minimal_order_price',
                         $discountService,
-                        $cart_total,
+                        $order->cart_total,
                         $discount,
                     ),
                 DiscountTargetType::SHIPPING_PRICE => $this
@@ -85,21 +84,27 @@ class DiscountSeeder extends Seeder
                         'shipping_price',
                         'minimal_shipping_price',
                         $discountService,
-                        $shipping_price,
+                        $order->shipping_price,
                         $discount,
                     ),
             };
 
-            // TODO: Change to money with discounts rework
+            $discountAmount = null;
+            if ($discount->percentage === null) {
+                [$discountAmount] = DiscountRepository::getDiscountAmounts($discount->getKey(), $order->currency);
+            }
+
             $order->discounts()->attach($discount, [
                 'name' => $discount->name,
+                'amount' => $discountAmount?->value->getMinorAmount(),
+                'currency' => $discountAmount?->value->getCurrency()->getCurrencyCode(),
                 'percentage' => $discount->percentage,
                 'target_type' => $discount->target_type,
-                'applied_discount' => $appliedDiscount->getAmount()->toFloat(),
+                'applied_discount' => $appliedDiscount->getMinorAmount(),
             ]);
 
             $order->update($update + [
-                'summary' => $order->cart_total + $order->shipping_price,
+                'summary' => $order->cart_total->plus($order->shipping_price),
             ]);
         }
     }
@@ -122,9 +127,8 @@ class DiscountSeeder extends Seeder
         $appliedDiscount = $discountService->calc($price, $discount);
         $appliedDiscount = $discountService->calcAppliedDiscount($price, $appliedDiscount, $minimalPrice);
 
-        // TODO: Change to money with orders rework
         $update = [
-            $field => $price->minus($appliedDiscount)->getAmount()->toFloat(),
+            $field => $price->minus($appliedDiscount),
         ];
 
         return [$appliedDiscount, $update];

@@ -130,7 +130,7 @@ class ProductSeeder extends Seeder
     {
         /** @var Schema $schema */
         $schema = Schema::factory()->make([
-            'type' => mt_rand(0, 6), // all types except multiply_schemas
+            'type' => mt_rand(0, 5), // all types except multiply_schemas
         ]);
         $schemaTranslation = Schema::factory()->definition();
         $schema->setLocale($language)->fill(Arr::only($schemaTranslation, ['name', 'description']));

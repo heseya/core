@@ -21,6 +21,7 @@ use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
 use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
+use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Product\Dtos\ProductCreateDto;
@@ -170,7 +171,6 @@ final class ProductService
         [$schemaMin, $schemaMax] = $this->getSchemasPrices(
             clone $product->schemas,
             clone $product->schemas,
-            [],
             $currency,
         );
 
@@ -271,13 +271,16 @@ final class ProductService
     }
 
     /**
-     * @return float[]
+     * @return Money[]
+     *
+     * @throws MathException
+     * @throws MoneyMismatchException
      */
     private function getSchemasPrices(
         Collection $allSchemas,
         Collection $remainingSchemas,
+        Currency $currency,
         array $values = [],
-        Currency $currency = Currency::DEFAULT,
     ): array {
         if ($remainingSchemas->isNotEmpty()) {
             /** @var Schema $schema */
@@ -312,12 +315,12 @@ final class ProductService
             };
         } else {
             $price = $allSchemas->reduce(
-                fn (float $carry, Schema $current) => $carry + $current->getPrice(
+                fn (Money $carry, Schema $current) => $carry->plus($current->getPrice(
                     $values[$current->getKey()],
                     $values,
                     $currency,
-                ),
-                0,
+                )),
+                Money::zero($currency->value),
             );
 
             $minmax = [
@@ -330,7 +333,9 @@ final class ProductService
     }
 
     /**
-     * @return float[]
+     * @return Money[]
+     *
+     * @throws MoneyMismatchException
      */
     private function getBestSchemasPrices(
         Collection $allSchemas,
@@ -338,39 +343,41 @@ final class ProductService
         array $currentValues,
         Schema $schema,
         array $values,
-        Currency $currency = Currency::DEFAULT,
+        Currency $currency,
     ): array {
         return $this->bestMinMax(Collection::make($values)->map(
             fn ($value) => $this->getSchemasPrices(
                 $allSchemas,
                 clone $remainingSchemas,
+                $currency,
                 $currentValues + [
                     $schema->getKey() => $value,
                 ],
-                $currency,
             ),
-        ));
+        ), $currency);
     }
 
     /**
-     * @return float[]
+     * @return Money[]
+     *
+     * @throws MoneyMismatchException
      */
-    private function bestMinMax(Collection $minmaxCol): array
+    private function bestMinMax(Collection $minmaxCol, Currency $currency): array
     {
-        $bestMin = $minmaxCol->reduce(function (?float $carry, array $current) {
+        $bestMin = $minmaxCol->reduce(function (?Money $carry, array $current) {
             if ($carry === null) {
                 return $current[0];
             }
 
-            return min($current[0], $carry);
-        }) ?? 0;
+            return Money::min($current[0], $carry);
+        }) ?? Money::zero($currency->value);
 
-        $bestMax = $minmaxCol->reduce(function (?float $carry, array $current) {
+        $bestMax = $minmaxCol->reduce(function (?Money $carry, array $current) {
             if ($carry === null) {
                 return $current[1];
             }
 
-            return max($current[1], $carry);
+            return Money::max($current[1], $carry);
         }) ?? $bestMin;
 
         return [$bestMin, $bestMax];

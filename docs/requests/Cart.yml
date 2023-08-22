@@ -5,8 +5,12 @@ CartProcess:
         required:
           - sales_channel_id
           - items
+          - currency
         type: object
         properties:
+          currency:
+            type: string
+            example: 'PLN'
           sales_channel_id:
             type: string
             format: uuid

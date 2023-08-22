@@ -4,7 +4,9 @@ namespace App\Http\Requests;
 
 use App\Rules\ShippingPlaceValidation;
 use App\Traits\MetadataRules;
+use Domain\Currency\Currency;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Enum;
 
 class OrderCreateRequest extends OrderItemsRequest
 {
@@ -16,6 +18,8 @@ class OrderCreateRequest extends OrderItemsRequest
             parent::rules(),
             $this->metadataRules(),
             [
+                'currency' => ['required', new Enum(Currency::class)],
+
                 'email' => ['required', 'email', 'max:255'],
                 'comment' => ['nullable', 'string', 'max:1000'],
 
