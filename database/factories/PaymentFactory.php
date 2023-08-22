@@ -29,7 +29,7 @@ class PaymentFactory extends Factory
             'method' => $this->faker->randomElement(['przelewy24', 'bluemedia', 'paynow']),
 //            'currency' => $currency,
 //            'amount' => $price,
-            'amount' => $price->getAmount(),
+            'amount' => $price->getAmount()->toFloat(),
             'redirect_url' => 'https://heseya.com/pay',
             'continue_url' => 'https://store.heseya.com/done',
             'status' => $this->faker->randomElement(['pending', 'failed', 'successful']),
