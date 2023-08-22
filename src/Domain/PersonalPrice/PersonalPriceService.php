@@ -1,16 +1,17 @@
 <?php
 
-namespace App\Services;
+declare(strict_types=1);
+
+namespace Domain\PersonalPrice;
 
 use App\Dtos\ProductPriceDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
 use App\Models\Product;
 use App\Services\Contracts\DiscountServiceContract;
-use App\Services\Contracts\PriceServiceContract;
 use Illuminate\Support\Facades\Gate;
 
-readonly class PriceService implements PriceServiceContract
+final readonly class PersonalPriceService
 {
     public function __construct(
         private DiscountServiceContract $discountService,
@@ -21,9 +22,9 @@ readonly class PriceService implements PriceServiceContract
      *
      * @throws ClientException
      */
-    public function calcProductsListDiscounts(array $productIds): array
+    public function calcProductsListDiscounts(ProductPricesDto $dto): array
     {
-        $query = Product::query()->whereIn('id', $productIds);
+        $query = Product::query()->whereIn('id', $dto->ids);
 
         if (Gate::denies('products.show_hidden')) {
             $query->where('products.public', true);
@@ -31,7 +32,7 @@ readonly class PriceService implements PriceServiceContract
 
         $products = $query->get();
 
-        if ($products->count() < count($productIds)) {
+        if ($products->count() < count($dto->ids)) {
             throw new ClientException(Exceptions::PRODUCT_NOT_FOUND);
         }
 

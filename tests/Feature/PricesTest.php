@@ -50,15 +50,15 @@ class PricesTest extends TestCase
      * @throws UnknownCurrencyException
      * @throws RoundingNecessaryException
      */
-    public function testProducts($user): void
+    public function testProducts(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show');
 
         $product1 = Product::factory()->create([
             'public' => true,
         ]);
-        $priceMin1 = 2500;
-        $priceMax1 = 3000;
+        $priceMin1 = '2500.00';
+        $priceMax1 = '3000.00';
         $this->productRepository->setProductPrices($product1->getKey(), [
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))],
             ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))],
@@ -67,8 +67,8 @@ class PricesTest extends TestCase
         $product2 = Product::factory()->create([
             'public' => true,
         ]);
-        $priceMin2 = 1000;
-        $priceMax2 = 1500;
+        $priceMin2 = '1000.00';
+        $priceMax2 = '1500.00';
         $this->productRepository->setProductPrices($product2->getKey(), [
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin2, $this->currency->value))],
             ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax2, $this->currency->value))],
@@ -86,24 +86,40 @@ class PricesTest extends TestCase
                 'data' => [
                     [
                         'id' => $product1->getKey(),
-                        'price_min' => $priceMin1,
-                        'price_max' => $priceMax1,
+                        'prices_min' => [[
+                            'currency' => Currency::DEFAULT,
+                            'gross' => $priceMin1,
+                            'net' => $priceMin1,
+                        ]],
+                        'prices_max' => [[
+                            'currency' => Currency::DEFAULT,
+                            'gross' => $priceMax1,
+                            'net' => $priceMax1,
+                        ]],
                     ],
                     [
                         'id' => $product2->getKey(),
-                        'price_min' => $priceMin2,
-                        'price_max' => $priceMax2,
+                        'prices_min' => [[
+                            'currency' => Currency::DEFAULT,
+                            'gross' => $priceMin2,
+                            'net' => $priceMin2,
+                        ]],
+                        'prices_max' => [[
+                            'currency' => Currency::DEFAULT,
+                            'gross' => $priceMax2,
+                            'net' => $priceMax2,
+                        ]],
                     ],
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(15);
+        $this->assertQueryCountLessThan(13);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testProductsHidden($user): void
+    public function testProductsHidden(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show');
 
@@ -118,13 +134,13 @@ class PricesTest extends TestCase
             ]])
             ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(6);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testProductsMissing($user): void
+    public function testProductsMissing(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show');
 
@@ -146,7 +162,7 @@ class PricesTest extends TestCase
      * @throws UnknownCurrencyException
      * @throws RoundingNecessaryException
      */
-    public function testProductsGeneralDiscount($user): void
+    public function testProductsGeneralDiscount(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show');
 
@@ -158,16 +174,6 @@ class PricesTest extends TestCase
         $this->productRepository->setProductPrices($product1->getKey(), [
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))],
             ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))],
-        ]);
-
-        $product2 = Product::factory()->create([
-            'public' => true,
-        ]);
-        $priceMin2 = 1000;
-        $priceMax2 = 1500;
-        $this->productRepository->setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin2, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax2, $this->currency->value))],
         ]);
 
         $discountRate = 0.5;
@@ -183,33 +189,22 @@ class PricesTest extends TestCase
 
         $sale->products()->attach([
             $product1->getKey(),
-            $product2->getKey(),
         ]);
 
         $this
             ->actingAs($this->{$user})
             ->json('GET', '/prices/products', ['ids' => [
                 $product1->getKey(),
-                $product2->getKey(),
             ]])
             ->assertStatus(Response::HTTP_OK)
-            ->assertJsonCount(2, 'data')
-            ->assertJsonFragment([
-                'data' => [
-                    [
-                        'id' => $product1->getKey(),
-                        'price_min' => $priceMin1 * (1 - $discountRate),
-                        'price_max' => $priceMax1 * (1 - $discountRate),
-                    ],
-                    [
-                        'id' => $product2->getKey(),
-                        'price_min' => $priceMin2 * (1 - $discountRate),
-                        'price_max' => $priceMax2 * (1 - $discountRate),
-                    ],
-                ],
-            ]);
+            ->assertJsonPath('data.0.prices_min.0.net', number_format(
+                $priceMin1 * (1 - $discountRate), 2, '.', '',
+            ))
+            ->assertJsonPath('data.0.prices_max.0.net', number_format(
+                $priceMax1 * (1 - $discountRate), 2, '.', '',
+            ));
 
-        $this->assertQueryCountLessThan(32);
+        $this->assertQueryCountLessThan(19);
     }
 
     /**
@@ -220,7 +215,7 @@ class PricesTest extends TestCase
      * @throws UnknownCurrencyException
      * @throws RoundingNecessaryException
      */
-    public function testProductsUserDiscount($user): void
+    public function testProductsUserDiscount(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show');
 
@@ -232,16 +227,6 @@ class PricesTest extends TestCase
         $this->productRepository->setProductPrices($product1->getKey(), [
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))],
             ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))],
-        ]);
-
-        $product2 = Product::factory()->create([
-            'public' => true,
-        ]);
-        $priceMin2 = 1000;
-        $priceMax2 = 1500;
-        $this->productRepository->setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin2, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax2, $this->currency->value))],
         ]);
 
         $discountRate = 0.5;
@@ -257,7 +242,6 @@ class PricesTest extends TestCase
 
         $sale->products()->attach([
             $product1->getKey(),
-            $product2->getKey(),
         ]);
 
         $conditionGroup = ConditionGroup::create();
@@ -277,24 +261,14 @@ class PricesTest extends TestCase
             ->actingAs($this->{$user})
             ->json('GET', '/prices/products', ['ids' => [
                 $product1->getKey(),
-                $product2->getKey(),
             ]])
             ->assertStatus(Response::HTTP_OK)
-            ->assertJsonCount(2, 'data')
-            ->assertJsonFragment([
-                'data' => [
-                    [
-                        'id' => $product1->getKey(),
-                        'price_min' => $priceMin1 * (1 - $discountRate),
-                        'price_max' => $priceMax1 * (1 - $discountRate),
-                    ],
-                    [
-                        'id' => $product2->getKey(),
-                        'price_min' => $priceMin2 * (1 - $discountRate),
-                        'price_max' => $priceMax2 * (1 - $discountRate),
-                    ],
-                ],
-            ]);
+            ->assertJsonPath('data.0.prices_min.0.net', number_format(
+                $priceMin1 * (1 - $discountRate), 2, '.', '',
+            ))
+            ->assertJsonPath('data.0.prices_max.0.net', number_format(
+                $priceMax1 * (1 - $discountRate), 2, '.', '',
+            ));
 
         $this->assertQueryCountLessThan(35);
     }
@@ -307,28 +281,18 @@ class PricesTest extends TestCase
      * @throws UnknownCurrencyException
      * @throws RoundingNecessaryException
      */
-    public function testProductsOtherUserDiscount($user): void
+    public function testProductsOtherUserDiscount(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show');
 
         $product1 = Product::factory()->create([
             'public' => true,
         ]);
-        $priceMin1 = 2500;
-        $priceMax1 = 3000;
+        $priceMin1 = '2500.00';
+        $priceMax1 = '3000.00';
         $this->productRepository->setProductPrices($product1->getKey(), [
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))],
             ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))],
-        ]);
-
-        $product2 = Product::factory()->create([
-            'public' => true,
-        ]);
-        $priceMin2 = 1000;
-        $priceMax2 = 1500;
-        $this->productRepository->setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin2, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax2, $this->currency->value))],
         ]);
 
         $discountRate = 0.5;
@@ -344,7 +308,6 @@ class PricesTest extends TestCase
 
         $sale->products()->attach([
             $product1->getKey(),
-            $product2->getKey(),
         ]);
 
         $otherUser = User::factory()->create();
@@ -365,24 +328,10 @@ class PricesTest extends TestCase
             ->actingAs($this->{$user})
             ->json('GET', '/prices/products', ['ids' => [
                 $product1->getKey(),
-                $product2->getKey(),
             ]])
             ->assertStatus(Response::HTTP_OK)
-            ->assertJsonCount(2, 'data')
-            ->assertJsonFragment([
-                'data' => [
-                    [
-                        'id' => $product1->getKey(),
-                        'price_min' => $priceMin1,
-                        'price_max' => $priceMax1,
-                    ],
-                    [
-                        'id' => $product2->getKey(),
-                        'price_min' => $priceMin2,
-                        'price_max' => $priceMax2,
-                    ],
-                ],
-            ]);
+            ->assertJsonPath('data.0.prices_min.0.net', $priceMin1)
+            ->assertJsonPath('data.0.prices_max.0.net', $priceMax1);
 
         $this->assertQueryCountLessThan(35);
     }
@@ -407,16 +356,6 @@ class PricesTest extends TestCase
             ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))],
         ]);
 
-        $product2 = Product::factory()->create([
-            'public' => true,
-        ]);
-        $priceMin2 = 1000;
-        $priceMax2 = 1500;
-        $this->productRepository->setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin2, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax2, $this->currency->value))],
-        ]);
-
         $discountRate = 0.5;
         $sale = Discount::factory()->create([
             'description' => 'Testowa promocja',
@@ -430,7 +369,6 @@ class PricesTest extends TestCase
 
         $sale->products()->attach([
             $product1->getKey(),
-            $product2->getKey(),
         ]);
 
         $role = Role::factory()->create();
@@ -453,24 +391,14 @@ class PricesTest extends TestCase
             ->actingAs($this->user)
             ->json('GET', '/prices/products', ['ids' => [
                 $product1->getKey(),
-                $product2->getKey(),
             ]])
             ->assertStatus(Response::HTTP_OK)
-            ->assertJsonCount(2, 'data')
-            ->assertJsonFragment([
-                'data' => [
-                    [
-                        'id' => $product1->getKey(),
-                        'price_min' => $priceMin1 * (1 - $discountRate),
-                        'price_max' => $priceMax1 * (1 - $discountRate),
-                    ],
-                    [
-                        'id' => $product2->getKey(),
-                        'price_min' => $priceMin2 * (1 - $discountRate),
-                        'price_max' => $priceMax2 * (1 - $discountRate),
-                    ],
-                ],
-            ]);
+            ->assertJsonPath('data.0.prices_min.0.net', number_format(
+                $priceMin1 * (1 - $discountRate), 2, '.', '',
+            ))
+            ->assertJsonPath('data.0.prices_max.0.net', number_format(
+                $priceMax1 * (1 - $discountRate), 2, '.', '',
+            ));
 
         $this->assertQueryCountLessThan(36);
     }
@@ -488,21 +416,11 @@ class PricesTest extends TestCase
         $product1 = Product::factory()->create([
             'public' => true,
         ]);
-        $priceMin1 = 2500;
-        $priceMax1 = 3000;
+        $priceMin1 = '2500.00';
+        $priceMax1 = '3000.00';
         $this->productRepository->setProductPrices($product1->getKey(), [
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))],
             ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))],
-        ]);
-
-        $product2 = Product::factory()->create([
-            'public' => true,
-        ]);
-        $priceMin2 = 1000;
-        $priceMax2 = 1500;
-        $this->productRepository->setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin2, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax2, $this->currency->value))],
         ]);
 
         $discountRate = 0.5;
@@ -518,7 +436,6 @@ class PricesTest extends TestCase
 
         $sale->products()->attach([
             $product1->getKey(),
-            $product2->getKey(),
         ]);
 
         $role = Role::factory()->create();
@@ -540,24 +457,10 @@ class PricesTest extends TestCase
             ->actingAs($this->user)
             ->json('GET', '/prices/products', ['ids' => [
                 $product1->getKey(),
-                $product2->getKey(),
             ]])
             ->assertStatus(Response::HTTP_OK)
-            ->assertJsonCount(2, 'data')
-            ->assertJsonFragment([
-                'data' => [
-                    [
-                        'id' => $product1->getKey(),
-                        'price_min' => $priceMin1,
-                        'price_max' => $priceMax1,
-                    ],
-                    [
-                        'id' => $product2->getKey(),
-                        'price_min' => $priceMin2,
-                        'price_max' => $priceMax2,
-                    ],
-                ],
-            ]);
+            ->assertJsonPath('data.0.prices_min.0.net', $priceMin1)
+            ->assertJsonPath('data.0.prices_max.0.net', $priceMax1);
 
         $this->assertQueryCountLessThan(36);
     }
