@@ -140,7 +140,7 @@ readonly class DiscountService implements DiscountServiceContract
             $this->metadataService->sync($discount, $dto->getMetadata());
         }
 
-        if (!($dto->getSeo() instanceof Missing)) {
+        if ($dto->getSeo() !== null && !($dto->getSeo() instanceof Missing)) {
             $this->seoMetadataService->createOrUpdateFor($discount, $dto->getSeo());
         }
 
@@ -196,8 +196,11 @@ readonly class DiscountService implements DiscountServiceContract
             }
         }
 
-        if (!($dto->getSeo() instanceof Missing)) {
+        if ($dto->getSeo() !== null && !($dto->getSeo() instanceof Missing)) {
             $this->seoMetadataService->createOrUpdateFor($discount, $dto->getSeo());
+        } elseif ($dto->getSeo() === null && $discount->seo) {
+            $this->seoMetadataService->delete($discount->seo);
+            $discount->refresh();
         }
 
         if (!($dto->amounts instanceof Missing)) {
