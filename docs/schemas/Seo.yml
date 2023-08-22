@@ -1,15 +1,6 @@
-Seo:
+SeoBase:
   type: object
   properties:
-    title:
-      description: 'Displayed seo title'
-      type: string
-      example: Title
-    description:
-      description: 'Displayed SEO description'
-      type: string
-      example: 'Description SEO'
-      maxLength: 1000
     keywords:
       description: 'List of SEO keywords'
       type: array
@@ -18,13 +9,52 @@ Seo:
         example: PHP
     twitter_card:
       type: string
-      enum: ['summary', 'summary_large_image']
+      enum: [ 'summary', 'summary_large_image' ]
     no_index:
       description: 'Whether seo indexing is disabled'
       type: boolean
     header_tags:
       description: 'Custom header tags'
       type: array
+      items:
+        type: string
+        example: 'tag'
+    translations:
+      type: array
+      description: 'Translation table for languages. Array key is language UUID'
+      items:
+        type: object
+        properties:
+          title:
+            description: 'Displayed seo title'
+            type: string
+            example: Title
+          description:
+            description: 'Displayed SEO description'
+            type: string
+            example: 'Description SEO'
+    published:
+      type: array
+      items:
+        type: string
+        format: uuid
+        example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b'
+
+Seo:
+  type: object
+  allOf:
+    - $ref: '#/Seo'
+    - type: object
+      properties:
+        title:
+          description: 'Displayed seo title'
+          type: string
+          example: Title
+        description:
+          description: 'Displayed SEO description'
+          type: string
+          example: 'Description SEO'
+          maxLength: 1000
 
 SeoStore:
   allOf:
