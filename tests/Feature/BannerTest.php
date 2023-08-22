@@ -595,6 +595,42 @@ class BannerTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateBannerSameSlug($user): void
+    {
+        $this->{$user}->givePermissionTo('banners.edit');
+
+        $banner = [
+            'name' => 'Super spring banner',
+            'active' => true,
+            'slug' => $this->banner->slug,
+        ];
+
+        $response = $this
+            ->actingAs($this->{$user})
+            ->patchJson("/banners/id:{$this->banner->getKey()}", $banner)
+            ->assertOk();
+
+        $response
+            ->assertJson([
+                'data' => [
+                    'id' => $response->getData()->data->id,
+                    'name' => $banner['name'],
+                    'slug' => $this->banner->slug,
+                    'active' => $banner['active'],
+                ],
+            ]);
+
+        $this->assertDatabaseHas('banners', [
+            'id' => $response->getData()->data->id,
+            'name' => $banner['name'],
+            'slug' => $this->banner->slug,
+            'active' => $banner['active'],
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testDeleteBanner($user): void
     {
         $this->{$user}->givePermissionTo('banners.remove');
