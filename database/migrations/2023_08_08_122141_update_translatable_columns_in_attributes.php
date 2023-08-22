@@ -5,8 +5,8 @@ use Domain\ProductAttribute\Models\Attribute as AttributeAlias;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Support\Utils\Migrate;
 
 return new class extends Migration
 {
@@ -15,8 +15,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $language = Language::query()->where('default', true)->firstOrFail();
-        $lang = $language->getKey();
+        $lang = Language::query()->where('default', true)->value('id');
 
         Schema::table('attributes', function (Blueprint $table) {
             $table->text('name')->change();
@@ -24,23 +23,18 @@ return new class extends Migration
             $table->text('published')->nullable();
         });
 
-        AttributeAlias::chunk(100, fn ($models) => $models->each(
-            function (AttributeAlias $model) use ($lang): void {
-                $attr = $model->getAttributes();
-                $model
-                    ->setAttribute('published', [$lang])
-                    ->setTranslation('name', $lang, $attr['name'])
-                    ->setTranslation('description', $lang, $attr['description'])
-                    ->save();
-            },
-        ));
+        AttributeAlias::query()->update([
+            'name' => Migrate::lang('name', $lang),
+            'description' => Migrate::lang('description', $lang),
+            'published' => [$lang],
+        ]);
 
         Schema::table('attribute_options', function (Blueprint $table) {
             $table->text('name')->change();
         });
 
         AttributeOption::query()->update([
-            'name' => DB::raw("CONCAT(CONCAT('{\"{$lang}\":\"', name), '\"}')"),
+            'name' => Migrate::lang('name', $lang),
         ]);
     }
 
