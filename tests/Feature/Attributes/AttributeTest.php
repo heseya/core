@@ -598,6 +598,37 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateSameSlug(string $user): void
+    {
+        $this->{$user}->givePermissionTo('attributes.edit');
+
+        $name = 'Test ' . $this->attribute->name;
+        $attributeUpdate = [
+            'translations' => [
+                $this->lang => [
+                    'name' => $name,
+                ],
+            ],
+            'slug' => $this->attribute->slug,
+            'published' => [
+                $this->lang,
+            ],
+        ];
+
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
+            ->assertOk()
+            ->assertJsonStructure($this->expectedStructure)
+            ->assertJsonFragment([
+                'name' => $name,
+                'slug' => $this->attribute->slug,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateChangeType(string $user): void
     {
         $this->{$user}->givePermissionTo('attributes.edit');
