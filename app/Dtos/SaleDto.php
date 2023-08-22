@@ -34,7 +34,7 @@ class SaleDto extends Dto implements InstantiateFromRequest
         public readonly bool|Missing $active,
 
         public readonly array|Missing $metadata,
-        public readonly Missing|SeoMetadataDto $seo,
+        public readonly Missing|SeoMetadataDto|null $seo,
     ) {
         if (!($percentage instanceof Missing || $amounts instanceof Missing)) {
             throw new DtoException("Can't have both percentage and amount discounts");
@@ -51,6 +51,9 @@ class SaleDto extends Dto implements InstantiateFromRequest
             $request->input('amounts'),
         ) : new Missing();
 
+        $seo = $request->has('seo')
+            ? ($request->input('seo') !== null ? SeoMetadataDto::instantiateFromRequest($request) : null) : new Missing();
+
         return new self(
             translations: $request->input('translations', []),
             published: $request->input('published', []),
@@ -66,7 +69,7 @@ class SaleDto extends Dto implements InstantiateFromRequest
             target_shipping_methods: $request->input('target_shipping_methods', new Missing()),
             active: $request->input('active', new Missing()),
             metadata: self::mapMetadata($request),
-            seo: $request->has('seo') ? SeoMetadataDto::instantiateFromRequest($request) : new Missing(),
+            seo: $seo,
         );
     }
 
@@ -90,7 +93,7 @@ class SaleDto extends Dto implements InstantiateFromRequest
         return $this->target_shipping_methods;
     }
 
-    public function getSeo(): Missing|SeoMetadataDto
+    public function getSeo(): Missing|SeoMetadataDto|null
     {
         return $this->seo;
     }

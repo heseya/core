@@ -20,8 +20,10 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Language\Language;
 use Heseya\Dto\DtoException;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 
 class DiscountSeeder extends Seeder
@@ -42,6 +44,11 @@ class DiscountSeeder extends Seeder
         $amount = mt_rand(10, 15);
         $discounts = Discount::factory()->count($amount)->create();
         $discounts = $discounts->merge(Discount::factory(['code' => null])->count(25 - $amount)->create());
+
+        $language = Language::query()->where('default', false)->firstOrFail()->getKey();
+        $discounts->each(function ($discount) use ($language) {
+            $this->translations($discount, $language);
+        });
 
         /** @var DiscountService $discountService */
         $discountService = App::make(DiscountServiceContract::class);
@@ -125,5 +132,13 @@ class DiscountSeeder extends Seeder
         ];
 
         return [$appliedDiscount, $update];
+    }
+
+    private function translations(Discount $discount, string $language): void
+    {
+        $translation = Discount::factory()->definition();
+        $discount->setLocale($language)->fill(Arr::only($translation, ['name', 'description_html', 'description']));
+        $discount->fill(['published' => array_merge($discount->published, [$language])]);
+        $discount->save();
     }
 }

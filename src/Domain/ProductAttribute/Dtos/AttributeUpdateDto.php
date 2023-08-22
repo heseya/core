@@ -11,6 +11,7 @@ use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Attributes\Validation\Unique;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
+use Spatie\LaravelData\Support\Validation\References\RouteParameterReference;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
 final class AttributeUpdateDto extends Data
@@ -22,7 +23,7 @@ final class AttributeUpdateDto extends Data
     public function __construct(
         #[Rule(new Translations(['name', 'description']))]
         public readonly array $translations,
-        #[Max(255), AlphaDash, Unique('attributes')]
+        #[Max(255), AlphaDash, Unique('attributes', ignore: new RouteParameterReference('id'), ignoreColumn: 'id')]
         public readonly Optional|string $slug,
         public readonly bool|Optional $global,
         public readonly bool|Optional $sortable,
