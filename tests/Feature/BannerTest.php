@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ValidationError;
 use App\Models\Media;
 use Domain\Banner\Models\Banner;
 use Domain\Banner\Models\BannerMedia;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class BannerTest extends TestCase
@@ -626,6 +628,47 @@ class BannerTest extends TestCase
             'slug' => $this->banner->slug,
             'active' => $banner['active'],
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateBannerNoExistingBannerMedia($user): void
+    {
+        $this->{$user}->givePermissionTo('banners.edit');
+
+        $media = Media::factory()->create();
+        $noExistingUUID = Str::uuid();
+
+        $banner = [
+            'name' => 'Super spring banner',
+            'active' => true,
+            'slug' => 'new slug',
+            'banner_media' => [
+                [
+                    'id' => $noExistingUUID,
+                    'translations' => [
+                        $this->lang => [
+                            'title' => 'No exist'
+                        ]
+                    ],
+                    'media' => [
+                        ['min_screen_width' => 150, 'media' => $media->getKey()],
+                    ],
+                    'published' => [
+                        $this->lang,
+                    ],
+                ]
+            ]
+        ];
+
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson("/banners/id:{$this->banner->getKey()}", $banner)
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => 'VALIDATION_EXISTS',
+            ]);
     }
 
     /**
