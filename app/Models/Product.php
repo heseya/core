@@ -23,6 +23,7 @@ use App\Enums\Product\ProductPriceType;
 use App\Models\Contracts\SeoContract;
 use App\Models\Contracts\SortableContract;
 use App\Models\Interfaces\Translatable;
+use App\SortColumnTypes\PriceColumn;
 use App\SortColumnTypes\TranslatedColumn;
 use App\Traits\CustomHasTranslations;
 use App\Traits\HasDiscountConditions;
@@ -116,9 +117,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'available',
         'attribute.*',
         'set.*',
-        //        'price',
-        'price_min',
-        'price_max',
+        'price' => PriceColumn::class,
     ];
 
     protected array $criteria = [

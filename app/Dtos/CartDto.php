@@ -3,6 +3,8 @@
 namespace App\Dtos;
 
 use App\Dtos\Contracts\InstantiateFromRequest;
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Exceptions\ServerException;
 use App\Http\Requests\CartRequest;
 use Domain\Currency\Currency;
 use Heseya\Dto\DtoException;
@@ -12,21 +14,29 @@ use Illuminate\Support\Collection;
 
 class CartDto extends CartOrderDto implements InstantiateFromRequest
 {
-    public Currency $currency;
-    private array $items;
-    private array|Missing $coupons;
-    private Missing|string $shipping_method_id;
-    private Missing|string $digital_shipping_method_id;
-
-    public string $sales_channel_id;
+    public function __construct(
+        public readonly Currency $currency,
+        public array $items,
+        public readonly array|Missing $coupons,
+        public readonly Missing|string $shipping_method_id,
+        public readonly Missing|string $digital_shipping_method_id,
+        public readonly string $sales_channel_id,
+    ) {}
 
     /**
      * @throws DtoException
+     * @throws ServerException
      */
     public static function instantiateFromRequest(CartRequest|FormRequest $request): self
     {
+        $currency = $request->enum('currency', Currency::class);
+
+        if ($currency === null) {
+            throw new ServerException(Exceptions::SERVER_PRICE_UNKNOWN_CURRENCY);
+        }
+
         return new self(
-            currency: $request->enum('currency', Currency::class),
+            currency: $currency,
             items: self::prepareItems($request->input('items', [])),
             coupons: $request->input('coupons', new Missing()),
             shipping_method_id: $request->input('shipping_method_id', new Missing()),
@@ -45,6 +55,7 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
             items: self::prepareItems($array['items']),
             coupons: $array['coupons'],
             shipping_method_id: $array['shipping_method_id'],
+            digital_shipping_method_id: new Missing(),
             sales_channel_id: $array['sales_channel_id'],
         );
     }

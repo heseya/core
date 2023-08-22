@@ -1462,8 +1462,8 @@ class OrderTest extends TestCase
 
         $salesChannelId = SalesChannel::query()->value('id');
         $response = $this->actingAs($this->user)->json('POST', '/orders', [
-            'currency' => $this->currency,
             'sales_channel_id' => $salesChannelId,
+            'currency' => $this->currency,
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => [

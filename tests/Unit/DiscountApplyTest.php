@@ -355,7 +355,7 @@ class DiscountApplyTest extends TestCase
             $this->currency,
         );
 
-        $this->assertTrue($orderProduct->price === $result);
+        $this->assertTrue($orderProduct->price->isEqualTo($result));
         $this->assertDatabaseMissing('order_products', [
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -394,7 +394,7 @@ class DiscountApplyTest extends TestCase
             $this->currency,
         );
 
-        $this->assertEquals($result, $orderProduct->price);
+        $this->assertTrue($orderProduct->price->isEqualTo($result));
         $this->assertDatabaseMissing('order_products', [
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -429,7 +429,7 @@ class DiscountApplyTest extends TestCase
             $this->currency,
         );
 
-        $this->assertTrue($orderProduct->price === $result);
+        $this->assertTrue($orderProduct->price->isEqualTo($result));
         $this->assertDatabaseMissing('order_products', [
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -467,7 +467,7 @@ class DiscountApplyTest extends TestCase
             $this->currency,
         );
 
-        $this->assertTrue($orderProduct->price === $result);
+        $this->assertTrue($orderProduct->price->isEqualTo($result));
         $this->assertDatabaseMissing('order_products', [
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -498,7 +498,7 @@ class DiscountApplyTest extends TestCase
             $this->currency,
         );
 
-        $this->assertTrue($orderProduct->price === 120.0);
+        $this->assertTrue($orderProduct->price->isEqualTo(120.0));
         $this->assertDatabaseMissing('order_products', [
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -531,7 +531,7 @@ class DiscountApplyTest extends TestCase
             $this->currency,
         );
 
-        $this->assertTrue($orderProduct->price === 120.0);
+        $this->assertTrue($orderProduct->price->isEqualTo(120.0));
         $this->assertDatabaseMissing('order_products', [
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -560,7 +560,7 @@ class DiscountApplyTest extends TestCase
             $this->currency,
         );
 
-        $this->assertTrue($orderProduct->price === 120.0);
+        $this->assertTrue($orderProduct->price->isEqualTo(120.0));
         $this->assertDatabaseMissing('order_products', [
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -593,7 +593,7 @@ class DiscountApplyTest extends TestCase
             $this->currency,
         );
 
-        $this->assertTrue($orderProduct->price === 120.0);
+        $this->assertTrue($orderProduct->price->isEqualTo(120.0));
         $this->assertDatabaseMissing('order_products', [
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -650,7 +650,7 @@ class DiscountApplyTest extends TestCase
 
         $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
 
-        $this->assertTrue($orderProduct->price === $result);
+        $this->assertTrue($orderProduct->price->isEqualTo($result));
     }
 
     /**
@@ -678,7 +678,7 @@ class DiscountApplyTest extends TestCase
 
         $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
 
-        $this->assertTrue($orderProduct->price === $result);
+        $this->assertTrue($orderProduct->price->isEqualTo($result));
     }
 
     /**
@@ -702,7 +702,7 @@ class DiscountApplyTest extends TestCase
 
         $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
 
-        $this->assertTrue($orderProduct->price === $result);
+        $this->assertTrue($orderProduct->price->isEqualTo($result));
     }
 
     /**
@@ -733,7 +733,7 @@ class DiscountApplyTest extends TestCase
 
         $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
 
-        $this->assertTrue($orderProduct->price === $result);
+        $this->assertTrue($orderProduct->price->isEqualTo($result));
     }
 
     /**
@@ -753,7 +753,7 @@ class DiscountApplyTest extends TestCase
 
         $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
 
-        $this->assertTrue($orderProduct->price === 120.0);
+        $this->assertTrue($orderProduct->price->isEqualTo(120.0));
     }
 
     /**
@@ -775,7 +775,7 @@ class DiscountApplyTest extends TestCase
 
         $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
 
-        $this->assertTrue($orderProduct->price === 120.0);
+        $this->assertTrue($orderProduct->price->isEqualTo(120.0));
     }
 
     /**
@@ -797,7 +797,7 @@ class DiscountApplyTest extends TestCase
 
         $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
 
-        $this->assertTrue($orderProduct->price === 120.0);
+        $this->assertTrue($orderProduct->price->isEqualTo(120.0));
     }
 
     /**
@@ -825,7 +825,7 @@ class DiscountApplyTest extends TestCase
 
         $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
 
-        $this->assertTrue($orderProduct->price === 120.0);
+        $this->assertTrue($orderProduct->price->isEqualTo(120.0));
     }
 
     /**
@@ -847,7 +847,7 @@ class DiscountApplyTest extends TestCase
 
         $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
 
-        $this->assertTrue($cartItemResponse->price_discounted === $result);
+        $this->assertTrue($cartItemResponse->price_discounted->isEqualTo($result));
     }
 
     /**
@@ -875,7 +875,7 @@ class DiscountApplyTest extends TestCase
 
         $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
 
-        $this->assertTrue($cartItemResponse->price_discounted === $result);
+        $this->assertTrue($cartItemResponse->price_discounted->isEqualTo($result));
     }
 
     /**
@@ -899,7 +899,7 @@ class DiscountApplyTest extends TestCase
 
         $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
 
-        $this->assertTrue($cartItemResponse->price_discounted === $result);
+        $this->assertTrue($cartItemResponse->price_discounted->isEqualTo($result));
     }
 
     /**
@@ -926,7 +926,7 @@ class DiscountApplyTest extends TestCase
 
         $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
 
-        $this->assertTrue($cartItemResponse->price_discounted === $result);
+        $this->assertTrue($cartItemResponse->price_discounted->isEqualTo($result));
     }
 
     /**
@@ -946,7 +946,7 @@ class DiscountApplyTest extends TestCase
 
         $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
 
-        $this->assertTrue($cartItemResponse->price_discounted === 120.0);
+        $this->assertTrue($cartItemResponse->price_discounted->isEqualTo(120.0));
     }
 
     /**
@@ -968,7 +968,7 @@ class DiscountApplyTest extends TestCase
 
         $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
 
-        $this->assertTrue($cartItemResponse->price_discounted === 120.0);
+        $this->assertTrue($cartItemResponse->price_discounted->isEqualTo(120.0));
     }
 
     /**
@@ -990,7 +990,7 @@ class DiscountApplyTest extends TestCase
 
         $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
 
-        $this->assertTrue($cartItemResponse->price_discounted === 120.0);
+        $this->assertTrue($cartItemResponse->price_discounted->isEqualTo(120.0));
     }
 
     /**
@@ -1014,7 +1014,7 @@ class DiscountApplyTest extends TestCase
 
         $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
 
-        $this->assertTrue($cartItemResponse->price_discounted === 120.0);
+        $this->assertTrue($cartItemResponse->price_discounted->isEqualTo(120.0));
     }
 
     public function testApplyDiscountOnOrderValueAmount(): void
@@ -1030,7 +1030,7 @@ class DiscountApplyTest extends TestCase
 
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
 
-        $this->assertTrue($discountedOrder->cart_total === 310.0); // 360 - 50
+        $this->assertTrue($discountedOrder->cart_total->isEqualTo(310.0)); // 360 - 50
     }
 
     public function testApplyDiscountOnOrderValuePercentage(): void
@@ -1043,7 +1043,7 @@ class DiscountApplyTest extends TestCase
 
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
 
-        $this->assertTrue($discountedOrder->cart_total === 180.0); // 360 * 50%
+        $this->assertTrue($discountedOrder->cart_total->isEqualTo(180.0)); // 360 * 50%
     }
 
     public function testApplyDiscountOnOrderShippingAmount(): void
@@ -1061,7 +1061,7 @@ class DiscountApplyTest extends TestCase
 
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
 
-        $this->assertTrue($discountedOrder->shipping_price === 10.0); // 20 - 10
+        $this->assertTrue($discountedOrder->shipping_price->isEqualTo(10.0)); // 20 - 10
     }
 
     public function testApplyDiscountOnOrderShippingAmountNotAllow(): void
@@ -1079,7 +1079,7 @@ class DiscountApplyTest extends TestCase
 
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
 
-        $this->assertTrue($discountedOrder->shipping_price === 20.0);
+        $this->assertTrue($discountedOrder->shipping_price->isEqualTo(20.0));
     }
 
     public function testApplyDiscountOnOrderShippingPercentage(): void
@@ -1094,7 +1094,7 @@ class DiscountApplyTest extends TestCase
 
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
 
-        $this->assertTrue($discountedOrder->shipping_price === 15.0); // 20 * 75%
+        $this->assertTrue($discountedOrder->shipping_price->isEqualTo(15.0)); // 20 * 75%
     }
 
     public function testApplyDiscountOnOrderShippingPercentageNotAllow(): void
@@ -1109,7 +1109,7 @@ class DiscountApplyTest extends TestCase
 
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
 
-        $this->assertTrue($discountedOrder->shipping_price === 20.0);
+        $this->assertTrue($discountedOrder->shipping_price->isEqualTo(20.0));
     }
 
     public function testApplyDiscountOnOrderProductAmount(): void
@@ -1127,7 +1127,7 @@ class DiscountApplyTest extends TestCase
 
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
 
-        $this->assertTrue($discountedOrder->cart_total === 210.0); // (120 - 50) * 3
+        $this->assertTrue($discountedOrder->cart_total->isEqualTo(210.0)); // (120 - 50) * 3
     }
 
     public function testApplyDiscountOnOrderProductAmountNotAllow(): void
@@ -1145,7 +1145,7 @@ class DiscountApplyTest extends TestCase
 
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
 
-        $this->assertTrue($discountedOrder->cart_total === 360.0); // 120.0 * 3
+        $this->assertTrue($discountedOrder->cart_total->isEqualTo(360.0)); // 120.0 * 3
     }
 
     public function testApplyDiscountOnOrderProductPercentage(): void
@@ -1160,7 +1160,7 @@ class DiscountApplyTest extends TestCase
 
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
 
-        $this->assertTrue($discountedOrder->cart_total === 180.0); // 120 * 50 % * 3
+        $this->assertTrue($discountedOrder->cart_total->isEqualTo(180.0)); // 120 * 50 % * 3
     }
 
     public function testApplyDiscountOnOrderProductPercentageNotAllow(): void
@@ -1175,7 +1175,7 @@ class DiscountApplyTest extends TestCase
 
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
 
-        $this->assertTrue($discountedOrder->cart_total === 360.0); // 120.0 * 3
+        $this->assertTrue($discountedOrder->cart_total->isEqualTo(360.0)); // 120.0 * 3
     }
 
     /**
@@ -1231,6 +1231,6 @@ class DiscountApplyTest extends TestCase
 
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $order);
 
-        $this->assertTrue($discountedOrder->cart_total === 550.0); // 120.0 * 3 + (80 - 50) * 3
+        $this->assertTrue($discountedOrder->cart_total->isEqualTo(550.0)); // 120.0 * 3 + (80 - 50) * 3
     }
 }

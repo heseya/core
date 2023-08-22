@@ -16,6 +16,7 @@ use App\Exceptions\PublishingException;
 use App\Listeners\WebHookEventListener;
 use App\Models\Address;
 use App\Models\ConditionGroup;
+use App\Models\Country;
 use App\Models\Deposit;
 use App\Models\Discount;
 use App\Models\Item;
@@ -1868,7 +1869,8 @@ class OrderCreateTest extends TestCase
                     'product_id' => $this->product->getKey(),
                     'quantity' => 1,
                 ],
-            ]])
+            ]
+        ])
             ->assertUnprocessable()
             ->assertJsonFragment([
                 'message' => Exceptions::PRODUCT_PURCHASE_LIMIT,
@@ -1912,7 +1914,8 @@ class OrderCreateTest extends TestCase
                     'product_id' => $this->product->getKey(),
                     'quantity' => 1,
                 ],
-            ]])
+            ]
+        ])
             ->assertCreated();
     }
 
@@ -1958,5 +1961,86 @@ class OrderCreateTest extends TestCase
                 ],
             ],
         ])->assertCreated();
+    }
+
+    /**
+     * @dataProvider authProvider
+     *
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws MoneyMismatchException
+     */
+    public function testCreateSimpleOrderWithWrongCountry($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $this->productPrice = Money::of(10, $this->currency->value);
+
+        $this->productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
+        ]);
+
+        $productQuantity = 20;
+
+        $country = Country::query()->firstOrCreate([
+            'code' => 'PL',
+        ], [
+            'name' => 'Poland',
+        ]);
+
+        $this->shippingMethod->countries()->attach($country);
+        $this->shippingMethod->block_list = false;
+        $this->shippingMethod->save();
+
+        $this->address->country = $country->code;
+        $this->address->save();
+
+        $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+        ]);
+
+        $response->assertValid()->assertCreated();
+
+        Event::assertDispatchedTimes(OrderCreated::class, 1);
+
+        $country2 = Country::query()->firstOrCreate([
+            'code' => 'DE',
+        ], [
+            'name' => 'Germany',
+        ]);
+        $address2 = Address::factory()->create([
+            'country' => $country2->code,
+        ]);
+
+        $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $address2->toArray(),
+            'billing_address' => $address2->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+        ]);
+
+        $response->assertUnprocessable();
+        $response->assertJsonFragment(['message' => Exceptions::CLIENT_SHIPPING_METHOD_INVALID_COUNTRY->value]);
+
+        Event::assertDispatchedTimes(OrderCreated::class, 1); // no increase
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Traits;
 
 use App\Services\Contracts\SortServiceContract;
-use App\SortColumnTypes\SortableColumn;
 use Illuminate\Database\Eloquent\Builder;
 
 trait Sortable
@@ -23,16 +22,8 @@ trait Sortable
 
     public function getSortable(): array
     {
-        /** @phpstan-ignore-next-line */
-        $sortable = $this->sortable ?? [];
-
-        foreach ($sortable as $key => $value) {
-            if ($value instanceof SortableColumn) {
-                $sortable['$key'] = $value::getColumnName($key);
-            }
-        }
-
-        return $sortable;
+        // @phpstan-ignore-next-line
+        return $this->sortable ?? [];
     }
 
     public function getDefaultSortBy(): string

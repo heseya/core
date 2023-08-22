@@ -3,6 +3,8 @@
 namespace App\Dtos;
 
 use App\Dtos\Contracts\InstantiateFromRequest;
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Exceptions\ServerException;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Traits\MapMetadata;
@@ -14,22 +16,22 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    public Currency $currency;
-    private Missing|string $email;
-    private Missing|string|null $comment;
-    private Missing|string $shipping_method_id;
-    private Missing|string $digital_shipping_method_id;
-    private array|Missing $items;
-    private AddressDto|Missing $billing_address;
-    private array|Missing $coupons;
-    private array|Missing $sale_ids;
-    private Missing|string|null $shipping_number;
-    private AddressDto|Missing|string $shipping_place;
-    private bool|Missing $invoice_requested;
-
-    private array|Missing $metadata;
-
-    public string $sales_channel_id;
+    public function __construct(
+        public readonly Currency $currency,
+        public readonly Missing|string $email,
+        public readonly Missing|string|null $comment,
+        public readonly Missing|string $shipping_method_id,
+        public readonly Missing|string $digital_shipping_method_id,
+        public readonly array|Missing $items,
+        public readonly AddressDto|Missing $billing_address,
+        public readonly array|Missing $coupons,
+        public readonly array|Missing $sale_ids,
+        public readonly Missing|string|null $shipping_number,
+        public readonly AddressDto|Missing|string $shipping_place,
+        public readonly bool|Missing $invoice_requested,
+        public readonly array|Missing $metadata,
+        public readonly string $sales_channel_id,
+    ) {}
 
     public static function instantiateFromRequest(FormRequest|OrderCreateRequest|OrderUpdateRequest $request): self
     {
@@ -41,35 +43,31 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
             }
         }
 
+        $currency = $request->enum('currency', Currency::class);
+
+        if ($currency === null) {
+            throw new ServerException(Exceptions::SERVER_PRICE_UNKNOWN_CURRENCY);
+        }
+
         return new self(
-            currency: $request->enum('currency', Currency::class),
+            currency: $currency,
             email: $request->input('email', new Missing()),
             comment: $request->input('comment', new Missing()),
             shipping_method_id: $request->input('shipping_method_id', new Missing()),
             digital_shipping_method_id: $request->input('digital_shipping_method_id', new Missing()),
             items: $orderProducts instanceof Missing ? $orderProducts : $items,
-            shipping_place: is_array($request->input('shipping_place'))
-                ? AddressDto::instantiateFromRequest($request, 'shipping_place.')
-                : $request->input('shipping_place', new Missing()) ?? new Missing(),
             billing_address: $request->has('billing_address')
                 ? AddressDto::instantiateFromRequest($request, 'billing_address.') : new Missing(),
             coupons: $request->input('coupons', new Missing()),
             sale_ids: $request->input('sale_ids', new Missing()),
-            metadata: self::mapMetadata($request),
             shipping_number: $request->input('shipping_number', new Missing()),
+            shipping_place: is_array($request->input('shipping_place'))
+                ? AddressDto::instantiateFromRequest($request, 'shipping_place.')
+                : $request->input('shipping_place', new Missing()) ?? new Missing(),
             invoice_requested: $request->input('invoice_requested', new Missing()),
+            metadata: self::mapMetadata($request),
             sales_channel_id: $request->input('sales_channel_id'),
         );
-    }
-
-    public function getEmail(): Missing|string
-    {
-        return $this->email;
-    }
-
-    public function getComment(): Missing|string|null
-    {
-        return $this->comment;
     }
 
     public function getShippingMethodId(): Missing|string
@@ -140,10 +138,5 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
         }
 
         return $length;
-    }
-
-    public function getShippingNumber(): Missing|string|null
-    {
-        return $this->shipping_number;
     }
 }

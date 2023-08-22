@@ -831,7 +831,7 @@ readonly class DiscountService implements DiscountServiceContract
         return new OrderProduct([
             'product_id' => $product->getKey(),
             'quantity' => $orderProductDto->getQuantity(),
-            'price' => $this->calcPrice($price, $product->getKey(), $discount)->getAmount()->toFloat(),
+            'price' => $this->calcPrice($price, $product->getKey(), $discount),
         ]);
     }
 

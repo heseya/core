@@ -4,9 +4,11 @@ namespace App\Services;
 
 use App\Rules\WhereIn;
 use App\Services\Contracts\SortServiceContract;
+use App\SortColumnTypes\SortableColumn;
 use Domain\ProductAttribute\Repositories\AttributeRepository;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -25,14 +27,37 @@ class SortService implements SortServiceContract
         foreach ($sort as $option) {
             $option = explode(':', $option);
             $this->validate($option, $sortable);
-            $this->addOrder(
-                $query,
-                $option[0],
-                count($option) > 1 ? $option[1] : 'asc',
-            );
+
+            if (count($option) === 3) {
+                $this->addOrder(
+                    $query,
+                    $option[0],
+                    $option[2],
+                );
+            } else {
+                $this->addOrder(
+                    $query,
+                    $option[0],
+                    count($option) > 1 ? $option[1] : 'asc',
+                );
+            }
         }
 
         return $query;
+    }
+
+    private function getSortableColumnNames(array $sortable): array
+    {
+        return Arr::map($sortable, fn ($value, $key) => is_a($value, SortableColumn::class, true) ? $value::getColumnName($key) : $value);
+    }
+
+    private function getSortableColumnSettingsValidation(string $key, array $sortable): array
+    {
+        if (array_key_exists($key, $sortable) && is_a($sortable[$key], SortableColumn::class, true)) {
+            return $sortable[$key]::getValidationRules($key);
+        }
+
+        return [];
     }
 
     /**
@@ -40,15 +65,30 @@ class SortService implements SortServiceContract
      */
     private function validate(array $field, array $sortable): void
     {
+        if (count($field) === 3) {
+            [$sort_by, $sort_settings, $sort_direction] = $field;
+        } elseif (count($field) == 2) {
+            $sort_settings = null;
+            [$sort_by, $sort_direction] = $field;
+        } else {
+            $sort_settings = null;
+            $sort_direction = 'asc';
+            [$sort_by] = $field;
+        }
         Validator::make(
-            $field,
             [
-                '0' => ['required', new WhereIn($sortable)],
-                '1' => ['in:asc,desc'],
+                'sort_by' => $sort_by,
+                'sort_settings' => $sort_settings,
+                'sort_direction' => $sort_direction,
             ],
             [
-                'required' => 'You must specify sort field.',
-                '1.in' => "Only asc|desc sorting directions are allowed on field {$field[0]}.",
+                'sort_by' => ['required', new WhereIn($this->getSortableColumnNames($sortable))],
+                'sort_settings' => $this->getSortableColumnSettingsValidation($sort_by, $sortable),
+                'sort_direction' => ['in:asc,desc'],
+            ],
+            [
+                'sort_by.required' => 'You must specify sort field.',
+                'sort_direction.in' => "Only asc|desc sorting directions are allowed on field {$field[0]}.",
             ],
         )->validate();
     }

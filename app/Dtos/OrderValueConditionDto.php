@@ -2,13 +2,12 @@
 
 namespace App\Dtos;
 
-use Brick\Money\Money;
 use Heseya\Dto\Missing;
 
 class OrderValueConditionDto extends ConditionDto
 {
-    private Missing|float $min_value;
-    private Missing|float $max_value;
+    private float|Missing $min_value;
+    private float|Missing $max_value;
     private bool $include_taxes;
     private bool $is_in_range;
 
@@ -23,12 +22,12 @@ class OrderValueConditionDto extends ConditionDto
         );
     }
 
-    public function getMinValue(): Missing|float
+    public function getMinValue(): float|Missing
     {
         return $this->min_value;
     }
 
-    public function getMaxValue(): Missing|float
+    public function getMaxValue(): float|Missing
     {
         return $this->max_value;
     }
