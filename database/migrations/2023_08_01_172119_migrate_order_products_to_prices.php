@@ -42,7 +42,6 @@ return new class extends Migration {
                 ]);
         });
 
-
         Schema::table('order_products', function (Blueprint $table) {
             $table->string('currency', 3)->nullable(false)->change();
             $table->decimal('price', 27, 0)->change();

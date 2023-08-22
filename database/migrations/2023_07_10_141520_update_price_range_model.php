@@ -26,11 +26,13 @@ return new class extends Migration {
                 ->where('model_id', $priceRange->id)
                 ->first();
 
+            $start = Money::of($priceRange->start, 'PLN', roundingMode: RoundingMode::HALF_UP);
             $money = Money::of($price->value, 'PLN', roundingMode: RoundingMode::HALF_UP);
 
             DB::table('price_ranges')
                 ->where('id', $priceRange->id)
                 ->update([
+                    'start' => $start->getMinorAmount(),
                     'value' => $money->getMinorAmount(),
                     'currency' => $money->getCurrency()->getCurrencyCode(),
                 ]);
