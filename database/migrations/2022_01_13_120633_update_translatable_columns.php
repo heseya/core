@@ -29,7 +29,7 @@ class UpdateTranslatableColumns extends Migration
             $table->text('published')->nullable();
         });
 
-        Product::query()->update([
+        Product::query()->withTrashed()->update([
             'name' => Migrate::lang('name', $lang),
             'description_html' => Migrate::lang('description_html', $lang),
             'description_short' => Migrate::lang('description_short', $lang),
@@ -62,7 +62,7 @@ class UpdateTranslatableColumns extends Migration
             $table->text('published')->nullable();
         });
 
-        Page::query()->update([
+        Page::query()->withTrashed()->update([
             'name' => Migrate::lang('name', $lang),
             'content_html' => Migrate::lang('content_html', $lang),
             'published' => [$lang],
@@ -88,7 +88,7 @@ class UpdateTranslatableColumns extends Migration
             $table->text('published')->nullable();
         });
 
-        SeoMetadata::query()->chunk(100, fn ($seo) => $seo->each(
+        SeoMetadata::query()->withTrashed()->chunk(100, fn ($seo) => $seo->each(
             function (SeoMetadata $seo) use ($lang): void {
                 $attr = $seo->getAttributes();
                 $seo
@@ -109,7 +109,7 @@ class UpdateTranslatableColumns extends Migration
             $table->text('published')->nullable();
         });
 
-        ProductSet::query()->update([
+        ProductSet::query()->withTrashed()->update([
             'name' => Migrate::lang('name', $lang),
             'description_html' => Migrate::lang('description_html', $lang),
             'published' => [$lang],

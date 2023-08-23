@@ -33,7 +33,7 @@ return new class extends Migration
             $table->text('name')->change();
         });
 
-        AttributeOption::query()->update([
+        AttributeOption::query()->withTrashed()->update([
             'name' => Migrate::lang('name', $lang),
         ]);
     }

@@ -15,6 +15,7 @@ final class Language extends Model
     use HasFactory;
 
     protected $fillable = [
+        'id',
         'iso',
         'name',
         'default',
