@@ -19,11 +19,9 @@ class SaleResource extends Resource
 
     public function base(Request $request): array
     {
-        if (isset($this->resource->pivot, $this->resource->pivot->type)) {
-            // @phpstan-ignore-next-line
-            $this->resource->value = $this->resource->pivot->value;
-            $this->resource->type = $this->resource->pivot->type;
-        }
+        $amounts = $this->resource->amounts->isNotEmpty()
+            ? PriceResource::collection($this->resource->amounts)
+            : null;
 
         return array_merge([
             'id' => $this->resource->getKey(),
@@ -31,7 +29,7 @@ class SaleResource extends Resource
             'slug' => $this->resource->slug,
             'description' => $this->resource->description,
             'percentage' => $this->resource->percentage,
-            'amounts' => PriceResource::collection($this->resource->amounts),
+            'amounts' => $amounts,
             'priority' => $this->resource->priority,
             'uses' => $this->resource->uses,
             'target_type' => $this->resource->target_type,
