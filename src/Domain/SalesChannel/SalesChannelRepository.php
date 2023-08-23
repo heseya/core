@@ -6,6 +6,7 @@ namespace Domain\SalesChannel;
 
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
+use App\Traits\GetPublishedLanguageFilter;
 use Domain\SalesChannel\Dtos\SalesChannelCreateDto;
 use Domain\SalesChannel\Dtos\SalesChannelIndexDto;
 use Domain\SalesChannel\Dtos\SalesChannelUpdateDto;
@@ -17,6 +18,8 @@ use Support\Enum\Status;
 
 final class SalesChannelRepository
 {
+    use GetPublishedLanguageFilter;
+
     public function getOne(string $id): SalesChannel
     {
         $query = SalesChannel::where('id', '=', $id)
@@ -35,7 +38,7 @@ final class SalesChannelRepository
      */
     public function getAll(SalesChannelIndexDto $dto): LengthAwarePaginator
     {
-        return SalesChannel::searchByCriteria($dto->toArray())
+        return SalesChannel::searchByCriteria($dto->toArray() + $this->getPublishedLanguageFilter('sales_channels'))
             ->with('countries')
             ->paginate(Config::get('pagination.per_page'));
     }

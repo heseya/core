@@ -7,13 +7,14 @@ namespace Domain\SalesChannel\Models;
 use App\Models\Country;
 use App\Models\Interfaces\Translatable;
 use App\Models\Model;
+use App\Traits\CustomHasTranslations;
 use Domain\Language\Language;
 use Domain\SalesChannel\Criteria\CountrySearch;
+use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Spatie\Translatable\HasTranslations;
 use Support\Enum\Status;
 
 /**
@@ -21,9 +22,11 @@ use Support\Enum\Status;
  */
 final class SalesChannel extends Model implements Translatable
 {
+    use CustomHasTranslations;
     use HasCriteria;
     use HasFactory;
-    use HasTranslations;
+
+    protected const HIDDEN_PERMISSION = 'sales_channels.show_hidden';
 
     protected $fillable = [
         'id',
@@ -33,6 +36,7 @@ final class SalesChannel extends Model implements Translatable
         'countries_block_list',
         'default_currency',
         'default_language_id',
+        'published',
 
         // TODO: remove temp field
         'vat_rate',
@@ -46,11 +50,14 @@ final class SalesChannel extends Model implements Translatable
     protected $casts = [
         'status' => Status::class,
         'countries_block_list' => 'bool',
+        'published' => 'array',
     ];
 
     /** @var array<string, class-string> */
     protected array $criteria = [
         'country' => CountrySearch::class,
+        'published' => Like::class,
+        'sales_channels.published' => Like::class,
     ];
 
     /**

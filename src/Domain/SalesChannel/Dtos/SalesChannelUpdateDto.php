@@ -20,6 +20,7 @@ final class SalesChannelUpdateDto extends Data
     /**
      * @param array<string, array<string, string>> $translations
      * @param string[]|Optional $countries
+     * @param string[] $published
      */
     public function __construct(
         #[Rule(new Translations(['name']))]
@@ -37,6 +38,7 @@ final class SalesChannelUpdateDto extends Data
         // TODO: remove temp field
         #[Numeric]
         public readonly Optional|string $vat_rate,
+        public readonly array $published = [],
     ) {}
 
     /**
