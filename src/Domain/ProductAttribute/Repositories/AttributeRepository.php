@@ -7,6 +7,7 @@ namespace Domain\ProductAttribute\Repositories;
 use Domain\ProductAttribute\Dtos\AttributeCreateDto;
 use Domain\ProductAttribute\Dtos\AttributeUpdateDto;
 use Domain\ProductAttribute\Models\Attribute;
+use Spatie\LaravelData\Optional;
 
 final readonly class AttributeRepository
 {
@@ -34,10 +35,12 @@ final readonly class AttributeRepository
     public function update(string $id, AttributeUpdateDto $dto): bool
     {
         /** @var Attribute $attribute */
-        $attribute = Attribute::query()->where('id', '=', $id)->first();
+        $attribute = Attribute::query()->where('id', '=', $id)->firstOrFail();
 
-        foreach ($dto->translations as $lang => $translation) {
-            $attribute->setLocale($lang)->fill($translation);
+        if (!($dto->translations instanceof Optional)) {
+            foreach ($dto->translations as $lang => $translation) {
+                $attribute->setLocale($lang)->fill($translation);
+            }
         }
         $attribute->fill($dto->toArray());
 
