@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Attributes;
 
+use App\Enums\ValidationError;
 use App\Models\Option;
 use Domain\Language\Language;
 use Domain\Metadata\Enums\MetadataType;
@@ -642,7 +643,30 @@ class AttributeTest extends TestCase
             ->patchJson('/attributes/id:' . $attribute->getKey(), [
                 'type' => AttributeType::DATE,
             ])
-            ->assertUnprocessable();
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::PROHIBITED->value,
+                'message' => 'The type field is prohibited.',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateSameType(string $user): void
+    {
+        $this->{$user}->givePermissionTo('attributes.edit');
+
+        $attribute = Attribute::factory()->create([
+            'type' => AttributeType::SINGLE_OPTION,
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson('/attributes/id:' . $attribute->getKey(), [
+                'type' => AttributeType::SINGLE_OPTION,
+            ])
+            ->assertOk();
     }
 
     /**
@@ -661,7 +685,7 @@ class AttributeTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
-            ->assertUnprocessable();
+            ->assertNotFound();
     }
 
     /**

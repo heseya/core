@@ -224,6 +224,31 @@ class LanguageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateSameIso(string $user): void
+    {
+        $this->{$user}->givePermissionTo('languages.edit');
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', "/languages/id:{$this->languageHidden->getKey()}", [
+                'iso' => 'en',
+                'name' => 'English',
+                'hidden' => false,
+                'default' => false,
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('languages', [
+            'iso' => 'en',
+            'name' => 'English',
+            'hidden' => false,
+            'default' => false,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateWithWebHookDispatched(string $user): void
     {
         $this->{$user}->givePermissionTo('languages.edit');

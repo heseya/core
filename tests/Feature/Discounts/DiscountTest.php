@@ -31,6 +31,7 @@ use Domain\ProductSet\ProductSet;
 use Heseya\Dto\DtoException;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
@@ -1216,8 +1217,6 @@ class DiscountTest extends TestCase
      */
     public function testCreateMaxValueAmount($user, $discountKind): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo("{$discountKind}.add");
 
         Queue::fake();
@@ -1228,7 +1227,10 @@ class DiscountTest extends TestCase
                     'name' => 'Kupon',
                 ],
             ],
-            'value' => 855,
+            'amounts' => Arr::map(Currency::values(), fn (string $currency) => [
+                'value' => '855.00',
+                'currency' => $currency,
+            ]),
             'type' => DiscountType::AMOUNT,
             'priority' => 1,
             'target_type' => DiscountTargetType::ORDER_VALUE,
@@ -1242,13 +1244,28 @@ class DiscountTest extends TestCase
         $response = $this->actingAs($this->{$user})->json('POST', "/{$discountKind}", $discount);
 
         unset($discount['translations']);
+        unset($discount['type']);
+
+        $discount['amounts'] = Arr::map($discount['amounts'], fn (array $amount) => [
+            'currency' => $amount['currency'],
+            'gross' => $amount['value'],
+            'net' => $amount['value'],
+        ]);
+
         $response
+            ->assertValid()
             ->assertCreated()
             ->assertJsonFragment($discount + ['name' => 'Kupon']);
 
         $discountId = $response->getData()->data->id;
 
-        $this->assertDatabaseHas('discounts', $discount + ['id' => $discountId]);
+        $this->assertDatabaseHas('discounts', [
+            'id' => $discountId,
+            'code' => $discount['code'] ?? null,
+            'priority' => $discount['priority'],
+            'target_type' => $discount['target_type']->value,
+            'target_is_allow_list' => $discount['target_is_allow_list'],
+        ]);
     }
 
     /**
@@ -1972,7 +1989,8 @@ class DiscountTest extends TestCase
                     'name' => 'Kupon',
                     'description' => 'Testowy kupon',
                     'description_html' => 'html',
-            ])
+                ]
+            )
             ->assertJsonMissing($discountCondition->value);
 
         foreach ($this->conditions as $condition) {

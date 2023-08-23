@@ -716,6 +716,49 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateSameSlug(string $user): void
+    {
+        $this->{$user}->givePermissionTo('pages.edit');
+
+        Event::fake(PageUpdated::class);
+
+        $html = '<h1>hello world 2</h1>';
+
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson('/pages/id:' . $this->page->getKey(), [
+                'slug' => $this->page->slug,
+                'public' => false,
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test 2',
+                        'content_html' => $html,
+                    ],
+                ],
+                'published' => [$this->lang],
+            ])
+            ->assertOk()
+            ->assertJson(['data' => [
+                'name' => 'Test 2',
+                'slug' => $this->page->slug,
+                'public' => false,
+                'content_html' => $html,
+            ]]);
+
+        $this->assertDatabaseHas('pages', [
+            'id' => $this->page->getKey(),
+            "name->{$this->lang}" => 'Test 2',
+            'slug' => $this->page->slug,
+            'public' => false,
+            "content_html->{$this->lang}" => $html,
+        ]);
+
+        Event::assertDispatched(PageUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateMissingFields(string $user): void
     {
         $this->{$user}->givePermissionTo('pages.edit');

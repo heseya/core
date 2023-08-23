@@ -60,7 +60,7 @@ final class BannerService
         if (!$dto->banner_media instanceof Optional) {
             foreach ($dto->banner_media as $index => $group) {
                 $bannerMedia = null;
-                if (!$group->id instanceof Optional) {
+                if (!($group->id instanceof Optional)) {
                     /** @var BannerMedia $bannerMedia */
                     $bannerMedia = $banner->BannerMedia()->firstWhere('id', '=', $group->id);
                     $bannerMedia->update($group->toArray() + ['order' => $index + 1]);
@@ -74,7 +74,7 @@ final class BannerService
                     ]);
                 }
 
-                if (!$group->translations instanceof Optional) {
+                if (!($group->translations instanceof Optional)) {
                     foreach ($group->translations as $lang => $translation) {
                         $bannerMedia->setLocale($lang)->fill($translation);
                     }
@@ -82,7 +82,7 @@ final class BannerService
                 $bannerMedia->save();
 
                 $medias = [];
-                if (!$group->media instanceof Optional) {
+                if (!($group->media instanceof Optional)) {
                     foreach ($group->media as $media) {
                         $medias[$media->media] = ['min_screen_width' => $media->min_screen_width];
                     }

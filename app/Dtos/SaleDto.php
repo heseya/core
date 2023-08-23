@@ -47,7 +47,7 @@ class SaleDto extends Dto implements InstantiateFromRequest
     public static function instantiateFromRequest(FormRequest|SaleCreateRequest $request): self
     {
         $amounts = $request->has('amounts') ? array_map(
-            fn ($data) => PriceDto::from($data),
+            fn (array|PriceDto $amount) => $amount instanceof PriceDto ? $amount : PriceDto::from($amount),
             $request->input('amounts'),
         ) : new Missing();
 

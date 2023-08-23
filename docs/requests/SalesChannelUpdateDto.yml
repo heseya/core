@@ -34,3 +34,8 @@ SalesChannelUpdateDto:
             type: array
             items:
               type: string
+          published:
+            type: array
+            items:
+              type: string
+              format: uuid
