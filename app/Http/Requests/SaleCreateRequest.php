@@ -29,8 +29,8 @@ class SaleCreateRequest extends FormRequest
             'translations' => ['required', new Translations(['name', 'description_html', 'description'])],
             'slug' => ['nullable', 'string', 'max:128', 'alpha_dash'],
 
-            'percentage' => ['required_without:amounts', 'prohibits:amounts', 'numeric', 'string', 'gte:0'],
-            'amounts' => ['required_without:percentage', 'prohibits:percentage', new PricesEveryCurrency()],
+            'percentage' => ['nullable', 'required_without:amounts', 'prohibits:amounts', 'numeric', 'string', 'gte:0'],
+            'amounts' => ['nullable', 'required_without:percentage', 'prohibits:percentage', new PricesEveryCurrency()],
             'amounts.*' => [new Price(['value'], min: BigDecimal::zero())],
 
             'priority' => ['required', 'integer'],
