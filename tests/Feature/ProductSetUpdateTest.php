@@ -76,6 +76,44 @@ final class ProductSetUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateEmptyDescription(string $user): void
+    {
+        $this->{$user}->givePermissionTo('product_sets.edit');
+
+        Event::fake([ProductSetUpdated::class]);
+
+        /** @var ProductSet $set */
+        $set = ProductSet::factory()->create([
+            'description_html' => null,
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson("/product-sets/id:{$set->getKey()}", [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test Edit',
+                        'description_html' => null,
+                    ],
+                ],
+            ])
+            ->assertOk()
+            ->assertJson(['data' => [
+                'name' => 'Test Edit',
+                'description_html' => '',
+            ]]);
+
+        $this->assertDatabaseHas('product_sets', [
+            "name->{$this->lang}" => 'Test Edit',
+            "description_html->{$this->lang}" => null,
+        ]);
+
+        Event::assertDispatched(ProductSetUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateWithPartialData(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.edit');
