@@ -35,8 +35,9 @@ class AnalyticsTest extends TestCase
 
         $orderBefore->payments()->save(Payment::factory()->make([
             'status' => PaymentStatus::SUCCESSFUL,
-            'amount' => $orderBefore->summary->getAmount()->toFloat(),
+            'amount' => $orderBefore->summary,
             'created_at' => $orderBefore->created_at,
+            'currency' => $orderBefore->currency,
         ]));
 
         $order = Order::factory()->create([
@@ -46,8 +47,9 @@ class AnalyticsTest extends TestCase
 
         $order->payments()->save(Payment::factory()->make([
             'status' => PaymentStatus::SUCCESSFUL,
-            'amount' => $order->summary->getAmount()->toFloat(),
+            'amount' => $order->summary,
             'created_at' => $order->created_at,
+            'currency' => $order->currency,
         ]));
 
         $orderAfter = Order::factory()->create([
@@ -58,19 +60,23 @@ class AnalyticsTest extends TestCase
 
         $orderAfter->payments()->save(Payment::factory()->make([
             'status' => PaymentStatus::SUCCESSFUL,
-            'amount' => $orderAfter->summary->getAmount()->toFloat(),
+            'amount' => $orderAfter->summary,
             'created_at' => $orderAfter->created_at,
+            'currency' => $orderAfter->currency,
         ]));
 
-        $this->actingAs($this->{$user})->json('GET', '/analytics/payments', [
-            'from' => $from->toDateTimeString(),
-            'to' => $to->toDateTimeString(),
-            'group' => 'total',
-        ])
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/analytics/payments', [
+                'from' => $from->toDateTimeString(),
+                'to' => $to->toDateTimeString(),
+                'group' => 'total',
+            ])
             ->assertOk()
             ->assertJsonFragment([
-                'amount' => 1000.0,
+                'amount' => '1000.00',
                 'count' => 1,
+                'currency' => $order->currency,
             ]);
     }
 
@@ -93,8 +99,9 @@ class AnalyticsTest extends TestCase
 
         $orderBefore->payments()->save(Payment::factory()->make([
             'status' => PaymentStatus::SUCCESSFUL,
-            'amount' => $orderBefore->summary->getAmount()->toFloat(),
+            'amount' => $orderBefore->summary,
             'created_at' => $orderBefore->created_at,
+            'currency' => $orderBefore->currency,
         ]));
 
         $order = Order::factory()->create([
@@ -104,14 +111,16 @@ class AnalyticsTest extends TestCase
 
         $order->payments()->save(Payment::factory()->make([
             'status' => PaymentStatus::SUCCESSFUL,
-            'amount' => $order->summary->dividedBy(2, RoundingMode::HALF_DOWN)->getAmount()->toFloat(),
+            'amount' => $order->summary->dividedBy(2, RoundingMode::HALF_DOWN),
             'created_at' => $order->created_at,
+            'currency' => $order->currency,
         ]));
 
         $order->payments()->save(Payment::factory()->make([
             'status' => PaymentStatus::SUCCESSFUL,
-            'amount' => $order->summary->dividedBy(2)->getAmount()->toFloat(),
+            'amount' => $order->summary->dividedBy(2),
             'created_at' => $order->created_at,
+            'currency' => $order->currency,
         ]));
 
         $orderAfter = Order::factory()->create([
@@ -122,19 +131,22 @@ class AnalyticsTest extends TestCase
 
         $orderAfter->payments()->save(Payment::factory()->make([
             'status' => PaymentStatus::SUCCESSFUL,
-            'amount' => $orderAfter->summary->getAmount()->toFloat(),
+            'amount' => $orderAfter->summary,
             'created_at' => $orderAfter->created_at,
+            'currency' => $orderAfter->currency,
         ]));
 
-        $this->actingAs($this->{$user})->json('GET', '/analytics/payments', [
+        $response = $this->actingAs($this->{$user})->json('GET', '/analytics/payments', [
             'from' => $from->toDateTimeString(),
             'to' => $to->toDateTimeString(),
             'group' => 'total',
-        ])
-            ->assertOk()
+        ]);
+
+        $response->assertOk()
             ->assertJsonFragment([
-                'amount' => 1000.0,
+                'amount' => '1000.00',
                 'count' => 2,
+                'currency' => $order->currency,
             ]);
     }
 }

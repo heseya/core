@@ -159,6 +159,7 @@ class TimeFormatTest extends TestCase
         $order = Order::factory()->create();
         $payment = Payment::factory()->create([
             'order_id' => $order->getKey(),
+            'currency' => $order->currency,
         ]);
 
         $this->modelTimeFormat($payment, ['created_at', 'updated_at']);
