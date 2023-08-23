@@ -22,17 +22,19 @@ class PayPal implements PaymentMethod
         $gateway->setSecret(Config::get('paypal.client_secret'));
         $gateway->setTestMode(Config::get('paypal.sandbox'));
 
+        $amount = $payment->amount->getAmount()->toFloat();
+
         $response = $gateway->purchase([
-            'amount' => $payment->amount,
+            'amount' => $amount,
             'items' => [
                 [
                     'name' => $payment->order->code,
-                    'price' => $payment->amount,
+                    'price' => $amount,
                     'description' => 'Order ' . $payment->order->code,
                     'quantity' => 1,
                 ],
             ],
-            'currency' => $payment->order->currency,
+            'currency' => $payment->currency->value,
             'returnUrl' => Config::get('app.url') . '/payments/paypal',
             'cancelUrl' => Config::get('app.url') . '/payments/paypal',
         ])->send();

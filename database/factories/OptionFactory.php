@@ -7,7 +7,6 @@ use App\Models\Option;
 use Domain\Price\PriceRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Collection;
 use Tests\Utils\FakeDto;
 
 class OptionFactory extends Factory
