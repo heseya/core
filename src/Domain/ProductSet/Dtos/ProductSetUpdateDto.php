@@ -47,7 +47,7 @@ final class ProductSetUpdateDto extends Data
     {
         return [
             'translations.*.name' => ['sometimes', 'string', 'max:255'],
-            'translations.*.description_html' => ['sometimes', 'string', 'max:255'],
+            'translations.*.description_html' => ['sometimes', 'nullable', 'string', 'max:255'],
             'children_ids.*' => ['uuid', 'exists:product_sets,id'],
             'attributes.*' => ['uuid', 'exists:attributes,id'],
         ];
