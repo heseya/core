@@ -2010,6 +2010,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => $productQuantity,
                 ],
             ],
+            'currency' => Currency::DEFAULT->value,
         ]);
 
         $response->assertValid()->assertCreated();
@@ -2038,6 +2039,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => $productQuantity,
                 ],
             ],
+            'currency' => Currency::DEFAULT->value,
         ]);
 
         $response->assertUnprocessable();

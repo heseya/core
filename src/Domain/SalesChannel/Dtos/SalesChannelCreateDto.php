@@ -20,6 +20,7 @@ final class SalesChannelCreateDto extends Data
     /**
      * @param array<string, array<string, string>> $translations
      * @param string[] $countries
+     * @param string[] $published
      */
     public function __construct(
         #[Uuid]
@@ -39,6 +40,7 @@ final class SalesChannelCreateDto extends Data
         // TODO: remove temp field
         #[Numeric]
         public readonly string $vat_rate,
+        public readonly array $published = [],
     ) {}
 
     /**
