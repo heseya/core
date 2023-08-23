@@ -198,11 +198,13 @@ class AvailabilityTest extends TestCase
 
         $this->product->schemas()->saveMany([$schemaOne, $schemaTwo]);
 
-        $this->actingAs($this->{$user})
+        $response = $this->actingAs($this->{$user})
             ->postJson('/items/id:' . $itemTwo->getKey() . '/deposits', [
                 'quantity' => 20,
                 'shipping_time' => 0,
-            ])
+            ]);
+
+        $response->assertValid()
             ->assertCreated();
 
         $this

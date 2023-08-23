@@ -43,6 +43,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
             }
         }
 
+        /** @var ?Currency $currency */
         $currency = $request->enum('currency', Currency::class);
 
         if ($currency === null) {

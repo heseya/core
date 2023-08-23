@@ -34,16 +34,22 @@ Analytics:
                   properties:
                     $timeframe:
                       description: 'formatted time frame in UTC+0 eg.: for monthly - "YYYY-MM", for hourly - "YYYY-MM-DD HH", for total "total"'
-                      properties:
-                        amount:
-                          description: 'total money amount'
-                          type: number
-                          example: 1234.57
-                        count:
-                          description: 'total payment count'
-                          type: integer
-                          example: 13
-                      type: object
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          amount:
+                            description: 'total money amount'
+                            type: 'number'
+                            example: '1234.57'
+                          count:
+                            description: 'total payment count'
+                            type: integer
+                            example: 13
+                          currency:
+                            type: string
+                            example: 'PLN'
+
                   type: object
               type: object
     security:

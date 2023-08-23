@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Services\Contracts\AnalyticsServiceContract;
+use Domain\Currency\Currency;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
@@ -39,8 +40,11 @@ class AnalyticsControllerTest extends TestCase
             $mock->shouldReceive('getPaymentsOverPeriod')
                 ->andReturn([
                     'total' => [
-                        'amount' => 1000.0,
-                        'count' => 7,
+                        [
+                            'amount' => 1000.0,
+                            'count' => 7,
+                            'currency' => Currency::DEFAULT->value,
+                        ]
                     ],
                 ]);
         });
@@ -55,8 +59,11 @@ class AnalyticsControllerTest extends TestCase
             ->assertJson([
                 'data' => [
                     'total' => [
-                        'amount' => 1000.0,
-                        'count' => 7,
+                        [
+                            'amount' => 1000.0,
+                            'count' => 7,
+                            'currency' => Currency::DEFAULT->value,
+                        ]
                     ],
                 ],
             ]);

@@ -14,10 +14,13 @@ class OrderModelTest extends TestCase
         /** @var Order $order */
         $order = Order::factory()->create();
 
-        $order->payments()->save(Payment::factory()->make([
-            'amount' => $order->summary->multipliedBy(2)->getAmount()->toFloat(),
+        $payment = Payment::factory()->make([
+            'currency' => $order->currency,
             'status' => PaymentStatus::SUCCESSFUL,
-        ]));
+            'amount' => $order->summary->multipliedBy(2)->getAmount()->toFloat(),
+        ]);
+
+        $order->payments()->save($payment);
 
         $order->refresh();
         $this->assertTrue($order->paid);
