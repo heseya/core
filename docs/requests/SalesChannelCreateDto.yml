@@ -36,6 +36,11 @@ SalesChannelCreateDto:
             type: array
             items:
               type: string
+          published:
+            type: array
+            items:
+              type: string
+              format: uuid
         required:
           - translations
           - slug

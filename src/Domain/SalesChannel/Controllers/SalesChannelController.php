@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use Domain\SalesChannel\Dtos\SalesChannelCreateDto;
 use Domain\SalesChannel\Dtos\SalesChannelIndexDto;
 use Domain\SalesChannel\Dtos\SalesChannelUpdateDto;
+use Domain\SalesChannel\Models\SalesChannel;
 use Domain\SalesChannel\Resources\SalesChannelResource;
 use Domain\SalesChannel\SalesChannelCrudService;
 use Illuminate\Http\JsonResponse;
@@ -30,10 +31,10 @@ final class SalesChannelController extends Controller
         ));
     }
 
-    public function show(string $id): SalesChannelResource
+    public function show(SalesChannel $salesChannel): SalesChannelResource
     {
         return new SalesChannelResource(
-            $this->salesChannelService->show($id),
+            $this->salesChannelService->show($salesChannel->getKey()),
         );
     }
 
