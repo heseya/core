@@ -89,7 +89,7 @@ final class ProductSearchDto extends Data
             if ($this->price->min instanceof Money) {
                 $result['price_min'] = $this->price->min;
             }
-            if ($this->price->min instanceof Money) {
+            if ($this->price->max instanceof Money) {
                 $result['price_max'] = $this->price->max;
             }
         }

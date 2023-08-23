@@ -11,6 +11,10 @@ class PriceMinCap extends Criterion
 {
     public function query(Builder $query): Builder
     {
+        if (!$this->value instanceof Money) {
+            return $query;
+        }
+
         /** @var Money $value */
         $value = $this->value;
 
