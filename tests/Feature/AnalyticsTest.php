@@ -35,7 +35,7 @@ class AnalyticsTest extends TestCase
 
         $orderBefore->payments()->save(Payment::factory()->make([
             'status' => PaymentStatus::SUCCESSFUL,
-            'amount' => $orderBefore->summary->getAmount()->toFloat(),
+            'amount' => $orderBefore->summary,
             'created_at' => $orderBefore->created_at,
             'currency' => $orderBefore->currency,
         ]));
@@ -47,7 +47,7 @@ class AnalyticsTest extends TestCase
 
         $order->payments()->save(Payment::factory()->make([
             'status' => PaymentStatus::SUCCESSFUL,
-            'amount' => $order->summary->getAmount()->toFloat(),
+            'amount' => $order->summary,
             'created_at' => $order->created_at,
             'currency' => $order->currency,
         ]));
@@ -60,7 +60,7 @@ class AnalyticsTest extends TestCase
 
         $orderAfter->payments()->save(Payment::factory()->make([
             'status' => PaymentStatus::SUCCESSFUL,
-            'amount' => $orderAfter->summary->getAmount()->toFloat(),
+            'amount' => $orderAfter->summary,
             'created_at' => $orderAfter->created_at,
             'currency' => $orderAfter->currency,
         ]));
@@ -99,7 +99,7 @@ class AnalyticsTest extends TestCase
 
         $orderBefore->payments()->save(Payment::factory()->make([
             'status' => PaymentStatus::SUCCESSFUL,
-            'amount' => $orderBefore->summary->getAmount()->toFloat(),
+            'amount' => $orderBefore->summary,
             'created_at' => $orderBefore->created_at,
             'currency' => $orderBefore->currency,
         ]));
@@ -111,14 +111,14 @@ class AnalyticsTest extends TestCase
 
         $order->payments()->save(Payment::factory()->make([
             'status' => PaymentStatus::SUCCESSFUL,
-            'amount' => $order->summary->dividedBy(2, RoundingMode::HALF_DOWN)->getAmount()->toFloat(),
+            'amount' => $order->summary->dividedBy(2, RoundingMode::HALF_DOWN),
             'created_at' => $order->created_at,
             'currency' => $order->currency,
         ]));
 
         $order->payments()->save(Payment::factory()->make([
             'status' => PaymentStatus::SUCCESSFUL,
-            'amount' => $order->summary->dividedBy(2)->getAmount()->toFloat(),
+            'amount' => $order->summary->dividedBy(2),
             'created_at' => $order->created_at,
             'currency' => $order->currency,
         ]));
@@ -131,7 +131,7 @@ class AnalyticsTest extends TestCase
 
         $orderAfter->payments()->save(Payment::factory()->make([
             'status' => PaymentStatus::SUCCESSFUL,
-            'amount' => $orderAfter->summary->getAmount()->toFloat(),
+            'amount' => $orderAfter->summary,
             'created_at' => $orderAfter->created_at,
             'currency' => $orderAfter->currency,
         ]));

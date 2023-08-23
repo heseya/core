@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Services\AnalyticsService;
 use App\Services\Contracts\AnalyticsServiceContract;
+use Domain\Currency\Currency;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
@@ -30,7 +31,9 @@ class AnalyticsServiceTest extends TestCase
         $to = Carbon::today();
         $from = $to->copy()->subDays(30);
 
-        $order = Order::factory()->create();
+        $order = Order::factory()->create([
+            'currency' => Currency::PLN->value,
+        ]);
 
         $before = Payment::factory([
             'status' => PaymentStatus::SUCCESSFUL,
@@ -75,7 +78,12 @@ class AnalyticsServiceTest extends TestCase
                 [
                     'amount' => $amount->getAmount(),
                     'count' => 3,
-                    'currency' => $order->currency,
+                    'currency' => Currency::PLN->value,
+                ],
+                [
+                    'amount' => 0,
+                    'count' => 0,
+                    'currency' => Currency::EUR->value,
                 ]
             ],
         ], $this->analyticsService->getPaymentsOverPeriod($from, $to, 'total'));
@@ -154,7 +162,9 @@ class AnalyticsServiceTest extends TestCase
         string $labelTwo,
         string $group
     ): void {
-        $order = Order::factory()->create();
+        $order = Order::factory()->create([
+            'currency' => Currency::PLN->value,
+        ]);
 
         $oneG0 = Payment::factory([
             'status' => PaymentStatus::SUCCESSFUL,
@@ -193,14 +203,24 @@ class AnalyticsServiceTest extends TestCase
                 [
                     'amount' => $amountG0->getAmount(),
                     'count' => 2,
-                    'currency' => $order->currency,
+                    'currency' => Currency::PLN->value,
+                ],
+                [
+                    'amount' => 0,
+                    'count' => 0,
+                    'currency' => Currency::EUR->value,
                 ]
             ],
             $labelTwo => [
                 [
                     'amount' => $amountG1->getAmount(),
                     'count' => 2,
-                    'currency' => $order->currency,
+                    'currency' => Currency::PLN->value,
+                ],
+                [
+                    'amount' => 0,
+                    'count' => 0,
+                    'currency' => Currency::EUR->value,
                 ]
             ],
         ], $this->analyticsService->getPaymentsOverPeriod($groupOne0, $groupTwo1, $group));

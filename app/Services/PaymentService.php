@@ -13,7 +13,6 @@ use App\Models\PaymentMethod;
 use App\Payments\PayPal;
 use App\Payments\PayU;
 use App\Payments\Przelewy24;
-use App\Services\Contracts\PaymentServiceContract;
 use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
 use Domain\Currency\Currency;
@@ -25,7 +24,7 @@ use Illuminate\Validation\Rules\Enum;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
-final class PaymentService implements PaymentServiceContract
+final class PaymentService
 {
     /**
      * @throws ClientException
