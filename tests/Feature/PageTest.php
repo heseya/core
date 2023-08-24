@@ -349,6 +349,9 @@ class PageTest extends TestCase
                 'slug' => 'test-test',
                 'public' => true,
                 'content_html' => $html,
+                'published' => [
+                    $this->lang,
+                ],
             ]);
 
         $this->assertDatabaseHas('pages', [
