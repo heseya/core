@@ -597,6 +597,81 @@ class BannerTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateBannerWithBannerMedia($user): void
+    {
+        $this->{$user}->givePermissionTo('banners.edit');
+
+        BannerMedia::query()->delete();
+
+        $media = Media::factory()->create();
+
+        $response = $this
+            ->actingAs($this->{$user})
+            ->patchJson("/banners/id:{$this->banner->getKey()}", [
+                'banner_media' => [
+                    [
+                        'id' => null,
+                        'translations' => [
+                            $this->lang => [
+                                'title' => 'test',
+                            ],
+                        ],
+                        'media' => [
+                            ['min_screen_width' => 150, 'media' => $media->getKey()],
+                        ],
+                        'published' => [
+                            $this->lang,
+                        ],
+                    ],
+                ],
+            ])
+            ->assertOk()
+            ->assertJson([
+                'data' => [
+                    'slug' => $this->banner->slug,
+                    'name' => $this->banner->name,
+                    'active' => $this->banner->active,
+                    'banner_media' => [
+                        [
+                            'url' => null,
+                            'title' => 'test',
+                            'media' => [
+                                [
+                                    'min_screen_width' => 150,
+                                    'media' => [
+                                        'id' => $media->id,
+                                        'url' => $media->url,
+                                        'slug' => $media->slug,
+                                    ],
+                                ],
+                            ],
+                            'published' => [
+                                $this->lang,
+                            ],
+                        ],
+                    ],
+                ],
+            ]);
+
+        $data = $response->getData()->data;
+
+        $this
+            ->assertDatabaseHas('banners', [
+                'id' => $data->id,
+                'slug' => $data->slug,
+                'name' => $data->name,
+                'active' => $data->active,
+            ])
+            ->assertDatabaseHas('banner_media', [
+                'id' => $data->banner_media[0]->id,
+                'url' => $data->banner_media[0]->url,
+                "title->{$this->lang}" => $data->banner_media[0]->title,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateBannerSameSlug($user): void
     {
         $this->{$user}->givePermissionTo('banners.edit');
