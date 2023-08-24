@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\ValidationError;
 use App\Listeners\WebHookEventListener;
 use App\Models\WebHook;
+use Domain\Language\Language;
 use Domain\Metadata\Enums\MetadataType;
 use Domain\Page\Events\PageCreated;
 use Domain\Page\Events\PageDeleted;
@@ -348,6 +349,9 @@ class PageTest extends TestCase
                 'slug' => 'test-test',
                 'public' => true,
                 'content_html' => $html,
+                'published' => [
+                    $this->lang,
+                ],
             ]);
 
         $this->assertDatabaseHas('pages', [
@@ -700,6 +704,56 @@ class PageTest extends TestCase
                 'slug' => 'test-2',
                 'public' => false,
                 'content_html' => $html,
+            ]]);
+
+        $this->assertDatabaseHas('pages', [
+            'id' => $this->page->getKey(),
+            "name->{$this->lang}" => 'Test 2',
+            'slug' => 'test-2',
+            'public' => false,
+            "content_html->{$this->lang}" => $html,
+        ]);
+
+        Event::assertDispatched(PageUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdatePublished(string $user): void
+    {
+        $this->{$user}->givePermissionTo('pages.edit');
+
+        Event::fake(PageUpdated::class);
+
+        $html = '<h1>hello world 2</h1>';
+
+        $this->page->update([
+            'published' => Language::query()->get()->pluck('id'),
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson('/pages/id:' . $this->page->getKey(), [
+                'slug' => 'test-2',
+                'public' => false,
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test 2',
+                        'content_html' => $html,
+                    ],
+                ],
+                'published' => [$this->lang],
+            ])
+            ->assertOk()
+            ->assertJson(['data' => [
+                'name' => 'Test 2',
+                'slug' => 'test-2',
+                'public' => false,
+                'content_html' => $html,
+                'published' => [
+                    $this->lang,
+                ],
             ]]);
 
         $this->assertDatabaseHas('pages', [

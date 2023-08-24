@@ -29,6 +29,7 @@ final class PageCreateDto extends Data
      * @param array<string, array<string, string>> $translations
      * @param array<string, string>|Optional $metadata_public
      * @param array<string, string>|Optional $metadata_private
+     * @param string[] $published
      */
     public function __construct(
         #[Rule(new Translations(['name', 'content_html']))]
@@ -42,6 +43,7 @@ final class PageCreateDto extends Data
         #[MapInputName('metadata')]
         public readonly array|Optional $metadata_public,
         public readonly array|Optional $metadata_private,
+        public readonly array|Optional $published,
     ) {
         $this->metadata_computed = Map::toMetadata(
             $this->metadata_public,
