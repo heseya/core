@@ -95,8 +95,8 @@ final readonly class PageService
             foreach ($dto->translations as $lang => $translations) {
                 $page->setLocale($lang)->fill($translations);
             }
-            $this->translationService->checkPublished($page, ['name', 'content_html']);
         }
+        $this->translationService->checkPublished($page, ['name', 'content_html']);
 
         $page->save();
 
