@@ -60,7 +60,7 @@ final class BannerService
         if (!$dto->banner_media instanceof Optional) {
             foreach ($dto->banner_media as $index => $group) {
                 $bannerMedia = null;
-                if (!($group->id instanceof Optional)) {
+                if (!($group->id instanceof Optional) && $group->id) {
                     /** @var BannerMedia $bannerMedia */
                     $bannerMedia = $banner->BannerMedia()->firstWhere('id', '=', $group->id);
                     $bannerMedia->update($group->toArray() + ['order' => $index + 1]);

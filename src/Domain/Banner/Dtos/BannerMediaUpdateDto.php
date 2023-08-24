@@ -22,7 +22,7 @@ final class BannerMediaUpdateDto extends Data
      */
     public function __construct(
         #[Exists('banner_media', 'id')]
-        public readonly Optional|string $id,
+        public readonly Optional|string|null $id,
         #[Max(255)]
         public readonly string|null $url,
         #[Rule(new Translations(['title', 'subtitle']))]
