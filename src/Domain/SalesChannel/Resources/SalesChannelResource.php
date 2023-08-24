@@ -44,7 +44,8 @@ final class SalesChannelResource extends Resource
             'default_currency' => $currencyDto,
             'default_language' => new LanguageResource($this->resource->defaultLanguage),
             'countries' => $this->resource->countries->pluck('code'),
-            ...$request->boolean('with_translations') ? $this->getAllTranslations() : [],
+            'published' => $this->resource->published,
+            ...$request->boolean('with_translations') ? $this->getAllTranslations('sales_channels.show_hidden') : [],
         ];
     }
 }

@@ -40,7 +40,7 @@ final class SalesChannelCreateDto extends Data
         // TODO: remove temp field
         #[Numeric]
         public readonly string $vat_rate,
-        public readonly array $published = [],
+        public readonly array|Optional $published,
     ) {}
 
     /**

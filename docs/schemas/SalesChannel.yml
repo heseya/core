@@ -29,3 +29,16 @@ SalesChannel:
       type: array
       items:
         type: string
+    translations:
+      type: object
+      properties:
+        lang_uuid:
+          type: object
+          properties:
+            name:
+              type: string
+    published:
+      type: array
+      items:
+        type: string
+        format: uuid

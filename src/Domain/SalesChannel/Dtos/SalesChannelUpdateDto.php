@@ -38,7 +38,7 @@ final class SalesChannelUpdateDto extends Data
         // TODO: remove temp field
         #[Numeric]
         public readonly Optional|string $vat_rate,
-        public readonly array $published = [],
+        public readonly array|Optional $published,
     ) {}
 
     /**
