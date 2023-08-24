@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\RelationAlias;
 use App\Exceptions\ServerException;
-use App\Models\Discount;
 use App\Models\Price;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
@@ -25,7 +25,7 @@ class DiscountRepository
             $rows[] = [
                 'id' => Uuid::uuid4(),
                 'model_id' => $discountId,
-                'model_type' => Discount::class,
+                'model_type' => RelationAlias::DISCOUNT->value,
                 'price_type' => 'amount',
                 'currency' => $amount->value->getCurrency()->getCurrencyCode(),
                 'value' => $amount->value->getMinorAmount(),

@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\RelationAlias;
 use App\Exceptions\ClientException;
 use App\Models\App;
 use App\Models\User;
@@ -46,7 +47,7 @@ class WebHookPolicy
     private function canChange(App|User $user, WebHook $webHook, string $method): Response
     {
         // Webhook stworzony przez aplikację
-        if ($webHook->model_type === App::class) {
+        if ($webHook->model_type === RelationAlias::APP->value) {
             // Zalogowana aplikacja i aplikacja stworzyła danego Webhooka
             return ($user instanceof App) && $user->getKey() === $webHook->creator_id
                 ? Response::allow()

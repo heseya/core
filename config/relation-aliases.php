@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\RelationAlias;
 use App\Models\App;
 use App\Models\Discount;
 use App\Models\Item;
@@ -20,22 +21,22 @@ use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductSet\ProductSet;
 
 return [
-    'App' => App::class,
-    'Attribute' => Attribute::class,
-    'AttributeOption' => AttributeOption::class,
-    'Banner' => Banner::class,
-    'Discount' => Discount::class,
-    'Item' => Item::class,
-    'Media' => Media::class,
-    'Option' => Option::class,
-    'Order' => Order::class,
-    'OrderProduct' => OrderProduct::class,
-    'Page' => Page::class,
-    'Product' => Product::class,
-    'ProductSet' => ProductSet::class,
-    'Role' => Role::class,
-    'Schema' => Schema::class,
-    'ShippingMethod' => ShippingMethod::class,
-    'Status' => Status::class,
-    'User' => User::class,
+    RelationAlias::APP->value => App::class,
+    RelationAlias::ATTRIBUTE->value => Attribute::class,
+    RelationAlias::ATTRIBUTE_OPTION->value => AttributeOption::class,
+    RelationAlias::BANNER->value => Banner::class,
+    RelationAlias::DISCOUNT->value => Discount::class,
+    RelationAlias::ITEM->value => Item::class,
+    RelationAlias::MEDIA->value => Media::class,
+    RelationAlias::OPTION->value => Option::class,
+    RelationAlias::ORDER->value => Order::class,
+    RelationAlias::ORDER_PRODUCT->value => OrderProduct::class,
+    RelationAlias::PAGE->value => Page::class,
+    RelationAlias::PRODUCT->value => Product::class,
+    RelationAlias::PRODUCT_SET->value => ProductSet::class,
+    RelationAlias::ROLE->value => Role::class,
+    RelationAlias::SCHEMA->value => Schema::class,
+    RelationAlias::SHIPPING_METHOD->value => ShippingMethod::class,
+    RelationAlias::STATUS->value => Status::class,
+    RelationAlias::USER->value => User::class,
 ];

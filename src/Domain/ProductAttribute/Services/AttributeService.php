@@ -33,7 +33,7 @@ final readonly class AttributeService
         $attribute = $this->repository->create($dto);
 
         if (!($dto->metadata_computed instanceof Optional)) {
-            $this->metadataService->sync(Attribute::class, $attribute->getKey(), $dto->metadata_computed);
+            $this->metadataService->sync($attribute->getMorphClass(), $attribute->getKey(), $dto->metadata_computed);
         }
 
         return $attribute;

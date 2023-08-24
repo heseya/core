@@ -150,7 +150,7 @@ class SeoKeywordsTest extends TestCase
             "description->{$this->lang}" => 'product-description',
             'global' => false,
             'model_id' => $product->getKey(),
-            'model_type' => Product::class,
+            'model_type' => $product->getMorphClass(),
         ]);
     }
 }

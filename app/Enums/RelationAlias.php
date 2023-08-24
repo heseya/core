@@ -20,7 +20,7 @@ enum RelationAlias: string
     case ORDER_PRODUCT = 'OrderProduct';
     case PAGE = 'Page';
     case PRODUCT = 'Product';
-    case PRODUCT_SET = 'ProdcutSet';
+    case PRODUCT_SET = 'ProductSet';
     case ROLE = 'Role';
     case SCHEMA = 'Schema';
     case SHIPPING_METHOD = 'ShippingMethod';

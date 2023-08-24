@@ -6,6 +6,7 @@ use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\Product\ProductPriceType;
+use App\Enums\RelationAlias;
 use App\Enums\ValidationError;
 use App\Events\CouponCreated;
 use App\Events\CouponUpdated;
@@ -768,7 +769,7 @@ class DiscountTest extends TestCase
         );
         $this->assertDatabaseHas('model_has_discounts', [
             'discount_id' => $discountId,
-            'model_type' => ShippingMethod::class,
+            'model_type' => RelationAlias::SHIPPING_METHOD->value,
             'model_id' => $shippingMethod->getKey(),
         ]);
     }
@@ -870,12 +871,12 @@ class DiscountTest extends TestCase
         $this->assertDatabaseHas('discounts', $discount + ['id' => $discountId]);
         $this->assertDatabaseHas('model_has_discounts', [
             'discount_id' => $discountId,
-            'model_type' => Product::class,
+            'model_type' => $product->getMorphClass(),
             'model_id' => $product->getKey(),
         ]);
         $this->assertDatabaseHas('model_has_discounts', [
             'discount_id' => $discountId,
-            'model_type' => ProductSet::class,
+            'model_type' => $productSet->getMorphClass(),
             'model_id' => $productSet->getKey(),
         ]);
     }
@@ -971,12 +972,12 @@ class DiscountTest extends TestCase
         $this->assertDatabaseHas('discounts', $discount + ['id' => $discountId]);
         $this->assertDatabaseHas('model_has_discounts', [
             'discount_id' => $discountId,
-            'model_type' => Product::class,
+            'model_type' => $product->getMorphClass(),
             'model_id' => $product->getKey(),
         ]);
         $this->assertDatabaseHas('model_has_discounts', [
             'discount_id' => $discountId,
-            'model_type' => ProductSet::class,
+            'model_type' => $productSet->getMorphClass(),
             'model_id' => $productSet->getKey(),
         ]);
     }
@@ -1052,7 +1053,7 @@ class DiscountTest extends TestCase
         $this->assertDatabaseHas('discounts', $discount + ['id' => $discountId]);
         $this->assertDatabaseHas('model_has_discounts', [
             'discount_id' => $discountId,
-            'model_type' => ProductSet::class,
+            'model_type' => $parentSet->getMorphClass(),
             'model_id' => $parentSet->getKey(),
         ]);
     }
@@ -1129,7 +1130,7 @@ class DiscountTest extends TestCase
         $this->assertDatabaseHas('discounts', $discount + ['id' => $discountId]);
         $this->assertDatabaseHas('model_has_discounts', [
             'discount_id' => $discountId,
-            'model_type' => ProductSet::class,
+            'model_type' => $parentSet->getMorphClass(),
             'model_id' => $parentSet->getKey(),
         ]);
         $this->assertDatabaseHas('prices', [

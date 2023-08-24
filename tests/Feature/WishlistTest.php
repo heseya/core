@@ -261,7 +261,7 @@ class WishlistTest extends TestCase
         WishlistProduct::create([
             'product_id' => $this->product->getKey(),
             'user_id' => $this->{$user}->getKey(),
-            'user_type' => $this->{$user}::class,
+            'user_type' => $this->{$user}->getMorphClass(),
         ]);
 
         $this->actingAs($this->{$user})->json('DELETE', '/wishlist/id:' . $this->product->getKey())

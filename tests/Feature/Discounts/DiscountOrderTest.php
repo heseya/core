@@ -5,6 +5,7 @@ namespace Tests\Feature\Discounts;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Enums\RelationAlias;
 use App\Enums\SchemaType;
 use App\Enums\ShippingType;
 use App\Models\ConditionGroup;
@@ -118,7 +119,7 @@ class DiscountOrderTest extends TestCase
         $this->assertDatabaseHas('order_discounts', [
             'model_id' => $orderId,
             'discount_id' => $discount->getKey(),
-            'model_type' => Order::class,
+            'model_type' => RelationAlias::ORDER->value,
         ]);
     }
 
@@ -526,21 +527,21 @@ class DiscountOrderTest extends TestCase
 
         $this->assertDatabaseHas('order_discounts', [
             'model_id' => $cheapestProduct->getKey(),
-            'model_type' => OrderProduct::class,
+            'model_type' => RelationAlias::ORDER_PRODUCT->value,
             'discount_id' => $cheapestDiscount->getKey(),
             'applied_discount' => '450',
         ]);
 
         $this->assertDatabaseHas('order_discounts', [
             'model_id' => $product->getKey(),
-            'model_type' => OrderProduct::class,
+            'model_type' => RelationAlias::ORDER_PRODUCT->value,
             'discount_id' => $sale->getKey(),
             'applied_discount' => '1000',
         ]);
 
         $this->assertDatabaseHas('order_discounts', [
             'model_id' => $cheapestProduct->getKey(),
-            'model_type' => OrderProduct::class,
+            'model_type' => RelationAlias::ORDER_PRODUCT->value,
             'discount_id' => $sale->getKey(),
             'applied_discount' => '1000',
         ]);

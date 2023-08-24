@@ -79,7 +79,7 @@ final readonly class PageService
         }
 
         if (!($dto->metadata_computed instanceof Optional)) {
-            $this->metadataService->sync(Page::class, $page->getKey(), $dto->metadata_computed);
+            $this->metadataService->sync($page->getMorphClass(), $page->getKey(), $dto->metadata_computed);
         }
 
         PageCreated::dispatch($page);

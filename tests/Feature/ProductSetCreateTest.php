@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\MediaType;
+use App\Enums\RelationAlias;
 use App\Listeners\WebHookEventListener;
 use App\Models\Media;
 use App\Models\WebHook;
@@ -628,7 +629,7 @@ class ProductSetCreateTest extends TestCase
             "title->{$this->lang}" => 'seo title',
             "description->{$this->lang}" => 'seo description',
             'model_id' => $response->json('data.id'),
-            'model_type' => ProductSet::class,
+            'model_type' => RelationAlias::PRODUCT_SET->value,
         ]);
 
         $this->assertDatabaseHas('product_sets', [

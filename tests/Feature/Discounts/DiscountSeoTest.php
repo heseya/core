@@ -3,6 +3,7 @@
 namespace Tests\Feature\Discounts;
 
 use App\Enums\DiscountTargetType;
+use App\Enums\RelationAlias;
 use App\Models\Discount;
 use Domain\Seo\Models\SeoMetadata;
 use Tests\TestCase;
@@ -44,7 +45,7 @@ class DiscountSeoTest extends TestCase
 
         $this->assertDatabaseHas('seo_metadata', [
             'model_id' => $response->json('data.id'),
-            'model_type' => Discount::class,
+            'model_type' => RelationAlias::DISCOUNT->value,
             "title->{$this->lang}" => 'Great Sale!',
             "description->{$this->lang}" => 'Really Great',
         ]);
@@ -104,7 +105,7 @@ class DiscountSeoTest extends TestCase
 
         $this->assertDatabaseHas('seo_metadata', [
             'model_id' => $sale->getKey(),
-            'model_type' => Discount::class,
+            'model_type' => RelationAlias::DISCOUNT->value,
             "title->{$this->lang}" => 'Sale',
             "description->{$this->lang}" => 'Interesting business proposition',
         ]);

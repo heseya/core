@@ -263,13 +263,13 @@ class AppOtherTest extends TestCase
         $app = App::factory()->create(['url' => $this->url]);
 
         $webhook = WebHook::factory([
-            'model_type' => $app::class,
+            'model_type' => $app->getMorphClass(),
             'creator_id' => $app->getKey(),
         ])->create();
 
         $this->assertDatabaseHas('web_hooks', [
             'creator_id' => $app->getKey(),
-            'model_type' => App::class,
+            'model_type' => $app->getMorphClass(),
         ]);
 
         $this->assertTrue($app->webhooks->isNotEmpty());

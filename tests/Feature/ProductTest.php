@@ -7,6 +7,7 @@ use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\MediaType;
 use App\Enums\Product\ProductPriceType;
+use App\Enums\RelationAlias;
 use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
@@ -1956,7 +1957,7 @@ class ProductTest extends TestCase
             "title->{$this->lang}" => 'seo title',
             "description->{$this->lang}" => 'seo description',
             'model_id' => $response->json('data.id'),
-            'model_type' => Product::class,
+            'model_type' => RelationAlias::PRODUCT->value,
             "no_index->{$this->lang}" => $booleanValue,
         ]);
     }

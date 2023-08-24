@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\RelationAlias;
 use App\Models\Product;
 use Domain\Currency\Currency;
 use Domain\Metadata\Enums\MetadataType;
@@ -47,7 +48,7 @@ class MetadataFormsTest extends TestCase
 
         $this->assertDatabaseHas('metadata', [
             'model_id' => $response->json('data.id'),
-            'model_type' => Product::class,
+            'model_type' => RelationAlias::PRODUCT->value,
             'name' => 'test',
             'value' => '123',
             'value_type' => MetadataType::STRING,
@@ -56,7 +57,7 @@ class MetadataFormsTest extends TestCase
 
         $this->assertDatabaseHas('metadata', [
             'model_id' => $response->json('data.id'),
-            'model_type' => Product::class,
+            'model_type' => RelationAlias::PRODUCT->value,
             'name' => 'test-two',
             'value' => 123,
             'value_type' => MetadataType::NUMBER,
@@ -95,20 +96,20 @@ class MetadataFormsTest extends TestCase
 
         $this->assertDatabaseHas('metadata', [
             'model_id' => $response->json('data.id'),
-            'model_type' => ProductSet::class,
+            'model_type' => RelationAlias::PRODUCT_SET->value,
             'name' => 'test',
             'value' => '123',
             'value_type' => MetadataType::STRING,
-            'public' => true,
+            'public' => 1,
         ]);
 
         $this->assertDatabaseHas('metadata', [
             'model_id' => $response->json('data.id'),
-            'model_type' => ProductSet::class,
+            'model_type' => RelationAlias::PRODUCT_SET->value,
             'name' => 'test-two',
             'value' => 123,
             'value_type' => MetadataType::NUMBER,
-            'public' => false,
+            'public' => 0,
         ]);
     }
 }

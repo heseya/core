@@ -22,7 +22,7 @@ readonly class MediaAttachmentService implements MediaAttachmentServiceContract
 
         return MediaAttachment::query()->create([
             'model_id' => $model->getKey(),
-            'model_type' => $model::class,
+            'model_type' => $model->getMorphClass(),
             'label' => $label,
         ] + $dto->toArray());
     }
