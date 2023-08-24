@@ -185,7 +185,6 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'sales_channel_id' => $salesChannelId,
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address->toArray(),
