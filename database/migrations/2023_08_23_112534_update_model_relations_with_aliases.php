@@ -214,6 +214,6 @@ return new class extends Migration {
                         $typeColumn => $newValue,
                     ]);
                 }
-        });
+        }, $idColumn);
     }
 };
