@@ -71,7 +71,7 @@ final class SeoMetadataService
      */
     public function createOrUpdateFor(SeoContract $model, SeoMetadataDto|SeoMetadataDtoOld $dto): void
     {
-        $seo = new SeoMetadata($dto->toArray());
+        $seo = $model->seo ?? new SeoMetadata($dto->toArray());
         $seo->global = false;
 
         $seo->setAttribute('no_index', '{}');
