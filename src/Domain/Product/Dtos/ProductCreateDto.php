@@ -7,7 +7,7 @@ namespace Domain\Product\Dtos;
 use App\Rules\Translations;
 use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Domain\Price\Dtos\PriceDto;
-use Domain\Seo\Dtos\SeoMetadataDto;
+use Domain\Seo\Dtos\SeoMetadataCreateDto;
 use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\MapInputName;
@@ -61,7 +61,7 @@ final class ProductCreateDto extends Data
         public array|Optional $schemas,
         public array|Optional $sets,
         public array|Optional $items,
-        public Optional|SeoMetadataDto $seo,
+        public Optional|SeoMetadataCreateDto $seo,
         public array|Optional $attributes,
         public array|Optional $descriptions,
         public array|Optional $related_sets,

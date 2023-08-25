@@ -6,7 +6,7 @@ namespace Domain\Seo;
 
 use App\Http\Controllers\Controller;
 use Domain\Seo\Dtos\SeoKeywordsDto;
-use Domain\Seo\Dtos\SeoMetadataDto;
+use Domain\Seo\Dtos\SeoMetadataCreateDto;
 use Domain\Seo\Resources\SeoKeywordsResource;
 use Domain\Seo\Resources\SeoMetadataResource;
 use Illuminate\Http\JsonResponse;
@@ -25,7 +25,7 @@ final class SeoMetadataController extends Controller
             ->setStatusCode(200);
     }
 
-    public function createOrUpdate(SeoMetadataDto $dto): JsonResource
+    public function createOrUpdate(SeoMetadataCreateDto $dto): JsonResource
     {
         return SeoMetadataResource::make($this->seoMetadataService->createOrUpdate($dto));
     }

@@ -6,7 +6,7 @@ namespace Domain\Product\Dtos;
 
 use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Domain\Price\Dtos\PriceDto;
-use Domain\Seo\Dtos\SeoMetadataDto;
+use Domain\Seo\Dtos\SeoMetadataUpdateDto;
 use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\MapOutputName;
@@ -54,7 +54,7 @@ final class ProductUpdateDto extends Data
         public array|Optional $schemas,
         public array|Optional $sets,
         public array|Optional $items,
-        public Optional|SeoMetadataDto $seo,
+        public Optional|SeoMetadataUpdateDto $seo,
         public array|Optional $attributes,
         public array|Optional $descriptions,
         public array|Optional $related_sets,

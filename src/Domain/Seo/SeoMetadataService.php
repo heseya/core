@@ -9,7 +9,8 @@ use App\Exceptions\PublishingException;
 use App\Models\Contracts\SeoContract;
 use App\Services\Contracts\TranslationServiceContract;
 use Domain\Seo\Dtos\SeoKeywordsDto;
-use Domain\Seo\Dtos\SeoMetadataDto;
+use Domain\Seo\Dtos\SeoMetadataCreateDto;
+use Domain\Seo\Dtos\SeoMetadataUpdateDto;
 use Domain\Seo\Models\SeoMetadata;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
@@ -27,7 +28,7 @@ final class SeoMetadataService
         return $this->getGlobalSeo();
     }
 
-    public function createOrUpdate(SeoMetadataDto $dto): SeoMetadata
+    public function createOrUpdate(SeoMetadataCreateDto $dto): SeoMetadata
     {
         /** @var SeoMetadata|null $seo */
         $seo = SeoMetadata::query()->where('global', '=', true)->first();
@@ -69,20 +70,22 @@ final class SeoMetadataService
     /**
      * Create or update seo for given model.
      */
-    public function createOrUpdateFor(SeoContract $model, SeoMetadataDto|SeoMetadataDtoOld $dto): void
+    public function createOrUpdateFor(SeoContract $model, SeoMetadataCreateDto|SeoMetadataDtoOld|SeoMetadataUpdateDto $dto): void
     {
         $seo = $model->seo ?? new SeoMetadata($dto->toArray());
         $seo->global = false;
 
         $seo->setAttribute('no_index', '{}');
 
-        foreach ($dto->translations as $lang => $translations) {
-            $translationArray = $translations + [
-                'no_index' => $translations['no_index'] ?? false,
-            ];
+        if (!($dto->translations instanceof Optional)) {
+            foreach ($dto->translations as $lang => $translations) {
+                $translationArray = $translations + [
+                    'no_index' => $translations['no_index'] ?? false,
+                ];
 
-            foreach ($translationArray as $key => $translation) {
-                $seo->setTranslation($key, $lang, $translation);
+                foreach ($translationArray as $key => $translation) {
+                    $seo->setTranslation($key, $lang, $translation);
+                }
             }
         }
 
@@ -92,13 +95,15 @@ final class SeoMetadataService
     /**
      * @throws PublishingException
      */
-    public function update(SeoMetadataDto|SeoMetadataDtoOld $dto, SeoMetadata $seoMetadata): SeoMetadata
+    public function update(SeoMetadataCreateDto|SeoMetadataDtoOld|SeoMetadataUpdateDto $dto, SeoMetadata $seoMetadata): SeoMetadata
     {
         $seoMetadata->fill($dto->toArray());
 
-        foreach ($dto->translations as $lang => $translations) {
-            foreach ($translations as $key => $translation) {
-                $seoMetadata->setTranslation($key, $lang, $translation);
+        if (!($dto->translations instanceof Optional)) {
+            foreach ($dto->translations as $lang => $translations) {
+                foreach ($translations as $key => $translation) {
+                    $seoMetadata->setTranslation($key, $lang, $translation);
+                }
             }
         }
 

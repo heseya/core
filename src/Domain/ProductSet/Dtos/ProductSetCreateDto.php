@@ -6,7 +6,7 @@ namespace Domain\ProductSet\Dtos;
 
 use App\Rules\Translations;
 use Domain\Metadata\Dtos\MetadataUpdateDto;
-use Domain\Seo\Dtos\SeoMetadataDto;
+use Domain\Seo\Dtos\SeoMetadataCreateDto;
 use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\MapOutputName;
@@ -47,7 +47,7 @@ final class ProductSetCreateDto extends Data
         public readonly bool $slug_override,
         public readonly bool $public,
 
-        public readonly Optional|SeoMetadataDto $seo,
+        public readonly Optional|SeoMetadataCreateDto $seo,
 
         #[MapInputName('metadata')]
         public readonly array|Optional $metadata_public,
