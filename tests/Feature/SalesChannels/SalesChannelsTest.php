@@ -153,6 +153,8 @@ final class SalesChannelsTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('order_products', [
+            'price' => '1230',
+            'price_initial' => '1230',
             'base_price' => '1230',
             'base_price_initial' => '1230',
             'quantity' => 2,
