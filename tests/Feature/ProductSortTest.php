@@ -172,4 +172,78 @@ class ProductSortTest extends TestCase
                 ],
             ]);
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSortByName(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.show');
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $product1->setLocale($this->lang)->fill([
+            'name' => 'B product',
+        ]);
+        $product1->save();
+        $product2 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $product2->setLocale($this->lang)->fill([
+            'name' => 'C product',
+        ]);
+        $product2->save();
+        $product3 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $product3->setLocale($this->lang)->fill([
+            'name' => 'A product',
+        ]);
+        $product3->save();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products', ['sort' => 'name:asc'])
+            ->assertOk()
+            ->assertJsonCount(3, 'data')
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'id' => $product3->id,
+                        'name' => $product3->name,
+                    ],
+                    1 => [
+                        'id' => $product1->id,
+                        'name' => $product1->name,
+                    ],
+                    2 => [
+                        'id' => $product2->id,
+                        'name' => $product2->name,
+                    ],
+                ],
+            ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products', ['sort' => 'name:desc'])
+            ->assertOk()
+            ->assertJsonCount(3, 'data')
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'id' => $product2->id,
+                        'name' => $product2->name,
+                    ],
+                    1 => [
+                        'id' => $product1->id,
+                        'name' => $product1->name,
+                    ],
+                    2 => [
+                        'id' => $product3->id,
+                        'name' => $product3->name,
+                    ],
+                ],
+            ]);
+    }
 }

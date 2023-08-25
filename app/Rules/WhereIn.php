@@ -26,7 +26,7 @@ class WhereIn implements Rule
             return false;
         }
 
-        return in_array($value, $this->fields);
+        return in_array($value, $this->fields) || in_array($value, array_keys($this->fields));
     }
 
     public function message(): string
