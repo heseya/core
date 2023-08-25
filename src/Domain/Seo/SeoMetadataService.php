@@ -80,15 +80,14 @@ final class SeoMetadataService
         if (!($dto->translations instanceof Optional)) {
             foreach ($dto->translations as $lang => $translations) {
                 $translationArray = $translations + [
-                        'no_index' => $translations['no_index'] ?? false,
-                    ];
+                    'no_index' => $translations['no_index'] ?? false,
+                ];
 
                 foreach ($translationArray as $key => $translation) {
                     $seo->setTranslation($key, $lang, $translation);
                 }
             }
         }
-
 
         $model->seo()->save($seo);
     }

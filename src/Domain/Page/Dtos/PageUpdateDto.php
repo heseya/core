@@ -39,7 +39,7 @@ final class PageUpdateDto extends Data
         public readonly Optional|string $slug,
         public readonly bool|Optional $public,
 
-        public readonly Optional|SeoMetadataUpdateDto $seo,
+        public readonly Optional|SeoMetadataUpdateDto|null $seo,
 
         #[MapInputName('metadata')]
         public readonly array|Optional $metadata_public,
