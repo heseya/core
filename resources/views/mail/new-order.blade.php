@@ -250,7 +250,7 @@
                                     <table cellpadding="0" cellspacing="0" width="100%" border="0" style="color:#000000;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:22px;table-layout:auto;width:100%;border:none;">
                                         <tr>
                                             <td style="width: 180px">@lang('mail.summary-products'):</td>
-                                            <td><b>{{ $order->cart_total->getAmount() }} {{ $order->currency }}</b></td>
+                                            <td><b>{{ $order->cart_total_initial->getAmount() }} {{ $order->currency }}</b></td>
                                         </tr>
                                         <tr>
                                             <td style="width: 180px">@lang('mail.summary-delivery'):</td>
