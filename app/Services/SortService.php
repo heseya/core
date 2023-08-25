@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Rules\WhereIn;
 use App\Services\Contracts\SortServiceContract;
 use App\SortColumnTypes\SortableColumn;
+use App\SortColumnTypes\TranslatedColumn;
 use Domain\ProductAttribute\Repositories\AttributeRepository;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\JoinClause;
@@ -27,6 +28,10 @@ class SortService implements SortServiceContract
         foreach ($sort as $option) {
             $option = explode(':', $option);
             $this->validate($option, $sortable);
+
+            if (isset($sortable[$option[0]]) && $sortable[$option[0]] === TranslatedColumn::class) {
+                $option[0] = TranslatedColumn::getColumnName($option[0]);
+            }
 
             if (count($option) === 3) {
                 $this->addOrder(
