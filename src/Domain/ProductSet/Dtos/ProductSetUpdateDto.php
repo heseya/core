@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\ProductSet\Dtos;
 
 use App\Rules\Translations;
-use Domain\Seo\Dtos\SeoMetadataDto;
+use Domain\Seo\Dtos\SeoMetadataUpdateDto;
 use Spatie\LaravelData\Attributes\Validation\AlphaDash;
 use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -34,7 +34,7 @@ final class ProductSetUpdateDto extends Data
         public readonly array|Optional $attributes,
         public readonly array|Optional $published,
 
-        public readonly Optional|SeoMetadataDto $seo,
+        public readonly Optional|SeoMetadataUpdateDto $seo,
 
         #[Rule(new Translations(['name', 'description_html']))]
         public readonly array $translations = [],

@@ -6,7 +6,7 @@ namespace Domain\Page\Dtos;
 
 use App\Rules\Translations;
 use Domain\Metadata\Dtos\MetadataUpdateDto;
-use Domain\Seo\Dtos\SeoMetadataDto;
+use Domain\Seo\Dtos\SeoMetadataUpdateDto;
 use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\MapOutputName;
@@ -39,7 +39,7 @@ final class PageUpdateDto extends Data
         public readonly Optional|string $slug,
         public readonly bool|Optional $public,
 
-        public readonly Optional|SeoMetadataDto $seo,
+        public readonly Optional|SeoMetadataUpdateDto $seo,
 
         #[MapInputName('metadata')]
         public readonly array|Optional $metadata_public,
