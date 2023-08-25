@@ -298,18 +298,20 @@ final readonly class OrderService implements OrderServiceContract
                     );
 
                     foreach ($orderProduct->discounts as $discount) {
-                        $discount->pivot->applied_discount = $this->salesChannelService->addVat(
+                        $discount->pivot->applied_discount = $this->salesChannelService->addVatString(
                             $discount->pivot->applied_discount,
                             $vat_rate,
                         );
+                        $discount->pivot->save();
                     }
                 }
 
                 foreach ($order->discounts as $discount) {
-                    $discount->pivot->applied_discount = $this->salesChannelService->addVat(
+                    $discount->pivot->applied_discount = $this->salesChannelService->addVatString(
                         $discount->pivot->applied_discount,
                         $vat_rate,
                     );
+                    $discount->pivot->save();
                 }
 
                 $order->cart_total_initial = $this->salesChannelService->addVat(

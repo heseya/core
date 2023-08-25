@@ -23,7 +23,7 @@ final readonly class SalesChannelService
             ->where('id', '=', $sales_channel_id)
             ->firstOr(fn () => throw new ClientException(Exceptions::CLIENT_SALES_CHANNEL_NOT_FOUND));
 
-        return BigDecimal::of($sales_channel->vat_rate)->multipliedBy(0.01);
+        return BigDecimal::of($sales_channel->vat_rate)->multipliedBy(0.01)->plus(1);
     }
 
     /**
@@ -31,6 +31,14 @@ final readonly class SalesChannelService
      */
     public function addVat(Money $price, BigDecimal $vat_rate): Money
     {
-        return $price->multipliedBy($vat_rate->plus(1));
+        return $price->multipliedBy($vat_rate);
+    }
+
+    /**
+     * @throws MathException
+     */
+    public function addVatString(string $decimal, BigDecimal $vat_rate): string
+    {
+        return (string) $vat_rate->multipliedBy($decimal)->toInt();
     }
 }
