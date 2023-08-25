@@ -280,12 +280,34 @@ final readonly class OrderService implements OrderServiceContract
                         throw new OrderException(Exceptions::ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE);
                     }
 
-                    $orderProduct->price_initial = $this->salesChannelService->addVat(
+                    $orderProduct->base_price_initial = $this->salesChannelService->addVat(
                         $orderProduct->base_price_initial,
+                        $vat_rate,
+                    );
+                    $orderProduct->base_price = $this->salesChannelService->addVat(
+                        $orderProduct->base_price,
+                        $vat_rate,
+                    );
+                    $orderProduct->price_initial = $this->salesChannelService->addVat(
+                        $orderProduct->price_initial,
                         $vat_rate,
                         );
                     $orderProduct->price = $this->salesChannelService->addVat(
-                        $orderProduct->base_price,
+                        $orderProduct->price,
+                        $vat_rate,
+                    );
+
+                    foreach ($orderProduct->discounts as $discount) {
+                        $discount->pivot->applied_discount = $this->salesChannelService->addVat(
+                            $discount->pivot->applied_discount,
+                            $vat_rate,
+                        );
+                    }
+                }
+
+                foreach ($order->discounts as $discount) {
+                    $discount->pivot->applied_discount = $this->salesChannelService->addVat(
+                        $discount->pivot->applied_discount,
                         $vat_rate,
                     );
                 }
