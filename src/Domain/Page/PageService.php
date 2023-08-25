@@ -100,11 +100,11 @@ final readonly class PageService
 
         $page->save();
 
-        $seo = $page->seo;
-        if ($seo !== null && !$dto->seo instanceof Optional) {
-            $this->seoMetadataService->update($dto->seo, $seo);
+        if (!($dto->seo instanceof Optional)) {
+            $this->seoMetadataService->createOrUpdateFor($page, $dto->seo);
         }
 
+        $page = $page->refresh();
         PageUpdated::dispatch($page);
 
         return $page;
