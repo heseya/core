@@ -38,7 +38,7 @@ final class PageCreateDto extends Data
         public readonly string $slug,
         public readonly bool $public,
 
-        public readonly Optional|SeoMetadataDto $seo,
+        public readonly Optional|SeoMetadataDto|null $seo,
 
         #[MapInputName('metadata')]
         public readonly array|Optional $metadata_public,
