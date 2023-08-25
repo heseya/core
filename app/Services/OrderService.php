@@ -291,7 +291,7 @@ final readonly class OrderService implements OrderServiceContract
                     $orderProduct->price_initial = $this->salesChannelService->addVat(
                         $orderProduct->price_initial,
                         $vat_rate,
-                        );
+                    );
                     $orderProduct->price = $this->salesChannelService->addVat(
                         $orderProduct->price,
                         $vat_rate,
