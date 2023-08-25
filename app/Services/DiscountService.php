@@ -146,6 +146,7 @@ readonly class DiscountService implements DiscountServiceContract
         if (!($dto->amounts instanceof Missing)) {
             $this->discountRepository->setDiscountAmounts($discount->getKey(), $dto->amounts);
         }
+        $discount->refresh();
 
         if ($dto instanceof CouponDto) {
             CouponCreated::dispatch($discount);
@@ -199,8 +200,8 @@ readonly class DiscountService implements DiscountServiceContract
             $this->seoMetadataService->createOrUpdateFor($discount, $dto->getSeo());
         } elseif ($dto->getSeo() === null && $discount->seo) {
             $this->seoMetadataService->delete($discount->seo);
-            $discount->refresh();
         }
+        $discount->refresh();
 
         if (!($dto->amounts instanceof Missing)) {
             $this->discountRepository->setDiscountAmounts($discount->getKey(), $dto->amounts);

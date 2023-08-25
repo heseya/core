@@ -2730,7 +2730,7 @@ class ProductTest extends TestCase
             'order' => 1,
         ]);
 
-        $response = $this
+        $this
             ->actingAs($this->{$user})
             ->json('PATCH', '/products/id:' . $this->product->getKey(), [
                 'seo' => [],

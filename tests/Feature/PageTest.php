@@ -887,8 +887,7 @@ class PageTest extends TestCase
     {
         $this->{$user}->givePermissionTo('pages.edit');
 
-        $seo = SeoMetadata::factory()->create();
-        $this->page->seo()->save($seo);
+        $this->page->seo()->save(SeoMetadata::factory()->make());
         $this
             ->actingAs($this->{$user})
             ->json('PATCH', '/pages/id:' . $this->page->getKey(), [
@@ -935,6 +934,64 @@ class PageTest extends TestCase
             "title->{$this->lang}" => 'seo title',
             "description->{$this->lang}" => 'seo description',
             "no_index->{$this->lang}" => $booleanValue,
+        ]);
+    }
+
+    /**
+     * @dataProvider booleanProvider
+     */
+    public function testUpdateSeo(string $user, bool $boolean, bool $booleanValue): void
+    {
+        $this->{$user}->givePermissionTo('pages.edit');
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', '/pages/id:' . $this->page->getKey(), [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test 2',
+                        'content_html' => '<h1>hello world 2</h1>',
+                    ],
+                ],
+                'published' => [$this->lang],
+                'slug' => 'test-2',
+                'public' => $boolean,
+                'seo' => [
+                    'translations' => [
+                        $this->lang => [
+                            'title' => 'seo title',
+                            'description' => 'seo description',
+                            'no_index' => $boolean,
+                        ],
+                    ],
+                    'published' => [$this->lang],
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'title' => 'seo title',
+                'description' => 'seo description',
+                'no_index' => $booleanValue,
+            ])
+            ->assertJsonFragment([
+                'name' => 'Test 2',
+                'slug' => 'test-2',
+                'public' => $booleanValue,
+                'content_html' => '<h1>hello world 2</h1>',
+            ]);
+
+        $this->assertDatabaseHas('pages', [
+            'id' => $this->page->getKey(),
+            "name->{$this->lang}" => 'Test 2',
+            'slug' => 'test-2',
+            'public' => $booleanValue,
+            "content_html->{$this->lang}" => '<h1>hello world 2</h1>',
+        ]);
+        $this->assertDatabaseHas('seo_metadata', [
+            "title->{$this->lang}" => 'seo title',
+            "description->{$this->lang}" => 'seo description',
+            "no_index->{$this->lang}" => $booleanValue,
+            'model_id' => $this->page->getKey(),
         ]);
     }
 
