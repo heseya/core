@@ -11,7 +11,7 @@ use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 
-final class SeoMetadataDto extends Data
+final class SeoMetadataUpdateDto extends Data
 {
     /**
      * @param array<string, array<string, string>> $translations
@@ -20,7 +20,7 @@ final class SeoMetadataDto extends Data
      */
     public function __construct(
         #[Rule(new Translations(['title', 'description', 'keywords', 'no_index']))]
-        public readonly array $translations,
+        public readonly array|Optional $translations,
         public readonly Optional|string|null $twitter_card,
         #[MapInputName('og_image_id'), Exists('media', 'id')]
         public readonly Optional|string|null $og_image,
@@ -29,6 +29,6 @@ final class SeoMetadataDto extends Data
         public readonly bool|Optional $no_index,
         public readonly array|Optional|null $header_tags,
         /** @var array<string> */
-        public readonly array $published = [],
+        public readonly array|Optional $published = [],
     ) {}
 }
