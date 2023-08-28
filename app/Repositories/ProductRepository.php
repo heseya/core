@@ -6,7 +6,6 @@ namespace App\Repositories;
 
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\Product\ProductPriceType;
-use App\Enums\RelationAlias;
 use App\Exceptions\ServerException;
 use App\Models\Price;
 use App\Models\Product;
@@ -65,7 +64,7 @@ class ProductRepository implements ProductRepositoryContract
      */
     public function setProductPrices(string $productId, array $priceMatrix): void
     {
-        $this->priceRepository->setModelPrices(new ModelIdentityDto($productId, RelationAlias::PRODUCT->value), $priceMatrix);
+        $this->priceRepository->setModelPrices(new ModelIdentityDto($productId, 'Product'), $priceMatrix);
     }
 
     /**
@@ -78,7 +77,7 @@ class ProductRepository implements ProductRepositoryContract
      */
     public function getProductPrices(string $productId, array $priceTypes, ?Currency $currency = null): Collection|EloquentCollection
     {
-        $prices = $this->priceRepository->getModelPrices(new ModelIdentityDto($productId, RelationAlias::PRODUCT->value), $priceTypes, $currency);
+        $prices = $this->priceRepository->getModelPrices(new ModelIdentityDto($productId, 'Product'), $priceTypes, $currency);
 
         $groupedPrices = $prices->mapToGroups(fn (Price $price) => [$price->price_type => PriceDto::from($price)]);
 

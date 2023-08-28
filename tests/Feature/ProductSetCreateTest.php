@@ -3,11 +3,9 @@
 namespace Tests\Feature;
 
 use App\Enums\MediaType;
-use App\Enums\RelationAlias;
 use App\Listeners\WebHookEventListener;
 use App\Models\Media;
 use App\Models\WebHook;
-use Domain\Language\Language;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductSet\Events\ProductSetCreated;
 use Domain\ProductSet\ProductSet;
@@ -15,7 +13,6 @@ use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Ramsey\Uuid\Uuid;
-use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
 class ProductSetCreateTest extends TestCase
@@ -625,11 +622,12 @@ class ProductSetCreateTest extends TestCase
             ])
             ->assertJsonFragment(['id' => $media->getKey()]);
 
+        $set = ProductSet::query()->find($response->json('data.id'))->first();
         $this->assertDatabaseHas('seo_metadata', [
             "title->{$this->lang}" => 'seo title',
             "description->{$this->lang}" => 'seo description',
-            'model_id' => $response->json('data.id'),
-            'model_type' => RelationAlias::PRODUCT_SET->value,
+            'model_id' => $set,
+            'model_type' => $set->getMorphClass(),
         ]);
 
         $this->assertDatabaseHas('product_sets', [

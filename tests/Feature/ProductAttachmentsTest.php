@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Enums\MediaAttachmentType;
-use App\Enums\RelationAlias;
 use App\Enums\VisibilityType;
 use App\Models\Media;
 use App\Models\MediaAttachment;
@@ -211,7 +210,7 @@ class ProductAttachmentsTest extends TestCase
             'description' => 'test',
             'media_id' => $this->media->getKey(),
             'model_id' => $this->product->getKey(),
-            'model_type' => RelationAlias::PRODUCT->value,
+            'model_type' => $this->product->getMorphClass(),
         ]);
     }
 

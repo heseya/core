@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\RelationAlias;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
@@ -41,8 +40,8 @@ return new class extends Migration {
                     'id_column' => 'role_id',
                     'id_second_column' => 'model_id',
                     'relations' => [
-                        'App\Models\User' => RelationAlias::USER->value,
-                        'App\Models\App' => RelationAlias::APP->value,
+                        'App\Models\User' => 'User',
+                        'App\Models\App' => 'App',
                     ],
                 ],
             ],
@@ -51,10 +50,10 @@ return new class extends Migration {
                     'id_column' => 'discount_id',
                     'id_second_column' => 'model_id',
                     'relations' => [
-                        'App\Models\Product' => RelationAlias::PRODUCT->value,
-                        'App\Models\ProductSet' => RelationAlias::PRODUCT_SET->value,
-                        'Domain\ProductSet\ProductSet' => RelationAlias::PRODUCT_SET->value,
-                        'App\Models\ShippingMethod' => RelationAlias::SHIPPING_METHOD->value,
+                        'App\Models\Product' => 'Product',
+                        'App\Models\ProductSet' => 'ProductSet',
+                        'Domain\ProductSet\ProductSet' => 'ProductSet',
+                        'App\Models\ShippingMethod' => 'ShippingMethod',
                     ],
                 ]
             ],
@@ -63,8 +62,8 @@ return new class extends Migration {
                     'id_column' => 'id',
                     'id_second_column' => null,
                     'relations' => [
-                        'App\Models\User' => RelationAlias::USER->value,
-                        'App\Models\App' => RelationAlias::APP->value,
+                        'App\Models\User' => 'User',
+                        'App\Models\App' => 'App',
                     ],
                 ]
             ],
@@ -73,8 +72,8 @@ return new class extends Migration {
                     'id_column' => 'id',
                     'id_second_column' => null,
                     'relations' => [
-                        'App\Models\User' => RelationAlias::USER->value,
-                        'App\Models\App' => RelationAlias::APP->value,
+                        'App\Models\User' => 'User',
+                        'App\Models\App' => 'App',
                     ],
                 ]
             ],
@@ -83,12 +82,12 @@ return new class extends Migration {
                     'id_column' => 'id',
                     'id_second_column' => null,
                     'relations' => [
-                        'App\Models\Product' => RelationAlias::PRODUCT->value,
-                        'App\Models\ProductSet' => RelationAlias::PRODUCT_SET->value,
-                        'Domain\ProductSet\ProductSet' => RelationAlias::PRODUCT_SET->value,
-                        'App\Models\Discount' => RelationAlias::DISCOUNT->value,
-                        'App\Models\Page' => RelationAlias::PAGE->value,
-                        'Domain\Page\Page' => RelationAlias::PAGE->value,
+                        'App\Models\Product' => 'Product',
+                        'App\Models\ProductSet' => 'ProductSet',
+                        'Domain\ProductSet\ProductSet' => 'ProductSet',
+                        'App\Models\Discount' => 'Discount',
+                        'App\Models\Page' => 'Page',
+                        'Domain\Page\Page' => 'Page',
                     ],
                 ]
             ],
@@ -97,10 +96,10 @@ return new class extends Migration {
                     'id_column' => 'id',
                     'id_second_column' => null,
                     'relations' => [
-                        'App\Models\Product' => RelationAlias::PRODUCT->value,
-                        'App\Models\Discount' => RelationAlias::DISCOUNT->value,
-                        'App\Models\Option' => RelationAlias::OPTION->value,
-                        'App\Models\Schema' => RelationAlias::SCHEMA->value,
+                        'App\Models\Product' => 'Product',
+                        'App\Models\Discount' => 'Discount',
+                        'App\Models\Option' => 'Option',
+                        'App\Models\Schema' => 'Schema',
                     ],
                 ]
             ],
@@ -109,8 +108,8 @@ return new class extends Migration {
                     'id_column' => 'discount_id',
                     'id_second_column' => 'model_id',
                     'relations' => [
-                        'App\Models\Order' => RelationAlias::ORDER->value,
-                        'App\Models\OrderProduct' => RelationAlias::ORDER_PRODUCT->value,
+                        'App\Models\Order' => 'Order',
+                        'App\Models\OrderProduct' => 'OrderProduct',
                     ],
                 ]
             ],
@@ -119,8 +118,8 @@ return new class extends Migration {
                     'id_column' => 'permission_id',
                     'id_second_column' => 'model_id',
                     'relations' => [
-                        'App\Models\App' => RelationAlias::APP->value,
-                        'App\Models\User' => RelationAlias::USER->value,
+                        'App\Models\App' => 'App',
+                        'App\Models\User' => 'User',
                     ],
                 ]
             ],
@@ -129,11 +128,11 @@ return new class extends Migration {
                     'id_column' => 'discount_condition_id',
                     'id_second_column' => 'model_id',
                     'relations' => [
-                        'App\Models\Product' => RelationAlias::PRODUCT->value,
-                        'App\Models\ProductSet' => RelationAlias::PRODUCT_SET->value,
-                        'Domain\ProductSet\ProductSet' => RelationAlias::PRODUCT_SET->value,
-                        'App\Models\User' => RelationAlias::USER->value,
-                        'App\Models\Role' => RelationAlias::ROLE->value,
+                        'App\Models\Product' => 'Product',
+                        'App\Models\ProductSet' => 'ProductSet',
+                        'Domain\ProductSet\ProductSet' => 'ProductSet',
+                        'App\Models\User' => 'User',
+                        'App\Models\Role' => 'Role',
                     ],
                 ]
             ],
@@ -142,7 +141,7 @@ return new class extends Migration {
                     'id_column' => 'id',
                     'id_second_column' => null,
                     'relations' => [
-                        'App\Models\User' => RelationAlias::USER->value,
+                        'App\Models\User' => 'User',
                     ],
                 ]
             ],
@@ -151,28 +150,28 @@ return new class extends Migration {
                     'id_column' => 'id',
                     'id_second_column' => null,
                     'relations' => [
-                        'App\Models\Order' => RelationAlias::ORDER->value,
-                        'App\Models\Discount' => RelationAlias::DISCOUNT->value,
-                        'App\Models\Banner' => RelationAlias::BANNER->value,
-                        'Domain\Banner\Models\Banner' => RelationAlias::BANNER->value,
-                        'App\Models\ProductSet' => RelationAlias::PRODUCT_SET->value,
-                        'Domain\ProductSet\ProductSet' => RelationAlias::PRODUCT_SET->value,
-                        'App\Models\AttributeOption' => RelationAlias::ATTRIBUTE_OPTION->value,
-                        'Domain\ProductAttribute\Models\AttributeOption' => RelationAlias::ATTRIBUTE_OPTION->value,
-                        'App\Models\Product' => RelationAlias::PRODUCT->value,
-                        'App\Models\Schema' => RelationAlias::SCHEMA->value,
-                        'App\Models\Status' => RelationAlias::STATUS->value,
-                        'App\Models\Attribute' => RelationAlias::ATTRIBUTE->value,
-                        'Domain\ProductAttribute\Models\Attribute' => RelationAlias::ATTRIBUTE->value,
-                        'App\Models\Role' => RelationAlias::ROLE->value,
-                        'App\Models\Page' => RelationAlias::PAGE->value,
-                        'Domain\Page\Page' => RelationAlias::PAGE->value,
-                        'App\Models\Option' => RelationAlias::OPTION->value,
-                        'App\Models\Item' => RelationAlias::ITEM->value,
-                        'App\Models\App' => RelationAlias::APP->value,
-                        'App\Models\User' => RelationAlias::USER->value,
-                        'App\Models\Media' => RelationAlias::MEDIA->value,
-                        'App\Models\ShippingMethod' => RelationAlias::SHIPPING_METHOD->value,
+                        'App\Models\Order' => 'Order',
+                        'App\Models\Discount' => 'Discount',
+                        'App\Models\Banner' => 'Banner',
+                        'Domain\Banner\Models\Banner' => 'Banner',
+                        'App\Models\ProductSet' => 'ProductSet',
+                        'Domain\ProductSet\ProductSet' => 'ProductSet',
+                        'App\Models\AttributeOption' => 'AttributeOption',
+                        'Domain\ProductAttribute\Models\AttributeOption' => 'AttributeOption',
+                        'App\Models\Product' => 'Product',
+                        'App\Models\Schema' => 'Schema',
+                        'App\Models\Status' => 'Status',
+                        'App\Models\Attribute' => 'Attribute',
+                        'Domain\ProductAttribute\Models\Attribute' => 'Attribute',
+                        'App\Models\Role' => 'Role',
+                        'App\Models\Page' => 'Page',
+                        'Domain\Page\Page' => 'Page',
+                        'App\Models\Option' => 'Option',
+                        'App\Models\Item' => 'Item',
+                        'App\Models\App' => 'App',
+                        'App\Models\User' => 'User',
+                        'App\Models\Media' => 'Media',
+                        'App\Models\ShippingMethod' => 'ShippingMethod',
                     ],
                 ]
             ],
@@ -181,7 +180,7 @@ return new class extends Migration {
                     'id_column' => 'id',
                     'id_second_column' => null,
                     'relations' => [
-                        'App\Models\Product' => RelationAlias::PRODUCT->value,
+                        'App\Models\Product' => 'Product',
                     ],
                 ]
             ],
@@ -190,8 +189,8 @@ return new class extends Migration {
                     'id_column' => 'id',
                     'id_second_column' => null,
                     'relations' => [
-                        'App\Models\User' => RelationAlias::USER->value,
-                        'App\Models\App' => RelationAlias::APP->value,
+                        'App\Models\User' => 'User',
+                        'App\Models\App' => 'App',
                     ],
                 ]
             ],

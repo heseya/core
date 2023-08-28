@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\RelationAlias;
 use App\Enums\SchemaType;
 use App\Models\Item;
 use App\Models\Option;
@@ -375,8 +374,8 @@ class SchemaTest extends TestCase
         $response->assertValid()
             ->assertCreated();
 
-        $schema = $response->getData()->data;
-        $option = $response->getData()->data->options[0];
+        $schema = Schema::query()->find($response->getData()->data->id)->first();
+        $option = Option::query()->find($response->getData()->data->options[0]->id)->first();
         $option1 = $response->getData()->data->options[1];
         $option2 = $response->getData()->data->options[2];
 
@@ -392,29 +391,29 @@ class SchemaTest extends TestCase
 
         $this->assertDatabaseHas('prices', [
             'value' => "12000",
-            'model_id' => $schema->id,
-            'model_type' => RelationAlias::SCHEMA->value,
+            'model_id' => $schema->getKey(),
+            'model_type' => $schema->getMorphClass(),
         ]);
 
         $this->assertDatabaseHas('options', [
-            'id' => $option->id,
+            'id' => $option->getKey(),
             "name->{$this->lang}" => 'L',
             'disabled' => 0,
-            'schema_id' => $schema->id,
+            'schema_id' => $schema->getKey(),
             'order' => 0,
             'available' => false,
         ]);
 
         $this->assertDatabaseHas('prices', [
             'value' => "10000",
-            'model_id' => $option->id,
-            'model_type' => RelationAlias::OPTION->value,
+            'model_id' => $option->getKey(),
+            'model_type' => $option->getMorphClass(),
         ]);
 
         $this->assertDatabaseHas('options', [
             "name->{$this->lang}" => 'A',
             'disabled' => 0,
-            'schema_id' => $schema->id,
+            'schema_id' => $schema->getKey(),
             'order' => 1,
             'available' => true,
         ]);
@@ -422,13 +421,13 @@ class SchemaTest extends TestCase
         $this->assertDatabaseHas('prices', [
             'value' => "100000",
             'model_id' => $option1->id,
-            'model_type' => RelationAlias::OPTION->value,
+            'model_type' => $option->getMorphClass(),
         ]);
 
         $this->assertDatabaseHas('options', [
             "name->{$this->lang}" => 'B',
             'disabled' => 0,
-            'schema_id' => $schema->id,
+            'schema_id' => $schema->getKey(),
             'order' => 2,
             'available' => true,
         ]);
@@ -436,7 +435,7 @@ class SchemaTest extends TestCase
         $this->assertDatabaseHas('prices', [
             'value' => "0",
             'model_id' => $option2->id,
-            'model_type' => RelationAlias::OPTION->value,
+            'model_type' => $option->getMorphClass(),
         ]);
 
         $this->assertDatabaseHas('option_items', [

@@ -5,7 +5,6 @@ namespace Tests\Feature\Discounts;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
-use App\Enums\RelationAlias;
 use App\Enums\SchemaType;
 use App\Enums\ShippingType;
 use App\Models\ConditionGroup;
@@ -114,12 +113,12 @@ class DiscountOrderTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment(['summary' => '95.00']); // 100 - 100 * 15% + 10 (delivery)
 
-        $orderId = $response->getData()->data->id;
+        $order = Order::query()->find($response->getData()->data->id)->first();
 
         $this->assertDatabaseHas('order_discounts', [
-            'model_id' => $orderId,
+            'model_id' => $order->getKey(),
             'discount_id' => $discount->getKey(),
-            'model_type' => RelationAlias::ORDER->value,
+            'model_type' => $order->getMorphClass(),
         ]);
     }
 
@@ -524,24 +523,25 @@ class DiscountOrderTest extends TestCase
         ]);
 
         $this->assertDatabaseCount('order_discounts', 3);
+        $modelType = 'OrderProduct';
 
         $this->assertDatabaseHas('order_discounts', [
             'model_id' => $cheapestProduct->getKey(),
-            'model_type' => RelationAlias::ORDER_PRODUCT->value,
+            'model_type' => $modelType,
             'discount_id' => $cheapestDiscount->getKey(),
             'applied_discount' => '450',
         ]);
 
         $this->assertDatabaseHas('order_discounts', [
             'model_id' => $product->getKey(),
-            'model_type' => RelationAlias::ORDER_PRODUCT->value,
+            'model_type' => $modelType,
             'discount_id' => $sale->getKey(),
             'applied_discount' => '1000',
         ]);
 
         $this->assertDatabaseHas('order_discounts', [
             'model_id' => $cheapestProduct->getKey(),
-            'model_type' => RelationAlias::ORDER_PRODUCT->value,
+            'model_type' => $modelType,
             'discount_id' => $sale->getKey(),
             'applied_discount' => '1000',
         ]);

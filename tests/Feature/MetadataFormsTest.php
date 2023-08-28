@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\RelationAlias;
 use App\Models\Product;
 use Domain\Currency\Currency;
 use Domain\Metadata\Enums\MetadataType;
@@ -45,10 +44,11 @@ class MetadataFormsTest extends TestCase
             ]);
 
         $response->assertCreated();
+        $product = Product::query()->find($response->json('data.id'))->first();
 
         $this->assertDatabaseHas('metadata', [
-            'model_id' => $response->json('data.id'),
-            'model_type' => RelationAlias::PRODUCT->value,
+            'model_id' => $product->getKey(),
+            'model_type' => $product->getMorphClass(),
             'name' => 'test',
             'value' => '123',
             'value_type' => MetadataType::STRING,
@@ -56,8 +56,8 @@ class MetadataFormsTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('metadata', [
-            'model_id' => $response->json('data.id'),
-            'model_type' => RelationAlias::PRODUCT->value,
+            'model_id' => $product->getKey(),
+            'model_type' => $product->getMorphClass(),
             'name' => 'test-two',
             'value' => 123,
             'value_type' => MetadataType::NUMBER,
@@ -93,10 +93,11 @@ class MetadataFormsTest extends TestCase
             ]);
 
         $response->assertCreated();
+        $set = ProductSet::query()->find($response->json('data.id'))->first();
 
         $this->assertDatabaseHas('metadata', [
-            'model_id' => $response->json('data.id'),
-            'model_type' => RelationAlias::PRODUCT_SET->value,
+            'model_id' => $set->getKey(),
+            'model_type' => $set->getMorphClass(),
             'name' => 'test',
             'value' => '123',
             'value_type' => MetadataType::STRING,
@@ -104,8 +105,8 @@ class MetadataFormsTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('metadata', [
-            'model_id' => $response->json('data.id'),
-            'model_type' => RelationAlias::PRODUCT_SET->value,
+            'model_id' => $set->getKey(),
+            'model_type' => $set->getMorphClass(),
             'name' => 'test-two',
             'value' => 123,
             'value_type' => MetadataType::NUMBER,
