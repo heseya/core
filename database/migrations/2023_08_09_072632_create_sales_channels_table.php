@@ -46,7 +46,7 @@ return new class extends Migration
         $channel = SalesChannel::query()->make([
             'slug' => 'default',
             'status' => Status::ACTIVE->value,
-            'countries_block_list' => false,
+            'countries_block_list' => true,
             'default_currency' => Currency::DEFAULT,
             'default_language_id' => Language::default()?->getKey(),
             'vat_rate' => '0',
@@ -58,9 +58,6 @@ return new class extends Migration
             ]);
         }
         $channel->save();
-
-        // add all countries to default sales channel
-        $channel->countries()->sync(Country::query()->pluck('code'));
 
         Permission::create([
             'name' => 'sales_channels.show_hidden',

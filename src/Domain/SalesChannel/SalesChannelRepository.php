@@ -14,7 +14,6 @@ use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
-use Spatie\LaravelData\Optional;
 use Support\Enum\Status;
 
 final class SalesChannelRepository
