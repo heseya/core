@@ -377,6 +377,48 @@ class LanguageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testDeleteModelPublished(string $user): void
+    {
+        $this->{$user}->givePermissionTo('languages.remove');
+
+        $language = Language::create([
+            'iso' => 'nl',
+            'name' => 'Netherland',
+            'hidden' => false,
+            'default' => false,
+        ]);
+
+        /** @var Product $product */
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $product->setLocale($language->getKey())->fill([
+            'name' => 'Netherland name',
+            'description_short' => 'Netherland description',
+        ]);
+        $product->fill([
+            'published' => [$this->language->getKey(), $language->getKey()],
+        ]);
+
+        $product->save();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('DELETE', "/languages/id:{$language->getKey()}")
+            ->assertNoContent();
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            "name->{$language->getKey()}" => null,
+            "description_short->{$language->getKey()}" => null,
+            'published' => json_encode([$this->language->getKey()]),
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testDeleteWithWebHookDispatched(string $user): void
     {
         $this->{$user}->givePermissionTo('languages.remove');
