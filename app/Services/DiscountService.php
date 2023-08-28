@@ -532,7 +532,7 @@ readonly class DiscountService implements DiscountServiceContract
             $item->price_discounted = $this->salesChannelService->addVat($item->price_discounted, $vat_rate);
         }
 
-        $cartResource->cart_total_initial = $this->salesChannelService->addVat($cartResource->cart_total, $vat_rate);
+        $cartResource->cart_total_initial = $this->salesChannelService->addVat($cartResource->cart_total_initial, $vat_rate);
         $cartResource->cart_total = $this->salesChannelService->addVat($cartResource->cart_total, $vat_rate);
         $cartResource->summary = $cartResource->cart_total->plus($cartResource->shipping_price);
 
