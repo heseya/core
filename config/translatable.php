@@ -12,6 +12,7 @@ use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\Tag\Models\Tag;
 
 return [
 
@@ -39,5 +40,6 @@ return [
         Attribute::class,
         Status::class,
         Page::class,
+        Tag::class,
     ],
 ];
