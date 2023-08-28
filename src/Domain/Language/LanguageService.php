@@ -103,8 +103,9 @@ final class LanguageService
          * @var string $modelClass
          * @var string[] $fields
          */
-        foreach ($modelClasses as $modelClass => $fields) {
+        foreach ($modelClasses as $modelClass) {
             $query = $modelClass::query();
+            $fields = (new $modelClass())->getTranslatableAttributes();
 
             $query->where(function (Builder $query) use ($fields): void {
                 foreach ($fields as $field) {
