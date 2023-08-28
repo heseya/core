@@ -11,6 +11,6 @@ final readonly class Migrate
 {
     public static function lang(string $column, string $lang_id): Expression
     {
-        return DB::raw("CONCAT(CONCAT('{\"{$lang_id}\":\"', {$column}), '\"}')");
+        return DB::raw("JSON_OBJECT('{$lang_id}', `{$column}`)");
     }
 }

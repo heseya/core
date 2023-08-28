@@ -25,7 +25,7 @@ return new class extends Migration
 
         $lang = Language::query()->where('default', true)->value('id');
 
-        Discount::query()->update([
+        Discount::query()->withTrashed()->update([
             'name' => Migrate::lang('name', $lang),
             'description' => Migrate::lang('description', $lang),
             'published' => [$lang],

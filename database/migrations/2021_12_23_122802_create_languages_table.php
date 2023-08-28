@@ -25,6 +25,7 @@ class CreateLanguagesTable extends Migration
         });
 
         Language::query()->create([
+            'id' => '28ebf354-cf00-4f42-86e7-5fe3e79e0984',
             'iso' => 'pl',
             'name' => 'Polski',
             'default' => true,
