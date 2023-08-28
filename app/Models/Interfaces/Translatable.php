@@ -13,4 +13,5 @@ interface Translatable
     public function setTranslations(string $key, array $translations): self;
 
     public function hasTranslation(string $key, ?string $locale = null): bool;
+    public function getTranslatableAttributes(): array;
 }

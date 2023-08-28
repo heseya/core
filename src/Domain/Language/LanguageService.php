@@ -6,6 +6,7 @@ namespace Domain\Language;
 
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\StoreException;
+use App\Models\Interfaces\Translatable;
 use Domain\Language\Dtos\LanguageCreateDto;
 use Domain\Language\Dtos\LanguageUpdateDto;
 use Domain\Language\Events\LanguageCreated;
@@ -101,11 +102,12 @@ final class LanguageService
         $modelClasses = Config::get('translatable.models');
         /**
          * @var string $modelClass
-         * @var string[] $fields
          */
         foreach ($modelClasses as $modelClass) {
             $query = $modelClass::query();
-            $fields = (new $modelClass())->getTranslatableAttributes();
+            /** @var Translatable $model */
+            $model = new $modelClass();
+            $fields = $model->getTranslatableAttributes();
 
             $query->where(function (Builder $query) use ($fields): void {
                 foreach ($fields as $field) {
