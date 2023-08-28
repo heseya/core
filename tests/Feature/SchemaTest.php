@@ -374,8 +374,8 @@ class SchemaTest extends TestCase
         $response->assertValid()
             ->assertCreated();
 
-        $schema = Schema::query()->find($response->getData()->data->id)->first();
-        $option = Option::query()->find($response->getData()->data->options[0]->id)->first();
+        $schema = $response->getData()->data;
+        $option = $response->getData()->data->options[0];
         $option1 = $response->getData()->data->options[1];
         $option2 = $response->getData()->data->options[2];
 
@@ -391,29 +391,29 @@ class SchemaTest extends TestCase
 
         $this->assertDatabaseHas('prices', [
             'value' => "12000",
-            'model_id' => $schema->getKey(),
-            'model_type' => $schema->getMorphClass(),
+            'model_id' => $schema->id,
+            'model_type' => 'Schema',
         ]);
 
         $this->assertDatabaseHas('options', [
-            'id' => $option->getKey(),
+            'id' => $option->id,
             "name->{$this->lang}" => 'L',
             'disabled' => 0,
-            'schema_id' => $schema->getKey(),
+            'schema_id' => $schema->id,
             'order' => 0,
             'available' => false,
         ]);
 
         $this->assertDatabaseHas('prices', [
             'value' => "10000",
-            'model_id' => $option->getKey(),
-            'model_type' => $option->getMorphClass(),
+            'model_id' => $option->id,
+            'model_type' => 'Option',
         ]);
 
         $this->assertDatabaseHas('options', [
             "name->{$this->lang}" => 'A',
             'disabled' => 0,
-            'schema_id' => $schema->getKey(),
+            'schema_id' => $schema->id,
             'order' => 1,
             'available' => true,
         ]);
@@ -421,13 +421,13 @@ class SchemaTest extends TestCase
         $this->assertDatabaseHas('prices', [
             'value' => "100000",
             'model_id' => $option1->id,
-            'model_type' => $option->getMorphClass(),
+            'model_type' => 'Option',
         ]);
 
         $this->assertDatabaseHas('options', [
             "name->{$this->lang}" => 'B',
             'disabled' => 0,
-            'schema_id' => $schema->getKey(),
+            'schema_id' => $schema->id,
             'order' => 2,
             'available' => true,
         ]);
@@ -435,7 +435,7 @@ class SchemaTest extends TestCase
         $this->assertDatabaseHas('prices', [
             'value' => "0",
             'model_id' => $option2->id,
-            'model_type' => $option->getMorphClass(),
+            'model_type' => 'Option',
         ]);
 
         $this->assertDatabaseHas('option_items', [

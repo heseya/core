@@ -626,7 +626,7 @@ class ProductSetCreateTest extends TestCase
         $this->assertDatabaseHas('seo_metadata', [
             "title->{$this->lang}" => 'seo title',
             "description->{$this->lang}" => 'seo description',
-            'model_id' => $set,
+            'model_id' => $response->json('data.id'),
             'model_type' => $set->getMorphClass(),
         ]);
 
