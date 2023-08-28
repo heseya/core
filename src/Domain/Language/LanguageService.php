@@ -6,13 +6,17 @@ namespace Domain\Language;
 
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\StoreException;
+use App\Models\Interfaces\Translatable;
 use Domain\Language\Dtos\LanguageCreateDto;
 use Domain\Language\Dtos\LanguageUpdateDto;
 use Domain\Language\Events\LanguageCreated;
 use Domain\Language\Events\LanguageDeleted;
 use Domain\Language\Events\LanguageUpdated;
+use Domain\Language\Jobs\RemoveTranslations;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 
 final class LanguageService
 {
@@ -74,6 +78,7 @@ final class LanguageService
         $this->updateHiddenLanguagesCache($language->getKey());
 
         LanguageDeleted::dispatch($language);
+        RemoveTranslations::dispatch($language);
 
         $language->delete();
     }
@@ -90,6 +95,38 @@ final class LanguageService
         }
 
         return $hiddenLanguages;
+    }
+
+    public function removeAllLanguageTranslations(Language $language): void
+    {
+        $modelClasses = Config::get('translatable.models');
+        /**
+         * @var string $modelClass
+         */
+        foreach ($modelClasses as $modelClass) {
+            $query = $modelClass::query();
+            /** @var Translatable $model */
+            $model = new $modelClass();
+            $fields = $model->getTranslatableAttributes();
+
+            $query->where(function (Builder $query) use ($fields): void {
+                foreach ($fields as $field) {
+                    $query->orWhere($field, '!=', null);
+                }
+            });
+
+            $query->chunkById(100, function ($models) use ($language): void {
+                foreach ($models as $model) {
+                    $model->forgetAllTranslations($language->getKey());
+                    $published = $model->published ?? [];
+                    if (($key = array_search($language->getKey(), $published, true)) !== false) {
+                        unset($published[$key]);
+                    }
+                    $model->published = $published;
+                    $model->save();
+                }
+            });
+        }
     }
 
     private function updateHiddenLanguagesCache(string $uuid): void

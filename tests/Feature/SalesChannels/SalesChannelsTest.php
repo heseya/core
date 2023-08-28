@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Feature\SalesChannels;
 
+use App\Enums\DiscountTargetType;
 use App\Enums\ShippingType;
-use App\Models\Product;
+use App\Models\Discount;
 use App\Models\ShippingMethod;
 use App\Services\ProductService;
 use Brick\Money\Money;
@@ -71,7 +72,9 @@ final class SalesChannelsTest extends TestCase
             ])
             ->assertOk()
             ->assertJsonFragment(['shipping_price' => '10.00']) // shipping price should remain the same
-            ->assertJsonFragment(['price_discounted' => '12.30']) // product price
+            ->assertJsonFragment(['price_discounted' => '12.30']) // single product price
+            ->assertJsonFragment(['cart_total_initial' => '24.60'])
+            ->assertJsonFragment(['cart_total' => '24.60'])
             ->assertJsonFragment(['summary' => '34.60']);
     }
 
@@ -150,6 +153,8 @@ final class SalesChannelsTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('order_products', [
+            'price' => '1230',
+            'price_initial' => '1230',
             'base_price' => '1230',
             'base_price_initial' => '1230',
             'quantity' => 2,
