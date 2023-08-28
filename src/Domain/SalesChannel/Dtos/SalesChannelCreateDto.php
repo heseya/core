@@ -19,8 +19,8 @@ final class SalesChannelCreateDto extends Data
 {
     /**
      * @param array<string, array<string, string>> $translations
-     * @param string[] $countries
      * @param string[] $published
+     * @param string[] $countries
      */
     public function __construct(
         #[Uuid]
@@ -35,12 +35,11 @@ final class SalesChannelCreateDto extends Data
         #[Uuid, Exists('languages', 'id')]
         public readonly string $default_language_id,
 
-        public readonly array $countries,
-
         // TODO: remove temp field
         #[Numeric]
         public readonly string $vat_rate,
         public readonly array|Optional $published,
+        public readonly array|Optional $countries,
     ) {}
 
     /**

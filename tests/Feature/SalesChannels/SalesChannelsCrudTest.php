@@ -128,6 +128,45 @@ final class SalesChannelsCrudTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateCountriesBlockList(string $user): void
+    {
+        /** @var Language $lang */
+        $lang = Language::default();
+
+        $this->{$user}->givePermissionTo('sales_channels.add');
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/sales-channels', [
+                'id' => $id = Str::uuid(),
+                'translations' => [
+                    $lang->getKey() => [
+                        'name' => 'Test',
+                    ],
+                ],
+                'status' => Status::ACTIVE->value,
+                'vat_rate' => '23',
+                'slug' => 'test',
+                'countries_block_list' => true,
+                'default_currency' => Currency::DEFAULT,
+                'default_language_id' => $lang->getKey(),
+                'countries' => [],
+            ])
+            ->assertCreated();
+
+        $this->assertDatabaseHas('sales_channels', [
+            'id' => $id,
+            "name->{$lang->getKey()}" => 'Test',
+            'vat_rate' => '23',
+        ]);
+
+        $this->assertDatabaseMissing('sales_channels_countries', [
+            'sales_channel_id' => $id,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdate(string $user): void
     {
         $channel = SalesChannel::factory()->create(['vat_rate' => '23']);

@@ -14,6 +14,7 @@ use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
+use Spatie\LaravelData\Optional;
 use Support\Enum\Status;
 
 final class SalesChannelRepository
@@ -63,7 +64,9 @@ final class SalesChannelRepository
         }
 
         $channel->save();
-        $channel->countries()->sync($dto->countries);
+        if (is_array($dto->countries)) {
+            $channel->countries()->sync($dto->countries);
+        }
 
         return $channel;
     }
