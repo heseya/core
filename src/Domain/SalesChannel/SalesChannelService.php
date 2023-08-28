@@ -8,6 +8,7 @@ use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
 use Brick\Math\BigDecimal;
 use Brick\Math\Exception\MathException;
+use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Domain\SalesChannel\Models\SalesChannel;
 
@@ -31,7 +32,7 @@ final readonly class SalesChannelService
      */
     public function addVat(Money $price, BigDecimal $vat_rate): Money
     {
-        return $price->multipliedBy($vat_rate->plus(1));
+        return $price->multipliedBy($vat_rate->plus(1), RoundingMode::HALF_EVEN);
     }
 
     /**
