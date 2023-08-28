@@ -2,21 +2,21 @@
 
 namespace Tests\Feature;
 
-use Domain\Price\Dtos\PriceDto;
 use App\Enums\Product\ProductPriceType;
 use App\Models\Media;
 use App\Models\Product;
-use App\Models\Tag;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductSet\ProductSet;
+use Domain\Tag\Models\Tag;
 use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Carbon;

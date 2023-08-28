@@ -11,6 +11,7 @@ use Domain\Page\PageResource;
 use Domain\ProductSet\ProductSet;
 use Domain\ProductSet\Resources\ProductSetResource;
 use Domain\Seo\Resources\SeoMetadataResource;
+use Domain\Tag\Resources\TagResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 

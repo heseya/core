@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Product;
-use App\Models\Tag;
+use Domain\Tag\Models\Tag;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
@@ -103,14 +103,18 @@ class TagTest extends TestCase
     public function create($user): void
     {
         $response = $this->actingAs($this->{$user})->postJson('/tags', [
-            'name' => 'test sale',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'test sale',
+                ],
+            ],
             'color' => '444444',
         ]);
 
         $response->assertCreated();
 
         $this->assertDatabaseHas('tags', [
-            'name' => 'test sale',
+            "name->{$this->lang}" => 'test sale',
             'color' => '444444',
         ]);
     }
@@ -145,7 +149,11 @@ class TagTest extends TestCase
         $id = Uuid::uuid4()->toString();
 
         $response = $this->actingAs($this->{$user})->postJson('/tags', [
-            'name' => 'test sale',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'test sale',
+                ],
+            ],
             'color' => '444444',
             'id' => $id,
         ]);
@@ -153,7 +161,7 @@ class TagTest extends TestCase
         $response->assertCreated();
 
         $this->assertDatabaseHas('tags', [
-            'name' => 'test sale',
+            "name->{$this->lang}" => 'test sale',
             'color' => '444444',
             'id' => $id,
         ]);
@@ -176,14 +184,18 @@ class TagTest extends TestCase
         $tag = Tag::factory()->create();
 
         $response = $this->actingAs($this->{$user})->patchJson('/tags/id:' . $tag->getKey(), [
-            'name' => 'test tag',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'test tag',
+                ]
+            ],
             'color' => 'ababab',
         ]);
 
         $response->assertOk();
 
         $this->assertDatabaseHas('tags', [
-            'name' => 'test tag',
+            "name->{$this->lang}" => 'test tag',
             'color' => 'ababab',
         ]);
     }
@@ -202,7 +214,7 @@ class TagTest extends TestCase
         $response->assertOk();
 
         $this->assertDatabaseHas('tags', [
-            'name' => $tag->name,
+            "name->{$this->lang}" => $tag->name,
             'color' => $tag->color,
         ]);
     }

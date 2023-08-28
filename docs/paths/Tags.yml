@@ -27,6 +27,18 @@ Tags:
           items:
             type: string
             format: uuid
+      - name: lang_fallback
+        in: query
+        description: "Determines what data will be returned if it does not occur in the selected language. The default option is 'none'. If 'none' then items that do not have the given translation will not be returned. If 'default', missing translations will be replaced in the default API language. 'Any' means that missing translations will be replaced with the first available translation for the item."
+        required: false
+        schema:
+          type: string
+          enum: [ 'none', 'any', 'default' ]
+      - name: with_translations
+        in: query
+        required: false
+        schema:
+          type: boolean
     responses:
       200:
         description: Success
@@ -37,7 +49,7 @@ Tags:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Tags.yml#/Tag'
+                    $ref: './../schemas/Tags.yml#/TagView'
               type: object
     security:
       - BearerAuth: [ ]
@@ -46,10 +58,7 @@ Tags:
       - Tags
     summary: 'add new tag'
     requestBody:
-      content:
-        application/json:
-          schema:
-            $ref: './../schemas/Tags.yml#/Tag'
+      $ref: './../requests/Tags.yml#/TagStore'
     responses:
       201:
         description: Created
@@ -58,7 +67,7 @@ Tags:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Tags.yml#/Tag'
+                  $ref: './../schemas/Tags.yml#/TagView'
               type: object
     security:
       - BearerAuth: [ ]
@@ -92,10 +101,7 @@ TagsParams:
           type: string
           format: uuid
     requestBody:
-      content:
-        application/json:
-          schema:
-            $ref: './../schemas/Tags.yml#/Tag'
+      $ref: './../requests/Tags.yml#/TagStore'
     responses:
       200:
         description: Success
@@ -104,7 +110,7 @@ TagsParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Tags.yml#/Tag'
+                  $ref: './../schemas/Tags.yml#/TagView'
               type: object
     security:
       - BearerAuth: [ ]
