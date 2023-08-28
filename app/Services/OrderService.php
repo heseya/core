@@ -288,6 +288,30 @@ final readonly class OrderService implements OrderServiceContract
                         $orderProduct->base_price,
                         $vat_rate,
                     );
+                    $orderProduct->price_initial = $this->salesChannelService->addVat(
+                        $orderProduct->price_initial,
+                        $vat_rate,
+                    );
+                    $orderProduct->price = $this->salesChannelService->addVat(
+                        $orderProduct->price,
+                        $vat_rate,
+                    );
+
+                    foreach ($orderProduct->discounts as $discount) {
+                        $discount->pivot->applied_discount = $this->salesChannelService->addVatString(
+                            $discount->pivot->applied_discount,
+                            $vat_rate,
+                        );
+                        $discount->pivot->save();
+                    }
+                }
+
+                foreach ($order->discounts as $discount) {
+                    $discount->pivot->applied_discount = $this->salesChannelService->addVatString(
+                        $discount->pivot->applied_discount,
+                        $vat_rate,
+                    );
+                    $discount->pivot->save();
                 }
 
                 $order->cart_total_initial = $this->salesChannelService->addVat(
