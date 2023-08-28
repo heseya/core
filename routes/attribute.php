@@ -12,8 +12,8 @@ Route::prefix('attributes')->group(function (): void {
         ->middleware('can:attributes.add');
     Route::post('/reorder', [AttributeController::class, 'reorder'])
         ->middleware('can:attributes.edit');
-    Route::get('/id:{id}', [AttributeController::class, 'show'])
-        ->middleware('can:attributes.show');
+    Route::get('/id:{attribute:id}', [AttributeController::class, 'show'])
+        ->middleware('can:attributes.show', 'published:attribute');
     Route::patch('/id:{id}', [AttributeController::class, 'update'])
         ->middleware('can:attributes.edit');
     Route::delete('/id:{attribute:id}', [AttributeController::class, 'destroy'])

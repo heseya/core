@@ -55,10 +55,10 @@ final class AttributeController extends Controller
         );
     }
 
-    public function show(string $id): JsonResource
+    public function show(Attribute $attribute): JsonResource
     {
         return AttributeResource::make(
-            $this->attributeService->show($id),
+            $this->attributeService->show($attribute->getKey()),
         );
     }
 
