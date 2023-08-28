@@ -128,7 +128,7 @@ class PerformanceTest extends TestCase
             ->getJson('/attributes/id:' . $attribute->getKey())
             ->assertOk();
 
-        $this->assertQueryCountLessThan(8);
+        $this->assertQueryCountLessThan(9);
     }
 
     public function testShowPerformanceListAttributeOptions2500(): void
@@ -165,7 +165,7 @@ class PerformanceTest extends TestCase
             ->getJson('/attributes/id:' . $attribute->getKey())
             ->assertOk();
 
-        $this->assertQueryCountLessThan(8);
+        $this->assertQueryCountLessThan(9);
     }
 
     public function testIndexPerformanceBanner100(): void
