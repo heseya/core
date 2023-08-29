@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Enums\Product\ProductPriceType;
 use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
@@ -24,6 +23,7 @@ use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\ProductPriceType;
 use Domain\Product\Dtos\ProductCreateDto;
 use Domain\Product\Dtos\ProductUpdateDto;
 use Domain\ProductAttribute\Services\AttributeService;

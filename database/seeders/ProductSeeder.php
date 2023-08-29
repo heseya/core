@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Enums\Product\ProductPriceType;
+use Domain\Price\Enums\ProductPriceType;
 use App\Enums\SchemaType;
 use App\Models\Deposit;
 use App\Models\Item;

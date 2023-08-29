@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Enums\Product\ProductPriceType;
 use App\Models\Schema;
+use Domain\Price\Enums\ProductPriceType;
 use Domain\Price\PriceRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;

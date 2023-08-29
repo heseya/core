@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use Domain\Price\Dtos\PriceDto;
-use App\Enums\Product\ProductPriceType;
+use Domain\Price\Enums\ProductPriceType;
 use App\Models\Media;
 use App\Models\Product;
 use App\Models\Tag;

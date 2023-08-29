@@ -6,6 +6,7 @@ use App\Dtos\CartDto;
 use App\Enums\ConditionType;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
+use App\Models\DiscountCondition;
 use App\Models\Product;
 use App\Models\Role;
 use App\Models\ShippingMethod;
@@ -18,6 +19,7 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\DiscountConditionPriceType;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Models\SalesChannel;
 use Heseya\Dto\DtoException;
@@ -218,14 +220,23 @@ class DiscountConditionsCheckTest extends TestCase
 
     public function testCheckConditionOrderValuePass(): void
     {
-        $discountCondition = $this->conditionGroup->conditions()->create([
+        $discountCondition = DiscountCondition::query()->create([
             'type' => ConditionType::ORDER_VALUE,
+            'condition_group_id' => $this->conditionGroup->getKey(),
             'value' => [
-                'min_value' => 9.99,
-                'max_value' => 99.99,
                 'include_taxes' => false,
                 'is_in_range' => true,
             ],
+        ]);
+        $discountCondition->pricesMin()->create([
+            'currency' => $this->currency->value,
+            'value' => 999,
+            'price_type' => DiscountConditionPriceType::PRICE_MIN->value,
+        ]);
+        $discountCondition->pricesMax()->create([
+            'currency' => $this->currency->value,
+            'value' => 9999,
+            'price_type' => DiscountConditionPriceType::PRICE_MAX->value,
         ]);
 
         $this->assertTrue($this->discountService->checkCondition(condition: $discountCondition, cartValue: Money::of(50.0, $this->currency->value),));
@@ -233,14 +244,23 @@ class DiscountConditionsCheckTest extends TestCase
 
     public function testCheckConditionOrderValueNotInRangePass(): void
     {
-        $discountCondition = $this->conditionGroup->conditions()->create([
+        $discountCondition = DiscountCondition::query()->create([
             'type' => ConditionType::ORDER_VALUE,
+            'condition_group_id' => $this->conditionGroup->getKey(),
             'value' => [
-                'min_value' => 9.99,
-                'max_value' => 99.99,
                 'include_taxes' => false,
                 'is_in_range' => false,
             ],
+        ]);
+        $discountCondition->pricesMin()->create([
+            'currency' => $this->currency->value,
+            'value' => 999,
+            'price_type' => DiscountConditionPriceType::PRICE_MIN->value,
+        ]);
+        $discountCondition->pricesMax()->create([
+            'currency' => $this->currency->value,
+            'value' => 9999,
+            'price_type' => DiscountConditionPriceType::PRICE_MAX->value,
         ]);
 
         $this->assertTrue($this->discountService->checkCondition(condition: $discountCondition, cartValue: Money::of(100.0, $this->currency->value),));
@@ -248,14 +268,23 @@ class DiscountConditionsCheckTest extends TestCase
 
     public function testCheckConditionOrderValueFail(): void
     {
-        $discountCondition = $this->conditionGroup->conditions()->create([
+        $discountCondition = DiscountCondition::query()->create([
             'type' => ConditionType::ORDER_VALUE,
+            'condition_group_id' => $this->conditionGroup->getKey(),
             'value' => [
-                'min_value' => 9.99,
-                'max_value' => 99.99,
                 'include_taxes' => false,
                 'is_in_range' => true,
             ],
+        ]);
+        $discountCondition->pricesMin()->create([
+            'currency' => $this->currency->value,
+            'value' => 999,
+            'price_type' => DiscountConditionPriceType::PRICE_MIN->value,
+        ]);
+        $discountCondition->pricesMax()->create([
+            'currency' => $this->currency->value,
+            'value' => 9999,
+            'price_type' => DiscountConditionPriceType::PRICE_MAX->value,
         ]);
 
         $this->assertFalse($this->discountService->checkCondition(condition: $discountCondition, cartValue: Money::of(100.0, $this->currency->value),));
@@ -263,14 +292,23 @@ class DiscountConditionsCheckTest extends TestCase
 
     public function testCheckConditionOrderValueNotInRangeFail(): void
     {
-        $discountCondition = $this->conditionGroup->conditions()->create([
+        $discountCondition = DiscountCondition::query()->create([
             'type' => ConditionType::ORDER_VALUE,
+            'condition_group_id' => $this->conditionGroup->getKey(),
             'value' => [
-                'min_value' => 9.99,
-                'max_value' => 99.99,
                 'include_taxes' => false,
                 'is_in_range' => false,
             ],
+        ]);
+        $discountCondition->pricesMin()->create([
+            'currency' => $this->currency->value,
+            'value' => 999,
+            'price_type' => DiscountConditionPriceType::PRICE_MIN->value,
+        ]);
+        $discountCondition->pricesMax()->create([
+            'currency' => $this->currency->value,
+            'value' => 9999,
+            'price_type' => DiscountConditionPriceType::PRICE_MAX->value,
         ]);
 
         $this->assertFalse($this->discountService->checkCondition(condition: $discountCondition, cartValue: Money::of(50.0, $this->currency->value),));
@@ -1505,14 +1543,38 @@ class DiscountConditionsCheckTest extends TestCase
 
     private function prepareConditionGroup(): void
     {
-        $this->conditionGroup->conditions()->create([
+        /** @var DiscountCondition $condition */
+        $condition = DiscountCondition::query()->create([
             'type' => ConditionType::ORDER_VALUE,
+            'condition_group_id' => $this->conditionGroup->getKey(),
             'value' => [
-                'min_value' => 9.99,
-                'max_value' => 99.99,
                 'include_taxes' => false,
                 'is_in_range' => true,
+                /*
+                'min_values' => [
+                    [
+                        'value' => "9.99",
+                        'currency' => $this->currency->value,
+                    ]
+                ],
+                'max_values' => [
+                    [
+                        'value' => "99.99",
+                        'currency' => $this->currency->value,
+                    ]
+                ],
+                */
             ],
+        ]);
+        $condition->pricesMin()->create([
+            'currency' => $this->currency->value,
+            'value' => 999,
+            'price_type' => DiscountConditionPriceType::PRICE_MIN->value,
+        ]);
+        $condition->pricesMax()->create([
+            'currency' => $this->currency->value,
+            'value' => 9999,
+            'price_type' => DiscountConditionPriceType::PRICE_MAX->value,
         ]);
 
         $this->conditionGroup->conditions()->create([
@@ -1541,14 +1603,24 @@ class DiscountConditionsCheckTest extends TestCase
         /** @var ConditionGroup $conditionGroup */
         $conditionGroup = ConditionGroup::query()->create();
 
-        $conditionGroup->conditions()->create([
+        /** @var DiscountCondition $condition */
+        $condition = DiscountCondition::query()->create([
             'type' => ConditionType::ORDER_VALUE,
+            'condition_group_id' => $conditionGroup->getKey(),
             'value' => [
-                'min_value' => 100.0,
-                'max_value' => 199.99,
                 'include_taxes' => false,
                 'is_in_range' => true,
             ],
+        ]);
+        $condition->pricesMin()->create([
+            'currency' => $this->currency->value,
+            'value' => 10000,
+            'price_type' => DiscountConditionPriceType::PRICE_MIN->value,
+        ]);
+        $condition->pricesMax()->create([
+            'currency' => $this->currency->value,
+            'value' => 19999,
+            'price_type' => DiscountConditionPriceType::PRICE_MAX->value,
         ]);
 
         $conditionGroup->conditions()->create([

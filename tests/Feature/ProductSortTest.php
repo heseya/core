@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Enums\Product\ProductPriceType;
+use Domain\Price\Enums\ProductPriceType;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use Brick\Math\Exception\NumberFormatException;

@@ -2,9 +2,13 @@
 
 namespace App\Http\Resources;
 
+use App\Models\DiscountCondition;
 use Domain\ProductSet\Resources\ProductSetResource;
 use Illuminate\Http\Request;
 
+/**
+ * @property DiscountCondition $resource
+ */
 class ConditionResource extends Resource
 {
     public function base(Request $request): array
@@ -25,6 +29,14 @@ class ConditionResource extends Resource
 
         if (array_key_exists('product_sets', $value)) {
             $value['product_sets'] = ProductSetResource::collection($this->resource->productSets);
+        }
+
+        if (array_key_exists('min_values', $value)) {
+            $value['min_values'] = PriceResource::collection($this->resource->pricesMin);
+        }
+
+        if (array_key_exists('max_values', $value)) {
+            $value['max_values'] = PriceResource::collection($this->resource->pricesMax);
         }
 
         return [

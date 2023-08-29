@@ -2,9 +2,9 @@
 
 namespace App\Repositories\Contracts;
 
-use App\Enums\Product\ProductPriceType;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\ProductPriceType;
 use Domain\Product\Dtos\ProductSearchDto;
 use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;

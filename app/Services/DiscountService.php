@@ -29,7 +29,6 @@ use App\Dtos\WeekDayInConditionDto;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\ExceptionsEnums\Exceptions;
-use App\Enums\Product\ProductPriceType;
 use App\Events\CouponCreated;
 use App\Events\CouponDeleted;
 use App\Events\CouponUpdated;
@@ -72,6 +71,9 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\DiscountConditionPriceType;
+use Domain\Price\Enums\ProductPriceType;
+use Domain\Price\PriceRepository;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\SalesChannelService;
 use Domain\Seo\SeoMetadataService;
@@ -99,6 +101,7 @@ readonly class DiscountService implements DiscountServiceContract
         private ProductRepositoryContract $productRepository,
         private DiscountRepository $discountRepository,
         private SalesChannelService $salesChannelService,
+        private PriceRepository $priceRepository,
     ) {}
 
     public function index(CouponIndexDto|SaleIndexDto $dto): LengthAwarePaginator
@@ -272,6 +275,29 @@ readonly class DiscountService implements DiscountServiceContract
 
             if (method_exists($condition, 'getUsers')) {
                 $discountCondition->users()->attach($condition->getUsers());
+            }
+
+            if (method_exists($condition, 'getMinValues')) {
+                if ($condition->getMinValues() instanceof Missing) {
+                    if ($discountCondition->exists) {
+                        $discountCondition->pricesMin()->delete();
+                    }
+                } else {
+                    $this->priceRepository->setModelPrices($discountCondition, [
+                        DiscountConditionPriceType::PRICE_MIN->value => $condition->getMinValues(),
+                    ]);
+                }
+            }
+            if (method_exists($condition, 'getMaxValues')) {
+                if ($condition->getMaxValues() instanceof Missing) {
+                    if ($discountCondition->exists) {
+                        $discountCondition->pricesMax()->delete();
+                    }
+                } else {
+                    $this->priceRepository->setModelPrices($discountCondition, [
+                        DiscountConditionPriceType::PRICE_MAX->value => $condition->getMaxValues(),
+                    ]);
+                }
             }
         }
 
@@ -1722,20 +1748,21 @@ readonly class DiscountService implements DiscountServiceContract
     {
         $conditionDto = OrderValueConditionDto::fromArray($condition->value + ['type' => $condition->type]);
 
-        // TODO: This needs to get currency support
-
         // TODO uwzględnić przy sprawdzaniu podatki $conditionDto->isIncludeTaxes()
-        if (!$conditionDto->getMinValue() instanceof Missing && !$conditionDto->getMaxValue() instanceof Missing) {
-            return ($cartValue->isGreaterThanOrEqualTo($conditionDto->getMinValue()) && $cartValue->isLessThanOrEqualTo($conditionDto->getMaxValue())) ===
-                $conditionDto->isIsInRange();
+
+        $minValue = $conditionDto->getMinValueForCurrency($cartValue->getCurrency()->getCurrencyCode());
+        $maxValue = $conditionDto->getMaxValueForCurrency($cartValue->getCurrency()->getCurrencyCode());
+
+        if ($minValue !== null && $maxValue !== null) {
+            return ($cartValue->isGreaterThanOrEqualTo($minValue->value) && $cartValue->isLessThanOrEqualTo($maxValue->value)) === $conditionDto->isIsInRange();
         }
 
-        if (!$conditionDto->getMinValue() instanceof Missing) {
-            return $cartValue->isGreaterThanOrEqualTo($conditionDto->getMinValue()) === $conditionDto->isIsInRange();
+        if ($minValue !== null) {
+            return $cartValue->isGreaterThanOrEqualTo($minValue->value) === $conditionDto->isIsInRange();
         }
 
-        if (!$conditionDto->getMaxValue() instanceof Missing) {
-            return $cartValue->isLessThanOrEqualTo($conditionDto->getMaxValue()) === $conditionDto->isIsInRange();
+        if ($maxValue !== null) {
+            return $cartValue->isLessThanOrEqualTo($maxValue->value) === $conditionDto->isIsInRange();
         }
 
         return false;

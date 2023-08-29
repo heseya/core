@@ -5,7 +5,7 @@ namespace Unit;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
-use App\Enums\Product\ProductPriceType;
+use Domain\Price\Enums\ProductPriceType;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
 use App\Models\Product;

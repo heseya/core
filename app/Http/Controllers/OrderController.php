@@ -70,6 +70,7 @@ class OrderController extends Controller
                 'shippingAddress',
                 'metadata',
                 'documents',
+                'salesChannel',
             ]);
 
         return OrderResource::collection(

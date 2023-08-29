@@ -5,7 +5,6 @@ namespace Tests\Feature\Discounts;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
-use App\Enums\Product\ProductPriceType;
 use App\Enums\ValidationError;
 use App\Events\CouponCreated;
 use App\Events\CouponUpdated;
@@ -27,6 +26,7 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\ProductPriceType;
 use Domain\ProductSet\ProductSet;
 use Heseya\Dto\DtoException;
 use Illuminate\Events\CallQueuedListener;
@@ -79,8 +79,26 @@ class DiscountTest extends TestCase
         $this->conditions = [
             [
                 'type' => ConditionType::ORDER_VALUE,
-                'min_value' => 100,
-                'max_value' => 500,
+                'min_values' => [
+                    [
+                        'currency' => Currency::PLN->value,
+                        'value' => "100.00",
+                    ],
+                    [
+                        'currency' => Currency::EUR->value,
+                        'value' => "25.00",
+                    ]
+                ],
+                'max_values' => [
+                    [
+                        'currency' => Currency::PLN->value,
+                        'value' => "500.00",
+                    ],
+                    [
+                        'currency' => Currency::EUR->value,
+                        'value' => "125.00",
+                    ]
+                ],
                 'include_taxes' => false,
                 'is_in_range' => true,
             ],
@@ -842,6 +860,7 @@ class DiscountTest extends TestCase
 
         unset($discount['translations']);
         $response
+            ->assertValid()
             ->assertCreated()
             ->assertJsonFragment($discount + ['name' => 'Kupon', 'description' => 'Testowy kupon'])
             ->assertJsonFragment([
@@ -1039,6 +1058,7 @@ class DiscountTest extends TestCase
 
         unset($discount['translations']);
         $response
+            ->assertValid()
             ->assertCreated()
             ->assertJsonFragment($discount + ['name' => 'Kupon', 'description' => 'Testowy kupon'])
             ->assertJsonFragment([
@@ -1369,6 +1389,7 @@ class DiscountTest extends TestCase
 
         unset($discount['translations']);
         $response
+            ->assertValid()
             ->assertCreated()
             ->assertJsonFragment($discount + ['name' => 'Kupon', 'description' => 'Testowy kupon']);
 
@@ -1381,6 +1402,7 @@ class DiscountTest extends TestCase
                         ConditionType::USER_IN,
                         ConditionType::PRODUCT_IN,
                         ConditionType::PRODUCT_IN_SET,
+                        ConditionType::ORDER_VALUE,
                     ]
                 )
             ) {
@@ -1424,6 +1446,35 @@ class DiscountTest extends TestCase
                 'id' => $this->conditionProductSet->getKey(),
                 'name' => $this->conditionProductSet->name,
                 'slug' => $this->conditionProductSet->slug,
+            ])
+            ->assertJsonFragment([
+                'type' => ConditionType::ORDER_VALUE,
+                'include_taxes' => false,
+                'is_in_range' => true,
+                'min_values' => [
+                    [
+                        'currency' => 'PLN',
+                        'gross' => '100.00',
+                        'net' => '100.00',
+                    ],
+                    [
+                        'currency' => 'EUR',
+                        'gross' => '25.00',
+                        'net' => '25.00',
+                    ],
+                ],
+                'max_values' => [
+                    [
+                        'currency' => 'PLN',
+                        'gross' => '500.00',
+                        'net' => '500.00',
+                    ],
+                    [
+                        'currency' => 'EUR',
+                        'gross' => '125.00',
+                        'net' => '125.00',
+                    ],
+                ]
             ]);
 
         $discountId = $response->getData()->data->id;
@@ -1475,6 +1526,7 @@ class DiscountTest extends TestCase
 
         unset($discount['translations']);
         $response
+            ->assertValid()
             ->assertCreated()
             ->assertJsonFragment($discount + ['name' => 'Kupon', 'description' => 'Testowy kupon'])
             ->assertJsonFragment([
@@ -1659,7 +1711,7 @@ class DiscountTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->json('POST', 'sales', $discount + $conditions);
 
-        $response->assertCreated();
+        $response->assertValid()->assertCreated();
 
         $discountModel = Discount::find($response->getData()->data->id);
 
@@ -1774,7 +1826,7 @@ class DiscountTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->json('POST', 'sales', $discount + $conditions);
 
-        $response->assertCreated();
+        $response->assertValid()->assertCreated();
 
         $discountModel = Discount::find($response->getData()->data->id);
 
@@ -1982,6 +2034,7 @@ class DiscountTest extends TestCase
 
         unset($discountNew['translations']);
         $response
+            ->assertValid()
             ->assertOk()
             ->assertJsonFragment(
                 $discountNew + [
@@ -2002,6 +2055,7 @@ class DiscountTest extends TestCase
                         ConditionType::USER_IN,
                         ConditionType::PRODUCT_IN,
                         ConditionType::PRODUCT_IN_SET,
+                        ConditionType::ORDER_VALUE,
                     ]
                 )
             ) {
@@ -2045,6 +2099,35 @@ class DiscountTest extends TestCase
                 'id' => $this->conditionProductSet->getKey(),
                 'name' => $this->conditionProductSet->name,
                 'slug' => $this->conditionProductSet->slug,
+            ])
+            ->assertJsonFragment([
+                'type' => ConditionType::ORDER_VALUE,
+                'include_taxes' => false,
+                'is_in_range' => true,
+                'min_values' => [
+                    [
+                        'currency' => 'PLN',
+                        'gross' => '100.00',
+                        'net' => '100.00',
+                    ],
+                    [
+                        'currency' => 'EUR',
+                        'gross' => '25.00',
+                        'net' => '25.00',
+                    ],
+                ],
+                'max_values' => [
+                    [
+                        'currency' => 'PLN',
+                        'gross' => '500.00',
+                        'net' => '500.00',
+                    ],
+                    [
+                        'currency' => 'EUR',
+                        'gross' => '125.00',
+                        'net' => '125.00',
+                    ],
+                ]
             ]);
 
         $this->assertDatabaseHas('discounts', $discountNew + ['id' => $discount->getKey()]);

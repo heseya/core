@@ -6,6 +6,7 @@ namespace Domain\ProductSchema;
 
 use App\Models\Option;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\OptionPriceType;
 use Domain\Price\PriceRepository;
 use Support\Dtos\ModelIdentityDto;
 
@@ -20,6 +21,6 @@ final class OptionRepository
             $option = new ModelIdentityDto($option, Option::class);
         }
 
-        app(PriceRepository::class)->setModelPrices($option, ['option' => $prices]);
+        app(PriceRepository::class)->setModelPrices($option, [OptionPriceType::PRICE_BASE->value => $prices]);
     }
 }
