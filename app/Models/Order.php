@@ -81,6 +81,7 @@ class Order extends Model implements SortableContract
         'status_id',
         'shipping_method_id',
         'digital_shipping_method_id',
+        'sales_channel_id',
         'code' => Like::class,
         'email' => Like::class,
         'buyer_id',

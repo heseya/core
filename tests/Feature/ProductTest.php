@@ -6,7 +6,7 @@ use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\MediaType;
-use App\Enums\Product\ProductPriceType;
+use Domain\Price\Enums\ProductPriceType;
 use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;

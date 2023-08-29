@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Enums\Product\ProductPriceType;
+use Domain\Price\Enums\ProductPriceType;
 use App\Models\Address;
 use App\Models\App;
 use App\Models\Deposit;

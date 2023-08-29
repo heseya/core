@@ -6,7 +6,7 @@ use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\ExceptionsEnums\Exceptions;
-use App\Enums\Product\ProductPriceType;
+use Domain\Price\Enums\ProductPriceType;
 use App\Enums\RoleType;
 use App\Enums\SchemaType;
 use App\Enums\ShippingType;

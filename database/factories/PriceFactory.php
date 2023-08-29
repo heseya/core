@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Enums\Product\ProductPriceType;
 use App\Models\Model;
 use App\Models\Price;
 use Domain\Currency\Currency;
+use Domain\Price\Enums\ProductPriceType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;

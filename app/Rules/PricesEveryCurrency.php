@@ -8,6 +8,8 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 readonly class PricesEveryCurrency implements ValidationRule
 {
+    public function __construct(private string $currency_field = 'currency') {}
+
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (!is_array($value)) {
@@ -19,7 +21,7 @@ readonly class PricesEveryCurrency implements ValidationRule
         $currencies = [];
 
         foreach ($value as $price) {
-            $currency = $price['currency'] ?? '';
+            $currency = $price[$this->currency_field] ?? '';
 
             if (!in_array($currency, $currencies)) {
                 $currencies[] = $currency;

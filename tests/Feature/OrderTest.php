@@ -189,7 +189,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(22);
+        $this->assertQueryCountLessThan(23);
     }
 
     /**
@@ -221,7 +221,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(22);
+        $this->assertQueryCountLessThan(23);
     }
 
     /**
@@ -243,7 +243,7 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(23);
+        $this->assertQueryCountLessThan(24);
     }
 
     /**
@@ -397,7 +397,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(22);
+        $this->assertQueryCountLessThan(23);
     }
 
     /**
@@ -442,7 +442,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(22);
+        $this->assertQueryCountLessThan(23);
     }
 
     public function testIndexUserUnauthenticated(): void
@@ -771,6 +771,46 @@ class OrderTest extends TestCase
             ])
             ->assertJsonMissing([
                 'id' => $orderPhysical->getKey(),
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchBySalesChannel($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.show');
+
+        $salesChannelId = SalesChannel::query()->value('id');
+
+        $status = Status::factory([
+            'hidden' => false,
+        ])->create();
+
+        $order = Order::factory([
+            'sales_channel_id' => $salesChannelId,
+            'status_id' => $status->getKey(),
+        ])->create();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/orders', ['sales_channel_id' => $salesChannelId])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonStructure([
+                'data' => [
+                    0 => $this->expected_full_structure,
+                ],
+            ])
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'code' => $order->code,
+                        'sales_channel' => [
+                            'id' => $salesChannelId,
+                        ],
+                    ],
+                ],
             ]);
     }
 

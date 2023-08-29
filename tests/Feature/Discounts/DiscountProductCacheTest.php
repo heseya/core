@@ -5,7 +5,7 @@ namespace Tests\Feature\Discounts;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
-use App\Enums\Product\ProductPriceType;
+use Domain\Price\Enums\ProductPriceType;
 use App\Models\Product;
 use App\Models\Role;
 use App\Repositories\Contracts\ProductRepositoryContract;

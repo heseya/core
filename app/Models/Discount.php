@@ -61,12 +61,14 @@ class Discount extends Model implements SeoContract, Translatable
         'description',
         'description_html',
     ];
+
     protected $casts = [
         'target_type' => DiscountTargetType::class,
         'target_is_allow_list' => 'boolean',
         'active' => 'boolean',
         'published' => 'array',
     ];
+
     protected array $criteria = [
         'description' => Like::class,
         'code' => Like::class,

@@ -2,34 +2,72 @@
 
 namespace App\Dtos;
 
+use App\Models\Price;
+use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
 use Heseya\Dto\Missing;
 
 class OrderValueConditionDto extends ConditionDto
 {
-    private float|Missing $min_value;
-    private float|Missing $max_value;
+    /** @var PriceDto[]|Missing */
+    private array|Missing $min_values;
+    /** @var PriceDto[]|Missing */
+    private array|Missing $max_values;
     private bool $include_taxes;
     private bool $is_in_range;
 
     public static function fromArray(array $array): self
     {
+        $min_values = array_key_exists('min_values', $array)
+            ? array_map(fn (array|Price|PriceDto $min) => $min instanceof PriceDto ? $min : PriceDto::from($min), $array['min_values'])
+            : new Missing();
+        $max_values = array_key_exists('max_values', $array)
+            ? array_map(fn (array|Price|PriceDto $min) => $min instanceof PriceDto ? $min : PriceDto::from($min), $array['max_values'])
+            : new Missing();
+
         return new self(
             type: $array['type'],
-            min_value: array_key_exists('min_value', $array) ? $array['min_value'] : new Missing(),
-            max_value: array_key_exists('max_value', $array) ? $array['max_value'] : new Missing(),
+            min_values: $min_values,
+            max_values: $max_values,
             include_taxes: $array['include_taxes'],
             is_in_range: $array['is_in_range'],
         );
     }
 
-    public function getMinValue(): float|Missing
+    public function getMinValues(): array|Missing
     {
-        return $this->min_value;
+        return $this->min_values;
     }
 
-    public function getMaxValue(): float|Missing
+    public function getMinValueForCurrency(Currency|string $currency): PriceDto|null
     {
-        return $this->max_value;
+        if (is_string($currency)) {
+            $currency = Currency::from($currency);
+        }
+
+        if ($this->getMinValues() instanceof Missing) {
+            return null;
+        }
+
+        return collect($this->getMinValues())->first(fn (PriceDto $value) => $value->currency === $currency);
+    }
+
+    public function getMaxValues(): array|Missing
+    {
+        return $this->max_values;
+    }
+
+    public function getMaxValueForCurrency(Currency|string $currency): PriceDto|null
+    {
+        if (is_string($currency)) {
+            $currency = Currency::from($currency);
+        }
+
+        if ($this->getMaxValues() instanceof Missing) {
+            return null;
+        }
+
+        return collect($this->getMaxValues())->first(fn (PriceDto $value) => $value->currency === $currency);
     }
 
     public function isIncludeTaxes(): bool

@@ -4,7 +4,7 @@ namespace Tests\Feature\Discounts;
 
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
-use App\Enums\Product\ProductPriceType;
+use Domain\Price\Enums\ProductPriceType;
 use App\Events\CouponDeleted;
 use App\Events\SaleDeleted;
 use App\Listeners\WebHookEventListener;
