@@ -63,7 +63,9 @@ final class SalesChannelRepository
         }
 
         $channel->save();
-        $channel->countries()->sync($dto->countries);
+        if (is_array($dto->countries)) {
+            $channel->countries()->sync($dto->countries);
+        }
 
         return $channel;
     }
