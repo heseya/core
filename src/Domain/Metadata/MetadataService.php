@@ -37,7 +37,6 @@ final readonly class MetadataService
     }
 
     /**
-     * @param class-string $class
      * @param MetadataUpdateDto[] $metadata
      */
     public function sync(string $class, string $model_id, array $metadata): void

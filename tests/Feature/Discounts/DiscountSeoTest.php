@@ -42,9 +42,10 @@ class DiscountSeoTest extends TestCase
                 'description' => 'Really Great',
             ]);
 
+        $discount = Discount::query()->find($response->json('data.id'))->first();
         $this->assertDatabaseHas('seo_metadata', [
             'model_id' => $response->json('data.id'),
-            'model_type' => Discount::class,
+            'model_type' => $discount->getMorphClass(),
             "title->{$this->lang}" => 'Great Sale!',
             "description->{$this->lang}" => 'Really Great',
         ]);
@@ -104,7 +105,7 @@ class DiscountSeoTest extends TestCase
 
         $this->assertDatabaseHas('seo_metadata', [
             'model_id' => $sale->getKey(),
-            'model_type' => Discount::class,
+            'model_type' => $sale->getMorphClass(),
             "title->{$this->lang}" => 'Sale',
             "description->{$this->lang}" => 'Interesting business proposition',
         ]);

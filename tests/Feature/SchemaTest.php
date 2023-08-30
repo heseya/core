@@ -392,7 +392,7 @@ class SchemaTest extends TestCase
         $this->assertDatabaseHas('prices', [
             'value' => "12000",
             'model_id' => $schema->id,
-            'model_type' => Schema::class,
+            'model_type' => 'Schema',
         ]);
 
         $this->assertDatabaseHas('options', [
@@ -407,7 +407,7 @@ class SchemaTest extends TestCase
         $this->assertDatabaseHas('prices', [
             'value' => "10000",
             'model_id' => $option->id,
-            'model_type' => Option::class,
+            'model_type' => 'Option',
         ]);
 
         $this->assertDatabaseHas('options', [
@@ -421,7 +421,7 @@ class SchemaTest extends TestCase
         $this->assertDatabaseHas('prices', [
             'value' => "100000",
             'model_id' => $option1->id,
-            'model_type' => Option::class,
+            'model_type' => 'Option',
         ]);
 
         $this->assertDatabaseHas('options', [
@@ -435,7 +435,7 @@ class SchemaTest extends TestCase
         $this->assertDatabaseHas('prices', [
             'value' => "0",
             'model_id' => $option2->id,
-            'model_type' => Option::class,
+            'model_type' => 'Option',
         ]);
 
         $this->assertDatabaseHas('option_items', [
@@ -974,7 +974,7 @@ class SchemaTest extends TestCase
             'value' => 1000,
             'currency' => Currency::DEFAULT->value,
             'model_id' => $schema->getKey(),
-            'model_type' => $schema::class,
+            'model_type' => $schema->getMorphClass(),
         ]);
     }
 

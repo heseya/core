@@ -37,7 +37,7 @@ final class PriceRepository
                 $rows[] = [
                     'id' => Uuid::uuid4(),
                     'model_id' => $model instanceof ModelIdentityDto ? $model->uuid : $model->getKey(),
-                    'model_type' => $model instanceof ModelIdentityDto ? $model->class : $model::class,
+                    'model_type' => $model instanceof ModelIdentityDto ? $model->class : $model->getMorphClass(),
                     'price_type' => $type,
                     'currency' => $price->value->getCurrency()->getCurrencyCode(),
                     'value' => (string) $price->value->getMinorAmount(),

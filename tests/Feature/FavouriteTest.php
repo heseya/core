@@ -134,6 +134,7 @@ class FavouriteTest extends TestCase
 
         $this->{$user}->favouriteProductSets()->create([
             'product_set_id' => $this->productSet->getKey(),
+            'user_type' => $this->{$user}->getMorphClass(),
         ]);
 
         $this

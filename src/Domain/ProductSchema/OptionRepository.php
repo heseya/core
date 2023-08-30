@@ -18,7 +18,7 @@ final class OptionRepository
     public function setOptionPrices(Option|string $option, array $prices): void
     {
         if (is_string($option)) {
-            $option = new ModelIdentityDto($option, Option::class);
+            $option = new ModelIdentityDto($option, (new Option())->getMorphClass());
         }
 
         app(PriceRepository::class)->setModelPrices($option, [OptionPriceType::PRICE_BASE->value => $prices]);

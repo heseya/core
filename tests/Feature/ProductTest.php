@@ -1952,11 +1952,13 @@ class ProductTest extends TestCase
 
         $response->assertCreated();
 
+        $product = Product::query()->find($response->json('data.id'))->first();
+
         $this->assertDatabaseHas('seo_metadata', [
             "title->{$this->lang}" => 'seo title',
             "description->{$this->lang}" => 'seo description',
             'model_id' => $response->json('data.id'),
-            'model_type' => Product::class,
+            'model_type' => $product->getMorphClass(),
             "no_index->{$this->lang}" => $booleanValue,
         ]);
     }

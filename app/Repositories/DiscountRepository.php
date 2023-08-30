@@ -25,7 +25,7 @@ class DiscountRepository
             $rows[] = [
                 'id' => Uuid::uuid4(),
                 'model_id' => $discountId,
-                'model_type' => Discount::class,
+                'model_type' => (new Discount())->getMorphClass(),
                 'price_type' => 'amount',
                 'currency' => $amount->value->getCurrency()->getCurrencyCode(),
                 'value' => $amount->value->getMinorAmount(),
