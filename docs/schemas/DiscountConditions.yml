@@ -5,7 +5,7 @@ ConditionGroup:
       type: array
       items:
         oneOf:
-          - $ref: '#/OrderValue'
+          - $ref: '#/OrderValueUpdate'
           - $ref: '#/UserInRole'
           - $ref: '#/UserIn'
           - $ref: '#/ProductInSet'
@@ -47,22 +47,52 @@ OrderValue:
     type:
       type: string
       example: 'order-value'
-    min_value:
-      type: number
-      example: 9.99
-    max_value:
-      type: number
-      example: 999.99
     include_taxes:
       type: boolean
     is_in_range:
       type: boolean
+
+OrderValueUpdate:
+  type: object
+  allOf:
+    - $ref: '#/OrderValue'
+    - properties:
+        min_values:
+          type: array
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                example: '9.99'
+              currency:
+                type: string
+                example: 'PLN'
+        max_values:
+          type: array
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                example: '9.99'
+              currency:
+                type: string
+                example: 'PLN'
 
 OrderValueShow:
   type: object
   allOf:
     - $ref: '#/OrderValue'
     - properties:
+        min_values:
+          type: array
+          items:
+            $ref: './../schemas/Prices.yml#/PriceResource'
+        max_values:
+          type: array
+          items:
+            $ref: './../schemas/Prices.yml#/PriceResource'
         id:
           type: string
           format: uuid
