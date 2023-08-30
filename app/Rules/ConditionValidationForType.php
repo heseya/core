@@ -63,9 +63,9 @@ class ConditionValidationForType implements DataAwareRule, ValidationRule, Valid
                     ConditionType::ORDER_VALUE->value => [
                         'is_in_range' => ['required', 'boolean'],
                         'include_taxes' => ['required', 'boolean'],
-                        'min_values' => (empty($value['max_values']) ? ['required'] : []) + ['array', new PricesEveryCurrency()],
+                        'min_values' => (empty($value['max_values']) ? ['required'] : ['nullable']) + ['array', new PricesEveryCurrency()],
                         'min_values.*' => [new Price(['value'], min: BigDecimal::zero())],
-                        'max_values' => (empty($value['min_values']) ? ['required'] : [new ConditionOrderValueMaxValuesGreaterThanMinValues($value)]) + ['array', new PricesEveryCurrency()],
+                        'max_values' => (empty($value['min_values']) ? ['required'] : ['nullable']) + ['array', new ConditionOrderValueMaxValuesGreaterThanMinValues($value), new PricesEveryCurrency()],
                         'max_values.*' => [new Price(['value'], min: BigDecimal::zero())],
                     ],
                     ConditionType::PRODUCT_IN->value => [

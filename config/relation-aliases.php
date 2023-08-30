@@ -2,6 +2,7 @@
 
 use App\Models\App;
 use App\Models\Discount;
+use App\Models\DiscountCondition;
 use App\Models\Item;
 use App\Models\Media;
 use App\Models\Option;
@@ -25,6 +26,7 @@ return [
     'AttributeOption' => AttributeOption::class,
     'Banner' => Banner::class,
     'Discount' => Discount::class,
+    'DiscountCondition' => DiscountCondition::class,
     'Item' => Item::class,
     'Media' => Media::class,
     'Option' => Option::class,

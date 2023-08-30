@@ -55,8 +55,10 @@ class ConditionOrderValueMaxValuesGreaterThanMinValues implements ValidationRule
             }
         }
 
+        $failedCurrencies = rtrim($failedCurrencies, ',');
+
         if (!empty($failedCurrencies)) {
-            $fail(":attribute contains values that are lower than values in {$this->min_values_field} for currencies {$failedCurrencies}");
+            $fail(":attribute contains values that are lower (or equal) to values in {$this->min_values_field} for currencies {$failedCurrencies}");
         }
     }
 }
