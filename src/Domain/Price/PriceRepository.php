@@ -63,7 +63,7 @@ final class PriceRepository
         /** @var Builder<Price> $query */
         $query = Price::query()
             ->where('model_id', $model instanceof ModelIdentityDto ? $model->uuid : $model->getKey())
-            ->where('model_type', $model instanceof ModelIdentityDto ? $model->class : $model::class)
+            ->where('model_type', $model instanceof ModelIdentityDto ? $model->class : $model->getMorphClass())
             ->whereIn('price_type', Arr::map($priceTypes, fn (DiscountConditionPriceType|OptionPriceType|ProductPriceType|SchemaPriceType|string $item) => is_string($item) ? $item : $item->value));
 
         if ($currency !== null) {
