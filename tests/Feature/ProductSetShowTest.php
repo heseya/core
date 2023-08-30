@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use Domain\Language\Enums\LangFallbackType;
+use Domain\Language\Language;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductSet\ProductSet;
@@ -389,6 +391,36 @@ class ProductSetShowTest extends TestCase
                         'attribute_id' => $attribute->getKey(),
                     ],
                 ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowUnpublishedTranslation($user): void
+    {
+        $this->{$user}->givePermissionTo('product_sets.show_details');
+
+        $es = Language::create([
+            'iso' => 'es',
+            'name' => 'Spain',
+            'default' => false,
+            'hidden' => false,
+        ]);
+
+        $this->set->setLocale($es->getKey())->fill([
+            'name' => 'Nombre',
+        ]);
+
+        $this->actingAs($this->{$user})
+            ->json('GET', '/product-sets/id:' . $this->set->getKey(), [
+                'lang_fallback' => LangFallbackType::NONE->value,
+            ], [
+                'Accept-Language' => $es->iso,
+            ])
+            ->assertStatus(406)
+            ->assertJsonFragment([
+                'message' => 'No content in selected language',
             ]);
     }
 }

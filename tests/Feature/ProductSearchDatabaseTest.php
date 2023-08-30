@@ -2,7 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Enums\Product\ProductPriceType;
+use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\ProductPriceType;
 use App\Models\Media;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryContract;
@@ -11,7 +12,6 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
-use Domain\Price\Dtos\PriceDto;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;

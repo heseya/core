@@ -2,12 +2,12 @@
 
 namespace Database\Factories;
 
-use App\Enums\Product\ProductPriceType;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\ProductPriceType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Enums\ExceptionsEnums\Exceptions;
-use App\Enums\Product\ProductPriceType;
 use App\Exceptions\ServerException;
 use App\Models\Price;
 use App\Models\Product;
@@ -13,6 +12,7 @@ use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Traits\GetPublishedLanguageFilter;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\ProductPriceType;
 use Domain\Price\PriceRepository;
 use Domain\Product\Dtos\ProductSearchDto;
 use Heseya\Dto\DtoException;
@@ -64,7 +64,7 @@ class ProductRepository implements ProductRepositoryContract
      */
     public function setProductPrices(string $productId, array $priceMatrix): void
     {
-        $this->priceRepository->setModelPrices(new ModelIdentityDto($productId, Product::class), $priceMatrix);
+        $this->priceRepository->setModelPrices(new ModelIdentityDto($productId, (new Product())->getMorphClass()), $priceMatrix);
     }
 
     /**
@@ -77,7 +77,7 @@ class ProductRepository implements ProductRepositoryContract
      */
     public function getProductPrices(string $productId, array $priceTypes, ?Currency $currency = null): Collection|EloquentCollection
     {
-        $prices = $this->priceRepository->getModelPrices(new ModelIdentityDto($productId, Product::class), $priceTypes, $currency);
+        $prices = $this->priceRepository->getModelPrices(new ModelIdentityDto($productId, (new Product())->getMorphClass()), $priceTypes, $currency);
 
         $groupedPrices = $prices->mapToGroups(fn (Price $price) => [$price->price_type => PriceDto::from($price)]);
 

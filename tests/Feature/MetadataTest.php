@@ -345,7 +345,7 @@ class MetadataTest extends TestCase
 
         $this->assertDatabaseHas('metadata', array_merge($metadata2->toArray(), [
             'model_id' => $product2->getKey(),
-            'model_type' => Product::class,
+            'model_type' => $product2->getMorphClass(),
         ]));
     }
 
@@ -539,19 +539,19 @@ class MetadataTest extends TestCase
             ->assertJsonFragment(['data' => $metadata]);
 
         $this->assertDatabaseHas('metadata_personals', [
-            'model_type' => $this->user::class,
+            'model_type' => $this->user->getMorphClass(),
             'model_id' => $this->user->getKey(),
             'name' => 'sample text metadata',
             'value' => 'Lorem ipsum dolor sit amet',
         ]);
         $this->assertDatabaseHas('metadata_personals', [
-            'model_type' => $this->user::class,
+            'model_type' => $this->user->getMorphClass(),
             'model_id' => $this->user->getKey(),
             'name' => 'sample numeric metadata',
             'value' => 21.5,
         ]);
         $this->assertDatabaseHas('metadata_personals', [
-            'model_type' => $this->user::class,
+            'model_type' => $this->user->getMorphClass(),
             'model_id' => $this->user->getKey(),
             'name' => 'sample bool metadata',
             'value' => true,
@@ -579,13 +579,13 @@ class MetadataTest extends TestCase
             ->assertJsonFragment(['data' => $metadata]);
 
         $this->assertDatabaseHas('metadata_personals', [
-            'model_type' => $this->user::class,
+            'model_type' => $this->user->getMorphClass(),
             'model_id' => $this->user->getKey(),
             'name' => 'sample text metadata',
             'value' => 'Lorem ipsum dolor sit amet',
         ]);
         $this->assertDatabaseMissing('metadata_personals', [
-            'model_type' => $this->user::class,
+            'model_type' => $this->user->getMorphClass(),
             'model_id' => $this->user->getKey(),
             'name' => 'sample text metadata',
             'value' => 'metadata test',
@@ -644,19 +644,19 @@ class MetadataTest extends TestCase
             ->assertJsonFragment(['data' => $metadata]);
 
         $this->assertDatabaseHas('metadata_personals', [
-            'model_type' => $model::class,
+            'model_type' => $model->getMorphClass(),
             'model_id' => $model->getKey(),
             'name' => 'sample text metadata',
             'value' => 'Lorem ipsum dolor sit amet',
         ]);
         $this->assertDatabaseHas('metadata_personals', [
-            'model_type' => $model::class,
+            'model_type' => $model->getMorphClass(),
             'model_id' => $model->getKey(),
             'name' => 'sample numeric metadata',
             'value' => 21.5,
         ]);
         $this->assertDatabaseHas('metadata_personals', [
-            'model_type' => $model::class,
+            'model_type' => $model->getMorphClass(),
             'model_id' => $model->getKey(),
             'name' => 'sample bool metadata',
             'value' => true,
@@ -690,13 +690,13 @@ class MetadataTest extends TestCase
             ->assertJsonFragment(['data' => $metadata]);
 
         $this->assertDatabaseHas('metadata_personals', [
-            'model_type' => $model::class,
+            'model_type' => $model->getMorphClass(),
             'model_id' => $model->getKey(),
             'name' => 'sample text metadata',
             'value' => 'Lorem ipsum dolor sit amet',
         ]);
         $this->assertDatabaseMissing('metadata_personals', [
-            'model_type' => $model::class,
+            'model_type' => $model->getMorphClass(),
             'model_id' => $model->getKey(),
             'name' => 'sample text metadata',
             'value' => 'metadata test',

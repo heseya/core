@@ -8,6 +8,9 @@ use App\Models\DiscountCondition;
 use App\Models\Product;
 use App\Models\Role;
 use App\Models\User;
+use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\DiscountConditionPriceType;
 use Domain\ProductSet\ProductSet;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -20,15 +23,6 @@ class DiscountConditionModelTest extends TestCase
     public static function conditionsProvider(): array
     {
         return [
-            ConditionType::ORDER_VALUE->value => [
-                ConditionType::ORDER_VALUE,
-                [
-                    'min_value' => 20,
-                    'max_value' => 100,
-                    'include_taxes' => false,
-                    'is_in_range' => false,
-                ],
-            ],
             ConditionType::DATE_BETWEEN->value => [
                 ConditionType::DATE_BETWEEN,
                 [
@@ -78,6 +72,52 @@ class DiscountConditionModelTest extends TestCase
             'type' => $type,
             'value' => $value,
         ]);
+
+        $this->assertEquals($condition->value, $value);
+    }
+
+    public function testCastValueOrderValue(): void
+    {
+        $conditionGroup = ConditionGroup::create();
+
+        $value = [
+            'min_values' => [
+                [
+                    'value' => "20.00",
+                    'currency' => Currency::DEFAULT->value,
+                ]
+            ],
+            'max_values' => [
+                [
+                    'value' => "100.00",
+                    'currency' => Currency::DEFAULT->value,
+                ]
+            ],
+            'include_taxes' => false,
+            'is_in_range' => false,
+        ];
+
+        $type = ConditionType::ORDER_VALUE;
+
+        /** @var DiscountCondition $condition */
+        $condition = DiscountCondition::create([
+            'condition_group_id' => $conditionGroup->getKey(),
+            'type' => $type,
+            'value' => $value,
+        ]);
+        $condition->pricesMin()->create([
+            'value' => 2000,
+            'currency' => Currency::DEFAULT->value,
+            'price_type' => DiscountConditionPriceType::PRICE_MIN->value,
+        ]);
+        $condition->pricesMin()->create([
+            'value' => 10000,
+            'currency' => Currency::DEFAULT->value,
+            'price_type' => DiscountConditionPriceType::PRICE_MAX->value,
+        ]);
+
+        $value['min_values'] = array_map(fn (array $price) => PriceDto::from($price), $value['min_values']);
+        $value['max_values'] = array_map(fn (array $price) => PriceDto::from($price), $value['max_values']);
 
         $this->assertEquals($condition->value, $value);
     }

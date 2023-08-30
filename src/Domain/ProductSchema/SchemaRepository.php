@@ -6,6 +6,7 @@ namespace Domain\ProductSchema;
 
 use App\Models\Schema;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\SchemaPriceType;
 use Domain\Price\PriceRepository;
 use Support\Dtos\ModelIdentityDto;
 
@@ -17,9 +18,9 @@ final class SchemaRepository
     public function setSchemaPrices(Schema|string $schema, array $prices): void
     {
         if (is_string($schema)) {
-            $schema = new ModelIdentityDto($schema, Schema::class);
+            $schema = new ModelIdentityDto($schema, (new Schema())->getMorphClass());
         }
 
-        app(PriceRepository::class)->setModelPrices($schema, ['schema' => $prices]);
+        app(PriceRepository::class)->setModelPrices($schema, [SchemaPriceType::PRICE_BASE->value => $prices]);
     }
 }

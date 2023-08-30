@@ -2,8 +2,8 @@
 
 namespace App\Criteria;
 
-use App\Enums\Product\ProductPriceType;
 use Brick\Money\Money;
+use Domain\Price\Enums\ProductPriceType;
 use Heseya\Searchable\Criteria\Criterion;
 use Illuminate\Database\Eloquent\Builder;
 

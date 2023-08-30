@@ -38,7 +38,7 @@ final class AttributeOptionDto extends Data
         public Optional|string $id,
         #[Rule([new Translations(['name'])]), RequiredIf('attribute.type', [AttributeTypeValues::SINGLE_OPTION, AttributeTypeValues::MULTI_CHOICE_OPTION])]
         public readonly ?array $translations,
-        #[Regex('/^\d{1,6}(\.\d{1,2}|)$/')]
+        #[Regex('/^\d{1,6}(\.\d{1,4}|)$/')]
         public readonly float|Optional|null $value_number,
         public readonly Optional|string|null $value_date,
         #[MapInputName('metadata')]

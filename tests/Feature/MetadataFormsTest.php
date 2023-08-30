@@ -44,10 +44,11 @@ class MetadataFormsTest extends TestCase
             ]);
 
         $response->assertCreated();
+        $product = Product::query()->find($response->json('data.id'))->first();
 
         $this->assertDatabaseHas('metadata', [
-            'model_id' => $response->json('data.id'),
-            'model_type' => Product::class,
+            'model_id' => $product->getKey(),
+            'model_type' => $product->getMorphClass(),
             'name' => 'test',
             'value' => '123',
             'value_type' => MetadataType::STRING,
@@ -55,8 +56,8 @@ class MetadataFormsTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('metadata', [
-            'model_id' => $response->json('data.id'),
-            'model_type' => Product::class,
+            'model_id' => $product->getKey(),
+            'model_type' => $product->getMorphClass(),
             'name' => 'test-two',
             'value' => 123,
             'value_type' => MetadataType::NUMBER,
@@ -92,23 +93,24 @@ class MetadataFormsTest extends TestCase
             ]);
 
         $response->assertCreated();
+        $set = ProductSet::query()->find($response->json('data.id'))->first();
 
         $this->assertDatabaseHas('metadata', [
-            'model_id' => $response->json('data.id'),
-            'model_type' => ProductSet::class,
+            'model_id' => $set->getKey(),
+            'model_type' => $set->getMorphClass(),
             'name' => 'test',
             'value' => '123',
             'value_type' => MetadataType::STRING,
-            'public' => true,
+            'public' => 1,
         ]);
 
         $this->assertDatabaseHas('metadata', [
-            'model_id' => $response->json('data.id'),
-            'model_type' => ProductSet::class,
+            'model_id' => $set->getKey(),
+            'model_type' => $set->getMorphClass(),
             'name' => 'test-two',
             'value' => 123,
             'value_type' => MetadataType::NUMBER,
-            'public' => false,
+            'public' => 0,
         ]);
     }
 }

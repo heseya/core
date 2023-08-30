@@ -210,7 +210,7 @@ class ProductAttachmentsTest extends TestCase
             'description' => 'test',
             'media_id' => $this->media->getKey(),
             'model_id' => $this->product->getKey(),
-            'model_type' => Product::class,
+            'model_type' => $this->product->getMorphClass(),
         ]);
     }
 
@@ -259,7 +259,7 @@ class ProductAttachmentsTest extends TestCase
         $this->assertDatabaseHas('media_attachments', $data + [
             'media_id' => $this->media->getKey(),
             'model_id' => $this->product->getKey(),
-            'model_type' => Product::class,
+            'model_type' => $this->product->getMorphClass(),
         ]);
     }
 
@@ -275,7 +275,7 @@ class ProductAttachmentsTest extends TestCase
         $attachment = MediaAttachment::query()->create($createData + [
             'media_id' => $this->media->getKey(),
             'model_id' => $this->product->getKey(),
-            'model_type' => Product::class,
+            'model_type' => $this->product->getMorphClass(),
         ]);
 
         $finalData = $outputData + $createData;
@@ -291,7 +291,7 @@ class ProductAttachmentsTest extends TestCase
         $this->assertDatabaseHas('media_attachments', $finalData + [
             'media_id' => $this->media->getKey(),
             'model_id' => $this->product->getKey(),
-            'model_type' => Product::class,
+            'model_type' => $this->product->getMorphClass(),
         ]);
     }
 }

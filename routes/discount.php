@@ -8,9 +8,9 @@ Route::prefix('coupons')->group(function (): void {
     Route::get('/', [DiscountController::class, 'indexCoupons'])
         ->middleware('can:coupons.show');
     Route::get('id:{coupon:id}', [DiscountController::class, 'showCoupon'])
-        ->middleware('can:coupons.show_details');
+        ->middleware('can:coupons.show_details', 'published:coupon');
     Route::get('{coupon:code}', [DiscountController::class, 'showCouponByCode'])
-        ->middleware('can:coupons.show_details');
+        ->middleware('can:coupons.show_details', 'published:coupon');
     Route::post('/', [DiscountController::class, 'storeCoupon'])
         ->middleware('can:coupons.add');
     Route::patch('id:{coupon:id}', [DiscountController::class, 'updateCoupon'])
@@ -27,7 +27,7 @@ Route::prefix('sales')->group(function (): void {
     Route::get('/', [DiscountController::class, 'indexSales'])
         ->middleware('can:sales.show');
     Route::get('id:{sale:id}', [DiscountController::class, 'showSale'])
-        ->middleware('can:sales.show_details');
+        ->middleware('can:sales.show_details', 'published:sale');
     Route::post('/', [DiscountController::class, 'storeSale'])
         ->middleware('can:sales.add');
     Route::patch('id:{sale:id}', [DiscountController::class, 'updateSale'])

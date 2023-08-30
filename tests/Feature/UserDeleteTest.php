@@ -392,7 +392,7 @@ class UserDeleteTest extends TestCase
 
         $order = Order::factory()->create([
             'buyer_id' => $this->user->getKey(),
-            'buyer_type' => User::class,
+            'buyer_type' => $this->user->getMorphClass(),
         ]);
 
         $this
