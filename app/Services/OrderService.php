@@ -426,7 +426,7 @@ final readonly class OrderService implements OrderServiceContract
         } catch (Exception $error) {
             DB::rollBack();
 
-            throw new ClientException(Exceptions::CLIENT_ORDER_EDIT_ERROR);
+            throw new ClientException(Exceptions::CLIENT_ORDER_EDIT_ERROR, $error);
         }
     }
 

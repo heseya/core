@@ -127,7 +127,12 @@ final class Handler extends ExceptionHandler
         }
 
         if (Config::get('app.debug') === true) {
-            $error->setStack($this->convertExceptionToArray($exception));
+            $stack = [];
+            $stack[] = $this->convertExceptionToArray($exception);
+            if ($exception->getPrevious() !== null) {
+                $stack[] = $this->convertExceptionToArray($exception->getPrevious());
+            }
+            $error->setStack($stack);
         }
 
         return ErrorResource::make($error)

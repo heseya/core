@@ -40,6 +40,6 @@ final readonly class SalesChannelService
      */
     public function addVatString(string $decimal, BigDecimal $vat_rate): string
     {
-        return (string) $vat_rate->plus(1)->multipliedBy($decimal)->toInt();
+        return (string) $vat_rate->plus(1)->multipliedBy($decimal)->toScale(0, RoundingMode::HALF_EVEN)->toInt();
     }
 }
