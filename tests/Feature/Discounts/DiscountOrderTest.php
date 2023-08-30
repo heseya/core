@@ -523,7 +523,7 @@ class DiscountOrderTest extends TestCase
         ]);
 
         $this->assertDatabaseCount('order_discounts', 3);
-        $modelType = 'OrderProduct';
+        $modelType = (new OrderProduct())->getMorphClass();
 
         $this->assertDatabaseHas('order_discounts', [
             'model_id' => $cheapestProduct->getKey(),

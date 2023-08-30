@@ -46,7 +46,7 @@ class WebHookPolicy
     private function canChange(App|User $user, WebHook $webHook, string $method): Response
     {
         // Webhook stworzony przez aplikację
-        if ($webHook->model_type === 'App') {
+        if ($webHook->model_type === (new App())->getMorphClass()) {
             // Zalogowana aplikacja i aplikacja stworzyła danego Webhooka
             return ($user instanceof App) && $user->getKey() === $webHook->creator_id
                 ? Response::allow()

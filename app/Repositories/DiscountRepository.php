@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ServerException;
+use App\Models\Discount;
 use App\Models\Price;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
@@ -24,7 +25,7 @@ class DiscountRepository
             $rows[] = [
                 'id' => Uuid::uuid4(),
                 'model_id' => $discountId,
-                'model_type' => 'Discount',
+                'model_type' => (new Discount())->getMorphClass(),
                 'price_type' => 'amount',
                 'currency' => $amount->value->getCurrency()->getCurrencyCode(),
                 'value' => $amount->value->getMinorAmount(),

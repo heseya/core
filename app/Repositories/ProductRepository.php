@@ -64,7 +64,7 @@ class ProductRepository implements ProductRepositoryContract
      */
     public function setProductPrices(string $productId, array $priceMatrix): void
     {
-        $this->priceRepository->setModelPrices(new ModelIdentityDto($productId, 'Product'), $priceMatrix);
+        $this->priceRepository->setModelPrices(new ModelIdentityDto($productId, (new Product())->getMorphClass()), $priceMatrix);
     }
 
     /**
@@ -77,7 +77,7 @@ class ProductRepository implements ProductRepositoryContract
      */
     public function getProductPrices(string $productId, array $priceTypes, ?Currency $currency = null): Collection|EloquentCollection
     {
-        $prices = $this->priceRepository->getModelPrices(new ModelIdentityDto($productId, 'Product'), $priceTypes, $currency);
+        $prices = $this->priceRepository->getModelPrices(new ModelIdentityDto($productId, (new Product())->getMorphClass()), $priceTypes, $currency);
 
         $groupedPrices = $prices->mapToGroups(fn (Price $price) => [$price->price_type => PriceDto::from($price)]);
 

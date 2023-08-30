@@ -17,7 +17,7 @@ final class SchemaRepository
     public function setSchemaPrices(Schema|string $schema, array $prices): void
     {
         if (is_string($schema)) {
-            $schema = new ModelIdentityDto($schema, 'Schema');
+            $schema = new ModelIdentityDto($schema, (new Schema())->getMorphClass());
         }
 
         app(PriceRepository::class)->setModelPrices($schema, ['schema' => $prices]);
