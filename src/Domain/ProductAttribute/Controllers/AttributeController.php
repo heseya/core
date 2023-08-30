@@ -57,9 +57,7 @@ final class AttributeController extends Controller
 
     public function show(Attribute $attribute): JsonResource
     {
-        return AttributeResource::make(
-            $this->attributeService->show($attribute->getKey()),
-        );
+        return AttributeResource::make($attribute);
     }
 
     public function store(AttributeCreateDto $dto): JsonResource
