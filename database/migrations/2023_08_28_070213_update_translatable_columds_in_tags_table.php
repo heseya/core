@@ -3,9 +3,12 @@
 use App\Enums\RoleType;
 use App\Models\Permission;
 use App\Models\Role;
+use Domain\Language\Language;
+use Domain\Tag\Models\Tag;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Support\Utils\Migrate;
 
 return new class extends Migration {
     public function up(): void
@@ -14,6 +17,13 @@ return new class extends Migration {
             $table->text('name')->change();
             $table->text('published')->nullable();
         });
+
+        $lang = Language::query()->where('default', true)->value('id');
+
+        Tag::query()->update([
+            'name' => Migrate::lang('name', $lang),
+            'published' => [$lang],
+        ]);
 
         Permission::create([
             'name' => 'tags.show_hidden',
