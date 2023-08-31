@@ -16,6 +16,8 @@ use Domain\ProductAttribute\Dtos\FiltersDto;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Resources\AttributeResource;
 use Domain\ProductAttribute\Services\AttributeService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Config;
@@ -55,8 +57,17 @@ final class AttributeController extends Controller
         );
     }
 
-    public function show(Attribute $attribute): JsonResource
-    {
+    public function show(
+        Request $request,
+        Attribute $attribute
+    ): JsonResource {
+        if (!$attribute->exists) {
+            $attribute->refresh();
+        }
+        if (!$attribute->exists) {
+            throw (new ModelNotFoundException())->setModel(Attribute::class, (string) $request->segment(2));
+        }
+
         return AttributeResource::make($attribute);
     }
 
