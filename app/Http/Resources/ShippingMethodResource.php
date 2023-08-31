@@ -2,9 +2,13 @@
 
 namespace App\Http\Resources;
 
+use App\Models\ShippingMethod;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
+/**
+ * @property ShippingMethod $resource
+ */
 class ShippingMethodResource extends Resource
 {
     use MetadataResource;
@@ -17,6 +21,7 @@ class ShippingMethodResource extends Resource
             'price' => $this->resource->price,
             'public' => $this->resource->public,
             'block_list' => $this->resource->block_list,
+            'payment_on_delivery' => $this->resource->payment_on_delivery,
             'payment_methods' => PaymentMethodResource::collection($this->resource->paymentMethods),
             'countries' => CountryResource::collection($this->resource->countries),
             'price_ranges' => PriceRangeResource::collection($this->resource->priceRanges->sortBy('start')),

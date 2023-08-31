@@ -31,7 +31,7 @@ class ShippingMethodCreateDto extends Dto implements InstantiateFromRequest
     protected string|null $app_id;
 
     protected array|Missing $metadata;
-    protected bool $payment_on_delivery;
+    public bool $payment_on_delivery;
 
     public static function instantiateFromRequest(
         FormRequest|ShippingMethodStoreRequest|ShippingMethodUpdateRequest $request,
