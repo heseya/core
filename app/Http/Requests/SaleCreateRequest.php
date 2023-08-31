@@ -27,6 +27,10 @@ class SaleCreateRequest extends FormRequest
     {
         return [
             'translations' => ['required', new Translations(['name', 'description_html', 'description'])],
+            'translations.*.name' => ['required', 'string', 'max:255'],
+            'translations.*.description_html' => ['nullable', 'string'],
+            'translations.*.description' => ['nullable', 'string'],
+
             'slug' => ['nullable', 'string', 'max:128', 'alpha_dash'],
 
             'percentage' => ['nullable', 'required_without:amounts', 'prohibits:amounts', 'numeric', 'string', 'gte:0'],

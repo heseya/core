@@ -41,7 +41,7 @@ class SchemaUpdateRequest extends FormRequest
                 'sometimes',
                 new Translations(['name']),
             ],
-            'options.*.translations.*.name' => ['string', 'max:255'],
+            'options.*.translations.*.name' => ['sometimes', 'string', 'max:255'],
 
             'options.*.prices' => ['sometimes', 'required', new PricesEveryCurrency()],
             'options.*.prices.*' => ['sometimes', 'required', new Price(['value'], min: BigDecimal::zero())],

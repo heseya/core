@@ -18,6 +18,9 @@ class SaleUpdateRequest extends SaleCreateRequest
     {
         return array_merge(parent::rules(), [
             'translations' => ['sometimes', new Translations(['name', 'description_html', 'description'])],
+            'translations.*.name' => ['sometimes', 'string', 'max:255'],
+            'translations.*.description_html' => ['sometimes', 'nullable', 'string'],
+            'translations.*.description' => ['sometimes', 'nullable', 'string'],
 
             'percentage' => ['prohibits:amounts', 'numeric', 'string', 'gte:0'],
             'amounts' => ['prohibits:percentage', new PricesEveryCurrency()],
