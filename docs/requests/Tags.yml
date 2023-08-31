@@ -1,0 +1,9 @@
+TagStore:
+  content:
+    application/json:
+      schema:
+        allOf:
+          - $ref: './../schemas/Tags.yml#/Tag'
+        type: object
+        required:
+          - translations

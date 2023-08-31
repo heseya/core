@@ -2,8 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\Tag;
+use Domain\Tag\Models\Tag;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\App;
 
 class TagFactory extends Factory
 {
@@ -29,6 +30,7 @@ class TagFactory extends Factory
                 'coming soon',
             ]),
             'color' => ltrim($this->faker->hexColor, '#'),
+            'published' => [App::getLocale()],
         ];
     }
 }

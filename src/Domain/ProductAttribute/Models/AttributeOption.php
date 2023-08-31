@@ -51,6 +51,7 @@ final class AttributeOption extends Model implements Translatable
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'value_number' => 'float',
     ];
 
     /** @var string[] */

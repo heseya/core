@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\TagController;
+use Domain\Tag\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('tags')->group(function (): void {
