@@ -8,7 +8,6 @@ use App\Repositories\DiscountRepository;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
-use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\App;
 
 class DiscountFactory extends Factory

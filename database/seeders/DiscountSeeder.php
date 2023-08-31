@@ -41,11 +41,11 @@ class DiscountSeeder extends Seeder
      */
     public function run(): void
     {
-        $amount = mt_rand(10, 15);
-        $discounts = Discount::factory()->count($amount)->create();
-        $discounts = $discounts->merge(Discount::factory(['code' => null])->count(25 - $amount)->create());
+        $discounts = Discount::factory()->count(5)->create();
+        $discounts = $discounts->merge(Discount::factory(['code' => null])->count(5)->create());
 
         $language = Language::query()->where('default', false)->firstOrFail()->getKey();
+        
         $discounts->each(function ($discount) use ($language) {
             $this->translations($discount, $language);
         });

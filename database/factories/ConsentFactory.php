@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use Domain\Consent\Models\Consent;
-use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ConsentFactory extends Factory
 {

@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Enums\ShippingType;
 use App\Models\PaymentMethod;
 use App\Models\ShippingMethod;
 use Brick\Math\Exception\NumberFormatException;
@@ -10,6 +9,7 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
 
 class ShippingMethodSeeder extends Seeder
@@ -19,19 +19,24 @@ class ShippingMethodSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->createShippingMethodsWithType(ShippingType::cases(), true);
-        $this->createShippingMethodsWithType(ShippingType::cases(), false);
+        $paymentMethods = PaymentMethod::factory()->allMethods()->create();
+        $this->createShippingMethodsWithType($paymentMethods, true);
+        $this->createShippingMethodsWithType($paymentMethods, false);
     }
 
-    private function createShippingMethodsWithType(array $types, bool $public): void
+    /**
+     * @var PaymentMethod[]|Collection<int,PaymentMethod> $paymentMethods
+     */
+    private function createShippingMethodsWithType(Collection|array $paymentMethods, bool $public): void
     {
-        foreach ($types as $type) {
-            /** @var ShippingMethod $shippingMethod */
-            $shippingMethod = ShippingMethod::factory()->create([
-                'public' => $public,
-                'shipping_type' => $type,
-            ]);
-            $this->addPaymentMethods($shippingMethod);
+        /** @var ShippingMethod[] $shippingMethods */
+        $shippingMethods = ShippingMethod::factory()->allMethods()->create([
+            'public' => $public,
+        ]);
+
+        foreach ($shippingMethods as $shippingMethod) {
+            $this->addPriceRanges($shippingMethod);
+            $shippingMethod->paymentMethods()->sync($paymentMethods);
         }
     }
 
@@ -40,7 +45,7 @@ class ShippingMethodSeeder extends Seeder
      * @throws NumberFormatException
      * @throws RoundingNecessaryException
      */
-    private function addPaymentMethods(ShippingMethod $shippingMethod): void
+    private function addPriceRanges(ShippingMethod $shippingMethod): void
     {
         $price_ranges = array_map(function (Currency $currency) {
             return [
@@ -49,8 +54,6 @@ class ShippingMethodSeeder extends Seeder
             ];
         }, Currency::cases());
 
-        $paymentMethods = PaymentMethod::factory()->count(mt_rand(1, 3))->create();
-        $shippingMethod->paymentMethods()->sync($paymentMethods);
         $shippingMethod->priceRanges()->createMany($price_ranges);
     }
 }

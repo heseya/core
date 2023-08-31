@@ -8,12 +8,14 @@ use App\Models\Media;
 use App\Models\Option;
 use App\Models\Order;
 use App\Models\OrderProduct;
+use App\Models\Permission;
 use App\Models\Product;
 use App\Models\Role;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\User;
+use App\Models\WebHook;
 use Domain\Banner\Models\Banner;
 use Domain\Page\Page;
 use Domain\ProductAttribute\Models\AttributeOption;
@@ -33,6 +35,7 @@ return [
     'Order' => Order::class,
     'OrderProduct' => OrderProduct::class,
     'Page' => Page::class,
+    'Permission' => Permission::class,
     'Product' => Product::class,
     'ProductSet' => ProductSet::class,
     'Role' => Role::class,
@@ -40,4 +43,5 @@ return [
     'ShippingMethod' => ShippingMethod::class,
     'Status' => Status::class,
     'User' => User::class,
+    'WebHook' => WebHook::class,
 ];

@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use Domain\Seo\Models\SeoMetadata;
-use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\App;
 
 class SeoMetadataFactory extends Factory

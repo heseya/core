@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use Domain\Banner\Models\Banner;
-use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends Factory<Banner>

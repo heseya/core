@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use Domain\ProductAttribute\Models\AttributeOption;
-use Illuminate\Database\Eloquent\Factories\Factory;
 
 class AttributeOptionFactory extends Factory
 {

@@ -5,7 +5,6 @@ namespace Database\Factories;
 use App\Models\OrderSchema;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
-use Illuminate\Database\Eloquent\Factories\Factory;
 
 class OrderSchemaFactory extends Factory
 {
