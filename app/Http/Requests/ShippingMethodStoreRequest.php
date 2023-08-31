@@ -20,7 +20,8 @@ class ShippingMethodStoreRequest extends FormRequest
                 'name' => ['required', 'string', 'max:255'],
                 'public' => ['boolean'],
                 'block_list' => ['boolean'],
-                'payment_methods' => 'array',
+                'payment_on_delivery' => ['required', 'boolean'],
+                'payment_methods' => ['array', 'prohibited_if:payment_on_delivery,true'],
                 'payment_methods.*' => ['uuid', 'exists:payment_methods,id'],
                 'countries' => 'array',
                 'countries.*' => ['string', 'size:2', 'exists:countries,code'],
@@ -33,7 +34,7 @@ class ShippingMethodStoreRequest extends FormRequest
                 'shipping_type' => ['required', new EnumValue(ShippingType::class, false)],
                 'shipping_points' => ['array'],
                 'shipping_points.*.id' => ['string', 'exists:addresses,id'],
-            ]
+            ],
         );
     }
 }

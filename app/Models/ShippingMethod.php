@@ -45,7 +45,9 @@ class ShippingMethod extends Model implements AuditableContract
         'integration_key',
         'app_id',
         'shipping_type',
+        'payment_on_delivery',
     ];
+
     /**
      * The attributes that should be cast to native types.
      *
@@ -54,6 +56,7 @@ class ShippingMethod extends Model implements AuditableContract
     protected $casts = [
         'public' => 'boolean',
         'block_list' => 'boolean',
+        'payment_on_delivery' => 'boolean',
     ];
 
     /** @var array<string, class-string> */
