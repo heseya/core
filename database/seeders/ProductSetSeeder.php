@@ -43,7 +43,7 @@ final class ProductSetSeeder extends Seeder
         ]);
         $this->seo($rootCategory, $languages);
 
-        for ($i = rand(20, 40); $i >= 0; $i--) {
+        for ($i = rand(10, 20); $i >= 0; $i--) {
             /** @var ProductSet $category */
             $category = ProductSet::factory()->create([
                 'parent_id' => $rootCategory->getKey(),
@@ -63,6 +63,15 @@ final class ProductSetSeeder extends Seeder
                 'public' => true,
             ]);
             $this->seo($category, $languages);
+
+            if ($i % 3 === 0) {
+                $categoryChild = ProductSet::factory()->create([
+                    'parent_id' => $category->getKey(),
+                ]);
+                $categoryChild->save();
+                $this->translations($categoryChild, $languages);
+                $this->seo($categoryChild, $languages);
+            }
         }
     }
 

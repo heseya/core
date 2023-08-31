@@ -2,11 +2,8 @@
 
 namespace Database\Factories;
 
-use Domain\Language\Language;
 use Domain\ProductSet\ProductSet;
-use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Str;
 
 class ProductSetFactory extends Factory
 {

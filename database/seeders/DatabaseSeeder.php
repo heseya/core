@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
 
         $this
             ->call(InitSeeder::class)
+            ->call(SalesChannelSeeder::class)
             ->call(ItemSeeder::class)
             ->call(ProductSetSeeder::class)
             ->call(ProductSeeder::class)

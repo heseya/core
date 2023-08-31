@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Enums\EventType;
 use App\Models\WebHook;
-use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 class WebHookFactory extends Factory

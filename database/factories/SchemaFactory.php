@@ -5,7 +5,6 @@ namespace Database\Factories;
 use App\Models\Schema;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\Price\PriceRepository;
-use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\App;
 use Tests\Utils\FakeDto;

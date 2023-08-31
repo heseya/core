@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use Domain\Metadata\Enums\MetadataType;
 use Domain\Metadata\Models\Metadata;
-use Illuminate\Database\Eloquent\Factories\Factory;
 
 class MetadataFactory extends Factory
 {

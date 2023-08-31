@@ -6,7 +6,6 @@ use App\Models\OrderProduct;
 use App\Models\Product;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
-use Illuminate\Database\Eloquent\Factories\Factory;
 
 class OrderProductFactory extends Factory
 {

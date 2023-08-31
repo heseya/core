@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Country;
 use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;

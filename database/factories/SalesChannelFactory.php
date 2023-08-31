@@ -5,7 +5,6 @@ namespace Database\Factories;
 use Domain\Currency\Currency;
 use Domain\Language\Language;
 use Domain\SalesChannel\Models\SalesChannel;
-use Illuminate\Database\Eloquent\Factories\Factory;
 use Support\Enum\Status;
 
 /**

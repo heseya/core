@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use Domain\Banner\Models\BannerMedia;
-use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\App;
 
 /**

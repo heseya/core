@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\PaymentMethod;
-use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 class PaymentMethodFactory extends Factory
@@ -33,5 +32,19 @@ class PaymentMethodFactory extends Factory
             'icon' => 'https://picsum.photos/seed/' . mt_rand(0, 999999) . '/800',
             'url' => $this->faker->url,
         ];
+    }
+
+    public function allMethods(): static
+    {
+        return $this->forEachSequence([
+            'name' => 'Przelewy24',
+            'alias' =>  Str::slug('Przelewy24')
+        ], [
+            'name' => 'Bluemedia',
+            'alias' =>  Str::slug('Bluemedia')
+        ], [
+            'name' => 'PayNow',
+            'alias' =>  Str::slug('PayNow')
+        ]);
     }
 }
