@@ -339,6 +339,7 @@ class ShippingMethodTest extends TestCase
             'shipping_type' => ShippingType::DIGITAL->value,
             'shipping_time_max' => 0,
             'shipping_time_min' => 0,
+            'payment_on_delivery' => false,
         ];
 
         $this->actingAs($this->{$user})->postJson(
