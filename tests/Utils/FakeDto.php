@@ -49,6 +49,7 @@ final readonly class FakeDto
             'public' => $faker->boolean,
             'block_list' => $faker->boolean,
             'price_ranges' => [$priceRange],
+            'payment_on_delivery' => false,
         ]);
     }
 
@@ -134,8 +135,8 @@ final readonly class FakeDto
     }
 
     /**
-     * @param array<int,PriceDto>|array<int,array<string,int|string>> $data 
-     * 
+     * @param array<int,PriceDto>|array<int,array<string,int|string>> $data
+     *
      * @return array<int,array<string,int|string>>
      */
     public static function generatePricesInAllCurrencies(array $data = [], BigDecimal|int|float|null $amount = null): array
