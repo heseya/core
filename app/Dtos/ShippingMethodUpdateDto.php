@@ -36,6 +36,7 @@ class ShippingMethodUpdateDto extends Dto implements InstantiateFromRequest
         public readonly string|null $app_id = null,
 
         public readonly array|Missing $metadata = new Missing(),
+        public bool|Missing $payment_on_delivery = new Missing(),
     ) {}
 
     /**
@@ -69,6 +70,7 @@ class ShippingMethodUpdateDto extends Dto implements InstantiateFromRequest
             shipping_points: $request->input('shipping_points'),
             app_id: $user instanceof App ? $user->id : null,
             metadata: self::mapMetadata($request),
+            payment_on_delivery: $request->input('payment_on_delivery', new Missing()),
         );
     }
 

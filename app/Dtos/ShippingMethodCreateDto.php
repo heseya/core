@@ -27,6 +27,7 @@ class ShippingMethodCreateDto extends Dto implements InstantiateFromRequest
         public readonly string $shipping_type,
         /** @var PriceRangeDto[] $price_ranges */
         public readonly array $price_ranges,
+        public readonly bool $payment_on_delivery,
         public readonly ?array $payment_methods = null,
         public readonly ?array $countries = null,
         public readonly int|Missing $shipping_time_min = new Missing(),
@@ -68,6 +69,7 @@ class ShippingMethodCreateDto extends Dto implements InstantiateFromRequest
             shipping_points: $request->input('shipping_points'),
             app_id: $user instanceof App ? $user->id : null,
             metadata: self::mapMetadata($request),
+            payment_on_delivery: $request->input('payment_on_delivery'),
         );
     }
 

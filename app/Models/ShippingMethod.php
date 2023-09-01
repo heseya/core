@@ -46,7 +46,9 @@ class ShippingMethod extends Model
         'integration_key',
         'app_id',
         'shipping_type',
+        'payment_on_delivery',
     ];
+
     /**
      * The attributes that should be cast to native types.
      *
@@ -56,6 +58,7 @@ class ShippingMethod extends Model
         'public' => 'boolean',
         'block_list' => 'boolean',
         'shipping_type' => ShippingType::class,
+        'payment_on_delivery' => 'boolean',
     ];
 
     /** @var array<string, class-string> */

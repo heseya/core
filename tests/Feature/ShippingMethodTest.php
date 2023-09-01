@@ -475,6 +475,7 @@ class ShippingMethodTest extends TestCase
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
             'shipping_type' => ShippingType::ADDRESS->value,
+            'payment_on_delivery' => true,
         ];
 
         $response = $this->actingAs($this->{$user})
@@ -521,6 +522,7 @@ class ShippingMethodTest extends TestCase
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
             'shipping_type' => ShippingType::ADDRESS->value,
+            'payment_on_delivery' => false,
             'metadata' => [
                 'attributeMeta' => 'attributeValue',
             ],
@@ -551,6 +553,7 @@ class ShippingMethodTest extends TestCase
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
             'shipping_type' => ShippingType::ADDRESS->value,
+            'payment_on_delivery' => true,
             'metadata_private' => [
                 'attributeMetaPriv' => 'attributeValue',
             ],
@@ -581,6 +584,7 @@ class ShippingMethodTest extends TestCase
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
             'shipping_type' => ShippingType::ADDRESS->value,
+            'payment_on_delivery' => true,
         ];
 
         $response = $this->actingAs($this->{$user})
@@ -613,6 +617,7 @@ class ShippingMethodTest extends TestCase
                 'shipping_time_max' => 2,
                 'shipping_type' => ShippingType::ADDRESS->value,
                 'price_ranges' => $this->priceRanges,
+                'payment_on_delivery' => false,
             ]);
 
         $response->assertStatus(422);
@@ -632,6 +637,7 @@ class ShippingMethodTest extends TestCase
             'shipping_time_min' => 2,
             'shipping_time_max' => 2,
             'shipping_type' => ShippingType::ADDRESS->value,
+            'payment_on_delivery' => false,
         ];
 
         $response = $this->actingAs($this->{$user})
@@ -665,6 +671,7 @@ class ShippingMethodTest extends TestCase
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
             'shipping_type' => ShippingType::POINT->value,
+            'payment_on_delivery' => false,
         ];
         $shipping_points = [
             'shipping_points' => [
