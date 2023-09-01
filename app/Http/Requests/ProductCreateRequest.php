@@ -13,7 +13,9 @@ use App\Rules\UniqueIdInRequest;
 use App\Traits\MetadataRules;
 use App\Traits\SeoRules;
 use Brick\Math\BigDecimal;
+use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ProductCreateRequest extends FormRequest implements MetadataRequestContract, SeoRequestContract
 {
@@ -76,6 +78,12 @@ class ProductCreateRequest extends FormRequest implements MetadataRequestContrac
 
                 'related_sets' => ['array'],
                 'related_sets.*' => ['uuid', 'exists:product_sets,id'],
+
+                'sales_channels' => ['array'],
+                'sales_channels.*' => ['array'],
+                'sales_channels.*.id' => ['uuid', Rule::exists(SalesChannel::class, 'id')],
+                'sales_channels.*.active' => ['boolean'],
+                'sales_channels.*.public' => ['boolean'],
             ],
         );
     }

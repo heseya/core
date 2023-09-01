@@ -7,8 +7,10 @@ namespace Domain\SalesChannel\Models;
 use App\Models\Country;
 use App\Models\Interfaces\Translatable;
 use App\Models\Model;
+use App\Models\Product;
 use App\Traits\CustomHasTranslations;
 use Domain\Language\Language;
+use Domain\Product\Models\ProductSalesChannel;
 use Domain\SalesChannel\Criteria\CountrySearch;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
@@ -81,5 +83,17 @@ final class SalesChannel extends Model implements Translatable
             'id',
             'code',
         );
+    }
+
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Product::class,
+            (new ProductSalesChannel())->getTable(),
+            'sales_channel_id',
+            'product_id',
+        )
+            ->using(ProductSalesChannel::class)
+            ->withPivot(['active', 'public']);
     }
 }

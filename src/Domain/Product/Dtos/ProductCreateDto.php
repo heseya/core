@@ -71,6 +71,8 @@ final class ProductCreateDto extends Data
         #[Rule(new Translations(['name']))]
         public array $translations = [],
         public array $published = [],
+        #[DataCollectionOf(ProductSalesChannelDto::class)]
+        public DataCollection|Optional $sales_channels = new Optional(),
     ) {
         $this->metadata_computed = Map::toMetadata($metadata_public, $metadata_private);
     }

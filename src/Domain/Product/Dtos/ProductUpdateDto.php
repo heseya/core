@@ -60,6 +60,8 @@ final class ProductUpdateDto extends Data
         public array|Optional $related_sets,
         public array|Optional $translations = [],
         public array|Optional $published = [],
+        #[DataCollectionOf(ProductSalesChannelDto::class)]
+        public DataCollection|Optional $sales_channels = new Optional(),
     ) {
         $this->metadata_computed = new Optional();
     }

@@ -25,6 +25,7 @@ use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\Product\Dtos\ProductCreateDto;
+use Domain\Product\Dtos\ProductSalesChannelDto;
 use Domain\Product\Dtos\ProductUpdateDto;
 use Domain\ProductAttribute\Services\AttributeService;
 use Domain\Seo\SeoMetadataService;
@@ -246,6 +247,16 @@ final class ProductService
             $this->productRepository->setProductPrices($product->getKey(), [
                 ProductPriceType::PRICE_BASE->value => $dto->prices_base->items(),
             ]);
+        }
+
+        if ($dto->sales_channels instanceof DataCollection) {
+            $sales_channels = $dto->sales_channels->reduce(fn (array $reduced, ProductSalesChannelDto $dto) => $reduced + [
+                $dto->id => [
+                    'active' => $dto->active,
+                    'public' => $dto->public,
+                ],
+            ], []);
+            $product->salesChannels()->sync($sales_channels);
         }
 
         $this->updateMinMaxPrices($product);

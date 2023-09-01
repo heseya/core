@@ -33,8 +33,10 @@ use App\Traits\HasSeoMetadata;
 use App\Traits\Sortable;
 use Domain\Page\Page;
 use Domain\Price\Enums\ProductPriceType;
+use Domain\Product\Models\ProductSalesChannel;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductSet\ProductSet;
+use Domain\SalesChannel\Models\SalesChannel;
 use Domain\Tag\Models\Tag;
 use Heseya\Searchable\Criteria\Equals;
 use Heseya\Searchable\Criteria\Like;
@@ -306,5 +308,16 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     public function pricesMaxInitial(): MorphMany
     {
         return $this->prices()->where('price_type', ProductPriceType::PRICE_MAX_INITIAL->value);
+    }
+
+    public function salesChannels(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            SalesChannel::class,
+            (new ProductSalesChannel())->getTable(),
+            'product_id',
+            'sales_channel_id',
+        )->using(ProductSalesChannel::class)
+            ->withPivot(['active', 'public']);
     }
 }
