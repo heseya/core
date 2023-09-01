@@ -31,6 +31,7 @@ class ShippingMethodUpdateDto extends Dto implements InstantiateFromRequest
     protected string|null $app_id;
 
     protected array|Missing $metadata;
+    public bool|Missing $payment_on_delivery;
 
     public static function instantiateFromRequest(
         FormRequest|ShippingMethodStoreRequest|ShippingMethodUpdateRequest $request,
@@ -52,6 +53,7 @@ class ShippingMethodUpdateDto extends Dto implements InstantiateFromRequest
             integration_key: $request->input('integration_key'),
             app_id: $user instanceof App ? Auth::id() : null,
             metadata: self::mapMetadata($request),
+            payment_on_delivery: $request->input('payment_on_delivery', new Missing()),
         );
     }
 

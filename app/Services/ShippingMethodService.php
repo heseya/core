@@ -87,7 +87,7 @@ readonly class ShippingMethodService implements ShippingMethodServiceContract
             $this->syncShippingPoints($shippingMethodDto, $shippingMethod);
         }
 
-        if ($shippingMethodDto->getPaymentMethods() !== null) {
+        if (!$shippingMethod->payment_on_delivery && $shippingMethodDto->getPaymentMethods() !== null) {
             $shippingMethod->paymentMethods()->sync($shippingMethodDto->getPaymentMethods());
         }
 
@@ -122,8 +122,10 @@ readonly class ShippingMethodService implements ShippingMethodServiceContract
             $this->syncShippingPoints($shippingMethodDto, $shippingMethod);
         }
 
-        if ($shippingMethodDto->getPaymentMethods() !== null) {
+        if (!$shippingMethod->payment_on_delivery && $shippingMethodDto->getPaymentMethods() !== null) {
             $shippingMethod->paymentMethods()->sync($shippingMethodDto->getPaymentMethods());
+        } elseif ($shippingMethod->payment_on_delivery) {
+            $shippingMethod->paymentMethods()->sync([]);
         }
 
         if ($shippingMethodDto->getCountries() !== null) {
