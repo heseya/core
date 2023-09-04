@@ -61,4 +61,12 @@ class SettingsService implements SettingsServiceContract
 
         return $value;
     }
+
+    /**
+     * @return string[]
+     */
+    public function getAdminMails(): array
+    {
+        return explode(';', $this->getSetting('admin_mails')->value);
+    }
 }
