@@ -24,8 +24,10 @@ use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Role;
 use App\Models\Schema;
+use App\Models\Setting;
 use App\Models\ShippingMethod;
 use App\Models\Status;
+use App\Models\User;
 use App\Models\WebHook;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -33,6 +35,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
@@ -156,6 +159,49 @@ class OrderCreateTest extends TestCase
         $listener->handle($event);
 
         Queue::assertNotPushed(CallWebhookJob::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderMailSend($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.add');
+
+        $this->product->update([
+            'price' => 10,
+            'vat_rate' => 23,
+        ]);
+
+        $admin = User::factory()->create();
+
+        Setting::create([
+            'name' => 'admin_mails',
+            'value' => $admin->email,
+            'public' => false,
+        ]);
+
+        $productQuantity = 20;
+
+        Notification::fake();
+        $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+        ])->assertCreated();
+
+        /** @var Order $order */
+        $order = Order::query()->where('id', '=', $response->getData()->data->id)->first();
+        Notification::assertCount(2);
+        Notification::assertSentTo($order, \App\Notifications\OrderCreated::class);
+        Notification::assertSentTo($admin, \App\Notifications\OrderCreated::class);
     }
 
     /**

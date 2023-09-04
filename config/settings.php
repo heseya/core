@@ -105,4 +105,9 @@ return [
         'value' => 0,
         'public' => false,
     ],
+
+    'admin_mails' => [
+        'value' => '',
+        'public' => false,
+    ],
 ];
