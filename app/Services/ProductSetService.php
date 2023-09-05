@@ -24,7 +24,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class ProductSetService implements ProductSetServiceContract
+final readonly class ProductSetService implements ProductSetServiceContract
 {
     public function __construct(
         private SeoMetadataServiceContract $seoMetadataService,
@@ -228,16 +228,7 @@ class ProductSetService implements ProductSetServiceContract
 
     public function attach(ProductSet $set, array $productsIds): Collection
     {
-        // old products for reindexing
-        $oldProductsIds = $set->products()->pluck('id');
-
         $set->products()->sync($productsIds);
-
-        // @phpstan-ignore-next-line
-        Product::query()->whereIn(
-            'id',
-            $oldProductsIds->merge($productsIds)->unique(),
-        )->searchable();
 
         return $set->products;
     }
@@ -248,17 +239,12 @@ class ProductSetService implements ProductSetServiceContract
             $set->children->each(fn ($subset) => $this->delete($subset));
         }
 
-        $productsIds = $set->allProductsIds();
-
         if ($set->delete()) {
             ProductSetDeleted::dispatch($set);
             if ($set->seo !== null) {
                 $this->seoMetadataService->delete($set->seo);
             }
         }
-
-        // @phpstan-ignore-next-line
-        Product::query()->whereIn('id', $productsIds)->searchable();
     }
 
     public function products(ProductSet $set): LengthAwarePaginator
@@ -299,6 +285,7 @@ class ProductSetService implements ProductSetServiceContract
     public function reorderProducts(ProductSet $set, ProductsReorderDto $dto): void
     {
         if (!$dto->getProducts() instanceof Missing) {
+            /** @var Product $product */
             $product = $set->products()->where('id', $dto->getProducts()[0]['id'])->firstOrFail();
             $order = $dto->getProducts()[0]['order'];
             $orderedProductsAmount = $set->products()
@@ -328,12 +315,6 @@ class ProductSetService implements ProductSetServiceContract
 
             $this->assignOrderToNulls($highestOrder, $set->products->whereNull('pivot.order'));
         }
-    }
-
-    public function indexAllProducts(ProductSet $set): void
-    {
-        // @phpstan-ignore-next-line
-        Product::query()->whereIn('id', $set->allProductsIds())->searchable();
     }
 
     private function setHigherOrder(Product $product, int $order): void

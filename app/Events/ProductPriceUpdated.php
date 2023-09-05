@@ -9,11 +9,11 @@ class ProductPriceUpdated extends WebHookEvent
     private string $updatedAt;
 
     public function __construct(
-        private string $id,
-        private ?float $oldPriceMin,
-        private ?float $oldPriceMax,
-        private float $newPriceMin,
-        private float $newPriceMax,
+        private readonly string $id,
+        private readonly ?float $oldPriceMin,
+        private readonly ?float $oldPriceMax,
+        private readonly float $newPriceMin,
+        private readonly float $newPriceMax,
     ) {
         $this->updatedAt = Carbon::now()->toIso8601String();
         parent::__construct();

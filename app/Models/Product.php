@@ -34,11 +34,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
-use JeroenG\Explorer\Application\Explored;
-use JeroenG\Explorer\Application\SearchableFields;
-use JeroenG\Explorer\Domain\Analysis\Analysis;
-use JeroenG\Explorer\Domain\Analysis\Analyzer\StandardAnalyzer;
-use Laravel\Scout\Searchable;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
@@ -152,37 +147,6 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
 
     protected string $defaultSortBy = 'products.order';
     protected string $defaultSortDirection = 'desc';
-
-    public function mappableAs(): array
-    {
-        $searchService = app(ProductSearchServiceContract::class);
-
-        return $searchService->mappableAs();
-    }
-
-    public function toSearchableArray(): array
-    {
-        $searchService = app(ProductSearchServiceContract::class);
-
-        return $searchService->mapSearchableArray($this);
-    }
-
-    public function getSearchableFields(): array
-    {
-        $searchService = app(ProductSearchServiceContract::class);
-
-        return $searchService->searchableFields();
-    }
-
-    public function indexSettings(): array
-    {
-        $analyzer = new StandardAnalyzer('morfologik');
-        $analyzer->setFilters(['lowercase', 'morfologik_stem']);
-
-        return (new Analysis())
-            ->addAnalyzer($analyzer)
-            ->build();
-    }
 
     public function sets(): BelongsToMany
     {

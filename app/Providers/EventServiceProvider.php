@@ -42,7 +42,6 @@ use App\Events\UserCreated;
 use App\Events\UserDeleted;
 use App\Events\UserUpdated;
 use App\Listeners\ItemUpdatedQuantityListener;
-use App\Listeners\MakeSetProductsSearchable;
 use App\Listeners\OrderCreatedListener;
 use App\Listeners\OrderUpdatedStatusListener;
 use App\Listeners\UserCreatedListener;
@@ -83,12 +82,6 @@ class EventServiceProvider extends ServiceProvider
         ],
         ItemUpdatedQuantity::class => [
             ItemUpdatedQuantityListener::class,
-        ],
-        ProductSetCreated::class => [
-            MakeSetProductsSearchable::class,
-        ],
-        ProductSetUpdated::class => [
-            MakeSetProductsSearchable::class,
         ],
         UserCreated::class => [
             UserCreatedListener::class,

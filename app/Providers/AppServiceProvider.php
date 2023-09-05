@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Models\Product;
 use App\Services\AnalyticsService;
 use App\Services\AppService;
 use App\Services\AttributeOptionService;
@@ -106,7 +105,6 @@ use App\Services\UserService;
 use App\Services\WebHookService;
 use App\Services\WishlistService;
 use Illuminate\Support\ServiceProvider;
-use Laravel\Scout\Builder;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -180,19 +178,5 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->isLocal()) {
             $this->app->register('\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider');
         }
-    }
-
-    public function boot(): void
-    {
-        Builder::macro('sort', function (?string $sortString = null) {
-            if ($sortString !== null) {
-                // @phpstan-ignore-next-line
-                return app(SortServiceContract::class)->sort($this, $sortString);
-            }
-
-            return $this;
-        });
-
-        Product::disableSearchSyncing();
     }
 }

@@ -2,32 +2,20 @@
 
 namespace App\Services;
 
-use App\Enums\ExceptionsEnums\Exceptions;
-use App\Exceptions\ClientException;
-use App\Models\Contracts\SortableContract;
 use App\Rules\WhereIn;
 use App\Services\Contracts\SortServiceContract;
-use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use Laravel\Scout\Builder as ScoutBuilder;
+use Illuminate\Validation\ValidationException;
 
 class SortService implements SortServiceContract
 {
     /**
-     * @throws Exception
+     * @throws ValidationException
      */
-    public function sortScout(ScoutBuilder $query, ?string $sortString): Builder|ScoutBuilder
-    {
-        if ($query->model instanceof SortableContract && $sortString !== null) {
-            return $this->sort($query, $sortString, $query->model->getSortable());
-        }
-        throw new ClientException(Exceptions::CLIENT_MODEL_NOT_SORTABLE);
-    }
-
-    public function sort(Builder|ScoutBuilder $query, string $sortString, array $sortable): Builder|ScoutBuilder
+    public function sort(Builder $query, string $sortString, array $sortable): Builder
     {
         $sort = explode(',', $sortString);
 
@@ -59,19 +47,20 @@ class SortService implements SortServiceContract
         )->validate();
     }
 
-    // TODO: refactor this
-    private function addOrder(Builder|ScoutBuilder $query, string $field, string $order): void
+    private function addOrder(Builder $query, string $field, string $order): void
     {
-        if ($query instanceof Builder) {
-            if (Str::startsWith($field, 'set.')) {
-                $this->addSetOrder($query, $field, $order);
-
-                return;
-            } elseif (Str::startsWith($field, 'attribute.')) {
-                $this->addAttributeOrder($query, $field, $order);
-
-                return;
-            }
+        if (Str::contains($field, 'set.')) {
+            $query->leftJoin('product_set_product', function (JoinClause $join) use ($field): void {
+                $join->on('product_set_product.product_id', 'products.id')
+                    ->join('product_sets', function (JoinClause $join) use ($field): void {
+                        $join->on('product_sets.id', 'product_set_product.product_set_id')
+                            ->where('product_sets.slug', Str::after($field, 'set.'));
+                    });
+            })
+                ->select('product_set_product.order AS set_order', 'products.*')
+                ->orderBy('set_order', $order);
+        } else {
+            $query->orderBy($field, $order);
         }
 
         $query->orderBy($field, $order);
