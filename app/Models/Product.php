@@ -19,7 +19,6 @@ use App\Criteria\WhereNotId;
 use App\Criteria\WhereNotSlug;
 use App\Enums\DiscountTargetType;
 use App\Models\Contracts\SortableContract;
-use App\Services\Contracts\ProductSearchServiceContract;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasDiscounts;
 use App\Traits\HasMediaAttachments;
@@ -42,7 +41,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  *
  * @mixin IdeHelperProduct
  */
-class Product extends Model implements AuditableContract, Explored, SearchableFields, SortableContract
+class Product extends Model implements AuditableContract, SortableContract
 {
     use Auditable;
     use HasCriteria;
@@ -52,7 +51,6 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
     use HasMediaAttachments;
     use HasMetadata;
     use HasSeoMetadata;
-    use Searchable;
     use SoftDeletes;
     use Sortable;
 

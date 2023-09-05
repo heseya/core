@@ -32,6 +32,9 @@ class SortService implements SortServiceContract
         return $query;
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function validate(array $field, array $sortable): void
     {
         Validator::make(
@@ -49,18 +52,14 @@ class SortService implements SortServiceContract
 
     private function addOrder(Builder $query, string $field, string $order): void
     {
-        if (Str::contains($field, 'set.')) {
-            $query->leftJoin('product_set_product', function (JoinClause $join) use ($field): void {
-                $join->on('product_set_product.product_id', 'products.id')
-                    ->join('product_sets', function (JoinClause $join) use ($field): void {
-                        $join->on('product_sets.id', 'product_set_product.product_set_id')
-                            ->where('product_sets.slug', Str::after($field, 'set.'));
-                    });
-            })
-                ->select('product_set_product.order AS set_order', 'products.*')
-                ->orderBy('set_order', $order);
-        } else {
-            $query->orderBy($field, $order);
+        if (Str::startsWith($field, 'set.')) {
+            $this->addSetOrder($query, $field, $order);
+
+            return;
+        } elseif (Str::startsWith($field, 'attribute.')) {
+            $this->addAttributeOrder($query, $field, $order);
+
+            return;
         }
 
         $query->orderBy($field, $order);

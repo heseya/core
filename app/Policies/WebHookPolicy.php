@@ -52,6 +52,7 @@ class WebHookPolicy
                 ? Response::allow()
                 : throw new ClientException(Exceptions::CLIENT_WEBHOOK_APP_ACTION, errorArray: ['method' => $method]);
         }
+
         // Webhook stworzony przez użytkownika
         return $user instanceof User
             ? Response::allow()
