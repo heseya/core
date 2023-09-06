@@ -100,7 +100,7 @@ Orders:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Orders.yml#/OrderSummary'
+                  $ref: './../schemas/Orders.yml#/OrderView'
               type: object
 
 OrdersParams:
