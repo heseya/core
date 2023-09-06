@@ -22,6 +22,6 @@ abstract class RedirectEvent extends WebHookEvent
 
     public function getDataType(): string
     {
-        return $this->getModelClass($this->redirect);
+        return Redirect::class;
     }
 }
