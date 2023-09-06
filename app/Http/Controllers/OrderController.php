@@ -104,7 +104,7 @@ class OrderController extends Controller
 
     public function store(OrderCreateRequest $request): JsonResource
     {
-        return OrderPublicResource::make(
+        return OrderResource::make(
             $this->orderService->store(OrderDto::instantiateFromRequest($request)),
         );
     }
