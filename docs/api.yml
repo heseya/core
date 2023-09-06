@@ -442,6 +442,8 @@ components:
       $ref: './schemas/Wishlist.yml#/WishlistProduct'
     UserPreferences:
       $ref: './schemas/Auth.yml#/Preferences'
+    Redirect:
+      $ref: './schemas/Redirects.yml#/Redirect'
   requestBodies:
     AppStore:
       $ref: './requests/Apps.yml#/AppStore'
@@ -477,8 +479,6 @@ components:
       $ref: './requests/Users.yml#/UserUpdate'
     WebHookCreate:
       $ref: './requests/WebHooks.yml#/WebHookCreate'
-    Redirect:
-      $ref: './schemas/Redirects.yml#/Redirect'
   securitySchemes:
     BearerAuth:
       description: 'Use /login to generate bearer token'
