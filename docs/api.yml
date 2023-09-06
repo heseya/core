@@ -239,7 +239,7 @@ paths:
   '/coupons/id:{id}/metadata':
     $ref: './paths/Metadata.yml#/Metadata'
   '/coupons/id:{id}/metadata-private':
-     $ref: './paths/Metadata.yml#/Metadata'
+    $ref: './paths/Metadata.yml#/Metadata'
   '/items/id:{id}/metadata':
     $ref: './paths/Metadata.yml#/Metadata'
   '/items/id:{id}/metadata-private':
@@ -330,6 +330,10 @@ paths:
     $ref: './paths/Wishlist.yml#/WishlistProduct'
   '/wishlist/id:{product_id}':
     $ref: './paths/Wishlist.yml#/WishlistProductParams'
+  /redirects:
+    $ref: './paths/Redirects.yml#/Redirects'
+  '/redirects/id:{id}':
+    $ref: './paths/Redirects.yml#/RedirectsParams'
 components:
   schemas:
     Error:
@@ -473,6 +477,8 @@ components:
       $ref: './requests/Users.yml#/UserUpdate'
     WebHookCreate:
       $ref: './requests/WebHooks.yml#/WebHookCreate'
+    Redirect:
+      $ref: './schemas/Redirects.yml#/Redirect'
   securitySchemes:
     BearerAuth:
       description: 'Use /login to generate bearer token'
