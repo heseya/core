@@ -11,10 +11,10 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class RedirectUpdateDto extends Dto implements InstantiateFromRequest
 {
-    private string|Missing $name;
-    private string|Missing $slug;
-    private string|Missing $url;
+    private Missing|string $name;
+    private Missing|string $slug;
     private int|Missing $type;
+    private Missing|string $url;
 
     public static function instantiateFromRequest(FormRequest|RedirectCreateRequest|RedirectUpdateRequest $request
     ): self {

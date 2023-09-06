@@ -2,6 +2,4 @@
 
 namespace App\Events;
 
-class RedirectUpdated extends RedirectEvent
-{
-}
+class RedirectUpdated extends RedirectEvent {}

@@ -22,10 +22,7 @@ Redirects:
       - Redirects
     summary: 'add new redirect'
     requestBody:
-      content:
-        application/json:
-          schema:
-            $ref: './../schemas/Redirects.yml#/Redirect'
+      $ref: './../requests/Redirects.yml#/RedirectStore'
     responses:
       201:
         description: Created
@@ -68,10 +65,7 @@ RedirectsParams:
           type: string
           format: uuid
     requestBody:
-      content:
-        application/json:
-          schema:
-            $ref: './../schemas/Redirects.yml#/Redirect'
+      $ref: './../requests/Redirects.yml#/RedirectUpdate'
     responses:
       200:
         description: Success

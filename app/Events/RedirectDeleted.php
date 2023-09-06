@@ -2,6 +2,4 @@
 
 namespace App\Events;
 
-class RedirectDeleted extends RedirectEvent
-{
-}
+class RedirectDeleted extends RedirectEvent {}
