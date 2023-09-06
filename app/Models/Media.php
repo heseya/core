@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Criteria\MediaSearch;
 use App\Criteria\MediaWhereHasRelations;
 use App\Criteria\WhereInIds;
 use App\Enums\MediaSource;
@@ -46,6 +47,7 @@ class Media extends Model
         'source',
         'has_relationships' => MediaWhereHasRelations::class,
         'ids' => WhereInIds::class,
+        'search' => MediaSearch::class,
     ];
 
     public function products(): BelongsToMany

@@ -15,6 +15,7 @@ class MediaIndexRequest extends FormRequest
             'has_relationships' => ['boolean'],
             'ids' => ['array'],
             'ids.*' => ['uuid'],
+            'search' => ['string', 'max:255'],
         ];
     }
 }

@@ -73,6 +73,64 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexWithSearchParameter($user): void
+    {
+        $this->{$user}->givePermissionTo('media.show');
+
+        Media::query()->delete();
+
+        $mediaOne = Media::factory()->create([
+            'type' => MediaType::OTHER,
+        ]);
+
+        $mediaTwo = Media::factory()->create([
+            'url' => 'https://example.com',
+        ]);
+
+        $mediaThree = Media::factory()->create([
+            'alt' => 'alt_value',
+        ]);
+
+        $mediaFour = Media::factory()->create([
+            'slug' => 'slug_value',
+        ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/media', [
+            'search' => 'oth',
+        ])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $mediaOne->getKey(),
+            ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/media', [
+            'search' => 'xampl',
+        ])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $mediaTwo->getKey(),
+            ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/media', [
+            'search' => 'alt_val',
+        ])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $mediaThree->getKey(),
+            ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/media', [
+            'search' => 'slug_val',
+        ])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $mediaFour->getKey(),
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexByIds($user): void
     {
         $this->{$user}->givePermissionTo('media.show');
