@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Product;
+use Domain\Product\Enums\ProductSalesChannelStatus;
 use Domain\Product\Models\ProductSalesChannel;
 use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Database\Migrations\Migration;
@@ -18,8 +19,7 @@ return new class extends Migration
             $table->uuid('sales_channel_id')->index();
             $table->uuid('product_id')->index();
 
-            $table->boolean('active')->default(true);
-            $table->boolean('public')->default(true);
+            $table->string('availability_status')->default(ProductSalesChannelStatus::PUBLIC->value);
 
             $table->foreign('sales_channel_id')->references('id')->on((new SalesChannel())->getTable())->onDelete('cascade');
             $table->foreign('product_id')->references('id')->on((new Product())->getTable())->onDelete('cascade');

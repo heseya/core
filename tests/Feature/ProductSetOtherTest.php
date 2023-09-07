@@ -5,12 +5,16 @@ namespace Tests\Feature;
 use App\Listeners\WebHookEventListener;
 use App\Models\Product;
 use App\Models\WebHook;
+use Domain\Product\Enums\ProductSalesChannelStatus;
 use Domain\ProductSet\Events\ProductSetDeleted;
 use Domain\ProductSet\ProductSet;
+use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Domain\Seo\Models\SeoMetadata;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
+use Support\Enum\Status;
 use Tests\TestCase;
 
 class ProductSetOtherTest extends TestCase
@@ -371,6 +375,8 @@ class ProductSetOtherTest extends TestCase
     {
         $this->{$user}->givePermissionTo('product_sets.show_details');
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault() ?? SalesChannel::query()->firstOrCreate(['status' => Status::ACTIVE->value], SalesChannel::factory()->definition());
+
         $set = ProductSet::factory()->create([
             'public' => true,
         ]);
@@ -378,12 +384,17 @@ class ProductSetOtherTest extends TestCase
         $product1 = Product::factory()->create([
             'public' => true,
         ]);
+        $product1->salesChannels()->syncWithPivotValues($salesChannel, ['availability_status' => ProductSalesChannelStatus::PUBLIC->value]);
+
         $product2 = Product::factory()->create([
             'public' => false,
         ]);
-        Product::factory()->create([
+        $product2->salesChannels()->syncWithPivotValues($salesChannel, ['availability_status' => ProductSalesChannelStatus::HIDDEN->value]);
+
+        $product3 = Product::factory()->create([
             'public' => true,
         ]);
+        $product3->salesChannels()->syncWithPivotValues($salesChannel, ['availability_status' => ProductSalesChannelStatus::PUBLIC->value]);
 
         $set->products()->sync([
             $product1->getKey(),
@@ -396,13 +407,14 @@ class ProductSetOtherTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJson(['data' => [
-                [
-                    'id' => $product1->getKey(),
-                    'name' => $product1->name,
-                    'slug' => $product1->slug,
+            ->assertJson([
+                'data' => [
+                    [
+                        'id' => $product1->getKey(),
+                        'name' => $product1->name,
+                        'slug' => $product1->slug,
+                    ],
                 ],
-            ],
             ]);
     }
 
@@ -413,6 +425,8 @@ class ProductSetOtherTest extends TestCase
     {
         $this->{$user}->givePermissionTo('product_sets.show_details');
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault() ?? SalesChannel::query()->firstOrCreate(['status' => Status::ACTIVE->value], SalesChannel::factory()->definition());
+
         $set = ProductSet::factory()->create([
             'public' => true,
         ]);
@@ -420,12 +434,17 @@ class ProductSetOtherTest extends TestCase
         $product1 = Product::factory()->create([
             'public' => true,
         ]);
+        $product1->salesChannels()->syncWithPivotValues($salesChannel, ['availability_status' => ProductSalesChannelStatus::PUBLIC->value]);
+
         $product2 = Product::factory()->create([
             'public' => false,
         ]);
-        Product::factory()->create([
+        $product2->salesChannels()->syncWithPivotValues($salesChannel, ['availability_status' => ProductSalesChannelStatus::HIDDEN->value]);
+
+        $product3 = Product::factory()->create([
             'public' => true,
         ]);
+        $product3->salesChannels()->syncWithPivotValues($salesChannel, ['availability_status' => ProductSalesChannelStatus::PUBLIC->value]);
 
         $set->products()->sync([
             $product1->getKey(),
@@ -448,6 +467,8 @@ class ProductSetOtherTest extends TestCase
     {
         $this->{$user}->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault() ?? SalesChannel::query()->firstOrCreate(['status' => Status::ACTIVE->value], SalesChannel::factory()->definition());
+
         $set = ProductSet::factory()->create([
             'public' => true,
         ]);
@@ -455,9 +476,12 @@ class ProductSetOtherTest extends TestCase
         $product1 = Product::factory()->create([
             'public' => true,
         ]);
+        $product1->salesChannels()->syncWithPivotValues($salesChannel, ['availability_status' => ProductSalesChannelStatus::PUBLIC->value]);
+
         $product2 = Product::factory()->create([
             'public' => false,
         ]);
+        $product2->salesChannels()->syncWithPivotValues($salesChannel, ['availability_status' => ProductSalesChannelStatus::HIDDEN->value]);
 
         $set->products()->sync([
             $product1->getKey(),

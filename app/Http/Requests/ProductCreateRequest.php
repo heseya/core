@@ -13,6 +13,7 @@ use App\Rules\UniqueIdInRequest;
 use App\Traits\MetadataRules;
 use App\Traits\SeoRules;
 use Brick\Math\BigDecimal;
+use Domain\Product\Enums\ProductSalesChannelStatus;
 use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -82,8 +83,7 @@ class ProductCreateRequest extends FormRequest implements MetadataRequestContrac
                 'sales_channels' => ['array'],
                 'sales_channels.*' => ['array'],
                 'sales_channels.*.id' => ['uuid', Rule::exists(SalesChannel::class, 'id')],
-                'sales_channels.*.active' => ['boolean'],
-                'sales_channels.*.public' => ['boolean'],
+                'sales_channels.*.availability_status' => ['string', Rule::enum(ProductSalesChannelStatus::class)],
             ],
         );
     }

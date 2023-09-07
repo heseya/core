@@ -33,6 +33,7 @@ use App\Traits\HasSeoMetadata;
 use App\Traits\Sortable;
 use Domain\Page\Page;
 use Domain\Price\Enums\ProductPriceType;
+use Domain\Product\Enums\ProductSalesChannelStatus;
 use Domain\Product\Models\ProductSalesChannel;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductSet\ProductSet;
@@ -47,6 +48,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
 
 /**
  * @property string $name
@@ -78,7 +80,6 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'slug',
         'description_html',
         'description_short',
-        'public',
         'quantity_step',
         'google_product_category',
         'available',
@@ -100,7 +101,6 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
 
     protected $casts = [
         'shipping_date' => 'date',
-        'public' => 'bool',
         'available' => 'bool',
         'quantity_step' => 'float',
         'published' => 'array',
@@ -116,7 +116,6 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'created_at',
         'updated_at',
         'order',
-        'public',
         'available',
         'attribute.*',
         'set.*',
@@ -128,7 +127,6 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'ids' => WhereInIds::class,
         'slug' => Like::class,
         'name' => TranslatedLike::class,
-        'public' => Equals::class,
         'available' => Equals::class,
         'sets' => WhereHasSlug::class,
         'sets_not' => WhereNotSlug::class,
@@ -206,7 +204,13 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
 
     public function scopePublic(Builder $query): Builder
     {
-        return $query->where('public', true);
+        $salesChannel = Config::get('sales-channel.model');
+
+        if ($salesChannel instanceof SalesChannel) {
+            $query->whereHas('salesChannels', fn (Builder $subquery) => $subquery->where('sales_channel_id', $salesChannel->getKey())->where('availability_status', ProductSalesChannelStatus::PUBLIC->value));
+        }
+
+        return $query;
     }
 
     public function attributes(): BelongsToMany
@@ -318,6 +322,6 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
             'product_id',
             'sales_channel_id',
         )->using(ProductSalesChannel::class)
-            ->withPivot(['active', 'public']);
+            ->withPivot(['availability_status']);
     }
 }

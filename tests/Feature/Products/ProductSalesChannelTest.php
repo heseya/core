@@ -7,6 +7,7 @@ use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Domain\Currency\Currency;
+use Domain\Product\Enums\ProductSalesChannelStatus;
 use Domain\Product\Models\ProductSalesChannel;
 use Domain\SalesChannel\Models\SalesChannel;
 use Heseya\Dto\DtoException;
@@ -44,8 +45,7 @@ class ProductSalesChannelTest extends TestCase
             'sales_channels' => [
                 [
                     'id' => $sales_channel->getKey(),
-                    'active' => false,
-                    'public' => false,
+                    'availability_status' => ProductSalesChannelStatus::DISABLED->value,
                 ]
             ]
         ];
@@ -59,8 +59,7 @@ class ProductSalesChannelTest extends TestCase
         $this->assertDatabaseHas(ProductSalesChannel::class, [
             'product_id' => $response->json('data.id'),
             'sales_channel_id' => $sales_channel->getKey(),
-            'active' => false,
-            'public' => false,
+            'availability_status' => ProductSalesChannelStatus::DISABLED->value,
         ]);
     }
 
@@ -86,8 +85,7 @@ class ProductSalesChannelTest extends TestCase
             'sales_channels' => [
                 [
                     'id' => $sales_channel->getKey(),
-                    'active' => false,
-                    'public' => false,
+                    'availability_status' => ProductSalesChannelStatus::HIDDEN->value,
                 ]
             ]
         ];
@@ -101,8 +99,7 @@ class ProductSalesChannelTest extends TestCase
         $this->assertDatabaseHas(ProductSalesChannel::class, [
             'product_id' => $product->getKey(),
             'sales_channel_id' => $sales_channel->getKey(),
-            'active' => false,
-            'public' => false,
+            'availability_status' => ProductSalesChannelStatus::HIDDEN->value,
         ]);
     }
 }

@@ -38,6 +38,7 @@ final class ProductUpdateDto extends Data
      * @param string[]|Optional $related_sets
      * @param array<string,string[]>|Optional $translations
      * @param string[]|Optional $published
+     * @param DataCollection<int,ProductSalesChannelDto> $sales_channels
      */
     public function __construct(
         public Optional|string $slug,

@@ -54,6 +54,13 @@ final class SalesChannelRepository
             ->paginate(Config::get('pagination.per_page'));
     }
 
+    // TODO: is it possible for this function to return null in properly configured application?
+    public function getDefault(): ?SalesChannel
+    {
+        return SalesChannel::query()->where('slug', 'default')->first()
+            ?? SalesChannel::query()->where('status', '=', Status::ACTIVE->value)->first();
+    }
+
     public function store(SalesChannelCreateDto $dto): SalesChannel
     {
         $channel = new SalesChannel($dto->toArray());

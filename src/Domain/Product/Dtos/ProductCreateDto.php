@@ -44,6 +44,7 @@ final class ProductCreateDto extends Data
      * @param string[]|Optional $metadata_private
      * @param array<string,string[]> $translations
      * @param string[] $published
+     * @param DataCollection<int,ProductSalesChannelDto> $sales_channels
      */
     public function __construct(
         public string $slug,

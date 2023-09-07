@@ -41,6 +41,7 @@ final class ProductSearchDto extends Data
         public Optional|string $name,
         public bool|Optional $public,
         public bool|Optional $available,
+        public bool|Optional $all,
         public bool|Optional $has_cover,
         public bool|Optional $has_items,
         public bool|Optional $has_schemas,

@@ -12,6 +12,7 @@ use App\Http\Middleware\TrimStrings;
 use App\Http\Middleware\TrustProxies;
 use App\Http\Middleware\UndotParams;
 use App\Http\Middleware\UserAccessRestrict;
+use Domain\SalesChannel\Middleware\WithSalesChannel;
 use Heseya\Pagination\Http\Middleware\Pagination;
 use Illuminate\Auth\Middleware\Authorize;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
@@ -36,6 +37,7 @@ class Kernel extends HttpKernel
         HandleCors::class,
         ValidatePostSize::class,
         AcceptLanguage::class,
+        WithSalesChannel::class,
         TrustProxies::class,
         TrimStrings::class,
         ConvertEmptyStringsToNull::class,

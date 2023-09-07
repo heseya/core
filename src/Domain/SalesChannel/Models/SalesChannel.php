@@ -85,6 +85,9 @@ final class SalesChannel extends Model implements Translatable
         );
     }
 
+    /**
+     * @return BelongsToMany<Product>
+     */
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -94,6 +97,6 @@ final class SalesChannel extends Model implements Translatable
             'product_id',
         )
             ->using(ProductSalesChannel::class)
-            ->withPivot(['active', 'public']);
+            ->withPivot(['availability_status']);
     }
 }

@@ -27,10 +27,13 @@ use Domain\Price\Enums\ProductPriceType;
 use Domain\Product\Dtos\ProductCreateDto;
 use Domain\Product\Dtos\ProductSalesChannelDto;
 use Domain\Product\Dtos\ProductUpdateDto;
+use Domain\Product\Models\ProductSalesChannel;
 use Domain\ProductAttribute\Services\AttributeService;
+use Domain\SalesChannel\Models\SalesChannel;
 use Domain\Seo\SeoMetadataService;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\Optional;
@@ -252,8 +255,7 @@ final class ProductService
         if ($dto->sales_channels instanceof DataCollection) {
             $sales_channels = $dto->sales_channels->reduce(fn (array $reduced, ProductSalesChannelDto $dto) => $reduced + [
                 $dto->id => [
-                    'active' => $dto->active,
-                    'public' => $dto->public,
+                    'availability_status' => $dto->availability_status,
                 ],
             ], []);
             $product->salesChannels()->sync($sales_channels);
@@ -392,5 +394,14 @@ final class ProductService
         }) ?? $bestMin;
 
         return [$bestMin, $bestMax];
+    }
+
+    public function productIsHiddenInSalesChannel(Product $product, ?SalesChannel $salesChannel = null)
+    {
+        $salesChannel ??= Config::get('sales-channel.model');
+
+        return empty($salesChannel)
+            ? !$product->public
+            : (ProductSalesChannel::query()->forProductAndSalesChannel($product, $salesChannel)->first()?->hidden ?? false);
     }
 }

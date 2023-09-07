@@ -80,7 +80,7 @@ class PerformanceTest extends TestCase
             ->assertOk();
 
         // TODO: From 31 up to 1533... prices as a relation kind of suck
-        $this->assertQueryCountLessThan(1535);
+        $this->assertQueryCountLessThan(1537);
     }
 
     public function testIndexPerformanceListAttribute500(): void
@@ -254,7 +254,7 @@ class PerformanceTest extends TestCase
             ->assertOk();
 
         // TODO: this should be improved
-        $this->assertQueryCountLessThan(13);
+        $this->assertQueryCountLessThan(15);
     }
 
     public function testIndexPerformanceDiscount(): void
@@ -808,6 +808,6 @@ class PerformanceTest extends TestCase
             ->json('GET', '/items/id:' . $productItem->getKey())
             ->assertOk();
 
-        $this->assertQueryCountLessThan(22);
+        $this->assertQueryCountLessThan(23);
     }
 }

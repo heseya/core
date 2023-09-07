@@ -15,6 +15,8 @@ use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\Price\PriceRepository;
 use Domain\Product\Dtos\ProductSearchDto;
+use Domain\Product\Enums\ProductSalesChannelStatus;
+use Domain\Product\Models\ProductSalesChannel;
 use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -33,11 +35,26 @@ class ProductRepository implements ProductRepositoryContract
 
     public function search(ProductSearchDto $dto): LengthAwarePaginator
     {
-        $query = Product::searchByCriteria($dto->except('sort')->toArray() + $this->getPublishedLanguageFilter('products'))
+        $query = Product::searchByCriteria($dto->except('sort', 'public', 'all')->toArray() + $this->getPublishedLanguageFilter('products'))
             ->with(['attributes', 'metadata', 'media', 'tags', 'items', 'pricesBase', 'pricesMin', 'pricesMax', 'pricesMinInitial', 'pricesMaxInitial']);
 
+        $salesChannel = Config::get('sales-channel.model');
+
         if (Gate::denies('products.show_hidden')) {
-            $query->where('products.public', true);
+            $query->whereHas('salesChannels', fn (Builder $subquery) => $subquery
+                ->where('sales_channel_id', $salesChannel->getKey())
+                ->where(app(ProductSalesChannel::class)->qualifyColumn('availability_status'), ProductSalesChannelStatus::PUBLIC->value));
+        } elseif (!$dto->all) {
+            $query->whereHas('salesChannels', function (Builder $subquery) use ($salesChannel, $dto) {
+                $subquery->where('sales_channel_id', $salesChannel->getKey());
+                if ($dto->public) {
+                    $subquery->where(app(ProductSalesChannel::class)->qualifyColumn('availability_status'), '=', ProductSalesChannelStatus::PUBLIC->value);
+                } else {
+                    $subquery->where(app(ProductSalesChannel::class)->qualifyColumn('availability_status'), '!=', ProductSalesChannelStatus::DISABLED->value);
+                }
+
+                return $subquery;
+            });
         }
 
         if (is_string($dto->price_sort_direction)) {
