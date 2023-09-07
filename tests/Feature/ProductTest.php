@@ -41,12 +41,20 @@ class ProductTest extends TestCase
 {
     private Product $product;
     private Product $hidden_product;
-
     private array $expected;
     private array $expected_short;
-
     private ProductServiceContract $productService;
     private DiscountServiceContract $discountService;
+
+    public static function noIndexProvider(): array
+    {
+        return [
+            'as user no index' => ['user', true],
+            'as application no index' => ['application', true],
+            'as user index' => ['user', false],
+            'as application index' => ['application', false],
+        ];
+    }
 
     public function setUp(): void
     {
@@ -61,7 +69,7 @@ class ProductTest extends TestCase
         $this->product = Product::factory()->create([
             'shipping_digital' => false,
             'public' => true,
-            'order' => 1,
+            'created_at' => now()->subHours(5),
         ]);
 
         $schema = $this->product->schemas()->create([
@@ -169,40 +177,43 @@ class ProductTest extends TestCase
             'description_html' => $this->product->description_html,
             'description_short' => $this->product->description_short,
             'gallery' => [],
-            'schemas' => [[
-                'name' => 'Rozmiar',
-                'type' => 'select',
-                'required' => true,
-                'available' => true,
-                'price' => 0,
-                'metadata' => [],
-                'options' => [
-                    [
-                        'name' => 'XL',
-                        'price' => 0,
-                        'disabled' => false,
-                        'available' => true,
-                        'items' => [[
-                            'name' => 'Koszulka XL',
-                            'sku' => 'K001/XL',
+            'schemas' => [
+                [
+                    'name' => 'Rozmiar',
+                    'type' => 'select',
+                    'required' => true,
+                    'available' => true,
+                    'price' => 0,
+                    'metadata' => [],
+                    'options' => [
+                        [
+                            'name' => 'XL',
+                            'price' => 0,
+                            'disabled' => false,
+                            'available' => true,
+                            'items' => [
+                                [
+                                    'name' => 'Koszulka XL',
+                                    'sku' => 'K001/XL',
+                                ],
+                            ],
+                            'metadata' => [],
                         ],
+                        [
+                            'name' => 'L',
+                            'price' => 0,
+                            'disabled' => false,
+                            'available' => false,
+                            'items' => [
+                                [
+                                    'name' => 'Koszulka L',
+                                    'sku' => 'K001/L',
+                                ],
+                            ],
+                            'metadata' => [],
                         ],
-                        'metadata' => [],
-                    ],
-                    [
-                        'name' => 'L',
-                        'price' => 0,
-                        'disabled' => false,
-                        'available' => false,
-                        'items' => [[
-                            'name' => 'Koszulka L',
-                            'sku' => 'K001/L',
-                        ],
-                        ],
-                        'metadata' => [],
                     ],
                 ],
-            ],
             ],
             'metadata' => [
                 $metadata->name => $metadata->value,
@@ -237,7 +248,7 @@ class ProductTest extends TestCase
             ->assertJsonCount(2, 'data')
             ->assertJson([
                 'data' => [
-                    0 => $this->expected_short,
+                    1 => $this->expected_short,
                 ],
             ])->assertJsonFragment([
                 'price_min' => $this->product->price_min,
@@ -426,34 +437,35 @@ class ProductTest extends TestCase
             ->actingAs($this->{$user})
             ->getJson('/products/' . $product->slug)
             ->assertOk()
-            ->assertJsonFragment(['sets' => [
-                [
-                    'id' => $set1->getKey(),
-                    'name' => $set1->name,
-                    'slug' => $set1->slug,
-                    'slug_suffix' => $set1->slugSuffix,
-                    'slug_override' => $set1->slugOverride,
-                    'public' => $set1->public,
-                    'visible' => $set1->public_parent && $set1->public,
-                    'parent_id' => $set1->parent_id,
-                    'children_ids' => [],
-                    'cover' => null,
-                    'metadata' => [],
+            ->assertJsonFragment([
+                'sets' => [
+                    [
+                        'id' => $set1->getKey(),
+                        'name' => $set1->name,
+                        'slug' => $set1->slug,
+                        'slug_suffix' => $set1->slugSuffix,
+                        'slug_override' => $set1->slugOverride,
+                        'public' => $set1->public,
+                        'visible' => $set1->public_parent && $set1->public,
+                        'parent_id' => $set1->parent_id,
+                        'children_ids' => [],
+                        'cover' => null,
+                        'metadata' => [],
+                    ],
+                    [
+                        'id' => $set2->getKey(),
+                        'name' => $set2->name,
+                        'slug' => $set2->slug,
+                        'slug_suffix' => $set2->slugSuffix,
+                        'slug_override' => $set2->slugOverride,
+                        'public' => $set2->public,
+                        'visible' => $set2->public_parent && $set2->public,
+                        'parent_id' => $set2->parent_id,
+                        'children_ids' => [],
+                        'cover' => null,
+                        'metadata' => [],
+                    ],
                 ],
-                [
-                    'id' => $set2->getKey(),
-                    'name' => $set2->name,
-                    'slug' => $set2->slug,
-                    'slug_suffix' => $set2->slugSuffix,
-                    'slug_override' => $set2->slugOverride,
-                    'public' => $set2->public,
-                    'visible' => $set2->public_parent && $set2->public,
-                    'parent_id' => $set2->parent_id,
-                    'children_ids' => [],
-                    'cover' => null,
-                    'metadata' => [],
-                ],
-            ],
             ]);
     }
 
@@ -481,21 +493,22 @@ class ProductTest extends TestCase
             ->actingAs($this->{$user})
             ->getJson('/products/' . $product->slug)
             ->assertOk()
-            ->assertJsonFragment(['sets' => [
-                [
-                    'id' => $set1->getKey(),
-                    'name' => $set1->name,
-                    'slug' => $set1->slug,
-                    'slug_suffix' => $set1->slugSuffix,
-                    'slug_override' => $set1->slugOverride,
-                    'public' => $set1->public,
-                    'visible' => $set1->public_parent && $set1->public,
-                    'parent_id' => $set1->parent_id,
-                    'children_ids' => [],
-                    'cover' => null,
-                    'metadata' => [],
+            ->assertJsonFragment([
+                'sets' => [
+                    [
+                        'id' => $set1->getKey(),
+                        'name' => $set1->name,
+                        'slug' => $set1->slug,
+                        'slug_suffix' => $set1->slugSuffix,
+                        'slug_override' => $set1->slugOverride,
+                        'public' => $set1->public,
+                        'visible' => $set1->public_parent && $set1->public,
+                        'parent_id' => $set1->parent_id,
+                        'children_ids' => [],
+                        'cover' => null,
+                        'metadata' => [],
+                    ],
                 ],
-            ],
             ]);
     }
 
@@ -523,34 +536,35 @@ class ProductTest extends TestCase
             ->actingAs($this->{$user})
             ->getJson('/products/' . $product->slug)
             ->assertOk()
-            ->assertJsonFragment(['sets' => [
-                [
-                    'id' => $set1->getKey(),
-                    'name' => $set1->name,
-                    'slug' => $set1->slug,
-                    'slug_suffix' => $set1->slugSuffix,
-                    'slug_override' => $set1->slugOverride,
-                    'public' => $set1->public,
-                    'visible' => $set1->public_parent && $set1->public,
-                    'parent_id' => $set1->parent_id,
-                    'children_ids' => [],
-                    'cover' => null,
-                    'metadata' => [],
+            ->assertJsonFragment([
+                'sets' => [
+                    [
+                        'id' => $set1->getKey(),
+                        'name' => $set1->name,
+                        'slug' => $set1->slug,
+                        'slug_suffix' => $set1->slugSuffix,
+                        'slug_override' => $set1->slugOverride,
+                        'public' => $set1->public,
+                        'visible' => $set1->public_parent && $set1->public,
+                        'parent_id' => $set1->parent_id,
+                        'children_ids' => [],
+                        'cover' => null,
+                        'metadata' => [],
+                    ],
+                    [
+                        'id' => $set2->getKey(),
+                        'name' => $set2->name,
+                        'slug' => $set2->slug,
+                        'slug_suffix' => $set2->slugSuffix,
+                        'slug_override' => $set2->slugOverride,
+                        'public' => $set2->public,
+                        'visible' => $set2->public_parent && $set2->public,
+                        'parent_id' => $set2->parent_id,
+                        'children_ids' => [],
+                        'cover' => null,
+                        'metadata' => [],
+                    ],
                 ],
-                [
-                    'id' => $set2->getKey(),
-                    'name' => $set2->name,
-                    'slug' => $set2->slug,
-                    'slug_suffix' => $set2->slugSuffix,
-                    'slug_override' => $set2->slugOverride,
-                    'public' => $set2->public,
-                    'visible' => $set2->public_parent && $set2->public,
-                    'parent_id' => $set2->parent_id,
-                    'children_ids' => [],
-                    'cover' => null,
-                    'metadata' => [],
-                ],
-            ],
             ]);
     }
 
@@ -590,50 +604,51 @@ class ProductTest extends TestCase
             ->getJson('/products/' . $product->slug);
         $response
             ->assertOk()
-            ->assertJsonFragment(['sets' => [
-                [
-                    'id' => $set1->getKey(),
-                    'name' => $set1->name,
-                    'slug' => $set1->slug,
-                    'slug_suffix' => $set1->slugSuffix,
-                    'slug_override' => $set1->slugOverride,
-                    'public' => $set1->public,
-                    'visible' => $set1->public_parent && $set1->public,
-                    'parent_id' => $set1->parent_id,
-                    'children_ids' => [],
-                    'metadata' => [],
-                    'cover' => [
-                        'id' => $media1->getKey(),
-                        'type' => $media1->type->value,
-                        'url' => $media1->url,
-                        'slug' => $media1->slug,
-                        'alt' => $media1->alt,
-                        'source' => $media1->source->value,
+            ->assertJsonFragment([
+                'sets' => [
+                    [
+                        'id' => $set1->getKey(),
+                        'name' => $set1->name,
+                        'slug' => $set1->slug,
+                        'slug_suffix' => $set1->slugSuffix,
+                        'slug_override' => $set1->slugOverride,
+                        'public' => $set1->public,
+                        'visible' => $set1->public_parent && $set1->public,
+                        'parent_id' => $set1->parent_id,
+                        'children_ids' => [],
                         'metadata' => [],
+                        'cover' => [
+                            'id' => $media1->getKey(),
+                            'type' => $media1->type->value,
+                            'url' => $media1->url,
+                            'slug' => $media1->slug,
+                            'alt' => $media1->alt,
+                            'source' => $media1->source->value,
+                            'metadata' => [],
+                        ],
+                    ],
+                    [
+                        'id' => $set2->getKey(),
+                        'name' => $set2->name,
+                        'slug' => $set2->slug,
+                        'slug_suffix' => $set2->slugSuffix,
+                        'slug_override' => $set2->slugOverride,
+                        'public' => $set2->public,
+                        'visible' => $set2->public_parent && $set2->public,
+                        'parent_id' => $set2->parent_id,
+                        'children_ids' => [],
+                        'metadata' => [],
+                        'cover' => [
+                            'id' => $media2->getKey(),
+                            'type' => $media2->type->value,
+                            'url' => $media2->url,
+                            'slug' => $media2->slug,
+                            'alt' => $media2->alt,
+                            'source' => $media2->source->value,
+                            'metadata' => [],
+                        ],
                     ],
                 ],
-                [
-                    'id' => $set2->getKey(),
-                    'name' => $set2->name,
-                    'slug' => $set2->slug,
-                    'slug_suffix' => $set2->slugSuffix,
-                    'slug_override' => $set2->slugOverride,
-                    'public' => $set2->public,
-                    'visible' => $set2->public_parent && $set2->public,
-                    'parent_id' => $set2->parent_id,
-                    'children_ids' => [],
-                    'metadata' => [],
-                    'cover' => [
-                        'id' => $media2->getKey(),
-                        'type' => $media2->type->value,
-                        'url' => $media2->url,
-                        'slug' => $media2->slug,
-                        'alt' => $media2->alt,
-                        'source' => $media2->source->value,
-                        'metadata' => [],
-                    ],
-                ],
-            ],
             ]);
     }
 
@@ -699,9 +714,10 @@ class ProductTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonFragment(['metadata_private' => [
-                $privateMetadata->name => $privateMetadata->value,
-            ],
+            ->assertJsonFragment([
+                'metadata_private' => [
+                    $privateMetadata->name => $privateMetadata->value,
+                ],
             ]);
     }
 
@@ -762,16 +778,6 @@ class ProductTest extends TestCase
         $response->assertOk();
     }
 
-    public static function noIndexProvider(): array
-    {
-        return [
-            'as user no index' => ['user', true],
-            'as application no index' => ['application', true],
-            'as user index' => ['user', false],
-            'as application index' => ['application', false],
-        ];
-    }
-
     /**
      * @dataProvider noIndexProvider
      */
@@ -794,15 +800,17 @@ class ProductTest extends TestCase
             ->getJson('/products/id:' . $product->getKey());
         $response
             ->assertOk()
-            ->assertJsonFragment(['seo' => [
-                'title' => $seo->title,
-                'no_index' => $noIndex,
-                'description' => $seo->description,
-                'og_image' => null,
-                'twitter_card' => $seo->twitter_card,
-                'keywords' => $seo->keywords,
-                'header_tags' => ['test1', 'test2'],
-            ]]);
+            ->assertJsonFragment([
+                'seo' => [
+                    'title' => $seo->title,
+                    'no_index' => $noIndex,
+                    'description' => $seo->description,
+                    'og_image' => null,
+                    'twitter_card' => $seo->twitter_card,
+                    'keywords' => $seo->keywords,
+                    'header_tags' => ['test1', 'test2'],
+                ],
+            ]);
     }
 
     /**
@@ -1200,18 +1208,19 @@ class ProductTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJson(['data' => [
-                'slug' => 'test',
-                'name' => 'Test',
-                'price' => 100,
-                'public' => true,
-                'vat_rate' => 23,
-                'shipping_digital' => false,
-                'description_html' => '<h1>Description</h1>',
-                'description_short' => 'So called short description...',
-                'cover' => null,
-                'gallery' => [],
-            ],
+            ->assertJson([
+                'data' => [
+                    'slug' => 'test',
+                    'name' => 'Test',
+                    'price' => 100,
+                    'public' => true,
+                    'vat_rate' => 23,
+                    'shipping_digital' => false,
+                    'description_html' => '<h1>Description</h1>',
+                    'description_short' => 'So called short description...',
+                    'cover' => null,
+                    'gallery' => [],
+                ],
             ]);
 
         $this->assertDatabaseHas('products', [
@@ -1269,16 +1278,17 @@ class ProductTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJson(['data' => [
-                'slug' => 'test',
-                'name' => 'Test',
-                'price' => 100,
-                'public' => true,
-                'shipping_digital' => false,
-                'description_html' => '<h1>Description</h1>',
-                'cover' => null,
-                'gallery' => [],
-            ],
+            ->assertJson([
+                'data' => [
+                    'slug' => 'test',
+                    'name' => 'Test',
+                    'price' => 100,
+                    'public' => true,
+                    'shipping_digital' => false,
+                    'description_html' => '<h1>Description</h1>',
+                    'cover' => null,
+                    'gallery' => [],
+                ],
             ]);
 
         $this->assertDatabaseHas('products', [
@@ -1342,16 +1352,17 @@ class ProductTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJson(['data' => [
-                'slug' => 'test',
-                'name' => 'Test',
-                'price' => 100,
-                'public' => true,
-                'shipping_digital' => false,
-                'description_html' => '<h1>Description</h1>',
-                'cover' => null,
-                'gallery' => [],
-            ],
+            ->assertJson([
+                'data' => [
+                    'slug' => 'test',
+                    'name' => 'Test',
+                    'price' => 100,
+                    'public' => true,
+                    'shipping_digital' => false,
+                    'description_html' => '<h1>Description</h1>',
+                    'cover' => null,
+                    'gallery' => [],
+                ],
             ]);
 
         $this->assertDatabaseHas('products', [
@@ -1415,16 +1426,17 @@ class ProductTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJson(['data' => [
-                'slug' => 'test',
-                'name' => 'Test',
-                'price' => 100,
-                'public' => false,
-                'shipping_digital' => false,
-                'description_html' => '<h1>Description</h1>',
-                'cover' => null,
-                'gallery' => [],
-            ],
+            ->assertJson([
+                'data' => [
+                    'slug' => 'test',
+                    'name' => 'Test',
+                    'price' => 100,
+                    'public' => false,
+                    'shipping_digital' => false,
+                    'description_html' => '<h1>Description</h1>',
+                    'cover' => null,
+                    'gallery' => [],
+                ],
             ]);
 
         $this->assertDatabaseHas('products', [
@@ -1480,16 +1492,17 @@ class ProductTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJson(['data' => [
-                'slug' => 'test',
-                'name' => 'Test',
-                'price' => 100,
-                'public' => false,
-                'shipping_digital' => false,
-                'description_html' => '<h1>Description</h1>',
-                'cover' => null,
-                'gallery' => [],
-            ],
+            ->assertJson([
+                'data' => [
+                    'slug' => 'test',
+                    'name' => 'Test',
+                    'price' => 100,
+                    'public' => false,
+                    'shipping_digital' => false,
+                    'description_html' => '<h1>Description</h1>',
+                    'cover' => null,
+                    'gallery' => [],
+                ],
             ]);
 
         $this->assertDatabaseHas('products', [
@@ -1565,14 +1578,16 @@ class ProductTest extends TestCase
                 'shipping_digital' => false,
             ])
             ->assertCreated()
-            ->assertJson(['data' => [
-                'id' => $uuid,
-                'slug' => 'test',
-                'name' => 'Test',
-                'price' => 100,
-                'public' => true,
-                'shipping_digital' => false,
-            ]]);
+            ->assertJson([
+                'data' => [
+                    'id' => $uuid,
+                    'slug' => 'test',
+                    'name' => 'Test',
+                    'price' => 100,
+                    'public' => true,
+                    'shipping_digital' => false,
+                ],
+            ]);
 
         $this->assertDatabaseHas('products', [
             'id' => $uuid,
@@ -1600,13 +1615,14 @@ class ProductTest extends TestCase
                 'shipping_digital' => true,
             ])
             ->assertCreated()
-            ->assertJson(['data' => [
-                'slug' => 'test',
-                'name' => 'Test',
-                'price' => 100,
-                'public' => true,
-                'shipping_digital' => true,
-            ],
+            ->assertJson([
+                'data' => [
+                    'slug' => 'test',
+                    'name' => 'Test',
+                    'price' => 100,
+                    'public' => true,
+                    'shipping_digital' => true,
+                ],
             ]);
 
         $this->assertDatabaseHas('products', [
@@ -1634,13 +1650,14 @@ class ProductTest extends TestCase
                 'shipping_digital' => false,
             ])
             ->assertCreated()
-            ->assertJson(['data' => [
-                'slug' => 'test',
-                'name' => 'Test',
-                'price' => 100,
-                'public' => true,
-                'shipping_digital' => false,
-            ],
+            ->assertJson([
+                'data' => [
+                    'slug' => 'test',
+                    'name' => 'Test',
+                    'price' => 100,
+                    'public' => true,
+                    'shipping_digital' => false,
+                ],
             ]);
 
         $this->assertDatabaseHas('products', [
@@ -1791,25 +1808,27 @@ class ProductTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJson(['data' => [
-                'slug' => 'test',
-                'name' => 'Test',
-                'price' => 100,
-                'public' => $booleanValue,
-                'shipping_digital' => false,
-                'description_html' => '<h1>Description</h1>',
-                'cover' => null,
-                'gallery' => [],
-                'seo' => [
-                    'title' => 'seo title',
-                    'description' => 'seo description',
-                    'og_image' => [
-                        'id' => $media->getKey(),
+            ->assertJson([
+                'data' => [
+                    'slug' => 'test',
+                    'name' => 'Test',
+                    'price' => 100,
+                    'public' => $booleanValue,
+                    'shipping_digital' => false,
+                    'description_html' => '<h1>Description</h1>',
+                    'cover' => null,
+                    'gallery' => [],
+                    'seo' => [
+                        'title' => 'seo title',
+                        'description' => 'seo description',
+                        'og_image' => [
+                            'id' => $media->getKey(),
+                        ],
+                        'no_index' => $booleanValue,
+                        'header_tags' => ['test1', 'test2'],
                     ],
-                    'no_index' => $booleanValue,
-                    'header_tags' => ['test1', 'test2'],
                 ],
-            ]]);
+            ]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
@@ -1853,21 +1872,22 @@ class ProductTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJson(['data' => [
-                'slug' => 'test',
-                'name' => 'Test',
-                'price' => 100,
-                'public' => true,
-                'shipping_digital' => false,
-                'description_html' => '<h1>Description</h1>',
-                'cover' => null,
-                'gallery' => [],
-                'seo' => [
-                    'title' => 'seo title',
-                    'description' => 'seo description',
-                    'no_index' => false,
+            ->assertJson([
+                'data' => [
+                    'slug' => 'test',
+                    'name' => 'Test',
+                    'price' => 100,
+                    'public' => true,
+                    'shipping_digital' => false,
+                    'description_html' => '<h1>Description</h1>',
+                    'cover' => null,
+                    'gallery' => [],
+                    'seo' => [
+                        'title' => 'seo title',
+                        'description' => 'seo description',
+                        'no_index' => false,
+                    ],
                 ],
-            ],
             ]);
 
         $this->assertDatabaseHas('products', [
@@ -2436,9 +2456,10 @@ class ProductTest extends TestCase
                 'shipping_digital' => true,
             ])
             ->assertOk()
-            ->assertJson(['data' => [
-                'shipping_digital' => true,
-            ],
+            ->assertJson([
+                'data' => [
+                    'shipping_digital' => true,
+                ],
             ]);
 
         $this->assertDatabaseHas('products', [
@@ -2661,7 +2682,6 @@ class ProductTest extends TestCase
             'price' => 100,
             'description_html' => '<h1>Description</h1>',
             'public' => false,
-            'order' => 1,
         ])->create();
 
         $seo = SeoMetadata::factory()->create();
@@ -3049,7 +3069,6 @@ class ProductTest extends TestCase
             'price' => 100,
             'description_html' => '<h1>Description</h1>',
             'public' => false,
-            'order' => 1,
         ])->create();
 
         $seo = SeoMetadata::factory()->create();
@@ -3092,7 +3111,6 @@ class ProductTest extends TestCase
             'price' => 100,
             'description_html' => '<h1>Description</h1>',
             'public' => false,
-            'order' => 1,
         ])->create();
 
         $product->media()->sync($media);

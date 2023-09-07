@@ -75,7 +75,6 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
         'price_min',
         'price_max',
         'available',
-        'order',
         'price_min_initial',
         'price_max_initial',
         'shipping_time',
@@ -85,7 +84,6 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
         'shipping_digital',
         'purchase_limit_per_user',
     ];
-
     protected array $auditInclude = [
         'name',
         'slug',
@@ -96,9 +94,7 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
         'price_min',
         'price_max',
         'available',
-        'order',
     ];
-
     protected $casts = [
         'shipping_date' => 'date',
         'price' => 'float',
@@ -111,14 +107,12 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
         'shipping_digital' => 'bool',
         'purchase_limit_per_user' => 'float',
     ];
-
     protected array $sortable = [
         'id',
         'price',
         'name',
         'created_at',
         'updated_at',
-        'order',
         'public',
         'available',
         'price_min',
@@ -126,7 +120,6 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
         'attribute.*',
         'set.*',
     ];
-
     protected array $criteria = [
         'search' => ProductSearch::class,
         'ids' => WhereInIds::class,
@@ -149,8 +142,7 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
         'has_schemas' => WhereHasSchemas::class,
         'shipping_digital' => Equals::class,
     ];
-
-    protected string $defaultSortBy = 'products.order';
+    protected string $defaultSortBy = 'products.created_at';
     protected string $defaultSortDirection = 'desc';
 
     public function mappableAs(): array
@@ -268,19 +260,6 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
         );
     }
 
-    public function productSetSales(): Collection
-    {
-        $sales = Collection::make();
-        $sets = $this->sets;
-
-        /** @var ProductSet $set */
-        foreach ($sets as $set) {
-            $sales = $sales->merge($set->allProductsSales());
-        }
-
-        return $sales->unique('id');
-    }
-
     public function allProductSales(Collection $salesWithBlockList): Collection
     {
         $sales = $this->discounts->filter(
@@ -309,6 +288,19 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
 
         $sales = $sales->merge($productSetSales->where('target_is_allow_list', true));
         $sales = $sales->diff($productSetSales->where('target_is_allow_list', false));
+
+        return $sales->unique('id');
+    }
+
+    public function productSetSales(): Collection
+    {
+        $sales = Collection::make();
+        $sets = $this->sets;
+
+        /** @var ProductSet $set */
+        foreach ($sets as $set) {
+            $sales = $sales->merge($set->allProductsSales());
+        }
 
         return $sales->unique('id');
     }
