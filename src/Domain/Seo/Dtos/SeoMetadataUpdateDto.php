@@ -41,7 +41,7 @@ final class SeoMetadataUpdateDto extends Data
             'translations.*.no_index' => ['boolean'],
             'translations.*.title' => ['string', 'max:255'],
             'translations.*.description' => ['string', 'max:2000'],
-            'translations.*.keywords' => ['string', 'max:2000'],
+            'translations.*.keywords' => ['array'],
         ];
     }
 }
