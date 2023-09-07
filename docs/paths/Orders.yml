@@ -71,6 +71,11 @@ Orders:
           items:
             type: string
             format: uuid
+      - name: payments
+        in: query
+        description: 'Payment name'
+        schema:
+          type: string
     responses:
       200:
         description: Success
@@ -572,7 +577,7 @@ OrdersSendUrls:
         schema:
           type: string
           format: uuid
-    summary:  'Send email with order products urls'
+    summary: 'Send email with order products urls'
     responses:
       200:
         description: Success

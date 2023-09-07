@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Casts\MoneyCast;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\OrderPayments;
 use App\Criteria\OrderSearch;
 use App\Criteria\WhereCreatedAfter;
 use App\Criteria\WhereCreatedBefore;
@@ -75,7 +76,6 @@ class Order extends Model implements SortableContract
         'shipping_price',
         'summary',
     ];
-
     protected array $criteria = [
         'search' => OrderSearch::class,
         'status_id',
@@ -92,20 +92,17 @@ class Order extends Model implements SortableContract
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,
+        'payments' => OrderPayments::class,
     ];
-
     protected array $sortable = [
         'id',
         'code',
         'created_at',
         'email',
-
         'summary',
     ];
-
     protected string $defaultSortBy = 'created_at';
     protected string $defaultSortDirection = 'desc';
-
     protected $casts = [
         'paid' => 'boolean',
         'invoice_requested' => 'boolean',
