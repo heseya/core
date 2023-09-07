@@ -30,8 +30,7 @@ final class SeoMetadataUpdateDto extends Data
         public readonly array|Optional|null $header_tags,
         /** @var array<string> */
         public readonly array|Optional $published = [],
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, array<int, string>>
