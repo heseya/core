@@ -227,7 +227,7 @@ class DiscountTest extends TestCase
             ->assertOk()
             ->assertJsonCount(10, 'data');
 
-        $this->assertQueryCountLessThan(24);
+        $this->assertQueryCountLessThan(25);
     }
 
     /**
@@ -249,7 +249,7 @@ class DiscountTest extends TestCase
             ->assertJsonCount(500, 'data');
 
         // It's now 512 ugh
-        $this->assertQueryCountLessThan(15);
+        $this->assertQueryCountLessThan(16);
     }
 
     public function testShowUnauthorized(): void

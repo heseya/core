@@ -34,6 +34,7 @@ use Domain\Currency\Currency;
 use Domain\Language\Language;
 use Domain\Metadata\Enums\MetadataType;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Product\Enums\ProductSalesChannelStatus;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
@@ -154,6 +155,7 @@ class ProductTest extends TestCase
         ]);
 
         $this->hidden_product = Product::factory()->create();
+        $this->salesChannel->products()->attach($this->hidden_product, ['availability_status' => ProductSalesChannelStatus::HIDDEN->value]);
 
         $attribute = Attribute::factory()->create();
 
@@ -249,6 +251,8 @@ class ProductTest extends TestCase
         ]);
 
         $this->saleProduct = Product::factory()->create();
+        $this->salesChannel->products()->attach($this->saleProduct);
+
         $this->productRepository->setProductPrices($this->saleProduct->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(3000, $this->currency->value))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(2500, $this->currency->value))],
@@ -336,6 +340,7 @@ class ProductTest extends TestCase
             'name' => 'Test product with translations',
             'public' => true,
         ]);
+        $this->salesChannel->products()->attach($product);
 
         /** @var Language $language */
         $language = Language::query()->create([
@@ -367,6 +372,7 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo(['products.show', 'products.show_hidden']);
 
         $product = Product::factory()->create();
+        $this->salesChannel->products()->attach($product);
         $set = ProductSet::factory()->create([
             'public' => false,
         ]);
@@ -462,6 +468,7 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('products.show_details');
 
         $product = Product::factory()->create();
+        $this->salesChannel->products()->attach($product);
 
         $set1 = ProductSet::factory()->create([
             'public' => true,
@@ -522,6 +529,7 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('products.show_details');
 
         $product = Product::factory()->create();
+        $this->salesChannel->products()->attach($product);
 
         $set1 = ProductSet::factory()->create([
             'public' => true,
@@ -568,6 +576,7 @@ class ProductTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
+        $this->salesChannel->products()->attach($product);
 
         $set1 = ProductSet::factory()->create([
             'public' => true,
@@ -628,6 +637,7 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('products.show_details');
 
         $product = Product::factory()->create();
+        $this->salesChannel->products()->attach($product);
 
         $media1 = Media::factory()->create([
             'type' => MediaType::PHOTO,
@@ -847,6 +857,7 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('products.show_details');
 
         $product = Product::factory()->create();
+        $this->salesChannel->products()->attach($product);
 
         $seo = SeoMetadata::factory([
             'no_index' => $noIndex,
@@ -2930,6 +2941,7 @@ class ProductTest extends TestCase
             'description_html' => '<h1>Description</h1>',
             'order' => 1,
         ])->create();
+        $this->salesChannel->products()->attach($product);
 
         $seo = SeoMetadata::factory()->create();
         $product->seo()->save($seo);
@@ -2971,6 +2983,7 @@ class ProductTest extends TestCase
             'description_html' => '<h1>Description</h1>',
             'order' => 1,
         ])->create();
+        $this->salesChannel->products()->attach($product);
 
         $product->media()->sync($media);
 

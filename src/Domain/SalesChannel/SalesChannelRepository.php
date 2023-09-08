@@ -56,7 +56,7 @@ final class SalesChannelRepository
 
     public function getDefault(): SalesChannel
     {
-        return SalesChannel::query()->where('slug', 'default')->first() ?? SalesChannel::query()->where('status', '=', Status::ACTIVE->value)->first();
+        return SalesChannel::query()->where('slug', 'default')->first() ?? SalesChannel::query()->where('status', '=', Status::ACTIVE->value)->firstOrFail();
     }
 
     public function store(SalesChannelCreateDto $dto): SalesChannel

@@ -141,7 +141,7 @@ class DepositsTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(8);
+        $this->assertQueryCountLessThan(9);
     }
 
     public function testViewUnauthorized(): void

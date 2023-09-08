@@ -55,9 +55,10 @@ class OrderTest extends TestCase
     {
         parent::setUp();
 
-        Product::factory()->create();
-
         $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
+
+        $product0 = Product::factory()->create();
+        $this->salesChannel->products()->attach($product0);
 
         $this->currency = Currency::DEFAULT;
         $this->shippingMethod = ShippingMethod::factory()->create();
@@ -69,6 +70,8 @@ class OrderTest extends TestCase
 
         $status = Status::factory()->create();
         $product = Product::factory()->create();
+
+        $this->salesChannel->products()->attach($product);
 
         $this->order = Order::factory()->create([
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -470,6 +473,7 @@ class OrderTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
+        $this->salesChannel->products()->attach($product);
         $status = Status::factory()->create();
 
         $order1 = Order::factory([
@@ -1092,7 +1096,9 @@ class OrderTest extends TestCase
 
         $status = Status::factory()->create();
         $product = Product::factory()->create();
+        $this->salesChannel->products()->attach($product);
         $product2 = Product::factory()->create();
+        $this->salesChannel->products()->attach($product2);
 
         $order = Order::factory()->create([
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -1501,6 +1507,7 @@ class OrderTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
+        $this->salesChannel->products()->attach($product);
 
         Event::fake([OrderCreated::class]);
 
@@ -1563,6 +1570,7 @@ class OrderTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
+        $this->salesChannel->products()->attach($product);
 
         Event::fake([OrderCreated::class]);
 

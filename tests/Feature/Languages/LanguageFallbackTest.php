@@ -5,12 +5,15 @@ namespace Tests\Feature\Languages;
 use App\Models\Product;
 use Domain\Language\Enums\LangFallbackType;
 use Domain\Language\Language;
+use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
 
 class LanguageFallbackTest extends TestCase
 {
     public Language $language;
+    protected SalesChannel $salesChannel;
 
     public function setUp(): void
     {
@@ -26,6 +29,8 @@ class LanguageFallbackTest extends TestCase
         ]);
 
         App::setLocale($this->language->getKey());
+
+        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
     }
 
     public static function fallbackProvider(): array
@@ -102,14 +107,16 @@ class LanguageFallbackTest extends TestCase
             'description_short' => 'Kurze Beschreibung',
             'public' => true,
         ]);
+        $this->salesChannel->products()->attach($product_de);
 
         App::setLocale($this->language->getKey());
         $product_pl = Product::factory()->create([
             'name' => 'Nazwa',
             'description_html' => 'HTML opis',
             'description_short' => 'Krótki opis',
-            'public' =>true,
+            'public' => true,
         ]);
+        $this->salesChannel->products()->attach($product_pl);
 
         $response = $this->actingAs($this->$user)->json('GET', 'products', [
             'lang_fallback' => $fallback,
@@ -158,6 +165,7 @@ class LanguageFallbackTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
+        $this->salesChannel->products()->attach($product);
 
         $this->actingAs($this->$user)->json('GET', 'products/id:' . $product->getKey(), [
             'lang_fallback' => $fallback,
@@ -661,28 +669,30 @@ class LanguageFallbackTest extends TestCase
             App::setLocale($this->language->getKey());
             $published = $default ? [] : ['published' => []];
             $product = Product::factory()->create([
-                    'name' => 'Nazwa',
-                    'description_html' => 'HTML opis',
-                    'description_short' => 'Krótki opis',
-                    'public' => true,
-                ] + $published);
+                'name' => 'Nazwa',
+                'description_html' => 'HTML opis',
+                'description_short' => 'Krótki opis',
+                'public' => true,
+            ] + $published);
+            $this->salesChannel->products()->attach($product);
         }
 
         if ($another === true || $another === false) {
             $published = $another ? [] : ['published' => []];
             $data = [
-                    'name' => 'Name',
-                    'description_html' => 'HTML Beschreibung',
-                    'description_short' => 'Kurze Beschreibung',
-                    'public' => true,
-                ] + $published;
+                'name' => 'Name',
+                'description_html' => 'HTML Beschreibung',
+                'description_short' => 'Kurze Beschreibung',
+                'public' => true,
+            ] + $published;
             if ($product !== null) {
                 $product->setLocale($de->getKey())->update($data + [
-                        'published' => array_merge($product->published, [$de->getKey()]),
-                    ]);
+                    'published' => array_merge($product->published, [$de->getKey()]),
+                ]);
             } else {
                 App::setLocale($de->getKey());
                 $product = Product::factory()->create($data);
+                $this->salesChannel->products()->attach($product);
             }
         }
 

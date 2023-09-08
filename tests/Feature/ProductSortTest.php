@@ -211,9 +211,9 @@ class ProductSortTest extends TestCase
         $product3->save();
 
         $defaultSalesChannel->products()->sync([
-            $product1,
-            $product2,
-            $product3,
+            $product1->getKey(),
+            $product2->getKey(),
+            $product3->getKey(),
         ]);
 
         $this
