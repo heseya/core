@@ -182,7 +182,7 @@ class ProductSortTest extends TestCase
 
         $defaultSalesChannel = app(SalesChannelRepository::class)->getDefault();
 
-        $product1 = Product::factory()->create(]);
+        $product1 = Product::factory()->create();
         $product1->setLocale($this->lang)->fill([
             'name' => 'B product',
         ]);
