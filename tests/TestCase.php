@@ -10,6 +10,8 @@ use App\Models\User;
 use App\Services\Contracts\TokenServiceContract;
 use Database\Seeders\InitSeeder;
 use Domain\Language\Language;
+use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
@@ -38,6 +40,14 @@ abstract class TestCase extends BaseTestCase
 
         $seeder = new InitSeeder();
         $seeder->run();
+
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+        if (empty($salesChannel)) {
+            SalesChannel::factory()->create([
+                'slug' => 'default',
+                'status' => 'active',
+            ]);
+        }
 
         $this->lang = Language::query()->where('default', true)->firstOrFail()->getKey();
         App::setLocale($this->lang);

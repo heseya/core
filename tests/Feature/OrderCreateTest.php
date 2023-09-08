@@ -46,6 +46,7 @@ use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -69,6 +70,7 @@ class OrderCreateTest extends TestCase
     private Address $address;
     private Product $product;
     private string $email;
+    private SalesChannel $salesChannel;
 
     private Currency $currency;
     private Money $productPrice;
@@ -94,6 +96,8 @@ class OrderCreateTest extends TestCase
 
         $this->productRepository = App::make(ProductRepository::class);
 
+        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $this->shippingMethod = ShippingMethod::factory()->create([
             'public' => true,
             'shipping_type' => ShippingType::ADDRESS,
@@ -117,6 +121,7 @@ class OrderCreateTest extends TestCase
         $this->product = Product::factory()->create([
             'public' => true,
         ]);
+        $this->product->salesChannels()->attach($this->salesChannel);
 
         /** @var ProductRepositoryContract $productRepository */
         $productRepository = App::make(ProductRepositoryContract::class);
@@ -142,7 +147,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address->toArray(),
@@ -260,7 +265,7 @@ class OrderCreateTest extends TestCase
             ->actingAs($this->{$user})
             ->postJson('/orders', [
                 'currency' => $this->currency,
-                'sales_channel_id' => SalesChannel::query()->value('id'),
+                'sales_channel_id' => $this->salesChannel->getKey(),
                 'email' => $this->email,
                 'shipping_method_id' => $this->shippingMethod->getKey(),
                 'billing_address' => $this->address->toArray(),
@@ -302,7 +307,7 @@ class OrderCreateTest extends TestCase
             ->actingAs($this->{$user})
             ->postJson('/orders', [
                 'currency' => $this->currency,
-                'sales_channel_id' => SalesChannel::query()->value('id'),
+                'sales_channel_id' => $this->salesChannel->getKey(),
                 'email' => $this->email,
                 'shipping_method_id' => $this->shippingMethod->getKey(),
                 'billing_address' => $this->address->toArray(),
@@ -359,7 +364,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $freeShipping->getKey(),
             'shipping_place' => $this->address->toArray(),
@@ -416,7 +421,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -468,7 +473,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->actingAs($this->user)->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address->toArray(),
@@ -497,7 +502,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address->toArray(),
@@ -538,7 +543,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address->toArray(),
@@ -645,7 +650,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address->toArray(),
@@ -732,7 +737,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address->toArray(),
@@ -803,7 +808,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address->toArray(),
@@ -873,7 +878,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -919,7 +924,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_place' => $this->address->toArray(),
@@ -1019,7 +1024,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -1091,7 +1096,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_place' => [
@@ -1125,7 +1130,7 @@ class OrderCreateTest extends TestCase
             ->actingAs($this->{$user})
             ->postJson('/orders', [
                 'currency' => $this->currency,
-                'sales_channel_id' => SalesChannel::query()->value('id'),
+                'sales_channel_id' => $this->salesChannel->getKey(),
                 'email' => $this->email,
                 'shipping_method_id' => $this->shippingMethod->getKey(),
                 'shipping_address' => $this->address->toArray(),
@@ -1179,7 +1184,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_address' => $this->address->toArray(),
@@ -1236,7 +1241,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_address' => $this->address->toArray(),
@@ -1290,7 +1295,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
@@ -1359,7 +1364,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
@@ -1424,7 +1429,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
@@ -1489,7 +1494,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
@@ -1544,7 +1549,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
@@ -1604,7 +1609,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
@@ -1661,7 +1666,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
@@ -1689,7 +1694,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->actingAs($this->user)->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -1728,7 +1733,7 @@ class OrderCreateTest extends TestCase
             ->actingAs($this->user)
             ->postJson('/orders', [
                 'currency' => $this->currency,
-                'sales_channel_id' => SalesChannel::query()->value('id'),
+                'sales_channel_id' => $this->salesChannel->getKey(),
                 'email' => $this->email,
                 'shipping_method_id' => $this->shippingMethod->getKey(),
                 'billing_address' => $address + [
@@ -1769,7 +1774,7 @@ class OrderCreateTest extends TestCase
 
         $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -1814,7 +1819,7 @@ class OrderCreateTest extends TestCase
 
         $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -1859,7 +1864,7 @@ class OrderCreateTest extends TestCase
 
         $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -1904,7 +1909,7 @@ class OrderCreateTest extends TestCase
 
         $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -1947,9 +1952,9 @@ class OrderCreateTest extends TestCase
             'purchase_limit_per_user' => 1,
         ]);
 
-        $this->actingAs($this->{$user})->postJson('/orders', [
+        $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -1960,7 +1965,11 @@ class OrderCreateTest extends TestCase
                     'quantity' => 1,
                 ],
             ],
-        ])->assertCreated();
+        ]);
+
+        var_dump($response->getContent());
+
+        $response->assertValid()->assertCreated();
     }
 
     /**
@@ -1999,7 +2008,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address->toArray(),
@@ -2028,7 +2037,7 @@ class OrderCreateTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $address2->toArray(),

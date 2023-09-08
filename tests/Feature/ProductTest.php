@@ -172,7 +172,6 @@ class ProductTest extends TestCase
             'id' => $this->product->getKey(),
             'name' => $this->product->name,
             'slug' => $this->product->slug,
-            'visible' => $this->product->public,
             'available' => true,
             'cover' => null,
         ];

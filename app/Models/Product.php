@@ -223,7 +223,8 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         $salesChannel ??= Config::get('sales-channel.model');
 
         if ($salesChannel instanceof SalesChannel) {
-            return $this->salesChannels->where('id', $salesChannel->getKey())->first()?->pivot?->availability_status === ProductSalesChannelStatus::PUBLIC;
+            $productSalesChannel = $this->salesChannels->where('id', $salesChannel->getKey())->first();
+            return $productSalesChannel?->pivot->availability_status === ProductSalesChannelStatus::PUBLIC;
         }
 
         return false;
@@ -234,7 +235,8 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         $salesChannel ??= Config::get('sales-channel.model');
 
         if ($salesChannel instanceof SalesChannel) {
-            return $this->salesChannels->where('id', $salesChannel->getKey())->first()?->pivot?->availability_status === ProductSalesChannelStatus::HIDDEN;
+            $productSalesChannel = $this->salesChannels->where('id', $salesChannel->getKey())->first();
+            return $productSalesChannel?->pivot->availability_status === ProductSalesChannelStatus::HIDDEN;
         }
 
         return false;

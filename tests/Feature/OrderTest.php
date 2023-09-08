@@ -28,6 +28,7 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Metadata\Enums\MetadataType;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
@@ -48,12 +49,15 @@ class OrderTest extends TestCase
     private array $expected_full_structure;
     private array $expected_full_view_structure;
     private Currency $currency;
+    private SalesChannel $salesChannel;
 
     public function setUp(): void
     {
         parent::setUp();
 
         Product::factory()->create();
+
+        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
 
         $this->currency = Currency::DEFAULT;
         $this->shippingMethod = ShippingMethod::factory()->create();
@@ -781,7 +785,7 @@ class OrderTest extends TestCase
     {
         $this->{$user}->givePermissionTo('orders.show');
 
-        $salesChannelId = SalesChannel::query()->value('id');
+        $salesChannelId = $this->salesChannel->getKey();
 
         $status = Status::factory([
             'hidden' => false,
@@ -1500,7 +1504,7 @@ class OrderTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $salesChannelId = SalesChannel::query()->value('id');
+        $salesChannelId = $this->salesChannel->getKey();
         $response = $this->actingAs($this->user)->json('POST', '/orders', [
             'sales_channel_id' => $salesChannelId,
             'currency' => $this->currency,
@@ -1564,7 +1568,7 @@ class OrderTest extends TestCase
 
         $this->actingAs($this->{$user})->json('POST', '/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => [

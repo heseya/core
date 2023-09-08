@@ -7,6 +7,7 @@ use App\Enums\VisibilityType;
 use App\Models\Media;
 use App\Models\MediaAttachment;
 use App\Models\Product;
+use Domain\SalesChannel\SalesChannelRepository;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -19,9 +20,11 @@ class ProductAttachmentsTest extends TestCase
     {
         parent::setUp();
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
         $this->product = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($this->product);
 
         $this->media = Media::factory()->create();
     }
