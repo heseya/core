@@ -39,7 +39,6 @@ class ProductSearchService implements ProductSearchServiceContract
                 'description_short' => $product->description_short,
                 'created_at' => $product->created_at?->toIso8601String(),
                 'updated_at' => $product->updated_at?->toIso8601String(),
-                'order' => $product->order,
                 'shipping_digital' => $product->shipping_digital,
                 'shipping_date' => $product->shipping_date,
                 'shipping_time' => $product->shipping_time,
@@ -76,6 +75,108 @@ class ProductSearchService implements ProductSearchServiceContract
                 "set.{$set->slug}" => $set->pivot->order,
             ])->toArray(),
         );
+    }
+
+    private function mapCover(Product $product): ?array
+    {
+        /** @var ?Media $cover */
+        $cover = $product->media->first();
+
+        if ($cover === null) {
+            return null;
+        }
+
+        return [
+            'id' => $cover->getKey(),
+            'url' => $cover->url,
+            'type' => $cover->type,
+            'metadata' => $cover->metadata
+                ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
+                ->toArray(),
+            'metadata_private' => $cover->metadataPrivate
+                ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
+                ->toArray(),
+        ];
+    }
+
+    private function mapMeta(Metadata $meta): array
+    {
+        return [
+            'id' => $meta->getKey(),
+            'name' => $meta->name,
+            'value' => $meta->value,
+            'value_type' => $meta->value_type,
+        ];
+    }
+
+    private function mapTag(Tag $tag): array
+    {
+        return [
+            'id' => $tag->getKey(),
+            'name' => $tag->name,
+            'color' => $tag->color,
+        ];
+    }
+
+    private function mapSetsSlugs(Product $product): array
+    {
+        $sets = $this->productSetService->flattenParentsSetsTree($product->sets);
+
+        return $sets->map(fn (ProductSet $set): string => $set->slug)->toArray();
+    }
+
+    private function mapSets(Product $product): array
+    {
+        $sets = $this->productSetService->flattenParentsSetsTree($product->sets);
+
+        return $sets->map(fn (ProductSet $set): array => $this->mapSet($set))->toArray();
+    }
+
+    private function mapSet(ProductSet $set): array
+    {
+        return [
+            'id' => $set->getKey(),
+            'name' => $set->name,
+            'slug' => $set->slug,
+            'description' => $set->description_html ? strip_tags($set->description_html) : null,
+        ];
+    }
+
+    private function mapAttribute(Attribute $attribute): array
+    {
+        return [
+            'id' => $attribute->getKey(),
+            'name' => $attribute->name,
+            'slug' => $attribute->slug,
+            'attribute_type' => $attribute->type,
+            'values' => $attribute->pivot->options->map(fn (AttributeOption $option): array => [
+                'id' => $option->getKey(),
+                'name' => $option->name,
+                'value_number' => $option->value_number,
+                'value_date' => $option->value_date,
+                'metadata' => $option->metadata
+                    ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
+                    ->toArray(),
+                'metadata_private' => $option->metadataPrivate
+                    ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
+                    ->toArray(),
+            ])->toArray(),
+            'metadata' => $attribute->metadata
+                ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
+                ->toArray(),
+            'metadata_private' => $attribute->metadataPrivate
+                ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
+                ->toArray(),
+        ];
+    }
+
+    private function getAttributeValue(Attribute $attribute): array
+    {
+        return match ($attribute->type) {
+            AttributeType::NUMBER => $attribute->pivot->options->pluck('value_number')->toArray(),
+            AttributeType::DATE => $attribute->pivot->options->pluck('value_date')->toArray(),
+            default => $attribute->pivot->options->pluck('name')->toArray(),
+        };
     }
 
     public function mappableAs(): array
@@ -135,108 +236,6 @@ class ProductSearchService implements ProductSearchServiceContract
             'name^10',
             'attributes.*^5',
             '*',
-        ];
-    }
-
-    private function mapCover(Product $product): ?array
-    {
-        /** @var ?Media $cover */
-        $cover = $product->media->first();
-
-        if ($cover === null) {
-            return null;
-        }
-
-        return [
-            'id' => $cover->getKey(),
-            'url' => $cover->url,
-            'type' => $cover->type,
-            'metadata' => $cover->metadata
-                ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
-                ->toArray(),
-            'metadata_private' => $cover->metadataPrivate
-                ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
-                ->toArray(),
-        ];
-    }
-
-    private function mapSetsSlugs(Product $product): array
-    {
-        $sets = $this->productSetService->flattenParentsSetsTree($product->sets);
-
-        return $sets->map(fn (ProductSet $set): string => $set->slug)->toArray();
-    }
-
-    private function mapSets(Product $product): array
-    {
-        $sets = $this->productSetService->flattenParentsSetsTree($product->sets);
-
-        return $sets->map(fn (ProductSet $set): array => $this->mapSet($set))->toArray();
-    }
-
-    private function mapTag(Tag $tag): array
-    {
-        return [
-            'id' => $tag->getKey(),
-            'name' => $tag->name,
-            'color' => $tag->color,
-        ];
-    }
-
-    private function mapSet(ProductSet $set): array
-    {
-        return [
-            'id' => $set->getKey(),
-            'name' => $set->name,
-            'slug' => $set->slug,
-            'description' => $set->description_html ? strip_tags($set->description_html) : null,
-        ];
-    }
-
-    private function mapAttribute(Attribute $attribute): array
-    {
-        return [
-            'id' => $attribute->getKey(),
-            'name' => $attribute->name,
-            'slug' => $attribute->slug,
-            'attribute_type' => $attribute->type,
-            'values' => $attribute->pivot->options->map(fn (AttributeOption $option): array => [
-                'id' => $option->getKey(),
-                'name' => $option->name,
-                'value_number' => $option->value_number,
-                'value_date' => $option->value_date,
-                'metadata' => $option->metadata
-                    ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
-                    ->toArray(),
-                'metadata_private' => $option->metadataPrivate
-                    ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
-                    ->toArray(),
-            ])->toArray(),
-            'metadata' => $attribute->metadata
-                ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
-                ->toArray(),
-            'metadata_private' => $attribute->metadataPrivate
-                ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
-                ->toArray(),
-        ];
-    }
-
-    private function getAttributeValue(Attribute $attribute): array
-    {
-        return match ($attribute->type) {
-            AttributeType::NUMBER => $attribute->pivot->options->pluck('value_number')->toArray(),
-            AttributeType::DATE => $attribute->pivot->options->pluck('value_date')->toArray(),
-            default => $attribute->pivot->options->pluck('name')->toArray(),
-        };
-    }
-
-    private function mapMeta(Metadata $meta): array
-    {
-        return [
-            'id' => $meta->getKey(),
-            'name' => $meta->name,
-            'value' => $meta->value,
-            'value_type' => $meta->value_type,
         ];
     }
 }
