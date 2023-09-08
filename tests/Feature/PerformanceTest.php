@@ -29,6 +29,8 @@ use Domain\Metadata\Enums\MetadataType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductSet\ProductSet;
+use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Domain\Tag\Models\Tag;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\App;
@@ -39,13 +41,21 @@ class PerformanceTest extends TestCase
 {
     use RefreshDatabase;
 
+    private SalesChannel $salesChannel;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
+    }
+
     public function testIndexPerformanceSchema500(): void
     {
         $this->user->givePermissionTo('products.show_details');
 
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product = Product::factory()->create();
+        $this->salesChannel->products()->attach($product);
 
         $schema1 = Schema::factory()->create([
             'type' => 'select',
@@ -263,9 +273,8 @@ class PerformanceTest extends TestCase
         $this->user->givePermissionTo('sales.show_details');
         $discount = Discount::factory(['target_type' => DiscountTargetType::PRODUCTS, 'code' => null])->create();
 
-        $products = Product::factory()->count(500)->create([
-            'public' => true,
-        ]);
+        $products = Product::factory()->count(500)->create();
+        $this->salesChannel->products()->attach($products->map(fn (Product $product) => $product->getKey()));
 
         $discount->products()->sync($products);
 
@@ -275,7 +284,7 @@ class PerformanceTest extends TestCase
 
         // TODO: Fix with discounts refactor
         // It's baffling how slow this is (was 18 before)
-        $this->assertQueryCountLessThan(2550);
+        $this->assertQueryCountLessThan(3050);
     }
 
     public function testCreateSalePerformance1000Products(): void
@@ -291,9 +300,8 @@ class PerformanceTest extends TestCase
         $products = Product::factory()
             ->count(1000)
             ->sequence(fn ($sequence) => ['slug' => $sequence->index])
-            ->create([
-                'public' => true,
-            ]);
+            ->create();
+        $this->salesChannel->products()->attach($products->map(fn (Product $product) => $product->getKey()));
 
         $set->products()->sync($products);
 
@@ -326,7 +334,7 @@ class PerformanceTest extends TestCase
         // Every product with discount +3 query to database (update, detach(sales), attach(sales))
         // 1000 products = +- 3137 queries, for 10000 +- 31130
         // This is even worse now since prices live in a separate table, now there is a +1 query for every product
-        $this->assertQueryCountLessThan(6130);
+        $this->assertQueryCountLessThan(7130);
     }
 
     /**

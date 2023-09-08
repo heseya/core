@@ -57,7 +57,6 @@ class ItemProductTest extends TestCase
             'published' => [$this->lang],
             'slug' => 'test',
             'prices_base' => $this->prices,
-            'public' => true,
             'shipping_digital' => false,
             'items' => [
                 [
@@ -87,7 +86,6 @@ class ItemProductTest extends TestCase
                 'name' => 'test',
                 'slug' => 'test',
                 'prices_base' => $this->prices,
-                'public' => true,
                 'shipping_digital' => false,
                 'items' => [
                     [
@@ -109,7 +107,6 @@ class ItemProductTest extends TestCase
             'name' => 'test',
             'slug' => 'test',
             'prices_base' => $this->prices,
-            'public' => true,
             'items' => [
                 [
                     'id' => $this->items->first()->getKey(),
@@ -136,7 +133,6 @@ class ItemProductTest extends TestCase
             'name' => 'test',
             'slug' => 'test',
             'prices_base' => $this->prices,
-            'public' => true,
         ]);
         $response
             ->assertOk()
@@ -153,7 +149,6 @@ class ItemProductTest extends TestCase
             'name' => 'test',
             'slug' => 'test',
             'prices_base' => $this->prices,
-            'public' => true,
             'items' => [],
         ]);
         $response
@@ -175,7 +170,6 @@ class ItemProductTest extends TestCase
             'name' => 'test',
             'slug' => 'test',
             'prices_base' => $this->prices,
-            'public' => true,
             'items' => [
                 [
                     'id' => $this->items->get(2)->getKey(),
@@ -210,7 +204,6 @@ class ItemProductTest extends TestCase
             'name' => 'test',
             'slug' => 'test',
             'prices_base' => $this->prices,
-            'public' => true,
             'items' => [],
         ]);
 
@@ -246,7 +239,6 @@ class ItemProductTest extends TestCase
             'name' => 'test',
             'slug' => 'test',
             'prices_base' => $this->prices,
-            'public' => true,
         ]);
 
         $response
@@ -281,7 +273,6 @@ class ItemProductTest extends TestCase
             'name' => 'test',
             'slug' => 'test',
             'prices_base' => $this->prices,
-            'public' => true,
         ]);
 
         $response

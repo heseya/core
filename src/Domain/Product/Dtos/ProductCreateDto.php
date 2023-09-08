@@ -50,7 +50,6 @@ final class ProductCreateDto extends Data
         public string $slug,
         #[DataCollectionOf(PriceDto::class)]
         public DataCollection $prices_base,
-        public bool $public,
         public bool $shipping_digital,
         public Optional|string $id,
         public int|Optional $order,

@@ -19,6 +19,8 @@ use Domain\Banner\Models\Banner;
 use Domain\Metadata\Enums\MetadataType;
 use Domain\Page\Page;
 use Domain\ProductSet\ProductSet;
+use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Illuminate\Support\Facades\App as FacadesApp;
 use Tests\TestCase;
 use Tests\Utils\FakeDto;
@@ -26,11 +28,13 @@ use Tests\Utils\FakeDto;
 class MetadataTest extends TestCase
 {
     private SchemaCrudService $schemaCrudService;
+    private SalesChannel $salesChannel;
 
     public function setUp(): void
     {
         parent::setUp();
         $this->schemaCrudService = FacadesApp::make(SchemaCrudService::class);
+        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
     }
 
     public static function dataProvider(): array
@@ -507,9 +511,8 @@ class MetadataTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show_details');
 
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product = Product::factory()->create();
+        $this->salesChannel->products()->attach($product);
 
         $response = $this
             ->actingAs($this->{$user})

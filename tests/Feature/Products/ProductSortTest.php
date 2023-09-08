@@ -52,9 +52,7 @@ class ProductSortTest extends TestCase
         ]);
 
         /** @var Product $product */
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product = Product::factory()->create();
         $product->attributes()->attach($attribute->getKey());
         $product->attributes()->get()->each(
             fn (Attribute $attribute) => $attribute->pivot->options()->attach($option->getKey())

@@ -375,25 +375,19 @@ class ProductSetOtherTest extends TestCase
     {
         $this->{$user}->givePermissionTo('product_sets.show_details');
 
-        $salesChannel = app(SalesChannelRepository::class)->getDefault() ?? SalesChannel::query()->firstOrCreate(['status' => Status::ACTIVE->value], SalesChannel::factory()->definition());
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
 
         $set = ProductSet::factory()->create([
             'public' => true,
         ]);
 
-        $product1 = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product1 = Product::factory()->create();
         $product1->salesChannels()->syncWithPivotValues($salesChannel, ['availability_status' => ProductSalesChannelStatus::PUBLIC->value]);
 
-        $product2 = Product::factory()->create([
-            'public' => false,
-        ]);
+        $product2 = Product::factory()->create();
         $product2->salesChannels()->syncWithPivotValues($salesChannel, ['availability_status' => ProductSalesChannelStatus::HIDDEN->value]);
 
-        $product3 = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product3 = Product::factory()->create();
         $product3->salesChannels()->syncWithPivotValues($salesChannel, ['availability_status' => ProductSalesChannelStatus::PUBLIC->value]);
 
         $set->products()->sync([
@@ -425,25 +419,19 @@ class ProductSetOtherTest extends TestCase
     {
         $this->{$user}->givePermissionTo('product_sets.show_details');
 
-        $salesChannel = app(SalesChannelRepository::class)->getDefault() ?? SalesChannel::query()->firstOrCreate(['status' => Status::ACTIVE->value], SalesChannel::factory()->definition());
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
 
         $set = ProductSet::factory()->create([
             'public' => true,
         ]);
 
-        $product1 = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product1 = Product::factory()->create();
         $product1->salesChannels()->syncWithPivotValues($salesChannel, ['availability_status' => ProductSalesChannelStatus::PUBLIC->value]);
 
-        $product2 = Product::factory()->create([
-            'public' => false,
-        ]);
+        $product2 = Product::factory()->create();
         $product2->salesChannels()->syncWithPivotValues($salesChannel, ['availability_status' => ProductSalesChannelStatus::HIDDEN->value]);
 
-        $product3 = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product3 = Product::factory()->create();
         $product3->salesChannels()->syncWithPivotValues($salesChannel, ['availability_status' => ProductSalesChannelStatus::PUBLIC->value]);
 
         $set->products()->sync([
@@ -473,14 +461,10 @@ class ProductSetOtherTest extends TestCase
             'public' => true,
         ]);
 
-        $product1 = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product1 = Product::factory()->create();
         $product1->salesChannels()->syncWithPivotValues($salesChannel, ['availability_status' => ProductSalesChannelStatus::PUBLIC->value]);
 
-        $product2 = Product::factory()->create([
-            'public' => false,
-        ]);
+        $product2 = Product::factory()->create();
         $product2->salesChannels()->syncWithPivotValues($salesChannel, ['availability_status' => ProductSalesChannelStatus::HIDDEN->value]);
 
         $set->products()->sync([
@@ -695,11 +679,9 @@ class ProductSetOtherTest extends TestCase
         ]);
 
         $product1 = Product::factory()->create([
-            'public' => true,
             'name' => 'one',
         ]);
         $product2 = Product::factory()->create([
-            'public' => false,
             'name' => 'two',
         ]);
 
@@ -737,19 +719,15 @@ class ProductSetOtherTest extends TestCase
         ]);
 
         $product1 = Product::factory()->create([
-            'public' => true,
             'name' => 'one',
         ]);
         $product2 = Product::factory()->create([
-            'public' => true,
             'name' => 'two',
         ]);
         $product3 = Product::factory()->create([
-            'public' => true,
             'name' => 'three',
         ]);
         $product4 = Product::factory()->create([
-            'public' => true,
             'name' => 'four',
         ]);
 

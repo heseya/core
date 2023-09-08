@@ -15,6 +15,8 @@ use App\Models\Status;
 use App\Models\WebHook;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Bus;
@@ -38,6 +40,8 @@ class OrderUpdateTest extends TestCase
     private Address $addressInvoice;
     private Address $address;
 
+    private SalesChannel $salesChannel;
+
     private Currency $currency;
 
     public function setUp(): void
@@ -51,6 +55,8 @@ class OrderUpdateTest extends TestCase
         $this->addressInvoice = Address::factory()->create();
         $this->address = Address::factory()->make();
 
+        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $this->order = Order::factory()->create([
             'code' => 'XXXXXX123',
             'email' => self::EMAIL,
@@ -61,9 +67,8 @@ class OrderUpdateTest extends TestCase
             'shipping_address_id' => $this->addressDelivery->getKey(),
         ]);
 
-        Product::factory()->create([
-            'public' => true,
-        ]);
+        $product = Product::factory()->create();
+        $this->salesChannel->products()->attach($product);
 
         $this->order->products()->save(
             OrderProduct::factory()->make(),
@@ -1118,9 +1123,9 @@ class OrderUpdateTest extends TestCase
         $this->{$user}->givePermissionTo('orders.edit');
 
         $product = Product::factory()->create([
-            'public' => true,
             'shipping_digital' => true,
         ]);
+        $this->salesChannel->products()->attach($product);
 
         $digitalShippingMethodOld = $this->createShippingMethod(0, ['shipping_type' => ShippingType::DIGITAL]);
         $digitalShippingMethodNew = $this->createShippingMethod(0, ['shipping_type' => ShippingType::DIGITAL]);
@@ -1168,9 +1173,9 @@ class OrderUpdateTest extends TestCase
         $this->{$user}->givePermissionTo('orders.edit');
 
         $product = Product::factory()->create([
-            'public' => true,
             'shipping_digital' => true,
         ]);
+        $this->salesChannel->products()->attach($product);
 
         $digitalShippingMethod = $this->createShippingMethod(0, ['shipping_type' => ShippingType::DIGITAL]);
 
@@ -1284,9 +1289,9 @@ class OrderUpdateTest extends TestCase
         $pointShipping->shippingPoints()->sync([$address->getKey()]);
 
         $product = Product::factory()->create([
-            'public' => true,
             'shipping_digital' => false,
         ]);
+        $this->salesChannel->products()->attach($product);
 
         $order = Order::factory()->create([
             'code' => 'NEWORDERCODE',
@@ -1360,9 +1365,9 @@ class OrderUpdateTest extends TestCase
         ]);
 
         $product = Product::factory()->create([
-            'public' => true,
             'shipping_digital' => false,
         ]);
+        $this->salesChannel->products()->attach($product);
 
         $order = Order::factory()->create([
             'code' => 'NEWORDERCODE',

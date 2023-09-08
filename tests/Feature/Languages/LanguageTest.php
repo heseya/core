@@ -395,9 +395,7 @@ class LanguageTest extends TestCase
         ]);
 
         /** @var Product $product */
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product = Product::factory()->create();
         $this->salesChannel->products()->attach($product);
 
         $product->setLocale($language->getKey())->fill([
@@ -507,7 +505,6 @@ class LanguageTest extends TestCase
             'name' => 'Nazwa',
             'description_html' => 'Opis HTML',
             'description_short' => 'Krótki opis',
-            'public' => true,
         ]);
         $this->salesChannel->products()->attach($product);
 
@@ -545,7 +542,6 @@ class LanguageTest extends TestCase
             'name' => 'Name',
             'description_html' => 'HTML Beschreibung',
             'description_short' => 'Kurze Beschreibung',
-            'public' => true,
         ]);
         $this->salesChannel->products()->attach($product);
 
@@ -576,7 +572,6 @@ class LanguageTest extends TestCase
             'name' => 'Nazwa',
             'description_html' => 'Opis HTML',
             'description_short' => 'Krótki opis',
-            'public' => true,
         ]);
         $this->salesChannel->products()->attach($product);
 
@@ -584,7 +579,6 @@ class LanguageTest extends TestCase
             'name' => 'Hidden name',
             'description_html' => 'Hidden HTML description',
             'description_short' => 'Hidden short description',
-            'public' => true,
         ]);
 
         $this

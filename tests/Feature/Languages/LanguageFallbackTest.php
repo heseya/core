@@ -97,7 +97,6 @@ class LanguageFallbackTest extends TestCase
             'name' => 'Nombre',
             'description_html' => 'HTML descripción',
             'description_short' => 'Breve descripción',
-            'public' => true,
         ]);
         $this->salesChannel->products()->attach($product_es);
 
@@ -106,7 +105,6 @@ class LanguageFallbackTest extends TestCase
             'name' => 'Name',
             'description_html' => 'HTML Beschreibung',
             'description_short' => 'Kurze Beschreibung',
-            'public' => true,
         ]);
         $this->salesChannel->products()->attach($product_de);
 
@@ -115,7 +113,6 @@ class LanguageFallbackTest extends TestCase
             'name' => 'Nazwa',
             'description_html' => 'HTML opis',
             'description_short' => 'Krótki opis',
-            'public' => true,
         ]);
         $this->salesChannel->products()->attach($product_pl);
 
@@ -163,9 +160,7 @@ class LanguageFallbackTest extends TestCase
             'hidden' => false,
         ]);
 
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product = Product::factory()->create();
         $this->salesChannel->products()->attach($product);
 
         $this->actingAs($this->$user)->json('GET', 'products/id:' . $product->getKey(), [
@@ -673,7 +668,6 @@ class LanguageFallbackTest extends TestCase
                 'name' => 'Nazwa',
                 'description_html' => 'HTML opis',
                 'description_short' => 'Krótki opis',
-                'public' => true,
             ] + $published);
             $this->salesChannel->products()->attach($product);
         }
@@ -684,7 +678,6 @@ class LanguageFallbackTest extends TestCase
                 'name' => 'Name',
                 'description_html' => 'HTML Beschreibung',
                 'description_short' => 'Kurze Beschreibung',
-                'public' => true,
             ] + $published;
             if ($product !== null) {
                 $product->setLocale($de->getKey())->update($data + [

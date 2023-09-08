@@ -44,7 +44,6 @@ final class ProductUpdateDto extends Data
         public Optional|string $slug,
         #[DataCollectionOf(PriceDto::class)]
         public DataCollection|Optional $prices_base,
-        public bool|Optional $public,
         public bool|Optional $shipping_digital,
         public int|Optional $order,
         public float|Optional $quantity_step,

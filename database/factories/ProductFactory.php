@@ -32,7 +32,6 @@ class ProductFactory extends Factory
             'slug' => Str::slug($name) . '-' . mt_rand(1, 99999),
             'description_html' => '<p>' . $this->faker->sentence(10) . '</p>',
             'description_short' => $this->faker->sentence(10),
-            'public' => $this->faker->boolean,
             'published' => [App::getLocale()],
         ];
     }

@@ -28,7 +28,6 @@ class OrderDigitalTest extends TestCase
         $this->currency = Currency::DEFAULT;
 
         $this->digitalProduct = Product::factory()->create([
-            'public' => true,
             'shipping_digital' => true,
         ]);
         $this->digitalShippingMethod = ShippingMethod::factory()->create([
@@ -40,9 +39,7 @@ class OrderDigitalTest extends TestCase
         ]);
         $this->digitalShippingMethod->priceRanges()->save($freeRange);
 
-        $this->physicalProduct = Product::factory()->create([
-            'public' => true,
-        ]);
+        $this->physicalProduct = Product::factory()->create();
         $this->physicalShippingMethod = ShippingMethod::factory()->create([
             'shipping_type' => ShippingType::ADDRESS,
         ]);

@@ -33,11 +33,9 @@ class OrderProductTest extends TestCase
         $shippingMethod = ShippingMethod::factory()->create();
         $status = Status::factory()->create();
         $product = Product::factory()->create([
-            'public' => true,
             'shipping_digital' => false,
         ]);
         $digitalProduct = Product::factory()->create([
-            'public' => true,
             'shipping_digital' => true,
         ]);
 
@@ -130,11 +128,9 @@ class OrderProductTest extends TestCase
         $shippingMethod = ShippingMethod::factory()->create();
         $status = Status::factory()->create();
         $product = Product::factory()->create([
-            'public' => true,
             'shipping_digital' => false,
         ]);
         $digitalProduct = Product::factory()->create([
-            'public' => true,
             'shipping_digital' => true,
         ]);
 

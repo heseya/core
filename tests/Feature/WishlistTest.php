@@ -20,7 +20,6 @@ class WishlistTest extends TestCase
     {
         parent::setUp();
         $this->product = Product::factory()->create([
-            'public' => true,
             'name' => 'test product',
         ]);
 
@@ -317,7 +316,6 @@ class WishlistTest extends TestCase
         ]);
 
         $product = Product::factory()->create([
-            'public' => true,
             'name' => 'another test product',
         ]);
 

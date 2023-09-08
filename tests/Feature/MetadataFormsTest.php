@@ -33,7 +33,6 @@ class MetadataFormsTest extends TestCase
                 'published' => [$this->lang],
                 'slug' => 'test',
                 'prices_base' => $prices,
-                'public' => true,
                 'shipping_digital' => false,
                 'metadata' => [
                     'test' => '123',

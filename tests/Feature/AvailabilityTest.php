@@ -72,10 +72,8 @@ class AvailabilityTest extends TestCase
         $this->product = $productService->create(FakeDto::productCreateDto());
         $this->product->update([
             'available' => false,
-            'public' => true,
             'quantity' => 0,
         ]);
-
         $this->product->salesChannels()->syncWithoutDetaching($this->salesChannel);
 
         $this->shippingMethodService = App::make(ShippingMethodServiceContract::class);
@@ -547,7 +545,6 @@ class AvailabilityTest extends TestCase
             'name' => 'test',
             'slug' => 'test',
             'prices' => [['value' => 10, 'currency' => Currency::DEFAULT->value]],
-            'public' => true,
             'items' => [
                 [
                     'id' => $item->getKey(),
@@ -589,7 +586,6 @@ class AvailabilityTest extends TestCase
             'name' => 'test',
             'slug' => 'test',
             'prices' => [['value' => 10, 'currency' => Currency::DEFAULT->value]],
-            'public' => true,
             'items' => [
                 [
                     'id' => $item->getKey(),

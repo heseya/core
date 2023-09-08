@@ -470,9 +470,7 @@ class OrderTest extends TestCase
     {
         $this->{$user}->givePermissionTo('orders.show');
 
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product = Product::factory()->create();
         $this->salesChannel->products()->attach($product);
         $status = Status::factory()->create();
 
@@ -1504,9 +1502,7 @@ class OrderTest extends TestCase
     {
         $this->user->givePermissionTo(['orders.add', 'orders.show_details']);
 
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product = Product::factory()->create();
         $this->salesChannel->products()->attach($product);
 
         Event::fake([OrderCreated::class]);
@@ -1567,9 +1563,7 @@ class OrderTest extends TestCase
     {
         $this->{$user}->givePermissionTo(['orders.add']);
 
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product = Product::factory()->create();
         $this->salesChannel->products()->attach($product);
 
         Event::fake([OrderCreated::class]);

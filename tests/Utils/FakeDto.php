@@ -95,7 +95,6 @@ final readonly class FakeDto
             ],
             'published' => [$langId],
             'slug' => Str::slug($name) . '-' . mt_rand(1, 99999),
-            'public' => $faker->boolean,
             'shipping_digital' => false,
             'sales_channels' => [
                 [

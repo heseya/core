@@ -8,6 +8,7 @@ use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Services\SchemaCrudService;
+use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
@@ -20,14 +21,16 @@ class ProductAvailabilityTest extends TestCase
     private Item $item;
     private Product $product;
     private SchemaCrudService $schemaCrudService;
+    private SalesChannel $salesChannel;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->product = Product::factory()->create([
-            'public' => true,
-        ]);
+        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
+
+        $this->product = Product::factory()->create();
+        $this->salesChannel->products()->attach($this->product);
 
         $this->item = Item::factory()->create();
 
@@ -171,9 +174,8 @@ class ProductAvailabilityTest extends TestCase
     {
         $this->{$user}->givePermissionTo('deposits.add');
 
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product = Product::factory()->create();
+        $this->salesChannel->products()->attach($this->product);
 
         $item1 = Item::factory()->create();
         $item1->deposits()->create([

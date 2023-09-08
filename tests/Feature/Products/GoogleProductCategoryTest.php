@@ -44,7 +44,6 @@ class GoogleProductCategoryTest extends TestCase
             ],
             'published' => [$this->lang],
             'slug' => 'slug',
-            'public' => true,
             'shipping_digital' => false,
             'prices_base' => $prices,
         ];

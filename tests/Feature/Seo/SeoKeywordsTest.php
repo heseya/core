@@ -90,9 +90,7 @@ class SeoKeywordsTest extends TestCase
         $seo->setTranslation('keywords', $this->lang, ['PHP', 'Laravel', 'Java']);
 
         /** @var Product $product */
-        $product = Product::factory([
-            'public' => true,
-        ])->create();
+        $product = Product::factory()->create();
         $product->seo()->save($seo);
 
         $this->{$user}->givePermissionTo('seo.edit');

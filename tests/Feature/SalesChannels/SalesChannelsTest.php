@@ -42,7 +42,6 @@ final class SalesChannelsTest extends TestCase
 
         // @phpstan-ignore-next-line
         $product = $productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [
                 [
                     'value' => 10,
@@ -106,7 +105,6 @@ final class SalesChannelsTest extends TestCase
 
         // @phpstan-ignore-next-line
         $product = $productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [
                 [
                     'value' => 10,

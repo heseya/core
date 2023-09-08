@@ -206,7 +206,6 @@ class ActiveSalesTest extends TestCase
 
         $product1 = Product::factory()->create([
             'name' => 'Product had discount',
-            'public' => true,
         ]);
         $productRepository->setProductPrices($product1->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(1000, $currency))],
@@ -216,7 +215,6 @@ class ActiveSalesTest extends TestCase
 
         $product2 = Product::factory()->create([
             'name' => 'Product will have discount',
-            'public' => true,
         ]);
         $productRepository->setProductPrices($product2->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(2500, $currency))],
@@ -226,7 +224,6 @@ class ActiveSalesTest extends TestCase
 
         $product3 = Product::factory()->create([
             'name' => 'Just the product',
-            'public' => true,
         ]);
         $productRepository->setProductPrices($product3->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(1500, $currency))],

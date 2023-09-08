@@ -51,9 +51,7 @@ class ProductSortTest extends TestCase
 
         $defaultSalesChannel = app(SalesChannelRepository::class)->getDefault();
 
-        $product1 = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product1 = Product::factory()->create();
         $defaultSalesChannel->products()->attach($product1);
         $this->productRepository->setProductPrices($product1->getKey(), [
             ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(13, $this->currency->value))],
@@ -63,9 +61,7 @@ class ProductSortTest extends TestCase
             ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(11, Currency::EUR->toCurrencyInstance()))],
             ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(1, Currency::EUR->toCurrencyInstance()))],
         ]);
-        $product2 = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product2 = Product::factory()->create();
         $defaultSalesChannel->products()->attach($product2);
         $this->productRepository->setProductPrices($product2->getKey(), [
             ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(12, $this->currency->value))],
@@ -75,9 +71,7 @@ class ProductSortTest extends TestCase
             ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(12, Currency::EUR->toCurrencyInstance()))],
             ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(2, Currency::EUR->toCurrencyInstance()))],
         ]);
-        $product3 = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product3 = Product::factory()->create();
         $defaultSalesChannel->products()->attach($product3);
         $this->productRepository->setProductPrices($product3->getKey(), [
             ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(11, $this->currency->value))],
@@ -188,23 +182,17 @@ class ProductSortTest extends TestCase
 
         $defaultSalesChannel = app(SalesChannelRepository::class)->getDefault();
 
-        $product1 = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product1 = Product::factory()->create(]);
         $product1->setLocale($this->lang)->fill([
             'name' => 'B product',
         ]);
         $product1->save();
-        $product2 = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product2 = Product::factory()->create();
         $product2->setLocale($this->lang)->fill([
             'name' => 'C product',
         ]);
         $product2->save();
-        $product3 = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product3 = Product::factory()->create();
         $product3->setLocale($this->lang)->fill([
             'name' => 'A product',
         ]);

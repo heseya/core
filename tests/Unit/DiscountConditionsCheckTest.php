@@ -65,7 +65,6 @@ class DiscountConditionsCheckTest extends TestCase
 
         $this->product = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [PriceDto::from(Money::of(20, $this->currency->value))],
-            'public' => true,
         ]));
 
         $this->set = ProductSet::factory()->create();
@@ -149,7 +148,6 @@ class DiscountConditionsCheckTest extends TestCase
 
         $product = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [PriceDto::from(Money::of(60, $this->currency->value))],
-            'public' => true,
         ]));
 
         $product->sets()->sync([$this->set->getKey()]);
@@ -191,7 +189,6 @@ class DiscountConditionsCheckTest extends TestCase
 
         $product = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [PriceDto::from(Money::of(60, $this->currency->value))],
-            'public' => true,
         ]));
 
         $cart = CartDto::fromArray([

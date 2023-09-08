@@ -226,9 +226,7 @@ class DiscountDeleteTest extends TestCase
             'target_is_allow_list' => true,
         ])->create();
 
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product = Product::factory()->create();
         $this->productRepository->setProductPrices($product->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(100, $this->currency->value))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(100, $this->currency->value))],
@@ -286,9 +284,7 @@ class DiscountDeleteTest extends TestCase
             'target_is_allow_list' => true,
         ])->create();
 
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product = Product::factory()->create();
         $this->productRepository->setProductPrices($product->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(100, $this->currency->value))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(100, $this->currency->value))],

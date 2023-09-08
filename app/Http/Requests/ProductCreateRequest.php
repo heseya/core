@@ -45,7 +45,6 @@ class ProductCreateRequest extends FormRequest implements MetadataRequestContrac
                 'prices_base' => ['required', new PricesEveryCurrency()],
                 'prices_base.*' => [new Price(['value'], min: BigDecimal::zero())],
 
-                'public' => ['required', 'boolean'],
                 'shipping_digital' => ['required', 'boolean'],
 
                 'quantity_step' => ['numeric'],

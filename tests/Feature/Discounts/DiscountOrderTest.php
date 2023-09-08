@@ -64,7 +64,6 @@ class DiscountOrderTest extends TestCase
         $this->currency = Currency::DEFAULT;
 
         $this->product = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(100, $this->currency->value))],
         ]));
 
@@ -290,17 +289,14 @@ class DiscountOrderTest extends TestCase
         $shippingMethod = $this->createShippingMethod(20, ['shipping_type' => ShippingType::ADDRESS]);
 
         $product1 = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(100, $this->currency->value))],
         ]));
 
         $product2 = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(200, $this->currency->value))],
         ]));
 
         $product3 = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(50, $this->currency->value))],
         ]));
 
@@ -565,7 +561,6 @@ class DiscountOrderTest extends TestCase
 
         $this->{$user}->givePermissionTo('orders.add');
         $product1 = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(5588.75, $this->currency->value))],
         ]));
 
@@ -637,7 +632,6 @@ class DiscountOrderTest extends TestCase
     {
         $this->{$user}->givePermissionTo('orders.add');
         $product1 = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(5588.75, $this->currency->value))],
         ]));
 
@@ -695,7 +689,6 @@ class DiscountOrderTest extends TestCase
         $this->{$user}->givePermissionTo('orders.add');
 
         $product = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(10, $this->currency->value))],
         ]));
 
@@ -746,7 +739,6 @@ class DiscountOrderTest extends TestCase
         $this->{$user}->givePermissionTo('orders.add');
 
         $product = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(10, $this->currency->value))],
         ]));
 
@@ -801,7 +793,6 @@ class DiscountOrderTest extends TestCase
         $this->{$user}->givePermissionTo('orders.add');
 
         $product = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(10, $this->currency->value))],
         ]));
 
@@ -860,7 +851,6 @@ class DiscountOrderTest extends TestCase
         $this->{$user}->givePermissionTo('orders.add');
 
         $product = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(10, $this->currency->value))],
         ]));
 
@@ -920,7 +910,6 @@ class DiscountOrderTest extends TestCase
         $this->{$user}->givePermissionTo('orders.add');
 
         $product = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(10, $this->currency->value))],
         ]));
 
@@ -982,7 +971,6 @@ class DiscountOrderTest extends TestCase
         $this->{$user}->givePermissionTo('orders.add');
 
         $product = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(100, $this->currency->value))],
         ]));
 
@@ -1062,7 +1050,6 @@ class DiscountOrderTest extends TestCase
 
         $productPrice = 50;
         $product = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of($productPrice, $this->currency->value))],
         ]));
 

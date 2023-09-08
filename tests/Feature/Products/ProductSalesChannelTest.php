@@ -40,7 +40,6 @@ class ProductSalesChannelTest extends TestCase
             'published' => [$this->lang],
             'slug' => 'slug',
             'prices_base' => $prices,
-            'public' => true,
             'shipping_digital' => false,
             'sales_channels' => [
                 [

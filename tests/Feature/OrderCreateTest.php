@@ -118,9 +118,7 @@ class OrderCreateTest extends TestCase
 
         $this->address = Address::factory()->make();
 
-        $this->product = Product::factory()->create([
-            'public' => true,
-        ]);
+        $this->product = Product::factory()->create();
         $this->product->salesChannels()->attach($this->salesChannel);
 
         /** @var ProductRepositoryContract $productRepository */
@@ -345,7 +343,6 @@ class OrderCreateTest extends TestCase
         Event::fake([OrderCreated::class]);
 
         $product = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::zero($this->currency->value))],
         ]));
 
@@ -968,7 +965,6 @@ class OrderCreateTest extends TestCase
         Event::fake([OrderCreated::class]);
 
         $product = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(150, $this->currency->value))],
         ]));
 
@@ -1966,8 +1962,6 @@ class OrderCreateTest extends TestCase
                 ],
             ],
         ]);
-
-        var_dump($response->getContent());
 
         $response->assertValid()->assertCreated();
     }

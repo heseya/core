@@ -338,7 +338,6 @@ class ProductTest extends TestCase
         /** @var Product $product */
         $product = Product::factory()->create([
             'name' => 'Test product with translations',
-            'public' => true,
         ]);
         $this->salesChannel->products()->attach($product);
 
@@ -573,9 +572,7 @@ class ProductTest extends TestCase
     {
         $this->{$user}->givePermissionTo(['products.show_details', 'product_sets.show_hidden']);
 
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product = Product::factory()->create();
         $this->salesChannel->products()->attach($product);
 
         $set1 = ProductSet::factory()->create([
@@ -1764,7 +1761,7 @@ class ProductTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.add');
 
-        $this
+        $response = $this
             ->actingAs($this->{$user})
             ->postJson('/products', [
                 'translations' => [
@@ -1776,7 +1773,9 @@ class ProductTest extends TestCase
                 'slug' => 'test',
                 'prices_base' => $this->productPrices,
                 'shipping_digital' => true,
-            ])
+            ]);
+
+        $response->assertValid()
             ->assertCreated()
             ->assertJsonFragment([
                 'slug' => 'test',

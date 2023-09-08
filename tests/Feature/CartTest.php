@@ -99,12 +99,10 @@ class CartTest extends TestCase
         $this->shippingMethod->priceRanges()->saveMany([$lowRange, $highRange]);
 
         $this->product = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(4600.0, $this->currency->value))],
         ]));
 
         $this->productWithSchema = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(100.0, $this->currency->value))],
         ]));
 
@@ -135,7 +133,6 @@ class CartTest extends TestCase
         $this->option2 = $this->schema->options->where('name', 'L')->first();
 
         $this->digitalProduct = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'shipping_digital' => true,
         ]));
         $this->digitalShippingMethod = ShippingMethod::factory()->create([
@@ -980,7 +977,6 @@ class CartTest extends TestCase
         $this->{$user}->givePermissionTo('cart.verify');
 
         $product = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(10.0, $this->currency->value))],
         ]));
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
@@ -990,7 +986,6 @@ class CartTest extends TestCase
         ]));
         $product->schemas()->save($schema);
         $product2 = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(100.0, $this->currency->value))],
         ]));
         $sale = Discount::factory()->create([
@@ -1040,7 +1035,6 @@ class CartTest extends TestCase
         $this->{$user}->givePermissionTo('cart.verify');
 
         $productDto = FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(10.0, $this->currency->value))],
         ]);
         $product = $this->productService->create($productDto);
@@ -1223,7 +1217,6 @@ class CartTest extends TestCase
         $code = $coupon ? [] : ['code' => null];
 
         $product = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(4601.0, $this->currency->value))],
         ]));
 
@@ -1309,7 +1302,6 @@ class CartTest extends TestCase
         $code = $coupon ? [] : ['code' => null];
 
         $product = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(45.0, $this->currency->value))],
         ]));
 
@@ -1405,7 +1397,6 @@ class CartTest extends TestCase
         $item = Item::factory()->create($itemData);
 
         $product = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(4600.0, $this->currency->value))],
         ]));
         $product->items()->attach($item->getKey(), ['required_quantity' => 100]);
@@ -1448,7 +1439,6 @@ class CartTest extends TestCase
         ]);
 
         $product = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(4600.0, $this->currency->value))],
         ]));
 
@@ -1561,11 +1551,9 @@ class CartTest extends TestCase
         ]);
 
         $product = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(4600.0, $this->currency->value))],
         ]));
         $product2 = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(4600.0, $this->currency->value))],
         ]));
 
@@ -1939,9 +1927,7 @@ class CartTest extends TestCase
 
         $this->{$user}->givePermissionTo('cart.verify');
 
-        $productWithSale = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
-        ]));
+        $productWithSale = $this->productService->create(FakeDto::productCreateDto());
 
         $sale = Discount::factory()->create([
             'code' => null,
@@ -2212,7 +2198,6 @@ class CartTest extends TestCase
         ]);
 
         $product = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(1000.0, $this->currency->value))],
         ]));
 
@@ -2618,7 +2603,6 @@ class CartTest extends TestCase
     private function prepareCouponWithProductInSetAndCountConditions(bool $productInSet, bool $isAllowList): array
     {
         $product = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(49.0, $this->currency->value))],
         ]));
 

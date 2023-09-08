@@ -72,9 +72,9 @@ class OrderDepositTest extends TestCase
 
         $this->currency = Currency::DEFAULT;
         $this->product = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(100.00, $this->currency->value))],
         ]));
+        $this->salesChannel->products()->attach($this->product);
 
         $this->schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 'select',
@@ -411,10 +411,9 @@ class OrderDepositTest extends TestCase
         ]);
 
         $product = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(100.00, $this->currency->value))],
         ]));
-
+        $this->salesChannel->products()->attach($product);
         $product->items()->attach($this->item->getKey(), ['required_quantity' => 1]);
 
         $this->assertDatabaseHas('products', [
@@ -702,10 +701,9 @@ class OrderDepositTest extends TestCase
         ]);
 
         $product = $this->productService->create(FakeDto::productCreateDto([
-            'public' => true,
             'prices_base' => [PriceDto::from(Money::of(100.00, $this->currency->value))],
         ]));
-
+        $this->salesChannel->products()->attach($product);
         $product->items()->attach($this->item->getKey(), ['required_quantity' => 1]);
 
         $this->assertDatabaseHas('products', [

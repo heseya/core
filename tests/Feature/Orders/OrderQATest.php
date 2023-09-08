@@ -58,7 +58,6 @@ class OrderQATest extends TestCase
         $productService = App::make(ProductService::class);
         $this->product = $productService->create(FakeDto::productCreateDto([
             'prices_base' => [PriceDto::from(Money::of(100, $currency))],
-            'public' => true,
         ]));
 
         $this->shippingMethod = ShippingMethod::factory()->create();
