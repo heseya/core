@@ -99,6 +99,7 @@ class LanguageFallbackTest extends TestCase
             'description_short' => 'Breve descripción',
             'public' => true,
         ]);
+        $this->salesChannel->products()->attach($product_es);
 
         App::setLocale($de->getKey());
         $product_de = Product::factory()->create([

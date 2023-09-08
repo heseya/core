@@ -449,7 +449,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(23);
+        $this->assertQueryCountLessThan(24);
     }
 
     public function testIndexUserUnauthenticated(): void
@@ -842,7 +842,7 @@ class OrderTest extends TestCase
             ->assertJsonFragment(['code' => $this->order->code])
             ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
 
-        $this->assertQueryCountLessThan(34);
+        $this->assertQueryCountLessThan(35);
     }
 
     /**
@@ -896,7 +896,7 @@ class OrderTest extends TestCase
                 $privateMetadata->name => $privateMetadata->value,
             ]]);
 
-        $this->assertQueryCountLessThan(35);
+        $this->assertQueryCountLessThan(37);
     }
 
     public function testViewSummaryUnauthorized(): void
@@ -964,7 +964,7 @@ class OrderTest extends TestCase
                 'summary_paid' => $summaryPaid->getAmount(),
             ]);
 
-        $this->assertQueryCountLessThan(34);
+        $this->assertQueryCountLessThan(36);
     }
 
     /**

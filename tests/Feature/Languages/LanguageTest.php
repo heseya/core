@@ -8,6 +8,8 @@ use Domain\Language\Events\LanguageCreated;
 use Domain\Language\Events\LanguageDeleted;
 use Domain\Language\Events\LanguageUpdated;
 use Domain\Language\Language;
+use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
@@ -18,6 +20,8 @@ class LanguageTest extends TestCase
 {
     public Language $language;
     public Language $languageHidden;
+
+    protected SalesChannel $salesChannel;
 
     public function setUp(): void
     {
@@ -40,6 +44,8 @@ class LanguageTest extends TestCase
             'default' => false,
             'hidden' => true,
         ]);
+
+        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
     }
 
     public function testIndex(): void
@@ -392,6 +398,7 @@ class LanguageTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
+        $this->salesChannel->products()->attach($product);
 
         $product->setLocale($language->getKey())->fill([
             'name' => 'Netherland name',
@@ -502,6 +509,7 @@ class LanguageTest extends TestCase
             'description_short' => 'Krótki opis',
             'public' => true,
         ]);
+        $this->salesChannel->products()->attach($product);
 
         $this
             ->actingAs($this->{$user})
@@ -539,6 +547,7 @@ class LanguageTest extends TestCase
             'description_short' => 'Kurze Beschreibung',
             'public' => true,
         ]);
+        $this->salesChannel->products()->attach($product);
 
         $this
             ->actingAs($this->{$user})
@@ -569,6 +578,7 @@ class LanguageTest extends TestCase
             'description_short' => 'Krótki opis',
             'public' => true,
         ]);
+        $this->salesChannel->products()->attach($product);
 
         $product->setLocale($this->languageHidden->getKey())->update([
             'name' => 'Hidden name',

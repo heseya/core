@@ -1504,7 +1504,11 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         $defaultSalesChannel = app(SalesChannelRepository::class)->getDefault();
-        $defaultSalesChannel->products()->sync($products);
+        $defaultSalesChannel->products()->sync([
+            $products[0]->getKey(),
+            $products[1]->getKey(),
+            $products[2]->getKey(),
+        ]);
 
         $set = ProductSet::factory()->create([
             'slug' => 'all-maritime',
