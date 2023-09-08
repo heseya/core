@@ -24,6 +24,7 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Notification;
@@ -37,6 +38,7 @@ class DiscountOrderTest extends TestCase
 
     protected Product $product;
     protected ShippingMethod $shippingMethod;
+    protected SalesChannel $salesChannel;
 
     protected array $items;
     protected array $address;
@@ -57,6 +59,7 @@ class DiscountOrderTest extends TestCase
 
         Notification::fake();
 
+        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
         $this->productService = App::make(ProductService::class);
         $this->currency = Currency::DEFAULT;
 
@@ -98,7 +101,7 @@ class DiscountOrderTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address,
@@ -139,7 +142,7 @@ class DiscountOrderTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address,
@@ -171,7 +174,7 @@ class DiscountOrderTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address,
@@ -223,7 +226,7 @@ class DiscountOrderTest extends TestCase
 
         $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address,
@@ -259,7 +262,7 @@ class DiscountOrderTest extends TestCase
 
         $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address,
@@ -364,7 +367,7 @@ class DiscountOrderTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address,
@@ -460,7 +463,7 @@ class DiscountOrderTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address,
@@ -477,6 +480,7 @@ class DiscountOrderTest extends TestCase
         ]);
 
         $response
+            ->assertValid()
             ->assertCreated()
             ->assertJsonFragment(['summary' => '185.50']); // 90 (first product) + 85,5 (second product) + 10 (delivery)
 
@@ -591,7 +595,7 @@ class DiscountOrderTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address,
@@ -646,7 +650,7 @@ class DiscountOrderTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address,
@@ -714,7 +718,7 @@ class DiscountOrderTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address,
@@ -769,7 +773,7 @@ class DiscountOrderTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address,
@@ -821,7 +825,7 @@ class DiscountOrderTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address,
             'billing_address' => $this->address,
@@ -880,7 +884,7 @@ class DiscountOrderTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address,
@@ -940,7 +944,7 @@ class DiscountOrderTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address,
@@ -998,7 +1002,7 @@ class DiscountOrderTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address,
@@ -1088,7 +1092,7 @@ class DiscountOrderTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => 'example@example.com',
             'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_place' => $this->address,

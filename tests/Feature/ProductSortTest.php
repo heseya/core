@@ -11,6 +11,7 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\SalesChannel\SalesChannelRepository;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
@@ -48,9 +49,12 @@ class ProductSortTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
+        $defaultSalesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $product1 = Product::factory()->create([
             'public' => true,
         ]);
+        $defaultSalesChannel->products()->attach($product1);
         $this->productRepository->setProductPrices($product1->getKey(), [
             ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(13, $this->currency->value))],
             ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(3, $this->currency->value))],
@@ -62,6 +66,7 @@ class ProductSortTest extends TestCase
         $product2 = Product::factory()->create([
             'public' => true,
         ]);
+        $defaultSalesChannel->products()->attach($product2);
         $this->productRepository->setProductPrices($product2->getKey(), [
             ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(12, $this->currency->value))],
             ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(2, $this->currency->value))],
@@ -73,6 +78,7 @@ class ProductSortTest extends TestCase
         $product3 = Product::factory()->create([
             'public' => true,
         ]);
+        $defaultSalesChannel->products()->attach($product3);
         $this->productRepository->setProductPrices($product3->getKey(), [
             ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(11, $this->currency->value))],
             ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(1, $this->currency->value))],
@@ -104,7 +110,7 @@ class ProductSortTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(22);
 
         $response = $this
             ->actingAs($this->{$user})
@@ -180,6 +186,8 @@ class ProductSortTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
+        $defaultSalesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $product1 = Product::factory()->create([
             'public' => true,
         ]);
@@ -201,6 +209,12 @@ class ProductSortTest extends TestCase
             'name' => 'A product',
         ]);
         $product3->save();
+
+        $defaultSalesChannel->products()->sync([
+            $product1,
+            $product2,
+            $product3,
+        ]);
 
         $this
             ->actingAs($this->{$user})

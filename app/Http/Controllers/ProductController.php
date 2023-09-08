@@ -58,11 +58,11 @@ final class ProductController extends Controller
 
     public function show(Product $product): JsonResource
     {
-        if (Gate::denies('products.show_hidden') && $this->productService->productIsHiddenInSalesChannel($product)) {
-            throw new NotFoundHttpException();
-        }
-
-        return ProductResource::make($product);
+        return match (true) {
+            $product->isPublicForSalesChannel(),
+            !Gate::denies('products.show_hidden') && $product->isHiddenForSalesChannel() => ProductResource::make($product),
+            default => throw new NotFoundHttpException(),
+        };
     }
 
     public function store(ProductCreateRequest $request): JsonResource

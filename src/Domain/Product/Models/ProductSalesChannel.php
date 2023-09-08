@@ -19,6 +19,9 @@ final class ProductSalesChannel extends Pivot
         'availability_status' => ProductSalesChannelStatus::class,
     ];
 
+    /**
+     * @param Builder<ProductSalesChannel> $query
+     */
     public static function scopeForProductAndSalesChannel(Builder $query, Product $product, SalesChannel $salesChannel): void
     {
         $query->where('product_id', $product->getKey())->where('sales_channel_id', $salesChannel->getKey());

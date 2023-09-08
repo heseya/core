@@ -113,7 +113,7 @@ class PricesTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(13);
+        $this->assertQueryCountLessThan(14);
     }
 
     /**
@@ -134,7 +134,7 @@ class PricesTest extends TestCase
             ]])
             ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
 
-        $this->assertQueryCountLessThan(6);
+        $this->assertQueryCountLessThan(7);
     }
 
     /**
@@ -151,7 +151,7 @@ class PricesTest extends TestCase
             ]])
             ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(11);
     }
 
     /**
@@ -204,7 +204,7 @@ class PricesTest extends TestCase
                 $priceMax1 * (1 - $discountRate), 2, '.', '',
             ));
 
-        $this->assertQueryCountLessThan(19);
+        $this->assertQueryCountLessThan(20);
     }
 
     /**
@@ -270,7 +270,7 @@ class PricesTest extends TestCase
                 $priceMax1 * (1 - $discountRate), 2, '.', '',
             ));
 
-        $this->assertQueryCountLessThan(35);
+        $this->assertQueryCountLessThan(36);
     }
 
     /**
@@ -333,7 +333,7 @@ class PricesTest extends TestCase
             ->assertJsonPath('data.0.prices_min.0.net', $priceMin1)
             ->assertJsonPath('data.0.prices_max.0.net', $priceMax1);
 
-        $this->assertQueryCountLessThan(35);
+        $this->assertQueryCountLessThan(36);
     }
 
     /**
@@ -400,7 +400,7 @@ class PricesTest extends TestCase
                 $priceMax1 * (1 - $discountRate), 2, '.', '',
             ));
 
-        $this->assertQueryCountLessThan(36);
+        $this->assertQueryCountLessThan(37);
     }
 
     /**
@@ -462,6 +462,6 @@ class PricesTest extends TestCase
             ->assertJsonPath('data.0.prices_min.0.net', $priceMin1)
             ->assertJsonPath('data.0.prices_max.0.net', $priceMax1);
 
-        $this->assertQueryCountLessThan(36);
+        $this->assertQueryCountLessThan(37);
     }
 }

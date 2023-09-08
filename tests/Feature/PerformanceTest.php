@@ -74,13 +74,14 @@ class PerformanceTest extends TestCase
             'schema_id' => $schema3->getKey(),
         ]);
 
-        $this
+        $response = $this
             ->actingAs($this->user)
-            ->json('GET', '/products/id:' . $product->getKey())
-            ->assertOk();
+            ->json('GET', '/products/id:' . $product->getKey());
+
+        $response->assertOk();
 
         // TODO: From 31 up to 1533... prices as a relation kind of suck
-        $this->assertQueryCountLessThan(1537);
+        $this->assertQueryCountLessThan(1538);
     }
 
     public function testIndexPerformanceListAttribute500(): void
@@ -208,7 +209,7 @@ class PerformanceTest extends TestCase
             ->getJson('/banners')
             ->assertOk();
 
-        $this->assertQueryCountLessThan(14);
+        $this->assertQueryCountLessThan(15);
     }
 
     public function testIndexPerformanceOrder500(): void
@@ -238,7 +239,7 @@ class PerformanceTest extends TestCase
             ->getJson('/orders')
             ->assertOk();
 
-        $this->assertQueryCountLessThan(23);
+        $this->assertQueryCountLessThan(24);
     }
 
     public function testIndexPerformanceShippingMethode(): void

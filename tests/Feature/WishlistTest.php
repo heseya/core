@@ -112,10 +112,11 @@ class WishlistTest extends TestCase
             'product_id' => $this->product->getKey(),
         ]);
 
-        $this
+        $response = $this
             ->actingAs($this->{$user})
-            ->json('GET', '/wishlist/id:' . $this->product->getKey())
-            ->assertOk()
+            ->json('GET', '/wishlist/id:' . $this->product->getKey());
+
+        $response->assertOk()
             ->assertJsonStructure(['data' => $this->expected_structure])
             ->assertJsonFragment(['id' => $this->product->getKey()]);
     }

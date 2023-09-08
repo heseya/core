@@ -57,8 +57,8 @@ final class SalesChannelRepository
     // TODO: is it possible for this function to return null in properly configured application?
     public function getDefault(): ?SalesChannel
     {
-        return SalesChannel::query()->where('slug', 'default')->first()
-            ?? SalesChannel::query()->where('status', '=', Status::ACTIVE->value)->first();
+        return SalesChannel::query()->where('slug', 'default')->oldest('id')->first()
+            ?? SalesChannel::query()->where('status', '=', Status::ACTIVE->value)->oldest('id')->first();
     }
 
     public function store(SalesChannelCreateDto $dto): SalesChannel

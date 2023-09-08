@@ -29,6 +29,7 @@ use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -57,6 +58,7 @@ class CartTest extends TestCase
     private ProductService $productService;
     private Currency $currency;
     private SchemaCrudService $schemaCrudService;
+    private SalesChannel $salesChannel;
 
     /**
      * @throws UnknownCurrencyException
@@ -74,6 +76,8 @@ class CartTest extends TestCase
             'public' => true,
             'shipping_type' => ShippingType::ADDRESS,
         ]);
+
+        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
 
         $this->productService = App::make(ProductService::class);
         $this->currency = Currency::DEFAULT;
@@ -143,7 +147,7 @@ class CartTest extends TestCase
     {
         $response = $this->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -167,7 +171,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'digital_shipping_method_id' => $this->digitalShippingMethod->getKey(),
             'items' => [
                 [
@@ -191,7 +195,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -215,7 +219,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -258,7 +262,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -362,7 +366,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -417,7 +421,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -478,7 +482,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -575,7 +579,7 @@ class CartTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -692,7 +696,7 @@ class CartTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->postJson('/cart/process', [
-                'sales_channel_id' => SalesChannel::query()->value('id'),
+                'sales_channel_id' => $this->salesChannel->getKey(),
                 'shipping_method_id' => $shippingMethod->getKey(),
                 'items' => [
                     [
@@ -750,7 +754,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -830,7 +834,7 @@ class CartTest extends TestCase
             ->actingAs($this->{$user})
             ->postJson('/cart/process', [
                 'currency' => $this->currency,
-                'sales_channel_id' => SalesChannel::query()->value('id'),
+                'sales_channel_id' => $this->salesChannel->getKey(),
                 'shipping_method_id' => $this->shippingMethod->getKey(),
                 'items' => [
                     [
@@ -918,7 +922,7 @@ class CartTest extends TestCase
         $response = $this
             ->actingAs($this->{$user})
             ->postJson('/cart/process', [
-                'sales_channel_id' => SalesChannel::query()->value('id'),
+                'sales_channel_id' => $this->salesChannel->getKey(),
                 'shipping_method_id' => $this->shippingMethod->getKey(),
                 'items' => [
                     [
@@ -999,7 +1003,7 @@ class CartTest extends TestCase
         $sale->products()->attach($product->getKey());
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1060,7 +1064,7 @@ class CartTest extends TestCase
         $sale->products()->attach($product->getKey());
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1090,7 +1094,7 @@ class CartTest extends TestCase
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1103,7 +1107,8 @@ class CartTest extends TestCase
             'coupons' => [
                 $couponWithLimit->code,
                 $coupon2->code,
-            ]])
+            ]
+        ])
             ->assertValid()->assertOk()
             ->assertJsonCount(2, 'data.coupons');
     }
@@ -1119,7 +1124,7 @@ class CartTest extends TestCase
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1132,7 +1137,8 @@ class CartTest extends TestCase
             'coupons' => [
                 $couponWithLimit->code,
                 $coupon2->code,
-            ]])
+            ]
+        ])
             ->assertValid()->assertOk()
             ->assertJsonCount(1, 'data.coupons')
             ->assertJsonMissing([
@@ -1152,7 +1158,7 @@ class CartTest extends TestCase
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1165,7 +1171,8 @@ class CartTest extends TestCase
             'coupons' => [
                 $couponWithLimit->code,
                 $coupon2->code,
-            ]])
+            ]
+        ])
             ->assertValid()->assertOk()
             ->assertJsonCount(1, 'data.coupons')
             ->assertJsonMissing([
@@ -1185,7 +1192,7 @@ class CartTest extends TestCase
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1198,7 +1205,8 @@ class CartTest extends TestCase
             'coupons' => [
                 $couponWithLimit->code,
                 $coupon2->code,
-            ]])
+            ]
+        ])
             ->assertValid()->assertOk()
             ->assertJsonCount(2, 'data.coupons');
     }
@@ -1246,7 +1254,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1334,7 +1342,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1404,7 +1412,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1456,7 +1464,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1477,7 +1485,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1508,7 +1516,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1582,7 +1590,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1617,7 +1625,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1646,7 +1654,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1687,7 +1695,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1734,7 +1742,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1779,7 +1787,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1874,7 +1882,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1960,7 +1968,7 @@ class CartTest extends TestCase
         $saleShippingMethod->shippingMethods()->attach($saleShippingMethod->getKey());
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1969,7 +1977,8 @@ class CartTest extends TestCase
                     'quantity' => 2,
                     'schemas' => [],
                 ],
-            ]])
+            ]
+        ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => 9200,
@@ -2041,7 +2050,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2094,7 +2103,7 @@ class CartTest extends TestCase
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2103,7 +2112,8 @@ class CartTest extends TestCase
                     'quantity' => 2,
                     'schemas' => [],
                 ],
-            ]])
+            ]
+        ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => '9200.00',
@@ -2135,7 +2145,7 @@ class CartTest extends TestCase
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2144,7 +2154,8 @@ class CartTest extends TestCase
                     'quantity' => 2,
                     'schemas' => [],
                 ],
-            ]])
+            ]
+        ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => '4600.00',
@@ -2207,7 +2218,7 @@ class CartTest extends TestCase
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2222,7 +2233,8 @@ class CartTest extends TestCase
                     'quantity' => 1,
                     'schemas' => [],
                 ],
-            ]])
+            ]
+        ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => '1000.00',
@@ -2275,7 +2287,7 @@ class CartTest extends TestCase
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2284,7 +2296,8 @@ class CartTest extends TestCase
                     'quantity' => 1,
                     'schemas' => [],
                 ],
-            ]])
+            ]
+        ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => '0.00',
@@ -2324,7 +2337,7 @@ class CartTest extends TestCase
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2333,7 +2346,8 @@ class CartTest extends TestCase
                     'quantity' => 1,
                     'schemas' => [],
                 ],
-            ]])
+            ]
+        ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => '4600.00',
@@ -2370,7 +2384,7 @@ class CartTest extends TestCase
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2379,7 +2393,8 @@ class CartTest extends TestCase
                     'quantity' => 1,
                     'schemas' => [],
                 ],
-            ]])
+            ]
+        ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => '0.00',
@@ -2423,7 +2438,7 @@ class CartTest extends TestCase
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2432,7 +2447,8 @@ class CartTest extends TestCase
                     'quantity' => 1,
                     'schemas' => [],
                 ],
-            ]])
+            ]
+        ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => '4600.00',
@@ -2463,7 +2479,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2514,7 +2530,7 @@ class CartTest extends TestCase
 
         $this->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2523,7 +2539,8 @@ class CartTest extends TestCase
                     'quantity' => 2,
                     'schemas' => [],
                 ],
-            ]])
+            ]
+        ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => '4600.00',
@@ -2674,7 +2691,7 @@ class CartTest extends TestCase
 
         $response = $this->actingAs($this->user)->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [

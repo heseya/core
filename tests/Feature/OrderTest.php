@@ -338,7 +338,7 @@ class OrderTest extends TestCase
                 'id' => $order_no_user->getKey(),
             ]);
 
-        $this->assertQueryCountLessThan(22);
+        $this->assertQueryCountLessThan(23);
     }
 
     /**

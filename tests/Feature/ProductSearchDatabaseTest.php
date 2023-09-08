@@ -16,6 +16,7 @@ use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductSet\ProductSet;
+use Domain\SalesChannel\SalesChannelRepository;
 use Domain\Tag\Models\Tag;
 use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -33,9 +34,13 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $product = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product);
+
         $set = ProductSet::factory()->create([
             'public' => true,
         ]);
@@ -44,6 +49,7 @@ class ProductSearchDatabaseTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product);
 
         $this
             ->actingAs($this->{$user})
@@ -64,9 +70,12 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $product = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product);
 
         $this
             ->actingAs($this->{$user})
@@ -83,14 +92,18 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $firstProduct = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($firstProduct);
 
         $secondProduct = Product::factory()->create([
             'public' => true,
             'created_at' => Carbon::now()->addHour(),
         ]);
+        $salesChannel->products()->attach($secondProduct);
 
         // Dummy product to check if response will return only 2 products created above
         Product::factory()->create([
@@ -117,9 +130,12 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $product = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product);
 
         $this
             ->actingAs($this->{$user})
@@ -136,6 +152,8 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $set = ProductSet::factory()->create([
             'public' => true,
         ]);
@@ -143,11 +161,13 @@ class ProductSearchDatabaseTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product);
 
         // Product not in set
-        Product::factory()->create([
+        $product2 = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product2);
 
         $set->products()->attach($product);
 
@@ -166,6 +186,8 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $set = ProductSet::factory()->create([
             'public' => true,
         ]);
@@ -173,11 +195,13 @@ class ProductSearchDatabaseTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product);
 
         // Product not in set
-        Product::factory()->create([
+        $product2 = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product2);
 
         $set->products()->attach($product);
 
@@ -195,6 +219,8 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $set = ProductSet::factory()->create([
             'public' => true,
         ]);
@@ -206,15 +232,18 @@ class ProductSearchDatabaseTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product);
 
         $product2 = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product2);
 
         // Product not in set
-        Product::factory()->create([
+        $product3 =  Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product3);
 
         $set->products()->attach($product);
         $set2->products()->attach($product2);
@@ -237,6 +266,8 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $set = ProductSet::factory()->create([
             'public' => true,
         ]);
@@ -248,15 +279,18 @@ class ProductSearchDatabaseTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product);
 
         $product2 = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product2);
 
         // Product not in set
-        Product::factory()->create([
+        $product3 = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product3);
 
         $set->products()->attach($product);
         $set2->products()->attach($product2);
@@ -295,6 +329,8 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo(['products.show', 'product_sets.show_hidden']);
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $set = ProductSet::factory()->create([
             'public' => true,
         ]);
@@ -307,11 +343,13 @@ class ProductSearchDatabaseTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product);
 
         // Product not in set
-        Product::factory()->create([
+        $product2 = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product2);
 
         $set->products()->attach($product);
 
@@ -344,6 +382,8 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $grandParentSet = ProductSet::factory()->create([
             'public' => true,
         ]);
@@ -361,11 +401,13 @@ class ProductSearchDatabaseTest extends TestCase
         $productRef = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($productRef);
 
         // Product not in set
-        Product::factory()->create([
+        $product2 = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product2);
 
         $childSet->products()->attach($productRef);
 
@@ -415,16 +457,20 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $tag = Tag::factory()->create();
 
         $product = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product);
 
         // Product not in tag
-        Product::factory()->create([
+        $product2 = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product2);
 
         $tag->products()->attach($product);
 
@@ -443,16 +489,20 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $tag = Tag::factory()->create();
 
         $product = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product);
 
         // Product not in tag
-        Product::factory()->create([
+        $product2 = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product2);
 
         $tag->products()->attach($product);
 
@@ -470,22 +520,27 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $tag1 = Tag::factory()->create();
 
         $product1 = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product1);
 
         $tag2 = Tag::factory()->create();
 
         $product2 = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product2);
 
         // Product not in tag
-        Product::factory()->create([
+        $product3 = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product3);
 
         $tag1->products()->attach($product1);
         $tag2->products()->attach($product2);
@@ -510,22 +565,27 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $tag1 = Tag::factory()->create();
 
         $product1 = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product1);
 
         $tag2 = Tag::factory()->create();
 
         $product2 = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product2);
 
         // Product not in tag
-        Product::factory()->create([
+        $product3 = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product3);
 
         $tag1->products()->attach($product1);
         $tag2->products()->attach($product2);
@@ -606,6 +666,8 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         /** @var ProductRepositoryContract $productRepository */
         $productRepository = App::make(ProductRepositoryContract::class);
         $currency = Currency::DEFAULT;
@@ -613,6 +675,7 @@ class ProductSearchDatabaseTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product);
         $productRepository->setProductPrices($product->getKey(), [
             ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(100, $currency->value))],
             ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(200, $currency->value))],
@@ -621,6 +684,7 @@ class ProductSearchDatabaseTest extends TestCase
         $product2 = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product2);
         $productRepository->setProductPrices($product2->getKey(), [
             ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(300, $currency->value))],
             ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(1000, $currency->value))],
@@ -629,6 +693,7 @@ class ProductSearchDatabaseTest extends TestCase
         $product3 = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product3);
         $productRepository->setProductPrices($product3->getKey(), [
             ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(10, $currency->value))],
             ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(10, $currency->value))],
@@ -653,13 +718,17 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $productNoPhoto = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($productNoPhoto);
 
         $productPhoto = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($productPhoto);
 
         $media = Media::factory()->create([
             'url' => 'https://picsum.photos/seed/' . mt_rand(0, 999999) . '/800',
@@ -692,6 +761,9 @@ class ProductSearchDatabaseTest extends TestCase
         $products = Product::factory()->count(2)->create([
             'public' => true,
         ]);
+
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+        $salesChannel->products()->attach($products);
 
         $attribute = Attribute::factory()->create([
             'name' => 'Serie',
@@ -747,6 +819,9 @@ class ProductSearchDatabaseTest extends TestCase
         $products = Product::factory()->count(2)->create([
             'public' => true,
         ]);
+
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+        $salesChannel->products()->attach($products);
 
         /** @var Attribute $attribute */
         $attribute = Attribute::factory()->create([
@@ -813,6 +888,9 @@ class ProductSearchDatabaseTest extends TestCase
         $products = Product::factory()->count(2)->create([
             'public' => true,
         ]);
+
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+        $salesChannel->products()->attach($products);
 
         $attribute = Attribute::factory()->create([
             'name' => 'Ilość stron',
@@ -937,6 +1015,9 @@ class ProductSearchDatabaseTest extends TestCase
         $products = Product::factory()->count(2)->create([
             'public' => true,
         ]);
+
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+        $salesChannel->products()->attach($products);
 
         $attribute = Attribute::factory()->create([
             'name' => 'Data wydania',
@@ -1063,6 +1144,9 @@ class ProductSearchDatabaseTest extends TestCase
             'public' => true,
         ]);
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+        $salesChannel->products()->attach($products);
+
         $attribute = Attribute::factory()->create([
             'name' => 'Serie',
             'slug' => 'serie',
@@ -1112,6 +1196,9 @@ class ProductSearchDatabaseTest extends TestCase
         $products = Product::factory()->count(2)->create([
             'public' => true,
         ]);
+
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+        $salesChannel->products()->attach($products);
 
         $attribute = Attribute::factory()->create([
             'name' => 'Ilość stron',
@@ -1233,6 +1320,9 @@ class ProductSearchDatabaseTest extends TestCase
             'public' => true,
         ]);
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+        $salesChannel->products()->attach($products);
+
         $attribute = Attribute::factory()->create([
             'name' => 'Data wydania',
             'slug' => 'data-wydania',
@@ -1350,15 +1440,23 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $product1 = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product1);
+
         $product2 = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product2);
+
         $product3 = Product::factory()->create([
             'public' => true,
         ]);
+        $salesChannel->products()->attach($product3);
+
         $set = ProductSet::factory()->create([
             'slug' => 'test',
             'public' => true,
@@ -1404,6 +1502,9 @@ class ProductSearchDatabaseTest extends TestCase
         $products = Product::factory()->count(3)->create([
             'public' => true,
         ]);
+
+        $defaultSalesChannel = app(SalesChannelRepository::class)->getDefault();
+        $defaultSalesChannel->products()->sync($products);
 
         $set = ProductSet::factory()->create([
             'slug' => 'all-maritime',
@@ -1479,6 +1580,8 @@ class ProductSearchDatabaseTest extends TestCase
         bool $isChildSetPublic,
         ?Product &$productRef = null,
     ): TestResponse {
+        $defaultSalesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $parentSet = ProductSet::factory()->create([
             'public' => true,
         ]);
@@ -1491,11 +1594,13 @@ class ProductSearchDatabaseTest extends TestCase
         $productRef = Product::factory()->create([
             'public' => true,
         ]);
+        $defaultSalesChannel->products()->attach($productRef);
 
         // Product not in set
-        Product::factory()->create([
+        $product2 = Product::factory()->create([
             'public' => true,
         ]);
+        $defaultSalesChannel->products()->attach($product2);
 
         $childSet->products()->attach($productRef);
 

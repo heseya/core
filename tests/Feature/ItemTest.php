@@ -78,7 +78,7 @@ class ItemTest extends TestCase
                 0 => $this->expected,
             ]]);
 
-        $this->assertQueryCountLessThan(11);
+        $this->assertQueryCountLessThan(12);
     }
 
     /**

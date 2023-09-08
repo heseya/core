@@ -30,6 +30,7 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -51,6 +52,7 @@ class AvailabilityTest extends TestCase
     private ShippingMethodServiceContract $shippingMethodService;
     private SchemaCrudService $schemaCrudService;
     private Currency $currency;
+    private SalesChannel $salesChannel;
 
     /**
      * @throws RoundingNecessaryException
@@ -63,6 +65,8 @@ class AvailabilityTest extends TestCase
         parent::setUp();
         Product::query()->delete();
 
+        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         /** @var ProductService $productService */
         $productService = App::make(ProductService::class);
         $this->product = $productService->create(FakeDto::productCreateDto());
@@ -71,6 +75,8 @@ class AvailabilityTest extends TestCase
             'public' => true,
             'quantity' => 0,
         ]);
+
+        $this->product->salesChannels()->syncWithoutDetaching($this->salesChannel);
 
         $this->shippingMethodService = App::make(ShippingMethodServiceContract::class);
         $this->schemaCrudService = App::make(SchemaCrudService::class);
@@ -648,9 +654,9 @@ class AvailabilityTest extends TestCase
             'has_schemas' => true,
         ]);
 
-        $this->actingAs($this->{$user})->postJson('/orders', [
+        $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => $email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_place' => $address->toArray(),
@@ -662,7 +668,9 @@ class AvailabilityTest extends TestCase
                     'schemas' => $schemas,
                 ],
             ],
-        ])
+        ]);
+
+        $response->assertValid()
             ->assertCreated();
 
         Event::assertDispatched(OrderCreated::class);

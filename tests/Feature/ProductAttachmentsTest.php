@@ -218,10 +218,11 @@ class ProductAttachmentsTest extends TestCase
     {
         $attachment = $this->createAttachment($visibility);
 
-        $this
+        $response = $this
             ->actingAs($user)
-            ->getJson("/products/id:{$this->product->getKey()}")
-            ->assertOk()
+            ->getJson("/products/id:{$this->product->getKey()}");
+
+        $response->assertOk()
             ->assertJson([
                 'data' => [
                     'attachments' => [

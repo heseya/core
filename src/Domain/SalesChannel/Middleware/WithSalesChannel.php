@@ -21,7 +21,7 @@ final class WithSalesChannel
         try {
             $sales_channel = empty($header)
                 ? app(SalesChannelRepository::class)->getDefault()
-                : app(SalesChannelRepository::class)->getOne($request->header('Sales-Channel'));
+                : app(SalesChannelRepository::class)->getOne($header);
         } catch (Throwable $th) {
             throw new ClientException(Exceptions::CLIENT_SALES_CHANNEL_NOT_FOUND, $th);
         }

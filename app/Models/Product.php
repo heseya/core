@@ -207,10 +207,37 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         $salesChannel = Config::get('sales-channel.model');
 
         if ($salesChannel instanceof SalesChannel) {
-            $query->whereHas('salesChannels', fn (Builder $subquery) => $subquery->where('sales_channel_id', $salesChannel->getKey())->where('availability_status', ProductSalesChannelStatus::PUBLIC->value));
+            $query->whereHas('salesChannels', fn (Builder $subquery) => $subquery->where($salesChannel->getQualifiedKeyName(), $salesChannel->getKey())->where('availability_status', ProductSalesChannelStatus::PUBLIC->value));
         }
 
         return $query;
+    }
+
+    public function getPublicAttribute(): bool
+    {
+        return $this->isPublicForSalesChannel();
+    }
+
+    public function isPublicForSalesChannel(?SalesChannel $salesChannel = null): bool
+    {
+        $salesChannel ??= Config::get('sales-channel.model');
+
+        if ($salesChannel instanceof SalesChannel) {
+            return $this->salesChannels->where('id', $salesChannel->getKey())->first()?->pivot?->availability_status === ProductSalesChannelStatus::PUBLIC;
+        }
+
+        return false;
+    }
+
+    public function isHiddenForSalesChannel(?SalesChannel $salesChannel = null): bool
+    {
+        $salesChannel ??= Config::get('sales-channel.model');
+
+        if ($salesChannel instanceof SalesChannel) {
+            return $this->salesChannels->where('id', $salesChannel->getKey())->first()?->pivot?->availability_status === ProductSalesChannelStatus::HIDDEN;
+        }
+
+        return false;
     }
 
     public function attributes(): BelongsToMany

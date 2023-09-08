@@ -13,8 +13,10 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Product\Dtos\ProductCreateDto;
+use Domain\Product\Enums\ProductSalesChannelStatus;
 use Domain\ProductSchema\Dtos\SchemaDto;
 use Domain\ProductSchema\Dtos\SchemaUpdateDto;
+use Domain\SalesChannel\SalesChannelRepository;
 use Faker\Generator;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Arr;
@@ -81,6 +83,8 @@ final readonly class FakeDto
 
         $langId = App::getLocale();
 
+        $defaultSalesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $data = $data + [
             'translations' => [
                 $langId => [
@@ -93,6 +97,12 @@ final readonly class FakeDto
             'slug' => Str::slug($name) . '-' . mt_rand(1, 99999),
             'public' => $faker->boolean,
             'shipping_digital' => false,
+            'sales_channels' => [
+                [
+                    'id' => $defaultSalesChannel->getKey(),
+                    'availability_status' => ProductSalesChannelStatus::PUBLIC->value,
+                ]
+            ]
         ];
 
         if ($returnArray) {

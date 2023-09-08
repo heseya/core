@@ -6,6 +6,7 @@ use App\Models\Product;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\SalesChannel\SalesChannelRepository;
 use Tests\TestCase;
 
 class ProductSortTest extends TestCase
@@ -17,6 +18,8 @@ class ProductSortTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
+        $defaultSalesChannel = app(SalesChannelRepository::class)->getDefault();
+
         /** @var Attribute $attribute */
         $attribute = Attribute::factory()->create([
             'type' => AttributeType::SINGLE_OPTION,
@@ -25,6 +28,8 @@ class ProductSortTest extends TestCase
         $product1 = $this->createProductWithAttribute($attribute, '2023-12-12');
         $product2 = $this->createProductWithAttribute($attribute, '2023-05-05');
         $product3 = $this->createProductWithAttribute($attribute, '2023-01-02');
+
+        $defaultSalesChannel->products()->sync([$product1, $product2, $product3]);
 
         $response = $this
             ->actingAs($this->{$user})

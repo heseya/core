@@ -22,6 +22,7 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
@@ -39,6 +40,7 @@ class OrderDepositTest extends TestCase
     private Option $option;
     private Item $item;
     private Address $address;
+    private SalesChannel $salesChannel;
 
     private array $request;
     private array $addressExpected;
@@ -62,6 +64,8 @@ class OrderDepositTest extends TestCase
         $this->createShippingMethod();
 
         Event::fake([OrderCreated::class, OrderUpdatedStatus::class]);
+
+        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
 
         $this->productService = App::make(ProductService::class);
         $this->schemaCrudService  = App::make(SchemaCrudService::class);
@@ -93,7 +97,7 @@ class OrderDepositTest extends TestCase
 
         $this->request = [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address->toArray(),
@@ -326,7 +330,10 @@ class OrderDepositTest extends TestCase
             ->actingAs($this->{$user})
             ->json('POST', '/orders', $this->request);
 
-        $response->assertCreated();
+        $response
+            ->assertValid()
+            ->assertCreated();
+
         $order = Order::find($response->getData()->data->id);
 
         $this->product->refresh();
@@ -420,7 +427,7 @@ class OrderDepositTest extends TestCase
         // first order 20 product
         $request = [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -436,7 +443,7 @@ class OrderDepositTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -485,7 +492,7 @@ class OrderDepositTest extends TestCase
         // second order 3 product
         $request = [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => 'test1@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -501,7 +508,7 @@ class OrderDepositTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -544,7 +551,7 @@ class OrderDepositTest extends TestCase
         // third order 1 product
         $request = [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => 'test1@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -560,7 +567,7 @@ class OrderDepositTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -708,7 +715,7 @@ class OrderDepositTest extends TestCase
 
         $request = [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -724,7 +731,7 @@ class OrderDepositTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => $this->salesChannel->getKey(),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
