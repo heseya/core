@@ -10,6 +10,7 @@ use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
+use Spatie\LaravelData\Support\Validation\ValidationContext;
 
 final class SeoMetadataUpdateDto extends Data
 {
@@ -26,9 +27,21 @@ final class SeoMetadataUpdateDto extends Data
         public readonly Optional|string|null $og_image,
         public readonly Optional|string|null $model_id,
         public readonly Optional|string|null $model_type,
-        public readonly bool|Optional $no_index,
         public readonly array|Optional|null $header_tags,
         /** @var array<string> */
         public readonly array|Optional $published = [],
     ) {}
+
+    /**
+     * @return array<string, array<int, string>>
+     */
+    public static function rules(ValidationContext $context): array
+    {
+        return [
+            'translations.*.no_index' => ['boolean'],
+            'translations.*.title' => ['string', 'max:255'],
+            'translations.*.description' => ['string', 'max:2000'],
+            'translations.*.keywords' => ['array'],
+        ];
+    }
 }
