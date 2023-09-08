@@ -19,6 +19,6 @@ class ProductSearch extends Criterion
                     ->whereFullText(['search_values'], $this->value)
                     ->orWhere('id', 'LIKE', '%' . $this->value . '%')
                     ->orWhere('slug', 'LIKE', '%' . $this->value . '%');
-        });
+            });
     }
 }

@@ -8,7 +8,6 @@ use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductPriceUpdated;
-use App\Events\ProductSearchValueEvent;
 use App\Events\ProductUpdated;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
@@ -26,7 +25,6 @@ use App\Services\Contracts\SeoMetadataServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 readonly class ProductService implements ProductServiceContract
 {
@@ -315,6 +313,7 @@ readonly class ProductService implements ProductServiceContract
         $product->update([
             'search_values' => $searchValues,
         ]);
+
         return $product;
     }
 }

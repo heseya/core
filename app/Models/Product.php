@@ -240,6 +240,7 @@ class Product extends Model implements AuditableContract, SortableContract
                 $sets->push($set->parent);
             }
         }
+
         return $sets;
     }
 

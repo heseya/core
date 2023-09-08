@@ -23,7 +23,7 @@ class ProductSearchValuesTest extends TestCase
             'name' => 'Searched product',
             'public' => true,
             'description_html' => 'Lorem ipsum',
-            'description_short' => 'short'
+            'description_short' => 'short',
         ]);
     }
 
@@ -71,7 +71,7 @@ class ProductSearchValuesTest extends TestCase
                 'public' => true,
                 'shipping_digital' => false,
                 'description_html' => 'New description',
-                'description_short' => 'new short'
+                'description_short' => 'new short',
             ])
             ->assertOk();
 
@@ -96,7 +96,7 @@ class ProductSearchValuesTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->json('PATCH', 'tags/id:' . $tag->getKey(), [
-                'name' => 'Tag updated'
+                'name' => 'Tag updated',
             ])
             ->assertOk();
 
@@ -403,7 +403,7 @@ class ProductSearchValuesTest extends TestCase
             ->json('PATCH', 'attributes/id:' . $attribute->getKey() . '/options/id:' . $option->getKey(), [
                 'name' => 'option 1',
                 'value_number' => 10,
-                'value_date' => '2023-09-08'
+                'value_date' => '2023-09-08',
             ])
             ->assertOk();
 
