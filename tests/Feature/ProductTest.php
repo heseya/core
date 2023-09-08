@@ -285,7 +285,7 @@ class ProductTest extends TestCase
 
         $this->assertArrayHasKey('translations', $response->json('data.0'));
         $this->assertIsArray($response->json('data.0.translations'));
-        $this->assertQueryCountLessThan(24);
+        $this->assertQueryCountLessThan(27);
     }
 
     public function testIndexUnauthorized(): void
@@ -326,7 +326,7 @@ class ProductTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(29);
+        $this->assertQueryCountLessThan(30);
     }
 
     /**

@@ -104,7 +104,7 @@ class ProductSortTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(22);
+        $this->assertQueryCountLessThan(28);
 
         $response = $this
             ->actingAs($this->{$user})

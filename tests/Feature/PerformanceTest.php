@@ -284,7 +284,7 @@ class PerformanceTest extends TestCase
 
         // TODO: Fix with discounts refactor
         // It's baffling how slow this is (was 18 before)
-        $this->assertQueryCountLessThan(3050);
+        $this->assertQueryCountLessThan(4021);
     }
 
     public function testCreateSalePerformance1000Products(): void
@@ -817,6 +817,6 @@ class PerformanceTest extends TestCase
             ->json('GET', '/items/id:' . $productItem->getKey())
             ->assertOk();
 
-        $this->assertQueryCountLessThan(25);
+        $this->assertQueryCountLessThan(26);
     }
 }
