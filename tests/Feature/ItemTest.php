@@ -327,12 +327,12 @@ class ItemTest extends TestCase
     {
         $this->{$user}->givePermissionTo('items.show_details');
 
-        $product1 = Product::factory()->create(['public' => true]);
+        $product1 = Product::factory()->create();
         $product1->items()->attach([$this->item->getKey() => [
             'required_quantity' => 1,
         ]]);
 
-        $product2 = Product::factory()->create(['public' => true]);
+        $product2 = Product::factory()->create();
         $product2->items()->attach([$this->item->getKey() => [
             'required_quantity' => 1,
         ]]);

@@ -27,7 +27,7 @@ final readonly class PersonalPriceService
         $query = Product::query()->whereIn('id', $dto->ids);
 
         if (Gate::denies('products.show_hidden')) {
-            $query->where('products.public', true);
+            $query->public();
         }
 
         $products = $query->get();

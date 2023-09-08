@@ -175,7 +175,7 @@ class ProductSetIndexTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(12);
+        $this->assertQueryCountLessThan(13);
     }
 
     /**

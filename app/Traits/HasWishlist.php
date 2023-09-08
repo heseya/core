@@ -17,7 +17,7 @@ trait HasWishlist
     {
         return $this->wishlistProducts()->whereHas(
             'product',
-            fn (Builder $query) => $query->where('public', '=', true),
+            fn (Builder $query) => $query->public()
         );
     }
 }

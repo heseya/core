@@ -152,6 +152,7 @@ class ProductTest extends TestCase
             'name' => 'testMetadata',
             'value' => 'value metadata',
             'value_type' => MetadataType::STRING,
+            'public' => true,
         ]);
 
         $this->hidden_product = Product::factory()->create();
