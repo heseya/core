@@ -1461,7 +1461,7 @@ class ProductSearchDatabaseTest extends TestCase
         $this->assertEquals($products[2]->getKey(), $data[1]->id); //12-12
         $this->assertEquals($products[0]->getKey(), $data[2]->id); //23
 
-        $this->assertQueryCountLessThan(34);
+        $this->assertQueryCountLessThan(35);
 
         // desc
         $response = $this

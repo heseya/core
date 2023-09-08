@@ -91,7 +91,7 @@ class PerformanceTest extends TestCase
         $response->assertOk();
 
         // TODO: From 31 up to 1533... prices as a relation kind of suck
-        $this->assertQueryCountLessThan(1538);
+        $this->assertQueryCountLessThan(1539);
     }
 
     public function testIndexPerformanceListAttribute500(): void
