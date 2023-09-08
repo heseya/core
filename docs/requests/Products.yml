@@ -102,9 +102,10 @@ Product:
       items:
         type: object
         properties:
-          sales_chanel_id:
+          id:
             type: string
             format: uuid
+            description: "Sales Channel UUID"
           availability_status:
             type: string
             enum: ["disabled", "hidden", "public"]

@@ -673,7 +673,7 @@ class ProductSearchDatabaseTest extends TestCase
         $this->{$user}->givePermissionTo('products.show');
 
         $products = Product::factory()->count(2)->create();
-        $this->salesChannel->attach([
+        $this->salesChannel->products()->attach([
             $products[0]->getKey(),
             $products[1]->getKey()
         ]);
@@ -730,7 +730,7 @@ class ProductSearchDatabaseTest extends TestCase
         $this->{$user}->givePermissionTo('products.show');
 
         $products = Product::factory()->count(2)->create();
-        $this->salesChannel->attach([
+        $this->salesChannel->products()->attach([
             $products[0]->getKey(),
             $products[1]->getKey()
         ]);
@@ -798,7 +798,7 @@ class ProductSearchDatabaseTest extends TestCase
         $this->{$user}->givePermissionTo('products.show');
 
         $products = Product::factory()->count(2)->create();
-        $this->salesChannel->attach([
+        $this->salesChannel->products()->attach([
             $products[0]->getKey(),
             $products[1]->getKey()
         ]);
@@ -924,7 +924,7 @@ class ProductSearchDatabaseTest extends TestCase
         $this->{$user}->givePermissionTo('products.show');
 
         $products = Product::factory()->count(2)->create();
-        $this->salesChannel->attach([
+        $this->salesChannel->products()->attach([
             $products[0]->getKey(),
             $products[1]->getKey()
         ]);
@@ -1051,7 +1051,7 @@ class ProductSearchDatabaseTest extends TestCase
         $this->{$user}->givePermissionTo('products.show');
 
         $products = Product::factory()->count(2)->create();
-        $this->salesChannel->attach([
+        $this->salesChannel->products()->attach([
             $products[0]->getKey(),
             $products[1]->getKey()
         ]);
@@ -1103,7 +1103,7 @@ class ProductSearchDatabaseTest extends TestCase
         $this->{$user}->givePermissionTo('products.show');
 
         $products = Product::factory()->count(2)->create();
-        $this->salesChannel->attach([
+        $this->salesChannel->products()->attach([
             $products[0]->getKey(),
             $products[1]->getKey()
         ]);
@@ -1225,7 +1225,7 @@ class ProductSearchDatabaseTest extends TestCase
         $this->{$user}->givePermissionTo('products.show');
 
         $products = Product::factory()->count(2)->create();
-        $this->salesChannel->attach([
+        $this->salesChannel->products()->attach([
             $products[0]->getKey(),
             $products[1]->getKey()
         ]);
@@ -1351,10 +1351,10 @@ class ProductSearchDatabaseTest extends TestCase
         $this->salesChannel->products()->attach($product1);
 
         $product2 = Product::factory()->create();
-        $this->salesChannel->products()->attach($product1);
+        $this->salesChannel->products()->attach($product2);
 
         $product3 = Product::factory()->create();
-        $this->salesChannel->products()->attach($product1);
+        $this->salesChannel->products()->attach($product3);
 
         $set = ProductSet::factory()->create([
             'slug' => 'test',

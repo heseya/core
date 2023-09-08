@@ -29,7 +29,7 @@ class ProductSortTest extends TestCase
         $product2 = $this->createProductWithAttribute($attribute, '2023-05-05');
         $product3 = $this->createProductWithAttribute($attribute, '2023-01-02');
 
-        $defaultSalesChannel->products()->sync([$product1, $product2, $product3]);
+        $defaultSalesChannel->products()->sync([$product1->getKey(), $product2->getKey(), $product3->getKey()]);
 
         $response = $this
             ->actingAs($this->{$user})

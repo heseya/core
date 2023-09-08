@@ -120,7 +120,7 @@ class PerformanceTest extends TestCase
             ->getJson('/attributes')
             ->assertOk();
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(11);
     }
 
     public function testShowPerformanceAttribute2500(): void
@@ -158,7 +158,7 @@ class PerformanceTest extends TestCase
             ->getJson('/attributes/id:' . $attribute->getKey() . '/options')
             ->assertOk();
 
-        $this->assertQueryCountLessThan(11);
+        $this->assertQueryCountLessThan(12);
     }
 
     public function testIndexPerformanceAttribute500(): void
@@ -817,6 +817,6 @@ class PerformanceTest extends TestCase
             ->json('GET', '/items/id:' . $productItem->getKey())
             ->assertOk();
 
-        $this->assertQueryCountLessThan(23);
+        $this->assertQueryCountLessThan(25);
     }
 }

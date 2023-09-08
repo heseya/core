@@ -352,7 +352,7 @@ class ItemTest extends TestCase
                 'name' => $product2->name,
             ]);
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(21);
     }
 
     /**

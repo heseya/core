@@ -1461,6 +1461,12 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'prices_base' => $this->productPrices,
             'shipping_digital' => false,
+            'sales_channels' => [
+                [
+                    'id' => $this->salesChannel->getKey(),
+                    'availability_status' => 'public',
+                ]
+            ]
         ]);
 
         $response
@@ -1535,6 +1541,12 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'prices_base' => $this->productPrices,
             'shipping_digital' => false,
+            'sales_channels' => [
+                [
+                    'id' => $this->salesChannel->getKey(),
+                    'availability_status' => 'public',
+                ]
+            ]
         ]);
 
         $response

@@ -771,23 +771,18 @@ class ProductSetOtherTest extends TestCase
         ]);
 
         $product1 = Product::factory()->create([
-            'public' => true,
             'name' => 'one',
         ]);
         $product2 = Product::factory()->create([
-            'public' => false,
             'name' => 'two',
         ]);
         $product3 = Product::factory()->create([
-            'public' => false,
             'name' => 'three',
         ]);
         $product4 = Product::factory()->create([
-            'public' => false,
             'name' => 'four',
         ]);
         $product5 = Product::factory()->create([
-            'public' => false,
             'name' => 'five',
         ]);
 

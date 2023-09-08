@@ -10,6 +10,7 @@ use App\Traits\MetadataResource;
 use Domain\Page\PageResource;
 use Domain\ProductSet\ProductSet;
 use Domain\ProductSet\Resources\ProductSetResource;
+use Domain\SalesChannel\Resources\SalesChannelResource;
 use Domain\Seo\Resources\SeoMetadataResource;
 use Domain\Tag\Resources\TagResource;
 use Illuminate\Http\Request;
@@ -49,6 +50,7 @@ class ProductResource extends Resource
             'shipping_digital' => $this->resource->shipping_digital,
             'purchase_limit_per_user' => $this->resource->purchase_limit_per_user,
             'published' => $this->resource->published,
+            'sales_channels' => SalesChannelResource::collection($this->resource->salesChannels),
         ];
 
         return array_merge(

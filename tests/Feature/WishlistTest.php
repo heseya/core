@@ -6,6 +6,7 @@ use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\ValidationError;
 use App\Models\Product;
 use App\Models\WishlistProduct;
+use Domain\SalesChannel\SalesChannelRepository;
 use Tests\TestCase;
 
 class WishlistTest extends TestCase
@@ -19,9 +20,11 @@ class WishlistTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
+
         $this->product = Product::factory()->create([
             'name' => 'test product',
         ]);
+        $this->product->salesChannels()->attach(app(SalesChannelRepository::class)->getDefault());
 
         $this->expected_structure = [
             'id',

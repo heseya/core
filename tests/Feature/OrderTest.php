@@ -196,7 +196,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(23);
+        $this->assertQueryCountLessThan(24);
     }
 
     /**
@@ -228,7 +228,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(23);
+        $this->assertQueryCountLessThan(24);
     }
 
     /**
@@ -250,7 +250,7 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(24);
+        $this->assertQueryCountLessThan(25);
     }
 
     /**
@@ -370,7 +370,7 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(22);
+        $this->assertQueryCountLessThan(23);
     }
 
     /**
@@ -404,7 +404,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(23);
+        $this->assertQueryCountLessThan(24);
     }
 
     /**
@@ -840,7 +840,7 @@ class OrderTest extends TestCase
             ->assertJsonFragment(['code' => $this->order->code])
             ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
 
-        $this->assertQueryCountLessThan(35);
+        $this->assertQueryCountLessThan(36);
     }
 
     /**
