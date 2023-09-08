@@ -77,6 +77,7 @@ class Product extends Model implements AuditableContract, SortableContract
         'quantity',
         'shipping_digital',
         'purchase_limit_per_user',
+        'search_values',
     ];
 
     protected array $auditInclude = [
@@ -228,6 +229,18 @@ class Product extends Model implements AuditableContract, SortableContract
             Page::class,
             'product_page',
         );
+    }
+
+    public function allProductSet(): Collection
+    {
+        $sets = $this->sets;
+        /** @var ProductSet $set */
+        foreach ($sets as $set) {
+            if ($set->parent) {
+                $sets->push($set->parent);
+            }
+        }
+        return $sets;
     }
 
     public function productSetSales(): Collection

@@ -25,6 +25,7 @@ use App\Events\PasswordReset;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductPriceUpdated;
+use App\Events\ProductSearchValueEvent;
 use App\Events\ProductSetCreated;
 use App\Events\ProductSetDeleted;
 use App\Events\ProductSetUpdated;
@@ -44,6 +45,7 @@ use App\Events\UserUpdated;
 use App\Listeners\ItemUpdatedQuantityListener;
 use App\Listeners\OrderCreatedListener;
 use App\Listeners\OrderUpdatedStatusListener;
+use App\Listeners\ProductSearchValueListener;
 use App\Listeners\UserCreatedListener;
 use App\Listeners\WebHookEventListener;
 use App\Listeners\WebHookFailedListener;
@@ -85,6 +87,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         UserCreated::class => [
             UserCreatedListener::class,
+        ],
+        ProductSearchValueEvent::class => [
+            ProductSearchValueListener::class,
         ],
     ];
 

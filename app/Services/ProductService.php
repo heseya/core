@@ -8,7 +8,10 @@ use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductPriceUpdated;
+use App\Events\ProductSearchValueEvent;
 use App\Events\ProductUpdated;
+use App\Models\Attribute;
+use App\Models\AttributeOption;
 use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
@@ -23,6 +26,7 @@ use App\Services\Contracts\SeoMetadataServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 readonly class ProductService implements ProductServiceContract
 {
@@ -88,7 +92,7 @@ readonly class ProductService implements ProductServiceContract
         $product->shipping_date = $availability['shipping_date'];
         $this->discountService->applyDiscountsOnProduct($product);
 
-        return $product;
+        return $this->prepareProductSearchValues($product);
     }
 
     public function create(ProductCreateDto $dto): Product
@@ -182,6 +186,13 @@ readonly class ProductService implements ProductServiceContract
             'price_max_initial' => $productMinMaxPrices[1],
         ]);
         $this->discountService->applyDiscountsOnProduct($product);
+    }
+
+    public function updateProductsSearchValues(array $productIds): void
+    {
+        Product::whereIn('id', $productIds)
+            ->with(['tags', 'sets', 'relatedSets', 'attributes', 'attributes.options'])
+            ->each(fn (Product $product) => $this->prepareProductSearchValues($product)->save());
     }
 
     private function assignItems(Product $product, ?array $items): void
@@ -284,5 +295,26 @@ readonly class ProductService implements ProductServiceContract
                 return max($current[1], $carry);
             }),
         ];
+    }
+
+    private function prepareProductSearchValues(Product $product): Product
+    {
+        $searchValues = rtrim($product->name . ' ' . $product->description_html . ' ' . $product->description_short);
+        $searchValues .= rtrim(' ' . $product->tags->pluck('name')->implode(' '));
+        $searchValues .= rtrim(' ' . $product->allProductSet()->pluck('name')->implode(' '));
+        $searchValues .= rtrim(' ' . $product->relatedSets->pluck('name')->implode(' '));
+
+        /** @var Attribute $attribute */
+        foreach ($product->attributes as $attribute) {
+            $searchValues .= rtrim(' ' . $attribute->name);
+            /** @var AttributeOption $option */
+            foreach ($attribute->pivot->options as $option) {
+                $searchValues .= rtrim(' ' . $option->name . ' ' . $option->value_number . ' ' . $option->value_date);
+            }
+        }
+        $product->update([
+            'search_values' => $searchValues,
+        ]);
+        return $product;
     }
 }
