@@ -31,6 +31,7 @@ final class Tag extends Model implements Translatable
         'id',
         'name',
         'color',
+        'published',
     ];
 
     /** @var string[] */

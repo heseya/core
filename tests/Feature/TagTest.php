@@ -102,16 +102,28 @@ class TagTest extends TestCase
 
     public function create($user): void
     {
-        $response = $this->actingAs($this->{$user})->postJson('/tags', [
+        $this->actingAs($this->{$user})->postJson('/tags?with_translations=1', [
             'translations' => [
                 $this->lang => [
                     'name' => 'test sale',
                 ],
             ],
             'color' => '444444',
-        ]);
-
-        $response->assertCreated();
+            'published' => [
+                $this->lang,
+            ],
+        ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'test sale',
+                    ],
+                ],
+                'published' => [
+                    $this->lang,
+                ],
+            ]);
 
         $this->assertDatabaseHas('tags', [
             "name->{$this->lang}" => 'test sale',
@@ -183,16 +195,29 @@ class TagTest extends TestCase
 
         $tag = Tag::factory()->create();
 
-        $response = $this->actingAs($this->{$user})->patchJson('/tags/id:' . $tag->getKey(), [
+        $this->actingAs($this->{$user})->patchJson('/tags/id:' . $tag->getKey() . '?with_translations=1', [
             'translations' => [
                 $this->lang => [
                     'name' => 'test tag',
                 ]
             ],
             'color' => 'ababab',
-        ]);
-
-        $response->assertOk();
+            'published' => [
+                $this->lang,
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'test tag',
+                    ]
+                ],
+                'color' => 'ababab',
+                'published' => [
+                    $this->lang,
+                ],
+            ]);
 
         $this->assertDatabaseHas('tags', [
             "name->{$this->lang}" => 'test tag',
