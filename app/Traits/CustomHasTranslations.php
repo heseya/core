@@ -7,11 +7,17 @@ use Domain\Language\LanguageService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Spatie\Translatable\HasTranslations;
 
 trait CustomHasTranslations
 {
     use HasTranslations;
+
+    public function hasPublishedColumn(): bool
+    {
+        return Schema::hasColumn($this->table, 'published');
+    }
 
     protected function normalizeLocale(string $key, string $locale, bool $useFallbackLocale): string
     {
