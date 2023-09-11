@@ -8,6 +8,8 @@ use Domain\Language\Events\LanguageCreated;
 use Domain\Language\Events\LanguageDeleted;
 use Domain\Language\Events\LanguageUpdated;
 use Domain\Language\Language;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
@@ -413,6 +415,45 @@ class LanguageTest extends TestCase
             "name->{$language->getKey()}" => null,
             "description_short->{$language->getKey()}" => null,
             'published' => json_encode([$this->language->getKey()]),
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteWithAttributeOption(string $user): void
+    {
+        $this->{$user}->givePermissionTo('languages.remove');
+
+        $language = Language::create([
+            'iso' => 'nl',
+            'name' => 'Netherland',
+            'hidden' => false,
+            'default' => false,
+        ]);
+
+        $attribute = Attribute::factory()->create();
+        /** @var AttributeOption $attributeOption */
+        $attributeOption = AttributeOption::factory()->create([
+            'name' => 'Name',
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+        ]);
+
+        $attributeOption->setLocale($language->getKey())->fill([
+            'name' => 'Netherland name',
+        ]);
+
+        $attributeOption->save();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('DELETE', "/languages/id:{$language->getKey()}")
+            ->assertNoContent();
+
+        $this->assertDatabaseHas('attribute_options', [
+            'id' => $attributeOption->getKey(),
+            "name->{$language->getKey()}" => null,
         ]);
     }
 
