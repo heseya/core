@@ -16,6 +16,7 @@ use App\Traits\CustomHasTranslations;
 use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
 use Domain\ProductSet\ProductSet;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
