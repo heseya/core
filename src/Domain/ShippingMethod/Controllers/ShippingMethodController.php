@@ -1,25 +1,26 @@
 <?php
 
-namespace App\Http\Controllers;
+declare(strict_types=1);
 
-use App\Dtos\ShippingMethodCreateDto;
-use App\Dtos\ShippingMethodUpdateDto;
+namespace Domain\ShippingMethod\Controllers;
+
+use App\Http\Controllers\Controller;
 use App\Http\Requests\ShippingMethodIndexRequest;
 use App\Http\Requests\ShippingMethodReorderRequest;
-use App\Http\Requests\ShippingMethodStoreRequest;
-use App\Http\Requests\ShippingMethodUpdateRequest;
 use App\Http\Resources\ShippingMethodResource;
-use App\Models\ShippingMethod;
-use App\Services\Contracts\ShippingMethodServiceContract;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
+use Domain\ShippingMethod\Dtos\ShippingMethodCreateDto;
+use Domain\ShippingMethod\Dtos\ShippingMethodUpdateDto;
+use Domain\ShippingMethod\Models\ShippingMethod;
+use Domain\ShippingMethod\Services\Contracts\ShippingMethodServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
 
-class ShippingMethodController extends Controller
+final class ShippingMethodController extends Controller
 {
     public function __construct(
         private readonly ShippingMethodServiceContract $shippingMethodService,
@@ -46,20 +47,18 @@ class ShippingMethodController extends Controller
         return ShippingMethodResource::collection($shippingMethods);
     }
 
-    public function store(ShippingMethodStoreRequest $request): JsonResource
+    public function store(ShippingMethodCreateDto $dto): JsonResource
     {
-        $shippingMethod = $this->shippingMethodService->store(
-            ShippingMethodCreateDto::instantiateFromRequest($request),
-        );
+        $shippingMethod = $this->shippingMethodService->store($dto);
 
         return ShippingMethodResource::make($shippingMethod);
     }
 
-    public function update(ShippingMethodUpdateRequest $request, ShippingMethod $shippingMethod): JsonResource
+    public function update(ShippingMethodUpdateDto $dto, ShippingMethod $shippingMethod): JsonResource
     {
         $shippingMethod = $this->shippingMethodService->update(
             $shippingMethod,
-            ShippingMethodUpdateDto::instantiateFromRequest($request),
+            $dto,
         );
 
         return ShippingMethodResource::make($shippingMethod);

@@ -6,7 +6,7 @@ use App\Enums\ExceptionsEnums\Exceptions;
 use App\Models\App;
 use App\Models\Order;
 use App\Models\PaymentMethod;
-use App\Models\ShippingMethod;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Tests\TestCase;
 
 class PaymentMethodTest extends TestCase
@@ -15,9 +15,7 @@ class PaymentMethodTest extends TestCase
     public PaymentMethod $payment_method_related;
     public PaymentMethod $payment_method_hidden;
     public ShippingMethod $shipping_method;
-
     public App $application;
-
     public array $expected;
 
     public function setUp(): void

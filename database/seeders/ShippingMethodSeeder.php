@@ -3,12 +3,12 @@
 namespace Database\Seeders;
 
 use App\Models\PaymentMethod;
-use App\Models\ShippingMethod;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
 

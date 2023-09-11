@@ -3,7 +3,7 @@
 namespace App\Rules;
 
 use App\Enums\ShippingType;
-use App\Models\ShippingMethod;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ImplicitRule;
 

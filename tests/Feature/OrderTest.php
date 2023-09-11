@@ -17,7 +17,6 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PriceRange;
 use App\Models\Product;
-use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\User;
 use App\Models\WebHook;
@@ -28,6 +27,7 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Metadata\Enums\MetadataType;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
@@ -151,13 +151,13 @@ class OrderTest extends TestCase
         ];
 
         $this->expected_full_view_structure = $this->expected_full_structure + [
-            'buyer',
-            'products',
-            'payments',
-            'discounts',
-            'billing_address',
-            'shipping_number',
-        ];
+                'buyer',
+                'products',
+                'payments',
+                'discounts',
+                'billing_address',
+                'shipping_number',
+            ];
     }
 
     public function testIndexUnauthorized(): void
@@ -884,9 +884,11 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonFragment(['code' => $this->order->code])
             ->assertJsonStructure(['data' => $this->expected_full_view_structure])
-            ->assertJsonFragment(['metadata_private' => [
-                $privateMetadata->name => $privateMetadata->value,
-            ]]);
+            ->assertJsonFragment([
+                'metadata_private' => [
+                    $privateMetadata->name => $privateMetadata->value,
+                ],
+            ]);
 
         $this->assertQueryCountLessThan(35);
     }
@@ -941,11 +943,13 @@ class OrderTest extends TestCase
 
         $summaryPaid = $this->order->summary->multipliedBy(2);
 
-        $this->order->payments()->save(Payment::factory()->make([
-            'amount' => $summaryPaid->getAmount()->toFloat(),
-            'status' => PaymentStatus::SUCCESSFUL,
-            'currency' => $this->order->currency,
-        ]));
+        $this->order->payments()->save(
+            Payment::factory()->make([
+                'amount' => $summaryPaid->getAmount()->toFloat(),
+                'status' => PaymentStatus::SUCCESSFUL,
+                'currency' => $this->order->currency,
+            ])
+        );
 
         $this
             ->actingAs($this->{$user})
@@ -966,11 +970,13 @@ class OrderTest extends TestCase
     {
         $this->{$user}->givePermissionTo('orders.show_summary');
 
-        $this->order->payments()->save(Payment::factory()->make([
-            'amount' => $this->order->summary->multipliedBy(2)->getAmount()->toFloat(),
-            'status' => PaymentStatus::SUCCESSFUL,
-            'currency' => $this->order->currency,
-        ]));
+        $this->order->payments()->save(
+            Payment::factory()->make([
+                'amount' => $this->order->summary->multipliedBy(2)->getAmount()->toFloat(),
+                'status' => PaymentStatus::SUCCESSFUL,
+                'currency' => $this->order->currency,
+            ])
+        );
 
         $this
             ->actingAs($this->{$user})
@@ -1456,11 +1462,13 @@ class OrderTest extends TestCase
 
         $summaryPaid = $this->order->summary->dividedBy(2, RoundingMode::HALF_DOWN);
 
-        $this->order->payments()->save(Payment::factory()->make([
-            'amount' => $summaryPaid->getAmount()->toFloat(),
-            'status' => PaymentStatus::SUCCESSFUL,
-            'currency' => $this->order->currency,
-        ]));
+        $this->order->payments()->save(
+            Payment::factory()->make([
+                'amount' => $summaryPaid->getAmount()->toFloat(),
+                'status' => PaymentStatus::SUCCESSFUL,
+                'currency' => $this->order->currency,
+            ])
+        );
 
         $this->actingAs($this->{$user})
             ->getJson('/orders/id:' . $this->order->getKey())
@@ -1478,11 +1486,13 @@ class OrderTest extends TestCase
     {
         $this->{$user}->givePermissionTo('orders.show_summary');
 
-        $this->order->payments()->save(Payment::factory()->make([
-            'amount' => $this->order->summary->dividedBy(2, RoundingMode::HALF_DOWN)->getAmount()->toFloat(),
-            'status' => PaymentStatus::SUCCESSFUL,
-            'currency' => $this->order->currency,
-        ]));
+        $this->order->payments()->save(
+            Payment::factory()->make([
+                'amount' => $this->order->summary->dividedBy(2, RoundingMode::HALF_DOWN)->getAmount()->toFloat(),
+                'status' => PaymentStatus::SUCCESSFUL,
+                'currency' => $this->order->currency,
+            ])
+        );
 
         $this->actingAs($this->{$user})
             ->getJson('/orders/' . $this->order->code)

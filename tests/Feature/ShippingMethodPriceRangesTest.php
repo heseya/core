@@ -3,12 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\PriceRange;
-use App\Models\ShippingMethod;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Tests\TestCase;
 
 class ShippingMethodPriceRangesTest extends TestCase
@@ -47,16 +47,22 @@ class ShippingMethodPriceRangesTest extends TestCase
         ]);
 
         $this->actingAs($this->{$user})
-            ->json('GET', '/shipping-methods', ['cart_value' => [
-                'value' => '1200.00',
-                'currency' => $currency,
-            ]])
+            ->json('GET', '/shipping-methods', [
+                'cart_value' => [
+                    'value' => '1200.00',
+                    'currency' => $currency,
+                ],
+            ])
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonFragment(['prices' => [[
-                'net' => '10.00',
-                'gross' => '10.00',
-                'currency' => $currency,
-            ]]]);
+            ->assertJsonFragment([
+                'prices' => [
+                    [
+                        'net' => '10.00',
+                        'gross' => '10.00',
+                        'currency' => $currency,
+                    ],
+                ],
+            ]);
     }
 }
