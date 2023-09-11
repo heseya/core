@@ -39,8 +39,10 @@ final readonly class OptionService implements OptionServiceContract
                 $option = $schema->options()->make($optionData);
             }
 
-            foreach ($optionItem->translations ?? [] as $lang => $translations) {
-                $option->setLocale($lang)->fill($translations);
+            if (!$optionItem->translations instanceof Optional) {
+                foreach ($optionItem->translations as $lang => $translations) {
+                    $option->setLocale($lang)->fill($translations);
+                }
             }
 
             $option->save();
@@ -53,7 +55,9 @@ final readonly class OptionService implements OptionServiceContract
                 $this->metadataService->sync($option, $optionItem->metadata_computed);
             }
 
-            $this->optionRepository->setOptionPrices($option->getKey(), $optionItem->prices->items());
+            if (!$optionItem->prices instanceof Optional) {
+                $this->optionRepository->setOptionPrices($option->getKey(), $optionItem->prices->items());
+            }
 
             $keep[] = $option->getKey();
         }
