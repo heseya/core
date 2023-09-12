@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\SettingController;
+use Domain\Setting\Controllers\SettingController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('settings')->group(function (): void {

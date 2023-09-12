@@ -1,13 +1,15 @@
 <?php
 
-namespace App\Services;
+declare(strict_types=1);
 
-use App\Models\Setting;
-use App\Services\Contracts\SettingsServiceContract;
+namespace Domain\Setting\Services;
+
+use Domain\Setting\Models\Setting;
+use Domain\Setting\Services\Contracts\SettingsServiceContract;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 
-class SettingsService implements SettingsServiceContract
+final class SettingsService implements SettingsServiceContract
 {
     public function getSettings(bool $publicOnly = false): Collection
     {
@@ -18,9 +20,13 @@ class SettingsService implements SettingsServiceContract
 
         Collection::make($configSettings)->each(function ($setting, $key) use ($settings): void {
             if (!$settings->contains('name', $key)) {
-                $settings->push(new Setting($setting + [
-                    'name' => $key,
-                ]));
+                $settings->push(
+                    new Setting(
+                        $setting + [
+                            'name' => $key,
+                        ]
+                    )
+                );
             }
         });
 
