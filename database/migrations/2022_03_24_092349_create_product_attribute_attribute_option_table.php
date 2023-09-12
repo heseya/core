@@ -40,7 +40,7 @@ class CreateProductAttributeAttributeOptionTable extends Migration
             $table->primary(['product_id', 'attribute_id']);
 
             $table->uuid('option_id');
-//            $table->foreign('option_id')->references('id')->on('attribute_options')->onDelete('cascade');
+            //            $table->foreign('option_id')->references('id')->on('attribute_options')->onDelete('cascade');
         });
     }
 }

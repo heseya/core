@@ -42,6 +42,6 @@ class AddProfilePermissionAndAddItToAuthenticatedRole extends Migration
         $owner->save();
 
         Permission::findByName('profile.addresses_manage')->delete();
-//        Role::delete();
+        //        Role::delete();
     }
 }
