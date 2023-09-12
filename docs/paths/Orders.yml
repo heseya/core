@@ -71,9 +71,9 @@ Orders:
           items:
             type: string
             format: uuid
-      - name: payments
+      - name: payment_method_id
         in: query
-        description: 'Payment name'
+        description: 'Payment method id'
         schema:
           type: string
     responses:

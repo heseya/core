@@ -15,6 +15,7 @@ use App\Models\Discount;
 use App\Models\Item;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\PaymentMethod;
 use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\ShippingMethod;
@@ -821,31 +822,32 @@ class OrderTest extends TestCase
     {
         $this->{$user}->givePermissionTo('orders.show');
 
+        $paymentMethod = PaymentMethod::factory()->create();
+        $paymentMethod2 = PaymentMethod::factory()->create();
+
         $orderOne = Order::factory()
-            ->has(Payment::factory()->state(['method' => 'Method One']))
-            ->has(Payment::factory()->state(['method' => 'Method Two']))
-            ->has(Payment::factory()->state(['method' => 'Method In Common']))
+            ->has(Payment::factory()->state(['method' => 'Method One', 'method_id' => $paymentMethod2->getKey()]))
+            ->has(Payment::factory()->state(['method' => 'Method In Common', 'method_id' => $paymentMethod->getKey()]))
             ->create();
 
         $orderTwo = Order::factory()
-            ->has(Payment::factory()->state(['method' => 'Method Three']))
-            ->has(Payment::factory()->state(['method' => 'Method Four']))
-            ->has(Payment::factory()->state(['method' => 'Method In Common']))
+            ->has(Payment::factory()->state(['method' => 'Method Two']))
+            ->has(Payment::factory()->state(['method' => 'Method In Common', 'method_id' => $paymentMethod->getKey()]))
             ->create();
 
         $this
             ->actingAs($this->{$user})
             ->json('GET', '/orders', [
-                'payments' => 'four',
+                'payment_method_id' => $paymentMethod2->getKey(),
             ])
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonFragment(['id' => $orderTwo->getKey()]);
+            ->assertJsonFragment(['id' => $orderOne->getKey()]);
 
         $this
             ->actingAs($this->{$user})
             ->json('GET', '/orders', [
-                'payments' => 'common',
+                'payment_method_id' => $paymentMethod->getKey(),
             ])
             ->assertOk()
             ->assertJsonCount(2, 'data')

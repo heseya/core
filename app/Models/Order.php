@@ -92,7 +92,7 @@ class Order extends Model implements SortableContract
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,
-        'payments' => OrderPayments::class,
+        'payment_method_id' => OrderPayments::class,
     ];
     protected array $sortable = [
         'id',

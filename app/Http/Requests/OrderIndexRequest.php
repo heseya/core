@@ -24,7 +24,7 @@ class OrderIndexRequest extends FormRequest
             'metadata_private' => ['nullable', 'array'],
             'ids' => ['array'],
             'ids.*' => ['uuid'],
-            'payments' => ['string', 'max:255'],
+            'payment_method_id' => ['uuid', 'max:255'],
         ];
     }
 }

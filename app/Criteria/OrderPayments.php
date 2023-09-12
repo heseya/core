@@ -10,7 +10,7 @@ class OrderPayments extends Criterion
     public function query(Builder $query): Builder
     {
         return $query->whereHas('payments', function (Builder $query): void {
-            $query->where('method', 'LIKE', '%' . $this->value . '%');
+            $query->where('method_id', $this->value);
         });
     }
 }
