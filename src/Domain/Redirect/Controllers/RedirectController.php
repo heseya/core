@@ -14,9 +14,7 @@ use Illuminate\Support\Facades\Response;
 
 class RedirectController extends Controller
 {
-    public function __construct(private readonly RedirectService $redirectService)
-    {
-    }
+    public function __construct(private readonly RedirectService $redirectService) {}
 
     public function index(): JsonResource
     {

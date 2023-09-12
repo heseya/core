@@ -24,6 +24,5 @@ class RedirectCreateDto extends Data
         #[WithCast(EnumCast::class)]
         #[Required, Enum(RedirectType::class)]
         public RedirectType $type,
-    ) {
-    }
+    ) {}
 }

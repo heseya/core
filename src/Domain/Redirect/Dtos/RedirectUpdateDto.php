@@ -24,6 +24,5 @@ class RedirectUpdateDto extends Data
         #[WithCast(EnumCast::class)]
         #[Enum(RedirectType::class)]
         public Optional|RedirectType $type,
-    ) {
-    }
+    ) {}
 }

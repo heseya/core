@@ -2,6 +2,4 @@
 
 namespace Domain\Redirect\Events;
 
-class RedirectDeleted extends RedirectEvent
-{
-}
+class RedirectDeleted extends RedirectEvent {}
