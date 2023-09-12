@@ -1,0 +1,80 @@
+Redirects:
+  get:
+    tags:
+      - Redirects
+    summary: 'list redirects'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Redirects.yml#/Redirect'
+              type: object
+    security:
+      - BearerAuth: [ ]
+  post:
+    tags:
+      - Redirects
+    summary: 'add new redirect'
+    requestBody:
+      $ref: './../requests/Redirects.yml#/RedirectStore'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Redirects.yml#/Redirect'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+RedirectsParams:
+  delete:
+    tags:
+      - Redirects
+    summary: 'delete redirect'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]
+  patch:
+    tags:
+      - Redirects
+    summary: 'update redirect'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      $ref: './../requests/Redirects.yml#/RedirectUpdate'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Redirects.yml#/Redirect'
+              type: object
+    security:
+      - BearerAuth: [ ]
