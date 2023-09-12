@@ -42,7 +42,6 @@ final class ShippingMethodCreateDto extends Data
     /**
      * @param string $name
      * @param bool $public
-     * @param ShippingType $shipping_type
      * @param DataCollection<int, PriceRangeDto> $price_ranges
      * @param bool $payment_on_delivery
      * @param int|Optional $shipping_time_min

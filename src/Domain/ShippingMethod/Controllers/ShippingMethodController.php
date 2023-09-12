@@ -25,8 +25,7 @@ final class ShippingMethodController extends Controller
 {
     public function __construct(
         private readonly ShippingMethodServiceContract $shippingMethodService,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws UnknownCurrencyException
