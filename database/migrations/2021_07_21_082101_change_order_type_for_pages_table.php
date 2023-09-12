@@ -15,8 +15,8 @@ class ChangeOrderTypeForPagesTable extends Migration
 
     public function down(): void
     {
-        Schema::table('pages', function (Blueprint $table): void {
-            $table->unsignedTinyInteger('order')->default(0)->change();
-        });
+//        Schema::table('pages', function (Blueprint $table): void {
+//            $table->unsignedTinyInteger('order')->default(0)->change();
+//        });
     }
 }

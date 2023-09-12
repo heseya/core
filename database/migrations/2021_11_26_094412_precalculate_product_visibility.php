@@ -35,7 +35,7 @@ class PrecalculateProductVisibility extends Migration
     {
         Product::chunk(100, fn (Collection $products) => $products->each(
             fn (Product $product) => $product->update([
-                'public' => $product->public_legacy,
+                'public' => $product->public_legacy ?? false,
             ]),
         ));
 

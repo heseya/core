@@ -38,7 +38,7 @@ return new class extends Migration {
             ->firstOrFail()
             ->revokePermissionTo('payment_methods.show_details');
 
-        Permission::delete();
+        Permission::findByName('payment_methods.show_details')->delete();
 
         Schema::table('payment_methods', function (Blueprint $table): void {
             $table->dropColumn('icon');
