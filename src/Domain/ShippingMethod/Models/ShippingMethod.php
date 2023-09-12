@@ -1,11 +1,21 @@
 <?php
 
-namespace App\Models;
+declare(strict_types=1);
+
+namespace Domain\ShippingMethod\Models;
 
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\WhereInIds;
 use App\Enums\ShippingType;
+use App\Models\Address;
+use App\Models\App;
+use App\Models\Country;
+use App\Models\IdeHelperShippingMethod;
+use App\Models\Model;
+use App\Models\Order;
+use App\Models\PaymentMethod;
+use App\Models\PriceRange;
 use App\Traits\HasDiscounts;
 use App\Traits\HasMetadata;
 use Brick\Math\BigDecimal;
@@ -23,7 +33,7 @@ use Illuminate\Support\Facades\Auth;
  *
  * @mixin IdeHelperShippingMethod
  */
-class ShippingMethod extends Model
+final class ShippingMethod extends Model
 {
     use HasCriteria;
     use HasDiscounts;
@@ -48,7 +58,6 @@ class ShippingMethod extends Model
         'shipping_type',
         'payment_on_delivery',
     ];
-
     /**
      * The attributes that should be cast to native types.
      *
@@ -60,7 +69,6 @@ class ShippingMethod extends Model
         'shipping_type' => ShippingType::class,
         'payment_on_delivery' => 'boolean',
     ];
-
     /** @var array<string, class-string> */
     protected array $criteria = [
         'metadata' => MetadataSearch::class,
@@ -68,31 +76,49 @@ class ShippingMethod extends Model
         'ids' => WhereInIds::class,
     ];
 
+    /**
+     * @return BelongsTo<App, self>
+     */
     public function app(): BelongsTo
     {
         return $this->belongsTo(App::class);
     }
 
+    /**
+     * @return HasMany<Order>
+     */
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class, 'shipping_method_id', 'id');
     }
 
+    /**
+     * @return HasMany<Order>
+     */
     public function digitalOrders(): HasMany
     {
         return $this->hasMany(Order::class, 'digital_shipping_method_id', 'id');
     }
 
+    /**
+     * @return BelongsToMany<PaymentMethod>
+     */
     public function paymentMethodsPublic(): BelongsToMany
     {
         return $this->paymentMethods()->where('public', true);
     }
 
+    /**
+     * @return BelongsToMany<PaymentMethod>
+     */
     public function paymentMethods(): BelongsToMany
     {
         return $this->belongsToMany(PaymentMethod::class, 'shipping_method_payment_method');
     }
 
+    /**
+     * @return BelongsToMany<Country>
+     */
     public function countries(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -117,6 +143,9 @@ class ShippingMethod extends Model
             : !$this->countries->contains('code', $country);
     }
 
+    /**
+     * @return BelongsToMany<Address>
+     */
     public function shippingPoints(): BelongsToMany
     {
         return $this->belongsToMany(Address::class, 'address_shipping_method');
@@ -135,6 +164,14 @@ class ShippingMethod extends Model
     }
 
     /**
+     * @return HasMany<PriceRange>
+     */
+    public function priceRanges(): HasMany
+    {
+        return $this->hasMany(PriceRange::class, 'shipping_method_id');
+    }
+
+    /**
      * @return Money[]
      */
     public function getStartingPrices(): array
@@ -144,11 +181,6 @@ class ShippingMethod extends Model
             ->get();
 
         return $priceRanges->map(fn (PriceRange $range) => $range->value)->toArray();
-    }
-
-    public function priceRanges(): HasMany
-    {
-        return $this->hasMany(PriceRange::class, 'shipping_method_id');
     }
 
     public function getDeletableAttribute(): bool

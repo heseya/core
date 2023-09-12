@@ -10,10 +10,10 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\Product;
-use App\Models\ShippingMethod;
 use App\Models\Status;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
@@ -23,7 +23,6 @@ class PaymentTest extends TestCase
 {
     private Order $order;
     private App $appUser;
-
     private ShippingMethod $shippingMethod;
     private PaymentMethod $paymentMethod;
     private Currency $currency;

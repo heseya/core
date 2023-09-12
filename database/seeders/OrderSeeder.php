@@ -10,11 +10,11 @@ use App\Models\OrderProductUrl;
 use App\Models\OrderSchema;
 use App\Models\Payment;
 use App\Models\Product;
-use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Services\Contracts\OrderServiceContract;
 use App\Services\OrderService;
 use Brick\Money\Money;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\App;
 
@@ -53,7 +53,10 @@ class OrderSeeder extends Seeder
                     $order->digital_shipping_method_id = $digital_shipping_method?->getKey();
                     $order->status_id = $statuses->random()->getKey();
 
-                    if ($shipping_method && in_array($shipping_method->shipping_type, [ShippingType::ADDRESS, ShippingType::POINT])) {
+                    if ($shipping_method && in_array(
+                            $shipping_method->shipping_type,
+                            [ShippingType::ADDRESS, ShippingType::POINT]
+                        )) {
                         $order->shipping_address_id = Address::factory()->create()->getKey();
                     } elseif ($shipping_method && $shipping_method->shipping_type === ShippingType::POINT_EXTERNAL) {
                         $order->shipping_place = fake()->streetAddress();
@@ -62,7 +65,8 @@ class OrderSeeder extends Seeder
                     if (mt_rand(0, 1)) {
                         $order->billing_address_id = Address::factory()->create()->getKey();
                     } else {
-                        $order->billing_address_id = $order->shipping_address_id ?? Address::factory()->create()->getKey();
+                        $order->billing_address_id = $order->shipping_address_id ?? Address::factory()->create(
+                        )->getKey();
                     }
 
                     $order->shipping_type = $shipping_method->shipping_type ?? $digital_shipping_method->shipping_type;

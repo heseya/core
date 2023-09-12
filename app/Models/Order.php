@@ -22,6 +22,7 @@ use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
