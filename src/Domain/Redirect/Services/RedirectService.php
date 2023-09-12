@@ -1,18 +1,17 @@
 <?php
 
-namespace App\Services;
+namespace Domain\Redirect\Services;
 
-use App\Dtos\RedirectCreateDto;
-use App\Dtos\RedirectUpdateDto;
-use App\Events\RedirectCreated;
-use App\Events\RedirectDeleted;
-use App\Events\RedirectUpdated;
-use App\Models\Redirect;
-use App\Services\Contracts\RedirectServiceContract;
+use Domain\Redirect\Dtos\RedirectCreateDto;
+use Domain\Redirect\Dtos\RedirectUpdateDto;
+use Domain\Redirect\Events\RedirectCreated;
+use Domain\Redirect\Events\RedirectDeleted;
+use Domain\Redirect\Events\RedirectUpdated;
+use Domain\Redirect\Models\Redirect;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Config;
 
-class RedirectService implements RedirectServiceContract
+class RedirectService
 {
     public function getPaginated(): LengthAwarePaginator
     {
@@ -21,6 +20,7 @@ class RedirectService implements RedirectServiceContract
 
     public function create(RedirectCreateDto $dto): Redirect
     {
+        /** @var Redirect $redirect */
         $redirect = Redirect::query()->create($dto->toArray());
 
         RedirectCreated::dispatch($redirect);

@@ -1,10 +1,10 @@
 <?php
 
-use App\Enums\RedirectType;
-use App\Events\RedirectCreated;
-use App\Events\RedirectDeleted;
-use App\Events\RedirectUpdated;
-use App\Models\Redirect;
+use Domain\Redirect\Enums\RedirectType;
+use Domain\Redirect\Events\RedirectCreated;
+use Domain\Redirect\Events\RedirectDeleted;
+use Domain\Redirect\Events\RedirectUpdated;
+use Domain\Redirect\Models\Redirect;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
@@ -44,7 +44,7 @@ class RedirectTest extends TestCase
 
         $this->{$user}->givePermissionTo('redirects.add');
 
-        $this->actingAs($this->{$user})
+        $res = $this->actingAs($this->{$user})
             ->postJson('/redirects', [
                 'name' => 'test',
                 'slug' => 'test_slug',

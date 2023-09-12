@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Enums;
+namespace Domain\Redirect\Enums;
 
 enum RedirectType: int
 {

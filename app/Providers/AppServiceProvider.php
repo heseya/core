@@ -45,7 +45,6 @@ use App\Services\Contracts\ProductSearchServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\Contracts\ProviderServiceContract;
-use App\Services\Contracts\RedirectServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
 use App\Services\Contracts\RoleServiceContract;
 use App\Services\Contracts\SavedAddressServiceContract;
@@ -88,7 +87,6 @@ use App\Services\ProductSearchService;
 use App\Services\ProductService;
 use App\Services\ProductSetService;
 use App\Services\ProviderService;
-use App\Services\RedirectService;
 use App\Services\ReorderService;
 use App\Services\RoleService;
 use App\Services\SavedAddressService;
@@ -164,7 +162,6 @@ class AppServiceProvider extends ServiceProvider
         PriceServiceContract::class => PriceService::class,
         MediaAttachmentServiceContract::class => MediaAttachmentService::class,
         SilverboxServiceContract::class => SilverboxService::class,
-        RedirectServiceContract::class => RedirectService::class,
     ];
 
     /**

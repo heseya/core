@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Events;
+namespace Domain\Redirect\Events;
 
+use App\Events\WebHookEvent;
 use App\Http\Resources\RedirectResource;
-use App\Models\Redirect;
+use Domain\Redirect\Models\Redirect;
 
 abstract class RedirectEvent extends WebHookEvent
 {

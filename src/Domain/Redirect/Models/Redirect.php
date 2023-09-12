@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Models;
+namespace Domain\Redirect\Models;
 
-use App\Enums\RedirectType;
+use App\Models\IdeHelperRedirect;
 use App\Traits\HasUuid;
+use Domain\Redirect\Enums\RedirectType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 

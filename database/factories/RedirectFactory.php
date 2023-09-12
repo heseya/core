@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Enums\RedirectType;
-use App\Models\Redirect;
+use Domain\Redirect\Enums\RedirectType;
+use Domain\Redirect\Models\Redirect;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class RedirectFactory extends Factory
