@@ -9,6 +9,7 @@ use Domain\ShippingMethod\Dtos\ShippingMethodCreateDto;
 use Domain\ShippingMethod\Dtos\ShippingMethodUpdateDto;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Spatie\LaravelData\Optional;
 
 interface ShippingMethodServiceContract
 {
@@ -17,14 +18,14 @@ interface ShippingMethodServiceContract
      *
      * @return LengthAwarePaginator<ShippingMethod>
      */
-    public function index(?array $search, ?string $country, ?Money $cartValue): LengthAwarePaginator;
+    public function index(?array $search, Optional|string $country, ?Money $cartValue): LengthAwarePaginator;
 
     public function store(ShippingMethodCreateDto $shippingMethodDto): ShippingMethod;
 
     public function update(ShippingMethod $shippingMethod, ShippingMethodUpdateDto $shippingMethodDto): ShippingMethod;
 
     /**
-     * @param array<ShippingMethod> $shippingMethods
+     * @param array<string> $shippingMethods
      */
     public function reorder(array $shippingMethods): void;
 

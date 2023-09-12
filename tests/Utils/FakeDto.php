@@ -41,16 +41,17 @@ final readonly class FakeDto
             Money::of(round(mt_rand(500, 2000) / 100, 2), $currency),
         );
 
-        return new ShippingMethodCreateDto(
-            ...$data + [
-                'name' => $faker->randomElement([
-                    'dpd',
-                    'inpostkurier',
-                ]),
-                'public' => $faker->boolean,
-                'block_list' => $faker->boolean,
-                'price_ranges' => [$priceRange],
-                'payment_on_delivery' => false,
+        return ShippingMethodCreateDto::from([
+                ...$data + [
+                        'name' => $faker->randomElement([
+                            'dpd',
+                            'inpostkurier',
+                        ]),
+                        'public' => $faker->boolean,
+                        'block_list' => $faker->boolean,
+                        'price_ranges' => [$priceRange],
+                        'payment_on_delivery' => false,
+                    ],
             ]
         );
     }

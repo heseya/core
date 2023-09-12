@@ -42,10 +42,11 @@ final class ShippingMethodCreateDto extends Data
     /**
      * @param string $name
      * @param bool $public
+     * @param ShippingType $shipping_type
      * @param DataCollection<int, PriceRangeDto> $price_ranges
      * @param bool $payment_on_delivery
-     * @param int $shipping_time_min
-     * @param int $shipping_time_max
+     * @param int|Optional $shipping_time_min
+     * @param int|Optional $shipping_time_max
      * @param array<string, string>|Missing|Optional $metadata
      * @param array<int>|Optional $payment_methods
      * @param array<string>|Optional $countries
@@ -70,10 +71,10 @@ final class ShippingMethodCreateDto extends Data
         public readonly bool $payment_on_delivery,
 
         #[IntegerType, Min(0)]
-        public readonly int $shipping_time_min,
+        public readonly int|Optional $shipping_time_min,
 
         #[IntegerType, GreaterThanOrEqualTo('shipping_time_min')]
-        public readonly int $shipping_time_max,
+        public readonly int|Optional $shipping_time_max,
 
         #[ArrayType]
         public array|Missing|Optional $metadata,

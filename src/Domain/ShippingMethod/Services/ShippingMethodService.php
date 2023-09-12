@@ -30,7 +30,7 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
         private MetadataServiceContract $metadataService,
     ) {}
 
-    public function index(?array $search, ?string $country, ?Money $cartValue): LengthAwarePaginator
+    public function index(?array $search, Optional|string $country, ?Money $cartValue): LengthAwarePaginator
     {
         $query = ShippingMethod::query()
             ->searchByCriteria($search ?? [])
@@ -55,7 +55,7 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
             ]);
         }
 
-        if ($country) {
+        if (!$country instanceof Optional) {
             $query->where(function (Builder $query) use ($country): void {
                 $query->where(function (Builder $query) use ($country): void {
                     $query
