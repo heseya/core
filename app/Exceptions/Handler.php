@@ -170,8 +170,8 @@ final class Handler extends ExceptionHandler
                 }
 
                 $validationErrors[$field][$index] = [
-                        'key' => $errorEnum->value,
-                    ] + $this->createValidationAttributeData($errorEnum, $attrValue);
+                    'key' => $errorEnum->value,
+                ] + $this->createValidationAttributeData($errorEnum, $attrValue);
 
                 if ($message !== null) {
                     $validationErrors[$field][$index] += [
