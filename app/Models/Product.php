@@ -68,7 +68,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     use SoftDeletes;
     use Sortable;
 
-    protected const HIDDEN_PERMISSION = 'products.show_hidden';
+    public const HIDDEN_PERMISSION = 'products.show_hidden';
 
     protected $fillable = [
         'id',

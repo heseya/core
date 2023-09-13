@@ -28,6 +28,6 @@ trait GetAllTranslations
             }
         }
 
-        return ['translations' => $allTranslations];
+        return ['translations' => count($allTranslations) > 0 ? $allTranslations : (object) $allTranslations];
     }
 }
