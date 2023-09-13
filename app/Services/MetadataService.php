@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Dtos\MetadataPersonalListDto;
 use App\Models\Discount;
+use App\Models\Media;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\MetadataServiceContract;
@@ -49,24 +50,11 @@ class MetadataService implements MetadataServiceContract
             'sales', 'coupons' => Discount::class,
             'attributes' => $routeSegments[2] === 'options' ? AttributeOption::class : Attribute::class,
             'banners' => Banner::class,
-            default => '',
+            'media' => Media::class,
+            default => $this->getClassFromSegment($routeSegments[0]),
         };
 
-        if (class_exists($className)) {
-            return new $className();
-        }
-
-        $className = 'App\\Models\\' . Str::studly(Str::singular($routeSegments[0]));
-
-        if (class_exists($className)) {
-            // @phpstan-ignore-next-line
-            return new $className();
-        }
-
-        $className = 'App\\Models\\' . Str::studly($routeSegments[0]);
-
-        if (class_exists($className)) {
-            // @phpstan-ignore-next-line
+        if (is_subclass_of($className, Model::class)) {
             return new $className();
         }
 
@@ -122,5 +110,25 @@ class MetadataService implements MetadataServiceContract
                 'public' => $dto->public ?? true,
             ],
         );
+    }
+
+    private function getClassFromSegment(string $segment): string
+    {
+        $className = 'App\\Models\\' . Str::studly(Str::singular($segment));
+
+        if (class_exists($className)) {
+            return $className;
+        }
+
+        // DDD structure
+        $className = 'Domain\\' . Str::studly(Str::singular($segment)) . '\\Models\\' . Str::studly(
+            Str::singular($segment)
+        );
+
+        if (class_exists($className)) {
+            return $className;
+        }
+
+        return '';
     }
 }

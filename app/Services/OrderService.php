@@ -30,7 +30,6 @@ use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
 use App\Models\Schema;
-use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\User;
 use App\Notifications\SendUrls;
@@ -46,6 +45,7 @@ use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\SalesChannel\SalesChannelService;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Exception;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -163,7 +163,8 @@ final readonly class OrderService implements OrderServiceContract
             $status = Status::query()
                 ->select('id')
                 ->orderBy('order')
-                ->firstOr(callback: fn () => throw new ServerException(Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED));
+                ->firstOr(callback: fn () => throw new ServerException(Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED)
+                );
 
             /** @var User|App $buyer */
             $buyer = Auth::user();
@@ -393,11 +394,13 @@ final readonly class OrderService implements OrderServiceContract
                 ? ['billing_address_id' => $billingAddress->getKey()]
                 : (!$dto->getBillingAddress() instanceof Missing ? ['billing_address_id' => null] : []);
 
-            $order->update([
-                'shipping_address_id' => $this->resolveShippingAddress($shippingPlace, $shippingType, $order),
-                'shipping_place' => $this->resolveShippingPlace($shippingPlace, $shippingType, $order),
-                'shipping_type' => $shippingType,
-            ] + $dto->toArray() + $billingAddressId);
+            $order->update(
+                [
+                    'shipping_address_id' => $this->resolveShippingAddress($shippingPlace, $shippingType, $order),
+                    'shipping_place' => $this->resolveShippingPlace($shippingPlace, $shippingType, $order),
+                    'shipping_type' => $shippingType,
+                ] + $dto->toArray() + $billingAddressId
+            );
 
             if ($shippingMethod) {
                 $order->shippingMethod()->dissociate();

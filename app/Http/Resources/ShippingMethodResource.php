@@ -2,9 +2,9 @@
 
 namespace App\Http\Resources;
 
-use App\Models\ShippingMethod;
 use App\Traits\MetadataResource;
 use Brick\Money\Money;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Http\Request;
 
 /**

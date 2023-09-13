@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\MediaType;
 use Domain\Price\Enums\ProductPriceType;
 use App\Enums\SchemaType;
@@ -2417,6 +2418,37 @@ class ProductTest extends TestCase
             'price_type' => ProductPriceType::PRICE_MAX,
             'value' => 80 * 100,
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateIncompleteTranslations(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.add');
+
+        /** @var Language $en */
+        $en = Language::where('iso', '=', 'en')->first();
+
+        $this->actingAs($this->{$user})->postJson('/products', [
+            'slug' => 'test',
+            'prices_base' => $this->productPrices,
+            'public' => true,
+            'shipping_digital' => false,
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                    'description_html' => '<h1>Description</h1>',
+                    'description_short' => 'So called short description...',
+                ],
+            ],
+            'published' => [$this->lang, $en->getKey()],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'message' => "Model doesn't have all required translations to be published in {$en->getKey()}",
+                'key' => Exceptions::PUBLISHING_TRANSLATION_EXCEPTION->name,
+            ]);
     }
 
     public function testUpdateUnauthorized(): void

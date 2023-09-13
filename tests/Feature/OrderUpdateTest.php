@@ -10,11 +10,11 @@ use App\Models\Address;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
-use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\WebHook;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Bus;
@@ -37,7 +37,6 @@ class OrderUpdateTest extends TestCase
     private Address $addressDelivery;
     private Address $addressInvoice;
     private Address $address;
-
     private Currency $currency;
 
     public function setUp(): void
@@ -1430,9 +1429,12 @@ class OrderUpdateTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('addresses', $newAddress);
-        $this->assertDatabaseMissing('addresses', [
-            'id' => $address->getKey(),
-        ] + $newAddress);
+        $this->assertDatabaseMissing(
+            'addresses',
+            [
+                'id' => $address->getKey(),
+            ] + $newAddress
+        );
     }
 
     private function checkAddress(Address $address): void

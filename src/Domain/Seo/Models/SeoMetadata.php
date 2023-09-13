@@ -62,4 +62,9 @@ final class SeoMetadata extends Model implements Translatable
     {
         return $this->hasOne(Media::class, 'id', 'og_image');
     }
+
+    public function hasPublishedColumn(): bool
+    {
+        return true;
+    }
 }

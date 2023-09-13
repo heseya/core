@@ -8,13 +8,13 @@ use App\Models\Item;
 use App\Models\Order;
 use App\Models\Role;
 use App\Models\Schema;
-use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\User;
 use Domain\Banner\Models\Banner;
 use Domain\Metadata\Enums\MetadataType;
 use Domain\Page\Page;
 use Domain\ProductSet\ProductSet;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Tests\TestCase;
 
 class MetadataFilterTest extends TestCase
@@ -33,7 +33,8 @@ class MetadataFilterTest extends TestCase
             ],
             'schemas as application' => [
                 'application',
-                ['model' => Schema::class,
+                [
+                    'model' => Schema::class,
                     'prefix_url' => 'schemas',
                     'public_role' => 'products.add',
                     'private_role' => 'schemas.show_metadata_private',
@@ -60,7 +61,8 @@ class MetadataFilterTest extends TestCase
             ],
 
             'coupons as user' => [
-                'user', [
+                'user',
+                [
                     'model' => Discount::class,
                     'prefix_url' => 'coupons',
                     'public_role' => 'coupons.show',
@@ -78,7 +80,8 @@ class MetadataFilterTest extends TestCase
             ],
 
             'sales as user' => [
-                'user', [
+                'user',
+                [
                     'model' => Discount::class,
                     'prefix_url' => 'sales',
                     'public_role' => 'sales.show',
@@ -105,7 +108,8 @@ class MetadataFilterTest extends TestCase
                 ],
             ],
             'items as application' => [
-                'application', [
+                'application',
+                [
                     'model' => Item::class,
                     'prefix_url' => 'items',
                     'public_role' => 'items.show',
@@ -114,7 +118,8 @@ class MetadataFilterTest extends TestCase
             ],
 
             'orders as user' => [
-                'user', [
+                'user',
+                [
                     'model' => Order::class,
                     'prefix_url' => 'orders',
                     'public_role' => 'orders.show',
@@ -122,7 +127,8 @@ class MetadataFilterTest extends TestCase
                 ],
             ],
             'orders as application' => [
-                'application', [
+                'application',
+                [
                     'model' => Order::class,
                     'prefix_url' => 'orders',
                     'public_role' => 'orders.show',
@@ -131,7 +137,8 @@ class MetadataFilterTest extends TestCase
             ],
 
             'statuses as user' => [
-                'user', [
+                'user',
+                [
                     'model' => Status::class,
                     'prefix_url' => 'statuses',
                     'public_role' => 'statuses.show',

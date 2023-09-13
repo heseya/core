@@ -15,4 +15,6 @@ interface Translatable
     public function hasTranslation(string $key, ?string $locale = null): bool;
 
     public function getTranslatableAttributes(): array;
+
+    public function hasPublishedColumn(): bool;
 }

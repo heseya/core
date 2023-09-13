@@ -5,10 +5,10 @@ namespace Tests\Feature;
 use App\Enums\ShippingType;
 use App\Models\PriceRange;
 use App\Models\Product;
-use App\Models\ShippingMethod;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Tests\TestCase;
 
 class OrderDigitalTest extends TestCase
@@ -17,7 +17,6 @@ class OrderDigitalTest extends TestCase
     private Product $physicalProduct;
     private ShippingMethod $digitalShippingMethod;
     private ShippingMethod $physicalShippingMethod;
-
     private array $billingAddress;
     private Currency $currency;
 

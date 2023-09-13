@@ -9,7 +9,6 @@ use App\Models\Discount;
 use App\Models\DiscountCondition;
 use App\Models\Product;
 use App\Models\Role;
-use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\ProductService;
@@ -22,6 +21,7 @@ use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\DiscountConditionPriceType;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Arr;
@@ -44,6 +44,276 @@ class DiscountConditionsCheckTest extends TestCase
     private Currency $currency;
     private ProductService $productService;
 
+    public static function dateBetweenPassProvider(): array
+    {
+        return [
+            'in range' => [
+                [
+                    'start_at' => Carbon::create(2020, 02, 01, 10),
+                    'end_at' => Carbon::create(2020, 02, 03, 10),
+                    'is_in_range' => true,
+                ],
+            ],
+            'not in range' => [
+                [
+                    'start_at' => Carbon::create(2020, 01, 01, 10),
+                    'end_at' => Carbon::create(2020, 01, 20, 10),
+                    'is_in_range' => false,
+                ],
+            ],
+            'only start at in range' => [
+                [
+                    'start_at' => Carbon::create(2020, 02, 01, 10),
+                    'is_in_range' => true,
+                ],
+            ],
+            'only start at not in range' => [
+                [
+                    'start_at' => Carbon::create(2020, 02, 03, 10),
+                    'is_in_range' => false,
+                ],
+            ],
+            'only end at in range' => [
+                [
+                    'end_at' => Carbon::create(2020, 03, 01, 10),
+                    'is_in_range' => true,
+                ],
+            ],
+            'only end at not in range' => [
+                [
+                    'end_at' => Carbon::create(2020, 01, 01, 10),
+                    'is_in_range' => false,
+                ],
+            ],
+        ];
+    }
+
+    public static function dateBetweenFailProvider(): array
+    {
+        return [
+            'in range' => [
+                [
+                    'start_at' => Carbon::create(2020, 02, 03, 10),
+                    'end_at' => Carbon::create(2020, 02, 04, 10),
+                    'is_in_range' => true,
+                ],
+            ],
+            'not in range' => [
+                [
+                    'start_at' => Carbon::create(2020, 02, 01, 10),
+                    'end_at' => Carbon::create(2020, 02, 03, 10),
+                    'is_in_range' => false,
+                ],
+            ],
+        ];
+    }
+
+    public static function timeBetweenPassProvider(): array
+    {
+        Carbon::setTestNow('2022-03-04T12:00:00');
+
+        return [
+            'in range' => [
+                [
+                    'start_at' => Carbon::now()->subHour()->toTimeString(),
+                    'end_at' => Carbon::now()->addHour()->toTimeString(),
+                    'is_in_range' => true,
+                ],
+            ],
+            'not in range' => [
+                [
+                    'start_at' => Carbon::now()->addHour()->toTimeString(),
+                    'end_at' => Carbon::now()->addHours(2)->toTimeString(),
+                    'is_in_range' => false,
+                ],
+            ],
+            'only start at in range' => [
+                [
+                    'start_at' => Carbon::now()->subHour()->toTimeString(),
+                    'is_in_range' => true,
+                ],
+            ],
+            'only start at not in range' => [
+                [
+                    'start_at' => Carbon::now()->addHour()->toTimeString(),
+                    'is_in_range' => false,
+                ],
+            ],
+            'only end at in range' => [
+                [
+                    'end_at' => Carbon::now()->addHour()->toTimeString(),
+                    'is_in_range' => true,
+                ],
+            ],
+            'only end at not in range' => [
+                [
+                    'end_at' => Carbon::now()->subHour()->toTimeString(),
+                    'is_in_range' => false,
+                ],
+            ],
+            'end at less in range' => [
+                [
+                    'start_at' => Carbon::now()->addHours(2)->toTimeString(),
+                    'end_at' => Carbon::now()->addHour()->toTimeString(),
+                    'is_in_range' => true,
+                ],
+            ],
+            'end at less not in range' => [
+                [
+                    'start_at' => Carbon::now()->addHour()->toTimeString(),
+                    'end_at' => Carbon::now()->subHour()->toTimeString(),
+                    'is_in_range' => false,
+                ],
+            ],
+        ];
+    }
+
+    public static function cartLengthProviderPass(): array
+    {
+        return [
+            'min-max min value' => [
+                1.0,
+                2.0,
+                [
+                    'min_value' => 3,
+                    'max_value' => 10,
+                ],
+            ],
+            'min-max max value' => [
+                2.0,
+                3.0,
+                [
+                    'min_value' => 3,
+                    'max_value' => 5,
+                ],
+            ],
+            'only min value' => [
+                2.0,
+                3.0,
+                [
+                    'min_value' => 3,
+                ],
+            ],
+            'only max value' => [
+                2.0,
+                2.0,
+                [
+                    'max_value' => 5,
+                ],
+            ],
+        ];
+    }
+
+    public static function cartLengthProviderFail(): array
+    {
+        return [
+            'min-max min value' => [
+                1.0,
+                2.0,
+                [
+                    'min_value' => 5,
+                    'max_value' => 10,
+                ],
+            ],
+            'min-max max value' => [
+                3.0,
+                3.0,
+                [
+                    'min_value' => 3,
+                    'max_value' => 5,
+                ],
+            ],
+            'only min value' => [
+                2.0,
+                3.0,
+                [
+                    'min_value' => 10,
+                ],
+            ],
+            'only max value' => [
+                4.0,
+                5.0,
+                [
+                    'max_value' => 5,
+                ],
+            ],
+        ];
+    }
+
+    public static function couponsCountProvider(): array
+    {
+        return [
+            'pass min-max min value' => [
+                3,
+                [
+                    'min_value' => 3,
+                    'max_value' => 10,
+                ],
+                true,
+            ],
+            'pass min-max max value' => [
+                3,
+                [
+                    'min_value' => 1,
+                    'max_value' => 3,
+                ],
+                true,
+            ],
+            'pass only min value' => [
+                3,
+                [
+                    'min_value' => 2,
+                ],
+                true,
+            ],
+            'pass only max value' => [
+                2,
+                [
+                    'max_value' => 5,
+                ],
+                true,
+            ],
+            'fail min-max min value' => [
+                4,
+                [
+                    'min_value' => 5,
+                    'max_value' => 10,
+                ],
+                false,
+            ],
+            'fail min-max max value' => [
+                6,
+                [
+                    'min_value' => 3,
+                    'max_value' => 5,
+                ],
+                false,
+            ],
+            'fail only min value' => [
+                2,
+                [
+                    'min_value' => 10,
+                ],
+                false,
+            ],
+            'fail only max value' => [
+                6,
+                [
+                    'max_value' => 5,
+                ],
+                false,
+            ],
+        ];
+    }
+
+    public static function couponsCountWithSalesProvider(): array
+    {
+        return [
+            'pass' => [true],
+            'fail' => [false],
+        ];
+    }
+
     /**
      * @throws DtoException
      * @throws RoundingNecessaryException
@@ -63,10 +333,12 @@ class DiscountConditionsCheckTest extends TestCase
         $this->currency = Currency::DEFAULT;
         $this->productService = App::make(ProductService::class);
 
-        $this->product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(20, $this->currency->value))],
-            'public' => true,
-        ]));
+        $this->product = $this->productService->create(
+            FakeDto::productCreateDto([
+                'prices_base' => [PriceDto::from(Money::of(20, $this->currency->value))],
+                'public' => true,
+            ])
+        );
 
         $this->set = ProductSet::factory()->create();
 
@@ -147,10 +419,12 @@ class DiscountConditionsCheckTest extends TestCase
         $this->prepareConditionGroup();
         $this->discount->conditionGroups()->attach($this->prepareNewConditionGroup());
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(60, $this->currency->value))],
-            'public' => true,
-        ]));
+        $product = $this->productService->create(
+            FakeDto::productCreateDto([
+                'prices_base' => [PriceDto::from(Money::of(60, $this->currency->value))],
+                'public' => true,
+            ])
+        );
 
         $product->sets()->sync([$this->set->getKey()]);
 
@@ -189,10 +463,12 @@ class DiscountConditionsCheckTest extends TestCase
         $this->prepareConditionGroup();
         $this->discount->conditionGroups()->attach($this->prepareNewConditionGroup());
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(60, $this->currency->value))],
-            'public' => true,
-        ]));
+        $product = $this->productService->create(
+            FakeDto::productCreateDto([
+                'prices_base' => [PriceDto::from(Money::of(60, $this->currency->value))],
+                'public' => true,
+            ])
+        );
 
         $cart = CartDto::fromArray([
             'currency' => $this->currency,
@@ -239,7 +515,15 @@ class DiscountConditionsCheckTest extends TestCase
             'price_type' => DiscountConditionPriceType::PRICE_MAX->value,
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition(condition: $discountCondition, cartValue: Money::of(50.0, $this->currency->value),));
+        $this->assertTrue(
+            $this->discountService->checkCondition(
+                condition: $discountCondition,
+                cartValue: Money::of(
+                50.0,
+                $this->currency->value
+            ),
+            )
+        );
     }
 
     public function testCheckConditionOrderValueNotInRangePass(): void
@@ -263,7 +547,15 @@ class DiscountConditionsCheckTest extends TestCase
             'price_type' => DiscountConditionPriceType::PRICE_MAX->value,
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition(condition: $discountCondition, cartValue: Money::of(100.0, $this->currency->value),));
+        $this->assertTrue(
+            $this->discountService->checkCondition(
+                condition: $discountCondition,
+                cartValue: Money::of(
+                100.0,
+                $this->currency->value
+            ),
+            )
+        );
     }
 
     public function testCheckConditionOrderValueFail(): void
@@ -287,7 +579,15 @@ class DiscountConditionsCheckTest extends TestCase
             'price_type' => DiscountConditionPriceType::PRICE_MAX->value,
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition(condition: $discountCondition, cartValue: Money::of(100.0, $this->currency->value),));
+        $this->assertFalse(
+            $this->discountService->checkCondition(
+                condition: $discountCondition,
+                cartValue: Money::of(
+                100.0,
+                $this->currency->value
+            ),
+            )
+        );
     }
 
     public function testCheckConditionOrderValueNotInRangeFail(): void
@@ -311,7 +611,15 @@ class DiscountConditionsCheckTest extends TestCase
             'price_type' => DiscountConditionPriceType::PRICE_MAX->value,
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition(condition: $discountCondition, cartValue: Money::of(50.0, $this->currency->value),));
+        $this->assertFalse(
+            $this->discountService->checkCondition(
+                condition: $discountCondition,
+                cartValue: Money::of(
+                50.0,
+                $this->currency->value
+            ),
+            )
+        );
     }
 
     public function testCheckConditionUserInRolePass(): void
@@ -330,7 +638,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
+        $this->assertTrue(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value))
+        );
     }
 
     public function testCheckConditionUserInRoleAllowListFalsePass(): void
@@ -350,7 +660,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
+        $this->assertTrue(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value))
+        );
     }
 
     public function testCheckConditionUserInRoleFail(): void
@@ -368,7 +680,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
+        $this->assertFalse(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value))
+        );
     }
 
     public function testCheckConditionUserInRoleAllowListFalseFail(): void
@@ -387,7 +701,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
+        $this->assertFalse(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value))
+        );
     }
 
     public function testCheckConditionUserInPass(): void
@@ -404,7 +720,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
+        $this->assertTrue(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value))
+        );
     }
 
     public function testCheckConditionUserInAllowListFalsePass(): void
@@ -421,7 +739,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
+        $this->assertTrue(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value))
+        );
     }
 
     public function testCheckConditionUserInFail(): void
@@ -438,7 +758,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
+        $this->assertFalse(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value))
+        );
     }
 
     public function testCheckConditionUserInAllowListFalseFail(): void
@@ -455,7 +777,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
+        $this->assertFalse(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value))
+        );
     }
 
     /**
@@ -495,7 +819,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
+        $this->assertTrue(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart)
+        );
     }
 
     /**
@@ -534,7 +860,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
+        $this->assertFalse(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart)
+        );
     }
 
     /**
@@ -573,7 +901,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
+        $this->assertTrue(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart)
+        );
     }
 
     /**
@@ -612,7 +942,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
+        $this->assertFalse(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart)
+        );
     }
 
     /**
@@ -656,7 +988,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
+        $this->assertTrue(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart)
+        );
     }
 
     /**
@@ -703,7 +1037,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
+        $this->assertTrue(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart)
+        );
     }
 
     /**
@@ -745,7 +1081,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
+        $this->assertFalse(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart)
+        );
     }
 
     /**
@@ -793,7 +1131,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
+        $this->assertFalse(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart)
+        );
     }
 
     /**
@@ -835,7 +1175,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
+        $this->assertTrue(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart)
+        );
     }
 
     /**
@@ -883,7 +1225,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
+        $this->assertTrue(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart)
+        );
     }
 
     /**
@@ -925,7 +1269,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
+        $this->assertFalse(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart)
+        );
     }
 
     /**
@@ -972,51 +1318,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
-    }
-
-    public static function dateBetweenPassProvider(): array
-    {
-        return [
-            'in range' => [
-                [
-                    'start_at' => Carbon::create(2020, 02, 01, 10),
-                    'end_at' => Carbon::create(2020, 02, 03, 10),
-                    'is_in_range' => true,
-                ],
-            ],
-            'not in range' => [
-                [
-                    'start_at' => Carbon::create(2020, 01, 01, 10),
-                    'end_at' => Carbon::create(2020, 01, 20, 10),
-                    'is_in_range' => false,
-                ],
-            ],
-            'only start at in range' => [
-                [
-                    'start_at' => Carbon::create(2020, 02, 01, 10),
-                    'is_in_range' => true,
-                ],
-            ],
-            'only start at not in range' => [
-                [
-                    'start_at' => Carbon::create(2020, 02, 03, 10),
-                    'is_in_range' => false,
-                ],
-            ],
-            'only end at in range' => [
-                [
-                    'end_at' => Carbon::create(2020, 03, 01, 10),
-                    'is_in_range' => true,
-                ],
-            ],
-            'only end at not in range' => [
-                [
-                    'end_at' => Carbon::create(2020, 01, 01, 10),
-                    'is_in_range' => false,
-                ],
-            ],
-        ];
+        $this->assertFalse(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart)
+        );
     }
 
     /**
@@ -1031,27 +1335,9 @@ class DiscountConditionsCheckTest extends TestCase
             'value' => $value,
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
-    }
-
-    public static function dateBetweenFailProvider(): array
-    {
-        return [
-            'in range' => [
-                [
-                    'start_at' => Carbon::create(2020, 02, 03, 10),
-                    'end_at' => Carbon::create(2020, 02, 04, 10),
-                    'is_in_range' => true,
-                ],
-            ],
-            'not in range' => [
-                [
-                    'start_at' => Carbon::create(2020, 02, 01, 10),
-                    'end_at' => Carbon::create(2020, 02, 03, 10),
-                    'is_in_range' => false,
-                ],
-            ],
-        ];
+        $this->assertTrue(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value))
+        );
     }
 
     /**
@@ -1066,67 +1352,9 @@ class DiscountConditionsCheckTest extends TestCase
             'value' => $value,
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
-    }
-
-    public static function timeBetweenPassProvider(): array
-    {
-        Carbon::setTestNow('2022-03-04T12:00:00');
-
-        return [
-            'in range' => [
-                [
-                    'start_at' => Carbon::now()->subHour()->toTimeString(),
-                    'end_at' => Carbon::now()->addHour()->toTimeString(),
-                    'is_in_range' => true,
-                ],
-            ],
-            'not in range' => [
-                [
-                    'start_at' => Carbon::now()->addHour()->toTimeString(),
-                    'end_at' => Carbon::now()->addHours(2)->toTimeString(),
-                    'is_in_range' => false,
-                ],
-            ],
-            'only start at in range' => [
-                [
-                    'start_at' => Carbon::now()->subHour()->toTimeString(),
-                    'is_in_range' => true,
-                ],
-            ],
-            'only start at not in range' => [
-                [
-                    'start_at' => Carbon::now()->addHour()->toTimeString(),
-                    'is_in_range' => false,
-                ],
-            ],
-            'only end at in range' => [
-                [
-                    'end_at' => Carbon::now()->addHour()->toTimeString(),
-                    'is_in_range' => true,
-                ],
-            ],
-            'only end at not in range' => [
-                [
-                    'end_at' => Carbon::now()->subHour()->toTimeString(),
-                    'is_in_range' => false,
-                ],
-            ],
-            'end at less in range' => [
-                [
-                    'start_at' => Carbon::now()->addHours(2)->toTimeString(),
-                    'end_at' => Carbon::now()->addHour()->toTimeString(),
-                    'is_in_range' => true,
-                ],
-            ],
-            'end at less not in range' => [
-                [
-                    'start_at' => Carbon::now()->addHour()->toTimeString(),
-                    'end_at' => Carbon::now()->subHour()->toTimeString(),
-                    'is_in_range' => false,
-                ],
-            ],
-        ];
+        $this->assertFalse(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value))
+        );
     }
 
     /**
@@ -1141,7 +1369,9 @@ class DiscountConditionsCheckTest extends TestCase
             'value' => $value,
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
+        $this->assertTrue(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value))
+        );
     }
 
     public function testCheckConditionMaxUsesPass(): void
@@ -1153,7 +1383,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
+        $this->assertTrue(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value))
+        );
     }
 
     public function testCheckConditionMaxUsesFail(): void
@@ -1165,7 +1397,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
+        $this->assertFalse(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value))
+        );
     }
 
     public function testCheckConditionMaxUsesPerUserPass(): void
@@ -1178,7 +1412,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
+        $this->assertTrue(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value))
+        );
     }
 
     public function testCheckConditionMaxUsesPerUserFail(): void
@@ -1191,7 +1427,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
+        $this->assertFalse(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value))
+        );
     }
 
     public function testCheckConditionMaxUsesPerUserNoAuthUser(): void
@@ -1203,7 +1441,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
+        $this->assertFalse(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value))
+        );
     }
 
     public function testCheckConditionWeekdayInPass(): void
@@ -1217,7 +1457,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
+        $this->assertTrue(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value))
+        );
     }
 
     public function testCheckConditionWeekdayInFail(): void
@@ -1231,43 +1473,9 @@ class DiscountConditionsCheckTest extends TestCase
             ],
         ]);
 
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value)));
-    }
-
-    public static function cartLengthProviderPass(): array
-    {
-        return [
-            'min-max min value' => [
-                1.0,
-                2.0,
-                [
-                    'min_value' => 3,
-                    'max_value' => 10,
-                ],
-            ],
-            'min-max max value' => [
-                2.0,
-                3.0,
-                [
-                    'min_value' => 3,
-                    'max_value' => 5,
-                ],
-            ],
-            'only min value' => [
-                2.0,
-                3.0,
-                [
-                    'min_value' => 3,
-                ],
-            ],
-            'only max value' => [
-                2.0,
-                2.0,
-                [
-                    'max_value' => 5,
-                ],
-            ],
-        ];
+        $this->assertFalse(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value))
+        );
     }
 
     /**
@@ -1310,43 +1518,9 @@ class DiscountConditionsCheckTest extends TestCase
         ]);
 
         $this->assertTrue($cart->getCartLength() === $quantity1 + $quantity2);
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
-    }
-
-    public static function cartLengthProviderFail(): array
-    {
-        return [
-            'min-max min value' => [
-                1.0,
-                2.0,
-                [
-                    'min_value' => 5,
-                    'max_value' => 10,
-                ],
-            ],
-            'min-max max value' => [
-                3.0,
-                3.0,
-                [
-                    'min_value' => 3,
-                    'max_value' => 5,
-                ],
-            ],
-            'only min value' => [
-                2.0,
-                3.0,
-                [
-                    'min_value' => 10,
-                ],
-            ],
-            'only max value' => [
-                4.0,
-                5.0,
-                [
-                    'max_value' => 5,
-                ],
-            ],
-        ];
+        $this->assertTrue(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart)
+        );
     }
 
     /**
@@ -1389,73 +1563,9 @@ class DiscountConditionsCheckTest extends TestCase
         ]);
 
         $this->assertTrue($cart->getCartLength() === $quantity1 + $quantity2);
-        $this->assertFalse($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart));
-    }
-
-    public static function couponsCountProvider(): array
-    {
-        return [
-            'pass min-max min value' => [
-                3,
-                [
-                    'min_value' => 3,
-                    'max_value' => 10,
-                ],
-                true,
-            ],
-            'pass min-max max value' => [
-                3,
-                [
-                    'min_value' => 1,
-                    'max_value' => 3,
-                ],
-                true,
-            ],
-            'pass only min value' => [
-                3,
-                [
-                    'min_value' => 2,
-                ],
-                true,
-            ],
-            'pass only max value' => [
-                2,
-                [
-                    'max_value' => 5,
-                ],
-                true,
-            ],
-            'fail min-max min value' => [
-                4,
-                [
-                    'min_value' => 5,
-                    'max_value' => 10,
-                ],
-                false,
-            ],
-            'fail min-max max value' => [
-                6,
-                [
-                    'min_value' => 3,
-                    'max_value' => 5,
-                ],
-                false,
-            ],
-            'fail only min value' => [
-                2,
-                [
-                    'min_value' => 10,
-                ],
-                false,
-            ],
-            'fail only max value' => [
-                6,
-                [
-                    'max_value' => 5,
-                ],
-                false,
-            ],
-        ];
+        $this->assertFalse(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart)
+        );
     }
 
     /**
@@ -1490,15 +1600,13 @@ class DiscountConditionsCheckTest extends TestCase
         ]);
 
         $this->assertTrue(count($cart->getCoupons()) === $quantity);
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart) === $result);
-    }
-
-    public static function couponsCountWithSalesProvider(): array
-    {
-        return [
-            'pass' => [true],
-            'fail' => [false],
-        ];
+        $this->assertTrue(
+            $this->discountService->checkCondition(
+                $discountCondition,
+                Money::zero($this->currency->value),
+                $cart
+            ) === $result
+        );
     }
 
     /**
@@ -1538,7 +1646,13 @@ class DiscountConditionsCheckTest extends TestCase
         ]);
 
         $this->assertEmpty($cart->getCoupons());
-        $this->assertTrue($this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value), $cart) === $result);
+        $this->assertTrue(
+            $this->discountService->checkCondition(
+                $discountCondition,
+                Money::zero($this->currency->value),
+                $cart
+            ) === $result
+        );
     }
 
     private function prepareConditionGroup(): void

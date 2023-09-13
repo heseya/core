@@ -45,9 +45,9 @@ final class OptionDto extends Data
         #[Uuid]
         public readonly Optional|string $id,
         #[Rule(new Translations(['name']))]
-        public readonly array $translations,
+        public readonly array|Optional $translations,
         #[DataCollectionOf(PriceDto::class)]
-        public DataCollection $prices,
+        public DataCollection|Optional $prices,
         public readonly bool|Optional $disabled,
         public readonly array|Optional $items,
 

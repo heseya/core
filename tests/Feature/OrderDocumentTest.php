@@ -11,8 +11,8 @@ use App\Models\Media;
 use App\Models\Order;
 use App\Models\OrderDocument;
 use App\Models\PaymentMethod;
-use App\Models\ShippingMethod;
 use App\Models\Status;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
@@ -93,9 +93,9 @@ class OrderDocumentTest extends TestCase
         $response = $this->actingAs($this->{$user})
             ->deleteJson(
                 'orders/id:'
-                    . $this->order->getKey()
-                    . '/docs/id:'
-                    . $this->order->documents()->latest()->first()->pivot->id
+                . $this->order->getKey()
+                . '/docs/id:'
+                . $this->order->documents()->latest()->first()->pivot->id
             );
 
         $response->assertStatus(204);
@@ -184,9 +184,9 @@ class OrderDocumentTest extends TestCase
             ->json(
                 'GET',
                 'orders/id:'
-                    . $this->order->getKey() . '/docs/id:'
-                    . $this->order->documents->last()->pivot->id
-                    . '/download'
+                . $this->order->getKey() . '/docs/id:'
+                . $this->order->documents->last()->pivot->id
+                . '/download'
             );
 
         // TODO: don't work i don't now why
@@ -217,9 +217,9 @@ class OrderDocumentTest extends TestCase
             ->json(
                 'GET',
                 'orders/id:'
-                    . $this->order->getKey() . '/docs/id:'
-                    . $this->order->documents->last()->pivot->id
-                    . '/download'
+                . $this->order->getKey() . '/docs/id:'
+                . $this->order->documents->last()->pivot->id
+                . '/download'
             );
 
         $response
@@ -249,9 +249,9 @@ class OrderDocumentTest extends TestCase
             ->json(
                 'GET',
                 'orders/id:'
-                    . $this->order->getKey() . '/docs/id:'
-                    . $this->order->documents->last()->pivot->id
-                    . '/download'
+                . $this->order->getKey() . '/docs/id:'
+                . $this->order->documents->last()->pivot->id
+                . '/download'
             );
 
         $response

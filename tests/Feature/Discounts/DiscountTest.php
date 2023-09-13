@@ -15,7 +15,6 @@ use App\Models\ConditionGroup;
 use App\Models\Discount;
 use App\Models\Product;
 use App\Models\Role;
-use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Models\WebHook;
 use App\Repositories\Contracts\ProductRepositoryContract;
@@ -28,6 +27,7 @@ use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\ProductSet\ProductSet;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Dto\DtoException;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -55,6 +55,80 @@ class DiscountTest extends TestCase
     private array $expectedStructure;
     private ProductRepositoryContract $productRepository;
     private Currency $currency;
+
+    public static function couponOrSaleProvider(): array
+    {
+        return [
+            'coupons' => ['coupons'],
+            'sales' => ['sales'],
+        ];
+    }
+
+    public static function authWithDiscountProvider(): array
+    {
+        return [
+            'as user coupons' => ['user', 'coupons'],
+            'as user sales' => ['user', 'sales'],
+            'as app coupons' => ['application', 'coupons'],
+            'as app sales' => ['application', 'sales'],
+        ];
+    }
+
+    public static function timeConditionProvider(): array
+    {
+        return [
+            'as user date between' => [
+                'user',
+                [
+                    'type' => ConditionType::DATE_BETWEEN,
+                    'is_in_range' => true,
+                    'start_at' => '2022-05-09',
+                    'end_at' => '2022-05-13',
+                ],
+            ],
+            'as user time between' => [
+                'user',
+                [
+                    'type' => ConditionType::TIME_BETWEEN,
+                    'is_in_range' => true,
+                    'start_at' => '10:00:00',
+                    'end_at' => '14:00:00',
+                ],
+            ],
+            'as user weekday in' => [
+                'user',
+                [
+                    'type' => ConditionType::WEEKDAY_IN,
+                    'weekday' => [0, 0, 0, 0, 1, 0, 0],
+                ],
+            ],
+            'as app date between' => [
+                'application',
+                [
+                    'type' => ConditionType::DATE_BETWEEN,
+                    'is_in_range' => true,
+                    'start_at' => '2022-05-09',
+                    'end_at' => '2022-05-13',
+                ],
+            ],
+            'as app time between' => [
+                'application',
+                [
+                    'type' => ConditionType::TIME_BETWEEN,
+                    'is_in_range' => true,
+                    'start_at' => '10:00:00',
+                    'end_at' => '14:00:00',
+                ],
+            ],
+            'as app weekday in' => [
+                'application',
+                [
+                    'type' => ConditionType::WEEKDAY_IN,
+                    'weekday' => [0, 0, 0, 0, 1, 0, 0],
+                ],
+            ],
+        ];
+    }
 
     public function setUp(): void
     {
@@ -87,7 +161,7 @@ class DiscountTest extends TestCase
                     [
                         'currency' => Currency::EUR->value,
                         'value' => "25.00",
-                    ]
+                    ],
                 ],
                 'max_values' => [
                     [
@@ -97,7 +171,7 @@ class DiscountTest extends TestCase
                     [
                         'currency' => Currency::EUR->value,
                         'value' => "125.00",
-                    ]
+                    ],
                 ],
                 'include_taxes' => false,
                 'is_in_range' => true,
@@ -184,24 +258,6 @@ class DiscountTest extends TestCase
                 'metadata',
                 'active',
             ],
-        ];
-    }
-
-    public static function couponOrSaleProvider(): array
-    {
-        return [
-            'coupons' => ['coupons'],
-            'sales' => ['sales'],
-        ];
-    }
-
-    public static function authWithDiscountProvider(): array
-    {
-        return [
-            'as user coupons' => ['user', 'coupons'],
-            'as user sales' => ['user', 'sales'],
-            'as app coupons' => ['application', 'coupons'],
-            'as app sales' => ['application', 'sales'],
         ];
     }
 
@@ -867,16 +923,20 @@ class DiscountTest extends TestCase
                 'id' => $product->getKey(),
                 'name' => $product->name,
                 'public' => true,
-                'prices_min' => [[
-                    'currency' => $this->currency->value,
-                    'net' => "{$minPriceDiscounted}.00",
-                    'gross' => "{$minPriceDiscounted}.00",
-                ]],
-                'prices_max' => [[
-                    'currency' => $this->currency->value,
-                    'net' => "{$maxPriceDiscounted}.00",
-                    'gross' => "{$maxPriceDiscounted}.00",
-                ]],
+                'prices_min' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'net' => "{$minPriceDiscounted}.00",
+                        'gross' => "{$minPriceDiscounted}.00",
+                    ],
+                ],
+                'prices_max' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'net' => "{$maxPriceDiscounted}.00",
+                        'gross' => "{$maxPriceDiscounted}.00",
+                    ],
+                ],
             ])
             ->assertJsonFragment([
                 'id' => $productSet->getKey(),
@@ -968,16 +1028,20 @@ class DiscountTest extends TestCase
                 'id' => $product->getKey(),
                 'name' => $product->name,
                 'public' => true,
-                'prices_min' => [[
-                    'currency' => $this->currency->value,
-                    'net' => "{$minPriceDiscounted}.00",
-                    'gross' => "{$minPriceDiscounted}.00",
-                ]],
-                'prices_max' => [[
-                    'currency' => $this->currency->value,
-                    'net' => "{$maxPriceDiscounted}.00",
-                    'gross' => "{$maxPriceDiscounted}.00",
-                ]],
+                'prices_min' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'net' => "{$minPriceDiscounted}.00",
+                        'gross' => "{$minPriceDiscounted}.00",
+                    ],
+                ],
+                'prices_max' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'net' => "{$maxPriceDiscounted}.00",
+                        'gross' => "{$maxPriceDiscounted}.00",
+                    ],
+                ],
             ])
             ->assertJsonFragment([
                 'id' => $productSet->getKey(),
@@ -1189,7 +1253,11 @@ class DiscountTest extends TestCase
             $discount['code'] = 'S43SA2';
         }
 
-        $response = $this->actingAs($this->{$user})->json('POST', "/{$discountKind}", $discount + ['description' => '']);
+        $response = $this->actingAs($this->{$user})->json(
+            'POST',
+            "/{$discountKind}",
+            $discount + ['description' => '']
+        );
 
         unset($discount['translations']);
         $response
@@ -1474,7 +1542,7 @@ class DiscountTest extends TestCase
                         'gross' => '125.00',
                         'net' => '125.00',
                     ],
-                ]
+                ],
             ]);
 
         $discountId = $response->getData()->data->id;
@@ -1619,62 +1687,6 @@ class DiscountTest extends TestCase
             'condition_group_id' => $conditionGroup->getKey(),
             'type' => ConditionType::DATE_BETWEEN,
         ]);
-    }
-
-    public static function timeConditionProvider(): array
-    {
-        return [
-            'as user date between' => [
-                'user',
-                [
-                    'type' => ConditionType::DATE_BETWEEN,
-                    'is_in_range' => true,
-                    'start_at' => '2022-05-09',
-                    'end_at' => '2022-05-13',
-                ],
-            ],
-            'as user time between' => [
-                'user',
-                [
-                    'type' => ConditionType::TIME_BETWEEN,
-                    'is_in_range' => true,
-                    'start_at' => '10:00:00',
-                    'end_at' => '14:00:00',
-                ],
-            ],
-            'as user weekday in' => [
-                'user',
-                [
-                    'type' => ConditionType::WEEKDAY_IN,
-                    'weekday' => [0, 0, 0, 0, 1, 0, 0],
-                ],
-            ],
-            'as app date between' => [
-                'application',
-                [
-                    'type' => ConditionType::DATE_BETWEEN,
-                    'is_in_range' => true,
-                    'start_at' => '2022-05-09',
-                    'end_at' => '2022-05-13',
-                ],
-            ],
-            'as app time between' => [
-                'application',
-                [
-                    'type' => ConditionType::TIME_BETWEEN,
-                    'is_in_range' => true,
-                    'start_at' => '10:00:00',
-                    'end_at' => '14:00:00',
-                ],
-            ],
-            'as app weekday in' => [
-                'application',
-                [
-                    'type' => ConditionType::WEEKDAY_IN,
-                    'weekday' => [0, 0, 0, 0, 1, 0, 0],
-                ],
-            ],
-        ];
     }
 
     /**
@@ -1904,18 +1916,22 @@ class DiscountTest extends TestCase
 
         Event::fake($event);
 
-        $response = $this->actingAs($this->{$user})->json('POST', "/{$discountKind}", [
-            'translations' => [
-                $this->lang => [
-                    'name' => 'Kupon',
-                    'description' => 'Testowy kupon',
+        $response = $this->actingAs($this->{$user})->json(
+            'POST',
+            "/{$discountKind}",
+            [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Kupon',
+                        'description' => 'Testowy kupon',
+                    ],
                 ],
-            ],
-            'percentage' => '10.0000',
-            'priority' => 1,
-            'target_type' => DiscountTargetType::ORDER_VALUE,
-            'target_is_allow_list' => true,
-        ] + $code)
+                'percentage' => '10.0000',
+                'priority' => 1,
+                'target_type' => DiscountTargetType::ORDER_VALUE,
+                'target_is_allow_list' => true,
+            ] + $code
+        )
             ->assertCreated();
 
         Event::assertDispatched($event);
@@ -2127,7 +2143,7 @@ class DiscountTest extends TestCase
                         'gross' => '125.00',
                         'net' => '125.00',
                     ],
-                ]
+                ],
             ]);
 
         $this->assertDatabaseHas('discounts', $discountNew + ['id' => $discount->getKey()]);
@@ -2170,18 +2186,23 @@ class DiscountTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonFragment([
+            ->assertJsonFragment(
+                [
+                    'id' => $discount->getKey(),
+                    'value' => 50,
+                    'type' => $discount->type,
+                    'metadata' => [],
+                ] + $code
+            );
+
+        $this->assertDatabaseHas(
+            'discounts',
+            [
                 'id' => $discount->getKey(),
                 'value' => 50,
                 'type' => $discount->type,
-                'metadata' => [],
-            ] + $code);
-
-        $this->assertDatabaseHas('discounts', [
-            'id' => $discount->getKey(),
-            'value' => 50,
-            'type' => $discount->type,
-        ] + $code);
+            ] + $code
+        );
 
         Queue::assertNotPushed(CallWebhookJob::class);
     }
@@ -2383,49 +2404,69 @@ class DiscountTest extends TestCase
             ->assertJsonFragment($discountNew + ['id' => $discount->getKey()])
             ->assertJsonFragment([
                 'id' => $product2->getKey(),
-                'prices_base' => [[
-                    'currency' => $this->currency->value,
-                    'gross' => '200.00',
-                ]],
-                'prices_min_initial' => [[
-                    'currency' => $this->currency->value,
-                    'gross' => '150.00',
-                ]],
-                'prices_max_initial' => [[
-                    'currency' => $this->currency->value,
-                    'gross' => '190.00',
-                ]],
-                'prices_min' => [[
-                    'currency' => $this->currency->value,
-                    'gross' => '140.00',
-                ]],
-                'prices_max' => [[
-                    'currency' => $this->currency->value,
-                    'gross' => '180.00',
-                ]],
+                'prices_base' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'gross' => '200.00',
+                    ],
+                ],
+                'prices_min_initial' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'gross' => '150.00',
+                    ],
+                ],
+                'prices_max_initial' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'gross' => '190.00',
+                    ],
+                ],
+                'prices_min' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'gross' => '140.00',
+                    ],
+                ],
+                'prices_max' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'gross' => '180.00',
+                    ],
+                ],
             ])
             ->assertJsonFragment([
                 'id' => $product3->getKey(),
-                'prices_base' => [[
-                    'currency' => $this->currency->value,
-                    'gross' => '300.00',
-                ]],
-                'prices_min_initial' => [[
-                    'currency' => $this->currency->value,
-                    'gross' => '290.00',
-                ]],
-                'prices_max_initial' => [[
-                    'currency' => $this->currency->value,
-                    'gross' => '350.00',
-                ]],
-                'prices_min' => [[
-                    'currency' => $this->currency->value,
-                    'gross' => '280.00',
-                ]],
-                'prices_max' => [[
-                    'currency' => $this->currency->value,
-                    'gross' => '340.00',
-                ]],
+                'prices_base' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'gross' => '300.00',
+                    ],
+                ],
+                'prices_min_initial' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'gross' => '290.00',
+                    ],
+                ],
+                'prices_max_initial' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'gross' => '350.00',
+                    ],
+                ],
+                'prices_min' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'gross' => '280.00',
+                    ],
+                ],
+                'prices_max' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'gross' => '340.00',
+                    ],
+                ],
             ]);
 
         $this->assertDatabaseHas('discounts', $discountNew + ['id' => $discount->getKey()]);
@@ -2484,10 +2525,12 @@ class DiscountTest extends TestCase
             'target_is_allow_list' => true,
         ];
 
-        $discount = Discount::factory($discountData + [
-            'code' => null,
-            'active' => true,
-        ])->create();
+        $discount = Discount::factory(
+            $discountData + [
+                'code' => null,
+                'active' => true,
+            ]
+        )->create();
 
         $product1 = Product::factory()->create([
             'public' => true,
@@ -2547,49 +2590,69 @@ class DiscountTest extends TestCase
             ->assertJsonFragment($discountData + ['id' => $discount->getKey()])
             ->assertJsonFragment([
                 'id' => $product2->getKey(),
-                'prices_base' => [[
-                    'currency' => $this->currency->value,
-                    'gross' => '200.00',
-                ]],
-                'prices_min_initial' => [[
-                    'currency' => $this->currency->value,
-                    'gross' => '190.00',
-                ]],
-                'prices_max_initial' => [[
-                    'currency' => $this->currency->value,
-                    'gross' => '250.00',
-                ]],
-                'prices_min' => [[
-                    'currency' => $this->currency->value,
-                    'gross' => '190.00',
-                ]],
-                'prices_max' => [[
-                    'currency' => $this->currency->value,
-                    'gross' => '250.00',
-                ]],
+                'prices_base' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'gross' => '200.00',
+                    ],
+                ],
+                'prices_min_initial' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'gross' => '190.00',
+                    ],
+                ],
+                'prices_max_initial' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'gross' => '250.00',
+                    ],
+                ],
+                'prices_min' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'gross' => '190.00',
+                    ],
+                ],
+                'prices_max' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'gross' => '250.00',
+                    ],
+                ],
             ])
             ->assertJsonFragment([
                 'id' => $product3->getKey(),
-                'prices_base' => [[
-                    'currency' => $this->currency->value,
-                    'gross' => '300.00',
-                ]],
-                'prices_min_initial' => [[
-                    'currency' => $this->currency->value,
-                    'gross' => '290.00',
-                ]],
-                'prices_max_initial' => [[
-                    'currency' => $this->currency->value,
-                    'gross' => '350.00',
-                ]],
-                'prices_min' => [[
-                    'currency' => $this->currency->value,
-                    'gross' => '290.00',
-                ]],
-                'prices_max' => [[
-                    'currency' => $this->currency->value,
-                    'gross' => '350.00',
-                ]],
+                'prices_base' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'gross' => '300.00',
+                    ],
+                ],
+                'prices_min_initial' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'gross' => '290.00',
+                    ],
+                ],
+                'prices_max_initial' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'gross' => '350.00',
+                    ],
+                ],
+                'prices_min' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'gross' => '290.00',
+                    ],
+                ],
+                'prices_max' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'gross' => '350.00',
+                    ],
+                ],
             ]);
 
         $this->assertDatabaseHas('discounts', $discountData + ['id' => $discount->getKey()]);
