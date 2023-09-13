@@ -1,15 +1,18 @@
 <?php
 
-namespace App\Http\Controllers;
+declare(strict_types=1);
 
-use App\Enums\GoogleCategoriesLang;
+namespace Domain\GoogleCategory\Controllers;
+
+use App\Http\Controllers\Controller;
 use App\Http\Resources\CategoryResource;
-use App\Services\Contracts\GoogleCategoryServiceContract;
+use Domain\GoogleCategory\Enums\GoogleCategoriesLang;
+use Domain\GoogleCategory\Services\Contracts\GoogleCategoryServiceContract;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Enum;
 
-class GoogleCategoryController extends Controller
+final class GoogleCategoryController extends Controller
 {
     public function __construct(
         private readonly GoogleCategoryServiceContract $categoryService

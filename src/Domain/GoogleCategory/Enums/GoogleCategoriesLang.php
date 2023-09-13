@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Enums;
+declare(strict_types=1);
+
+namespace Domain\GoogleCategory\Enums;
 
 use App\Enums\Traits\EnumTrait;
 
