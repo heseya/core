@@ -1,12 +1,15 @@
 <?php
 
-namespace App\Http\Controllers;
+declare(strict_types=1);
 
-use App\Http\Requests\SettingCreateRequest;
-use App\Http\Requests\SettingUpdateRequest;
+namespace Domain\Setting\Controllers;
+
+use App\Http\Controllers\Controller;
 use App\Http\Resources\SettingResource;
-use App\Models\Setting;
-use App\Services\Contracts\SettingsServiceContract;
+use Domain\Setting\Dtos\SettingCreateDto;
+use Domain\Setting\Dtos\SettingUpdateDto;
+use Domain\Setting\Models\Setting;
+use Domain\Setting\Services\Contracts\SettingsServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -16,7 +19,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class SettingController extends Controller
+final class SettingController extends Controller
 {
     private SettingsServiceContract $settingsService;
 
@@ -49,14 +52,14 @@ class SettingController extends Controller
         return SettingResource::make($setting);
     }
 
-    public function store(SettingCreateRequest $request): JsonResource
+    public function store(SettingCreateDto $data): JsonResource
     {
-        $setting = Setting::create($request->validated());
+        $setting = Setting::create($data->toArray());
 
         return SettingResource::make($setting);
     }
 
-    public function update(string $name, SettingUpdateRequest $request): JsonResource
+    public function update(string $name, SettingUpdateDto $data): JsonResource
     {
         $config = Config::get('settings.' . $name);
 
@@ -64,18 +67,18 @@ class SettingController extends Controller
             $setting = Setting::where('name', $name)->first();
 
             if ($setting === null) {
-                $config = array_replace($config, $request->validated());
+                $config = array_replace($config, $data->toArray());
                 $setting = Setting::create($config);
             } else {
-                $setting->update($request->validated());
+                $setting->update($data->toArray());
             }
 
-            if (in_array($name, ['minimal_product_price', 'minimal_shipping_price', 'minimal_order_price'])) {
+            if (in_array($name, ['minimal_product_price', 'minimal_shipping_price', 'minimal_order_price'], true)) {
                 Cache::put($name, $setting->value);
             }
         } else {
             $setting = Setting::where('name', $name)->firstOrFail();
-            $setting->update($request->validated());
+            $setting->update($data->toArray());
         }
 
         return SettingResource::make($setting);
