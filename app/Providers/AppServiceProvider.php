@@ -7,11 +7,9 @@ use App\Repositories\DiscountRepository;
 use App\Repositories\ProductRepository;
 use App\Services\AnalyticsService;
 use App\Services\AppService;
-use App\Services\AuthService;
 use App\Services\AvailabilityService;
 use App\Services\Contracts\AnalyticsServiceContract;
 use App\Services\Contracts\AppServiceContract;
-use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
@@ -42,8 +40,6 @@ use App\Services\Contracts\StatusServiceContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
 use App\Services\Contracts\UrlServiceContract;
-use App\Services\Contracts\UserLoginAttemptServiceContract;
-use App\Services\Contracts\UserServiceContract;
 use App\Services\Contracts\WebHookServiceContract;
 use App\Services\Contracts\WishlistServiceContract;
 use App\Services\DepositService;
@@ -75,14 +71,18 @@ use App\Services\StatusService;
 use App\Services\TokenService;
 use App\Services\TranslationService;
 use App\Services\UrlService;
-use App\Services\UserLoginAttemptService;
-use App\Services\UserService;
 use App\Services\WebHookService;
 use App\Services\WishlistService;
 use Domain\Setting\Services\Contracts\SettingsServiceContract;
 use Domain\Setting\Services\SettingsService;
 use Domain\ShippingMethod\Services\Contracts\ShippingMethodServiceContract;
 use Domain\ShippingMethod\Services\ShippingMethodService;
+use Domain\User\Services\AuthService;
+use Domain\User\Services\Contracts\AuthServiceContract;
+use Domain\User\Services\Contracts\UserLoginAttemptServiceContract;
+use Domain\User\Services\Contracts\UserServiceContract;
+use Domain\User\Services\UserLoginAttemptService;
+use Domain\User\Services\UserService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\ServiceProvider;
 
@@ -144,7 +144,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Factory::guessFactoryNamesUsing(
-            /** @phpstan-ignore-next-line */
+        /** @phpstan-ignore-next-line */
             fn (string $modelName) => 'Database\\Factories\\' . class_basename($modelName) . 'Factory',
         );
 

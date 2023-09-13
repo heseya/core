@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace Domain\User\Services;
 
 use App\DTO\Auth\RegisterDto;
 use App\Dtos\TFAConfirmDto;
@@ -26,13 +26,13 @@ use App\Models\UserPreference;
 use App\Notifications\ResetPassword;
 use App\Notifications\TFAInitialization;
 use App\Notifications\TFASecurityCode;
-use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\TokenServiceContract;
-use App\Services\Contracts\UserLoginAttemptServiceContract;
-use App\Services\Contracts\UserServiceContract;
 use Domain\Consent\Services\ConsentService;
+use Domain\User\Services\Contracts\AuthServiceContract;
+use Domain\User\Services\Contracts\UserLoginAttemptServiceContract;
+use Domain\User\Services\Contracts\UserServiceContract;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -55,7 +55,8 @@ class AuthService implements AuthServiceContract
         protected UserLoginAttemptServiceContract $userLoginAttemptService,
         protected UserServiceContract $userService,
         protected MetadataServiceContract $metadataService,
-    ) {}
+    ) {
+    }
 
     public function login(string $email, string $password, ?string $ip, ?string $userAgent, ?string $code): array
     {
@@ -401,7 +402,9 @@ class AuthService implements AuthServiceContract
             TfaSecurityCodeEvent::dispatch(Auth::user(), $code);
             Auth::user()->notify(new TFASecurityCode($code));
         }
-        throw new ClientException(Exceptions::CLIENT_TFA_REQUIRED, simpleLogs: true, errorArray: ['type' => Auth::user()?->tfa_type]);
+        throw new ClientException(Exceptions::CLIENT_TFA_REQUIRED, simpleLogs: true, errorArray: [
+            'type' => Auth::user()?->tfa_type,
+        ]);
     }
 
     private function checkIsValidTFA(string $code): void

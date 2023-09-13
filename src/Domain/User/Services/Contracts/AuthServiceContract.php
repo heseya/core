@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Contracts;
+namespace Domain\User\Services\Contracts;
 
 use App\DTO\Auth\RegisterDto;
 use App\Dtos\TFAConfirmDto;

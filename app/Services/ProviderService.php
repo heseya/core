@@ -13,8 +13,8 @@ use App\Models\AuthProvider;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\UserProvider;
-use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\ProviderServiceContract;
+use Domain\User\Services\Contracts\AuthServiceContract;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -29,7 +29,8 @@ class ProviderService implements ProviderServiceContract
 {
     public function __construct(
         private AuthServiceContract $authService,
-    ) {}
+    ) {
+    }
 
     public function getProvidersList(bool|null $active): JsonResource
     {
@@ -130,7 +131,10 @@ class ProviderService implements ProviderServiceContract
                     'merge_token_expires_at' => Carbon::now()->addDay(),
                 ]);
 
-                throw new ClientException(Exceptions::CLIENT_ALREADY_HAS_ACCOUNT, errorArray: ['merge_token' => $mergeToken]);
+                throw new ClientException(
+                    Exceptions::CLIENT_ALREADY_HAS_ACCOUNT,
+                    errorArray: ['merge_token' => $mergeToken]
+                );
             }
             $newUser = User::create([
                 'name' => $user->getName(),

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace Domain\User\Services;
 
 use App\Dtos\UserCreateDto;
 use App\Dtos\UserDto;
@@ -16,7 +16,7 @@ use App\Models\SavedAddress;
 use App\Models\User;
 use App\Models\UserPreference;
 use App\Services\Contracts\MetadataServiceContract;
-use App\Services\Contracts\UserServiceContract;
+use Domain\User\Services\Contracts\UserServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -31,7 +31,8 @@ readonly class UserService implements UserServiceContract
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
-    ) {}
+    ) {
+    }
 
     public function index(array $search, ?string $sort): LengthAwarePaginator
     {

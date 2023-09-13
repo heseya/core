@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Services;
+namespace Domain\User\Services;
 
 use App\Events\NewLocalizationLoginAttempt;
 use App\Events\SuccessfulLoginAttempt;
 use App\Jobs\ProcessFailedLoginAttempts;
 use App\Models\User;
 use App\Models\UserLoginAttempt;
-use App\Services\Contracts\UserLoginAttemptServiceContract;
+use Domain\User\Services\Contracts\UserLoginAttemptServiceContract;
 use Illuminate\Support\Facades\Request;
 
 class UserLoginAttemptService implements UserLoginAttemptServiceContract

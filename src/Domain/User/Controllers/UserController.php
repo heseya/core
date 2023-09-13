@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace Domain\User\Controllers;
 
 use App\Dtos\UserCreateDto;
 use App\Dtos\UserDto;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\SelfDeleteRequest;
 use App\Http\Requests\UserCreateRequest;
 use App\Http\Requests\UserIndexRequest;
@@ -11,8 +12,8 @@ use App\Http\Requests\UserUpdateRequest;
 use App\Http\Resources\ResourceCollection;
 use App\Http\Resources\UserResource;
 use App\Models\User;
-use App\Services\Contracts\AuthServiceContract;
-use App\Services\Contracts\UserServiceContract;
+use Domain\User\Services\Contracts\AuthServiceContract;
+use Domain\User\Services\Contracts\UserServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
@@ -22,7 +23,8 @@ class UserController extends Controller
     public function __construct(
         private UserServiceContract $userService,
         private AuthServiceContract $authService,
-    ) {}
+    ) {
+    }
 
     public function index(UserIndexRequest $request): JsonResource
     {

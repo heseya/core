@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace Domain\User\Controllers;
 
 use App\DTO\Auth\RegisterDto;
 use App\Dtos\SavedAddressDto;
@@ -9,6 +9,7 @@ use App\Dtos\TFAPasswordDto;
 use App\Dtos\TFASetupDto;
 use App\Dtos\UpdateProfileDto;
 use App\Enums\SavedAddressType;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordChangeRequest;
 use App\Http\Requests\PasswordResetRequest;
@@ -32,8 +33,8 @@ use App\Models\App;
 use App\Models\SavedAddress;
 use App\Models\User;
 use App\Services\Contracts\AppServiceContract;
-use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\SavedAddressServiceContract;
+use Domain\User\Services\Contracts\AuthServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -48,7 +49,8 @@ class AuthController extends Controller
         private readonly AuthServiceContract $authService,
         private readonly AppServiceContract $appService,
         private readonly SavedAddressServiceContract $savedAddersService,
-    ) {}
+    ) {
+    }
 
     public function login(LoginRequest $request): JsonResource
     {

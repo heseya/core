@@ -1,9 +1,9 @@
 <?php
 
 use App\Enums\SavedAddressType;
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MetadataController;
 use App\Http\Controllers\ProviderController;
+use Domain\User\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function (): void {
