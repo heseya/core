@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use App\Models\Discount;
 use Domain\Language\LanguageService;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
@@ -37,7 +38,7 @@ trait CustomHasTranslations
         }
 
         if (count($translatedLocales) > 0 && config('translatable.fallback_any')) {
-            return $translatedLocales[0];
+            return Arr::first($translatedLocales);
         }
 
         return $locale;
