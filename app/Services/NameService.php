@@ -6,7 +6,7 @@ use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
 use App\Models\Order;
 use App\Services\Contracts\NameServiceContract;
-use App\Services\Contracts\SettingsServiceContract;
+use Domain\Setting\Services\Contracts\SettingsServiceContract;
 use Illuminate\Support\Str;
 
 class NameService implements NameServiceContract

@@ -1,12 +1,17 @@
 <?php
 
-namespace App\Services\Contracts;
+declare(strict_types=1);
 
-use App\Models\Setting;
+namespace Domain\Setting\Services\Contracts;
+
+use Domain\Setting\Models\Setting;
 use Illuminate\Support\Collection;
 
 interface SettingsServiceContract
 {
+    /**
+     * @return Collection<int, Setting>
+     */
     public function getSettings(bool $publicOnly = false): Collection;
 
     public function getSetting(string $name): Setting;

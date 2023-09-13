@@ -1,20 +1,23 @@
 <?php
 
-namespace App\Models;
+declare(strict_types=1);
 
+namespace Domain\Setting\Models;
+
+use App\Models\IdeHelperSetting;
+use App\Models\Model;
 use Illuminate\Support\Facades\Config;
 
 /**
  * @mixin IdeHelperSetting
  */
-class Setting extends Model
+final class Setting extends Model
 {
     protected $fillable = [
         'name',
         'value',
         'public',
     ];
-
     protected $casts = [
         'public' => 'bool',
     ];

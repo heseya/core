@@ -1,17 +1,19 @@
 <?php
 
-namespace App\Services;
+declare(strict_types=1);
+
+namespace Domain\GoogleCategory\Services;
 
 use App\Enums\ExceptionsEnums\Exceptions;
-use App\Exceptions\GoogleProductCategoryFileException;
 use App\Exceptions\ServerException;
-use App\Services\Contracts\GoogleCategoryServiceContract;
+use Domain\GoogleCategory\Exceptions\GoogleProductCategoryFileException;
+use Domain\GoogleCategory\Services\Contracts\GoogleCategoryServiceContract;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
-class GoogleCategoryService implements GoogleCategoryServiceContract
+final class GoogleCategoryService implements GoogleCategoryServiceContract
 {
     public const FILE_NAME = 'google_product_category_';
 
@@ -49,6 +51,8 @@ class GoogleCategoryService implements GoogleCategoryServiceContract
     }
 
     /**
+     * @return array<string>
+     *
      * @throws GoogleProductCategoryFileException
      */
     private function getGoogleProductCategoryFileContent(string $lang): array
@@ -63,6 +67,8 @@ class GoogleCategoryService implements GoogleCategoryServiceContract
     }
 
     /**
+     * @return array<string>
+     *
      * @throws ServerException
      */
     private function getFromGoogleServer(string $lang): array
