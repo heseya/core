@@ -9,36 +9,29 @@ use App\Exceptions\ClientException;
 use App\Models\Address;
 use App\Models\SavedAddress;
 use App\Services\Contracts\SavedAddressServiceContract;
+use Domain\User\Dtos\SavedAddressStoreDto;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class SavedAddressService implements SavedAddressServiceContract
 {
-    public function storeAddress(SavedAddressDto $addressDto, SavedAddressType $type): ?SavedAddress
+    public function storeAddress(SavedAddressStoreDto $dto): ?SavedAddress
     {
-        $savedAddress = DB::transaction(function () use ($addressDto, $type): SavedAddress {
-            $address = Address::create([
-                'name' => $addressDto->getAddress()['name'],
-                'phone' => $addressDto->getAddress()['phone'],
-                'address' => $addressDto->getAddress()['address'],
-                'zip' => $addressDto->getAddress()['zip'],
-                'city' => $addressDto->getAddress()['city'],
-                'country' => $addressDto->getAddress()['country'],
-                'vat' => $addressDto->getAddress()['vat'],
-            ]);
+        $savedAddress = DB::transaction(function () use ($dto): SavedAddress {
+            $address = Address::create($dto->address->toArray());
 
             return SavedAddress::create([
-                'default' => $addressDto->getDefault(),
-                'name' => $addressDto->getName(),
+                'default' => $dto->default,
+                'name' => $dto->name,
+                'type' => $dto->type,
                 'user_id' => Auth::id(),
                 'address_id' => $address->getKey(),
-                'type' => $type,
             ]);
         });
 
         if ($savedAddress->default) {
-            $this->defaultSet($savedAddress, $type);
+            $this->defaultSet($savedAddress, $dto->type);
         }
 
         return $savedAddress;

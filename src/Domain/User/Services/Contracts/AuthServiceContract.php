@@ -3,30 +3,36 @@
 namespace Domain\User\Services\Contracts;
 
 use App\DTO\Auth\RegisterDto;
-use App\Dtos\TFAConfirmDto;
-use App\Dtos\TFAPasswordDto;
-use App\Dtos\TFASetupDto;
 use App\Dtos\UpdateProfileDto;
 use App\Models\User;
+use Domain\User\Dtos\ChangePasswordDto;
+use Domain\User\Dtos\LoginDto;
+use Domain\User\Dtos\PasswordResetDto;
+use Domain\User\Dtos\PasswordResetSaveDto;
+use Domain\User\Dtos\ShowResetPasswordFormDto;
+use Domain\User\Dtos\TFAConfirmDto;
+use Domain\User\Dtos\TFAPasswordDto;
+use Domain\User\Dtos\TFASetupDto;
+use Domain\User\Dtos\TokenRefreshDto;
 use Illuminate\Contracts\Auth\Authenticatable;
 
 interface AuthServiceContract
 {
-    public function login(string $email, string $password, ?string $ip, ?string $userAgent, ?string $code): array;
+    public function login(LoginDto $dto): array;
 
     public function loginWithUser(Authenticatable $user, ?string $ip, ?string $userAgent): array;
 
-    public function refresh(string $refreshToken, ?string $ip, ?string $userAgent): array;
+    public function refresh(TokenRefreshDto $dto): array;
 
     public function logout(): void;
 
-    public function resetPassword(string $email, string $redirect_url): void;
+    public function resetPassword(PasswordResetDto $dto): void;
 
-    public function showResetPasswordForm(?string $email, ?string $token): User;
+    public function showResetPasswordForm(ShowResetPasswordFormDto $dto): User;
 
-    public function saveResetPassword(string $email, string $token, string $password): void;
+    public function saveResetPassword(PasswordResetSaveDto $dto): void;
 
-    public function changePassword(User $user, string $password, string $newPassword): void;
+    public function changePassword(User $user, ChangePasswordDto $dto): void;
 
     public function userByIdentity(string $identityToken): User;
 

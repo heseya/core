@@ -5,12 +5,12 @@ namespace App\Services\Contracts;
 use App\Dtos\SavedAddressDto;
 use App\Enums\SavedAddressType;
 use App\Models\SavedAddress;
+use Domain\User\Dtos\SavedAddressStoreDto;
 
 interface SavedAddressServiceContract
 {
     public function storeAddress(
-        SavedAddressDto $addressDto,
-        SavedAddressType $type
+        SavedAddressStoreDto $dto
     ): ?SavedAddress;
 
     public function updateAddress(
