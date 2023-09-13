@@ -52,7 +52,7 @@ trait CustomHasTranslations
         } else {
             $permission = $this::HIDDEN_PERMISSION;
         }
-        if ($this instanceof SeoMetadata && !$this->global) {
+        if ($this instanceof SeoMetadata && !$this->global && $this->model_type) {
             $permission = Config::get('relation-aliases.' . $this->model_type)::HIDDEN_PERMISSION;
         }
         if (Auth::user() && Auth::user()->hasPermissionTo($permission)) {

@@ -42,6 +42,8 @@ class Discount extends Model implements SeoContract, Translatable
     use HasSeoMetadata;
     use SoftDeletes;
 
+    public const HIDDEN_PERMISSION = 'sales.show_hidden';
+
     protected $fillable = [
         'name',
         'slug',
