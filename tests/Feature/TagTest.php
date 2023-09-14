@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Product;
+use Domain\Language\Language;
 use Domain\Tag\Models\Tag;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Ramsey\Uuid\Uuid;
@@ -228,6 +229,53 @@ class TagTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateSecondTranslations($user): void
+    {
+        $this->{$user}->givePermissionTo('tags.edit');
+
+        $tag = Tag::factory()->create();
+
+        /** @var Language $en */
+        $en = Language::query()->where('iso', '=', 'en')->first();
+
+        $this->actingAs($this->{$user})->patchJson('/tags/id:' . $tag->getKey() . '?with_translations=1', [
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Nowy tag',
+                ],
+                $en->getKey() => [
+                    'name' => 'New tag',
+                ],
+            ],
+            'color' => 'ababab',
+            'published' => [
+                $this->lang,
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Nowy tag',
+                    ],
+                ],
+                'color' => 'ababab',
+                'published' => [
+                    $this->lang,
+                ],
+                'name' => 'Nowy tag',
+            ]);
+
+        $this->assertDatabaseHas('tags', [
+            'id' => $tag->getKey(),
+            "name->{$this->lang}" => 'Nowy tag',
+            "name->{$en->getKey()}" => 'New tag',
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateWithEmptyData($user): void
     {
         $this->{$user}->givePermissionTo('tags.edit');
@@ -267,5 +315,43 @@ class TagTest extends TestCase
         $this->assertDatabaseMissing('tags', [
             'id' => $tag->getKey(),
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testTagsTranslationOnProducts(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.show');
+
+        /** @var Language $en */
+        $en = Language::query()->where('iso', '=', 'en')->first();
+        $product = Product::factory()->create([
+            'public' => true,
+            'published' => $this->lang,
+        ]);
+
+        $tagPl = Tag::factory()->create([
+            'name' => 'Tag pl',
+            'published' => $this->lang,
+        ]);
+        /** @var Tag $tagEn */
+        $tagEn = Tag::factory()->create([
+            'name' => 'Tag en',
+            'published' => $en->getKey(),
+        ]);
+        $tagEn->setLocale($en->getKey())->fill(['name' => 'Tag en']);
+        $tagEn->save();
+        $product->tags()->sync([$tagPl->getKey(), $tagEn->getKey()]);
+
+        $this->actingAs($this->{$user})
+            ->json('GET', '/products')
+            ->assertOk()
+            ->assertJsonFragment([
+                'name' => 'Tag pl',
+            ])
+            ->assertJsonMissing([
+                'name' => 'Tag en',
+            ]);
     }
 }
