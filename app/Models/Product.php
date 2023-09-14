@@ -45,6 +45,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
 
 /**
  * @property string $name
@@ -187,6 +188,12 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'product_tags');
+    }
+
+    public function publishedTags(): BelongsToMany
+    {
+        return !Config::get('translatable.fallback_locale')
+            ? $this->tags()->where('tags.published', 'LIKE', '%' . Config::get('language.id') . '%') : $this->tags();
     }
 
     public function requiredSchemas(): BelongsToMany

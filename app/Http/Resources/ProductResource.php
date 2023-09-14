@@ -43,7 +43,7 @@ class ProductResource extends Resource
             'shipping_time' => $this->resource->shipping_time,
             'shipping_date' => $this->resource->shipping_date,
             'cover' => MediaResource::make($this->resource->media->first()),
-            'tags' => TagResource::collection($this->resource->tags),
+            'tags' => TagResource::collection($this->resource->publishedTags),
             'has_schemas' => (bool) $this->resource->has_schemas,
             'quantity' => $this->resource->quantity,
             'shipping_digital' => $this->resource->shipping_digital,

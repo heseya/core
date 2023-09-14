@@ -32,8 +32,10 @@ final class TagRepository
     {
         $tag = new Tag($dto->toArray());
 
-        foreach ($dto->translations as $lang => $translation) {
-            $tag->setLocale($lang)->fill($translation);
+        foreach ($dto->translations as $lang => $translations) {
+            foreach ($translations as $key => $translation) {
+                $tag->setTranslation($key, $lang, $translation);
+            }
         }
         $tag->save();
 
@@ -42,13 +44,15 @@ final class TagRepository
 
     public function update(Tag $tag, TagUpdateDto $dto): Tag
     {
+        $tag->fill($dto->toArray());
         if (!($dto->translations instanceof Optional)) {
-            foreach ($dto->translations as $lang => $translation) {
-                $tag->setLocale($lang)->fill($translation);
+            foreach ($dto->translations as $lang => $translations) {
+                foreach ($translations as $key => $translation) {
+                    $tag->setTranslation($key, $lang, $translation);
+                }
             }
         }
 
-        $tag->fill($dto->toArray());
         $tag->save();
 
         return $tag;
