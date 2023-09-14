@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Repositories\Eloquent;
+namespace App\Repositories;
 
 use App\Dtos\ProductSearchDto;
 use App\Models\Product;

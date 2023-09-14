@@ -80,8 +80,8 @@ return new class extends Migration {
                 ->delete();
         }
 
-        Schema::dropIfExists('banners');
-        Schema::dropIfExists('responsive_media');
         Schema::dropIfExists('media_responsive_media');
+        Schema::dropIfExists('responsive_media');
+        Schema::dropIfExists('banners');
     }
 };

@@ -9,6 +9,8 @@ use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductPriceUpdated;
 use App\Events\ProductUpdated;
+use App\Models\Attribute;
+use App\Models\AttributeOption;
 use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
@@ -86,9 +88,9 @@ readonly class ProductService implements ProductServiceContract
         $product->available = $availability['available'];
         $product->shipping_time = $availability['shipping_time'];
         $product->shipping_date = $availability['shipping_date'];
-        $this->discountService->applyDiscountsOnProduct($product, false);
+        $this->discountService->applyDiscountsOnProduct($product);
 
-        return $product;
+        return $this->prepareProductSearchValues($product);
     }
 
     public function create(ProductCreateDto $dto): Product
@@ -105,12 +107,10 @@ readonly class ProductService implements ProductServiceContract
             $product->getKey(),
             null,
             null,
-            $product->price_min, // @phpstan-ignore-line
-            $product->price_max, // @phpstan-ignore-line
+            $product->price_min ?? 0,
+            $product->price_max ?? 0,
         );
         ProductCreated::dispatch($product);
-        // @phpstan-ignore-next-line
-        Product::where($product->getKeyName(), $product->getKey())->searchable();
 
         return $product->refresh();
     }
@@ -133,14 +133,12 @@ readonly class ProductService implements ProductServiceContract
                 $product->getKey(),
                 $oldMinPrice,
                 $oldMaxPrice,
-                $product->price_min, // @phpstan-ignore-line
-                $product->price_max, // @phpstan-ignore-line
+                $product->price_min ?? 0,
+                $product->price_max ?? 0,
             );
         }
 
         ProductUpdated::dispatch($product);
-        // @phpstan-ignore-next-line
-        Product::query()->where($product->getKeyName(), $product->getKey())->searchable();
 
         // fix for duplicated items in relation after recalculating availability
         $product->unsetRelation('items');
@@ -156,7 +154,6 @@ readonly class ProductService implements ProductServiceContract
 
         $this->mediaService->sync($product, []);
 
-        $productId = $product->getKey();
         $product->delete();
 
         if ($product->seo !== null) {
@@ -164,8 +161,6 @@ readonly class ProductService implements ProductServiceContract
         }
 
         DB::commit();
-
-        Product::query()->where('id', $productId)->withTrashed()->first()?->unsearchable();
     }
 
     public function getMinMaxPrices(Product $product): array
@@ -189,6 +184,13 @@ readonly class ProductService implements ProductServiceContract
             'price_max_initial' => $productMinMaxPrices[1],
         ]);
         $this->discountService->applyDiscountsOnProduct($product);
+    }
+
+    public function updateProductsSearchValues(array $productIds): void
+    {
+        Product::whereIn('id', $productIds)
+            ->with(['tags', 'sets', 'relatedSets', 'attributes', 'attributes.options'])
+            ->each(fn (Product $product) => $this->prepareProductSearchValues($product)->save());
     }
 
     private function assignItems(Product $product, ?array $items): void
@@ -291,5 +293,27 @@ readonly class ProductService implements ProductServiceContract
                 return max($current[1], $carry);
             }),
         ];
+    }
+
+    private function prepareProductSearchValues(Product $product): Product
+    {
+        $searchValues = rtrim($product->name . ' ' . $product->description_html . ' ' . $product->description_short);
+        $searchValues .= rtrim(' ' . $product->tags->pluck('name')->implode(' '));
+        $searchValues .= rtrim(' ' . $product->allProductSet()->pluck('name')->implode(' '));
+        $searchValues .= rtrim(' ' . $product->relatedSets->pluck('name')->implode(' '));
+
+        /** @var Attribute $attribute */
+        foreach ($product->attributes as $attribute) {
+            $searchValues .= rtrim(' ' . $attribute->name);
+            /** @var AttributeOption $option */
+            foreach ($attribute->pivot->options as $option) {
+                $searchValues .= rtrim(' ' . $option->name . ' ' . $option->value_number . ' ' . $option->value_date);
+            }
+        }
+        $product->update([
+            'search_values' => $searchValues,
+        ]);
+
+        return $product;
     }
 }

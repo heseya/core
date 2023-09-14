@@ -13,11 +13,12 @@ class ProductSearch extends Criterion
             return $query;
         }
 
-        return $query->where(function (Builder $query): void {
-            $query->where('id', 'LIKE', '%' . $this->value . '%')
-                ->orWhere('slug', 'LIKE', '%' . $this->value . '%')
-                ->orWhere('name', 'LIKE', '%' . $this->value . '%')
-                ->orWhere('description_html', 'LIKE', '%' . $this->value . '%');
-        });
+        return $query
+            ->where(function (Builder $query): void {
+                $query
+                    ->whereFullText(['search_values'], $this->value)
+                    ->orWhere('id', 'LIKE', '%' . $this->value . '%')
+                    ->orWhere('slug', 'LIKE', '%' . $this->value . '%');
+            });
     }
 }

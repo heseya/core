@@ -146,6 +146,11 @@ class ProductSet extends Model
             ->orderByPivot('order');
     }
 
+    public function relatedProducts(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'related_product_sets');
+    }
+
     public function allProductsIds(): Collection
     {
         $products = $this->products()->pluck('id');

@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ProductSearchValueEvent;
 use App\Http\Requests\TagCreateRequest;
 use App\Http\Requests\TagIndexRequest;
 use App\Http\Requests\TagUpdateRequest;
 use App\Http\Resources\TagResource;
-use App\Models\Product;
 use App\Models\Tag;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
 
@@ -35,21 +35,17 @@ class TagController extends Controller
     public function update(Tag $tag, TagUpdateRequest $request): JsonResource
     {
         $tag->update($request->validated());
-
-        // @phpstan-ignore-next-line
-        $tag->products()->searchable();
+        ProductSearchValueEvent::dispatch($tag->products->pluck('id')->toArray());
 
         return TagResource::make($tag);
     }
 
-    public function destroy(Tag $tag): JsonResponse
+    public function destroy(Tag $tag): HttpResponse
     {
-        $productsIds = $tag->products()->pluck('id');
+        $products = $tag->products->pluck('id')->toArray();
         $tag->delete();
+        ProductSearchValueEvent::dispatch($products);
 
-        // @phpstan-ignore-next-line
-        Product::query()->whereIn('id', $productsIds)->searchable();
-
-        return Response::json(null, 204);
+        return Response::noContent();
     }
 }

@@ -39,7 +39,6 @@ class RefreshProduct extends Command
 
         $productService = app(ProductServiceContract::class);
         $productService->updateMinMaxPrices($product);
-        $product->searchable();
 
         $this->info('Done.');
 

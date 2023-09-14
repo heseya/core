@@ -41,7 +41,7 @@ return new class extends Migration {
 
     public function down(): void
     {
-        Schema::dropIfExists('consents');
         Schema::dropIfExists('consent_user');
+        Schema::dropIfExists('consents');
     }
 };
