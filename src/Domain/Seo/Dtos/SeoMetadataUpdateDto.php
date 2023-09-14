@@ -38,9 +38,9 @@ final class SeoMetadataUpdateDto extends Data
     public static function rules(ValidationContext $context): array
     {
         return [
-            'translations.*.no_index' => ['boolean'],
-            'translations.*.title' => ['string', 'max:255'],
-            'translations.*.description' => ['string', 'max:2000'],
+            'translations.*.no_index' => ['nullable', 'boolean'],
+            'translations.*.title' => ['nullable', 'string', 'max:255'],
+            'translations.*.description' => ['nullable', 'string', 'max:2000'],
             'translations.*.keywords' => ['array'],
         ];
     }
