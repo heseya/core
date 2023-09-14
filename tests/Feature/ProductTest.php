@@ -2760,6 +2760,88 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateSeoEmptyValues(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.edit');
+
+        $this->product->update([
+            'name' => 'Created',
+            'slug' => 'created',
+            'description_html' => '<h1>Description</h1>',
+            'public' => false,
+            'order' => 1,
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', '/products/id:' . $this->product->getKey(), [
+                'seo' => [
+                    'translations' => [
+                        $this->lang => [
+                            'title' => '',
+                            'description' => '',
+                        ],
+                    ],
+                ],
+            ])
+            ->assertJsonFragment([
+                'title' => '',
+                'description' => '',
+            ]);
+
+        $this->assertDatabaseHas('seo_metadata', [
+            "title->{$this->lang}" => null,
+            "description->{$this->lang}" => null,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateSeoPublished(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.edit');
+
+        $this->product->update([
+            'name' => 'Created',
+            'slug' => 'created',
+            'description_html' => '<h1>Description</h1>',
+            'public' => false,
+            'order' => 1,
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', '/products/id:' . $this->product->getKey(), [
+                'seo' => [
+                    'translations' => [
+                        $this->lang => [
+                            'title' => 'seo title',
+                            'description' => 'seo description',
+                        ],
+                    ],
+                    'published' => [
+                        $this->lang,
+                    ],
+                ],
+            ])
+            ->assertJsonFragment([
+                'title' => 'seo title',
+                'description' => 'seo description',
+                'published' => [
+                    $this->lang,
+                ],
+            ]);
+
+        $this->assertDatabaseHas('seo_metadata', [
+            "title->{$this->lang}" => 'seo title',
+            "description->{$this->lang}" => 'seo description',
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateEmptySeo(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
