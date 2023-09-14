@@ -3,12 +3,12 @@
 namespace Domain\User\Services\Contracts;
 
 use App\DTO\Auth\RegisterDto;
-use App\Dtos\UpdateProfileDto;
 use App\Models\User;
 use Domain\User\Dtos\ChangePasswordDto;
 use Domain\User\Dtos\LoginDto;
 use Domain\User\Dtos\PasswordResetDto;
 use Domain\User\Dtos\PasswordResetSaveDto;
+use Domain\User\Dtos\ProfileUpdateDto;
 use Domain\User\Dtos\ShowResetPasswordFormDto;
 use Domain\User\Dtos\TFAConfirmDto;
 use Domain\User\Dtos\TFAPasswordDto;
@@ -54,7 +54,7 @@ interface AuthServiceContract
 
     public function register(RegisterDto $dto): User;
 
-    public function updateProfile(UpdateProfileDto $dto): User;
+    public function updateProfile(ProfileUpdateDto $dto): User;
 
     public function selfRemove(string $password): void;
 }

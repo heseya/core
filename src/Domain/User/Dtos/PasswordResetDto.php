@@ -13,7 +13,7 @@ class PasswordResetDto extends Data
         #[Required, StringType]
         public string $email,
         #[Required, Url]
-        public string $redirectUrl,
+        public string $redirect_url,
     ) {
     }
 }

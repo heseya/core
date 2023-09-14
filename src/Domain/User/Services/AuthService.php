@@ -3,7 +3,6 @@
 namespace Domain\User\Services;
 
 use App\DTO\Auth\RegisterDto;
-use App\Dtos\UpdateProfileDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
 use App\Enums\TFAType;
@@ -31,6 +30,7 @@ use Domain\User\Dtos\ChangePasswordDto;
 use Domain\User\Dtos\LoginDto;
 use Domain\User\Dtos\PasswordResetDto;
 use Domain\User\Dtos\PasswordResetSaveDto;
+use Domain\User\Dtos\ProfileUpdateDto;
 use Domain\User\Dtos\ShowResetPasswordFormDto;
 use Domain\User\Dtos\TFAConfirmDto;
 use Domain\User\Dtos\TFAPasswordDto;
@@ -64,6 +64,9 @@ class AuthService implements AuthServiceContract
     ) {
     }
 
+    /**
+     * @throws ClientException
+     */
     public function login(LoginDto $dto): array
     {
         $uuid = Str::uuid()->toString();
@@ -163,8 +166,8 @@ class AuthService implements AuthServiceContract
         if ($user) {
             $token = Password::createToken($user);
 
-            PasswordReset::dispatch($user, $dto->redirectUrl);
-            $user->notify(new ResetPassword($token, $dto->redirectUrl));
+            PasswordReset::dispatch($user, $dto->redirect_url);
+            $user->notify(new ResetPassword($token, $dto->redirect_url));
         }
     }
 
@@ -370,14 +373,14 @@ class AuthService implements AuthServiceContract
         return $user;
     }
 
-    public function updateProfile(UpdateProfileDto $dto): User
+    public function updateProfile(ProfileUpdateDto $dto): User
     {
         /** @var User $user */
         $user = Auth::user();
         $user->update($dto->toArray());
-        $user->preferences()->update($dto->getPreferences()->toArray());
+        $user->preferences()->update($dto->preferences->toArray());
 
-        $this->consentService->updateUserConsents(Collection::make($dto->getConsents()), $user);
+        $this->consentService->updateUserConsents(Collection::make($dto->consents), $user);
 
         return $user;
     }
@@ -399,6 +402,9 @@ class AuthService implements AuthServiceContract
         $this->userService->destroy($user);
     }
 
+    /**
+     * @throws ClientException
+     */
     private function verifyTFA(string|Optional $code): void
     {
         if (!Auth::user()?->is_tfa_active && !($code instanceof Optional)) {
@@ -407,10 +413,11 @@ class AuthService implements AuthServiceContract
         }
 
         if (Auth::user()?->is_tfa_active) {
-            match ($code) {
-                null => $this->noTFACode(),
-                default => $this->checkIsValidTFA($code),
-            };
+            if ($code instanceof Optional) {
+                $this->noTFACode();
+            } else {
+                $this->checkIsValidTFA($code);
+            }
         }
     }
 

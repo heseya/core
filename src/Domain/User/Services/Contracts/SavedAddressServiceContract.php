@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Services\Contracts;
+namespace Domain\User\Services\Contracts;
 
-use App\Dtos\SavedAddressDto;
 use App\Enums\SavedAddressType;
 use App\Models\SavedAddress;
 use Domain\User\Dtos\SavedAddressStoreDto;
+use Domain\User\Dtos\SavedAddressUpdateDto;
 
 interface SavedAddressServiceContract
 {
@@ -15,7 +15,7 @@ interface SavedAddressServiceContract
 
     public function updateAddress(
         SavedAddress $address,
-        SavedAddressDto $addressDto,
+        SavedAddressUpdateDto $addressDto,
         SavedAddressType $type
     ): SavedAddress;
 

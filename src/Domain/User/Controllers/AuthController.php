@@ -3,14 +3,8 @@
 namespace Domain\User\Controllers;
 
 use App\DTO\Auth\RegisterDto;
-use App\Dtos\SavedAddressDto;
-use App\Dtos\UpdateProfileDto;
 use App\Enums\SavedAddressType;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\ProfileUpdateRequest;
-use App\Http\Requests\SavedAddressStoreRequest;
-use App\Http\Requests\SavedAddressUpdateRequest;
-use App\Http\Requests\TFAPasswordRequest;
 use App\Http\Resources\AppWithSavedAddressesResource;
 use App\Http\Resources\AuthResource;
 use App\Http\Resources\ProfileResource;
@@ -23,18 +17,20 @@ use App\Models\App;
 use App\Models\SavedAddress;
 use App\Models\User;
 use App\Services\Contracts\AppServiceContract;
-use App\Services\Contracts\SavedAddressServiceContract;
 use Domain\User\Dtos\ChangePasswordDto;
 use Domain\User\Dtos\LoginDto;
 use Domain\User\Dtos\PasswordResetDto;
 use Domain\User\Dtos\PasswordResetSaveDto;
+use Domain\User\Dtos\ProfileUpdateDto;
 use Domain\User\Dtos\SavedAddressStoreDto;
+use Domain\User\Dtos\SavedAddressUpdateDto;
 use Domain\User\Dtos\ShowResetPasswordFormDto;
 use Domain\User\Dtos\TFAConfirmDto;
 use Domain\User\Dtos\TFAPasswordDto;
 use Domain\User\Dtos\TFASetupDto;
 use Domain\User\Dtos\TokenRefreshDto;
 use Domain\User\Services\Contracts\AuthServiceContract;
+use Domain\User\Services\Contracts\SavedAddressServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -185,13 +181,13 @@ class AuthController extends Controller
     }
 
     public function updateSavedAddress(
-        SavedAddressUpdateRequest $request,
+        SavedAddressUpdateDto $dto,
         SavedAddress $address,
         SavedAddressType $type
     ): JsonResource {
         $this->savedAddersService->updateAddress(
             $address,
-            SavedAddressDto::instantiateFromRequest($request),
+            $dto,
             $type
         );
 
@@ -215,10 +211,10 @@ class AuthController extends Controller
         );
     }
 
-    public function updateProfile(ProfileUpdateRequest $request): JsonResource
+    public function updateProfile(ProfileUpdateDto $dto): JsonResource
     {
         return UserResource::make(
-            $this->authService->updateProfile(UpdateProfileDto::instantiateFromRequest($request)),
+            $this->authService->updateProfile($dto),
         );
     }
 }
