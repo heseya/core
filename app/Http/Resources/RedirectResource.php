@@ -11,9 +11,10 @@ class RedirectResource extends Resource
         return [
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
-            'slug' => $this->resource->slug,
-            'url' => $this->resource->url,
+            'source_url' => $this->resource->source_url,
+            'target_url' => $this->resource->target_url,
             'type' => $this->resource->type->value,
+            'enabled' => $this->resource->enabled,
         ];
     }
 }
