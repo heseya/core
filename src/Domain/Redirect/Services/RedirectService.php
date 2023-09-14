@@ -3,6 +3,7 @@
 namespace Domain\Redirect\Services;
 
 use Domain\Redirect\Dtos\RedirectCreateDto;
+use Domain\Redirect\Dtos\RedirectIndexDto;
 use Domain\Redirect\Dtos\RedirectUpdateDto;
 use Domain\Redirect\Events\RedirectCreated;
 use Domain\Redirect\Events\RedirectDeleted;
@@ -13,9 +14,9 @@ use Illuminate\Support\Facades\Config;
 
 class RedirectService
 {
-    public function getPaginated(): LengthAwarePaginator
+    public function getPaginated(RedirectIndexDto $dto): LengthAwarePaginator
     {
-        return Redirect::query()->paginate(Config::get('pagination.per_page'));
+        return Redirect::searchByCriteria($dto->toArray())->paginate(Config::get('pagination.per_page'));
     }
 
     public function create(RedirectCreateDto $dto): Redirect

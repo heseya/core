@@ -22,9 +22,15 @@ class RedirectFactory extends Factory
     {
         return [
             'name' => $this->faker->words(3, true),
-            'slug' => $this->faker->slug,
-            'url' => $this->faker->url,
-            'type' => $this->faker->randomElement([RedirectType::TEMPORARY->value, RedirectType::PERMANENT->value]),
+            'source_url' => $this->faker->slug,
+            'target_url' => $this->faker->url,
+            'type' => $this->faker->randomElement([
+                RedirectType::TEMPORARY_REDIRECT->value,
+                RedirectType::PERMANENT_REDIRECT->value,
+                RedirectType::MOVED_PERMANENTLY->value,
+                RedirectType::FOUND->value,
+            ]),
+            'enabled' => $this->faker->boolean,
         ];
     }
 }

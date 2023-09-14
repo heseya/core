@@ -27,11 +27,68 @@ class RedirectTest extends TestCase
         $this->assertQueryCountLessThan(5);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexFilteredByEnabled($user): void
+    {
+        Redirect::factory()->count(5)->create([
+            'enabled' => true,
+        ]);
+
+        $redirect = Redirect::factory()->create([
+            'enabled' => false,
+        ]);
+
+        $this->{$user}->givePermissionTo('redirects.show');
+
+        $response = $this->actingAs($this->{$user})
+            ->getJson('/redirects?enabled=0')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $redirect->getKey(),
+            ]);
+
+        $this->assertQueryCountLessThan(5);
+    }
+
     public function testIndexUnauthorized(): void
     {
         Redirect::factory()->count(5)->create();
 
         $this->getJson('/redirects')
+            ->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShow($user): void
+    {
+        $redirect = Redirect::factory()->create();
+        Redirect::factory()->count(5)->create();
+
+        $this->{$user}->givePermissionTo('redirects.show');
+
+        $this->actingAs($this->{$user})
+            ->getJson("/redirects/id:{$redirect->getKey()}")
+            ->assertJsonFragment([
+                'id' => $redirect->getKey(),
+                'name' => $redirect->name,
+                'source_url' => $redirect->source_url,
+                'target_url' => $redirect->target_url,
+                'type' => $redirect->type->value,
+                'enabled' => $redirect->enabled,
+            ]);
+    }
+
+    public function testShowUnauthorized(): void
+    {
+        $redirect = Redirect::factory()->create();
+        Redirect::factory()->count(5)->create();
+
+        $this->getJson("/redirects/id:{$redirect->getKey()}")
             ->assertForbidden();
     }
 
@@ -44,26 +101,26 @@ class RedirectTest extends TestCase
 
         $this->{$user}->givePermissionTo('redirects.add');
 
-        $res = $this->actingAs($this->{$user})
+        $this->actingAs($this->{$user})
             ->postJson('/redirects', [
                 'name' => 'test',
-                'slug' => 'test_slug',
-                'url' => 'http://example.com',
-                'type' => RedirectType::TEMPORARY->value,
+                'source_url' => 'source_url',
+                'target_url' => 'http://example.com',
+                'type' => RedirectType::TEMPORARY_REDIRECT->value,
             ])
             ->assertCreated()
             ->assertJsonFragment([
                 'name' => 'test',
-                'slug' => 'test_slug',
-                'url' => 'http://example.com',
-                'type' => RedirectType::TEMPORARY->value,
+                'source_url' => 'source_url',
+                'target_url' => 'http://example.com',
+                'type' => RedirectType::TEMPORARY_REDIRECT->value,
             ]);
 
         $this->assertDatabaseHas('redirects', [
             'name' => 'test',
-            'slug' => 'test_slug',
-            'url' => 'http://example.com',
-            'type' => RedirectType::TEMPORARY->value,
+            'source_url' => 'source_url',
+            'target_url' => 'http://example.com',
+            'type' => RedirectType::TEMPORARY_REDIRECT->value,
         ]);
 
         Event::assertDispatched(RedirectCreated::class);
@@ -73,9 +130,9 @@ class RedirectTest extends TestCase
     {
         $this->postJson('/redirects', [
             'name' => 'test',
-            'slug' => 'test_slug',
-            'url' => 'http://example.com',
-            'type' => RedirectType::TEMPORARY->value,
+            'source_url' => 'test_source_url',
+            'target_url' => 'http://example.com',
+            'type' => RedirectType::TEMPORARY_REDIRECT->value,
         ])
             ->assertForbidden();
     }
@@ -94,23 +151,23 @@ class RedirectTest extends TestCase
         $this->actingAs($this->{$user})
             ->patchJson("/redirects/id:{$redirect->getKey()}", [
                 'name' => 'test',
-                'slug' => 'test_slug',
-                'url' => 'http://example.com',
-                'type' => RedirectType::TEMPORARY->value,
+                'source_url' => 'test_source_url',
+                'target_url' => 'http://example.com',
+                'type' => RedirectType::TEMPORARY_REDIRECT->value,
             ])
             ->assertOk()
             ->assertJsonFragment([
                 'name' => 'test',
-                'slug' => 'test_slug',
-                'url' => 'http://example.com',
-                'type' => RedirectType::TEMPORARY->value,
+                'source_url' => 'test_source_url',
+                'target_url' => 'http://example.com',
+                'type' => RedirectType::TEMPORARY_REDIRECT->value,
             ]);
 
         $this->assertDatabaseHas('redirects', [
             'name' => 'test',
-            'slug' => 'test_slug',
-            'url' => 'http://example.com',
-            'type' => RedirectType::TEMPORARY->value,
+            'source_url' => 'test_source_url',
+            'target_url' => 'http://example.com',
+            'type' => RedirectType::TEMPORARY_REDIRECT->value,
         ]);
 
         Event::assertDispatched(RedirectUpdated::class);
@@ -122,9 +179,9 @@ class RedirectTest extends TestCase
 
         $this->patchJson("/redirects/id:{$redirect->getKey()}", [
             'name' => 'test',
-            'slug' => 'test_slug',
-            'url' => 'http://example.com',
-            'type' => RedirectType::TEMPORARY->value,
+            'source_url' => 'test_source_url',
+            'target_url' => 'http://example.com',
+            'type' => RedirectType::TEMPORARY_REDIRECT->value,
         ])
             ->assertForbidden();
     }
