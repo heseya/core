@@ -7,20 +7,22 @@ namespace Domain\Seo\Models;
 use App\Models\Interfaces\Translatable;
 use App\Models\Media;
 use App\Models\Model;
+use App\Traits\CustomHasTranslations;
 use Domain\Seo\Enums\TwitterCardType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Translatable\HasTranslations;
 
 /**
  * @mixin IdeHelperSeoMetadata
  */
 final class SeoMetadata extends Model implements Translatable
 {
+    use CustomHasTranslations;
     use HasFactory;
-    use HasTranslations;
     use SoftDeletes;
+
+    public const HIDDEN_PERMISSION = 'seo.edit';
 
     protected $fillable = [
         'global',

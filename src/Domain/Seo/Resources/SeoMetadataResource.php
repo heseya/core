@@ -8,6 +8,7 @@ use App\Http\Resources\MediaResource;
 use App\Http\Resources\Resource;
 use App\Traits\GetAllTranslations;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 
 final class SeoMetadataResource extends Resource
 {
@@ -27,7 +28,13 @@ final class SeoMetadataResource extends Resource
             'no_index' => $this->resource->no_index,
             'header_tags' => $this->resource->header_tags,
             'published' => $this->resource->published,
-            ...$request->boolean('with_translations') ? $this->getAllTranslations() : [],
+            ...$request->boolean('with_translations') ? $this->getAllTranslations($this->translationPermission()) : [],
         ];
+    }
+
+    private function translationPermission(): string
+    {
+        return $this->resource->global
+            ? 'seo.edit' : Config::get('relation-aliases.' . $this->resource->model_type)::HIDDEN_PERMISSION;
     }
 }

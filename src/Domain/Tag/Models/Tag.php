@@ -25,7 +25,7 @@ final class Tag extends Model implements Translatable
     use HasCriteria;
     use HasFactory;
 
-    protected const HIDDEN_PERMISSION = 'tags.show_hidden';
+    public const HIDDEN_PERMISSION = 'tags.show_hidden';
 
     protected $fillable = [
         'id',

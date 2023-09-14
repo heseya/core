@@ -21,7 +21,7 @@ final class BannerMedia extends Model implements Translatable
     use CustomHasTranslations;
     use HasFactory;
 
-    protected const HIDDEN_PERMISSION = 'banners.show_hidden';
+    public const HIDDEN_PERMISSION = 'banners.show_hidden';
 
     protected $fillable = [
         'title',

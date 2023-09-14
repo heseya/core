@@ -19,7 +19,7 @@ final class Consent extends Model implements Translatable
     use CustomHasTranslations;
     use HasFactory;
 
-    protected const HIDDEN_PERMISSION = 'consents.show_hidden';
+    public const HIDDEN_PERMISSION = 'consents.show_hidden';
 
     /**
      * The table associated with the model.

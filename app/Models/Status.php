@@ -26,7 +26,7 @@ class Status extends Model implements Translatable
     use HasFactory;
     use HasMetadata;
 
-    protected const HIDDEN_PERMISSION = 'statuses.show_hidden';
+    public const HIDDEN_PERMISSION = 'statuses.show_hidden';
 
     protected $fillable = [
         'name',

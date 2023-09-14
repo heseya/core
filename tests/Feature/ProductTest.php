@@ -1951,7 +1951,13 @@ class ProductTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->json('POST', '/products?with_translations=1', $data);
 
-        $response->assertCreated();
+        $response
+            ->assertCreated()
+            ->assertJsonFragment([
+                'title' => 'seo title',
+                'description' => 'seo description',
+                'no_index' => $booleanValue,
+            ]);
 
         $product = Product::query()->find($response->json('data.id'))->first();
 
@@ -2696,6 +2702,7 @@ class ProductTest extends TestCase
                         $this->lang => [
                             'title' => 'seo title',
                             'description' => 'seo description',
+                            'no_index' => false,
                         ],
                     ],
                 ],
@@ -2703,6 +2710,7 @@ class ProductTest extends TestCase
             ->assertJsonFragment([
                 'title' => 'seo title',
                 'description' => 'seo description',
+                'no_index' => false,
             ]);
 
         $this->assertDatabaseHas('seo_metadata', [

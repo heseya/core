@@ -35,7 +35,7 @@ final class Page extends Model implements SeoContract, SortableContract, Transla
     use SoftDeletes;
     use Sortable;
 
-    protected const HIDDEN_PERMISSION = 'pages.show_hidden';
+    public const HIDDEN_PERMISSION = 'pages.show_hidden';
 
     protected $fillable = [
         'order',

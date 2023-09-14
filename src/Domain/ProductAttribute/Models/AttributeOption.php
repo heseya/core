@@ -31,7 +31,7 @@ final class AttributeOption extends Model implements Translatable
     use HasMetadata;
     use SoftDeletes;
 
-    protected const HIDDEN_PERMISSION = 'attributes.show_hidden';
+    public const HIDDEN_PERMISSION = 'attributes.show_hidden';
 
     protected $fillable = [
         'id',
