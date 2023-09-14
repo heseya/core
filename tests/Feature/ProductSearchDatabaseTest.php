@@ -307,6 +307,36 @@ class ProductSearchDatabaseTest extends TestCase
             ->assertJsonFragment(['id' => $product->getKey()]);
     }
 
+    private function getProductsByParentSet(
+        Authenticatable $user,
+        bool $isChildSetPublic,
+        ?Product &$productRef = null,
+    ): TestResponse {
+        $parentSet = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $childSet = ProductSet::factory()->create([
+            'parent_id' => $parentSet->getKey(),
+            'public' => $isChildSetPublic,
+        ]);
+
+        $productRef = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        // Product not in set
+        Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $childSet->products()->attach($productRef);
+
+        return $this
+            ->actingAs($user)
+            ->getJson("/products?sets[]={$parentSet->slug}");
+    }
+
     /**
      * @dataProvider authProvider
      */
@@ -640,8 +670,15 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
-        $products = Product::factory()->count(2)->create([
-            'public' => true,
+        $products = collect([
+            Product::factory()->create([
+                'public' => true,
+                'created_at' => now()->subHour(),
+            ]),
+            Product::factory()->create([
+                'public' => true,
+                'created_at' => now(),
+            ]),
         ]);
 
         $attribute = Attribute::factory()->create([
@@ -1343,35 +1380,5 @@ class ProductSearchDatabaseTest extends TestCase
         $this->assertEquals($product1->getKey(), $data[2]->id);
         $this->assertEquals($product2->getKey(), $data[1]->id);
         $this->assertEquals($product3->getKey(), $data[0]->id);
-    }
-
-    private function getProductsByParentSet(
-        Authenticatable $user,
-        bool $isChildSetPublic,
-        ?Product &$productRef = null,
-    ): TestResponse {
-        $parentSet = ProductSet::factory()->create([
-            'public' => true,
-        ]);
-
-        $childSet = ProductSet::factory()->create([
-            'parent_id' => $parentSet->getKey(),
-            'public' => $isChildSetPublic,
-        ]);
-
-        $productRef = Product::factory()->create([
-            'public' => true,
-        ]);
-
-        // Product not in set
-        Product::factory()->create([
-            'public' => true,
-        ]);
-
-        $childSet->products()->attach($productRef);
-
-        return $this
-            ->actingAs($user)
-            ->getJson("/products?sets[]={$parentSet->slug}");
     }
 }

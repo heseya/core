@@ -68,7 +68,6 @@ class Product extends Model implements AuditableContract, SortableContract
         'price_min',
         'price_max',
         'available',
-        'order',
         'price_min_initial',
         'price_max_initial',
         'shipping_time',
@@ -79,7 +78,6 @@ class Product extends Model implements AuditableContract, SortableContract
         'purchase_limit_per_user',
         'search_values',
     ];
-
     protected array $auditInclude = [
         'name',
         'slug',
@@ -90,9 +88,7 @@ class Product extends Model implements AuditableContract, SortableContract
         'price_min',
         'price_max',
         'available',
-        'order',
     ];
-
     protected $casts = [
         'shipping_date' => 'date',
         'price' => 'float',
@@ -105,14 +101,12 @@ class Product extends Model implements AuditableContract, SortableContract
         'shipping_digital' => 'bool',
         'purchase_limit_per_user' => 'float',
     ];
-
     protected array $sortable = [
         'id',
         'price',
         'name',
         'created_at',
         'updated_at',
-        'order',
         'public',
         'available',
         'price_min',
@@ -120,7 +114,6 @@ class Product extends Model implements AuditableContract, SortableContract
         'attribute.*',
         'set.*',
     ];
-
     protected array $criteria = [
         'search' => ProductSearch::class,
         'ids' => WhereInIds::class,
@@ -143,8 +136,7 @@ class Product extends Model implements AuditableContract, SortableContract
         'has_schemas' => WhereHasSchemas::class,
         'shipping_digital' => Equals::class,
     ];
-
-    protected string $defaultSortBy = 'products.order';
+    protected string $defaultSortBy = 'products.created_at';
     protected string $defaultSortDirection = 'desc';
 
     public function sets(): BelongsToMany
@@ -231,32 +223,6 @@ class Product extends Model implements AuditableContract, SortableContract
         );
     }
 
-    public function allProductSet(): Collection
-    {
-        $sets = $this->sets;
-        /** @var ProductSet $set */
-        foreach ($sets as $set) {
-            if ($set->parent) {
-                $sets->push($set->parent);
-            }
-        }
-
-        return $sets;
-    }
-
-    public function productSetSales(): Collection
-    {
-        $sales = Collection::make();
-        $sets = $this->sets;
-
-        /** @var ProductSet $set */
-        foreach ($sets as $set) {
-            $sales = $sales->merge($set->allProductsSales());
-        }
-
-        return $sales->unique('id');
-    }
-
     public function allProductSales(Collection $salesWithBlockList): Collection
     {
         $sales = $this->discounts->filter(
@@ -285,6 +251,19 @@ class Product extends Model implements AuditableContract, SortableContract
 
         $sales = $sales->merge($productSetSales->where('target_is_allow_list', true));
         $sales = $sales->diff($productSetSales->where('target_is_allow_list', false));
+
+        return $sales->unique('id');
+    }
+
+    public function productSetSales(): Collection
+    {
+        $sales = Collection::make();
+        $sets = $this->sets;
+
+        /** @var ProductSet $set */
+        foreach ($sets as $set) {
+            $sales = $sales->merge($set->allProductsSales());
+        }
 
         return $sales->unique('id');
     }
