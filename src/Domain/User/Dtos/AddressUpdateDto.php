@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\User\Dtos;
 
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -8,7 +10,7 @@ use Spatie\LaravelData\Attributes\Validation\StringType;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 
-class AddressUpdateDto extends Data
+final class AddressUpdateDto extends Data
 {
     public function __construct(
         #[StringType, Max(255)]
@@ -24,7 +26,6 @@ class AddressUpdateDto extends Data
         #[StringType, Max(2)]
         public string $country,
         #[Nullable, StringType, Max(15)]
-        public string|Optional $vat,
-    ) {
-    }
+        public Optional|string $vat,
+    ) {}
 }

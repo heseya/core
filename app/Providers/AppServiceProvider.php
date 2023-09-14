@@ -144,7 +144,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Factory::guessFactoryNamesUsing(
-        /** @phpstan-ignore-next-line */
+            /** @phpstan-ignore-next-line */
             fn (string $modelName) => 'Database\\Factories\\' . class_basename($modelName) . 'Factory',
         );
 

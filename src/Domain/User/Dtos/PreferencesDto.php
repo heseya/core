@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\User\Dtos;
 
 use Spatie\LaravelData\Attributes\Validation\BooleanType;
 use Spatie\LaravelData\Data;
 
-class PreferencesDto extends Data
+final class PreferencesDto extends Data
 {
     public function __construct(
         #[BooleanType]
@@ -16,6 +18,5 @@ class PreferencesDto extends Data
         public bool $new_localization_login_alert,
         #[BooleanType]
         public bool $recovery_code_changed_alert,
-    ) {
-    }
+    ) {}
 }

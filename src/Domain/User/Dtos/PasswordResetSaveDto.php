@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\User\Dtos;
 
 use Illuminate\Validation\Rules\Password;
@@ -11,7 +13,7 @@ use Spatie\LaravelData\Attributes\Validation\StringType;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-class PasswordResetSaveDto extends Data
+final class PasswordResetSaveDto extends Data
 {
     public function __construct(
         #[Required, StringType]
@@ -22,9 +24,11 @@ class PasswordResetSaveDto extends Data
 
         #[Required, StringType, Max(255)]
         public string $password,
-    ) {
-    }
+    ) {}
 
+    /**
+     * @return array<string, array<int, mixed>>
+     */
     public static function rules(ValidationContext $context): array
     {
         return ['password' => [Password::defaults()]];

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\User\Services;
 
 use App\DTO\Auth\RegisterDto;
@@ -39,6 +41,7 @@ use Domain\User\Dtos\TokenRefreshDto;
 use Domain\User\Services\Contracts\AuthServiceContract;
 use Domain\User\Services\Contracts\UserLoginAttemptServiceContract;
 use Domain\User\Services\Contracts\UserServiceContract;
+use Exception;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -52,7 +55,7 @@ use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use Propaganistas\LaravelPhone\PhoneNumber;
 use Spatie\LaravelData\Optional;
 
-class AuthService implements AuthServiceContract
+final class AuthService implements AuthServiceContract
 {
     public function __construct(
         protected TokenServiceContract $tokenService,
@@ -61,8 +64,7 @@ class AuthService implements AuthServiceContract
         protected UserLoginAttemptServiceContract $userLoginAttemptService,
         protected UserServiceContract $userService,
         protected MetadataServiceContract $metadataService,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws ClientException
@@ -263,7 +265,6 @@ class AuthService implements AuthServiceContract
         return match ($dto->type) {
             TFAType::APP => $this->googleTFA(),
             TFAType::EMAIL => $this->emailTFA(),
-            default => throw new ClientException(Exceptions::CLIENT_INVALID_TFA_TYPE),
         };
     }
 
@@ -380,7 +381,9 @@ class AuthService implements AuthServiceContract
         $user->update($dto->toArray());
         $user->preferences()->update($dto->preferences->toArray());
 
-        $this->consentService->updateUserConsents(Collection::make($dto->consents), $user);
+        if (!($dto->consents instanceof Optional)) {
+            $this->consentService->updateUserConsents(Collection::make($dto->consents), $user);
+        }
 
         return $user;
     }
@@ -405,15 +408,15 @@ class AuthService implements AuthServiceContract
     /**
      * @throws ClientException
      */
-    private function verifyTFA(string|Optional $code): void
+    private function verifyTFA(Optional|string|null $code): void
     {
-        if (!Auth::user()?->is_tfa_active && !($code instanceof Optional)) {
+        if (!Auth::user()?->is_tfa_active && !($code instanceof Optional) && $code !== null) {
             $this->userLoginAttemptService->store();
             throw new ClientException(Exceptions::CLIENT_TFA_NOT_SET_UP, simpleLogs: true);
         }
 
         if (Auth::user()?->is_tfa_active) {
-            if ($code instanceof Optional) {
+            if ($code instanceof Optional || $code === null) {
                 $this->noTFACode();
             } else {
                 $this->checkIsValidTFA($code);
@@ -433,9 +436,7 @@ class AuthService implements AuthServiceContract
             TfaSecurityCodeEvent::dispatch(Auth::user(), $code);
             Auth::user()->notify(new TFASecurityCode($code));
         }
-        throw new ClientException(Exceptions::CLIENT_TFA_REQUIRED, simpleLogs: true, errorArray: [
-            'type' => Auth::user()?->tfa_type,
-        ]);
+        throw new ClientException(Exceptions::CLIENT_TFA_REQUIRED, simpleLogs: true, errorArray: ['type' => Auth::user()?->tfa_type]);
     }
 
     private function checkIsValidTFA(string $code): void
@@ -550,6 +551,11 @@ class AuthService implements AuthServiceContract
         }
     }
 
+    /**
+     * @return array<string, string>
+     *
+     * @throws Exception
+     */
     private function googleTFA(): array
     {
         /** @var User $user */
@@ -575,6 +581,9 @@ class AuthService implements AuthServiceContract
         ];
     }
 
+    /**
+     * @return array<string, int|string>
+     */
     private function emailTFA(): array
     {
         /** @var User $user */
@@ -615,6 +624,9 @@ class AuthService implements AuthServiceContract
         ]);
     }
 
+    /**
+     * @return array<string, bool|string>
+     */
     private function createTokens(bool|string $token, string $uuid): array
     {
         /** @var JWTSubject $user */

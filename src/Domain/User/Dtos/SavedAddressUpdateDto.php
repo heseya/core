@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\User\Dtos;
 
 use App\Enums\SavedAddressType;
@@ -12,7 +14,7 @@ use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 
-class SavedAddressUpdateDto extends Data
+final class SavedAddressUpdateDto extends Data
 {
     public function __construct(
         #[StringType, Nullable, Max(255)]
@@ -20,8 +22,7 @@ class SavedAddressUpdateDto extends Data
         #[BooleanType]
         public bool $default,
         #[WithCast(EnumCast::class, SavedAddressType::class)]
-        public SavedAddressType|Optional $type,
+        public Optional|SavedAddressType $type,
         public AddressUpdateDto|Optional $address,
-    ) {
-    }
+    ) {}
 }

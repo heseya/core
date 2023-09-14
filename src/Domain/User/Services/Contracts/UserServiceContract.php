@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\User\Services\Contracts;
 
 use App\Dtos\UserCreateDto;
@@ -9,6 +11,11 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 interface UserServiceContract
 {
+    /**
+     * @param array<string, mixed> $search
+     *
+     * @return LengthAwarePaginator<User>
+     */
     public function index(array $search, ?string $sort): LengthAwarePaginator;
 
     public function create(UserCreateDto $dto): User;

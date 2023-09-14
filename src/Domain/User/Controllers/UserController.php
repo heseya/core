@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\User\Controllers;
 
 use App\Dtos\UserCreateDto;
@@ -18,13 +20,12 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
 
-class UserController extends Controller
+final class UserController extends Controller
 {
     public function __construct(
-        private UserServiceContract $userService,
-        private AuthServiceContract $authService,
-    ) {
-    }
+        private readonly UserServiceContract $userService,
+        private readonly AuthServiceContract $authService,
+    ) {}
 
     public function index(UserIndexRequest $request): JsonResource
     {

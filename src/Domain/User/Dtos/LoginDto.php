@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\User\Dtos;
 
 use Spatie\LaravelData\Attributes\Validation\Email;
@@ -10,7 +12,7 @@ use Spatie\LaravelData\Attributes\Validation\StringType;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 
-class LoginDto extends Data
+final class LoginDto extends Data
 {
     public function __construct(
         #[Required, StringType, Max(255), Email]
@@ -18,7 +20,6 @@ class LoginDto extends Data
         #[Required, StringType, Max(255)]
         public string $password,
         #[StringType, Max(255), Nullable]
-        public null|string|Optional $code,
-    ) {
-    }
+        public Optional|string|null $code,
+    ) {}
 }

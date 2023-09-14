@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\User\Services;
 
 use App\Dtos\UserCreateDto;
@@ -27,12 +29,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-readonly class UserService implements UserServiceContract
+final readonly class UserService implements UserServiceContract
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
-    ) {
-    }
+    ) {}
 
     public function index(array $search, ?string $sort): LengthAwarePaginator
     {
@@ -59,7 +60,7 @@ readonly class UserService implements UserServiceContract
         }
 
         $permissions = $roleModels->flatMap(
-            fn ($role) => $role->type !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
+            fn (Role $role) => $role->type !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
         )->unique();
 
         if (!Auth::user()?->hasAllPermissions($permissions)) {
@@ -104,10 +105,12 @@ readonly class UserService implements UserServiceContract
                 ->get();
 
             $newRoles = $roleModels->diff($user->roles);
+
+            /** @var Collection<int, Role> $removedRoles */
             $removedRoles = $user->roles->diff($roleModels);
 
             $permissions = $newRoles->flatMap(
-                fn ($role) => $role->type !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
+                fn (Role $role) => $role->type !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
             )->unique();
 
             if (!$authenticable?->hasAllPermissions($permissions)) {

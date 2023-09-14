@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\User\Services\Contracts;
 
 use App\DTO\Auth\RegisterDto;
@@ -18,10 +20,19 @@ use Illuminate\Contracts\Auth\Authenticatable;
 
 interface AuthServiceContract
 {
+    /**
+     * @return array<string, bool|string>
+     */
     public function login(LoginDto $dto): array;
 
+    /**
+     * @return array<string, bool|string>
+     */
     public function loginWithUser(Authenticatable $user, ?string $ip, ?string $userAgent): array;
 
+    /**
+     * @return array<string, string|null>
+     */
     public function refresh(TokenRefreshDto $dto): array;
 
     public function logout(): void;
@@ -42,10 +53,19 @@ interface AuthServiceContract
 
     public function isAppAuthenticated(): bool;
 
+    /**
+     * @return array<string, string|int>
+     */
     public function setupTFA(TFASetupDto $dto): array;
 
+    /**
+     * @return array<string>
+     */
     public function confirmTFA(TFAConfirmDto $dto): array;
 
+    /**
+     * @return array<string>
+     */
     public function generateRecoveryCodes(TFAPasswordDto $dto): array;
 
     public function removeTFA(TFAPasswordDto $dto): void;

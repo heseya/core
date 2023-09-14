@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\User\Dtos;
 
 use App\Rules\ConsentsExists;
@@ -17,26 +19,34 @@ use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-class ProfileUpdateDto extends Data
+final class ProfileUpdateDto extends Data
 {
+    /**
+     * @param Optional|string $name
+     * @param DateTime|Optional $birthday_date
+     * @param Optional|string $phone
+     * @param array<string, bool>|Optional $consents
+     */
     public function __construct(
         #[Nullable, StringType, Max(255)]
-        public string|Optional $name,
+        public Optional|string $name,
 
         #[WithCast(DateTimeInterfaceCast::class)]
         #[Nullable, Date, BeforeOrEqual('today')]
         public DateTime|Optional $birthday_date,
 
         #[Nullable]
-        public string|Optional $phone,
+        public Optional|string $phone,
 
         #[Nullable, ArrayType]
         public array|Optional $consents,
 
         public PreferencesDto $preferences,
-    ) {
-    }
+    ) {}
 
+    /**
+     * @return array<string, array<int, mixed>>
+     */
     public static function rules(ValidationContext $context): array
     {
         return [

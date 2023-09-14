@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\User\Controllers;
 
 use App\DTO\Auth\RegisterDto;
@@ -39,14 +41,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
 
-class AuthController extends Controller
+final class AuthController extends Controller
 {
     public function __construct(
         private readonly AuthServiceContract $authService,
         private readonly AppServiceContract $appService,
         private readonly SavedAddressServiceContract $savedAddersService,
-    ) {
-    }
+    ) {}
 
     public function login(LoginDto $dto): JsonResource
     {

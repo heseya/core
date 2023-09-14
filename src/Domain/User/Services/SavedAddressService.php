@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\User\Services;
 
 use App\Enums\ExceptionsEnums\Exceptions;
@@ -13,8 +15,9 @@ use Domain\User\Services\Contracts\SavedAddressServiceContract;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Spatie\LaravelData\Optional;
 
-class SavedAddressService implements SavedAddressServiceContract
+final class SavedAddressService implements SavedAddressServiceContract
 {
     public function storeAddress(SavedAddressStoreDto $dto): ?SavedAddress
     {
@@ -52,7 +55,9 @@ class SavedAddressService implements SavedAddressServiceContract
                 'name' => $addressDto->name,
             ]);
 
-            $address->address?->update($addressDto->address->toArray());
+            if (!($addressDto->address instanceof Optional)) {
+                $address->address?->update($addressDto->address->toArray());
+            }
 
             if ($address->default) {
                 $this->defaultSet($address, $type);

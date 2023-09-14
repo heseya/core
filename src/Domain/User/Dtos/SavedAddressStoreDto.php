@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\User\Dtos;
 
 use App\Enums\SavedAddressType;
@@ -11,7 +13,7 @@ use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
-class SavedAddressStoreDto extends Data
+final class SavedAddressStoreDto extends Data
 {
     public function __construct(
         #[Required, StringType, Max(255)]
@@ -22,6 +24,5 @@ class SavedAddressStoreDto extends Data
         #[Required]
         public SavedAddressType $type,
         public AddressStoreDto $address,
-    ) {
-    }
+    ) {}
 }
