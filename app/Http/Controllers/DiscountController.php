@@ -54,6 +54,8 @@ class DiscountController extends Controller
         Gate::inspect('coupon', [$coupon]);
 
         if ($coupon->active) {
+            $coupon->load(['products', 'products.publishedTags']);
+
             return CouponResource::make($coupon);
         }
 
@@ -63,6 +65,7 @@ class DiscountController extends Controller
     public function showSale(Discount $sale): JsonResource
     {
         Gate::inspect('sale', [$sale]);
+        $sale->load(['products', 'products.publishedTags']);
 
         return SaleResource::make($sale);
     }
