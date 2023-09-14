@@ -27,8 +27,8 @@ class RedirectFactory extends Factory
             'type' => $this->faker->randomElement([
                 RedirectType::TEMPORARY_REDIRECT->value,
                 RedirectType::PERMANENT_REDIRECT->value,
-                RedirectType::MOVED_PERMANENTLY,
-                RedirectType::FOUND,
+                RedirectType::MOVED_PERMANENTLY->value,
+                RedirectType::FOUND->value,
             ]),
             'enabled' => $this->faker->boolean,
         ];
