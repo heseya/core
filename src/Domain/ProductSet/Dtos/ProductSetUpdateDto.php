@@ -38,8 +38,7 @@ final class ProductSetUpdateDto extends Data
 
         #[Rule(new Translations(['name', 'description_html']))]
         public readonly array $translations = [],
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, string[]>
