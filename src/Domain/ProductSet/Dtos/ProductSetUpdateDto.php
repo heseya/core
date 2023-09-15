@@ -38,7 +38,8 @@ final class ProductSetUpdateDto extends Data
 
         #[Rule(new Translations(['name', 'description_html']))]
         public readonly array $translations = [],
-    ) {}
+    ) {
+    }
 
     /**
      * @return array<string, string[]>
@@ -47,7 +48,7 @@ final class ProductSetUpdateDto extends Data
     {
         return [
             'translations.*.name' => ['sometimes', 'string', 'max:255'],
-            'translations.*.description_html' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'translations.*.description_html' => ['sometimes', 'nullable', 'string', 'max:60000'],
             'children_ids.*' => ['uuid', 'exists:product_sets,id'],
             'attributes.*' => ['uuid', 'exists:attributes,id'],
         ];
