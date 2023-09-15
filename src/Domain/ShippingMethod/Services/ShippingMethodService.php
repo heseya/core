@@ -13,6 +13,7 @@ use App\Services\Contracts\MetadataServiceContract;
 use Brick\Money\Money;
 use Domain\ShippingMethod\Dtos\PriceRangeDto;
 use Domain\ShippingMethod\Dtos\ShippingMethodCreateDto;
+use Domain\ShippingMethod\Dtos\ShippingMethodIndexDto;
 use Domain\ShippingMethod\Dtos\ShippingMethodUpdateDto;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Domain\ShippingMethod\Services\Contracts\ShippingMethodServiceContract;
@@ -30,10 +31,20 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
         private MetadataServiceContract $metadataService,
     ) {}
 
-    public function index(?array $search, Optional|string $country, ?Money $cartValue): LengthAwarePaginator
+    public function index(ShippingMethodIndexDto $dto, ?Money $cartValue): LengthAwarePaginator
     {
+        $search = $dto->only(
+            'metadata',
+            'metadata_private',
+            'ids',
+        )->toArray();
+
         $query = ShippingMethod::query()
-            ->searchByCriteria($search ?? [])
+            ->searchByCriteria($search);
+
+        $query = $this->filterBlocklist($query, $dto->is_product_blocklist, $dto->product_ids, $dto->product_set_ids);
+
+        $query
             ->with('metadata')
             ->orderBy('order');
 
@@ -54,6 +65,8 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
                 'paymentMethods' => fn ($query) => $query->where('public', true),
             ]);
         }
+
+        $country = $dto->country;
 
         if (!$country instanceof Optional) {
             $query->where(function (Builder $query) use ($country): void {
@@ -108,6 +121,14 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
             $this->metadataService->sync($shippingMethod, $shippingMethodDto->getMetadata());
         }
 
+        if (!($shippingMethodDto->product_ids instanceof Optional)) {
+            $shippingMethod->products()->sync($shippingMethodDto->product_ids);
+        }
+
+        if (!($shippingMethodDto->product_set_ids instanceof Optional)) {
+            $shippingMethod->productSets()->sync($shippingMethodDto->product_set_ids);
+        }
+
         $shippingMethodDto->getPriceRanges()->each(
             fn (PriceRangeDto $range) => $shippingMethod->priceRanges()->firstOrCreate([
                 'start' => $range->start,
@@ -117,34 +138,6 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
         );
 
         return $shippingMethod;
-    }
-
-    private function syncShippingPoints(
-        ShippingMethodCreateDto|ShippingMethodUpdateDto $shippingMethodDto,
-        ShippingMethod $shippingMethod,
-    ): void {
-        $shippingPoints = $shippingMethodDto->getShippingPoints();
-
-        if (!is_array($shippingPoints)) {
-            $shippingMethod->shippingPoints()->sync([]);
-        }
-
-        $addresses = new Collection();
-
-        // @phpstan-ignore-next-line
-        foreach ($shippingPoints as $shippingPoint) {
-            if (array_key_exists('id', $shippingPoint)) {
-                Address::query()->where('id', $shippingPoint['id'])->update($shippingPoint);
-                /** @var Address $address */
-                $address = Address::query()->findOrFail($shippingPoint['id']);
-            } else {
-                /** @var Address $address */
-                $address = Address::query()->create($shippingPoint);
-            }
-            $addresses->push($address->getKey());
-        }
-
-        $shippingMethod->shippingPoints()->sync($addresses);
     }
 
     public function update(ShippingMethod $shippingMethod, ShippingMethodUpdateDto $shippingMethodDto): ShippingMethod
@@ -179,6 +172,14 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
             }
         }
 
+        if (!($shippingMethodDto->product_ids instanceof Optional)) {
+            $shippingMethod->products()->sync($shippingMethodDto->product_ids);
+        }
+
+        if (!($shippingMethodDto->product_set_ids instanceof Optional)) {
+            $shippingMethod->productSets()->sync($shippingMethodDto->product_set_ids);
+        }
+
         return $shippingMethod;
     }
 
@@ -199,5 +200,103 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
         }
 
         $shippingMethod->delete();
+    }
+
+    private function syncShippingPoints(
+        ShippingMethodCreateDto|ShippingMethodUpdateDto $shippingMethodDto,
+        ShippingMethod $shippingMethod,
+    ): void {
+        $shippingPoints = $shippingMethodDto->getShippingPoints();
+
+        if (!is_array($shippingPoints)) {
+            $shippingMethod->shippingPoints()->sync([]);
+        }
+
+        $addresses = new Collection();
+
+        // @phpstan-ignore-next-line
+        foreach ($shippingPoints as $shippingPoint) {
+            if (array_key_exists('id', $shippingPoint)) {
+                Address::query()->where('id', $shippingPoint['id'])->update($shippingPoint);
+                /** @var Address $address */
+                $address = Address::query()->findOrFail($shippingPoint['id']);
+            } else {
+                /** @var Address $address */
+                $address = Address::query()->create($shippingPoint);
+            }
+            $addresses->push($address->getKey());
+        }
+
+        $shippingMethod->shippingPoints()->sync($addresses);
+    }
+
+    /**
+     * @param Builder<ShippingMethod> $query
+     * @param array<string> $productIds
+     * @param array<string> $productSetIds
+     *
+     * @return Builder<ShippingMethod>
+     */
+    private function filterBlocklist(
+        Builder $query,
+        bool $isBlocklist,
+        array $productIds,
+        array $productSetIds
+    ): Builder {
+        if (empty($productIds) && empty($productSetIds)) {
+            return $query;
+        }
+
+        $query = $query->where('is_product_blocklist', $isBlocklist);
+
+        return $isBlocklist ? $this->filterBlocklistTrue(
+            $query,
+            $productIds,
+            $productSetIds,
+        ) : $this->filterBlocklistFalse(
+            $query,
+            $productIds,
+            $productSetIds,
+        );
+    }
+
+    /**
+     * Block list filter.
+     *
+     * @param Builder<ShippingMethod> $query
+     * @param array<string> $productIds
+     * @param array<string> $productSetIds
+     *
+     * @return Builder<ShippingMethod>
+     */
+    private function filterBlocklistTrue(Builder $query, array $productIds, array $productSetIds): Builder
+    {
+        return $query
+            ->whereHas('products', function (Builder $query) use ($productIds): void {
+                $query->whereNotIn('products.id', $productIds);
+            })
+            ->whereHas('productSets', function (Builder $query) use ($productSetIds): void {
+                $query->whereNotIn('product_sets.id', $productSetIds);
+            });
+    }
+
+    /**
+     * Allow list filter.
+     *
+     * @param Builder<ShippingMethod> $query
+     * @param array<string> $productIds
+     * @param array<string> $productSetIds
+     *
+     * @return Builder<ShippingMethod>
+     */
+    private function filterBlocklistFalse(Builder $query, array $productIds, array $productSetIds): Builder
+    {
+        return $query
+            ->whereHas('products', function (Builder $query) use ($productIds): void {
+                $query->whereIn('products.id', $productIds);
+            }, '>=', count($productIds))
+            ->whereHas('productSets', function (Builder $query) use ($productSetIds): void {
+                $query->whereIn('product_sets.id', $productSetIds);
+            }, '>=', count($productSetIds));
     }
 }

@@ -50,8 +50,11 @@ final class ShippingMethodCreateDto extends Data
      * @param array<int>|Optional $payment_methods
      * @param array<string>|Optional $countries
      * @param array<array<string>>|Optional $shipping_points
-     * @param string|null $integration_key
+     * @param array<string>|Optional $product_ids
+     * @param array<string>|Optional $product_set_ids
      * @param bool $block_list
+     * @param bool $is_product_blocklist
+     * @param string|null $integration_key
      */
     public function __construct(
         #[Required, StringType, Max(255)]
@@ -87,11 +90,20 @@ final class ShippingMethodCreateDto extends Data
         #[ArrayType]
         public readonly array|Optional $shipping_points,
 
-        #[StringType, Nullable]
-        public readonly string|null $integration_key = null,
+        #[ArrayType]
+        public readonly array|Optional $product_ids,
+
+        #[ArrayType]
+        public readonly array|Optional $product_set_ids,
 
         #[BooleanType]
         public readonly bool $block_list = false,
+
+        #[BooleanType]
+        public readonly bool $is_product_blocklist = false,
+
+        #[StringType, Nullable]
+        public readonly string|null $integration_key = null,
     ) {
         /** @var User|App|null $user */
         $user = Auth::user();
@@ -114,6 +126,8 @@ final class ShippingMethodCreateDto extends Data
             'payment_methods' => ['array', 'prohibited_if:payment_on_delivery,true'],
             'payment_methods.*' => ['uuid', 'exists:payment_methods,id'],
             'shipping_points.*.id' => ['string', 'exists:addresses,id'],
+            'product_ids.*' => ['uuid', 'exists:products,id'],
+            'product_set_ids.*' => ['uuid', 'exists:product_sets,id'],
         ];
     }
 

@@ -9,11 +9,13 @@ use App\Models\App;
 use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\PriceRange;
+use App\Models\Product;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\ProductSet\ProductSet;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -128,6 +130,128 @@ class ShippingMethodTest extends TestCase
             ->assertJson([
                 'data' => [
                     0 => $this->expected,
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexBlocklistProductsAndSets($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.show');
+
+        $product1 = Product::factory()->create();
+        $product2 = Product::factory()->create();
+        $product3 = Product::factory()->create();
+        $product4 = Product::factory()->create();
+
+        $productForSet1 = Product::factory()->create();
+        $productForSet2 = Product::factory()->create();
+        $productForSet3 = Product::factory()->create();
+        $productForSet4 = Product::factory()->create();
+
+        $productSet1 = ProductSet::factory()->create();
+        $productSet2 = ProductSet::factory()->create();
+
+        $productSet1->products()->sync([$productForSet1->getKey(), $productForSet2->getKey()]);
+        $productSet2->products()->sync([$productForSet3->getKey(), $productForSet4->getKey()]);
+
+        $shippingMethod1 = ShippingMethod::factory()->create(['is_product_blocklist' => false, 'public' => true]);
+        $shippingMethod2 = ShippingMethod::factory()->create(['is_product_blocklist' => false, 'public' => true]);
+
+        $shippingMethod1->products()->sync([$product1->getKey(), $product2->getKey()]);
+        $shippingMethod2->products()->sync([$product3->getKey(), $product4->getKey()]);
+
+        $shippingMethod1->productSets()->sync([$productSet1->getKey()]);
+        $shippingMethod2->productSets()->sync([$productSet2->getKey()]);
+
+        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
+            'is_product_blocklist' => false,
+            'product_ids' => [$product1->getKey()],
+        ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'id' => $shippingMethod1->getKey(),
+                    ],
+                ],
+            ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
+            'is_product_blocklist' => false,
+            'product_set_ids' => [$productSet1->getKey()],
+        ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'id' => $shippingMethod1->getKey(),
+                    ],
+                ],
+            ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
+            'is_product_blocklist' => false,
+            'product_ids' => [$product1->getKey()],
+            'product_set_ids' => [$productSet1->getKey()],
+        ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'id' => $shippingMethod1->getKey(),
+                    ],
+                ],
+            ]);
+
+        $shippingMethod1->update(['is_product_blocklist' => true]);
+        $shippingMethod2->update(['is_product_blocklist' => true]);
+
+        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
+            'is_product_blocklist' => true,
+            'product_ids' => [$product3->getKey(), $product4->getKey()],
+        ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'id' => $shippingMethod1->getKey(),
+                    ],
+                ],
+            ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
+            'is_product_blocklist' => true,
+            'product_set_ids' => [$productSet2->getKey()],
+        ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'id' => $shippingMethod1->getKey(),
+                    ],
+                ],
+            ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
+            'is_product_blocklist' => true,
+            'product_ids' => [$product3->getKey()],
+            'product_set_ids' => [$productSet2->getKey()],
+        ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'id' => $shippingMethod1->getKey(),
+                    ],
                 ],
             ]);
     }
@@ -536,6 +660,49 @@ class ShippingMethodTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateWithBlacklist($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.add');
+
+        ShippingMethod::query()->delete();
+
+        $product = Product::factory()->create();
+        $productSet = ProductSet::factory()->create();
+
+        $shipping_method = [
+            'name' => 'Test',
+            'public' => true,
+            'block_list' => false,
+            'shipping_time_min' => 2,
+            'shipping_time_max' => 3,
+            'shipping_type' => ShippingType::ADDRESS->value,
+            'payment_on_delivery' => true,
+            'is_product_blocklist' => true,
+            'product_ids' => [$product->getKey()],
+            'product_set_ids' => [$productSet->getKey()],
+        ];
+
+        $response = $this->actingAs($this->{$user})
+            ->postJson(
+                '/shipping-methods',
+                $shipping_method + [
+                    'price_ranges' => $this->priceRanges,
+                ]
+            );
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment(['is_product_blocklist' => true]);
+
+        $shippingMethod = ShippingMethod::find($response->json('data.id'));
+
+        $this->assertTrue($shippingMethod->products()->count() === 1);
+        $this->assertTrue($shippingMethod->productSets()->count() === 1);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateWithMetadata($user): void
     {
         $this->{$user}->givePermissionTo('shipping_methods.add');
@@ -778,7 +945,7 @@ class ShippingMethodTest extends TestCase
                 'price_ranges' => $this->priceRangesWithNoInitialStart,
             ],
         );
-        
+
         $response->assertStatus(422);
     }
 
@@ -873,6 +1040,36 @@ class ShippingMethodTest extends TestCase
     {
         $this->patchJson('/shipping-methods/id:' . $this->shipping_method->getKey())
             ->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithBlacklist($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.edit');
+
+        $this->shipping_method->update(['is_product_blocklist' => false]);
+
+        $product = Product::factory()->create();
+        $productSet = ProductSet::factory()->create();
+
+        $response = $this->actingAs($this->{$user})->patchJson(
+            '/shipping-methods/id:' . $this->shipping_method->getKey(),
+            [
+                'price_ranges' => $this->priceRanges,
+                'is_product_blocklist' => true,
+                'product_ids' => [$product->getKey()],
+                'product_set_ids' => [$productSet->getKey()],
+            ],
+        );
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['is_product_blocklist' => true]);
+
+        $this->assertTrue($this->shipping_method->products()->count() === 1);
+        $this->assertTrue($this->shipping_method->productSets()->count() === 1);
     }
 
     /**

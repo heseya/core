@@ -40,8 +40,7 @@ final class ShippingMethodController extends Controller
         ) : null;
 
         $shippingMethods = $this->shippingMethodService->index(
-            $dto->only('metadata', 'metadata_private', 'ids')->toArray(),
-            $dto->country,
+            $dto,
             $cartTotal,
         );
 

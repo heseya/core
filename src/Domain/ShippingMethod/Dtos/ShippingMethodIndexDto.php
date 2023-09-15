@@ -6,6 +6,7 @@ namespace Domain\ShippingMethod\Dtos;
 
 use App\Rules\Price;
 use Spatie\LaravelData\Attributes\Validation\ArrayType;
+use Spatie\LaravelData\Attributes\Validation\BooleanType;
 use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\Size;
 use Spatie\LaravelData\Attributes\Validation\StringType;
@@ -21,6 +22,9 @@ final class ShippingMethodIndexDto extends Data
      * @param array<string, string>|Optional $cart_value
      * @param array<string, string>|Optional $metadata
      * @param array<string, string>|Optional $metadata_private
+     * @param array<string> $product_ids
+     * @param array<string> $product_set_ids
+     * @param bool $is_product_blocklist
      */
     public function __construct(
         #[StringType, Size(2), Exists('countries', 'code')]
@@ -33,6 +37,12 @@ final class ShippingMethodIndexDto extends Data
         public array|Optional $metadata,
         #[ArrayType]
         public array|Optional $metadata_private,
+        #[ArrayType]
+        public array $product_ids = [],
+        #[ArrayType]
+        public array $product_set_ids = [],
+        #[BooleanType]
+        public bool $is_product_blocklist = true,
     ) {}
 
     /**
@@ -43,6 +53,8 @@ final class ShippingMethodIndexDto extends Data
         return [
             'ids.*' => ['uuid', 'exists:shipping_methods,id'],
             'cart_value' => [new Price(['value'])],
+            'product_ids.*' => ['uuid', 'exists:products,id'],
+            'product_set_ids.*' => ['uuid', 'exists:product_sets,id'],
         ];
     }
 }

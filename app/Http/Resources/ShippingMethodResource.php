@@ -29,6 +29,7 @@ class ShippingMethodResource extends Resource
             ),
             'public' => $this->resource->public,
             'block_list' => $this->resource->block_list,
+            'is_product_blocklist' => $this->resource->is_product_blocklist,
             'payment_on_delivery' => $this->resource->payment_on_delivery,
             'payment_methods' => PaymentMethodResource::collection($this->resource->paymentMethods),
             'countries' => CountryResource::collection($this->resource->countries),

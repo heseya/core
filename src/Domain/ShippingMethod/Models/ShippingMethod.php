@@ -16,10 +16,12 @@ use App\Models\Model;
 use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\PriceRange;
+use App\Models\Product;
 use App\Traits\HasDiscounts;
 use App\Traits\HasMetadata;
 use Brick\Math\BigDecimal;
 use Brick\Money\Money;
+use Domain\ProductSet\ProductSet;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -50,6 +52,7 @@ final class ShippingMethod extends Model
         'public',
         'order',
         'block_list',
+        'is_product_blocklist',
         'shipping_time_min',
         'shipping_time_max',
         'shipping_type',
@@ -65,7 +68,8 @@ final class ShippingMethod extends Model
      */
     protected $casts = [
         'public' => 'boolean',
-        'block_list' => 'boolean',
+        'is_product_blocklist' => 'boolean',
+        'is_blocklist' => 'boolean',
         'shipping_type' => ShippingType::class,
         'payment_on_delivery' => 'boolean',
     ];
@@ -114,6 +118,22 @@ final class ShippingMethod extends Model
     public function paymentMethods(): BelongsToMany
     {
         return $this->belongsToMany(PaymentMethod::class, 'shipping_method_payment_method');
+    }
+
+    /**
+     * @return BelongsToMany<Product>
+     */
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'shipping_method_product');
+    }
+
+    /**
+     * @return BelongsToMany<ProductSet>
+     */
+    public function productSets(): BelongsToMany
+    {
+        return $this->belongsToMany(ProductSet::class, 'shipping_method_product_set');
     }
 
     /**

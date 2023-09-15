@@ -48,6 +48,28 @@ ShippingMethods:
           items:
             type: string
             format: uuid
+      - name: 'is_product_blocklist'
+        in: query
+        description: 'if true, will return only shipping methods that are not blocked for the product'
+        schema:
+          type: boolean
+          example: true
+      - name: 'product_ids'
+        in: query
+        description: 'product ids to check if shipping method is blocked for them'
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+      - name: 'product_set_ids'
+        in: query
+        description: 'product set ids to check if shipping method is blocked for them'
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
     responses:
       200:
         description: Success

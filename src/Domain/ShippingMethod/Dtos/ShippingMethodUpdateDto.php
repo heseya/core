@@ -37,6 +37,7 @@ final class ShippingMethodUpdateDto extends Data
      * @param Optional|string $name
      * @param bool|Optional $public
      * @param bool|Optional $block_list
+     * @param bool|Optional $is_product_blocklist
      * @param int|Optional $shipping_time_min
      * @param int|Optional $shipping_time_max
      * @param Optional|ShippingType $shipping_type
@@ -45,6 +46,8 @@ final class ShippingMethodUpdateDto extends Data
      * @param array<int>|Optional $payment_methods
      * @param array<string>|Optional $countries
      * @param DataCollection<int, PriceRangeDto>|Optional $price_ranges
+     * @param array<string>|Optional $product_ids
+     * @param array<string>|Optional $product_set_ids
      * @param array<string, string>|Missing|Optional $metadata
      * @param string|null $integration_key
      * @param string|null $app_id
@@ -52,30 +55,52 @@ final class ShippingMethodUpdateDto extends Data
     public function __construct(
         #[StringType]
         public readonly Optional|string $name,
+
         #[BooleanType]
         public readonly bool|Optional $public,
+
         #[BooleanType]
         public readonly bool|Optional $block_list,
+
+        #[BooleanType]
+        public readonly bool|Optional $is_product_blocklist,
+
         #[IntegerType, Min(0)]
         public readonly int|Optional $shipping_time_min,
+
         #[IntegerType, Min(0), GreaterThanOrEqualTo('shipping_time_min')]
         public readonly int|Optional $shipping_time_max,
+
         #[WithCast(EnumCast::class, ShippingType::class)]
         #[Enum(ShippingType::class)]
         public readonly Optional|ShippingType $shipping_type,
+
         #[BooleanType]
         public bool|Optional $payment_on_delivery,
+
         #[ArrayType]
         public readonly array|Optional $shipping_points,
+
         #[ArrayType]
         public readonly array|Optional $payment_methods,
+
         #[ArrayType]
         public readonly array|Optional $countries,
+
         #[DataCollectionOf(PriceRangeDto::class)]
         public readonly DataCollection|Optional $price_ranges,
+
+        #[ArrayType]
+        public readonly array|Optional $product_ids,
+
+        #[ArrayType]
+        public readonly array|Optional $product_set_ids,
+
         public array|Missing|Optional $metadata = new Missing(),
+
         #[StringType]
         public readonly string|null $integration_key = null,
+
         #[StringType, Nullable]
         public string|null $app_id = null,
     ) {
