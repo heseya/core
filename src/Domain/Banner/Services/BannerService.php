@@ -27,8 +27,7 @@ final class BannerService
              */
             foreach ($dto->banner_media as $index => $group) {
                 /** @var BannerMedia $bannerMedia */
-                $bannerMedia = $banner->bannerMedia()->make([
-                    'url' => $group->url,
+                $bannerMedia = $banner->bannerMedia()->make($group->toArray() + [
                     'order' => $index + 1,
                 ]);
                 foreach ($group->translations as $lang => $translation) {
@@ -55,21 +54,20 @@ final class BannerService
     public function update(Banner $banner, BannerUpdateDto $dto): Banner
     {
         $banner->update($dto->toArray());
-        $banner->bannerMedia()->delete();
 
-        if (!$dto->banner_media instanceof Optional) {
+        if (!($dto->banner_media instanceof Optional)) {
+            $toSaveMediaIds = [];
             foreach ($dto->banner_media as $index => $group) {
                 $bannerMedia = null;
                 if (!($group->id instanceof Optional) && $group->id) {
                     /** @var BannerMedia $bannerMedia */
-                    $bannerMedia = $banner->BannerMedia()->firstWhere('id', '=', $group->id);
+                    $bannerMedia = $banner->bannerMedia()->firstWhere('id', '=', $group->id);
                     $bannerMedia->update($group->toArray() + ['order' => $index + 1]);
                 }
 
                 if (!$bannerMedia) {
                     /** @var BannerMedia $bannerMedia */
-                    $bannerMedia = $banner->BannerMedia()->make($group->toArray() + [
-                        'url' => $group->url,
+                    $bannerMedia = $banner->bannerMedia()->make($group->toArray() + [
                         'order' => $index + 1,
                     ]);
                 }
@@ -88,7 +86,9 @@ final class BannerService
                     }
                 }
                 $bannerMedia->media()->sync($medias);
+                $toSaveMediaIds[] = $bannerMedia->getKey();
             }
+            $banner->bannerMedia()->whereNotIn('id', $toSaveMediaIds)->delete();
         }
 
         return $banner->refresh();
