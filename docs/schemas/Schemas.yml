@@ -122,7 +122,7 @@ Option:
     items:
       type: array
       items:
-        $ref: "./Items.yml#/Item"
+        $ref: "./Items.yml#/ItemWithQuantity"
     translations:
       type: array
       description: 'Translation table for languages. Array key is language UUID'

@@ -32,6 +32,22 @@ Item:
       items:
         $ref: '#/AvailabilityResource'
 
+ItemWithQuantity:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string
+      example: Chain
+    sku:
+      type: string
+      example: K121
+    quantity:
+      type: number
+      example: '5'
+
 ItemWithRequiredQuantity:
   type: object
   properties:
