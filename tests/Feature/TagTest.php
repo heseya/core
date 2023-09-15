@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Models\Product;
 use Domain\Language\Language;
 use Domain\Tag\Models\Tag;
@@ -180,6 +181,31 @@ class TagTest extends TestCase
         ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreatePublishTranslationEmptyName($user): void
+    {
+        $this->{$user}->givePermissionTo('tags.add');
+
+        $this->actingAs($this->{$user})->json('POST', '/tags?with_translations=1', [
+            'translations' => [
+                $this->lang => [
+                    'name' => '',
+                ]
+            ],
+            'color' => 'ababab',
+            'published' => [
+                $this->lang,
+            ],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => Exceptions::PUBLISHING_TRANSLATION_EXCEPTION->name,
+                'message' => Exceptions::PUBLISHING_TRANSLATION_EXCEPTION->value . ' in ' . $this->lang,
+            ]);
+    }
+
     public function testUpdateUnauthorized(): void
     {
         $tag = Tag::factory()->create();
@@ -224,6 +250,33 @@ class TagTest extends TestCase
             "name->{$this->lang}" => 'test tag',
             'color' => 'ababab',
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testPublishTranslationEmptyName($user): void
+    {
+        $this->{$user}->givePermissionTo('tags.edit');
+
+        $tag = Tag::factory()->create();
+
+        $this->actingAs($this->{$user})->patchJson('/tags/id:' . $tag->getKey() . '?with_translations=1', [
+            'translations' => [
+                $this->lang => [
+                    'name' => '',
+                ]
+            ],
+            'color' => 'ababab',
+            'published' => [
+                $this->lang,
+            ],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => Exceptions::PUBLISHING_TRANSLATION_EXCEPTION->name,
+                'message' => Exceptions::PUBLISHING_TRANSLATION_EXCEPTION->value . ' in ' . $this->lang,
+            ]);
     }
 
     /**
