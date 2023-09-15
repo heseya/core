@@ -416,6 +416,7 @@ class BannerTest extends TestCase
         ];
 
         $bannerMedia = [
+            'id' => $this->bannerMedia->getKey(),
             'translations' => [
                 $this->lang => [
                     'title' => 'changed title',
@@ -439,7 +440,76 @@ class BannerTest extends TestCase
                 $banner + ['banner_media' => [$bannerMedia + $medias]]
             )
             ->assertOk()
-            ->assertJsonFragment($banner);
+            ->assertJsonFragment($banner)
+            ->assertJsonFragment([
+                'id' => $this->bannerMedia->getKey(),
+                'title' => 'changed title',
+                'subtitle' => 'new subtitle',
+                'url' => 'https://picsum.photos/200',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateBannerDeleteOneBannerMedia($user): void
+    {
+        $this->{$user}->givePermissionTo('banners.edit');
+
+        $deletedMedia = BannerMedia::factory()->create([
+            'banner_id' => $this->banner->getKey(),
+            'title' => 'abcd',
+            'subtitle' => 'dcba',
+            'order' => 2,
+        ]);
+        $media = Media::factory()->create();
+        $deletedMedia->media()->sync([
+            $media->getKey() => ['min_screen_width' => 100],
+        ]);
+
+        $banner = [
+            'slug' => 'super-spring-banner',
+            'name' => 'Super spring banner',
+            'active' => true,
+        ];
+
+        $bannerMedia = [
+            'id' => $this->bannerMedia->getKey(),
+            'translations' => [
+                $this->lang => [
+                    'title' => 'changed title',
+                    'subtitle' => 'new subtitle',
+                ],
+            ],
+            'url' => 'https://picsum.photos/200',
+        ];
+
+        $medias = [
+            'media' => [
+                ['min_screen_width' => 150, 'media' => $this->media[2]->getKey()],
+                ['min_screen_width' => 200, 'media' => $this->media[0]->getKey()],
+            ],
+        ];
+
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson(
+                "/banners/id:{$this->banner->getKey()}",
+                $banner + ['banner_media' => [$bannerMedia + $medias]]
+            )
+            ->assertOk()
+            ->assertJsonFragment($banner)
+            ->assertJsonFragment([
+                'id' => $this->bannerMedia->getKey(),
+                'title' => 'changed title',
+                'subtitle' => 'new subtitle',
+                'url' => 'https://picsum.photos/200',
+            ])
+            ->assertJsonMissing([
+                'id' => $deletedMedia->getKey(),
+                'title' => 'abcd',
+                'subtitle' => 'dcba',
+            ]);
     }
 
     /**
