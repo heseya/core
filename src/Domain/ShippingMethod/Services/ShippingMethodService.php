@@ -42,7 +42,7 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
         $query = ShippingMethod::query()
             ->searchByCriteria($search);
 
-        $query = $this->filterBlocklist($query, $dto->is_product_blocklist, $dto->product_ids, $dto->product_set_ids);
+        $query = $this->filterBlocklist($query, $dto->product_ids, $dto->product_set_ids);
 
         $query
             ->with('metadata')
@@ -239,7 +239,6 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
      */
     private function filterBlocklist(
         Builder $query,
-        bool $isBlocklist,
         array $productIds,
         array $productSetIds
     ): Builder {
@@ -247,56 +246,26 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
             return $query;
         }
 
-        $query = $query->where('is_product_blocklist', $isBlocklist);
-
-        return $isBlocklist ? $this->filterBlocklistTrue(
-            $query,
-            $productIds,
-            $productSetIds,
-        ) : $this->filterBlocklistFalse(
-            $query,
-            $productIds,
-            $productSetIds,
-        );
-    }
-
-    /**
-     * Block list filter.
-     *
-     * @param Builder<ShippingMethod> $query
-     * @param array<string> $productIds
-     * @param array<string> $productSetIds
-     *
-     * @return Builder<ShippingMethod>
-     */
-    private function filterBlocklistTrue(Builder $query, array $productIds, array $productSetIds): Builder
-    {
         return $query
-            ->whereHas('products', function (Builder $query) use ($productIds): void {
-                $query->whereNotIn('products.id', $productIds);
+            ->where(function (Builder $query) use ($productIds, $productSetIds): void {
+                $query
+                    ->where('is_product_blocklist', false)
+                    ->whereHas('products', function (Builder $query) use ($productIds): void {
+                        $query->whereIn('products.id', $productIds);
+                    }, '>=', count($productIds))
+                    ->whereHas('productSets', function (Builder $query) use ($productSetIds): void {
+                        $query->whereIn('product_sets.id', $productSetIds);
+                    }, '>=', count($productSetIds));
             })
-            ->whereHas('productSets', function (Builder $query) use ($productSetIds): void {
-                $query->whereNotIn('product_sets.id', $productSetIds);
+            ->orWhere(function (Builder $query) use ($productIds, $productSetIds): void {
+                $query
+                    ->where('is_product_blocklist', true)
+                    ->whereDoesntHave('products', function (Builder $query) use ($productIds): void {
+                        $query->whereIn('products.id', $productIds);
+                    })
+                    ->whereDoesntHave('productSets', function (Builder $query) use ($productSetIds): void {
+                        $query->whereIn('product_sets.id', $productSetIds);
+                    });
             });
-    }
-
-    /**
-     * Allow list filter.
-     *
-     * @param Builder<ShippingMethod> $query
-     * @param array<string> $productIds
-     * @param array<string> $productSetIds
-     *
-     * @return Builder<ShippingMethod>
-     */
-    private function filterBlocklistFalse(Builder $query, array $productIds, array $productSetIds): Builder
-    {
-        return $query
-            ->whereHas('products', function (Builder $query) use ($productIds): void {
-                $query->whereIn('products.id', $productIds);
-            }, '>=', count($productIds))
-            ->whereHas('productSets', function (Builder $query) use ($productSetIds): void {
-                $query->whereIn('product_sets.id', $productSetIds);
-            }, '>=', count($productSetIds));
     }
 }

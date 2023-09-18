@@ -11,7 +11,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('shipping_methods', function (Blueprint $table): void {
-            $table->boolean('is_product_blocklist')->default(false);
+            $table->boolean('is_product_blocklist')->default(true);
         });
 
         Schema::create('shipping_method_product', function (Blueprint $table): void {
