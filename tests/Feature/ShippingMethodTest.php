@@ -150,14 +150,23 @@ class ShippingMethodTest extends TestCase
         $product5 = Product::factory()->create();
 
         $productSet1 = ProductSet::factory()->create();
+        $productForSet1 = Product::factory()->create();
+        $productForSet2 = Product::factory()->create();
+        $productSet1->products()->sync([$productForSet1->getKey(), $productForSet2->getKey()]);
+
         $productSet2 = ProductSet::factory()->create();
+        $productForSet3 = Product::factory()->create();
+        $productForSet4 = Product::factory()->create();
+        $productSet2->products()->sync([$productForSet3->getKey(), $productForSet4->getKey()]);
+
         $productSet3 = ProductSet::factory()->create();
-        $productSet4 = ProductSet::factory()->create();
-        $productSet5 = ProductSet::factory()->create();
+        $productForSet5 = Product::factory()->create();
+        $productForSet6 = Product::factory()->create();
+        $productSet3->products()->sync([$productForSet5->getKey(), $productForSet6->getKey()]);
 
         $shippingMethodAllowList = ShippingMethod::factory()->create([
             'name' => 'Test Allow-list',
-            'is_product_blocklist' => false,
+            'is_blocklist' => false,
             'public' => true,
         ]);
 
@@ -170,12 +179,12 @@ class ShippingMethodTest extends TestCase
         $shippingMethodAllowList->productSets()->sync([
             $productSet1->getKey(),
             $productSet2->getKey(),
-            $productSet5->getKey(),
+            $productSet3->getKey(),
         ]);
 
         $shippingMethodBlocklist = ShippingMethod::factory()->create([
             'name' => 'Test Block-list',
-            'is_product_blocklist' => true,
+            'is_blocklist' => true,
             'public' => true,
         ]);
 
@@ -185,13 +194,50 @@ class ShippingMethodTest extends TestCase
         ]);
 
         $shippingMethodBlocklist->productSets()->sync([
-            $productSet4->getKey(),
-            $productSet5->getKey(),
+            $productSet1->getKey(),
+            $productSet2->getKey(),
         ]);
 
         $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
-            'product_ids' => [$product1->getKey()],
-            'product_set_ids' => [$productSet1->getKey()],
+            'items' => [
+                $product1->getKey(),
+                $product5->getKey(),
+                $productForSet1->getKey(),
+                $productForSet2->getKey(),
+            ],
+        ])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonCount(3, 'data.0.product_ids')
+            ->assertJsonCount(3, 'data.0.product_set_ids')
+            ->assertJsonFragment([
+                'id' => $shippingMethodAllowList->getKey(),
+            ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
+            'items' => [
+                $product1->getKey(),
+                $product5->getKey(),
+                $productForSet1->getKey(),
+                $productForSet2->getKey(),
+                $product3->getKey(),
+            ],
+        ])
+            ->assertJsonCount(0, 'data');
+
+        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
+            'items' => [
+                $product3->getKey(),
+                $productForSet5->getKey(),
+                $productForSet6->getKey(),
+            ],
+        ])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $shippingMethodBlocklist->getKey(),
+            ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
+            'items' => [$product1->getKey(), $product2->getKey()],
         ])
             ->assertJsonCount(2, 'data')
             ->assertJsonFragment([
@@ -202,8 +248,7 @@ class ShippingMethodTest extends TestCase
             ]);
 
         $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
-            'product_ids' => [$product1->getKey(), $product2->getKey(), $product3->getKey()],
-            'product_set_ids' => [$productSet1->getKey(), $productSet2->getKey(), $productSet3->getKey()],
+            'items' => [$product1->getKey(), $product3->getKey()],
         ])
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment([
@@ -211,13 +256,7 @@ class ShippingMethodTest extends TestCase
             ]);
 
         $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
-            'product_ids' => [$product1->getKey(), $product2->getKey(), $product4->getKey()],
-        ])
-            ->assertJsonCount(0, 'data');
-
-        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
-            'product_ids' => [$product5->getKey()],
-            'product_set_ids' => [$productSet5->getKey()],
+            'items' => [$product5->getKey()],
         ])
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment([

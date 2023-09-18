@@ -28,7 +28,7 @@ class ShippingMethodFactory extends Factory
             ]),
             'public' => $this->faker->boolean,
             'block_list' => $this->faker->boolean,
-            'is_product_blocklist' => $this->faker->boolean,
+            'is_blocklist' => true,
         ];
     }
 

@@ -29,7 +29,7 @@ class ShippingMethodResource extends Resource
             ),
             'public' => $this->resource->public,
             'block_list' => $this->resource->block_list,
-            'is_product_blocklist' => $this->resource->is_product_blocklist,
+            'is_blocklist' => $this->resource->is_blocklist,
             'payment_on_delivery' => $this->resource->payment_on_delivery,
             'payment_methods' => PaymentMethodResource::collection($this->resource->paymentMethods),
             'countries' => CountryResource::collection($this->resource->countries),
@@ -40,6 +40,8 @@ class ShippingMethodResource extends Resource
             'integration_key' => $this->resource->integration_key,
             'deletable' => $this->resource->deletable,
             'shipping_points' => AddressResource::collection($this->resource->shippingPoints),
+            'product_ids' => $this->resource->products->pluck('id'),
+            'product_set_ids' => $this->resource->productSets->pluck('id'),
         ], $this->metadataResource('shipping_methods.show_metadata_private'));
     }
 }

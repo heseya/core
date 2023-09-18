@@ -53,7 +53,7 @@ final class ShippingMethodCreateDto extends Data
      * @param array<string>|Optional $product_ids
      * @param array<string>|Optional $product_set_ids
      * @param bool $block_list
-     * @param bool $is_product_blocklist
+     * @param bool $is_blocklist
      * @param string|null $integration_key
      */
     public function __construct(
@@ -100,7 +100,7 @@ final class ShippingMethodCreateDto extends Data
         public readonly bool $block_list = false,
 
         #[BooleanType]
-        public readonly bool $is_product_blocklist = true,
+        public readonly bool $is_blocklist = true,
 
         #[StringType, Nullable]
         public readonly string|null $integration_key = null,

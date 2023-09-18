@@ -48,17 +48,9 @@ ShippingMethods:
           items:
             type: string
             format: uuid
-      - name: 'product_ids'
+      - name: 'items[]'
         in: query
         description: 'product ids to check if shipping method is blocked for them'
-        schema:
-          type: array
-          items:
-            type: string
-            format: uuid
-      - name: 'product_set_ids'
-        in: query
-        description: 'product set ids to check if shipping method is blocked for them'
         schema:
           type: array
           items:

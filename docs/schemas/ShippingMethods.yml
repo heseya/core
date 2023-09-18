@@ -16,6 +16,8 @@ ShippingMethod:
       type: boolean
     block_list:
       type: boolean
+    is_blocklist:
+      type: boolean
     payment_methods:
       type: array
       items:
@@ -48,6 +50,16 @@ ShippingMethod:
         - address
         - point
         - point-external
+    product_ids:
+      type: array
+      items:
+        type: string
+        format: uuid
+    product_set_ids:
+      type: array
+      items:
+        type: string
+        format: uuid
     metadata:
       $ref: './../schemas/Metadata.yml#/Metadata'
     metadata_private:

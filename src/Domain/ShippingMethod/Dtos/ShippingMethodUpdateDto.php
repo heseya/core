@@ -37,7 +37,7 @@ final class ShippingMethodUpdateDto extends Data
      * @param Optional|string $name
      * @param bool|Optional $public
      * @param bool|Optional $block_list
-     * @param bool|Optional $is_product_blocklist
+     * @param bool|Optional $is_blocklist
      * @param int|Optional $shipping_time_min
      * @param int|Optional $shipping_time_max
      * @param Optional|ShippingType $shipping_type
@@ -63,7 +63,7 @@ final class ShippingMethodUpdateDto extends Data
         public readonly bool|Optional $block_list,
 
         #[BooleanType]
-        public readonly bool|Optional $is_product_blocklist,
+        public readonly bool|Optional $is_blocklist,
 
         #[IntegerType, Min(0)]
         public readonly int|Optional $shipping_time_min,
