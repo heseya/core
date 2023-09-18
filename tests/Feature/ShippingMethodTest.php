@@ -685,7 +685,7 @@ class ShippingMethodTest extends TestCase
             'shipping_time_max' => 3,
             'shipping_type' => ShippingType::ADDRESS->value,
             'payment_on_delivery' => true,
-            'is_product_blocklist' => true,
+            'is_blocklist' => true,
             'product_ids' => [$product->getKey()],
             'product_set_ids' => [$productSet->getKey()],
         ];
@@ -700,7 +700,7 @@ class ShippingMethodTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['is_product_blocklist' => true]);
+            ->assertJsonFragment(['is_blocklist' => true]);
 
         $shippingMethod = ShippingMethod::find($response->json('data.id'));
 
@@ -1057,7 +1057,7 @@ class ShippingMethodTest extends TestCase
     {
         $this->{$user}->givePermissionTo('shipping_methods.edit');
 
-        $this->shipping_method->update(['is_product_blocklist' => false]);
+        $this->shipping_method->update(['is_blocklist' => false]);
 
         $product = Product::factory()->create();
         $productSet = ProductSet::factory()->create();
@@ -1066,7 +1066,7 @@ class ShippingMethodTest extends TestCase
             '/shipping-methods/id:' . $this->shipping_method->getKey(),
             [
                 'price_ranges' => $this->priceRanges,
-                'is_product_blocklist' => true,
+                'is_blocklist' => true,
                 'product_ids' => [$product->getKey()],
                 'product_set_ids' => [$productSet->getKey()],
             ],
@@ -1074,7 +1074,7 @@ class ShippingMethodTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonFragment(['is_product_blocklist' => true]);
+            ->assertJsonFragment(['is_blocklist' => true]);
 
         $this->assertTrue($this->shipping_method->products()->count() === 1);
         $this->assertTrue($this->shipping_method->productSets()->count() === 1);

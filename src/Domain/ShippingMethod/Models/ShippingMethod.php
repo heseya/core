@@ -52,7 +52,7 @@ final class ShippingMethod extends Model
         'public',
         'order',
         'block_list',
-        'is_product_blocklist',
+        'is_blocklist',
         'shipping_time_min',
         'shipping_time_max',
         'shipping_type',
