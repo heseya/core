@@ -6,6 +6,7 @@ namespace Domain\ShippingMethod\Models;
 
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\ShippingMethodItems;
 use App\Criteria\WhereInIds;
 use App\Enums\ShippingType;
 use App\Models\Address;
@@ -78,6 +79,7 @@ final class ShippingMethod extends Model
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,
+        'items' => ShippingMethodItems::class,
     ];
 
     /**

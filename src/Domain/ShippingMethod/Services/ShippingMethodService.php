@@ -37,14 +37,11 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
             'metadata',
             'metadata_private',
             'ids',
+            'items',
         )->toArray();
 
         $query = ShippingMethod::query()
-            ->searchByCriteria($search);
-
-        $query = $this->filterBlocklist($query, $dto->items);
-
-        $query
+            ->searchByCriteria($search)
             ->with('metadata')
             ->orderBy('order');
 
@@ -228,51 +225,5 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
         }
 
         $shippingMethod->shippingPoints()->sync($addresses);
-    }
-
-    /**
-     * @param Builder<ShippingMethod> $query
-     * @param array<string> $items
-     *
-     * @return Builder<ShippingMethod>
-     */
-    private function filterBlocklist(
-        Builder $query,
-        array $items,
-    ): Builder {
-        if (empty($items)) {
-            return $query;
-        }
-
-        return $query
-            ->where(function (Builder $query) use ($items): void {
-                // Allowlist
-                $query->where('is_blocklist', false);
-
-                foreach ($items as $productId) {
-                    $query->where(function (Builder $innerQuery) use ($productId): void {
-                        $innerQuery->whereHas('products', function (Builder $query) use ($productId): void {
-                            $query->where('products.id', $productId);
-                        })
-                            ->orWhereHas('productSets', function (Builder $query) use ($productId): void {
-                                $query->whereHas('products', function (Builder $innerQuery) use ($productId): void {
-                                    $innerQuery->where('products.id', $productId);
-                                });
-                            });
-                    });
-                }
-            })
-            ->orWhere(function (Builder $query) use ($items): void {
-                // Blocklist
-                $query->where('is_blocklist', true)
-                    ->whereDoesntHave('products', function (Builder $query) use ($items): void {
-                        $query->whereIn('products.id', $items);
-                    })
-                    ->whereDoesntHave('productSets', function (Builder $query) use ($items): void {
-                        $query->whereHas('products', function (Builder $innerQuery) use ($items): void {
-                            $innerQuery->whereIn('products.id', $items);
-                        });
-                    });
-            });
     }
 }
