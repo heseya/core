@@ -159,7 +159,7 @@ final class AuthService implements AuthServiceContract
     public function logout(): void
     {
         // @phpstan-ignore-next-line
-        $this->tokenService->invalidateToken(Auth::getToken());
+        $this->tokenService->invalidateToken(Auth::getToken()->get());
     }
 
     public function resetPassword(PasswordResetDto $dto): void
