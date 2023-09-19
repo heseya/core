@@ -379,7 +379,8 @@ final class AuthService implements AuthServiceContract
         /** @var User $user */
         $user = Auth::user();
         $user->update($dto->toArray());
-        $user->preferences()->update($dto->preferences->toArray());
+
+        $user->preferences()->update($dto->preferences instanceof Optional ? [] : $dto->preferences->toArray());
 
         if (!($dto->consents instanceof Optional)) {
             $this->consentService->updateUserConsents(Collection::make($dto->consents), $user);

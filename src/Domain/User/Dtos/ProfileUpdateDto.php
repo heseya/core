@@ -6,7 +6,7 @@ namespace Domain\User\Dtos;
 
 use App\Rules\ConsentsExists;
 use App\Rules\RequiredConsents;
-use Propaganistas\LaravelPhone\PhoneNumber;
+use App\Traits\DtoHasPhone;
 use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\Validation\ArrayType;
 use Spatie\LaravelData\Attributes\Validation\BeforeOrEqual;
@@ -20,6 +20,8 @@ use Spatie\LaravelData\Support\Validation\ValidationContext;
 
 final class ProfileUpdateDto extends Data
 {
+    use DtoHasPhone;
+
     #[Computed]
     public Optional|string|null $phone_country;
     #[Computed]
@@ -41,10 +43,10 @@ final class ProfileUpdateDto extends Data
         #[StringType]
         public Optional|string $phone,
 
-        #[Nullable, ArrayType]
-        public array|Optional $consents,
+        public Optional|PreferencesDto $preferences,
 
-        public PreferencesDto $preferences,
+        #[Nullable, ArrayType]
+        public array|Optional $consents = [],
     ) {
         $this->initializePhone();
     }
@@ -59,16 +61,5 @@ final class ProfileUpdateDto extends Data
             'consents' => [new RequiredConsents()],
             'consents.*' => ['boolean', new ConsentsExists()],
         ];
-    }
-
-    private function initializePhone(): void
-    {
-        if (!($this->phone instanceof Optional)) {
-            $phone = new PhoneNumber($this->phone);
-            $this->phone_country = $phone->getCountry();
-            $this->phone_number = $phone->formatNational();
-        } else {
-            $this->phone_country = $this->phone_number = new Optional();
-        }
     }
 }

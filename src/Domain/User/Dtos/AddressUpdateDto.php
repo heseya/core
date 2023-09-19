@@ -26,6 +26,6 @@ final class AddressUpdateDto extends Data
         #[StringType, Max(2)]
         public string $country,
         #[Nullable, StringType, Max(15)]
-        public Optional|string $vat,
+        public Optional|string|null $vat,
     ) {}
 }
