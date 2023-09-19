@@ -78,6 +78,7 @@ class Product extends Model implements AuditableContract, SortableContract
         'purchase_limit_per_user',
         'search_values',
     ];
+
     protected array $auditInclude = [
         'name',
         'slug',
@@ -89,6 +90,7 @@ class Product extends Model implements AuditableContract, SortableContract
         'price_max',
         'available',
     ];
+
     protected $casts = [
         'shipping_date' => 'date',
         'price' => 'float',
@@ -101,6 +103,7 @@ class Product extends Model implements AuditableContract, SortableContract
         'shipping_digital' => 'bool',
         'purchase_limit_per_user' => 'float',
     ];
+
     protected array $sortable = [
         'id',
         'price',
@@ -114,6 +117,7 @@ class Product extends Model implements AuditableContract, SortableContract
         'attribute.*',
         'set.*',
     ];
+
     protected array $criteria = [
         'search' => ProductSearch::class,
         'ids' => WhereInIds::class,
@@ -136,8 +140,6 @@ class Product extends Model implements AuditableContract, SortableContract
         'has_schemas' => WhereHasSchemas::class,
         'shipping_digital' => Equals::class,
     ];
-    protected string $defaultSortBy = 'products.created_at';
-    protected string $defaultSortDirection = 'desc';
 
     public function sets(): BelongsToMany
     {

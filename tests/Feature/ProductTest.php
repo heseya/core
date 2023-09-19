@@ -246,11 +246,8 @@ class ProductTest extends TestCase
             ->json('GET', '/products', ['limit' => 100])
             ->assertOk()
             ->assertJsonCount(2, 'data')
-            ->assertJson([
-                'data' => [
-                    1 => $this->expected_short,
-                ],
-            ])->assertJsonFragment([
+            ->assertJsonFragment([
+                ...$this->expected_short,
                 'price_min' => $this->product->price_min,
                 'price_max' => $this->product->price_max,
             ]);
