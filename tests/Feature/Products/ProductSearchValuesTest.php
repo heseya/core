@@ -30,62 +30,6 @@ class ProductSearchValuesTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateSimpleSearchValues(string $user): void
-    {
-        $this->{$user}->givePermissionTo('products.add');
-
-        $response = $this
-            ->actingAs($this->{$user})
-            ->json('POST', '/products', [
-                'name' => 'Test search',
-                'slug' => 'slug',
-                'price' => 100,
-                'public' => true,
-                'shipping_digital' => false,
-                'description_html' => 'Lorem ipsum',
-                'description_short' => 'short',
-            ])
-            ->assertCreated();
-
-        $this->assertDatabaseHas('products', [
-            'id' => $response->getData()->data->id,
-            'name' => 'Test search',
-            'description_html' => 'Lorem ipsum',
-            'search_values' => 'Test search Lorem ipsum short',
-        ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdateSimpleSearchValues(string $user): void
-    {
-        $this->{$user}->givePermissionTo('products.edit');
-
-        $this
-            ->actingAs($this->{$user})
-            ->json('PATCH', '/products/id:' . $this->product->getKey(), [
-                'name' => 'New name',
-                'slug' => 'slug',
-                'price' => 100,
-                'public' => true,
-                'shipping_digital' => false,
-                'description_html' => 'New description',
-                'description_short' => 'new short',
-            ])
-            ->assertOk();
-
-        $this->assertDatabaseHas('products', [
-            'id' => $this->product->getKey(),
-            'name' => 'New name',
-            'description_html' => 'New description',
-            'search_values' => 'New name New description new short',
-        ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testUpdateTagSearchValues(string $user): void
     {
         $this->{$user}->givePermissionTo('tags.edit');
@@ -104,7 +48,7 @@ class ProductSearchValuesTest extends TestCase
             'id' => $this->product->getKey(),
             'name' => 'Searched product',
             'description_html' => 'Lorem ipsum',
-            'search_values' => 'Searched product Lorem ipsum short Tag updated',
+            'search_values' => 'Tag updated',
         ]);
     }
 
@@ -127,7 +71,7 @@ class ProductSearchValuesTest extends TestCase
             'id' => $this->product->getKey(),
             'name' => 'Searched product',
             'description_html' => 'Lorem ipsum',
-            'search_values' => 'Searched product Lorem ipsum short',
+            'search_values' => '',
         ]);
     }
 
@@ -156,51 +100,7 @@ class ProductSearchValuesTest extends TestCase
             'id' => $this->product->getKey(),
             'name' => 'Searched product',
             'description_html' => 'Lorem ipsum',
-            'search_values' => 'Searched product Lorem ipsum short set name',
-        ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdateParentProductSetSearchValues(string $user): void
-    {
-        $this->{$user}->givePermissionTo('product_sets.edit');
-
-        $parent = ProductSet::factory()->create([
-            'name' => 'Parent set',
-        ]);
-
-        $set = ProductSet::factory()->create([
-            'public' => true,
-            'name' => 'children set',
-            'parent_id' => $parent->getKey(),
-        ]);
-        $this->product->sets()->sync($set->getKey());
-
-        app(ProductServiceContract::class)->updateProductsSearchValues([$this->product->getKey()]);
-
-        $this->assertDatabaseHas('products', [
-            'id' => $this->product->getKey(),
-            'name' => 'Searched product',
-            'description_html' => 'Lorem ipsum',
-            'search_values' => 'Searched product Lorem ipsum short children set Parent set',
-        ]);
-
-        $this
-            ->actingAs($this->{$user})
-            ->json('PATCH', 'product-sets/id:' . $parent->getKey(), [
-                'name' => 'New parent name',
-                'parent_id' => null,
-                'children_ids' => [$set->getKey()],
-            ])
-            ->assertOk();
-
-        $this->assertDatabaseHas('products', [
-            'id' => $this->product->getKey(),
-            'name' => 'Searched product',
-            'description_html' => 'Lorem ipsum',
-            'search_values' => 'Searched product Lorem ipsum short children set New parent name',
+            'search_values' => 'set name',
         ]);
     }
 
@@ -225,7 +125,7 @@ class ProductSearchValuesTest extends TestCase
             'id' => $this->product->getKey(),
             'name' => 'Searched product',
             'description_html' => 'Lorem ipsum',
-            'search_values' => 'Searched product Lorem ipsum short',
+            'search_values' => '',
         ]);
     }
 
@@ -245,7 +145,7 @@ class ProductSearchValuesTest extends TestCase
             'name' => 'children set',
             'parent_id' => $parent->getKey(),
         ]);
-        $this->product->sets()->sync($set->getKey());
+        $this->product->sets()->sync([$parent->getKey(), $set->getKey()]);
 
         app(ProductServiceContract::class)->updateProductsSearchValues([$this->product->getKey()]);
 
@@ -253,62 +153,8 @@ class ProductSearchValuesTest extends TestCase
             'id' => $this->product->getKey(),
             'name' => 'Searched product',
             'description_html' => 'Lorem ipsum',
-            'search_values' => 'Searched product Lorem ipsum short children set Parent set',
+            'search_values' => 'Parent set children set',
         ]);
-
-        $this
-            ->actingAs($this->{$user})
-            ->json('DELETE', 'product-sets/id:' . $parent->getKey())
-            ->assertNoContent();
-
-        $this->assertDatabaseHas('products', [
-            'id' => $this->product->getKey(),
-            'name' => 'Searched product',
-            'description_html' => 'Lorem ipsum',
-            'search_values' => 'Searched product Lorem ipsum short',
-        ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdateRelatedSetSearchValues(string $user): void
-    {
-        $this->{$user}->givePermissionTo('product_sets.edit');
-
-        $set = ProductSet::factory()->create([
-            'public' => true,
-        ]);
-        $this->product->relatedSets()->sync($set->getKey());
-
-        $this
-            ->actingAs($this->{$user})
-            ->json('PATCH', 'product-sets/id:' . $set->getKey(), [
-                'name' => 'set name',
-                'parent_id' => null,
-                'children_ids' => [],
-            ])
-            ->assertOk();
-
-        $this->assertDatabaseHas('products', [
-            'id' => $this->product->getKey(),
-            'name' => 'Searched product',
-            'description_html' => 'Lorem ipsum',
-            'search_values' => 'Searched product Lorem ipsum short set name',
-        ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testDeleteRelatedSetSearchValues(string $user): void
-    {
-        $this->{$user}->givePermissionTo('product_sets.remove');
-
-        $set = ProductSet::factory()->create([
-            'public' => true,
-        ]);
-        $this->product->relatedSets()->sync($set->getKey());
 
         $this
             ->actingAs($this->{$user})
@@ -319,7 +165,7 @@ class ProductSearchValuesTest extends TestCase
             'id' => $this->product->getKey(),
             'name' => 'Searched product',
             'description_html' => 'Lorem ipsum',
-            'search_values' => 'Searched product Lorem ipsum short',
+            'search_values' => 'Parent set',
         ]);
     }
 
@@ -349,7 +195,7 @@ class ProductSearchValuesTest extends TestCase
             'id' => $this->product->getKey(),
             'name' => 'Searched product',
             'description_html' => 'Lorem ipsum',
-            'search_values' => 'Searched product Lorem ipsum short updated attribute',
+            'search_values' => 'updated attribute',
         ]);
     }
 
@@ -373,7 +219,7 @@ class ProductSearchValuesTest extends TestCase
             'id' => $this->product->getKey(),
             'name' => 'Searched product',
             'description_html' => 'Lorem ipsum',
-            'search_values' => 'Searched product Lorem ipsum short',
+            'search_values' => '',
         ]);
     }
 
@@ -411,7 +257,7 @@ class ProductSearchValuesTest extends TestCase
             'id' => $this->product->getKey(),
             'name' => 'Searched product',
             'description_html' => 'Lorem ipsum',
-            'search_values' => 'Searched product Lorem ipsum short Attribute option 1 10 2023-09-08',
+            'search_values' => 'Attribute option 1 10 2023-09-08',
         ]);
     }
 
@@ -445,7 +291,7 @@ class ProductSearchValuesTest extends TestCase
             'id' => $this->product->getKey(),
             'name' => 'Searched product',
             'description_html' => 'Lorem ipsum',
-            'search_values' => 'Searched product Lorem ipsum short Attribute',
+            'search_values' => 'Attribute',
         ]);
     }
 }

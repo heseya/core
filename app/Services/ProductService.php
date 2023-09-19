@@ -191,7 +191,7 @@ readonly class ProductService implements ProductServiceContract
         Product::query()
             ->whereIn('id', $productIds)
             ->with(['tags', 'sets', 'attributes', 'attributes.options'])
-            ->each(fn (Product $product) => $this->prepareProductSearchValues($product));
+            ->each(fn (Product $product) => $this->prepareProductSearchValues($product)->save());
     }
 
     private function assignItems(Product $product, ?array $items): void
