@@ -9,36 +9,17 @@ trait Sortable
 {
     public function scopeSort(Builder $query, ?string $sortString = null): Builder
     {
-        if ($sortString !== null) {
-            $query = app(SortServiceContract::class)
-                ->sort($query, $sortString, $this->getSortable());
+        if ($sortString === null) {
+            return $query;
         }
 
-        if (($sortBy = $this->getDefaultSortBy()) !== null) {
-            return $query->orderBy(
-                $sortBy,
-                $this->getDefaultSortDirection(),
-            );
-        }
-
-        return $query;
+        return app(SortServiceContract::class)
+            ->sort($query, $sortString, $this->getSortable());
     }
 
     public function getSortable(): array
     {
         // @phpstan-ignore-next-line
         return $this->sortable ?? [];
-    }
-
-    public function getDefaultSortBy(): ?string
-    {
-        // @phpstan-ignore-next-line
-        return $this->defaultSortBy ?? null;
-    }
-
-    public function getDefaultSortDirection(): string
-    {
-        // @phpstan-ignore-next-line
-        return $this->defaultSortDirection ?? 'asc';
     }
 }
