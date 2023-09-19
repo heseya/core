@@ -14,10 +14,14 @@ trait Sortable
                 ->sort($query, $sortString, $this->getSortable());
         }
 
-        return $query->orderBy(
-            $this->getDefaultSortBy(),
-            $this->getDefaultSortDirection(),
-        );
+        if (($sortBy = $this->getDefaultSortBy()) !== null) {
+            return $query->orderBy(
+                $sortBy,
+                $this->getDefaultSortDirection(),
+            );
+        }
+
+        return $query;
     }
 
     public function getSortable(): array
@@ -26,10 +30,10 @@ trait Sortable
         return $this->sortable ?? [];
     }
 
-    public function getDefaultSortBy(): string
+    public function getDefaultSortBy(): ?string
     {
         // @phpstan-ignore-next-line
-        return $this->defaultSortBy ?? 'created_at';
+        return $this->defaultSortBy ?? null;
     }
 
     public function getDefaultSortDirection(): string

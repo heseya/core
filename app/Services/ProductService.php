@@ -188,9 +188,10 @@ readonly class ProductService implements ProductServiceContract
 
     public function updateProductsSearchValues(array $productIds): void
     {
-        Product::whereIn('id', $productIds)
-            ->with(['tags', 'sets', 'relatedSets', 'attributes', 'attributes.options'])
-            ->each(fn (Product $product) => $this->prepareProductSearchValues($product)->save());
+        Product::query()
+            ->whereIn('id', $productIds)
+            ->with(['tags', 'sets', 'attributes', 'attributes.options'])
+            ->each(fn (Product $product) => $this->prepareProductSearchValues($product));
     }
 
     private function assignItems(Product $product, ?array $items): void
@@ -297,22 +298,23 @@ readonly class ProductService implements ProductServiceContract
 
     private function prepareProductSearchValues(Product $product): Product
     {
-        $searchValues = rtrim($product->name . ' ' . $product->description_html . ' ' . $product->description_short);
-        $searchValues .= rtrim(' ' . $product->tags->pluck('name')->implode(' '));
-        $searchValues .= rtrim(' ' . $product->allProductSet()->pluck('name')->implode(' '));
-        $searchValues .= rtrim(' ' . $product->relatedSets->pluck('name')->implode(' '));
+        $searchValues = [
+            ...$product->tags->pluck('name'),
+            ...$product->sets->pluck('name'),
+        ];
 
         /** @var Attribute $attribute */
         foreach ($product->attributes as $attribute) {
-            $searchValues .= rtrim(' ' . $attribute->name);
+            $searchValues[] = $attribute->name;
             /** @var AttributeOption $option */
             foreach ($attribute->pivot->options as $option) {
-                $searchValues .= rtrim(' ' . $option->name . ' ' . $option->value_number . ' ' . $option->value_date);
+                $searchValues[] = $option->name;
+                $searchValues[] = $option->value_number;
+                $searchValues[] = $option->value_date;
             }
         }
-        $product->update([
-            'search_values' => $searchValues,
-        ]);
+
+        $product->search_values = implode(' ', $searchValues);
 
         return $product;
     }

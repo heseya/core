@@ -10,7 +10,7 @@ interface SortableContract
 
     public function getSortable(): array;
 
-    public function getDefaultSortBy(): string;
+    public function getDefaultSortBy(): ?string;
 
     public function getDefaultSortDirection(): string;
 }
