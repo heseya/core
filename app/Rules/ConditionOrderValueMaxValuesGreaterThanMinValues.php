@@ -22,7 +22,7 @@ class ConditionOrderValueMaxValuesGreaterThanMinValues implements ValidationRule
             return;
         }
 
-        if (!array_key_exists($this->min_values_field, $this->condition)) {
+        if (!array_key_exists($this->min_values_field, $this->condition) || $this->condition[$this->min_values_field] === null) {
             return; // ok
         }
 
