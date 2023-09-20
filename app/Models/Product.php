@@ -19,7 +19,6 @@ use App\Criteria\WhereNotId;
 use App\Criteria\WhereNotSlug;
 use App\Enums\DiscountTargetType;
 use App\Models\Contracts\SortableContract;
-use App\Services\Contracts\ProductSearchServiceContract;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasDiscounts;
 use App\Traits\HasMediaAttachments;
@@ -34,11 +33,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
-use JeroenG\Explorer\Application\Explored;
-use JeroenG\Explorer\Application\SearchableFields;
-use JeroenG\Explorer\Domain\Analysis\Analysis;
-use JeroenG\Explorer\Domain\Analysis\Analyzer\StandardAnalyzer;
-use Laravel\Scout\Searchable;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
@@ -47,7 +41,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  *
  * @mixin IdeHelperProduct
  */
-class Product extends Model implements AuditableContract, Explored, SearchableFields, SortableContract
+class Product extends Model implements AuditableContract, SortableContract
 {
     use Auditable;
     use HasCriteria;
@@ -57,7 +51,6 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
     use HasMediaAttachments;
     use HasMetadata;
     use HasSeoMetadata;
-    use Searchable;
     use SoftDeletes;
     use Sortable;
 
@@ -83,7 +76,9 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
         'quantity',
         'shipping_digital',
         'purchase_limit_per_user',
+        'search_values',
     ];
+
     protected array $auditInclude = [
         'name',
         'slug',
@@ -95,6 +90,7 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
         'price_max',
         'available',
     ];
+
     protected $casts = [
         'shipping_date' => 'date',
         'price' => 'float',
@@ -107,6 +103,7 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
         'shipping_digital' => 'bool',
         'purchase_limit_per_user' => 'float',
     ];
+
     protected array $sortable = [
         'id',
         'price',
@@ -120,6 +117,7 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
         'attribute.*',
         'set.*',
     ];
+
     protected array $criteria = [
         'search' => ProductSearch::class,
         'ids' => WhereInIds::class,
@@ -142,39 +140,6 @@ class Product extends Model implements AuditableContract, Explored, SearchableFi
         'has_schemas' => WhereHasSchemas::class,
         'shipping_digital' => Equals::class,
     ];
-    protected string $defaultSortBy = 'products.created_at';
-    protected string $defaultSortDirection = 'desc';
-
-    public function mappableAs(): array
-    {
-        $searchService = app(ProductSearchServiceContract::class);
-
-        return $searchService->mappableAs();
-    }
-
-    public function toSearchableArray(): array
-    {
-        $searchService = app(ProductSearchServiceContract::class);
-
-        return $searchService->mapSearchableArray($this);
-    }
-
-    public function getSearchableFields(): array
-    {
-        $searchService = app(ProductSearchServiceContract::class);
-
-        return $searchService->searchableFields();
-    }
-
-    public function indexSettings(): array
-    {
-        $analyzer = new StandardAnalyzer('morfologik');
-        $analyzer->setFilters(['lowercase', 'morfologik_stem']);
-
-        return (new Analysis())
-            ->addAnalyzer($analyzer)
-            ->build();
-    }
 
     public function sets(): BelongsToMany
     {

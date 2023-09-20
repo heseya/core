@@ -2,16 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Repositories\Eloquent;
+namespace App\Repositories;
 
 use App\Dtos\ProductSearchDto;
 use App\Models\Product;
-use App\Repositories\Contracts\ProductRepositoryContract;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 
-class ProductRepository implements ProductRepositoryContract
+class ProductRepository
 {
     public function search(ProductSearchDto $dto): LengthAwarePaginator
     {

@@ -5,23 +5,19 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('products', function (Blueprint $table): void {
-            $table->boolean('has_schemas')->nullable()->index();
+            $table->text('search_values')->nullable();
+            $table->fullText('search_values');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('products', function (Blueprint $table): void {
-            $table->dropColumn('has_schemas');
+            $table->dropFullText('products_search_values_fulltext');
+            $table->dropColumn('search_values');
         });
     }
 };

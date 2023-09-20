@@ -114,9 +114,6 @@ class Order extends Model implements AuditableContract, SortableContract
         'summary',
     ];
 
-    protected string $defaultSortBy = 'created_at';
-    protected string $defaultSortDirection = 'desc';
-
     protected $casts = [
         'paid' => 'boolean',
         'invoice_requested' => 'boolean',

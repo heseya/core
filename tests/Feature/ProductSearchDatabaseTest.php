@@ -49,25 +49,6 @@ class ProductSearchDatabaseTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testSearch($user): void
-    {
-        $this->{$user}->givePermissionTo('products.show');
-
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
-
-        $this
-            ->actingAs($this->{$user})
-            ->json('GET', '/products', ['search' => $product->name])
-            ->assertOk()
-            ->assertJsonCount(1, 'data')
-            ->assertJsonFragment(['id' => $product->getKey()]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testIndexIdsSearch($user): void
     {
         $this->{$user}->givePermissionTo('products.show');

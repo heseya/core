@@ -3,6 +3,7 @@
 use App\Models\ProductSet;
 use App\Models\SeoMetadata;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class InsertProductSetsSeoMetadata extends Migration
