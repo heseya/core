@@ -2,6 +2,7 @@
 
 namespace App\Services\Contracts;
 
+use App\Dtos\SelfUpdateRoles;
 use App\Dtos\UserCreateDto;
 use App\Dtos\UserDto;
 use App\Models\User;
@@ -16,4 +17,6 @@ interface UserServiceContract
     public function update(User $user, UserDto $dto): User;
 
     public function destroy(User $user): void;
+
+    public function selfUpdateRoles(User $user, SelfUpdateRoles $dto): User;
 }

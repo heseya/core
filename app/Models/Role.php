@@ -11,6 +11,7 @@ use App\Enums\RoleType;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasMetadata;
 use App\Traits\HasUuid;
+use Heseya\Searchable\Criteria\Equals;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Builder;
@@ -26,6 +27,7 @@ use Spatie\Permission\PermissionRegistrar;
  * @property RoleType $type
  * @property string $name
  * @property bool $is_registration_role
+ * @property bool $is_joinable
  *
  * @mixin IdeHelperRole
  */
@@ -43,11 +45,13 @@ class Role extends SpatieRole implements AuditableContract
         'description',
         'guard_name',
         'is_registration_role',
+        'is_joinable',
     ];
 
     protected $casts = [
         'type' => RoleType::class,
         'is_registration_role' => 'bool',
+        'is_joinable' => 'bool',
     ];
 
     protected array $criteria = [
@@ -58,6 +62,7 @@ class Role extends SpatieRole implements AuditableContract
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,
+        'is_joinable' => Equals::class,
     ];
 
     public function users(): BelongsToMany

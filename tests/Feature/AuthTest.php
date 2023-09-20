@@ -1265,6 +1265,107 @@ class AuthTest extends TestCase
         ]);
     }
 
+    public function testSelfUpdateRolesUnauthorized(): void
+    {
+        $role = Role::factory()->create([
+            'is_joinable' => true,
+        ]);
+
+        $this->json('PATCH', '/auth/profile/roles', [
+            'roles' => [
+                $role->getKey(),
+            ],
+        ])
+            ->assertForbidden();
+    }
+
+    public function testSelfUpdateRoles(): void
+    {
+        $role = Role::factory()->create([
+            'name' => 'New joinable role',
+            'type' => RoleType::REGULAR,
+            'is_joinable' => true,
+        ]);
+
+        $noJoinable = Role::factory()->create([
+            'name' => 'No joinable role',
+            'type' => RoleType::REGULAR,
+            'is_joinable' => false,
+        ]);
+
+        $this->user->roles()->attach($noJoinable->getKey());
+
+        $this->actingAs($this->user)->json('PATCH', '/auth/profile/roles', [
+            'roles' => [
+                $role->getKey(),
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $noJoinable->getKey(),
+                'name' => 'No joinable role',
+                'is_joinable' => false,
+            ])
+            ->assertJsonFragment([
+                'id' => $role->getKey(),
+                'name' => 'New joinable role',
+                'is_joinable' => true,
+            ]);
+    }
+
+    public function testSelfUpdateRolesNoJoinable(): void
+    {
+        $role = Role::factory()->create([
+            'name' => 'New joinable role',
+            'type' => RoleType::REGULAR,
+            'is_joinable' => false,
+        ]);
+
+        $this->actingAs($this->user)->json('PATCH', '/auth/profile/roles', [
+            'roles' => [
+                $role->getKey(),
+            ],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => Exceptions::coerce(Exceptions::CLIENT_JOINING_NON_JOINABLE_ROLE)->key,
+            ])->assertJsonFragment([
+                'message' => Exceptions::CLIENT_JOINING_NON_JOINABLE_ROLE,
+            ]);
+    }
+
+    public function testSelfUpdateRolesRemove(): void
+    {
+        $role = Role::factory()->create([
+            'name' => 'New joinable role',
+            'type' => RoleType::REGULAR,
+            'is_joinable' => true,
+        ]);
+
+        $noJoinable = Role::factory()->create([
+            'name' => 'No joinable role',
+            'type' => RoleType::REGULAR,
+            'is_joinable' => false,
+        ]);
+
+        $this->user->roles()->saveMany([$role, $noJoinable]);
+
+        $this->actingAs($this->user)->json('PATCH', '/auth/profile/roles', [
+            'roles' => [],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $noJoinable->getKey(),
+                'name' => 'No joinable role',
+                'is_joinable' => false,
+            ])
+            ->assertJsonMissing([
+                'id' => $role->getKey(),
+                'name' => 'New joinable role',
+                'is_joinable' => true,
+            ]);
+    }
+
     public function testCheckIdentityUnauthorized(): void
     {
         $user = User::factory()->create();

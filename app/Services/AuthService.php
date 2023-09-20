@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Dtos\RegisterDto;
+use App\Dtos\SelfUpdateRoles;
 use App\Dtos\TFAConfirmDto;
 use App\Dtos\TFAPasswordDto;
 use App\Dtos\TFASetupDto;
@@ -367,6 +368,18 @@ class AuthService implements AuthServiceContract
         $this->checkCredentials($user, $password);
 
         $this->userService->destroy($user);
+    }
+
+    public function selfUpdateRoles(SelfUpdateRoles $dto): User
+    {
+        if ($this->isAppAuthenticated()) {
+            throw new ClientException(Exceptions::CLIENT_APPS_NO_ACCESS);
+        }
+
+        /** @var User $user */
+        $user = Auth::user();
+
+        return $this->userService->selfUpdateRoles($user, $dto);
     }
 
     private function verifyTFA(?string $code): void

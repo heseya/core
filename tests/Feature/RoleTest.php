@@ -60,6 +60,7 @@ class RoleTest extends TestCase
                 'deletable' => true,
                 'metadata' => [],
                 'users_count' => 1,
+                'is_joinable' => false,
             ],
             ])
             ->assertJsonFragment([[
@@ -71,6 +72,7 @@ class RoleTest extends TestCase
                 'deletable' => true,
                 'metadata' => [],
                 'users_count' => 0,
+                'is_joinable' => false,
             ],
             ]);
     }
@@ -309,6 +311,7 @@ class RoleTest extends TestCase
                 'deletable' => true,
                 'users_count' => 0,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ])
             ->assertJsonFragment([[
@@ -320,6 +323,7 @@ class RoleTest extends TestCase
                 'deletable' => true,
                 'users_count' => 0,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ])
             ->assertJsonFragment([[
@@ -331,6 +335,7 @@ class RoleTest extends TestCase
                 'deletable' => false,
                 'users_count' => 0,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ])
             ->assertJsonFragment([[
@@ -342,6 +347,7 @@ class RoleTest extends TestCase
                 'deletable' => false,
                 'users_count' => 0,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ]);
     }
@@ -388,6 +394,7 @@ class RoleTest extends TestCase
                 'deletable' => true,
                 'users_count' => 0,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ])
             ->assertJsonFragment([[
@@ -399,6 +406,7 @@ class RoleTest extends TestCase
                 'deletable' => true,
                 'users_count' => 0,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ]);
     }
@@ -638,6 +646,7 @@ class RoleTest extends TestCase
                 'test.custom1',
                 'test.custom2',
             ],
+            'is_joinable' => true,
         ]);
 
         $response
@@ -653,6 +662,7 @@ class RoleTest extends TestCase
                     'test.custom2',
                 ],
                 'metadata' => [],
+                'is_joinable' => true,
             ],
             ]);
 
@@ -972,6 +982,7 @@ class RoleTest extends TestCase
         $role = Role::create([
             'name' => 'role1',
             'description' => 'Role 1',
+            'is_joinable' => false,
         ]);
 
         $permission1 = Permission::create(['name' => 'test.custom1']);
@@ -987,6 +998,7 @@ class RoleTest extends TestCase
                 'test.custom2',
                 'test.custom3',
             ],
+            'is_joinable' => true,
         ]);
 
         $response
@@ -1002,6 +1014,7 @@ class RoleTest extends TestCase
                     'test.custom3',
                 ],
                 'metadata' => [],
+                'is_joinable' => true,
             ],
             ]);
 
@@ -1009,6 +1022,7 @@ class RoleTest extends TestCase
             $role->getKeyName() => $role->getKey(),
             'name' => 'test_role',
             'description' => 'Test role',
+            'is_joinable' => true,
         ]);
 
         $role = Role::findByName('test_role');
