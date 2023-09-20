@@ -9,11 +9,13 @@ use App\Models\App;
 use App\Models\User;
 use App\Rules\Price;
 use App\Rules\ShippingMethodPriceRanges;
-use App\Traits\MapMetadata;
 use Brick\Math\BigDecimal;
-use Heseya\Dto\Missing;
+use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Illuminate\Support\Facades\Auth;
+use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\MapInputName;
+use Spatie\LaravelData\Attributes\MapOutputName;
 use Spatie\LaravelData\Attributes\Validation\ArrayType;
 use Spatie\LaravelData\Attributes\Validation\BooleanType;
 use Spatie\LaravelData\Attributes\Validation\Enum;
@@ -28,10 +30,16 @@ use Spatie\LaravelData\Data;
 use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
+use Support\Utils\Map;
 
 final class ShippingMethodUpdateDto extends Data
 {
-    use MapMetadata;
+    /**
+     * @var Optional|MetadataUpdateDto[]
+     */
+    #[Computed]
+    #[MapOutputName('metadata')]
+    public readonly array|Optional $metadata_computed;
 
     /**
      * @param Optional|string $name
@@ -45,7 +53,8 @@ final class ShippingMethodUpdateDto extends Data
      * @param array<int>|Optional $payment_methods
      * @param array<string>|Optional $countries
      * @param DataCollection<int, PriceRangeDto>|Optional $price_ranges
-     * @param array<string, string>|Missing|Optional $metadata
+     * @param array|Optional $metadata_public
+     * @param array|Optional $metadata_private
      * @param string|null $integration_key
      * @param string|null $app_id
      */
@@ -73,7 +82,9 @@ final class ShippingMethodUpdateDto extends Data
         public readonly array|Optional $countries,
         #[DataCollectionOf(PriceRangeDto::class)]
         public readonly DataCollection|Optional $price_ranges,
-        public array|Missing|Optional $metadata = new Missing(),
+        #[MapInputName('metadata')]
+        public readonly array|Optional $metadata_public,
+        public readonly array|Optional $metadata_private,
         #[StringType]
         public readonly string|null $integration_key = null,
         #[StringType, Nullable]
@@ -83,7 +94,10 @@ final class ShippingMethodUpdateDto extends Data
         $user = Auth::user();
         $this->app_id = $user instanceof App ? $user->id : null;
 
-        $this->metadata = self::mapMetadata(request());
+        $this->metadata_computed = Map::toMetadata(
+            $this->metadata_public,
+            $this->metadata_private,
+        );
     }
 
     /**

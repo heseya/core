@@ -16,7 +16,6 @@ use Domain\ShippingMethod\Dtos\ShippingMethodCreateDto;
 use Domain\ShippingMethod\Dtos\ShippingMethodUpdateDto;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Domain\ShippingMethod\Services\Contracts\ShippingMethodServiceContract;
-use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -28,7 +27,8 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
-    ) {}
+    ) {
+    }
 
     public function index(?array $search, Optional|string $country, ?Money $cartValue): LengthAwarePaginator
     {
@@ -104,8 +104,8 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
             $shippingMethod->countries()->sync($shippingMethodDto->getCountries());
         }
 
-        if (!($shippingMethodDto->getMetadata() instanceof Missing)) {
-            $this->metadataService->sync($shippingMethod, $shippingMethodDto->getMetadata());
+        if (!($shippingMethodDto->metadata_computed instanceof Optional)) {
+            $this->metadataService->sync($shippingMethod, $shippingMethodDto->metadata_computed);
         }
 
         $shippingMethodDto->getPriceRanges()->each(
@@ -117,34 +117,6 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
         );
 
         return $shippingMethod;
-    }
-
-    private function syncShippingPoints(
-        ShippingMethodCreateDto|ShippingMethodUpdateDto $shippingMethodDto,
-        ShippingMethod $shippingMethod,
-    ): void {
-        $shippingPoints = $shippingMethodDto->getShippingPoints();
-
-        if (!is_array($shippingPoints)) {
-            $shippingMethod->shippingPoints()->sync([]);
-        }
-
-        $addresses = new Collection();
-
-        // @phpstan-ignore-next-line
-        foreach ($shippingPoints as $shippingPoint) {
-            if (array_key_exists('id', $shippingPoint)) {
-                Address::query()->where('id', $shippingPoint['id'])->update($shippingPoint);
-                /** @var Address $address */
-                $address = Address::query()->findOrFail($shippingPoint['id']);
-            } else {
-                /** @var Address $address */
-                $address = Address::query()->create($shippingPoint);
-            }
-            $addresses->push($address->getKey());
-        }
-
-        $shippingMethod->shippingPoints()->sync($addresses);
     }
 
     public function update(ShippingMethod $shippingMethod, ShippingMethodUpdateDto $shippingMethodDto): ShippingMethod
@@ -199,5 +171,33 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
         }
 
         $shippingMethod->delete();
+    }
+
+    private function syncShippingPoints(
+        ShippingMethodCreateDto|ShippingMethodUpdateDto $shippingMethodDto,
+        ShippingMethod $shippingMethod,
+    ): void {
+        $shippingPoints = $shippingMethodDto->getShippingPoints();
+
+        if (!is_array($shippingPoints)) {
+            $shippingMethod->shippingPoints()->sync([]);
+        }
+
+        $addresses = new Collection();
+
+        // @phpstan-ignore-next-line
+        foreach ($shippingPoints as $shippingPoint) {
+            if (array_key_exists('id', $shippingPoint)) {
+                Address::query()->where('id', $shippingPoint['id'])->update($shippingPoint);
+                /** @var Address $address */
+                $address = Address::query()->findOrFail($shippingPoint['id']);
+            } else {
+                /** @var Address $address */
+                $address = Address::query()->create($shippingPoint);
+            }
+            $addresses->push($address->getKey());
+        }
+
+        $shippingMethod->shippingPoints()->sync($addresses);
     }
 }

@@ -6,12 +6,14 @@ namespace Domain\User\Dtos;
 
 use App\Enums\RoleType;
 use App\Traits\DtoHasPhone;
-use App\Traits\MapMetadata;
-use Heseya\Dto\Missing;
-use Illuminate\Database\Eloquent\Builder;
+use Domain\Metadata\Dtos\MetadataUpdateDto;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rule as ValidationRule;
 use Illuminate\Validation\Rules\Password;
 use Spatie\LaravelData\Attributes\Computed;
+use Spatie\LaravelData\Attributes\MapInputName;
+use Spatie\LaravelData\Attributes\MapOutputName;
 use Spatie\LaravelData\Attributes\Validation\ArrayType;
 use Spatie\LaravelData\Attributes\Validation\BeforeOrEqual;
 use Spatie\LaravelData\Attributes\Validation\Date;
@@ -22,19 +24,22 @@ use Spatie\LaravelData\Attributes\Validation\StringType;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
+use Support\Utils\Map;
 
 final class UserCreateDto extends Data
 {
     use DtoHasPhone;
-    use MapMetadata;
 
     #[Computed]
     public string|Optional|null $phone_country;
     #[Computed]
     public string|Optional|null $phone_number;
-    /** @var array<string,string>|Missing */
+    /**
+     * @var Optional|MetadataUpdateDto[]
+     */
     #[Computed]
-    public array|Missing $metadata;
+    #[MapOutputName('metadata')]
+    public readonly array|Optional $metadata_computed;
 
     /**
      * @param string $name
@@ -42,11 +47,15 @@ final class UserCreateDto extends Data
      * @param string $password
      * @param string[]|Optional $roles
      * @param Optional|string $birthday_date
+     * @param Optional|string $phone
+     * @param array|Optional $metadata_public
+     * @param array|Optional $metadata_private
+     * @param array|Optional $metadata_personal
      */
     public function __construct(
         #[Required, StringType, Max(255)]
         public string $name,
-        #[Required, Email, Max(255)]
+        #[Required, StringType, Email, Max(255)]
         public string $email,
         #[Required, StringType, Max(255)]
         public string $password,
@@ -55,9 +64,18 @@ final class UserCreateDto extends Data
         #[Date, BeforeOrEqual('now')]
         public Optional|string $birthday_date,
         public Optional|string $phone,
+        #[MapInputName('metadata')]
+        public readonly array|Optional $metadata_public,
+        public readonly array|Optional $metadata_private,
+        public readonly array|Optional $metadata_personal,
     ) {
         $this->initializePhone();
-        $this->metadata = self::mapMetadata(request());
+
+        $this->metadata_computed = Map::toUserMetadata(
+            $this->metadata_public,
+            $this->metadata_private,
+            $this->metadata_personal,
+        );
     }
 
     /**
@@ -66,7 +84,12 @@ final class UserCreateDto extends Data
     public static function rules(ValidationContext $context): array
     {
         return [
-            'email' => [Rule::unique('users')->whereNull('deleted_at')],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                ValidationRule::unique('users')->whereNull('deleted_at'),
+            ],
             'password' => [Password::defaults()],
             'roles.*' => [
                 'uuid',

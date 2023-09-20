@@ -20,7 +20,6 @@ use Domain\User\Dtos\UserCreateDto;
 use Domain\User\Dtos\UserIndexDto;
 use Domain\User\Dtos\UserUpdateDto;
 use Domain\User\Services\Contracts\UserServiceContract;
-use Heseya\Dto\Missing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -35,7 +34,8 @@ final readonly class UserService implements UserServiceContract
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
-    ) {}
+    ) {
+    }
 
     public function index(UserIndexDto $dto, ?string $sort): LengthAwarePaginator
     {
@@ -81,8 +81,8 @@ final readonly class UserService implements UserServiceContract
 
         $user->syncRoles($roleModels);
 
-        if (!($dto->getMetadata() instanceof Missing)) {
-            $this->metadataService->sync($user, $dto->getMetadata());
+        if (!($dto->metadata_computed instanceof Optional)) {
+            $this->metadataService->sync($user, $dto->metadata_computed);
         }
 
         $user->save();

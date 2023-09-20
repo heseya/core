@@ -21,29 +21,7 @@ final readonly class Map
         array|Optional $metadata = new Optional(),
         array|Optional $metadata_private = new Optional(),
     ): array|Optional {
-        $return = [];
-
-        if (is_array($metadata)) {
-            foreach ($metadata as $key => $value) {
-                $return[] = new MetadataUpdateDto(
-                    $key,
-                    $value,
-                    true,
-                    MetadataType::matchType($value)
-                );
-            }
-        }
-
-        if (is_array($metadata_private)) {
-            foreach ($metadata_private as $key => $value) {
-                $return[] = new MetadataUpdateDto(
-                    $key,
-                    $value,
-                    false,
-                    MetadataType::matchType($value)
-                );
-            }
-        }
+        $return = self::getMetadata($metadata, $metadata_private);
 
         return count($return) > 0 ? $return : new Optional();
     }
@@ -69,5 +47,60 @@ final readonly class Map
         }
 
         return count($return) > 0 ? $return : new Optional();
+    }
+
+    public static function toUserMetadata(
+        array|Optional $metadata = new Optional(),
+        array|Optional $metadata_private = new Optional(),
+        array|Optional $metadata_personal = new Optional(),
+    ): array|Optional {
+        $return = self::getMetadata($metadata, $metadata_private);
+
+        if (is_array($metadata_personal)) {
+            foreach ($metadata_personal as $key => $value) {
+                $return[] = new MetadataPersonalDto(
+                    $key,
+                    $value,
+                    MetadataType::matchType($value)
+                );
+            }
+        }
+
+        return count($return) > 0 ? $return : new Optional();
+    }
+
+    /**
+     * @param array|Optional $metadata
+     * @param array|Optional $metadata_private
+     *
+     * @return array
+     */
+    private static function getMetadata(array|Optional $metadata, array|Optional $metadata_private): array
+    {
+        $return = [];
+
+        if (is_array($metadata)) {
+            foreach ($metadata as $key => $value) {
+                $return[] = new MetadataUpdateDto(
+                    $key,
+                    $value,
+                    true,
+                    MetadataType::matchType($value)
+                );
+            }
+        }
+
+        if (is_array($metadata_private)) {
+            foreach ($metadata_private as $key => $value) {
+                $return[] = new MetadataUpdateDto(
+                    $key,
+                    $value,
+                    false,
+                    MetadataType::matchType($value)
+                );
+            }
+        }
+
+        return $return;
     }
 }
