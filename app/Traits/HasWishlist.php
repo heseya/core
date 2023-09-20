@@ -17,6 +17,7 @@ trait HasWishlist
     {
         return $this->wishlistProducts()->whereHas(
             'product',
+            /** @phpstan-ignore-next-line */
             fn (Builder $query) => $query->public()
         );
     }

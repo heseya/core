@@ -382,8 +382,8 @@ class CartTest extends TestCase
                         'schemas' => [],
 
                     ],
-                ] + $coupons
-            ],
+                ],
+            ] + $coupons,
         );
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
@@ -779,8 +779,8 @@ class CartTest extends TestCase
                         'quantity' => 2,
                         'schemas' => [],
                     ],
-                ] + $data['coupons']
-            ],
+                ],
+            ] + $data['coupons'],
         );
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
@@ -871,10 +871,9 @@ class CartTest extends TestCase
                             'product_id' => $this->product->getKey(),
                             'quantity' => 2,
                             'schemas' => [],
-
                         ],
-                    ] + $coupons
-                ],
+                    ],
+                ] + $coupons,
             );
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
@@ -882,7 +881,8 @@ class CartTest extends TestCase
         $discountCode2 = $coupon ? ['code' => $discount->code] : [];
 
         $response
-            ->assertValid()->assertOk()
+            ->assertValid()
+            ->assertOk()
             ->assertJsonFragment(
                 [
                     'cart_total_initial' => '9200.00',
@@ -974,8 +974,8 @@ class CartTest extends TestCase
                             'quantity' => 2,
                             'schemas' => [],
                         ],
-                    ] + $coupons
-                ],
+                    ],
+                ] + $coupons,
             );
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
@@ -1316,8 +1316,8 @@ class CartTest extends TestCase
                         'quantity' => 2,
                         'schemas' => [],
                     ],
-                ] + $coupons
-            ],
+                ],
+            ] + $coupons,
         );
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
@@ -1416,8 +1416,8 @@ class CartTest extends TestCase
                         'quantity' => 2,
                         'schemas' => [],
                     ],
-                ] + $coupons
-            ],
+                ],
+            ] + $coupons,
         );
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
@@ -1969,8 +1969,8 @@ class CartTest extends TestCase
                         'schemas' => [],
 
                     ],
-                ] + $coupons
-            ],
+                ],
+            ] + $coupons,
         );
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
@@ -2138,8 +2138,8 @@ class CartTest extends TestCase
                         'quantity' => 2,
                         'schemas' => [],
                     ],
-                ] + $coupons
-            ],
+                ],
+            ] + $coupons,
         );
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];

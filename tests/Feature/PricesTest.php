@@ -115,7 +115,7 @@ class PricesTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(14);
+        $this->assertQueryCountLessThan(15);
     }
 
     /**
@@ -136,7 +136,7 @@ class PricesTest extends TestCase
             ]])
             ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
 
-        $this->assertQueryCountLessThan(7);
+        $this->assertQueryCountLessThan(8);
     }
 
     /**

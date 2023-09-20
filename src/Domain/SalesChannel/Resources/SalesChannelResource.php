@@ -47,7 +47,7 @@ final class SalesChannelResource extends Resource
             'countries' => $this->resource->countries->pluck('code'),
             'published' => $this->resource->published,
             ...$request->boolean('with_translations') ? $this->getAllTranslations('sales_channels.show_hidden') : [],
-            /** @phpstan-ignore-next-line */
+            // @phpstan-ignore-next-line
             ...($this->resource?->pivot instanceof ProductSalesChannel ? ['availability_status' => $this->resource->pivot->availability_status->value] : []),
         ];
     }

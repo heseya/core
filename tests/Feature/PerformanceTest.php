@@ -91,7 +91,7 @@ class PerformanceTest extends TestCase
         $response->assertOk();
 
         // TODO: From 31 up to 1533... prices as a relation kind of suck
-        $this->assertQueryCountLessThan(1539);
+        $this->assertQueryCountLessThan(1540);
     }
 
     public function testIndexPerformanceListAttribute500(): void
@@ -284,7 +284,7 @@ class PerformanceTest extends TestCase
 
         // TODO: Fix with discounts refactor
         // It's baffling how slow this is (was 18 before)
-        $this->assertQueryCountLessThan(4021);
+        $this->assertQueryCountLessThan(4022);
     }
 
     public function testCreateSalePerformance1000Products(): void

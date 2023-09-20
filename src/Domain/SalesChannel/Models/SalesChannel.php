@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Support\Enum\Status;
 
 /**
+ * @property mixed $pivot
+ *
  * @mixin IdeHelperSalesChannel
  */
 final class SalesChannel extends Model implements Translatable
