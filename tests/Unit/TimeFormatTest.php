@@ -2,7 +2,6 @@
 
 namespace Tests\Unit;
 
-use Domain\Price\Enums\ProductPriceType;
 use App\Models\Address;
 use App\Models\App;
 use App\Models\Deposit;
@@ -21,8 +20,6 @@ use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\Role;
 use App\Models\Schema;
-use App\Models\Setting;
-use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\Token;
 use App\Models\User;
@@ -32,7 +29,10 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Page\Page;
+use Domain\Price\Enums\ProductPriceType;
 use Domain\ProductSet\ProductSet;
+use Domain\Setting\Models\Setting;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Domain\Tag\Models\Tag;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

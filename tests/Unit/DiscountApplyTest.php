@@ -13,7 +13,6 @@ use App\Models\Discount;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\PriceRange;
-use App\Models\ShippingMethod;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\OptionService;
 use App\Services\ProductService;
@@ -27,6 +26,7 @@ use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
@@ -57,6 +57,68 @@ class DiscountApplyTest extends TestCase
     private $orderProduct;
     private Currency $currency;
 
+    public static function discountProductDataProvider(): array
+    {
+        return [
+            /** TODO: REVERT */
+            //            'as amount coupon' => [
+            //                DiscountType::AMOUNT,
+            //                20.0,
+            //                110.0,
+            //                'coupon',
+            //            ],
+            'as percentage coupon' => [
+                'percentage',
+                '20.0',
+                104.0,
+                'coupon',
+            ],
+            //            'as amount sale' => [
+            //                DiscountType::AMOUNT,
+            //                20.0,
+            //                110.0,
+            //                'sale',
+            //            ],
+            'as percentage sale' => [
+                'percentage',
+                '20.0',
+                104.0,
+                'sale',
+            ],
+        ];
+    }
+
+    public static function discountDataProvider(): array
+    {
+        return [
+            /** TODO: REVERT */
+            //            'as amount coupon' => [
+            //                DiscountType::AMOUNT,
+            //                20.0,
+            //                100.0,
+            //                'coupon',
+            //            ],
+            'as percentage coupon' => [
+                'percentage',
+                '20.0',
+                96.0,
+                'coupon',
+            ],
+            //            'as amount sale' => [
+            //                DiscountType::AMOUNT,
+            //                20.0,
+            //                100.0,
+            //                'sale',
+            //            ],
+            'as percentage sale' => [
+                'percentage',
+                '20.0',
+                96.0,
+                'sale',
+            ],
+        ];
+    }
+
     /**
      * @throws UnknownCurrencyException
      * @throws RoundingNecessaryException
@@ -76,11 +138,13 @@ class DiscountApplyTest extends TestCase
             'prices_base' => [PriceDto::from(Money::of(120, $this->currency->value))],
         ]));
 
-        $this->schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'prices' => [PriceDto::from(Money::of(10, $this->currency->value))],
-            'type' => 'string',
-            'hidden' => false,
-        ]));
+        $this->schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'prices' => [PriceDto::from(Money::of(10, $this->currency->value))],
+                'type' => 'string',
+                'hidden' => false,
+            ])
+        );
 
         $this->set = ProductSet::factory()->create([
             'public' => true,
@@ -126,6 +190,7 @@ class DiscountApplyTest extends TestCase
         ]);
 
         $order = Order::factory()->create();
+
         $this->productToOrderProduct = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [PriceDto::from(Money::of(120, $this->currency->value))],
         ]));
@@ -293,37 +358,6 @@ class DiscountApplyTest extends TestCase
         $this->assertTrue($cartItemResponse->price_discounted === 0.0);
     }
 
-    public static function discountProductDataProvider(): array
-    {
-        return [
-            /** TODO: REVERT */
-            //            'as amount coupon' => [
-            //                DiscountType::AMOUNT,
-            //                20.0,
-            //                110.0,
-            //                'coupon',
-            //            ],
-            'as percentage coupon' => [
-                'percentage',
-                '20.0',
-                104.0,
-                'coupon',
-            ],
-            //            'as amount sale' => [
-            //                DiscountType::AMOUNT,
-            //                20.0,
-            //                110.0,
-            //                'sale',
-            //            ],
-            'as percentage sale' => [
-                'percentage',
-                '20.0',
-                104.0,
-                'sale',
-            ],
-        ];
-    }
-
     /**
      * @dataProvider discountProductDataProvider
      */
@@ -365,6 +399,7 @@ class DiscountApplyTest extends TestCase
     public function testApplyDiscountToProductNotAllowList($type, $value, $result, $discountKind): void
     {
         $this->product->schemas()->sync([$this->schema->getKey()]);
+
         $product = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [PriceDto::from(Money::of(220, $this->currency->value))],
         ]));
@@ -594,37 +629,6 @@ class DiscountApplyTest extends TestCase
         ]);
     }
 
-    public static function discountDataProvider(): array
-    {
-        return [
-            /** TODO: REVERT */
-            //            'as amount coupon' => [
-            //                DiscountType::AMOUNT,
-            //                20.0,
-            //                100.0,
-            //                'coupon',
-            //            ],
-            'as percentage coupon' => [
-                'percentage',
-                '20.0',
-                96.0,
-                'coupon',
-            ],
-            //            'as amount sale' => [
-            //                DiscountType::AMOUNT,
-            //                20.0,
-            //                100.0,
-            //                'sale',
-            //            ],
-            'as percentage sale' => [
-                'percentage',
-                '20.0',
-                96.0,
-                'sale',
-            ],
-        ];
-    }
-
     /**
      * @dataProvider discountDataProvider
      */
@@ -655,6 +659,7 @@ class DiscountApplyTest extends TestCase
     public function testApplyDiscountToOrderProductNotAllowList($type, $value, $result, $discountKind): void
     {
         $code = $discountKind === 'coupon' ? [] : ['code' => null];
+
         $product = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [PriceDto::from(Money::of(220, $this->currency->value))],
         ]));
@@ -851,6 +856,7 @@ class DiscountApplyTest extends TestCase
     public function testApplyDiscountToCartItemNotAllowList($type, $value, $result, $discountKind): void
     {
         $code = $discountKind === 'coupon' ? [] : ['code' => null];
+
         $product = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [PriceDto::from(Money::of(220, $this->currency->value))],
         ]));

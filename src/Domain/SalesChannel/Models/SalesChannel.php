@@ -28,7 +28,7 @@ final class SalesChannel extends Model implements Translatable
     use HasCriteria;
     use HasFactory;
 
-    protected const HIDDEN_PERMISSION = 'sales_channels.show_hidden';
+    public const HIDDEN_PERMISSION = 'sales_channels.show_hidden';
 
     protected $fillable = [
         'id',

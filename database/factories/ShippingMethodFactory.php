@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\ShippingType;
-use App\Models\ShippingMethod;
+use Domain\ShippingMethod\Models\ShippingMethod;
 
 class ShippingMethodFactory extends Factory
 {

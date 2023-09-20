@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Feature\SalesChannels;
 
-use App\Enums\DiscountTargetType;
 use App\Enums\ShippingType;
-use App\Models\Discount;
-use App\Models\ShippingMethod;
 use App\Services\ProductService;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 use Tests\Utils\FakeDto;
@@ -43,10 +41,6 @@ final class SalesChannelsTest extends TestCase
         // @phpstan-ignore-next-line
         $product = $productService->create(FakeDto::productCreateDto([
             'prices_base' => [
-                [
-                    'value' => 10,
-                    'currency' => $currency,
-                ],
                 [
                     'value' => 10,
                     'currency' => $currency,
@@ -106,10 +100,6 @@ final class SalesChannelsTest extends TestCase
         // @phpstan-ignore-next-line
         $product = $productService->create(FakeDto::productCreateDto([
             'prices_base' => [
-                [
-                    'value' => 10,
-                    'currency' => $currency,
-                ],
                 [
                     'value' => 10,
                     'currency' => $currency,

@@ -10,6 +10,7 @@ use App\Services\Contracts\UrlServiceContract;
 use App\Traits\HasMetadata;
 use App\Traits\HasWebHooks;
 use App\Traits\HasWishlist;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
@@ -54,7 +55,6 @@ class App extends Model implements AuthenticatableContract, AuthorizableContract
         'uninstall_token',
         'role_id',
     ];
-
     protected array $criteria = [
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,

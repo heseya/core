@@ -4,9 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
-use App\Enums\DiscountType;
 use App\Enums\ExceptionsEnums\Exceptions;
-use Domain\Price\Enums\ProductPriceType;
 use App\Enums\RoleType;
 use App\Enums\SchemaType;
 use App\Enums\ShippingType;
@@ -26,16 +24,13 @@ use App\Models\Price;
 use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\Role;
-use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\WebHook;
 use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\DiscountRepository;
 use App\Repositories\ProductRepository;
 use App\Services\ProductService;
 use App\Services\SchemaCrudService;
-use App\Repositories\DiscountRepository;
-use App\Services\Contracts\ProductServiceContract;
-use BenSampo\Enum\Exceptions\InvalidEnumMemberException;
 use Brick\Math\Exception\MathException;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
@@ -44,9 +39,11 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\ProductPriceType;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\SalesChannel\SalesChannelRepository;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -75,7 +72,6 @@ class OrderCreateTest extends TestCase
     private Currency $currency;
     private Money $productPrice;
     private ProductService $productService;
-
     private DiscountRepository $discountRepository;
     private SchemaCrudService $schemaCrudService;
     private ProductRepository $productRepository;
@@ -528,11 +524,13 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => 'string',
-            'prices' => [['value' => 10, 'currency' => $this->currency->value]],
-            'hidden' => false,
-        ]));
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => 'string',
+                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
+                'hidden' => false,
+            ])
+        );
 
         $this->product->schemas()->sync([$schema->getKey()]);
 
@@ -620,11 +618,13 @@ class OrderCreateTest extends TestCase
             'quantity' => 100,
         ]);
 
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => 'select',
-            'prices_base' => [['value' => 10, 'currency' => Currency::DEFAULT->value]],
-            'hidden' => false,
-        ]));
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => 'select',
+                'prices_base' => [['value' => 10, 'currency' => Currency::DEFAULT->value]],
+                'hidden' => false,
+            ])
+        );
 
         $option = Option::factory()->create([
             'name' => 'A',
@@ -722,11 +722,13 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => 'string',
-            'prices' => [['value' => 10, 'currency' => $this->currency->value]],
-            'hidden' => true,
-        ]));
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => 'string',
+                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
+                'hidden' => true,
+            ])
+        );
 
         $this->product->schemas()->sync([$schema->getKey()]);
 
@@ -795,11 +797,13 @@ class OrderCreateTest extends TestCase
         Event::fake([OrderCreated::class]);
 
         $schemaPrice = 10;
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => SchemaType::STRING->name,
-            'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
-            'required' => false, // Important!
-        ]));
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => SchemaType::STRING->name,
+                'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+                'required' => false, // Important!
+            ])
+        );
 
         $this->product->schemas()->sync([$schema->getKey()]);
 
@@ -1265,11 +1269,13 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => 'string',
-            'prices' => [['value' => 10, 'currency' => $this->currency->value]],
-            'hidden' => false,
-        ]));
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => 'string',
+                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
+                'hidden' => false,
+            ])
+        );
 
         $this->product->schemas()->sync([$schema->getKey()]);
 
@@ -1331,11 +1337,13 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => 'string',
-            'prices' => [['value' => 10, 'currency' => $this->currency->value]],
-            'hidden' => false,
-        ]));
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => 'string',
+                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
+                'hidden' => false,
+            ])
+        );
 
         $this->product->schemas()->sync([$schema->getKey()]);
         $this->product->update([
@@ -1400,11 +1408,13 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => 'string',
-            'prices' => [['value' => 10, 'currency' => $this->currency->value]],
-            'hidden' => false,
-        ]));
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => 'string',
+                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
+                'hidden' => false,
+            ])
+        );
 
         $this->product->schemas()->sync([$schema->getKey()]);
         $this->product->update([
@@ -1465,11 +1475,13 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => 'string',
-            'prices' => [['value' => 10, 'currency' => $this->currency->value]],
-            'hidden' => false,
-        ]));
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => 'string',
+                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
+                'hidden' => false,
+            ])
+        );
 
         $this->product->schemas()->sync([$schema->getKey()]);
         $this->product->update([
@@ -1520,11 +1532,13 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => 'string',
-            'prices' => [['value' => 10, 'currency' => $this->currency->value]],
-            'hidden' => false,
-        ]));
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => 'string',
+                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
+                'hidden' => false,
+            ])
+        );
 
         $this->product->schemas()->sync([$schema->getKey()]);
         $this->product->update([
@@ -1747,9 +1761,12 @@ class OrderCreateTest extends TestCase
             ])
             ->assertCreated();
 
-        $this->assertDatabaseHas('addresses', $address + [
-            'vat' => null,
-        ]);
+        $this->assertDatabaseHas(
+            'addresses',
+            $address + [
+                'vat' => null,
+            ]
+        );
     }
 
     /**
@@ -1870,7 +1887,7 @@ class OrderCreateTest extends TestCase
                     'product_id' => $this->product->getKey(),
                     'quantity' => 1,
                 ],
-            ]
+            ],
         ])
             ->assertUnprocessable()
             ->assertJsonFragment([
@@ -1915,7 +1932,7 @@ class OrderCreateTest extends TestCase
                     'product_id' => $this->product->getKey(),
                     'quantity' => 1,
                 ],
-            ]
+            ],
         ])
             ->assertCreated();
     }

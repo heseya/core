@@ -5,11 +5,11 @@ namespace Tests\Feature;
 use App\Enums\ShippingType;
 use App\Models\PriceRange;
 use App\Models\Product;
-use App\Models\ShippingMethod;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\SalesChannel\SalesChannelRepository;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Tests\TestCase;
 
 class OrderDigitalTest extends TestCase

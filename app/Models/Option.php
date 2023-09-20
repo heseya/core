@@ -27,7 +27,7 @@ class Option extends Model implements Translatable
     use HasFactory;
     use HasMetadata;
 
-    protected const HIDDEN_PERMISSION = 'options.show_hidden';
+    public const HIDDEN_PERMISSION = 'options.show_hidden';
 
     protected $fillable = [
         'name',

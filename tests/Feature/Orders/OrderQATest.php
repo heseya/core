@@ -10,7 +10,6 @@ use App\Models\Discount;
 use App\Models\Order;
 use App\Models\PriceRange;
 use App\Models\Product;
-use App\Models\ShippingMethod;
 use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
@@ -19,6 +18,7 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
@@ -38,7 +38,6 @@ class OrderQATest extends TestCase
         'country' => 'PL',
         'phone' => '+48543234123',
     ];
-
     private Product $product;
     private ShippingMethod $shippingMethod;
 
@@ -56,6 +55,7 @@ class OrderQATest extends TestCase
 
         /** @var ProductService $productService */
         $productService = App::make(ProductService::class);
+
         $this->product = $productService->create(FakeDto::productCreateDto([
             'prices_base' => [PriceDto::from(Money::of(100, $currency))],
         ]));
@@ -137,10 +137,12 @@ class OrderQATest extends TestCase
                 'sales_channel_id' => SalesChannel::query()->value('id'),
                 'email' => 'test@example.com',
                 'shipping_method_id' => $this->shippingMethod->getKey(),
-                'items' => [[
-                    'product_id' => $this->product->getKey(),
-                    'quantity' => 1,
-                ]],
+                'items' => [
+                    [
+                        'product_id' => $this->product->getKey(),
+                        'quantity' => 1,
+                    ],
+                ],
                 'coupons' => [
                     $coupon->code,
                 ],
@@ -185,10 +187,12 @@ class OrderQATest extends TestCase
                 'sales_channel_id' => SalesChannel::query()->value('id'),
                 'email' => 'test@example.com',
                 'shipping_method_id' => $this->shippingMethod->getKey(),
-                'items' => [[
-                    'product_id' => $this->product->getKey(),
-                    'quantity' => 1,
-                ]],
+                'items' => [
+                    [
+                        'product_id' => $this->product->getKey(),
+                        'quantity' => 1,
+                    ],
+                ],
                 'shipping_place' => self::ADDRESS,
                 'billing_address' => self::ADDRESS,
             ])

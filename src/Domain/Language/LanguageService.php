@@ -118,11 +118,13 @@ final class LanguageService
             $query->chunkById(100, function ($models) use ($language): void {
                 foreach ($models as $model) {
                     $model->forgetAllTranslations($language->getKey());
-                    $published = $model->published ?? [];
-                    if (($key = array_search($language->getKey(), $published, true)) !== false) {
-                        unset($published[$key]);
+                    if ($model->hasPublishedColumn()) {
+                        $published = $model->published ?? [];
+                        if (($key = array_search($language->getKey(), $published, true)) !== false) {
+                            unset($published[$key]);
+                        }
+                        $model->published = $published;
                     }
-                    $model->published = $published;
                     $model->save();
                 }
             });

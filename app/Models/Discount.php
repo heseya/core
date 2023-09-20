@@ -16,6 +16,7 @@ use App\Traits\CustomHasTranslations;
 use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
 use Domain\ProductSet\ProductSet;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -40,6 +41,8 @@ class Discount extends Model implements SeoContract, Translatable
     use HasMetadata;
     use HasSeoMetadata;
     use SoftDeletes;
+
+    public const HIDDEN_PERMISSION = 'sales.show_hidden';
 
     protected $fillable = [
         'name',

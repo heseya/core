@@ -11,7 +11,6 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Role;
 use App\Models\Schema;
-use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\User;
 use App\Services\SchemaCrudService;
@@ -21,6 +20,7 @@ use Domain\Page\Page;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\SalesChannel\SalesChannelRepository;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Support\Facades\App as FacadesApp;
 use Tests\TestCase;
 use Tests\Utils\FakeDto;
@@ -29,13 +29,6 @@ class MetadataTest extends TestCase
 {
     private SchemaCrudService $schemaCrudService;
     private SalesChannel $salesChannel;
-
-    public function setUp(): void
-    {
-        parent::setUp();
-        $this->schemaCrudService = FacadesApp::make(SchemaCrudService::class);
-        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
-    }
 
     public static function dataProvider(): array
     {
@@ -194,6 +187,13 @@ class MetadataTest extends TestCase
         ];
     }
 
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->schemaCrudService = FacadesApp::make(SchemaCrudService::class);
+        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
+    }
+
     /**
      * @dataProvider dataProvider
      */
@@ -304,9 +304,11 @@ class MetadataTest extends TestCase
             ]
         )
             ->assertOk()
-            ->assertJsonFragment(['data' => [
-                $metadata->name => 'new super value',
-            ]]);
+            ->assertJsonFragment([
+                'data' => [
+                    $metadata->name => 'new super value',
+                ],
+            ]);
     }
 
     /**
@@ -347,10 +349,13 @@ class MetadataTest extends TestCase
                 ],
             ]);
 
-        $this->assertDatabaseHas('metadata', array_merge($metadata2->toArray(), [
-            'model_id' => $product2->getKey(),
-            'model_type' => $product2->getMorphClass(),
-        ]));
+        $this->assertDatabaseHas(
+            'metadata',
+            array_merge($metadata2->toArray(), [
+                'model_id' => $product2->getKey(),
+                'model_type' => $product2->getMorphClass(),
+            ])
+        );
     }
 
     /**

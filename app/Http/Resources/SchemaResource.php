@@ -37,7 +37,8 @@ class SchemaResource extends Resource
             'options' => OptionResource::collection($this->resource->options),
             'used_schemas' => $this->resource->usedSchemas->map(fn ($schema) => $schema->getKey()),
             ...$this->metadataResource('schemas.show_metadata_private'),
-            ...$request->boolean('with_translations') ? $this->getAllTranslations() : [],
+            'published' => $this->resource->published,
+            ...$request->boolean('with_translations') ? $this->getAllTranslations('schemas.show_hidden') : [],
         ];
     }
 

@@ -2,8 +2,6 @@
 
 namespace Tests\Utils;
 
-use App\Dtos\PriceRangeDto;
-use App\Dtos\ShippingMethodCreateDto;
 use App\Models\Schema;
 use Brick\Math\BigDecimal;
 use Brick\Math\Exception\NumberFormatException;
@@ -17,6 +15,8 @@ use Domain\Product\Enums\ProductSalesChannelStatus;
 use Domain\ProductSchema\Dtos\SchemaDto;
 use Domain\ProductSchema\Dtos\SchemaUpdateDto;
 use Domain\SalesChannel\SalesChannelRepository;
+use Domain\ShippingMethod\Dtos\PriceRangeDto;
+use Domain\ShippingMethod\Dtos\ShippingMethodCreateDto;
 use Faker\Generator;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Arr;
@@ -43,16 +43,20 @@ final readonly class FakeDto
             Money::of(round(mt_rand(500, 2000) / 100, 2), $currency),
         );
 
-        return new ShippingMethodCreateDto(...$data + [
-            'name' => $faker->randomElement([
-                'dpd',
-                'inpostkurier',
-            ]),
-            'public' => $faker->boolean,
-            'block_list' => $faker->boolean,
-            'price_ranges' => [$priceRange],
-            'payment_on_delivery' => false,
-        ]);
+        return ShippingMethodCreateDto::from(
+            [
+                ...$data + [
+                    'name' => $faker->randomElement([
+                        'dpd',
+                        'inpostkurier',
+                    ]),
+                    'public' => $faker->boolean,
+                    'block_list' => $faker->boolean,
+                    'price_ranges' => [$priceRange],
+                    'payment_on_delivery' => false,
+                ],
+            ]
+        );
     }
 
     /**
@@ -64,6 +68,7 @@ final readonly class FakeDto
     public static function productCreateData(array $data = []): array
     {
         $keys = array_keys($data);
+
         return Arr::only(self::productCreateDto($data, true), $keys);
     }
 
@@ -111,45 +116,15 @@ final readonly class FakeDto
         return ProductCreateDto::from($data);
     }
 
-    public static function schemaData(array $data = []): array
-    {
-        $keys = array_keys($data);
-        return Arr::only(self::schemaDto($data, true), $keys);
-    }
-
-    public static function schemaDto(array $data = [], bool $returnArray = false): SchemaDto|array
-    {
-        $data['prices'] = self::generatePricesInAllCurrencies($data['prices'] ?? []);
-
-        $data = $data + Schema::factory()->definition();
-
-        $langId = App::getLocale();
-
-        $data['translations'][$langId]['name'] = $data['translations'][$langId]['name'] ?? $data['name'];
-        $data['translations'][$langId]['description'] = $data['translations'][$langId]['description'] ?? $data['description'];
-
-        if (array_key_exists('options', $data)) {
-            foreach ($data['options'] as &$option) {
-                $option['translations'][$langId]['name'] = $option['translations'][$langId]['name'] ?? $option['name'] ?? Str::random(4);
-
-                $option['prices'] = self::generatePricesInAllCurrencies($option['prices'] ?? []);
-            }
-        }
-
-        if ($returnArray) {
-            return $data;
-        }
-
-        return SchemaUpdateDto::from($data);
-    }
-
     /**
      * @param array<int,PriceDto>|array<int,array<string,int|string>> $data
      *
      * @return array<int,array<string,int|string>>
      */
-    public static function generatePricesInAllCurrencies(array $data = [], BigDecimal|int|float|null $amount = null): array
-    {
+    public static function generatePricesInAllCurrencies(
+        array $data = [],
+        BigDecimal|int|float|null $amount = null
+    ): array {
         $prices = [];
         $usedCurrencies = [];
         /** @var PriceDto|array $price */
@@ -183,5 +158,40 @@ final readonly class FakeDto
         }
 
         return $prices;
+    }
+
+    public static function schemaData(array $data = []): array
+    {
+        $keys = array_keys($data);
+
+        return Arr::only(self::schemaDto($data, true), $keys);
+    }
+
+    public static function schemaDto(array $data = [], bool $returnArray = false): SchemaDto|array
+    {
+        $data['prices'] = self::generatePricesInAllCurrencies($data['prices'] ?? []);
+
+        $data = $data + Schema::factory()->definition();
+
+        $langId = App::getLocale();
+
+        $data['translations'][$langId]['name'] = $data['translations'][$langId]['name'] ?? $data['name'];
+        $data['translations'][$langId]['description'] = $data['translations'][$langId]['description'] ?? $data['description'];
+
+        if (array_key_exists('options', $data)) {
+            foreach ($data['options'] as &$option) {
+                $option['translations'][$langId]['name'] = $option['translations'][$langId]['name'] ?? $option['name'] ?? Str::random(
+                    4
+                );
+
+                $option['prices'] = self::generatePricesInAllCurrencies($option['prices'] ?? []);
+            }
+        }
+
+        if ($returnArray) {
+            return $data;
+        }
+
+        return SchemaUpdateDto::from($data);
     }
 }

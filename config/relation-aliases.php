@@ -12,15 +12,15 @@ use App\Models\Permission;
 use App\Models\Product;
 use App\Models\Role;
 use App\Models\Schema;
-use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\User;
 use App\Models\WebHook;
 use Domain\Banner\Models\Banner;
 use Domain\Page\Page;
-use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductSet\ProductSet;
+use Domain\ShippingMethod\Models\ShippingMethod;
 
 return [
     'App' => App::class,

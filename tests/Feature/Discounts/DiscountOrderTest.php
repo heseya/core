@@ -14,7 +14,6 @@ use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\PriceRange;
 use App\Models\Product;
-use App\Models\ShippingMethod;
 use App\Services\ProductService;
 use App\Services\SchemaCrudService;
 use Brick\Math\Exception\NumberFormatException;
@@ -25,6 +24,7 @@ use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\SalesChannel\SalesChannelRepository;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Notification;
@@ -42,7 +42,6 @@ class DiscountOrderTest extends TestCase
 
     protected array $items;
     protected array $address;
-
     private ProductService $productService;
     private Currency $currency;
     private SchemaCrudService $schemaCrudService;
@@ -69,10 +68,12 @@ class DiscountOrderTest extends TestCase
 
         $this->shippingMethod = $this->createShippingMethod(10, ['shipping_type' => ShippingType::ADDRESS]);
 
-        $this->items = [[
-            'product_id' => $this->product->getKey(),
-            'quantity' => 1,
-        ]];
+        $this->items = [
+            [
+                'product_id' => $this->product->getKey(),
+                'quantity' => 1,
+            ],
+        ];
 
         $this->address = [
             'name' => 'Test User',
@@ -432,13 +433,15 @@ class DiscountOrderTest extends TestCase
     {
         $this->{$user}->givePermissionTo('orders.add');
 
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'name' => 'test',
-            'type' => SchemaType::STRING,
-            'required' => true,
-            'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
-            'published' => [$this->lang],
-        ]));
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'name' => 'test',
+                'type' => SchemaType::STRING,
+                'required' => true,
+                'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
+                'published' => [$this->lang],
+            ])
+        );
 
         $this->product->schemas()->attach($schema->getKey());
 
@@ -560,6 +563,7 @@ class DiscountOrderTest extends TestCase
         $this->markTestSkipped();
 
         $this->{$user}->givePermissionTo('orders.add');
+
         $product1 = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [PriceDto::from(Money::of(5588.75, $this->currency->value))],
         ]));
@@ -631,6 +635,7 @@ class DiscountOrderTest extends TestCase
     public function testCreateOrderPriceRound($user): void
     {
         $this->{$user}->givePermissionTo('orders.add');
+
         $product1 = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [PriceDto::from(Money::of(5588.75, $this->currency->value))],
         ]));
@@ -796,11 +801,13 @@ class DiscountOrderTest extends TestCase
             'prices_base' => [PriceDto::from(Money::of(10, $this->currency->value))],
         ]));
 
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => 'string',
-            'prices' => [['value' => 20, 'currency' => $this->currency->value]],
-            'hidden' => false,
-        ]));
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => 'string',
+                'prices' => [['value' => 20, 'currency' => $this->currency->value]],
+                'hidden' => false,
+            ])
+        );
 
         $product->schemas()->save($schema);
 
@@ -854,11 +861,13 @@ class DiscountOrderTest extends TestCase
             'prices_base' => [PriceDto::from(Money::of(10, $this->currency->value))],
         ]));
 
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => SchemaType::BOOLEAN,
-            'prices' => [['value' => 20, 'currency' => $this->currency->value]],
-            'hidden' => false,
-        ]));
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => SchemaType::BOOLEAN,
+                'prices' => [['value' => 20, 'currency' => $this->currency->value]],
+                'hidden' => false,
+            ])
+        );
 
         $product->schemas()->sync([$schema->getKey()]);
 
@@ -913,11 +922,13 @@ class DiscountOrderTest extends TestCase
             'prices_base' => [PriceDto::from(Money::of(10, $this->currency->value))],
         ]));
 
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => SchemaType::BOOLEAN,
-            'price' => 10,
-            'hidden' => false,
-        ]));
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => SchemaType::BOOLEAN,
+                'price' => 10,
+                'hidden' => false,
+            ])
+        );
 
         $product->schemas()->sync([$schema->getKey()]);
 
@@ -1049,6 +1060,7 @@ class DiscountOrderTest extends TestCase
         $this->{$user}->givePermissionTo('orders.add');
 
         $productPrice = 50;
+
         $product = $this->productService->create(FakeDto::productCreateDto([
             'prices_base' => [PriceDto::from(Money::of($productPrice, $this->currency->value))],
         ]));

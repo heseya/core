@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Dtos;
+declare(strict_types=1);
+
+namespace Domain\ShippingMethod\Dtos;
 
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
-use Domain\Currency\Currency;
-use Heseya\Dto\Dto;
-use Heseya\Dto\DtoException;
+use Spatie\LaravelData\Data;
 
-class PriceRangeDto extends Dto
+final class PriceRangeDto extends Data
 {
     public function __construct(
         public readonly Money $start,
@@ -18,18 +18,17 @@ class PriceRangeDto extends Dto
     ) {}
 
     /**
+     * @param array<string> $data
+     *
      * @throws UnknownCurrencyException
      * @throws NumberFormatException
      * @throws RoundingNecessaryException
-     * @throws DtoException
      */
-    public static function fromData(string $value, string $start, string $currency): self
+    public static function fromArray(array $data): self
     {
-        $currency = Currency::from($currency);
-
         return new self(
-            start: Money::of($start, $currency->value),
-            value: Money::of($value, $currency->value),
+            start: Money::of($data['start'], $data['currency']),
+            value: Money::of($data['value'], $data['currency']),
         );
     }
 }

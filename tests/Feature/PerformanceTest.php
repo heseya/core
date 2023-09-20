@@ -15,7 +15,6 @@ use App\Models\Price;
 use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\Schema;
-use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Services\SchemaCrudService;
 use Brick\Math\Exception\NumberFormatException;
@@ -31,6 +30,7 @@ use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\SalesChannel\SalesChannelRepository;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Domain\Tag\Models\Tag;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\App;
@@ -268,7 +268,7 @@ class PerformanceTest extends TestCase
         $this->assertQueryCountLessThan(15);
     }
 
-    public function testIndexPerformanceDiscount(): void
+    public function testShowPerformanceSale(): void
     {
         $this->user->givePermissionTo('sales.show_details');
         $discount = Discount::factory(['target_type' => DiscountTargetType::PRODUCTS, 'code' => null])->create();
@@ -757,18 +757,20 @@ class PerformanceTest extends TestCase
 
         $schemaCrudService = App::make(SchemaCrudService::class);
 
-        $schema = $schemaCrudService->store(FakeDto::schemaDto([
-            'type' => 'select',
-            'prices' => [['value' => 0, 'currency' => Currency::DEFAULT->value]],
-            'hidden' => false,
-            'required' => true,
-            'options' => [
-                [
-                    'name' => 'XL',
-                    'prices' => [['value' => 0, 'currency' => Currency::DEFAULT->value]],
-                ]
-            ]
-        ]));
+        $schema = $schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => 'select',
+                'prices' => [['value' => 0, 'currency' => Currency::DEFAULT->value]],
+                'hidden' => false,
+                'required' => true,
+                'options' => [
+                    [
+                        'name' => 'XL',
+                        'prices' => [['value' => 0, 'currency' => Currency::DEFAULT->value]],
+                    ],
+                ],
+            ])
+        );
         $product->schemas()->sync([$schema->getKey()]);
         $product2->schemas()->sync([$schema->getKey()]);
         $product3->schemas()->sync([$schema->getKey()]);
@@ -781,22 +783,24 @@ class PerformanceTest extends TestCase
             $productItem->getKey() => ['required_quantity' => 1],
         ]);
 
-        $schema2 = $schemaCrudService->store(FakeDto::schemaDto([
-            'type' => 'select',
-            'prices' => [['value' => 0, 'currency' => Currency::DEFAULT->value]],
-            'hidden' => false,
-            'required' => false,
-            'options' => [
-                [
-                    'name' => 'XL',
-                    'prices' => [['value' => 0, 'currency' => Currency::DEFAULT->value]],
+        $schema2 = $schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => 'select',
+                'prices' => [['value' => 0, 'currency' => Currency::DEFAULT->value]],
+                'hidden' => false,
+                'required' => false,
+                'options' => [
+                    [
+                        'name' => 'XL',
+                        'prices' => [['value' => 0, 'currency' => Currency::DEFAULT->value]],
+                    ],
+                    [
+                        'name' => 'L',
+                        'prices' => [['value' => 0, 'currency' => Currency::DEFAULT->value]],
+                    ],
                 ],
-                [
-                    'name' => 'L',
-                    'prices' => [['value' => 0, 'currency' => Currency::DEFAULT->value]],
-                ]
-            ]
-        ]));
+            ])
+        );
 
         $option2 = $schema2->options->where('name', 'XL')->first();
         $option2->items()->attach([

@@ -47,7 +47,7 @@ class Schema extends Model implements SortableContract, Translatable
     use HasMetadata;
     use Sortable;
 
-    protected const HIDDEN_PERMISSION = 'schemas.show_hidden';
+    public const HIDDEN_PERMISSION = 'schemas.show_hidden';
 
     protected $fillable = [
         'type',

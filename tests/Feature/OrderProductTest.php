@@ -6,11 +6,11 @@ use App\Events\SendOrderUrls;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
-use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Notifications\SendUrls;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
@@ -23,7 +23,6 @@ class OrderProductTest extends TestCase
     private Order $order;
     private OrderProduct $digitalProduct;
     private OrderProduct $product;
-
     private Currency $currency;
 
     public function setUp(): void

@@ -72,10 +72,9 @@ final class SeoMetadataService
      */
     public function createOrUpdateFor(SeoContract $model, SeoMetadataCreateDto|SeoMetadataDtoOld|SeoMetadataUpdateDto $dto): void
     {
-        $seo = $model->seo ?? new SeoMetadata($dto->toArray());
+        $seo = $model->seo ?? new SeoMetadata();
+        $seo->fill($dto->toArray());
         $seo->global = false;
-
-        $seo->setAttribute('no_index', '{}');
 
         if (!($dto->translations instanceof Optional)) {
             foreach ($dto->translations as $lang => $translations) {

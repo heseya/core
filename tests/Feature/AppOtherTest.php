@@ -5,8 +5,8 @@ namespace Tests\Feature;
 use App\Models\App;
 use App\Models\Permission;
 use App\Models\Role;
-use App\Models\ShippingMethod;
 use App\Models\WebHook;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
@@ -75,18 +75,19 @@ class AppOtherTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJson(['data' => [
-                'url' => $app->url,
-                'microfrontend_url' => $app->microfrontend_url,
-                'name' => $app->name,
-                'slug' => $app->slug,
-                'version' => $app->version,
-                'description' => $app->description,
-                'icon' => $app->icon,
-                'author' => $app->author,
-                'permissions' => [],
-                'metadata' => [],
-            ],
+            ->assertJson([
+                'data' => [
+                    'url' => $app->url,
+                    'microfrontend_url' => $app->microfrontend_url,
+                    'name' => $app->name,
+                    'slug' => $app->slug,
+                    'version' => $app->version,
+                    'description' => $app->description,
+                    'icon' => $app->icon,
+                    'author' => $app->author,
+                    'permissions' => [],
+                    'metadata' => [],
+                ],
             ]);
     }
 

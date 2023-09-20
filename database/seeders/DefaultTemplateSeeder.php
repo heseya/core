@@ -4,14 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Enums\RoleType;
-use App\Models\Role;
-use App\Models\Setting;
-use App\Models\User;
-use App\Models\UserPreference;
-use Domain\Language\Language;
-use Domain\Metadata\Enums\MetadataType;
-use Domain\ProductSet\ProductSet;
+use Domain\Setting\Models\Setting;
 use Illuminate\Database\Seeder;
 
 /**

@@ -10,6 +10,7 @@ use App\Models\Schema;
 use App\Services\SchemaCrudService;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Language\Language;
 use Domain\Metadata\Enums\MetadataType;
 use Domain\Price\Dtos\PriceDto;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -74,6 +75,52 @@ class SchemaTest extends TestCase
 
         $response->assertOk()
             ->assertJsonCount(5, 'data');
+
+        $firstElement = $response['data'][0];
+
+        $this->assertArrayHasKey('translations', $firstElement);
+        $this->assertIsArray($firstElement['translations']);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexProductsWithTranslationsFlagMultiLang(string $user): void
+    {
+        $this->{$user}->givePermissionTo(['products.add', 'schemas.show_hidden']);
+
+        /** @var Schema $schema */
+        $schema = Schema::factory()->create([
+            'name' => 'Nazwa',
+            'description' => 'Opis',
+        ]);
+
+        /** @var Language $en */
+        $en = Language::query()->where('iso', '=', 'en')->first();
+
+        $schema->setLocale($en->getKey())->fill([
+            'name' => 'Name',
+            'description' => 'Description',
+        ]);
+        $schema->save();
+
+        $response = $this->actingAs($this->{$user})->json('GET', '/schemas?with_translations=1');
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Nazwa',
+                        'description' => 'Opis',
+                    ],
+                    $en->getKey() => [
+                        'name' => 'Name',
+                        'description' => 'Description',
+                    ],
+                ],
+            ]);
 
         $firstElement = $response['data'][0];
 

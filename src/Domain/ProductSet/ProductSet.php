@@ -50,7 +50,7 @@ final class ProductSet extends Model implements SeoContract, Translatable
     use HasSeoMetadata;
     use SoftDeletes;
 
-    protected const HIDDEN_PERMISSION = 'product_sets.show_hidden';
+    public const HIDDEN_PERMISSION = 'product_sets.show_hidden';
 
     protected $fillable = [
         'id',

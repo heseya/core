@@ -5,6 +5,7 @@ namespace App\Exceptions;
 use App\Enums\ErrorCode;
 use App\Enums\ValidationError;
 use App\Http\Resources\ErrorResource;
+use Domain\GoogleCategory\Exceptions\GoogleProductCategoryFileException;
 use Domain\Language\Exceptions\TranslationException;
 use Domain\Language\Resources\TranslationExceptionResource;
 use Exception;
@@ -66,7 +67,6 @@ final class Handler extends ExceptionHandler
         PackageException::class => ErrorCode::BAD_GATEWAY,
         PackageAuthException::class => ErrorCode::BAD_GATEWAY,
     ];
-
     /**
      * A list of the inputs that are never flashed for validation exceptions.
      *

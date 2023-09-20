@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\MetadataController;
-use App\Http\Controllers\ShippingMethodController;
+use Domain\ShippingMethod\Controllers\ShippingMethodController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('shipping-methods')->group(function (): void {

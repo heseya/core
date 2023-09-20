@@ -72,7 +72,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     use SoftDeletes;
     use Sortable;
 
-    protected const HIDDEN_PERMISSION = 'products.show_hidden';
+    public const HIDDEN_PERMISSION = 'products.show_hidden';
 
     protected $fillable = [
         'id',
@@ -189,6 +189,12 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         return $this->belongsToMany(Tag::class, 'product_tags');
     }
 
+    public function publishedTags(): BelongsToMany
+    {
+        return !Config::get('translatable.fallback_locale')
+            ? $this->tags()->where('tags.published', 'LIKE', '%' . Config::get('language.id') . '%') : $this->tags();
+    }
+
     public function requiredSchemas(): BelongsToMany
     {
         return $this->schemas()->where('required', true);
@@ -198,7 +204,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     {
         return $this
             ->belongsToMany(Schema::class, 'product_schemas')
-            ->with(['options', 'metadata', 'metadataPrivate', 'options.metadata', 'metadata.metadataPrivate'])
+            ->with(['options', 'metadata', 'metadataPrivate', 'options.metadata', 'options.metadataPrivate'])
             ->orderByPivot('order');
     }
 

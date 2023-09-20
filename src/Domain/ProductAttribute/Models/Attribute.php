@@ -37,7 +37,7 @@ final class Attribute extends Model implements Translatable
     use HasFactory;
     use HasMetadata;
 
-    protected const HIDDEN_PERMISSION = 'attributes.show_hidden';
+    public const HIDDEN_PERMISSION = 'attributes.show_hidden';
 
     protected $fillable = [
         'id',

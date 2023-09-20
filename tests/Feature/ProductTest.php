@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\MediaType;
 use Domain\Price\Enums\ProductPriceType;
 use App\Enums\SchemaType;
@@ -1937,7 +1938,13 @@ class ProductTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->json('POST', '/products?with_translations=1', $data);
 
-        $response->assertCreated();
+        $response
+            ->assertCreated()
+            ->assertJsonFragment([
+                'title' => 'seo title',
+                'description' => 'seo description',
+                'no_index' => $booleanValue,
+            ]);
 
         $product = Product::query()->find($response->json('data.id'))->first();
 
@@ -2399,6 +2406,37 @@ class ProductTest extends TestCase
         ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateIncompleteTranslations(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.add');
+
+        /** @var Language $en */
+        $en = Language::where('iso', '=', 'en')->first();
+
+        $this->actingAs($this->{$user})->postJson('/products', [
+            'slug' => 'test',
+            'prices_base' => $this->productPrices,
+            'public' => true,
+            'shipping_digital' => false,
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                    'description_html' => '<h1>Description</h1>',
+                    'description_short' => 'So called short description...',
+                ],
+            ],
+            'published' => [$this->lang, $en->getKey()],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'message' => "Model doesn't have all required translations to be published in {$en->getKey()}",
+                'key' => Exceptions::PUBLISHING_TRANSLATION_EXCEPTION->name,
+            ]);
+    }
+
     public function testUpdateUnauthorized(): void
     {
         Event::fake([ProductUpdated::class]);
@@ -2640,6 +2678,7 @@ class ProductTest extends TestCase
                         $this->lang => [
                             'title' => 'seo title',
                             'description' => 'seo description',
+                            'no_index' => false,
                         ],
                     ],
                 ],
@@ -2647,6 +2686,7 @@ class ProductTest extends TestCase
             ->assertJsonFragment([
                 'title' => 'seo title',
                 'description' => 'seo description',
+                'no_index' => false,
             ]);
 
         $this->assertDatabaseHas('seo_metadata', [
@@ -2684,6 +2724,88 @@ class ProductTest extends TestCase
             ->assertJsonFragment([
                 'title' => 'seo title',
                 'description' => 'seo description',
+            ]);
+
+        $this->assertDatabaseHas('seo_metadata', [
+            "title->{$this->lang}" => 'seo title',
+            "description->{$this->lang}" => 'seo description',
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateSeoEmptyValues(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.edit');
+
+        $this->product->update([
+            'name' => 'Created',
+            'slug' => 'created',
+            'description_html' => '<h1>Description</h1>',
+            'public' => false,
+            'order' => 1,
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', '/products/id:' . $this->product->getKey(), [
+                'seo' => [
+                    'translations' => [
+                        $this->lang => [
+                            'title' => '',
+                            'description' => '',
+                        ],
+                    ],
+                ],
+            ])
+            ->assertJsonFragment([
+                'title' => '',
+                'description' => '',
+            ]);
+
+        $this->assertDatabaseHas('seo_metadata', [
+            "title->{$this->lang}" => null,
+            "description->{$this->lang}" => null,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateSeoPublished(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.edit');
+
+        $this->product->update([
+            'name' => 'Created',
+            'slug' => 'created',
+            'description_html' => '<h1>Description</h1>',
+            'public' => false,
+            'order' => 1,
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', '/products/id:' . $this->product->getKey(), [
+                'seo' => [
+                    'translations' => [
+                        $this->lang => [
+                            'title' => 'seo title',
+                            'description' => 'seo description',
+                        ],
+                    ],
+                    'published' => [
+                        $this->lang,
+                    ],
+                ],
+            ])
+            ->assertJsonFragment([
+                'title' => 'seo title',
+                'description' => 'seo description',
+                'published' => [
+                    $this->lang,
+                ],
             ]);
 
         $this->assertDatabaseHas('seo_metadata', [

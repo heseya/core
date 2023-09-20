@@ -36,7 +36,7 @@ class ProductRepository implements ProductRepositoryContract
     public function search(ProductSearchDto $dto): LengthAwarePaginator
     {
         $query = Product::searchByCriteria($dto->except('sort', 'public', 'all')->toArray() + $this->getPublishedLanguageFilter('products'))
-            ->with(['attributes', 'metadata', 'media', 'tags', 'items', 'pricesBase', 'pricesMin', 'pricesMax', 'pricesMinInitial', 'pricesMaxInitial']);
+            ->with(['attributes', 'metadata', 'media', 'publishedTags', 'items', 'pricesBase', 'pricesMin', 'pricesMax', 'pricesMinInitial', 'pricesMaxInitial']);
 
         $salesChannel = Config::get('sales-channel.model');
 
