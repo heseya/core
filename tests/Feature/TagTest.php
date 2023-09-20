@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Models\Product;
 use Domain\Language\Language;
+use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Domain\Tag\Models\Tag;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Ramsey\Uuid\Uuid;
@@ -13,6 +15,15 @@ use Tests\TestCase;
 class TagTest extends TestCase
 {
     use RefreshDatabase;
+
+    private SalesChannel $salesChannel;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
+    }
 
     public function testIndexUnauthorized(): void
     {
@@ -36,6 +47,8 @@ class TagTest extends TestCase
         $product = Product::factory()->create();
         $product->tags()->sync([$tag->getKey()]);
 
+        $this->salesChannel->products()->attach($product);
+
         $response = $this->actingAs($this->{$user})->getJson('/tags');
 
         $response
@@ -54,6 +67,8 @@ class TagTest extends TestCase
 
         $product = Product::factory()->create();
         $product->tags()->sync([$tag->getKey()]);
+
+        $this->salesChannel->products()->attach($product);
 
         $response = $this->actingAs($this->{$user})->json('GET', '/tags', [
             'ids' => [
@@ -379,10 +394,12 @@ class TagTest extends TestCase
 
         /** @var Language $en */
         $en = Language::query()->where('iso', '=', 'en')->first();
+
         $product = Product::factory()->create([
-            'public' => true,
             'published' => $this->lang,
         ]);
+
+        $this->salesChannel->products()->attach($product);
 
         $tagPl = Tag::factory()->create([
             'name' => 'Tag pl',
