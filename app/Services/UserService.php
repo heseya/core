@@ -285,7 +285,7 @@ readonly class UserService implements UserServiceContract
             }
         }
 
-        // @phpstan-ignore-next-line
+        /** @phpstan-ignore-next-line */
         $roleModels = $roleModels->merge($user->roles->filter(fn (Role $role): bool => !$role->is_joinable));
 
         $user->syncRoles($roleModels);
