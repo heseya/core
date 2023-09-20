@@ -101,4 +101,50 @@ class FilterTest extends TestCase
                 'name' => 'Not in query single option',
             ]);
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testFiltersAndAttributesSameOrder($user): void
+    {
+        $this->{$user}->givePermissionTo('attributes.show');
+
+        $productSet = ProductSet::factory()->create();
+        $productSet->attributes()->attach([
+            $attr1 = Attribute::factory()->create([
+                'name' => 'Test A',
+                'global' => 0,
+                'order' => 1,
+                'type' => 'number',
+            ])->getKey(),
+            $attr2 = Attribute::factory()->create([
+                'global' => 0,
+                'name' => 'Test B',
+                'order' => 2,
+                'type' => 'date',
+            ])->getKey(),
+            $attr3 = Attribute::factory()->create([
+                'global' => 0,
+                'order' => 0,
+                'name' => 'Test C',
+                'type' => 'date',
+            ])->getKey(),
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->getJson('/attributes')
+            ->assertJsonPath('data.0.id', $attr3)
+            ->assertJsonPath('data.1.id', $attr1)
+            ->assertJsonPath('data.2.id', $attr2);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/filters', [
+                'sets' => [$productSet->getKey()],
+            ])
+            ->assertJsonPath('data.0.id', $attr3)
+            ->assertJsonPath('data.1.id', $attr1)
+            ->assertJsonPath('data.2.id', $attr2);
+    }
 }
