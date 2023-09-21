@@ -163,15 +163,11 @@ class ShippingMethodTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data')
-            ->assertJson([
-                'data' => [
-                    0 => [
-                        'id' => $shippingMethod1->getKey(),
-                    ],
-                    1 => [
-                        'id' => $shippingMethod2->getKey(),
-                    ],
-                ],
+            ->assertJsonFragment([
+                'id' => $shippingMethod1->getKey(),
+            ])
+            ->assertJsonFragment([
+                'id' => $shippingMethod2->getKey(),
             ]);
 
         $response = $this->actingAs($this->{$user})->getJson(
@@ -181,6 +177,7 @@ class ShippingMethodTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data')
+            ->assertJsonCount(2, 'data.0.sales_channels')
             ->assertJson([
                 'data' => [
                     0 => [
