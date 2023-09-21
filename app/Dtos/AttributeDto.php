@@ -26,7 +26,7 @@ class AttributeDto extends Dto implements InstantiateFromRequest
     ) {}
 
     public static function instantiateFromRequest(
-        AttributeStoreRequest|AttributeUpdateRequest|FormRequest $request
+        AttributeStoreRequest|AttributeUpdateRequest|FormRequest $request,
     ): self {
         return new self(
             id: $request->input('id', new Missing()),

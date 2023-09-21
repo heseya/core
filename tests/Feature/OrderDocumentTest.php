@@ -95,7 +95,7 @@ class OrderDocumentTest extends TestCase
                 'orders/id:'
                 . $this->order->getKey()
                 . '/docs/id:'
-                . $this->order->documents()->latest()->first()->pivot->id
+                . $this->order->documents()->latest()->first()->pivot->id,
             );
 
         $response->assertStatus(204);
@@ -186,7 +186,7 @@ class OrderDocumentTest extends TestCase
                 'orders/id:'
                 . $this->order->getKey() . '/docs/id:'
                 . $this->order->documents->last()->pivot->id
-                . '/download'
+                . '/download',
             );
 
         $response
@@ -218,7 +218,7 @@ class OrderDocumentTest extends TestCase
                 'orders/id:'
                 . $this->order->getKey() . '/docs/id:'
                 . $this->order->documents->last()->pivot->id
-                . '/download'
+                . '/download',
             );
 
         $response
@@ -250,7 +250,7 @@ class OrderDocumentTest extends TestCase
                 'orders/id:'
                 . $this->order->getKey() . '/docs/id:'
                 . $this->order->documents->last()->pivot->id
-                . '/download'
+                . '/download',
             );
 
         $response

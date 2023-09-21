@@ -23,7 +23,7 @@ class ProductSetUpdateDto extends Dto implements InstantiateFromRequest
     private array|Missing|null $attributes_ids;
 
     public static function instantiateFromRequest(
-        FormRequest|ProductSetStoreRequest|ProductSetUpdateRequest $request
+        FormRequest|ProductSetStoreRequest|ProductSetUpdateRequest $request,
     ): self {
         return new self(
             name: $request->input('name', new Missing()),

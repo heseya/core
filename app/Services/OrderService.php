@@ -60,7 +60,7 @@ class OrderService implements OrderServiceContract
         private ItemServiceContract $itemService,
         private NameServiceContract $nameService,
         private MetadataServiceContract $metadataService,
-        private DepositServiceContract $depositService
+        private DepositServiceContract $depositService,
     ) {}
 
     public function calcSummary(Order $order): float
@@ -411,7 +411,7 @@ class OrderService implements OrderServiceContract
     public function indexMyOrderProducts(OrderProductSearchDto $dto): LengthAwarePaginator
     {
         return OrderProduct::searchByCriteria(
-            ['user' => Auth::id(), 'paid' => true] + $dto->toArray()
+            ['user' => Auth::id(), 'paid' => true] + $dto->toArray(),
         )
             ->sort('created_at:desc')
             ->with(['urls', 'product'])
@@ -538,7 +538,7 @@ class OrderService implements OrderServiceContract
     private function resolveShippingAddress(
         Address|Missing|string|null $shippingPlace,
         string $shippingType,
-        Order $order
+        Order $order,
     ): ?string {
         if ($shippingPlace instanceof Missing) {
             return $order->shipping_address_id;
@@ -569,7 +569,7 @@ class OrderService implements OrderServiceContract
     private function resolveShippingPlace(
         Address|Missing|string|null $shippingPlace,
         string $shippingType,
-        Order $order
+        Order $order,
     ): ?string {
         if ($shippingPlace instanceof Missing) {
             return $order->shipping_place;

@@ -129,7 +129,7 @@ final readonly class ProductSetService implements ProductSetServiceContract
         Collection $children,
         string $parentId,
         ?string $parentSlug,
-        bool $publicParent
+        bool $publicParent,
     ): void {
         $children->each(
             function ($child, $order) use ($parentId, $parentSlug, $publicParent): void {
@@ -143,7 +143,7 @@ final readonly class ProductSetService implements ProductSetServiceContract
                     $child->children,
                     $child->getKey(),
                     $childSlug,
-                    $publicParent && $child->public
+                    $publicParent && $child->public,
                 );
 
                 $child->update([
@@ -240,8 +240,8 @@ final readonly class ProductSetService implements ProductSetServiceContract
         ProductSearchValueEvent::dispatch(
             array_merge(
                 $currentProducts->diff($productsIds)->toArray(),
-                collect($productsIds)->diff($currentProducts)->toArray()
-            )
+                collect($productsIds)->diff($currentProducts)->toArray(),
+            ),
         );
 
         return $set->products;
@@ -371,7 +371,7 @@ final readonly class ProductSetService implements ProductSetServiceContract
     private function prepareSlug(
         bool|Missing $isOverridden,
         Missing|string|null $slugSuffix,
-        string $parentSlug
+        string $parentSlug,
     ): ?string {
         $slug = $slugSuffix instanceof Missing ? null : $slugSuffix;
         if (!$isOverridden instanceof Missing && !$isOverridden) {

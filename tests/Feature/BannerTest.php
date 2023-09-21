@@ -309,7 +309,7 @@ class BannerTest extends TestCase
                     'metadata' => [
                         'attributeMeta' => 'attributeValue',
                     ],
-                ]
+                ],
             )
             ->assertCreated()
             ->assertJsonFragment($this->newBanner)
@@ -337,7 +337,7 @@ class BannerTest extends TestCase
                     'metadata_private' => [
                         'attributeMetaPriv' => 'attributeValue',
                     ],
-                ]
+                ],
             )
             ->assertCreated()
             ->assertJsonFragment($this->newBanner)
@@ -416,7 +416,7 @@ class BannerTest extends TestCase
             ->actingAs($this->{$user})
             ->patchJson(
                 "/banners/id:{$this->banner->getKey()}",
-                $banner + ['banner_media' => [$bannerMedia + $medias]]
+                $banner + ['banner_media' => [$bannerMedia + $medias]],
             )
             ->assertOk()
             ->assertJsonFragment($banner);

@@ -161,7 +161,7 @@ class OrderController extends Controller
         Gate::inspect('indexUserOrder', [Order::class]);
 
         return OrderResource::collection(
-            $this->orderService->indexUserOrder(OrderIndexDto::instantiateFromRequest($request))
+            $this->orderService->indexUserOrder(OrderIndexDto::instantiateFromRequest($request)),
         );
     }
 
@@ -175,7 +175,7 @@ class OrderController extends Controller
     public function shippingLists(Order $order, OrderShippingListRequest $request): JsonResource
     {
         return OrderResource::make(
-            $this->orderService->shippingList($order, $request->package_template_id)
+            $this->orderService->shippingList($order, $request->package_template_id),
         );
     }
 
@@ -236,7 +236,7 @@ class OrderController extends Controller
     public function myOrderProducts(OrderProductSearchRequest $request): JsonResource
     {
         return OrderProductResourcePublic::collection(
-            $this->orderService->indexMyOrderProducts(OrderProductSearchDto::instantiateFromRequest($request))
+            $this->orderService->indexMyOrderProducts(OrderProductSearchDto::instantiateFromRequest($request)),
         );
     }
 

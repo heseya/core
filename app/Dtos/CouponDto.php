@@ -19,7 +19,7 @@ final class CouponDto extends SaleDto implements InstantiateFromRequest
     protected array|Missing $metadata;
 
     public static function instantiateFromRequest(
-        CouponCreateRequest|CouponUpdateRequest|FormRequest|SaleCreateRequest|StatusUpdateRequest $request
+        CouponCreateRequest|CouponUpdateRequest|FormRequest|SaleCreateRequest|StatusUpdateRequest $request,
     ): self {
         return new self(
             code: $request->input('code', new Missing()),

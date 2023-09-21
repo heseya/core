@@ -29,7 +29,7 @@ class SeoMetadataService implements SeoMetadataServiceContract
         /** @var SeoMetadata $seo */
         $seo = SeoMetadata::query()->firstOrCreate(
             ['global' => true],
-            $dto->toArray()
+            $dto->toArray(),
         );
 
         if (!$seo->wasRecentlyCreated) {

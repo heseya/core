@@ -12,7 +12,7 @@ final class ProductsReorderDto extends Dto
     protected array|Missing $products;
 
     public static function instantiateFromRequest(
-        FormRequest|ProductSetProductReorderRequest $request
+        FormRequest|ProductSetProductReorderRequest $request,
     ): self {
         return new self(
             products: $request->input('products', new Missing()),

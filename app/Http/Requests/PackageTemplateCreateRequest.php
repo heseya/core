@@ -19,7 +19,7 @@ class PackageTemplateCreateRequest extends FormRequest
                 'width' => ['required', 'integer'],
                 'height' => ['required', 'integer'],
                 'depth' => ['required', 'integer'],
-            ]
+            ],
         );
     }
 }

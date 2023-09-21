@@ -23,7 +23,7 @@ class AddSummaryToOrdersTable extends Migration
             fn (Order $order) => $order->update([
                 'summary' => $orderService->calcSummary($order),
                 'paid' => $order->paid_amount >= $orderService->calcSummary($order),
-            ])
+            ]),
         ));
     }
 

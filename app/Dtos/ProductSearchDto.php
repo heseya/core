@@ -66,7 +66,7 @@ class ProductSearchDto extends Dto implements InstantiateFromRequest
             metadata: self::array('metadata', $request),
             metadata_private: self::array('metadata_private', $request),
             price_min: $request->input('price.min', new Missing()),
-            price_max: $request->input('price.max', new Missing())
+            price_max: $request->input('price.max', new Missing()),
         );
     }
 

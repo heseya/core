@@ -24,7 +24,7 @@ class BannerController extends Controller
             ->with(['bannerMedia', 'bannerMedia.media', 'metadata', 'metadataPrivate']);
 
         return BannerResource::collection(
-            $query->paginate(Config::get('pagination.per_page'))
+            $query->paginate(Config::get('pagination.per_page')),
         );
     }
 
@@ -39,8 +39,8 @@ class BannerController extends Controller
     {
         return BannerResource::make(
             $this->bannerService->create(
-                BannerDto::instantiateFromRequest($request)
-            )
+                BannerDto::instantiateFromRequest($request),
+            ),
         );
     }
 
@@ -49,8 +49,8 @@ class BannerController extends Controller
         return BannerResource::make(
             $this->bannerService->update(
                 $banner,
-                BannerDto::instantiateFromRequest($request)
-            )
+                BannerDto::instantiateFromRequest($request),
+            ),
         );
     }
 

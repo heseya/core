@@ -75,7 +75,7 @@ class PayU implements PaymentMethod
             $request->getContent(),
             $signature['signature'],
             Config::get('payu.second_key'),
-            $signature['algorithm']
+            $signature['algorithm'],
         )) {
             throw new ClientException(Exceptions::CLIENT_UNTRUSTED_NOTIFICATION);
         }

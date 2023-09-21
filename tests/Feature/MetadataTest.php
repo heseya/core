@@ -224,7 +224,7 @@ class MetadataTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->patchJson(
             "/{$data['prefix_url']}/id:{$object->getKey()}/metadata",
-            $metadata
+            $metadata,
         );
 
         $response
@@ -262,7 +262,7 @@ class MetadataTest extends TestCase
 
         $this->actingAs($this->{$user})->patchJson(
             "/{$data['prefix_url']}/id:{$object->getKey()}/metadata-private",
-            $metadata
+            $metadata,
         )
             ->assertOk()
             ->assertJsonFragment(['data' => $metadata]);
@@ -301,7 +301,7 @@ class MetadataTest extends TestCase
             "/{$data['prefix_url']}/id:{$object->getKey()}/metadata",
             [
                 $metadata->name => 'new super value',
-            ]
+            ],
         )
             ->assertOk()
             ->assertJsonFragment(['data' => [
@@ -339,7 +339,7 @@ class MetadataTest extends TestCase
             "/products/id:{$product->getKey()}/metadata",
             [
                 $metadata->name => 'new super value',
-            ]
+            ],
         )
             ->assertOk()
             ->assertJsonFragment(['data' => [
@@ -386,7 +386,7 @@ class MetadataTest extends TestCase
             "/{$data['prefix_url']}/id:{$object->getKey()}/metadata-private",
             [
                 $metadata->name => 'new super value',
-            ]
+            ],
         )
             ->assertOk()
             ->assertJsonFragment(['data' => [
@@ -436,7 +436,7 @@ class MetadataTest extends TestCase
             [
                 $metadata1->name => $metadata1->value,
                 $metadata2->name => null,
-            ]
+            ],
         )
             ->assertOk()
             ->assertJsonFragment(['data' => [
@@ -489,7 +489,7 @@ class MetadataTest extends TestCase
             [
                 $metadata1->name => $metadata1->value,
                 $metadata2->name => null,
-            ]
+            ],
         )
             ->assertOk()
             ->assertJsonFragment(['data' => [
@@ -534,7 +534,7 @@ class MetadataTest extends TestCase
         $this->actingAs($this->user)->json(
             'PATCH',
             '/auth/profile/metadata-personal',
-            $metadata
+            $metadata,
         )
             ->assertOk()
             ->assertJsonFragment(['data' => $metadata]);
@@ -574,7 +574,7 @@ class MetadataTest extends TestCase
         $this->actingAs($this->user)->json(
             'PATCH',
             '/auth/profile/metadata-personal',
-            $metadata
+            $metadata,
         )
             ->assertOk()
             ->assertJsonFragment(['data' => $metadata]);
@@ -608,7 +608,7 @@ class MetadataTest extends TestCase
         $this->actingAs($this->user)->json(
             'PATCH',
             '/auth/profile/metadata-personal',
-            $metadata
+            $metadata,
         )
             ->assertOk()
             ->assertJsonFragment(['data' => []]);
@@ -639,7 +639,7 @@ class MetadataTest extends TestCase
             ->json(
                 'PATCH',
                 "/users/id:{$model->getKey()}/metadata-personal",
-                $metadata
+                $metadata,
             )
             ->assertOk()
             ->assertJsonFragment(['data' => $metadata]);
@@ -685,7 +685,7 @@ class MetadataTest extends TestCase
         $this->actingAs($this->{$user})->json(
             'PATCH',
             "/users/id:{$model->getKey()}/metadata-personal",
-            $metadata
+            $metadata,
         )
             ->assertOk()
             ->assertJsonFragment(['data' => $metadata]);
@@ -725,7 +725,7 @@ class MetadataTest extends TestCase
         $this->actingAs($this->{$user})->json(
             'PATCH',
             "/users/id:{$model->getKey()}/metadata-personal",
-            $metadata
+            $metadata,
         )
             ->assertOk()
             ->assertJsonFragment(['data' => []]);

@@ -49,7 +49,7 @@ class UrlServiceTest extends TestCase
             'https://example.com/path?get=true#fragment',
             $this->urlService->urlSetPath(
                 'https://example.com?get=true#fragment',
-                'path/'
+                'path/',
             ),
         );
     }
@@ -60,7 +60,7 @@ class UrlServiceTest extends TestCase
             'https://example.com/path/subpath?get=true#fragment',
             $this->urlService->urlAppendPath(
                 'https://example.com/path?get=true#fragment',
-                '/subpath/'
+                '/subpath/',
             ),
         );
     }
@@ -71,7 +71,7 @@ class UrlServiceTest extends TestCase
             'https://example.com/path?get=true#fragment',
             $this->urlService->urlAppendPath(
                 'https://example.com?get=true#fragment',
-                '/path/'
+                '/path/',
             ),
         );
     }

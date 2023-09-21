@@ -12,7 +12,7 @@ use Illuminate\Validation\Rules\Enum;
 class GoogleCategoryController extends Controller
 {
     public function __construct(
-        private readonly GoogleCategoryServiceContract $categoryService
+        private readonly GoogleCategoryServiceContract $categoryService,
     ) {}
 
     public function index(string $lang): JsonResource

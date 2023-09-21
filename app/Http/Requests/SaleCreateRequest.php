@@ -71,7 +71,7 @@ class SaleCreateRequest extends FormRequest
                         ConditionType::MAX_USES,
                         ConditionType::MAX_USES_PER_USER,
                     ]);
-            }
+            },
         );
 
         $validator->sometimes(
@@ -85,7 +85,7 @@ class SaleCreateRequest extends FormRequest
                         ConditionType::USER_IN,
                         ConditionType::USER_IN_ROLE,
                     ]);
-            }
+            },
         );
 
         $validator->sometimes(
@@ -98,7 +98,7 @@ class SaleCreateRequest extends FormRequest
                         ConditionType::DATE_BETWEEN,
                         ConditionType::TIME_BETWEEN,
                     ]);
-            }
+            },
         );
 
         $validator->sometimes(
@@ -109,7 +109,7 @@ class SaleCreateRequest extends FormRequest
                     ->in([
                         ConditionType::ORDER_VALUE,
                     ]);
-            }
+            },
         );
 
         $validator->sometimes(
@@ -120,7 +120,7 @@ class SaleCreateRequest extends FormRequest
                     ->in([
                         ConditionType::ORDER_VALUE,
                     ]);
-            }
+            },
         );
 
         $validator->sometimes(
@@ -135,7 +135,7 @@ class SaleCreateRequest extends FormRequest
                     ->in([
                         ConditionType::ORDER_VALUE,
                     ]);
-            }
+            },
         );
 
         $validator->sometimes(
@@ -146,7 +146,7 @@ class SaleCreateRequest extends FormRequest
                     ->in([
                         ConditionType::TIME_BETWEEN,
                     ]);
-            }
+            },
         );
 
         $validator->sometimes(
@@ -157,7 +157,7 @@ class SaleCreateRequest extends FormRequest
                     ->in([
                         ConditionType::TIME_BETWEEN,
                     ]);
-            }
+            },
         );
 
         $validator->sometimes(
@@ -168,7 +168,7 @@ class SaleCreateRequest extends FormRequest
                     ->in([
                         ConditionType::DATE_BETWEEN,
                     ]);
-            }
+            },
         );
 
         $validator->sometimes(
@@ -183,7 +183,7 @@ class SaleCreateRequest extends FormRequest
                     ->in([
                         ConditionType::DATE_BETWEEN,
                     ]);
-            }
+            },
         );
 
         $validator->sometimes(
@@ -194,7 +194,7 @@ class SaleCreateRequest extends FormRequest
                     ->in([
                         ConditionType::WEEKDAY_IN,
                     ]);
-            }
+            },
         );
 
         $validator->sometimes(
@@ -205,7 +205,7 @@ class SaleCreateRequest extends FormRequest
                     ->in([
                         ConditionType::USER_IN_ROLE,
                     ]);
-            }
+            },
         );
 
         $validator->sometimes(
@@ -216,7 +216,7 @@ class SaleCreateRequest extends FormRequest
                     ->in([
                         ConditionType::USER_IN,
                     ]);
-            }
+            },
         );
 
         $validator->sometimes(
@@ -227,7 +227,7 @@ class SaleCreateRequest extends FormRequest
                     ->in([
                         ConditionType::PRODUCT_IN,
                     ]);
-            }
+            },
         );
 
         $validator->sometimes(
@@ -238,7 +238,7 @@ class SaleCreateRequest extends FormRequest
                     ->in([
                         ConditionType::PRODUCT_IN_SET,
                     ]);
-            }
+            },
         );
 
         $validator->sometimes(
@@ -250,7 +250,7 @@ class SaleCreateRequest extends FormRequest
                         ConditionType::CART_LENGTH,
                         ConditionType::COUPONS_COUNT,
                     ]);
-            }
+            },
         );
 
         $validator->sometimes(
@@ -266,7 +266,7 @@ class SaleCreateRequest extends FormRequest
                         ConditionType::CART_LENGTH,
                         ConditionType::COUPONS_COUNT,
                     ]);
-            }
+            },
         );
     }
 }

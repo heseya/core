@@ -36,6 +36,6 @@ Route::prefix('attributes')->group(function (): void {
         ->middleware('can:attributes.edit');
     Route::patch(
         'id:{attribute:id}/options/id:{option:id}/metadata-private',
-        [MetadataController::class, 'updateOrCreate']
+        [MetadataController::class, 'updateOrCreate'],
     )->middleware('can:attributes.edit');
 });

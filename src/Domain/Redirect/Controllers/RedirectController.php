@@ -25,7 +25,7 @@ class RedirectController extends Controller
     public function store(RedirectCreateDto $dto): JsonResource
     {
         return RedirectResource::make(
-            $this->redirectService->create($dto)
+            $this->redirectService->create($dto),
         );
     }
 
@@ -37,7 +37,7 @@ class RedirectController extends Controller
     public function update(Redirect $redirect, RedirectUpdateDto $dto): JsonResource
     {
         return RedirectResource::make(
-            $this->redirectService->update($redirect, $dto)
+            $this->redirectService->update($redirect, $dto),
         );
     }
 

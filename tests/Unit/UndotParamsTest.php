@@ -34,7 +34,7 @@ class UndotParamsTest extends TestCase
                         'Zagraniczny' => '0',
                     ],
                 ],
-                $req->metadata
+                $req->metadata,
             );
         });
     }
@@ -64,7 +64,7 @@ class UndotParamsTest extends TestCase
                         'Dystrybucja' => ['Polska', 'Francja'],
                     ],
                 ],
-                $req->metadata
+                $req->metadata,
             );
             $this->assertEquals('test', $req->not_related_param);
             $this->assertNotEquals('Heseya', $req->metadata_Producent);

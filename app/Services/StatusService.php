@@ -13,7 +13,7 @@ use Heseya\Dto\Missing;
 class StatusService implements StatusServiceContract
 {
     public function __construct(
-        private MetadataServiceContract $metadataService
+        private MetadataServiceContract $metadataService,
     ) {}
 
     public function store(StatusDto $dto): Status

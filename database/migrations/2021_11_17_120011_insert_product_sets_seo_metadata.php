@@ -16,7 +16,7 @@ class InsertProductSetsSeoMetadata extends Migration
                     'global' => false,
                     'model_id' => $set->getKey(),
                     'model_type' => ProductSet::class,
-                ])
+                ]),
             ));
         }
     }

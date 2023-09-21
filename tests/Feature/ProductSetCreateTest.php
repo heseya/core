@@ -174,7 +174,7 @@ class ProductSetCreateTest extends TestCase
             'product_sets',
             $set + $defaults + [
                 'parent_id' => null,
-            ]
+            ],
         );
 
         Event::assertDispatched(ProductSetCreated::class);

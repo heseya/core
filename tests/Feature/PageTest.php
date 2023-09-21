@@ -720,7 +720,7 @@ class PageTest extends TestCase
         $response = $this->actingAs($this->{$user})->json(
             'PATCH',
             '/pages/id:' . $this->page->getKey(),
-            $page
+            $page,
         );
 
         $response

@@ -76,7 +76,7 @@ class ChangeDiscountsTable extends Migration
                 }
 
                 $discount->conditionGroups()->attach($conditionGroup);
-            }
+            },
         ));
 
         Schema::table('discounts', function (Blueprint $table): void {
@@ -118,7 +118,7 @@ class ChangeDiscountsTable extends Migration
                     'expires_at' => $expiresAt,
                 ]);
                 $discount->conditionGroups()->delete();
-            }
+            },
         ));
 
         Schema::dropIfExists('model_has_discounts');
