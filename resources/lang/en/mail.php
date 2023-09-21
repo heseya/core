@@ -46,4 +46,8 @@ return [
     'benefits' => 'By logging into your account, you will gain access to your personal customer panel.
         You will be able to see all of your orders, along with information on their status.
         The customer account also allows you to manage your contact information and delivery addresses.',
+
+    // order paid
+    'subject-order-paid' => 'Order :number has been paid',
+    'order-paid' => 'Your order has been paid.',
 ];
