@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
 use App\Models\Permission;
 use App\Models\Role;
@@ -1071,6 +1072,35 @@ class RoleTest extends TestCase
             'description' => 'Role 1',
             'is_registration_role' => true,
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOwnerIsJoinable($user): void
+    {
+        $this->{$user}->givePermissionTo('roles.edit');
+
+        $role = Role::create([
+            'name' => 'role1',
+            'description' => 'Role 1',
+            'is_joinable' => false,
+        ]);
+        $role->type = RoleType::OWNER;
+        $role->save();
+
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson('/roles/id:' . $role->getKey(), [
+                'name' => 'test_role',
+                'is_joinable' => true,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => Exceptions::coerce(Exceptions::CLIENT_UPDATE_NOT_REGULAR_JOINABLE)->key,
+            ])->assertJsonFragment([
+                'message' => Exceptions::CLIENT_UPDATE_NOT_REGULAR_JOINABLE,
+            ]);
     }
 
     /**
