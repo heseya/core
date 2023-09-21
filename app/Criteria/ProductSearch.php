@@ -11,7 +11,6 @@ class ProductSearch extends Criterion
     {
         return $query->whereFullText([
             'name',
-            'slug',
             'description_html',
             'description_short',
             'search_values',

@@ -10,7 +10,7 @@ return new class extends Migration {
         Schema::table('products', function (Blueprint $table): void {
             $table->dropFullText('products_search_values_fulltext');
             $table->fullText(
-                ['search_values', 'slug', 'name', 'description_short', 'description_html'],
+                ['search_values', 'name', 'description_short', 'description_html'],
                 'products_fulltext',
             );
         });
