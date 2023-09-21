@@ -18,7 +18,7 @@ final class EnumCoerceCast implements Cast
      * @param class-string<\BackedEnum>&EnumTrait> $type
      */
     public function __construct(
-        protected ?string $type = null
+        protected ?string $type = null,
     ) {}
 
     public function cast(DataProperty $property, mixed $value, array $context): BackedEnum|Uncastable

@@ -153,7 +153,7 @@ enum Exceptions: string
             self::SERVER_ERROR,
             self::SERVER_ORDER_STATUSES_NOT_CONFIGURED,
             self::SERVER_PAYMENT_MICROSERVICE_ERROR => 500,
-            default => 422
+            default => 422,
         };
     }
 }

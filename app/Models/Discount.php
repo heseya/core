@@ -100,7 +100,7 @@ class Discount extends Model implements SeoContract, Translatable
         return $this->morphedByMany(
             Product::class,
             'model',
-            'model_has_discounts'
+            'model_has_discounts',
         )->with(['metadata', 'metadataPrivate', 'attributes', 'media', 'tags']);
     }
 
@@ -109,7 +109,7 @@ class Discount extends Model implements SeoContract, Translatable
         return $this->morphedByMany(
             ProductSet::class,
             'model',
-            'model_has_discounts'
+            'model_has_discounts',
         )->with(['metadata', 'metadataPrivate']);
     }
 

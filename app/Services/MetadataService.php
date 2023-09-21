@@ -122,7 +122,7 @@ class MetadataService implements MetadataServiceContract
 
         // DDD structure
         $className = 'Domain\\' . Str::studly(Str::singular($segment)) . '\\Models\\' . Str::studly(
-            Str::singular($segment)
+            Str::singular($segment),
         );
 
         if (class_exists($className)) {

@@ -13,7 +13,7 @@ class EnumKey implements ValidationRule
      * @param class-string<BackedEnum> $enumClass
      */
     public function __construct(
-        protected string $enumClass
+        protected string $enumClass,
     ) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void

@@ -270,7 +270,7 @@ class ItemService implements ItemServiceContract
         string $productId,
         float $limit,
         array $purchasedProducts,
-        float $quantity
+        float $quantity,
     ): array {
         $relation = Auth::user() instanceof User ? 'user' : 'app';
         if (array_key_exists($productId, $purchasedProducts)) {

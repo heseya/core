@@ -22,8 +22,8 @@ class FavouriteController extends Controller
     {
         return FavouriteProductSetResource::make(
             $this->favouriteService->storeFavouriteProductSet(
-                FavouriteProductSetDto::instantiateFromRequest($request)
-            )
+                FavouriteProductSetDto::instantiateFromRequest($request),
+            ),
         );
     }
 

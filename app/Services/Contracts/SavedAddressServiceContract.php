@@ -10,13 +10,13 @@ interface SavedAddressServiceContract
 {
     public function storeAddress(
         SavedAddressDto $addressDto,
-        SavedAddressType $type
+        SavedAddressType $type,
     ): ?SavedAddress;
 
     public function updateAddress(
         SavedAddress $address,
         SavedAddressDto $addressDto,
-        SavedAddressType $type
+        SavedAddressType $type,
     ): SavedAddress;
 
     public function deleteSavedAddress(SavedAddress $address): void;

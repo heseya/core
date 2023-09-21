@@ -24,8 +24,8 @@ final class SettingsService implements SettingsServiceContract
                     new Setting(
                         $setting + [
                             'name' => $key,
-                        ]
-                    )
+                        ],
+                    ),
                 );
             }
         });
@@ -49,7 +49,7 @@ final class SettingsService implements SettingsServiceContract
 
         if ($setting === null) {
             $setting = new Setting(
-                ($config ?? ['value' => $default]) + ['name' => $name]
+                ($config ?? ['value' => $default]) + ['name' => $name],
             );
         }
 

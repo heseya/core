@@ -241,7 +241,7 @@ final class Handler extends ExceptionHandler
             ValidationError::GTE => [
                 'field' => $data[0],
             ],
-            default => []
+            default => [],
         };
     }
 }

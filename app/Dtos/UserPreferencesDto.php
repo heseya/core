@@ -24,7 +24,7 @@ class UserPreferencesDto extends Dto implements InstantiateFromRequest
             new_localization_login_alert: $request
                 ->input('preferences.new_localization_login_alert', new Missing()),
             recovery_code_changed_alert: $request
-                ->input('preferences.recovery_code_changed_alert', new Missing())
+                ->input('preferences.recovery_code_changed_alert', new Missing()),
         );
     }
 
