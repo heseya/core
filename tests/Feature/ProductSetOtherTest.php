@@ -520,7 +520,7 @@ class ProductSetOtherTest extends TestCase
                         'order' => 0,
                     ],
                 ],
-            ]
+            ],
         );
 
         $this
@@ -564,7 +564,7 @@ class ProductSetOtherTest extends TestCase
                         'order' => 4,
                     ],
                 ],
-            ]
+            ],
         );
 
         $this
@@ -608,7 +608,7 @@ class ProductSetOtherTest extends TestCase
                         'order' => 2,
                     ],
                 ],
-            ]
+            ],
         );
 
         $this
@@ -652,7 +652,7 @@ class ProductSetOtherTest extends TestCase
                         'order' => 9999,
                     ],
                 ],
-            ]
+            ],
         );
 
         $this
@@ -706,7 +706,7 @@ class ProductSetOtherTest extends TestCase
                         'order' => 0,
                     ],
                 ],
-            ]
+            ],
         );
 
         $this
@@ -758,7 +758,7 @@ class ProductSetOtherTest extends TestCase
                         'order' => 0,
                     ],
                 ],
-            ]
+            ],
         );
 
         $this

@@ -25,7 +25,7 @@ interface ProductSetServiceContract
         Collection $children,
         string $parentId,
         string $parentSlug,
-        bool $publicParent
+        bool $publicParent,
     ): void;
 
     public function delete(ProductSet $set): void;

@@ -33,7 +33,7 @@ class SchemaController extends Controller
     public function store(SchemaStoreRequest $request): JsonResource
     {
         return SchemaResource::make($this->schemaService->store(
-            SchemaDto::instantiateFromRequest($request)
+            SchemaDto::instantiateFromRequest($request),
         ));
     }
 
@@ -46,7 +46,7 @@ class SchemaController extends Controller
     {
         return SchemaResource::make($this->schemaService->update(
             $schema,
-            SchemaDto::instantiateFromRequest($request)
+            SchemaDto::instantiateFromRequest($request),
         ));
     }
 

@@ -144,7 +144,7 @@ class AttributeTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(
-                array_merge($this->newAttribute, ['Dystrybucja' => 'Polska'])
+                array_merge($this->newAttribute, ['Dystrybucja' => 'Polska']),
             );
     }
 
@@ -195,7 +195,7 @@ class AttributeTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(
-                array_merge($this->newAttribute, ['Dystrybucja' => 'Polska'])
+                array_merge($this->newAttribute, ['Dystrybucja' => 'Polska']),
             );
     }
 
@@ -873,7 +873,7 @@ class AttributeTest extends TestCase
             [
                 'index' => 1,
                 'attribute_id' => $this->attribute->getKey(),
-            ]
+            ],
         );
         $option->metadata()->create([
             'name' => 'Dystrybucja',
@@ -888,7 +888,7 @@ class AttributeTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(
-                array_merge($this->newOption, ['Dystrybucja' => 'Polska'])
+                array_merge($this->newOption, ['Dystrybucja' => 'Polska']),
             );
     }
 
@@ -904,7 +904,7 @@ class AttributeTest extends TestCase
             [
                 'index' => 1,
                 'attribute_id' => $this->attribute->getKey(),
-            ]
+            ],
         );
         $option->metadata()->create([
             'name' => 'Dystrybucja',
@@ -932,7 +932,7 @@ class AttributeTest extends TestCase
             [
                 'index' => 1,
                 'attribute_id' => $this->attribute->getKey(),
-            ]
+            ],
         );
         $option->metadata()->create([
             'name' => 'Dystrybucja',
@@ -947,7 +947,7 @@ class AttributeTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(
-                array_merge($this->newOption, ['Dystrybucja' => 'Polska'])
+                array_merge($this->newOption, ['Dystrybucja' => 'Polska']),
             );
     }
 
@@ -963,7 +963,7 @@ class AttributeTest extends TestCase
             [
                 'index' => 1,
                 'attribute_id' => $this->attribute->getKey(),
-            ]
+            ],
         );
         $option->metadata()->create([
             'name' => 'Dystrybucja',
@@ -1127,7 +1127,7 @@ class AttributeTest extends TestCase
             ->json(
                 'PATCH',
                 '/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey(),
-                $optionUpdate
+                $optionUpdate,
             )
             ->assertOk()
             ->assertJsonFragment($optionUpdate);
@@ -1152,7 +1152,7 @@ class AttributeTest extends TestCase
             ->json(
                 'PATCH',
                 '/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey(),
-                $optionUpdate
+                $optionUpdate,
             )
             ->assertOk()
             ->assertJsonFragment($optionUpdate);
@@ -1185,7 +1185,7 @@ class AttributeTest extends TestCase
             ->json(
                 'PATCH',
                 '/attributes/id:' . $attribute->getKey() . '/options/id:' . $option->getKey(),
-                $optionUpdate
+                $optionUpdate,
             )
             ->assertUnprocessable();
     }
@@ -1212,7 +1212,7 @@ class AttributeTest extends TestCase
             ->json(
                 'PATCH',
                 '/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey(),
-                $optionUpdate
+                $optionUpdate,
             )
             ->assertNotFound();
     }
@@ -1239,7 +1239,7 @@ class AttributeTest extends TestCase
             ->json(
                 'PATCH',
                 '/attributes/id:' . $attribute->getKey() . '/options/id:' . $this->option->getKey(),
-                $optionUpdate
+                $optionUpdate,
             )
             ->assertNotFound();
     }
@@ -1261,7 +1261,7 @@ class AttributeTest extends TestCase
             ->actingAs($this->{$user})
             ->patchJson(
                 '/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey(),
-                $optionUpdate
+                $optionUpdate,
             )
             ->assertForbidden();
     }

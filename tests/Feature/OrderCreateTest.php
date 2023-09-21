@@ -1031,7 +1031,7 @@ class OrderCreateTest extends TestCase
                             'quantity' => 20,
                         ],
                     ],
-                ]
+                ],
             )
             ->assertUnprocessable();
 

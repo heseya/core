@@ -31,7 +31,7 @@ class ProductSetDto extends Dto implements InstantiateFromRequest
      * @throws DtoException
      */
     public static function instantiateFromRequest(
-        FormRequest|ProductSetStoreRequest|ProductSetUpdateRequest $request
+        FormRequest|ProductSetStoreRequest|ProductSetUpdateRequest $request,
     ): self {
         return new self(
             id: $request->input('id') ?? new Missing(),

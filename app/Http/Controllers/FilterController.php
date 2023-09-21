@@ -23,7 +23,7 @@ class FilterController extends Controller
                 )
                 ->orWhere('global', true)->with('options')
                 ->orderBy('order')
-                ->get()
+                ->get(),
         );
     }
 }

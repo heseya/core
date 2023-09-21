@@ -25,7 +25,7 @@ class BannerStoreRequest extends FormRequest
                 'banner_media.*.media' => ['required', 'array'],
                 'banner_media.*.media.*.min_screen_width' => ['required', 'numeric'],
                 'banner_media.*.media.*.media' => ['required', 'uuid', 'exists:media,id'],
-            ]
+            ],
         );
     }
 }

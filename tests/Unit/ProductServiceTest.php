@@ -44,7 +44,7 @@ class ProductServiceTest extends TestCase
         return [
             'optional schema' => array_merge(
                 $base,
-                [SchemaType::STRING, false, [$price, $price + $schemaPrice]]
+                [SchemaType::STRING, false, [$price, $price + $schemaPrice]],
             ),
             'boolean schema' => array_merge(
                 $base,

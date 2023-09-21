@@ -17,7 +17,7 @@ class ShippingTimeDateService implements ShippingTimeDateServiceContract
 {
     public function __construct(
         private AvailabilityServiceContract $availabilityService,
-        private DepositServiceContract $depositService
+        private DepositServiceContract $depositService,
     ) {}
 
     public function stopShippingUnlimitedStockDate(): void

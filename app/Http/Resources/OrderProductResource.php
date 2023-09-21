@@ -26,7 +26,7 @@ class OrderProductResource extends Resource
                 'sets' => ProductSetResource::collection(
                     Gate::denies('product_sets.show_hidden')
                     ? $this->resource->product->sets->where('public', true)
-                    : $this->resource->product->sets
+                    : $this->resource->product->sets,
                 ),
             ],
         ];

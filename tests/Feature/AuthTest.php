@@ -317,7 +317,7 @@ class AuthTest extends TestCase
                     && $payload['data_type'] === 'LocalizedLoginAttempt'
                     && $payload['event'] === 'NewLocalizationLoginAttempt'
                     && $payload['issuer_type'] === IssuerType::USER;
-            }
+            },
         );
     }
 
@@ -821,7 +821,7 @@ class AuthTest extends TestCase
                 [
                     'refresh_token' => $refreshToken,
                 ],
-                $this->defaultHeaders + ['Authorization' => 'Bearer ' . $token]
+                $this->defaultHeaders + ['Authorization' => 'Bearer ' . $token],
             );
 
         $this
@@ -829,7 +829,7 @@ class AuthTest extends TestCase
                 'POST',
                 '/auth/logout',
                 [],
-                $this->defaultHeaders + ['Authorization' => 'Bearer ' . $token]
+                $this->defaultHeaders + ['Authorization' => 'Bearer ' . $token],
             )
             ->assertStatus(422);
     }
@@ -1585,7 +1585,7 @@ class AuthTest extends TestCase
 
         Notification::assertSentTo(
             [$this->user],
-            TFARecoveryCodes::class
+            TFARecoveryCodes::class,
         );
 
         $this->assertDatabaseHas('users', [
@@ -1647,7 +1647,7 @@ class AuthTest extends TestCase
 
         Notification::assertNotSentTo(
             [$this->user],
-            TFARecoveryCodes::class
+            TFARecoveryCodes::class,
         );
         Event::assertNotDispatched(TfaRecoveryCodesChanged::class);
 
@@ -1669,7 +1669,7 @@ class AuthTest extends TestCase
 
         Notification::assertSentTo(
             [$this->user],
-            TFAInitialization::class
+            TFAInitialization::class,
         );
 
         $this->assertDatabaseHas('users', [
@@ -1770,7 +1770,7 @@ class AuthTest extends TestCase
 
         Notification::assertSentTo(
             [$this->user],
-            TFARecoveryCodes::class
+            TFARecoveryCodes::class,
         );
 
         $this->assertDatabaseHas('users', [
@@ -1828,7 +1828,7 @@ class AuthTest extends TestCase
 
         Notification::assertNotSentTo(
             [$this->user],
-            TFARecoveryCodes::class
+            TFARecoveryCodes::class,
         );
         Event::assertNotDispatched(TfaRecoveryCodesChanged::class);
 
@@ -1891,7 +1891,7 @@ class AuthTest extends TestCase
 
         Notification::assertSentTo(
             [$this->user],
-            TFARecoveryCodes::class
+            TFARecoveryCodes::class,
         );
 
         $recovery_codes = OneTimeSecurityCode::where('user_id', '=', $this->user->getKey())
@@ -1926,7 +1926,7 @@ class AuthTest extends TestCase
 
         Notification::assertNotSentTo(
             [$this->user],
-            TFARecoveryCodes::class
+            TFARecoveryCodes::class,
         );
         Event::assertNotDispatched(TfaRecoveryCodesChanged::class);
 

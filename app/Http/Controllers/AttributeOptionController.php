@@ -34,7 +34,7 @@ class AttributeOptionController extends Controller
             ->with(['metadata', 'metadataPrivate']);
 
         return AttributeOptionResource::collection(
-            $query->paginate(Config::get('pagination.per_page'))
+            $query->paginate(Config::get('pagination.per_page')),
         );
     }
 
@@ -42,7 +42,7 @@ class AttributeOptionController extends Controller
     {
         $attributeOption = $this->attributeOptionService->create(
             $attribute->getKey(),
-            AttributeOptionDto::instantiateFromRequest($request)
+            AttributeOptionDto::instantiateFromRequest($request),
         );
 
         return AttributeOptionResource::make($attributeOption);
@@ -56,7 +56,7 @@ class AttributeOptionController extends Controller
 
         $attributeOption = $this->attributeOptionService->updateOrCreate(
             $attribute->getKey(),
-            AttributeOptionDto::instantiateFromRequest($request)
+            AttributeOptionDto::instantiateFromRequest($request),
         );
 
         return AttributeOptionResource::make($attributeOption);

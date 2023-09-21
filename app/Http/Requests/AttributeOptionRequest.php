@@ -28,7 +28,7 @@ class AttributeOptionRequest extends FormRequest
                 'name' => [$nameRule, 'string', 'max:255'],
                 'value_number' => ['nullable', 'numeric', 'regex:/^\d{1,6}(\.\d{1,2}|)$/'],
                 'value_date' => ['nullable', 'date'],
-            ]
+            ],
         );
     }
 }

@@ -39,7 +39,7 @@ class SchemaStoreRequest extends FormRequest
 
                 'options.*.items' => ['nullable', 'array'],
                 'options.*.items.*' => ['uuid', 'exists:items,id'],
-            ]
+            ],
         );
     }
 }

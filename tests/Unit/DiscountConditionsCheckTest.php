@@ -76,7 +76,7 @@ class DiscountConditionsCheckTest extends TestCase
                 $this->conditionGroup,
                 $cart,
                 40.0,
-            )
+            ),
         );
     }
 
@@ -102,7 +102,7 @@ class DiscountConditionsCheckTest extends TestCase
                 $this->conditionGroup,
                 $cart,
                 40.0,
-            )
+            ),
         );
     }
 
@@ -136,7 +136,7 @@ class DiscountConditionsCheckTest extends TestCase
                 $this->discount,
                 $cart,
                 120.0,
-            )
+            ),
         );
     }
 
@@ -168,7 +168,7 @@ class DiscountConditionsCheckTest extends TestCase
                 $this->discount,
                 $cart,
                 120.0,
-            )
+            ),
         );
     }
 

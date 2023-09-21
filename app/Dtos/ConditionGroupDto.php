@@ -13,7 +13,7 @@ class ConditionGroupDto extends Dto
     public static function fromArray(array $array): self
     {
         return new self(
-            conditions: self::transformArrayToConditionDtos($array)
+            conditions: self::transformArrayToConditionDtos($array),
         );
     }
 
@@ -39,7 +39,7 @@ class ConditionGroupDto extends Dto
                 ConditionType::WEEKDAY_IN => WeekDayInConditionDto::fromArray($condition),
                 ConditionType::CART_LENGTH => CartLengthConditionDto::fromArray($condition),
                 ConditionType::COUPONS_COUNT => CouponsCountConditionDto::fromArray($condition),
-                default => throw new Exception('Unknown condition type.')
+                default => throw new Exception('Unknown condition type.'),
             };
         }
 
