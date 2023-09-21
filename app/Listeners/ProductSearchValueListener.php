@@ -4,8 +4,9 @@ namespace App\Listeners;
 
 use App\Events\ProductSearchValueEvent;
 use App\Services\Contracts\ProductServiceContract;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-readonly class ProductSearchValueListener
+readonly class ProductSearchValueListener implements ShouldQueue
 {
     public function __construct(
         private ProductServiceContract $productService,
