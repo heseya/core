@@ -10,6 +10,7 @@ use App\Models\Model;
 use App\Traits\CustomHasTranslations;
 use Domain\Language\Language;
 use Domain\SalesChannel\Criteria\CountrySearch;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -27,7 +28,6 @@ final class SalesChannel extends Model implements Translatable
     use HasFactory;
 
     public const HIDDEN_PERMISSION = 'sales_channels.show_hidden';
-
     protected $fillable = [
         'id',
         'name',
@@ -41,18 +41,15 @@ final class SalesChannel extends Model implements Translatable
         // TODO: remove temp field
         'vat_rate',
     ];
-
     /** @var string[] */
     protected array $translatable = [
         'name',
     ];
-
     protected $casts = [
         'status' => Status::class,
         'countries_block_list' => 'bool',
         'published' => 'array',
     ];
-
     /** @var array<string, class-string> */
     protected array $criteria = [
         'country' => CountrySearch::class,
@@ -80,6 +77,21 @@ final class SalesChannel extends Model implements Translatable
             'country_code',
             'id',
             'code',
+        );
+    }
+
+    /**
+     * @return BelongsToMany<ShippingMethod>
+     */
+    public function shippingMethods(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            ShippingMethod::class,
+            'sales_channels_shipping_methods',
+            'sales_channel_id',
+            'shipping_method_id',
+            'id',
+            'id',
         );
     }
 }

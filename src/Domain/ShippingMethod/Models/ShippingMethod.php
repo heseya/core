@@ -20,6 +20,7 @@ use App\Traits\HasDiscounts;
 use App\Traits\HasMetadata;
 use Brick\Math\BigDecimal;
 use Brick\Money\Money;
+use Domain\SalesChannel\Models\SalesChannel;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -169,6 +170,21 @@ final class ShippingMethod extends Model
     public function priceRanges(): HasMany
     {
         return $this->hasMany(PriceRange::class, 'shipping_method_id');
+    }
+
+    /**
+     * @return BelongsToMany<SalesChannel>
+     */
+    public function salesChannels(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            SalesChannel::class,
+            'sales_channels_shipping_methods',
+            'shipping_method_id',
+            'sales_channel_id',
+            'id',
+            'id',
+        );
     }
 
     /**
