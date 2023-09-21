@@ -50,6 +50,7 @@ final class ShippingMethodCreateDto extends Data
      * @param array<int>|Optional $payment_methods
      * @param array<string>|Optional $countries
      * @param array<array<string>>|Optional $shipping_points
+     * @param string[]|Optional $sales_channels
      * @param string|null $integration_key
      * @param bool $block_list
      */
@@ -87,6 +88,9 @@ final class ShippingMethodCreateDto extends Data
         #[ArrayType]
         public readonly array|Optional $shipping_points,
 
+        #[ArrayType]
+        public readonly array|Optional $sales_channels,
+
         #[StringType, Nullable]
         public readonly string|null $integration_key = null,
 
@@ -114,17 +118,9 @@ final class ShippingMethodCreateDto extends Data
             'payment_methods' => ['array', 'prohibited_if:payment_on_delivery,true'],
             'payment_methods.*' => ['uuid', 'exists:payment_methods,id'],
             'shipping_points.*.id' => ['string', 'exists:addresses,id'],
+            'sales_channels' => ['array'],
+            'sales_channels.*' => ['string', 'exists:sales_channels,id'],
         ];
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    public function isPublic(): bool
-    {
-        return $this->public;
     }
 
     /**

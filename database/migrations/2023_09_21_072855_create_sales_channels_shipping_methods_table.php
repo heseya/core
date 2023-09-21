@@ -10,7 +10,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('sales_channels_shipping_methods', function (Blueprint $table): void {
+        Schema::create('sales_channel_shipping_method', function (Blueprint $table): void {
             $table->uuid('sales_channel_id')->index();
             $table->uuid('shipping_method_id')->index();
 
@@ -23,8 +23,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('shipping_methods', function (Blueprint $table): void {
-            $table->dropColumn('vat_rate');
-        });
+        Schema::dropIfExists('sales_channel_shipping_method');
     }
 };

@@ -25,7 +25,7 @@ final class ShippingMethodIndexDto extends Data
      */
     public function __construct(
         #[StringType, Size(2), Exists('countries', 'code')]
-        public string|Optional $country,
+        public Optional|string $country,
         #[ArrayType, Exists('shipping_methods', 'id')]
         public array|Optional $ids,
         #[ArrayType]
@@ -35,9 +35,8 @@ final class ShippingMethodIndexDto extends Data
         #[ArrayType]
         public array|Optional $metadata_private,
         #[StringType, Exists('sales_channels', 'id')]
-        public string|Optional $sales_channel_id,
-    ) {
-    }
+        public Optional|string $sales_channel_id,
+    ) {}
 
     /**
      * @return array<string, array<int, mixed>>

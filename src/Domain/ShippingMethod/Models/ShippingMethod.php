@@ -6,6 +6,7 @@ namespace Domain\ShippingMethod\Models;
 
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\ShippingMethodSalesChannel;
 use App\Criteria\WhereInIds;
 use App\Enums\ShippingType;
 use App\Models\Address;
@@ -75,6 +76,7 @@ final class ShippingMethod extends Model
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,
+        'sales_channel_id' => ShippingMethodSalesChannel::class,
     ];
 
     /**
@@ -179,7 +181,7 @@ final class ShippingMethod extends Model
     {
         return $this->belongsToMany(
             SalesChannel::class,
-            'sales_channels_shipping_methods',
+            'sales_channel_shipping_method',
             'shipping_method_id',
             'sales_channel_id',
             'id',

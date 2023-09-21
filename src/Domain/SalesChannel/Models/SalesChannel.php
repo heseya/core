@@ -87,7 +87,7 @@ final class SalesChannel extends Model implements Translatable
     {
         return $this->belongsToMany(
             ShippingMethod::class,
-            'sales_channels_shipping_methods',
+            'sales_channel_shipping_method',
             'sales_channel_id',
             'shipping_method_id',
             'id',
