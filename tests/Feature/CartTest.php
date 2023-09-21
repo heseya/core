@@ -779,7 +779,7 @@ class CartTest extends TestCase
                             'schemas' => [],
                         ],
                     ],
-                ] + $coupons
+                ] + $coupons,
             );
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
@@ -869,7 +869,7 @@ class CartTest extends TestCase
                             'schemas' => [],
                         ],
                     ],
-                ] + $coupons
+                ] + $coupons,
             );
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
@@ -1734,7 +1734,7 @@ class CartTest extends TestCase
                 'type' => DiscountType::PERCENTAGE,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => true,
-            ] + $code
+            ] + $code,
         );
 
         $discountApplied->productSets()->attach($parentSet);
@@ -1747,7 +1747,7 @@ class CartTest extends TestCase
                 'type' => DiscountType::PERCENTAGE,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => false,
-            ] + $code
+            ] + $code,
         );
 
         $discount->productSets()->attach($parentSet);
@@ -1771,7 +1771,7 @@ class CartTest extends TestCase
                         'schemas' => [],
                     ],
                 ],
-            ] + $coupons
+            ] + $coupons,
         );
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
@@ -1787,7 +1787,7 @@ class CartTest extends TestCase
                     'shipping_price_initial' => 0,
                     'shipping_price' => 0,
                     'summary' => 4140,
-                ] + $result
+                ] + $result,
             )
             ->assertJsonFragment([
                 'cartitem_id' => '1',
@@ -1799,14 +1799,14 @@ class CartTest extends TestCase
                     'id' => $discountApplied->getKey(),
                     'name' => $discountApplied->name,
                     'value' => 460,
-                ] + $discountCode1
+                ] + $discountCode1,
             )
             ->assertJsonMissing(
                 [
                     'id' => $discount->getKey(),
                     'name' => $discount->name,
                     'value' => 0,
-                ] + $discountCode2
+                ] + $discountCode2,
             );
     }
 
@@ -1877,14 +1877,14 @@ class CartTest extends TestCase
                     'id' => $sale->getKey(),
                     'name' => $sale->name,
                     'value' => 0,
-                ]
+                ],
             )
             ->assertJsonMissing(
                 [
                     'id' => $saleShippingMethod->getKey(),
                     'name' => $saleShippingMethod->name,
                     'value' => 0,
-                ]
+                ],
             );
     }
 
@@ -1906,7 +1906,7 @@ class CartTest extends TestCase
                 'target_type' => DiscountTargetType::ORDER_VALUE,
                 'target_is_allow_list' => true,
                 'active' => false,
-            ] + $code
+            ] + $code,
         );
 
         $conditionGroup = ConditionGroup::create();
@@ -1938,7 +1938,7 @@ class CartTest extends TestCase
                         'schemas' => [],
                     ],
                 ],
-            ] + $coupons
+            ] + $coupons,
         );
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
@@ -1953,7 +1953,7 @@ class CartTest extends TestCase
                     'shipping_price_initial' => 0,
                     'shipping_price' => 0,
                     'summary' => 9200,
-                ] + $result
+                ] + $result,
             )
             ->assertJsonFragment([
                 'cartitem_id' => '1',
@@ -1965,7 +1965,7 @@ class CartTest extends TestCase
                     'id' => $discount->getKey(),
                     'name' => $discount->name,
                     'value' => 920,
-                ] + $discountCode
+                ] + $discountCode,
             );
     }
 

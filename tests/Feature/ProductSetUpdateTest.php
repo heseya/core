@@ -132,7 +132,7 @@ class ProductSetUpdateTest extends TestCase
             'product_sets',
             $set + $parentId + [
                 'slug' => 'test-edit',
-            ]
+            ],
         );
 
         Event::assertDispatched(ProductSetUpdated::class);

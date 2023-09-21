@@ -15,8 +15,8 @@ class ChangeOrderTypeForShippingMethodsTable extends Migration
 
     public function down(): void
     {
-        Schema::table('shipping_methods', function (Blueprint $table): void {
-            $table->unsignedTinyInteger('order')->default(0)->change();
-        });
+        //        Schema::table('shipping_methods', function (Blueprint $table): void {
+        //            $table->unsignedTinyInteger('order')->default(0)->change();
+        //        });
     }
 }

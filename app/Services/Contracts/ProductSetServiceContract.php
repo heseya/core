@@ -25,7 +25,7 @@ interface ProductSetServiceContract
         Collection $children,
         string $parentId,
         string $parentSlug,
-        bool $publicParent
+        bool $publicParent,
     ): void;
 
     public function delete(ProductSet $set): void;
@@ -39,6 +39,4 @@ interface ProductSetServiceContract
     public function attach(ProductSet $set, array $productsIds): Collection;
 
     public function reorderProducts(ProductSet $set, ProductsReorderDto $dto): void;
-
-    public function indexAllProducts(ProductSet $set): void;
 }

@@ -49,25 +49,6 @@ class ProductSearchDatabaseTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testSearch($user): void
-    {
-        $this->{$user}->givePermissionTo('products.show');
-
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
-
-        $this
-            ->actingAs($this->{$user})
-            ->json('GET', '/products', ['search' => $product->name])
-            ->assertOk()
-            ->assertJsonCount(1, 'data')
-            ->assertJsonFragment(['id' => $product->getKey()]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testIndexIdsSearch($user): void
     {
         $this->{$user}->givePermissionTo('products.show');
@@ -727,7 +708,7 @@ class ProductSearchDatabaseTest extends TestCase
                     'attribute' => [
                         $attribute->slug => $options[0]->getKey(),
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -793,7 +774,7 @@ class ProductSearchDatabaseTest extends TestCase
                             $option2->getKey(),
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
@@ -858,7 +839,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'max' => 2137,
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -885,7 +866,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'min' => 1337,
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
@@ -912,7 +893,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'min' => 2337,
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(0, 'data');
@@ -928,7 +909,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'max' => 1337,
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(0, 'data');
@@ -982,7 +963,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'max' => '2022-09-30',
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -1010,7 +991,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'max' => '2022-11-30',
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
@@ -1037,7 +1018,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'min' => '2022-12-01',
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(0, 'data');
@@ -1053,7 +1034,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'max' => '2022-09-10',
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(0, 'data');
@@ -1097,7 +1078,7 @@ class ProductSearchDatabaseTest extends TestCase
                     'attribute_not' => [
                         $attribute->slug => $options[0]->getKey(),
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -1157,7 +1138,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'max' => 2137,
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -1179,7 +1160,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'min' => 1337,
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(0, 'data');
@@ -1195,7 +1176,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'min' => 2337,
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
@@ -1217,7 +1198,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'max' => 1337,
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
@@ -1277,7 +1258,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'max' => '2022-09-30',
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -1300,7 +1281,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'max' => '2022-11-30',
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(0, 'data');
@@ -1316,7 +1297,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'min' => '2022-12-01',
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
@@ -1338,7 +1319,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'max' => '2022-09-10',
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')

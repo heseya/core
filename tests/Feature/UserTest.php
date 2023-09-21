@@ -834,7 +834,7 @@ class UserTest extends TestCase
                 return str_contains(
                     $message,
                     'ClientException(code: 422): '
-                    . "Can't give a role with permissions you don't have to the user at"
+                    . "Can't give a role with permissions you don't have to the user at",
                 );
             });
 

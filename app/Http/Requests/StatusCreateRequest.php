@@ -20,7 +20,7 @@ class StatusCreateRequest extends FormRequest
                 'description' => ['string', 'max:255', 'nullable'],
                 'hidden' => ['boolean'],
                 'no_notifications' => ['boolean'],
-            ]
+            ],
         );
     }
 }

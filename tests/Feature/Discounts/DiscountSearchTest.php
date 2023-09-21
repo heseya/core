@@ -79,7 +79,7 @@ class DiscountSearchTest extends TestCase
                     'ids' => [
                         $discount2->getKey(),
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(1, 'data')

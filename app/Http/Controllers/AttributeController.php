@@ -30,7 +30,7 @@ class AttributeController extends Controller
             ->with(['metadata', 'metadataPrivate']);
 
         return AttributeResource::collection(
-            $query->paginate(Config::get('pagination.per_page'))
+            $query->paginate(Config::get('pagination.per_page')),
         );
     }
 
@@ -42,7 +42,7 @@ class AttributeController extends Controller
     public function store(AttributeStoreRequest $request): JsonResource
     {
         $attribute = $this->attributeService->create(
-            AttributeDto::instantiateFromRequest($request)
+            AttributeDto::instantiateFromRequest($request),
         );
 
         return AttributeResource::make($attribute);
@@ -52,7 +52,7 @@ class AttributeController extends Controller
     {
         $attribute = $this->attributeService->update(
             $attribute,
-            AttributeDto::instantiateFromRequest($request)
+            AttributeDto::instantiateFromRequest($request),
         );
 
         return AttributeResource::make($attribute);

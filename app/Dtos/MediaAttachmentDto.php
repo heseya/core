@@ -37,7 +37,7 @@ class MediaAttachmentDto extends Dto implements InstantiateFromRequest
             name: $request->input('name'),
             type: $type,
             visibility: $visibility,
-            description: $request->input('description') ?? new Missing()
+            description: $request->input('description') ?? new Missing(),
         );
     }
 }

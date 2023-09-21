@@ -20,7 +20,7 @@ class RoleStoreRequest extends FormRequest
                 'permissions' => ['array'],
                 'permissions.*' => ['string'],
                 'is_joinable' => ['boolean'],
-            ]
+            ],
         );
     }
 }

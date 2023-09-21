@@ -16,10 +16,14 @@ class FilterController extends Controller
         }
 
         return AttributeResource::collection(
-            Attribute::whereHas(
-                'productSets',
-                fn ($query) => $query->whereIn('product_set_id', $request->input('sets')),
-            )->orWhere('global', true)->with('options')->get()
+            Attribute::query()
+                ->whereHas(
+                    'productSets',
+                    fn ($query) => $query->whereIn('product_set_id', $request->input('sets')),
+                )
+                ->orWhere('global', true)->with('options')
+                ->orderBy('order')
+                ->get(),
         );
     }
 }

@@ -633,22 +633,22 @@ class DepositsTest extends TestCase
         $testCountTimeDate5 = $depositService->getShippingTimeDateForQuantity($item, 11);
         $this->assertEquals(
             ['shipping_time' => null, 'shipping_date' => $deposit2->shipping_date],
-            $testCountTimeDate5
+            $testCountTimeDate5,
         );
         $testCountTimeDate6 = $depositService->getShippingTimeDateForQuantity($item, 12);
         $this->assertEquals(
             ['shipping_time' => null, 'shipping_date' => $deposit1->shipping_date],
-            $testCountTimeDate6
+            $testCountTimeDate6,
         );
         $testCountTimeDate7 = $depositService->getShippingTimeDateForQuantity($item, 14);
         $this->assertEquals(
             ['shipping_time' => null, 'shipping_date' => $deposit3->shipping_date],
-            $testCountTimeDate7
+            $testCountTimeDate7,
         );
         $testCountTimeDate8 = $depositService->getShippingTimeDateForQuantity($item, 20);
         $this->assertEquals(
             ['shipping_time' => null, 'shipping_date' => $item->unlimited_stock_shipping_date],
-            $testCountTimeDate8
+            $testCountTimeDate8,
         );
 
         $item->update(['unlimited_stock_shipping_date' => null]);

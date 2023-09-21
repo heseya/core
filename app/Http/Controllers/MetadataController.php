@@ -35,7 +35,7 @@ class MetadataController extends Controller
 
             $this->metadataService->updateOrCreate(
                 $model,
-                $dto
+                $dto,
             );
         }
 
@@ -54,8 +54,8 @@ class MetadataController extends Controller
     {
         return MetadataResource::make(
             $this->metadataService->updateOrCreateMyPersonal(
-                MetadataPersonalListDto::instantiateFromRequest($request)
-            )
+                MetadataPersonalListDto::instantiateFromRequest($request),
+            ),
         );
     }
 
@@ -65,7 +65,7 @@ class MetadataController extends Controller
             $this->metadataService->updateOrCreateUserPersonal(
                 MetadataPersonalListDto::instantiateFromRequest($request),
                 $modelId,
-            )
+            ),
         );
     }
 }

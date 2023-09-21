@@ -19,12 +19,16 @@ class AddHideOnIndexToBrandsAndCategoriesTable extends Migration
 
     public function down(): void
     {
-        Schema::table('brands', function (Blueprint $table): void {
-            $table->dropColumn('hide_on_index');
-        });
+        if (Schema::hasTable('brands') && Schema::hasColumn('brands', 'hide_on_index')) {
+            Schema::table('brands', function (Blueprint $table): void {
+                $table->dropColumn('hide_on_index');
+            });
+        }
 
-        Schema::table('categories', function (Blueprint $table): void {
-            $table->dropColumn('hide_on_index');
-        });
+        if (Schema::hasTable('categories') && Schema::hasColumn('categories', 'hide_on_index')) {
+            Schema::table('categories', function (Blueprint $table): void {
+                $table->dropColumn('hide_on_index');
+            });
+        }
     }
 }

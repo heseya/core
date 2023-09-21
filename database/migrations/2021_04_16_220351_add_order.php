@@ -31,24 +31,34 @@ class AddOrder extends Migration
 
     public function down(): void
     {
-        Schema::table('categories', function (Blueprint $table): void {
-            $table->dropColumn('order');
-        });
+        if (Schema::hasTable('categories') && Schema::hasColumn('categories', 'order')) {
+            Schema::table('categories', function (Blueprint $table): void {
+                $table->dropColumn('order');
+            });
+        }
 
-        Schema::table('brands', function (Blueprint $table): void {
-            $table->dropColumn('order');
-        });
+        if (Schema::hasTable('brands') && Schema::hasColumn('brands', 'order')) {
+            Schema::table('brands', function (Blueprint $table): void {
+                $table->dropColumn('order');
+            });
+        }
 
-        Schema::table('product_schemas', function (Blueprint $table): void {
-            $table->dropColumn('order');
-        });
+        if (Schema::hasTable('product_schemas') && Schema::hasColumn('product_schemas', 'order')) {
+            Schema::table('product_schemas', function (Blueprint $table): void {
+                $table->dropColumn('order');
+            });
+        }
 
-        Schema::table('shipping_methods', function (Blueprint $table): void {
-            $table->dropColumn('order');
-        });
+        if (Schema::hasTable('shipping_methods') && Schema::hasColumn('shipping_methods', 'order')) {
+            Schema::table('shipping_methods', function (Blueprint $table): void {
+                $table->dropColumn('order');
+            });
+        }
 
-        Schema::table('statuses', function (Blueprint $table): void {
-            $table->dropColumn('order');
-        });
+        if (Schema::hasTable('statuses') && Schema::hasColumn('statuses', 'order')) {
+            Schema::table('statuses', function (Blueprint $table): void {
+                $table->dropColumn('order');
+            });
+        }
     }
 }

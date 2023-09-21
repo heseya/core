@@ -37,7 +37,7 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('favourite_product_set');
+        Schema::dropIfExists('favourite_product_sets');
 
         $authenticated = Role::where('type', '=', RoleType::AUTHENTICATED)->firstOrFail();
         $authenticated->revokePermissionTo('profile.favourites_manage');

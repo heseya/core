@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Dtos\AttributeDto;
 use App\Enums\AttributeType;
+use App\Events\ProductSearchValueEvent;
 use App\Models\Attribute;
 use App\Models\Product;
 use App\Services\Contracts\AttributeOptionServiceContract;
@@ -34,15 +35,18 @@ readonly class AttributeService implements AttributeServiceContract
     public function update(Attribute $attribute, AttributeDto $dto): Attribute
     {
         $attribute->update($dto->toArray());
+        ProductSearchValueEvent::dispatch($attribute->products->pluck('id')->toArray());
 
         return $attribute;
     }
 
     public function delete(Attribute $attribute): void
     {
+        $products = $attribute->products->pluck('id')->toArray();
         $this->attributeOptionService->deleteAll($attribute->getKey());
 
         $attribute->delete();
+        ProductSearchValueEvent::dispatch($products);
     }
 
     public function sync(Product $product, array $data): void
@@ -51,7 +55,7 @@ readonly class AttributeService implements AttributeServiceContract
 
         $product->attributes()->sync($attributes);
         $product->attributes()->get()->each(
-            fn (Attribute $attribute) => $attribute->pivot->options()->sync($data[$attribute->getKey()])
+            fn (Attribute $attribute) => $attribute->pivot->options()->sync($data[$attribute->getKey()]),
         );
     }
 

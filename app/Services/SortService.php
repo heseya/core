@@ -2,32 +2,20 @@
 
 namespace App\Services;
 
-use App\Enums\ExceptionsEnums\Exceptions;
-use App\Exceptions\ClientException;
-use App\Models\Contracts\SortableContract;
 use App\Rules\WhereIn;
 use App\Services\Contracts\SortServiceContract;
-use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use Laravel\Scout\Builder as ScoutBuilder;
+use Illuminate\Validation\ValidationException;
 
 class SortService implements SortServiceContract
 {
     /**
-     * @throws Exception
+     * @throws ValidationException
      */
-    public function sortScout(ScoutBuilder $query, ?string $sortString): Builder|ScoutBuilder
-    {
-        if ($query->model instanceof SortableContract && $sortString !== null) {
-            return $this->sort($query, $sortString, $query->model->getSortable());
-        }
-        throw new ClientException(Exceptions::CLIENT_MODEL_NOT_SORTABLE);
-    }
-
-    public function sort(Builder|ScoutBuilder $query, string $sortString, array $sortable): Builder|ScoutBuilder
+    public function sort(Builder $query, string $sortString, array $sortable): Builder
     {
         $sort = explode(',', $sortString);
 
@@ -44,6 +32,9 @@ class SortService implements SortServiceContract
         return $query;
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function validate(array $field, array $sortable): void
     {
         Validator::make(
@@ -59,19 +50,16 @@ class SortService implements SortServiceContract
         )->validate();
     }
 
-    // TODO: refactor this
-    private function addOrder(Builder|ScoutBuilder $query, string $field, string $order): void
+    private function addOrder(Builder $query, string $field, string $order): void
     {
-        if ($query instanceof Builder) {
-            if (Str::startsWith($field, 'set.')) {
-                $this->addSetOrder($query, $field, $order);
+        if (Str::startsWith($field, 'set.')) {
+            $this->addSetOrder($query, $field, $order);
 
-                return;
-            } elseif (Str::startsWith($field, 'attribute.')) {
-                $this->addAttributeOrder($query, $field, $order);
+            return;
+        } elseif (Str::startsWith($field, 'attribute.')) {
+            $this->addAttributeOrder($query, $field, $order);
 
-                return;
-            }
+            return;
         }
 
         $query->orderBy($field, $order);

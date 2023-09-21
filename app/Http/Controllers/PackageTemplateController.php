@@ -29,8 +29,8 @@ class PackageTemplateController extends Controller
     {
         return PackageTemplateResource::make(
             $this->packageTemplateService->store(
-                PackageTemplateDto::instantiateFromRequest($request)
-            )
+                PackageTemplateDto::instantiateFromRequest($request),
+            ),
         );
     }
 
@@ -39,8 +39,8 @@ class PackageTemplateController extends Controller
         return PackageTemplateResource::make(
             $this->packageTemplateService->update(
                 $package,
-                PackageTemplateDto::instantiateFromRequest($request)
-            )
+                PackageTemplateDto::instantiateFromRequest($request),
+            ),
         );
     }
 

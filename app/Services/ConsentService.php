@@ -46,7 +46,7 @@ class ConsentService implements ConsentServiceContract
                     ],
                     [
                         'value' => $value,
-                    ]
+                    ],
                 );
             });
         }

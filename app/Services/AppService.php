@@ -274,7 +274,7 @@ class AppService implements AppServiceContract
     private function makePermissionsPublic(
         App $app,
         Collection $internalPermissions,
-        Collection $publicPermissions
+        Collection $publicPermissions,
     ): void {
         $publicPermissions = $publicPermissions->map(
             fn ($permission) => "app.{$app->slug}.{$permission}",

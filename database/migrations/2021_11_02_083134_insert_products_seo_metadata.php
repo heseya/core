@@ -18,8 +18,8 @@ class InsertProductsSeoMetadata extends Migration
                         'global' => false,
                         'model_id' => $product->id,
                         'model_type' => Product::class,
-                    ])
-                )
+                    ]),
+                ),
             );
         }
     }

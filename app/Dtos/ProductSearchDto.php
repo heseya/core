@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 
 class ProductSearchDto extends Dto implements InstantiateFromRequest
 {
-    private ?string $search;
+    private Missing|string $search;
     private ?string $sort;
 
     private array|Missing $ids;
@@ -46,7 +46,7 @@ class ProductSearchDto extends Dto implements InstantiateFromRequest
             ? Str::replace('price:desc', 'price_max:desc', $sort) : $sort;
 
         return new self(
-            search: $request->input('search'),
+            search: $request->input('search', new Missing()),
             sort: $sort,
             ids: $request->input('ids', new Missing()),
             slug: $request->input('slug', new Missing()),
@@ -66,28 +66,13 @@ class ProductSearchDto extends Dto implements InstantiateFromRequest
             metadata: self::array('metadata', $request),
             metadata_private: self::array('metadata_private', $request),
             price_min: $request->input('price.min', new Missing()),
-            price_max: $request->input('price.max', new Missing())
+            price_max: $request->input('price.max', new Missing()),
         );
-    }
-
-    public function getSearch(): ?string
-    {
-        return $this->search;
     }
 
     public function getSort(): ?string
     {
         return $this->sort;
-    }
-
-    public function getPriceMin(): float|Missing
-    {
-        return $this->price_min;
-    }
-
-    public function getPriceMax(): float|Missing
-    {
-        return $this->price_max;
     }
 
     private static function boolean(string $key, FormRequest|ProductIndexRequest $request): bool|Missing

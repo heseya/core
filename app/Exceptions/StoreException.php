@@ -32,7 +32,7 @@ class StoreException extends Exception
             . '(code: ' . $this->getCode()
             . '): ' . $this->getMessage()
             . ' at ' . $this->getFile()
-            . ':(' . $this->getLine() . ')'
+            . ':(' . $this->getLine() . ')',
         );
     }
 
