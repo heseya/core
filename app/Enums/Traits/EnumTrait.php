@@ -34,9 +34,19 @@ trait EnumTrait
 
         $name = Str::upper($name);
 
-        return $reflection->hasCase($name)            // @phpstan-ignore-line
-            ? $reflection->getCase($name)->getValue() // @phpstan-ignore-line
-            : null;                                   // @phpstan-ignore-line
+        $case = $reflection->hasCase($name)
+            ? $reflection->getCase($name)->getValue()
+            : null;
+
+        // For Aliases (consts in Enum that refer to existing Enum Case) to work:
+        if (empty($case) && defined(static::class . '::' . $name)) {
+            $alias = constant(static::class . '::' . $name);
+            if (is_a($alias, static::class, true)) {
+                return $alias; // @phpstan-ignore-line
+            }
+        }
+
+        return $case; // @phpstan-ignore-line
     }
 
     public static function coerce(int|string $valueOrName): ?static
