@@ -431,7 +431,7 @@ final class AuthService implements AuthServiceContract
             Auth::user()->securityCodes()->where('expires_at', '!=', null)->delete();
             $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(
                 Auth::user(),
-                Config::get('tfa.code_expires_time')
+                Config::get('tfa.code_expires_time'),
             );
 
             TfaSecurityCodeEvent::dispatch(Auth::user(), $code);
@@ -567,7 +567,7 @@ final class AuthService implements AuthServiceContract
         $qr_code_url = $google_authenticator->getQRCodeGoogleUrl(
             $user->email,
             $secret,
-            Config::get('app.name')
+            Config::get('app.name'),
         );
 
         $user->update([
@@ -592,7 +592,7 @@ final class AuthService implements AuthServiceContract
         $user->securityCodes()->delete();
         $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(
             $user,
-            Config::get('tfa.code_expires_time')
+            Config::get('tfa.code_expires_time'),
         );
 
         $user->update([

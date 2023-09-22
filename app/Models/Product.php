@@ -45,6 +45,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
 
 /**
  * @property string $name
@@ -68,7 +69,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     use SoftDeletes;
     use Sortable;
 
-    protected const HIDDEN_PERMISSION = 'products.show_hidden';
+    public const HIDDEN_PERMISSION = 'products.show_hidden';
 
     protected $fillable = [
         'id',
@@ -189,6 +190,12 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         return $this->belongsToMany(Tag::class, 'product_tags');
     }
 
+    public function publishedTags(): BelongsToMany
+    {
+        return !Config::get('translatable.fallback_locale')
+            ? $this->tags()->where('tags.published', 'LIKE', '%' . Config::get('language.id') . '%') : $this->tags();
+    }
+
     public function requiredSchemas(): BelongsToMany
     {
         return $this->schemas()->where('required', true);
@@ -252,7 +259,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
             fn (Discount $discount): bool => $discount->code === null
                 && $discount->active
                 && $discount->target_type->is(DiscountTargetType::PRODUCTS)
-                && $discount->target_is_allow_list
+                && $discount->target_is_allow_list,
         );
 
         $salesBlockList = $salesWithBlockList->filter(function ($sale): bool {

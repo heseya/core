@@ -1,10 +1,13 @@
 <?php
 
-namespace App\Exceptions;
+declare(strict_types=1);
 
+namespace Domain\GoogleCategory\Exceptions;
+
+use App\Exceptions\StoreException;
 use Throwable;
 
-class GoogleProductCategoryFileException extends StoreException
+final class GoogleProductCategoryFileException extends StoreException
 {
     public function __construct(
         string $message = 'Google product category file do not exist',

@@ -2,8 +2,8 @@
 
 namespace App\Jobs;
 
-use App\Enums\GoogleCategoriesLang;
-use App\Services\Contracts\GoogleCategoryServiceContract;
+use Domain\GoogleCategory\Enums\GoogleCategoriesLang;
+use Domain\GoogleCategory\Services\Contracts\GoogleCategoryServiceContract;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;

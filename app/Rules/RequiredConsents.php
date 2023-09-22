@@ -14,7 +14,7 @@ readonly class RequiredConsents implements ValidationRule
         $consents = Consent::query()->where('required', true)->pluck('id');
 
         if (!$consents->every(
-            fn ($consent) => array_key_exists($consent, $value) && $value[$consent]
+            fn ($consent) => array_key_exists($consent, $value) && $value[$consent],
         )) {
             $fail(Exceptions::CLIENT_NOT_ACCEPTED_ALL_REQUIRED_CONSENTS->value);
         }

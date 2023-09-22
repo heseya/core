@@ -36,7 +36,7 @@ class DiscountCondition extends Model
         if ($this->type->is(ConditionType::WEEKDAY_IN)) {
             $value['weekday'] = array_map(
                 fn (string $key) => (bool) $key,
-                mb_str_split(sprintf('%07d', decbin($value['weekday'])))
+                mb_str_split(sprintf('%07d', decbin($value['weekday']))),
             );
         }
 
@@ -76,7 +76,7 @@ class DiscountCondition extends Model
         return $this->morphedByMany(
             Product::class,
             'model',
-            'model_has_discount_conditions'
+            'model_has_discount_conditions',
         );
     }
 
@@ -85,7 +85,7 @@ class DiscountCondition extends Model
         return $this->morphedByMany(
             ProductSet::class,
             'model',
-            'model_has_discount_conditions'
+            'model_has_discount_conditions',
         );
     }
 
@@ -94,7 +94,7 @@ class DiscountCondition extends Model
         return $this->morphedByMany(
             User::class,
             'model',
-            'model_has_discount_conditions'
+            'model_has_discount_conditions',
         );
     }
 
@@ -103,7 +103,7 @@ class DiscountCondition extends Model
         return $this->morphedByMany(
             Role::class,
             'model',
-            'model_has_discount_conditions'
+            'model_has_discount_conditions',
         );
     }
 

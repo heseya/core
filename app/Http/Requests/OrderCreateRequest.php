@@ -51,7 +51,7 @@ class OrderCreateRequest extends OrderItemsRequest
                 ],
 
                 'invoice_requested' => ['boolean'],
-            ]
+            ],
         );
     }
 }

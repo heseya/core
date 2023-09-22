@@ -4,9 +4,12 @@ namespace App\Traits;
 
 use App\Models\Discount;
 use Domain\Language\LanguageService;
+use Domain\Seo\Models\SeoMetadata;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
 use Spatie\Translatable\HasTranslations;
 
@@ -37,7 +40,7 @@ trait CustomHasTranslations
         }
 
         if (count($translatedLocales) > 0 && config('translatable.fallback_any')) {
-            return $translatedLocales[0];
+            return Arr::first($translatedLocales);
         }
 
         return $locale;
@@ -49,6 +52,9 @@ trait CustomHasTranslations
             $permission = $this->code !== null ? 'coupons.show_hidden' : 'sales.show_hidden';
         } else {
             $permission = $this::HIDDEN_PERMISSION;
+        }
+        if ($this instanceof SeoMetadata && !$this->global && $this->model_type) {
+            $permission = Config::get('relation-aliases.' . $this->model_type)::HIDDEN_PERMISSION;
         }
         if (Auth::user() && Auth::user()->hasPermissionTo($permission)) {
             // published and no published

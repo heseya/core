@@ -9,7 +9,7 @@ class OrderException extends StoreException
 {
     public function __construct(
         Exceptions|string $message = '',
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
     ) {
         parent::__construct($message, $previous);
     }

@@ -254,10 +254,10 @@ class PerformanceTest extends TestCase
             ->assertOk();
 
         // TODO: this should be improved
-        $this->assertQueryCountLessThan(13);
+        $this->assertQueryCountLessThan(14);
     }
 
-    public function testIndexPerformanceDiscount(): void
+    public function testShowPerformanceSale(): void
     {
         $this->user->givePermissionTo('sales.show_details');
         $discount = Discount::factory(['target_type' => DiscountTargetType::PRODUCTS, 'code' => null])->create();

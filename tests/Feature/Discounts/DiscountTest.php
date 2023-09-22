@@ -13,6 +13,7 @@ use App\Events\SaleUpdated;
 use App\Listeners\WebHookEventListener;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
+use App\Models\DiscountCondition;
 use App\Models\Product;
 use App\Models\Role;
 use App\Models\User;
@@ -25,6 +26,7 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\DiscountConditionPriceType;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\ProductSet\ProductSet;
 use Domain\ShippingMethod\Models\ShippingMethod;
@@ -2151,6 +2153,142 @@ class DiscountTest extends TestCase
         $this->assertDatabaseCount('discount_condition_groups', 1);
         $this->assertDatabaseHas('discount_condition_groups', ['discount_id' => $discount->getKey()]);
         $this->assertDatabaseCount('discount_conditions', count($this->conditions));
+
+        Queue::assertPushed(CallQueuedListener::class, fn ($job) => $job->class === WebHookEventListener::class);
+
+        $discount = Discount::find($discount->getKey());
+        $event = $discountKind === 'coupons' ? new CouponCreated($discount) : new SaleCreated($discount);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Queue::assertNotPushed(CallWebhookJob::class);
+    }
+
+    /**
+     * @dataProvider authWithDiscountProvider
+     */
+    public function testUpdateOrderValueConditionWithNull($user, $discountKind): void
+    {
+        $this->{$user}->givePermissionTo("{$discountKind}.edit");
+        $code = $discountKind === 'coupons' ? [] : ['code' => null];
+        $discount = Discount::factory(['target_type' => DiscountTargetType::ORDER_VALUE] + $code)->create();
+
+        $conditionGroup = ConditionGroup::create();
+
+        $discountValue = [
+            'min_values' => [
+                [
+                    'currency' => Currency::PLN->value,
+                    'value' => "100.00",
+                ],
+                [
+                    'currency' => Currency::EUR->value,
+                    'value' => "25.00",
+                ],
+            ],
+            'max_values' => [
+                [
+                    'currency' => Currency::PLN->value,
+                    'value' => "500.00",
+                ],
+                [
+                    'currency' => Currency::EUR->value,
+                    'value' => "125.00",
+                ],
+            ],
+            'include_taxes' => false,
+            'is_in_range' => true,
+        ];
+
+        /** @var DiscountCondition $condition */
+        $condition = DiscountCondition::create([
+            'condition_group_id' => $conditionGroup->getKey(),
+            'type' => ConditionType::ORDER_VALUE,
+            'value' => $discountValue,
+        ]);
+        $condition->pricesMin()->create([
+            'value' => 10000,
+            'currency' => Currency::PLN->value,
+            'price_type' => DiscountConditionPriceType::PRICE_MIN->value,
+        ]);
+        $condition->pricesMin()->create([
+            'value' => 2500,
+            'currency' => Currency::EUR->value,
+            'price_type' => DiscountConditionPriceType::PRICE_MIN->value,
+        ]);
+        $condition->pricesMax()->create([
+            'value' => 50000,
+            'currency' => Currency::PLN->value,
+            'price_type' => DiscountConditionPriceType::PRICE_MAX->value,
+        ]);
+        $condition->pricesMin()->create([
+            'value' => 12500,
+            'currency' => Currency::EUR->value,
+            'price_type' => DiscountConditionPriceType::PRICE_MAX->value,
+        ]);
+
+        $discount->conditionGroups()->attach($conditionGroup);
+
+        $discountNew = [
+            'condition_groups' => [
+                [
+                    'id' => $conditionGroup->getKey(),
+                    'conditions' => [
+                        [
+                            'id' => $condition->getKey(),
+                            'type' => ConditionType::ORDER_VALUE,
+                            'min_values' => null,
+                            'max_values' => [
+                                [
+                                    'currency' => Currency::PLN->value,
+                                    'value' => "500.00",
+                                ],
+                                [
+                                    'currency' => Currency::EUR->value,
+                                    'value' => "125.00",
+                                ],
+                            ],
+                            'include_taxes' => false,
+                            'is_in_range' => true,
+                        ],
+                    ]
+                ],
+            ],
+        ];
+
+        Queue::fake();
+
+        $response = $this->actingAs($this->{$user})
+            ->json('PATCH', "/{$discountKind}/id:" . $discount->getKey(), $discountNew);
+
+        $response
+            ->assertValid()
+            ->assertOk();
+
+        $response->assertJsonFragment([
+            'type' => ConditionType::ORDER_VALUE,
+            'include_taxes' => false,
+            'is_in_range' => true,
+            'min_values' => null,
+            'max_values' => [
+                [
+                    'currency' => 'PLN',
+                    'gross' => '500.00',
+                    'net' => '500.00',
+                ],
+                [
+                    'currency' => 'EUR',
+                    'gross' => '125.00',
+                    'net' => '125.00',
+                ],
+            ],
+        ]);
+
+        $this->assertDatabaseHas('discounts', ['id' => $discount->getKey()]);
+        $this->assertDatabaseCount('condition_groups', 1);
+        $this->assertDatabaseCount('discount_condition_groups', 1);
+        $this->assertDatabaseHas('discount_condition_groups', ['discount_id' => $discount->getKey()]);
 
         Queue::assertPushed(CallQueuedListener::class, fn ($job) => $job->class === WebHookEventListener::class);
 

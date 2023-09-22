@@ -20,7 +20,7 @@ final class ArrayWrapCast implements Cast
         return match (true) {
             $value === null => new Optional(),
             is_array($value) => $value,
-            default => [$value]
+            default => [$value],
         };
     }
 }

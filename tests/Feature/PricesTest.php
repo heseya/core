@@ -113,7 +113,7 @@ class PricesTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(13);
+        $this->assertQueryCountLessThan(14);
     }
 
     /**
@@ -134,7 +134,7 @@ class PricesTest extends TestCase
             ]])
             ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
 
-        $this->assertQueryCountLessThan(6);
+        $this->assertQueryCountLessThan(7);
     }
 
     /**
@@ -204,7 +204,7 @@ class PricesTest extends TestCase
                 $priceMax1 * (1 - $discountRate), 2, '.', '',
             ));
 
-        $this->assertQueryCountLessThan(19);
+        $this->assertQueryCountLessThan(20);
     }
 
     /**

@@ -15,7 +15,7 @@ use Illuminate\Support\Collection;
 final readonly class ConsentService
 {
     public function __construct(
-        private readonly ConsentRepository $consentRepository
+        private readonly ConsentRepository $consentRepository,
     ) {}
 
     public function store(ConsentCreateDto $dto): Consent

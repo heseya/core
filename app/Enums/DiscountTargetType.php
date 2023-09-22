@@ -19,7 +19,7 @@ enum DiscountTargetType: string
             self::PRODUCTS => 0,
             self::CHEAPEST_PRODUCT => 1,
             self::ORDER_VALUE => 2,
-            self::SHIPPING_PRICE => 3
+            self::SHIPPING_PRICE => 3,
         };
     }
 }

@@ -15,7 +15,7 @@ trait GetAllTranslations
         $allTranslations = [];
         $languages = $this->resource->published;
         $dataTranslations = $this->resource->getTranslations(
-            allowedLocales: $permissions !== null && Gate::allows($permissions) ? null : $languages
+            allowedLocales: $permissions !== null && Gate::allows($permissions) ? null : $languages,
         );
 
         foreach ($dataTranslations as $field => $translations) {
@@ -28,6 +28,6 @@ trait GetAllTranslations
             }
         }
 
-        return ['translations' => $allTranslations];
+        return ['translations' => count($allTranslations) > 0 ? $allTranslations : (object) $allTranslations];
     }
 }

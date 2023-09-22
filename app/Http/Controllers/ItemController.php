@@ -44,7 +44,7 @@ class ItemController extends Controller
     public function store(ItemCreateRequest $request): JsonResource
     {
         $item = $this->itemService->store(
-            ItemDto::instantiateFromRequest($request)
+            ItemDto::instantiateFromRequest($request),
         );
 
         return ItemResource::make($item);
@@ -54,7 +54,7 @@ class ItemController extends Controller
     {
         $item = $this->itemService->update(
             $item,
-            ItemDto::instantiateFromRequest($request)
+            ItemDto::instantiateFromRequest($request),
         );
 
         return ItemResource::make($item);

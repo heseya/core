@@ -97,9 +97,9 @@ class ConditionValidationForType implements DataAwareRule, ValidationRule, Valid
                         'weekday' => ['required', 'array', 'min:7', 'max:7'],
                         'weekday.*' => ['required', 'boolean'],
                     ],
-                    default => []
+                    default => [],
                 },
-            ]
+            ],
         );
 
         if ($subValidator->fails()) {
