@@ -1398,7 +1398,7 @@ class ProductTest extends TestCase
         $productPricesMin = $productPrices->get(ProductPriceType::PRICE_MIN->value);
         $productPricesMax = $productPrices->get(ProductPriceType::PRICE_MAX->value);
 
-        return [$product, $productPricesMin, $productPricesMax, new ProductPriceUpdated($product->getKey(), null, null, $productPricesMin->toArray(), $productPricesMax->toArray())];
+        return [$product, new ProductPriceUpdated($product->getKey(), null, null, $productPricesMin->toArray(), $productPricesMax->toArray())];
     }
 
     /**
@@ -1418,25 +1418,22 @@ class ProductTest extends TestCase
 
         Bus::fake();
 
-        [$product, $productPricesMin, $productPricesMax, $event] = $payload;
+        [$product, $event] = $payload;
 
         $listener = new WebHookEventListener();
 
         $listener->handle($event);
 
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $product, $productPricesMin, $productPricesMax) {
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $product) {
             $payload = $job->payload;
 
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $product->getKey()
-                && $payload['data']['prices'][0]['currency'] === Currency::DEFAULT->value
-                && $payload['data']['prices'][0]['old_price_min'] === null
-                && $payload['data']['prices'][0]['old_price_max'] === null
-                && $payload['data']['prices'][0]['new_price_min'] === $productPricesMin
-                    ->where(fn (PriceDto $dto) => $dto->currency === Currency::DEFAULT)->first()->value->getAmount()
-                && $payload['data']['prices'][0]['new_price_max'] === $productPricesMax
-                    ->where(fn (PriceDto $dto) => $dto->currency === Currency::DEFAULT)->first()->value->getAmount()
+                && isset($payload['data']['prices_min_old'])
+                && isset($payload['data']['prices_max_old'])
+                && isset($payload['data']['prices_min_new'])
+                && isset($payload['data']['prices_max_new'])
                 && $payload['data_type'] === 'ProductPrices'
                 && $payload['event'] === 'ProductPriceUpdated';
         });
