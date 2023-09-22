@@ -3,7 +3,6 @@
 namespace App\Events;
 
 use App\Http\Resources\PriceResource;
-use Illuminate\Support\Carbon;
 
 class ProductPriceUpdated extends WebHookEvent
 {
