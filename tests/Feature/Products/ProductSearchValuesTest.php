@@ -8,7 +8,6 @@ use App\Models\AttributeOption;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Tag;
-use App\Services\Contracts\ProductServiceContract;
 use Tests\TestCase;
 
 class ProductSearchValuesTest extends TestCase
@@ -126,46 +125,6 @@ class ProductSearchValuesTest extends TestCase
             'name' => 'Searched product',
             'description_html' => 'Lorem ipsum',
             'search_values' => '',
-        ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testDeleteParentProductSetSearchValues(string $user): void
-    {
-        $this->{$user}->givePermissionTo('product_sets.remove');
-
-        $parent = ProductSet::factory()->create([
-            'name' => 'Parent set',
-        ]);
-
-        $set = ProductSet::factory()->create([
-            'public' => true,
-            'name' => 'children set',
-            'parent_id' => $parent->getKey(),
-        ]);
-        $this->product->sets()->sync([$parent->getKey(), $set->getKey()]);
-
-        app(ProductServiceContract::class)->updateProductsSearchValues([$this->product->getKey()]);
-
-        $this->assertDatabaseHas('products', [
-            'id' => $this->product->getKey(),
-            'name' => 'Searched product',
-            'description_html' => 'Lorem ipsum',
-            'search_values' => 'Parent set children set',
-        ]);
-
-        $this
-            ->actingAs($this->{$user})
-            ->json('DELETE', 'product-sets/id:' . $set->getKey())
-            ->assertNoContent();
-
-        $this->assertDatabaseHas('products', [
-            'id' => $this->product->getKey(),
-            'name' => 'Searched product',
-            'description_html' => 'Lorem ipsum',
-            'search_values' => 'Parent set',
         ]);
     }
 

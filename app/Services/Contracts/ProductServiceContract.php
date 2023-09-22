@@ -24,6 +24,4 @@ interface ProductServiceContract
      * Updates minimum and maximum possible product price.
      */
     public function updateMinMaxPrices(Product $product): void;
-
-    public function updateProductsSearchValues(array $productIds): void;
 }

@@ -26,7 +26,7 @@ use Heseya\Dto\Missing;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-readonly class ProductService implements ProductServiceContract
+final readonly class ProductService implements ProductServiceContract
 {
     public function __construct(
         private MediaServiceContract $mediaService,
@@ -184,14 +184,6 @@ readonly class ProductService implements ProductServiceContract
             'price_max_initial' => $productMinMaxPrices[1],
         ]);
         $this->discountService->applyDiscountsOnProduct($product);
-    }
-
-    public function updateProductsSearchValues(array $productIds): void
-    {
-        Product::query()
-            ->whereIn('id', $productIds)
-            ->with(['tags', 'sets', 'attributes', 'attributes.options'])
-            ->each(fn (Product $product) => $this->prepareProductSearchValues($product)->save());
     }
 
     private function assignItems(Product $product, ?array $items): void
