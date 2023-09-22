@@ -139,7 +139,7 @@ final class AuthController extends Controller
     public function confirmTFA(TFAConfirmDto $dto): JsonResource
     {
         return TFARecoveryCodesResource::make(
-            $this->authService->confirmTFA($dto)
+            $this->authService->confirmTFA($dto),
         );
     }
 
@@ -177,26 +177,26 @@ final class AuthController extends Controller
             SavedAddress::query()->where([
                 'user_id' => Auth::id(),
                 'type' => $dto->type,
-            ])->get()
+            ])->get(),
         );
     }
 
     public function updateSavedAddress(
         SavedAddressUpdateDto $dto,
         SavedAddress $address,
-        SavedAddressType $type
+        SavedAddressType $type,
     ): JsonResource {
         $this->savedAddersService->updateAddress(
             $address,
             $dto,
-            $type
+            $type,
         );
 
         return SavedAddressResource::collection(
             SavedAddress::query()->where([
                 'user_id' => Auth::id(),
                 'type' => $type,
-            ])->get()
+            ])->get(),
         );
     }
 
@@ -208,7 +208,7 @@ final class AuthController extends Controller
             SavedAddress::query()->where([
                 'user_id' => Auth::id(),
                 'type' => $type->value,
-            ])->get()
+            ])->get(),
         );
     }
 

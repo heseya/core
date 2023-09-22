@@ -7,7 +7,7 @@ namespace Domain\User\Dtos;
 use App\Enums\RoleType;
 use App\Models\User;
 use App\Traits\DtoHasPhone;
-use App\Traits\MapMetadata;
+use Domain\Metadata\Dtos\MetadataPersonalDto;
 use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Validation\Rule;
@@ -30,14 +30,13 @@ use Support\Utils\Map;
 final class UserUpdateDto extends Data
 {
     use DtoHasPhone;
-    use MapMetadata;
 
     #[Computed]
     public Optional|string|null $phone_country;
     #[Computed]
     public Optional|string|null $phone_number;
     /**
-     * @var Optional|MetadataUpdateDto[]
+     * @var Optional|MetadataUpdateDto[]|MetadataPersonalDto[]
      */
     #[Computed]
     #[MapOutputName('metadata')]
@@ -48,7 +47,9 @@ final class UserUpdateDto extends Data
      * @param string[]|Optional $roles
      * @param Optional|string|null $birthday_date
      * @param Optional|string|null $phone
-     * @param array|Optional $metadata_public
+     * @param array<string, string>|Optional $metadata_public
+     * @param array<string, string>|Optional $metadata_private
+     * @param array<string, string>|Optional $metadata_personal
      */
     public function __construct(
         #[Nullable, Required, StringType, Max(255)]
@@ -96,8 +97,8 @@ final class UserUpdateDto extends Data
                 Rule::exists('roles', 'id')->where(
                     fn (Builder $query) => $query->whereNotIn(
                         'type',
-                        [RoleType::AUTHENTICATED->value, RoleType::UNAUTHENTICATED->value]
-                    )
+                        [RoleType::AUTHENTICATED->value, RoleType::UNAUTHENTICATED->value],
+                    ),
                 ),
             ],
             'phone' => ['phone:AUTO'],

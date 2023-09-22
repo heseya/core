@@ -6,6 +6,7 @@ namespace Domain\User\Dtos;
 
 use App\Enums\RoleType;
 use App\Traits\DtoHasPhone;
+use Domain\Metadata\Dtos\MetadataPersonalDto;
 use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Validation\Rule;
@@ -35,7 +36,7 @@ final class UserCreateDto extends Data
     #[Computed]
     public Optional|string|null $phone_number;
     /**
-     * @var Optional|MetadataUpdateDto[]
+     * @var array|Optional|MetadataPersonalDto[]|MetadataUpdateDto[]
      */
     #[Computed]
     #[MapOutputName('metadata')]
@@ -47,7 +48,9 @@ final class UserCreateDto extends Data
      * @param string $password
      * @param string[]|Optional $roles
      * @param Optional|string $birthday_date
-     * @param array|Optional $metadata_public
+     * @param array<string, string>|Optional $metadata_public
+     * @param array<string, string>|Optional $metadata_private
+     * @param array<string, string>|Optional $metadata_personal
      */
     public function __construct(
         #[Required, StringType, Max(255)]
@@ -93,8 +96,8 @@ final class UserCreateDto extends Data
                 Rule::exists('roles', 'id')->where(
                     fn (Builder $query) => $query->whereNotIn(
                         'type',
-                        [RoleType::AUTHENTICATED->value, RoleType::UNAUTHENTICATED->value]
-                    )
+                        [RoleType::AUTHENTICATED->value, RoleType::UNAUTHENTICATED->value],
+                    ),
                 ),
             ],
             'phone' => ['phone:AUTO'],

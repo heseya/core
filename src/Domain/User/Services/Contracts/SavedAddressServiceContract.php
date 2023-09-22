@@ -12,13 +12,13 @@ use Domain\User\Dtos\SavedAddressUpdateDto;
 interface SavedAddressServiceContract
 {
     public function storeAddress(
-        SavedAddressStoreDto $dto
+        SavedAddressStoreDto $dto,
     ): ?SavedAddress;
 
     public function updateAddress(
         SavedAddress $address,
         SavedAddressUpdateDto $addressDto,
-        SavedAddressType $type
+        SavedAddressType $type,
     ): SavedAddress;
 
     public function deleteSavedAddress(SavedAddress $address): void;

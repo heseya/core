@@ -64,7 +64,7 @@ final class UserController extends Controller
     {
         $resultUser = $this->userService->update(
             $user,
-            $dto
+            $dto,
         );
 
         return UserResource::make($resultUser);

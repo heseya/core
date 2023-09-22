@@ -41,7 +41,7 @@ final readonly class Map
                 $return[] = new MetadataPersonalDto(
                     $key,
                     $value,
-                    MetadataType::matchType($value)
+                    MetadataType::matchType($value),
                 );
             }
         }
@@ -49,6 +49,13 @@ final readonly class Map
         return count($return) > 0 ? $return : new Optional();
     }
 
+    /**
+     * @param array<string,string>|Optional $metadata
+     * @param array<string,string>|Optional $metadata_private
+     * @param array<string,string>|Optional $metadata_personal
+     *
+     * @return MetadataPersonalDto[]|MetadataUpdateDto[]|Optional
+     */
     public static function toUserMetadata(
         array|Optional $metadata = new Optional(),
         array|Optional $metadata_private = new Optional(),
@@ -61,7 +68,7 @@ final readonly class Map
                 $return[] = new MetadataPersonalDto(
                     $key,
                     $value,
-                    MetadataType::matchType($value)
+                    MetadataType::matchType($value),
                 );
             }
         }
@@ -69,6 +76,12 @@ final readonly class Map
         return count($return) > 0 ? $return : new Optional();
     }
 
+    /**
+     * @param array<string,string>|Optional $metadata
+     * @param array<string,string>|Optional $metadata_private
+     *
+     * @return MetadataUpdateDto[]
+     */
     private static function getMetadata(array|Optional $metadata, array|Optional $metadata_private): array
     {
         $return = [];
@@ -79,7 +92,7 @@ final readonly class Map
                     $key,
                     $value,
                     true,
-                    MetadataType::matchType($value)
+                    MetadataType::matchType($value),
                 );
             }
         }
@@ -90,7 +103,7 @@ final readonly class Map
                     $key,
                     $value,
                     false,
-                    MetadataType::matchType($value)
+                    MetadataType::matchType($value),
                 );
             }
         }

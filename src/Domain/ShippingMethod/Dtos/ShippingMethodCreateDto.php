@@ -57,7 +57,8 @@ final class ShippingMethodCreateDto extends Data
      * @param array<int>|Optional $payment_methods
      * @param array<string>|Optional $countries
      * @param array<array<string>>|Optional $shipping_points
-     * @param array|Optional $metadata_public
+     * @param array<string, string>|Optional $metadata_public
+     * @param array<string, string>|Optional $metadata_private
      * @param string|null $integration_key
      * @param bool $block_list
      */
