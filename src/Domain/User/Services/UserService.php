@@ -34,8 +34,7 @@ final readonly class UserService implements UserServiceContract
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
-    ) {
-    }
+    ) {}
 
     public function index(UserIndexDto $dto, ?string $sort): LengthAwarePaginator
     {

@@ -54,7 +54,6 @@ final class ShippingMethodUpdateDto extends Data
      * @param array<string>|Optional $countries
      * @param DataCollection<int, PriceRangeDto>|Optional $price_ranges
      * @param array|Optional $metadata_public
-     * @param array|Optional $metadata_private
      * @param string|null $integration_key
      * @param string|null $app_id
      */

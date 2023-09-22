@@ -69,12 +69,6 @@ final readonly class Map
         return count($return) > 0 ? $return : new Optional();
     }
 
-    /**
-     * @param array|Optional $metadata
-     * @param array|Optional $metadata_private
-     *
-     * @return array
-     */
     private static function getMetadata(array|Optional $metadata, array|Optional $metadata_private): array
     {
         $return = [];

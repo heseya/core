@@ -27,8 +27,7 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
-    ) {
-    }
+    ) {}
 
     public function index(?array $search, Optional|string $country, ?Money $cartValue): LengthAwarePaginator
     {

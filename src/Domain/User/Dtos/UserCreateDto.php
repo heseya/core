@@ -31,9 +31,9 @@ final class UserCreateDto extends Data
     use DtoHasPhone;
 
     #[Computed]
-    public string|Optional|null $phone_country;
+    public Optional|string|null $phone_country;
     #[Computed]
-    public string|Optional|null $phone_number;
+    public Optional|string|null $phone_number;
     /**
      * @var Optional|MetadataUpdateDto[]
      */
@@ -47,10 +47,7 @@ final class UserCreateDto extends Data
      * @param string $password
      * @param string[]|Optional $roles
      * @param Optional|string $birthday_date
-     * @param Optional|string $phone
      * @param array|Optional $metadata_public
-     * @param array|Optional $metadata_private
-     * @param array|Optional $metadata_personal
      */
     public function __construct(
         #[Required, StringType, Max(255)]

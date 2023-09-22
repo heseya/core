@@ -33,9 +33,9 @@ final class UserUpdateDto extends Data
     use MapMetadata;
 
     #[Computed]
-    public string|Optional|null $phone_country;
+    public Optional|string|null $phone_country;
     #[Computed]
-    public string|Optional|null $phone_number;
+    public Optional|string|null $phone_number;
     /**
      * @var Optional|MetadataUpdateDto[]
      */
@@ -45,13 +45,10 @@ final class UserUpdateDto extends Data
 
     /**
      * @param Optional|string|null $name
-     * @param Optional|string|null $email
      * @param string[]|Optional $roles
      * @param Optional|string|null $birthday_date
      * @param Optional|string|null $phone
      * @param array|Optional $metadata_public
-     * @param array|Optional $metadata_private
-     * @param array|Optional $metadata_personal
      */
     public function __construct(
         #[Nullable, Required, StringType, Max(255)]

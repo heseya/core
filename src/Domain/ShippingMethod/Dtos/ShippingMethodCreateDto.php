@@ -50,7 +50,6 @@ final class ShippingMethodCreateDto extends Data
     /**
      * @param string $name
      * @param bool $public
-     * @param ShippingType $shipping_type
      * @param DataCollection<int, PriceRangeDto> $price_ranges
      * @param bool $payment_on_delivery
      * @param int|Optional $shipping_time_min
@@ -59,7 +58,6 @@ final class ShippingMethodCreateDto extends Data
      * @param array<string>|Optional $countries
      * @param array<array<string>>|Optional $shipping_points
      * @param array|Optional $metadata_public
-     * @param array|Optional $metadata_private
      * @param string|null $integration_key
      * @param bool $block_list
      */
@@ -103,7 +101,6 @@ final class ShippingMethodCreateDto extends Data
 
         #[BooleanType]
         public readonly bool $block_list = false,
-
     ) {
         /** @var User|App|null $user */
         $user = Auth::user();
