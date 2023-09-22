@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Dtos\AttributeOptionDto;
-use App\Events\ProductSearchValueEvent;
 use App\Models\AttributeOption;
 use App\Services\Contracts\AttributeOptionServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
@@ -42,8 +41,6 @@ readonly class AttributeOptionService implements AttributeOptionServiceContract
             $attributeOption = AttributeOption::query()->findOrFail($dto->id);
             $attributeOption->update($dto->toArray());
 
-            ProductSearchValueEvent::dispatch($attributeOption->productAttributes->pluck('product_id')->toArray());
-
             return $attributeOption;
         }
 
@@ -52,9 +49,7 @@ readonly class AttributeOptionService implements AttributeOptionServiceContract
 
     public function delete(AttributeOption $attributeOption): void
     {
-        $productIds = $attributeOption->productAttributes->pluck('product_id')->toArray();
         $attributeOption->delete();
-        ProductSearchValueEvent::dispatch($productIds);
     }
 
     public function deleteAll(string $attributeId): void

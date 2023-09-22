@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Dtos\ProductSetDto;
 use App\Dtos\ProductSetUpdateDto;
 use App\Dtos\ProductsReorderDto;
-use App\Events\ProductSearchValueEvent;
 use App\Events\ProductSetCreated;
 use App\Events\ProductSetDeleted;
 use App\Events\ProductSetUpdated;
@@ -117,8 +116,6 @@ final readonly class ProductSetService implements ProductSetServiceContract
             $this->metadataService->sync($set, $dto->metadata);
         }
 
-        ProductSearchValueEvent::dispatch($set->allProductsIds()->toArray());
-
         // searchable is handled by the event listener
         ProductSetCreated::dispatch($set);
 
@@ -204,7 +201,6 @@ final readonly class ProductSetService implements ProductSetServiceContract
             'slug' => $slug,
             'public_parent' => $publicParent,
         ]);
-        ProductSearchValueEvent::dispatch($productIds->toArray());
 
         if (!($dto->getAttributesIds() instanceof Missing)) {
             $attributes = Collection::make($dto->getAttributesIds());
@@ -233,23 +229,13 @@ final readonly class ProductSetService implements ProductSetServiceContract
 
     public function attach(ProductSet $set, array $productsIds): Collection
     {
-        $currentProducts = $set->products()->pluck('id');
-
         $set->products()->sync($productsIds);
-
-        ProductSearchValueEvent::dispatch(
-            array_merge(
-                $currentProducts->diff($productsIds)->toArray(),
-                collect($productsIds)->diff($currentProducts)->toArray(),
-            ),
-        );
 
         return $set->products;
     }
 
     public function delete(ProductSet $set): void
     {
-        $productIds = $set->allProductsIds()->merge($set->relatedProducts->pluck('id'));
         if ($set->children()->count() > 0) {
             $set->children->each(fn ($subset) => $this->delete($subset));
         }
@@ -259,7 +245,6 @@ final readonly class ProductSetService implements ProductSetServiceContract
             if ($set->seo !== null) {
                 $this->seoMetadataService->delete($set->seo);
             }
-            ProductSearchValueEvent::dispatch($productIds->toArray());
         }
     }
 
