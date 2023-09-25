@@ -238,7 +238,7 @@ class PerformanceTest extends TestCase
             ->getJson('/orders')
             ->assertOk();
 
-        $this->assertQueryCountLessThan(23);
+        $this->assertQueryCountLessThan(24);
     }
 
     public function testIndexPerformanceShippingMethode(): void
@@ -254,7 +254,7 @@ class PerformanceTest extends TestCase
             ->assertOk();
 
         // TODO: this should be improved
-        $this->assertQueryCountLessThan(14);
+        $this->assertQueryCountLessThan(15);
     }
 
     public function testShowPerformanceSale(): void

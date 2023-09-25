@@ -103,6 +103,9 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
         if (!$shippingMethodDto->getCountries() instanceof Optional) {
             $shippingMethod->countries()->sync($shippingMethodDto->getCountries());
         }
+        if (!($shippingMethodDto->sales_channels instanceof Optional)) {
+            $shippingMethod->salesChannels()->sync($shippingMethodDto->sales_channels);
+        }
 
         if (!($shippingMethodDto->getMetadata() instanceof Missing)) {
             $this->metadataService->sync($shippingMethod, $shippingMethodDto->getMetadata());
@@ -117,34 +120,6 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
         );
 
         return $shippingMethod;
-    }
-
-    private function syncShippingPoints(
-        ShippingMethodCreateDto|ShippingMethodUpdateDto $shippingMethodDto,
-        ShippingMethod $shippingMethod,
-    ): void {
-        $shippingPoints = $shippingMethodDto->getShippingPoints();
-
-        if (!is_array($shippingPoints)) {
-            $shippingMethod->shippingPoints()->sync([]);
-        }
-
-        $addresses = new Collection();
-
-        // @phpstan-ignore-next-line
-        foreach ($shippingPoints as $shippingPoint) {
-            if (array_key_exists('id', $shippingPoint)) {
-                Address::query()->where('id', $shippingPoint['id'])->update($shippingPoint);
-                /** @var Address $address */
-                $address = Address::query()->findOrFail($shippingPoint['id']);
-            } else {
-                /** @var Address $address */
-                $address = Address::query()->create($shippingPoint);
-            }
-            $addresses->push($address->getKey());
-        }
-
-        $shippingMethod->shippingPoints()->sync($addresses);
     }
 
     public function update(ShippingMethod $shippingMethod, ShippingMethodUpdateDto $shippingMethodDto): ShippingMethod
@@ -179,6 +154,10 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
             }
         }
 
+        if (!($shippingMethodDto->sales_channels instanceof Optional)) {
+            $shippingMethod->salesChannels()->sync($shippingMethodDto->sales_channels);
+        }
+
         return $shippingMethod;
     }
 
@@ -199,5 +178,33 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
         }
 
         $shippingMethod->delete();
+    }
+
+    private function syncShippingPoints(
+        ShippingMethodCreateDto|ShippingMethodUpdateDto $shippingMethodDto,
+        ShippingMethod $shippingMethod,
+    ): void {
+        $shippingPoints = $shippingMethodDto->getShippingPoints();
+
+        if (!is_array($shippingPoints)) {
+            $shippingMethod->shippingPoints()->sync([]);
+        }
+
+        $addresses = new Collection();
+
+        // @phpstan-ignore-next-line
+        foreach ($shippingPoints as $shippingPoint) {
+            if (array_key_exists('id', $shippingPoint)) {
+                Address::query()->where('id', $shippingPoint['id'])->update($shippingPoint);
+                /** @var Address $address */
+                $address = Address::query()->findOrFail($shippingPoint['id']);
+            } else {
+                /** @var Address $address */
+                $address = Address::query()->create($shippingPoint);
+            }
+            $addresses->push($address->getKey());
+        }
+
+        $shippingMethod->shippingPoints()->sync($addresses);
     }
 }
