@@ -50,4 +50,8 @@ return [
     'benefits' => 'Logując się na swoje konto, uzyskasz dostęp do osobistego panelu klienta,
         gdzie będziesz widzieć wszystkie swoje zamówienia wraz z informacją o statusie ich realizacji.
         Konto klienta pozwala Ci również na zarządzanie danymi kontaktowymi oraz adresami dostaw.',
+
+    // order paid
+    'subject-order-paid' => 'Zamówienia :number zostało opłacone',
+    'order-paid' => 'Twoje zamówienie zostało opłacone.',
 ];
