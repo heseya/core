@@ -26,7 +26,7 @@ class OptionResource extends Resource
 
         return array_merge(
             $data,
-            $request->boolean('with_translations') ? $this->getAllTranslations() : [],
+            $request->boolean('with_translations') ? $this->getAllTranslations('options.show_hidden') : [],
             $this->metadataResource('options.show_metadata_private'),
         );
     }
