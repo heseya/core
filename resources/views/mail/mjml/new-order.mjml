@@ -45,7 +45,7 @@
                 </mj-text>
                 <mj-table>
                     <tr style="border-bottom:1px solid #ecedee;text-align:left;padding:15px 0;">
-                        <th style="text-align: center; padding: 0 15px 0 0;">@lang('mail.name')</th>
+                        <th style="text-align: center; padding: 0 15px 0 0;">@lang('mail.product_name')</th>
                         <th style="text-align: center; padding: 0 15px; width: 30px;">@lang('mail.quantity')</th>
                         <th style="text-align: center; padding: 0 0 0 15px; width: 25%;">@lang('mail.price')</th>
                     </tr>
@@ -110,6 +110,10 @@
                     <tr>
                         <td style="width: 180px">@lang('mail.city'):</td>
                         <td>{{ $order?->invoiceAddress?->city ?? $order?->deliveryAddress?->city ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td style="width: 180px">@lang('mail.country'):</td>
+                        <td>{{ $order?->invoiceAddress?->country ?? $order?->deliveryAddress?->country ?? '-' }}</td>
                     </tr>
                     <tr>
                         <td style="width: 180px">@lang('mail.phone'):</td>
