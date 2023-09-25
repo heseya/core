@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\ProductSearchValueEvent;
 use App\Http\Requests\TagCreateRequest;
 use App\Http\Requests\TagIndexRequest;
 use App\Http\Requests\TagUpdateRequest;
@@ -35,16 +34,13 @@ class TagController extends Controller
     public function update(Tag $tag, TagUpdateRequest $request): JsonResource
     {
         $tag->update($request->validated());
-        ProductSearchValueEvent::dispatch($tag->products->pluck('id')->toArray());
 
         return TagResource::make($tag);
     }
 
     public function destroy(Tag $tag): HttpResponse
     {
-        $products = $tag->products->pluck('id')->toArray();
         $tag->delete();
-        ProductSearchValueEvent::dispatch($products);
 
         return Response::noContent();
     }

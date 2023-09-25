@@ -10,11 +10,10 @@ class ProductSearch extends Criterion
     public function query(Builder $query): Builder
     {
         return $query->whereFullText([
-            'name',
-            'slug',
-            'description_html',
-            'description_short',
-            'search_values',
+            'products.name',
+            'products.description_html',
+            'products.description_short',
+            'products.search_values',
         ], $this->value);
     }
 }
