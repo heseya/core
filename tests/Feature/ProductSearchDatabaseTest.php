@@ -83,6 +83,34 @@ class ProductSearchDatabaseTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexSearch($user): void
+    {
+        $this->{$user}->givePermissionTo('products.show');
+
+        Product::factory()->create([
+            'public' => true,
+            'name' => 'First',
+        ]);
+
+        Product::factory()->create([
+            'public' => true,
+            'created_at' => Carbon::now()->addHour(),
+            'name' => 'Second',
+        ]);
+
+        // This test check if there is no SQL error that 'name' is ambiguous
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products', [
+                'search' => 'First',
+                'sort' => 'attribute.data-wydania:desc',
+            ])
+            ->assertOk();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testSearchByPublic($user): void
     {
         $this->{$user}->givePermissionTo('products.show');
