@@ -59,6 +59,14 @@ class RoleService implements RoleServiceContract
     {
         $user = Auth::user();
 
+        if (
+            !($dto->getIsJoinable() instanceof Missing)
+            && $role->type->isNot(RoleType::REGULAR)
+            && $dto->getIsJoinable() !== $role->is_joinable
+        ) {
+            throw new ClientException(Exceptions::CLIENT_UPDATE_NOT_REGULAR_JOINABLE);
+        }
+
         if (!$user?->hasAllPermissions($role->getAllPermissions())) {
             throw new ClientException(Exceptions::CLIENT_UPDATE_ROLE_WITHOUT_PERMISSION);
         }

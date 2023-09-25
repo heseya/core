@@ -28,6 +28,10 @@ RoleStore:
             $ref: './../schemas/Metadata.yml#/Metadata'
           metadata_private:
             $ref: './../schemas/Metadata.yml#/Metadata'
+          is_joinable:
+            description: 'Whether the role can be assigned to user by himself.'
+            type: boolean
+            example: false
 
 RoleUpdate:
   content:
@@ -52,4 +56,8 @@ RoleUpdate:
             items:
               type: string
               example: roles.add
+          is_joinable:
+            description: 'Whether the role can be assigned to user by himself.'
+            type: boolean
+            example: false
         type: object

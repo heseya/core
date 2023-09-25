@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Dtos\SelfUpdateRoles;
 use App\Dtos\UserCreateDto;
 use App\Dtos\UserDto;
 use App\Enums\ExceptionsEnums\Exceptions;
@@ -26,6 +27,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\LaravelData\Optional;
 
 readonly class UserService implements UserServiceContract
 {
@@ -266,5 +268,28 @@ readonly class UserService implements UserServiceContract
                 UserDeleted::dispatch($user);
             }
         });
+    }
+
+    public function selfUpdateRoles(User $user, SelfUpdateRoles $dto): User
+    {
+        $roleModels = collect();
+        if (!($dto->roles instanceof Optional)) {
+            /** @var Collection<int, Role> $roleModels */
+            $roleModels = Role::query()
+                ->whereIn('id', $dto->roles)
+                ->where('is_joinable', '=', true)
+                ->get();
+
+            if ($roleModels->count() < count($dto->roles)) {
+                throw new ClientException(Exceptions::CLIENT_JOINING_NON_JOINABLE_ROLE);
+            }
+        }
+
+        /** @phpstan-ignore-next-line */
+        $roleModels = $roleModels->merge($user->roles->filter(fn (Role $role): bool => !$role->is_joinable));
+
+        $user->syncRoles($roleModels);
+
+        return $user;
     }
 }

@@ -127,6 +127,8 @@ final class Exceptions extends Enum
     public const CLIENT_PROVIDER_MERGE_TOKEN_INVALID = 'Provider merge token is invalid';
     public const CLIENT_PROVIDER_MERGE_TOKEN_MISMATCH =
         'Provider merge token is for an account with different email address';
+    public const CLIENT_JOINING_NON_JOINABLE_ROLE = 'Can\'t join to a non joinable role';
+    public const CLIENT_UPDATE_NOT_REGULAR_JOINABLE = 'Can\'t update is_joinable field in role types other than regular';
 
     public static function getCode(string $value): int
     {

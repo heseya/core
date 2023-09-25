@@ -17,6 +17,7 @@ class RoleCreateDto extends Dto implements InstantiateFromRequest
     private bool|Missing $is_registration_role;
     private array $permissions;
     private array|Missing $metadata;
+    private bool|Missing $is_joinable;
 
     public static function instantiateFromRequest(FormRequest $request): self
     {
@@ -26,6 +27,7 @@ class RoleCreateDto extends Dto implements InstantiateFromRequest
             is_registration_role: $request->input('is_registration_role', new Missing()),
             permissions: $request->input('permissions', []),
             metadata: self::mapMetadata($request),
+            is_joinable: $request->input('is_joinable', new Missing()),
         );
     }
 
@@ -47,5 +49,10 @@ class RoleCreateDto extends Dto implements InstantiateFromRequest
     public function getPermissions(): array
     {
         return $this->permissions;
+    }
+
+    public function getIsJoinable(): bool|Missing
+    {
+        return $this->is_joinable;
     }
 }

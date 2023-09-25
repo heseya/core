@@ -3,6 +3,7 @@
 namespace App\Services\Contracts;
 
 use App\Dtos\RegisterDto;
+use App\Dtos\SelfUpdateRoles;
 use App\Dtos\TFAConfirmDto;
 use App\Dtos\TFAPasswordDto;
 use App\Dtos\TFASetupDto;
@@ -51,4 +52,6 @@ interface AuthServiceContract
     public function updateProfile(UpdateProfileDto $dto): User;
 
     public function selfRemove(string $password): void;
+
+    public function selfUpdateRoles(SelfUpdateRoles $dto): User;
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Dtos\RegisterDto;
 use App\Dtos\SavedAddressDto;
+use App\Dtos\SelfUpdateRoles;
 use App\Dtos\TFAConfirmDto;
 use App\Dtos\TFAPasswordDto;
 use App\Dtos\TFASetupDto;
@@ -242,5 +243,10 @@ class AuthController extends Controller
         return UserResource::make(
             $this->authService->updateProfile(UpdateProfileDto::instantiateFromRequest($request)),
         );
+    }
+
+    public function selfUpdateRoles(SelfUpdateRoles $dto): JsonResource
+    {
+        return UserResource::make($this->authService->selfUpdateRoles($dto));
     }
 }

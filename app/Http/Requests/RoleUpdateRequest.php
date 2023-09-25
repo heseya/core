@@ -19,6 +19,7 @@ class RoleUpdateRequest extends FormRequest
             'is_registration_role' => ['boolean'],
             'permissions' => ['array'],
             'permissions.*' => ['string'],
+            'is_joinable' => ['boolean'],
         ];
     }
 }

@@ -900,6 +900,7 @@ class UserTest extends TestCase
                 'deletable' => true,
                 'users_count' => null,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ])->assertJsonFragment([[
                 'id' => $role2->getKey(),
@@ -910,6 +911,7 @@ class UserTest extends TestCase
                 'deletable' => true,
                 'users_count' => null,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ])->assertJsonFragment([[
                 'id' => $role3->getKey(),
@@ -920,6 +922,7 @@ class UserTest extends TestCase
                 'deletable' => true,
                 'users_count' => null,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ])->assertJsonPath('data.permissions', $permissions);
 
@@ -1249,6 +1252,7 @@ class UserTest extends TestCase
                 'deletable' => true,
                 'users_count' => null,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ])->assertJsonFragment([[
                 'id' => $role2->getKey(),
@@ -1259,6 +1263,7 @@ class UserTest extends TestCase
                 'deletable' => true,
                 'users_count' => null,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ])->assertJsonFragment([[
                 'id' => $role3->getKey(),
@@ -1269,6 +1274,7 @@ class UserTest extends TestCase
                 'deletable' => true,
                 'users_count' => null,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ])->assertJsonPath('data.permissions', $permissions);
 
