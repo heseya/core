@@ -7,6 +7,7 @@ use Domain\Banner\Models\Banner;
 use Domain\Banner\Models\BannerMedia;
 use Domain\Language\Language;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -95,6 +96,7 @@ class BannerTest extends TestCase
         $this->{$user}->givePermissionTo('banners.show');
 
         $languages = Language::all();
+        App::setLocale($languages->first()->getKey());
 
         BannerMedia::query()->delete();
         Banner::query()->delete();
