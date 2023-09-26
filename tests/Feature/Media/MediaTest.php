@@ -119,23 +119,26 @@ class MediaTest extends TestCase
 
         Media::query()->delete();
 
-        Media::factory()->create([
+        $media1 = Media::factory()->create([
             'type' => MediaType::OTHER,
             'alt' => 'Instrukcja',
         ]);
+
+        $media1->products()->save(Product::factory()->create());
 
         $expected = Media::factory()->create([
             'type' => MediaType::VIDEO,
             'alt' => 'Instrukcja',
         ]);
 
+        $expected->products()->save(Product::factory()->create());
+
         Media::factory()->create([
             'type' => MediaType::PHOTO,
             'alt' => 'test',
         ]);
 
-        $response = $this->actingAs($this->{$user})->json('GET', '/media?search=Instrukcja&type=video');
-
+        $response = $this->actingAs($this->{$user})->json('GET', '/media?search=Instrukcja&type=video&has_relationships=1');
         $response->assertJsonCount(1, 'data')
             ->assertJsonFragment([
                 'id' => $expected->getKey(),
