@@ -33,7 +33,7 @@ final class BannerIndexDto extends Data
         #[ArrayType]
         public readonly array|Optional $ids,
         #[BooleanType]
-        public readonly bool|Optional $with_translations = false,
+        public readonly bool|Optional $with_translations,
     ) {}
 
     /**
