@@ -21,6 +21,7 @@ use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\DiscountConditionPriceType;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -43,6 +44,7 @@ class DiscountConditionsCheckTest extends TestCase
     private ProductSet $set;
     private Currency $currency;
     private ProductService $productService;
+    private SalesChannel $salesChannel;
 
     public static function dateBetweenPassProvider(): array
     {
@@ -333,9 +335,14 @@ class DiscountConditionsCheckTest extends TestCase
         $this->currency = Currency::DEFAULT;
         $this->productService = App::make(ProductService::class);
 
-        $this->product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(20, $this->currency->value))],
-        ]));
+        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
+
+        $this->product = $this->productService->create(FakeDto::productCreateDto(
+            [
+                'prices_base' => [PriceDto::from(Money::of(20, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $this->set = ProductSet::factory()->create();
 
@@ -416,9 +423,12 @@ class DiscountConditionsCheckTest extends TestCase
         $this->prepareConditionGroup();
         $this->discount->conditionGroups()->attach($this->prepareNewConditionGroup());
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(60, $this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            [
+                'prices_base' => [PriceDto::from(Money::of(60, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $product->sets()->sync([$this->set->getKey()]);
 
@@ -457,9 +467,12 @@ class DiscountConditionsCheckTest extends TestCase
         $this->prepareConditionGroup();
         $this->discount->conditionGroups()->attach($this->prepareNewConditionGroup());
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(60, $this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            [
+                'prices_base' => [PriceDto::from(Money::of(60, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $cart = CartDto::fromArray([
             'currency' => $this->currency,

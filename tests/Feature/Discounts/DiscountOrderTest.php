@@ -62,9 +62,12 @@ class DiscountOrderTest extends TestCase
         $this->productService = App::make(ProductService::class);
         $this->currency = Currency::DEFAULT;
 
-        $this->product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(100, $this->currency->value))],
-        ]));
+        $this->product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(100, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $this->shippingMethod = $this->createShippingMethod(10, ['shipping_type' => ShippingType::ADDRESS]);
 
@@ -289,17 +292,26 @@ class DiscountOrderTest extends TestCase
 
         $shippingMethod = $this->createShippingMethod(20, ['shipping_type' => ShippingType::ADDRESS]);
 
-        $product1 = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(100, $this->currency->value))],
-        ]));
+        $product1 = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(100, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
-        $product2 = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(200, $this->currency->value))],
-        ]));
+        $product2 = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(200, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
-        $product3 = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(50, $this->currency->value))],
-        ]));
+        $product3 = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(50, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $sale1 = Discount::factory()->create([
             'target_type' => DiscountTargetType::PRODUCTS,
@@ -564,9 +576,12 @@ class DiscountOrderTest extends TestCase
 
         $this->{$user}->givePermissionTo('orders.add');
 
-        $product1 = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(5588.75, $this->currency->value))],
-        ]));
+        $product1 = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(5588.75, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $sale1 = Discount::factory()->create([
             'type' => DiscountType::PERCENTAGE,
@@ -636,9 +651,12 @@ class DiscountOrderTest extends TestCase
     {
         $this->{$user}->givePermissionTo('orders.add');
 
-        $product1 = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(5588.75, $this->currency->value))],
-        ]));
+        $product1 = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(5588.75, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $sale1 = Discount::factory()->create([
             'target_type' => DiscountTargetType::PRODUCTS,
@@ -693,9 +711,12 @@ class DiscountOrderTest extends TestCase
 
         $this->{$user}->givePermissionTo('orders.add');
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(10, $this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(10, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $items = [
             [
@@ -743,9 +764,12 @@ class DiscountOrderTest extends TestCase
 
         $this->{$user}->givePermissionTo('orders.add');
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(10, $this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(10, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $items = [
             [
@@ -797,9 +821,12 @@ class DiscountOrderTest extends TestCase
 
         $this->{$user}->givePermissionTo('orders.add');
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(10, $this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(10, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
@@ -857,9 +884,12 @@ class DiscountOrderTest extends TestCase
 
         $this->{$user}->givePermissionTo('orders.add');
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(10, $this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(10, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
@@ -918,9 +948,12 @@ class DiscountOrderTest extends TestCase
 
         $this->{$user}->givePermissionTo('orders.add');
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(10, $this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(10, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
@@ -981,9 +1014,12 @@ class DiscountOrderTest extends TestCase
     {
         $this->{$user}->givePermissionTo('orders.add');
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(100, $this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(100, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $itemData = [
             'unlimited_stock_shipping_time' => 4,
@@ -1061,9 +1097,12 @@ class DiscountOrderTest extends TestCase
 
         $productPrice = 50;
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of($productPrice, $this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of($productPrice, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $shippingMethod = ShippingMethod::factory()
             ->create(['public' => true, 'shipping_type' => ShippingType::ADDRESS]);

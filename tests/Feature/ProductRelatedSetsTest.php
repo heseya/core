@@ -9,6 +9,8 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Domain\Currency\Currency;
 use Domain\ProductSet\ProductSet;
+use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
@@ -17,6 +19,7 @@ use Tests\Utils\FakeDto;
 class ProductRelatedSetsTest extends TestCase
 {
     private Product $product;
+    private SalesChannel $salesChannel;
 
     /**
      * @throws DtoException
@@ -27,6 +30,8 @@ class ProductRelatedSetsTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
+
+        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
 
         /** @var ProductService $productService */
         $productService = App::make(ProductService::class);
@@ -198,6 +203,7 @@ class ProductRelatedSetsTest extends TestCase
         $prices = array_map(fn (Currency $currency) => [
             'value' => '10.00',
             'currency' => $currency->value,
+            'sales_channel_id' => $this->salesChannel->id,
         ], Currency::cases());
 
         $response = $this->actingAs($this->{$user})->postJson('/products', [

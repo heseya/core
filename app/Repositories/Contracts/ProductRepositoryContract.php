@@ -6,6 +6,7 @@ use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\Product\Dtos\ProductSearchDto;
+use Domain\SalesChannel\Models\SalesChannel;
 use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -24,9 +25,14 @@ interface ProductRepositoryContract
     /**
      * @param ProductPriceType[] $priceTypes
      *
-     * @return Collection|EloquentCollection<string,Collection<int,PriceDto>|EloquentCollection<int,PriceDto>>
+     * @return Collection<string,Collection<int,PriceDto>|EloquentCollection<int,PriceDto>>|EloquentCollection<string,Collection<int,PriceDto>|EloquentCollection<int,PriceDto>>
      *
      * @throws DtoException
      */
-    public function getProductPrices(string $productId, array $priceTypes, ?Currency $currency = null): Collection|EloquentCollection;
+    public function getProductPrices(
+        string $productId,
+        array $priceTypes,
+        ?Currency $currency = null,
+        ?SalesChannel $salesChannel = null,
+    ): Collection|EloquentCollection;
 }

@@ -411,15 +411,11 @@ class ProductSearchDatabaseTest extends TestCase
 
         $tag = Tag::factory()->create();
 
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product = Product::factory()->create();
         $this->salesChannel->products()->attach($product);
 
         // Product not in tag
-        $product2 = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product2 = Product::factory()->create();
         $this->salesChannel->products()->attach($product2);
 
         $tag->products()->attach($product);
@@ -673,6 +669,7 @@ class ProductSearchDatabaseTest extends TestCase
         $this->{$user}->givePermissionTo('products.show');
 
         $products = Product::factory()->count(2)->create();
+
         $this->salesChannel->products()->attach([
             $products[0]->getKey(),
             $products[1]->getKey()

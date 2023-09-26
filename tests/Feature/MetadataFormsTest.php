@@ -7,6 +7,7 @@ use Domain\Currency\Currency;
 use Domain\Metadata\Enums\MetadataType;
 use Domain\ProductSet\Events\ProductSetCreated;
 use Domain\ProductSet\ProductSet;
+use Domain\SalesChannel\SalesChannelRepository;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
@@ -19,9 +20,12 @@ class MetadataFormsTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.add');
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $prices = array_map(fn (Currency $currency) => [
             'value' => '10.00',
             'currency' => $currency->value,
+            'sales_channel_id' => $salesChannel->id,
         ], Currency::cases());
 
         $response = $this

@@ -91,12 +91,13 @@ class ProductTest extends TestCase
         $this->productRepository = App::make(ProductRepositoryContract::class);
         $this->schemaCrudService = App::make(SchemaCrudService::class);
 
+        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $this->productPrices = array_map(fn (Currency $currency) => [
             'value' => '100.00',
             'currency' => $currency->value,
+            'sales_channel_id' => $this->salesChannel->id,
         ], Currency::cases());
-
-        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
 
         /** @var AvailabilityServiceContract $availabilityService */
         $availabilityService = App::make(AvailabilityServiceContract::class);
@@ -1044,26 +1045,31 @@ class ProductTest extends TestCase
                     'net' => '3000.00',
                     'gross' => '3000.00',
                     'currency' => Currency::DEFAULT->value,
+                    'sales_channel_id' => $this->salesChannel->id,
                 ]],
                 'prices_min_initial' => [[
                     'net' => '2500.00',
                     'gross' => '2500.00',
                     'currency' => Currency::DEFAULT->value,
+                    'sales_channel_id' => $this->salesChannel->id,
                 ]],
                 'prices_max_initial' => [[
                     'net' => '3500.00',
                     'gross' => '3500.00',
                     'currency' => Currency::DEFAULT->value,
+                    'sales_channel_id' => $this->salesChannel->id,
                 ]],
                 'prices_min' => [[
                     'net' => '2250.00',
                     'gross' => '2250.00',
                     'currency' => Currency::DEFAULT->value,
+                    'sales_channel_id' => $this->salesChannel->id,
                 ]],
                 'prices_max' => [[
                     'net' => '3150.00',
                     'gross' => '3150.00',
                     'currency' => Currency::DEFAULT->value,
+                    'sales_channel_id' => $this->salesChannel->id,
                 ]],
             ])
             ->assertJsonFragment([
@@ -2859,6 +2865,7 @@ class ProductTest extends TestCase
         $prices = array_map(fn (Currency $currency) => [
             'value' => "{$productNewPrice}.00",
             'currency' => $currency->value,
+            'sales_channel_id' => $this->salesChannel->id,
         ], Currency::cases());
 
         $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
@@ -2924,6 +2931,7 @@ class ProductTest extends TestCase
         $prices = array_map(fn (Currency $currency) => [
             'value' => "{$productNewPrice}.00",
             'currency' => $currency->value,
+            'sales_channel_id' => $this->salesChannel->id,
         ], Currency::cases());
 
         $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [

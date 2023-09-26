@@ -15,6 +15,7 @@ use Domain\Price\Enums\DiscountConditionPriceType;
 use Domain\Price\Enums\OptionPriceType;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\Price\Enums\SchemaPriceType;
+use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
@@ -34,6 +35,7 @@ final class PriceRepository
         foreach ($priceMatrix as $type => $prices) {
             $prices = new DataCollection(PriceDto::class, $prices);
             foreach ($prices as $price) {
+                // @var PriceDto $price
                 $rows[] = [
                     'id' => Uuid::uuid4(),
                     'model_id' => $model instanceof ModelIdentityDto ? $model->uuid : $model->getKey(),
@@ -42,13 +44,14 @@ final class PriceRepository
                     'currency' => $price->value->getCurrency()->getCurrencyCode(),
                     'value' => (string) $price->value->getMinorAmount(),
                     'is_net' => false,
+                    'sales_channel_id' => $price->sales_channel_id ?? ($model instanceof Product ? $model->salesChannels->first()?->getKey() : null),
                 ];
             }
         }
 
         Price::query()->upsert(
             $rows,
-            ['model_id', 'price_type', 'currency'],
+            ['model_id', 'price_type', 'currency', 'sales_channel_id'],
             ['value', 'is_net'],
         );
     }
@@ -58,7 +61,7 @@ final class PriceRepository
      *
      * @return Collection<int, Price>
      */
-    public function getModelPrices(DiscountCondition|ModelIdentityDto|Option|Product|Schema $model, array $priceTypes, ?Currency $currency = null): Collection
+    public function getModelPrices(DiscountCondition|ModelIdentityDto|Option|Product|Schema $model, array $priceTypes, ?Currency $currency = null, ?SalesChannel $salesChannel = null): Collection
     {
         /** @var Builder<Price> $query */
         $query = Price::query()
@@ -68,6 +71,10 @@ final class PriceRepository
 
         if ($currency !== null) {
             $query->where('currency', $currency->value);
+        }
+
+        if ($salesChannel !== null) {
+            $query->where('sales_channel_id', $salesChannel->getKey());
         }
 
         return $query->get();

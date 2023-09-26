@@ -17,6 +17,7 @@ use Domain\Price\PriceRepository;
 use Domain\Product\Dtos\ProductSearchDto;
 use Domain\Product\Enums\ProductSalesChannelStatus;
 use Domain\Product\Models\ProductSalesChannel;
+use Domain\SalesChannel\Models\SalesChannel;
 use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -92,9 +93,13 @@ class ProductRepository implements ProductRepositoryContract
      * @throws DtoException
      * @throws ServerException
      */
-    public function getProductPrices(string $productId, array $priceTypes, ?Currency $currency = null): Collection|EloquentCollection
-    {
-        $prices = $this->priceRepository->getModelPrices(new ModelIdentityDto($productId, (new Product())->getMorphClass()), $priceTypes, $currency);
+    public function getProductPrices(
+        string $productId,
+        array $priceTypes,
+        ?Currency $currency = null,
+        ?SalesChannel $salesChannel = null
+    ): Collection|EloquentCollection {
+        $prices = $this->priceRepository->getModelPrices(new ModelIdentityDto($productId, (new Product())->getMorphClass()), $priceTypes, $currency, $salesChannel);
 
         $groupedPrices = $prices->mapToGroups(fn (Price $price) => [$price->price_type => PriceDto::from($price)]);
 

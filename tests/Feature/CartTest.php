@@ -108,13 +108,19 @@ class CartTest extends TestCase
 
         $this->shippingMethod->priceRanges()->saveMany([$lowRange, $highRange]);
 
-        $this->product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(4600.0, $this->currency->value))],
-        ]));
+        $this->product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(4600.0, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
-        $this->productWithSchema = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(100.0, $this->currency->value))],
-        ]));
+        $this->productWithSchema = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(100.0, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $this->schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
@@ -1029,18 +1035,24 @@ class CartTest extends TestCase
 
         $this->{$user}->givePermissionTo('cart.verify');
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(10.0, $this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(10.0, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 'string',
             'prices' => [PriceDto::from(Money::of(20.0, $this->currency->value))],
             'hidden' => false,
         ]));
         $product->schemas()->save($schema);
-        $product2 = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(100.0, $this->currency->value))],
-        ]));
+        $product2 = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(100.0, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $sale = Discount::factory()->create([
             'type' => DiscountType::AMOUNT,
@@ -1088,9 +1100,12 @@ class CartTest extends TestCase
 
         $this->{$user}->givePermissionTo('cart.verify');
 
-        $productDto = FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(10.0, $this->currency->value))],
-        ]);
+        $productDto = FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(10.0, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        );
         $product = $this->productService->create($productDto);
 
         $schemaDto = FakeDto::schemaDto([
@@ -1270,9 +1285,12 @@ class CartTest extends TestCase
 
         $code = $coupon ? [] : ['code' => null];
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(4601.0, $this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(4601.0, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $discountApplied = Discount::factory()->create(
             [
@@ -1368,9 +1386,12 @@ class CartTest extends TestCase
 
         $code = $coupon ? [] : ['code' => null];
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(45.0, $this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(45.0, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $discountApplied = Discount::factory()->create(
             [
@@ -1476,9 +1497,12 @@ class CartTest extends TestCase
 
         $item = Item::factory()->create($itemData);
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(4600.0, $this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(4600.0, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $product->items()->attach($item->getKey(), ['required_quantity' => 100]);
 
@@ -1522,9 +1546,12 @@ class CartTest extends TestCase
             'shipping_time' => null,
         ]);
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(4600.0, $this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(4600.0, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         Deposit::factory([
             'quantity' => 150,
@@ -1637,12 +1664,18 @@ class CartTest extends TestCase
             'shipping_time' => null,
         ]);
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(4600.0, $this->currency->value))],
-        ]));
-        $product2 = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(4600.0, $this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(4600.0, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
+        $product2 = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(4600.0, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         Deposit::factory([
             'quantity' => 150,
@@ -2291,9 +2324,12 @@ class CartTest extends TestCase
             'purchase_limit_per_user' => 0,
         ]);
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(1000.0, $this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(1000.0, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
@@ -2747,9 +2783,12 @@ class CartTest extends TestCase
      */
     private function prepareCouponWithProductInSetAndCountConditions(bool $productInSet, bool $isAllowList): array
     {
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(49.0, $this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(49.0, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $set = ProductSet::factory()->create([
             'public' => true,

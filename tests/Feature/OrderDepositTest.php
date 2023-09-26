@@ -71,9 +71,12 @@ class OrderDepositTest extends TestCase
         $this->schemaCrudService  = App::make(SchemaCrudService::class);
 
         $this->currency = Currency::DEFAULT;
-        $this->product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(100.00, $this->currency->value))],
-        ]));
+        $this->product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(100.00, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
         $this->salesChannel->products()->attach($this->product);
 
         $this->schema = $this->schemaCrudService->store(FakeDto::schemaDto([
@@ -410,9 +413,12 @@ class OrderDepositTest extends TestCase
             'unlimited_stock_shipping_time' => 10,
         ]);
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(100.00, $this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(100.00, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
         $this->salesChannel->products()->attach($product);
         $product->items()->attach($this->item->getKey(), ['required_quantity' => 1]);
 
@@ -700,9 +706,12 @@ class OrderDepositTest extends TestCase
             'unlimited_stock_shipping_date' => $date,
         ]);
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(100.00, $this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(100.00, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
         $this->salesChannel->products()->attach($product);
         $product->items()->attach($this->item->getKey(), ['required_quantity' => 1]);
 

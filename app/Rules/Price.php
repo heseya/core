@@ -11,6 +11,7 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money as BrickMoney;
 use Closure;
 use Domain\Currency\Currency;
+use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Contracts\Validation\ValidationRule;
 
 readonly class Price implements ValidationRule
@@ -22,6 +23,7 @@ readonly class Price implements ValidationRule
         private array $amountKeys,
         private ?BigDecimal $min = null,
         private bool $nullable = false,
+        private bool $with_channel = false,
     ) {}
 
     /**
@@ -34,6 +36,14 @@ readonly class Price implements ValidationRule
 
         if ($currency === null) {
             return;
+        }
+
+        if ($this->with_channel) {
+            $channel = $this->validateChannel($value, $fail);
+
+            if ($channel === null) {
+                return;
+            }
         }
 
         foreach ($this->amountKeys as $amountKey) {
@@ -104,5 +114,27 @@ readonly class Price implements ValidationRule
         if ($this->min !== null && $money?->isLessThan($this->min)) {
             $fail("The :attribute value is less than defined minimum: {$this->min}");
         }
+    }
+
+    public function validateChannel(mixed $value, Closure $fail): ?SalesChannel
+    {
+        if (!is_array($value)) {
+            $fail('The :attribute is not an object');
+
+            return null;
+        }
+
+        if (!array_key_exists('sales_channel_id', $value)) {
+            $fail("The :attribute is missing key 'sales_channel_id'");
+
+            return null;
+        }
+
+        $sales_channel = SalesChannel::find($value['sales_channel_id']);
+        if (empty($sales_channel)) {
+            $fail("The :attribute sales_channel_id {$value['sales_channel_id']} does not exist");
+        }
+
+        return $sales_channel;
     }
 }

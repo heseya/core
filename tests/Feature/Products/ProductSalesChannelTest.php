@@ -10,6 +10,7 @@ use Domain\Currency\Currency;
 use Domain\Product\Enums\ProductSalesChannelStatus;
 use Domain\Product\Models\ProductSalesChannel;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
@@ -27,6 +28,7 @@ class ProductSalesChannelTest extends TestCase
         $prices = array_map(fn (Currency $currency) => [
             'value' => '100.00',
             'currency' => $currency->value,
+            'sales_channel_id' => $sales_channel->id,
         ], Currency::cases());
 
         $this->{$user}->givePermissionTo('products.add');

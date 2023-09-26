@@ -368,8 +368,7 @@ readonly class DiscountService implements DiscountServiceContract
             ], $currency);
 
             /** @var Money $price */
-            $price = $prices->get(ProductPriceType::PRICE_BASE->value)?->firstOrFail(
-            )?->value ?? throw new ItemNotFoundException();
+            $price = $prices->get(ProductPriceType::PRICE_BASE->value)?->firstOrFail()?->value ?? throw new ItemNotFoundException();
 
             foreach ($cartItem->getSchemas() as $schemaId => $value) {
                 /** @var Schema $schema */
@@ -1016,7 +1015,9 @@ readonly class DiscountService implements DiscountServiceContract
             ],
         );
 
+        /** @var Collection<int,PriceDto>|EloquentCollection<int,PriceDto> $minPrices */
         $minPrices = $prices->get(ProductPriceType::PRICE_MIN_INITIAL->value);
+        /** @var Collection<int,PriceDto>|EloquentCollection<int,PriceDto> $maxPrices */
         $maxPrices = $prices->get(ProductPriceType::PRICE_MAX_INITIAL->value);
 
         $minimalMonetaryValue = 1;
@@ -1034,7 +1035,7 @@ readonly class DiscountService implements DiscountServiceContract
                     if (!$minPrice->value->isEqualTo($minimalProductPrice)) {
                         $minPrices[$index] = PriceDto::fromMoney(
                             $this->calcProductPriceDiscount($sale, $minPrice->value, $minimalProductPrice),
-                        );
+                        )->withSalesChannel($minPrice->sales_channel_id);
                     }
                 }
 
@@ -1047,7 +1048,7 @@ readonly class DiscountService implements DiscountServiceContract
                     if (!$maxPrice->value->isEqualTo($minimalProductPrice)) {
                         $maxPrices[$index] = PriceDto::fromMoney(
                             $this->calcProductPriceDiscount($sale, $maxPrice->value, $minimalProductPrice),
-                        );
+                        )->withSalesChannel($maxPrice->sales_channel_id);
                     }
                 }
 
@@ -1376,7 +1377,8 @@ readonly class DiscountService implements DiscountServiceContract
 
         /** @var CartItemDto $item */
         foreach ($cartDto->getItems() as $item) {
-            $cartItem = $cart->items->filter(fn ($value, $key) => $value->cartitem_id === $item->getCartItemId()
+            $cartItem = $cart->items->filter(
+                fn ($value, $key) => $value->cartitem_id === $item->getCartItemId()
             )->first();
 
             if ($cartItem === null) {
@@ -1418,7 +1420,8 @@ readonly class DiscountService implements DiscountServiceContract
 
         if ($cartItem->quantity > 1 && !$cartItem->price_discounted->isEqualTo($minimalProductPrice)) {
             $cart->items->first(
-                fn ($value
+                fn (
+                    $value
                 ): bool => $value->cartitem_id === $cartItem->cartitem_id && $value->quantity === $cartItem->quantity
             )->quantity = $cartItem->quantity - 1;
 
@@ -1615,7 +1618,8 @@ readonly class DiscountService implements DiscountServiceContract
             } else {
                 /** @var CartItemDto $item */
                 foreach ($cart->getItems() as $item) {
-                    if ($discount->allProductsIds()->doesntContain(fn ($value): bool => $value === $item->getProductId()
+                    if ($discount->allProductsIds()->doesntContain(
+                        fn ($value): bool => $value === $item->getProductId()
                     )) {
                         return true;
                     }

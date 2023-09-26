@@ -8,6 +8,7 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Domain\Currency\Currency;
 use Domain\Page\Page;
+use Domain\SalesChannel\SalesChannelRepository;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
@@ -22,9 +23,12 @@ class ProductCreateTest extends TestCase
     {
         $page = Page::factory()->create();
 
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         $prices = array_map(fn (Currency $currency) => [
             'value' => '100.00',
             'currency' => $currency->value,
+            'sales_channel_id' => $salesChannel->id,
         ], Currency::cases());
 
         $this->{$user}->givePermissionTo('products.add');

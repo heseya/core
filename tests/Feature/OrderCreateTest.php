@@ -338,9 +338,12 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::zero($this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::zero($this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $productQuantity = 1;
 
@@ -968,9 +971,12 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(150, $this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(150, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $discount = Discount::factory()->create([
             'description' => 'Testowy kupon',

@@ -39,7 +39,7 @@ class OrderUpdateTest extends TestCase
     private Address $addressDelivery;
     private Address $addressInvoice;
     private Address $address;
-    
+
     private SalesChannel $salesChannel;
 
     private Currency $currency;
@@ -1020,7 +1020,7 @@ class OrderUpdateTest extends TestCase
     {
         $this->{$user}->givePermissionTo('orders.edit');
 
-        $product = Product::factory()->create(['public' => true]);
+        $product = Product::factory()->create();
         $orderProduct = $this->order->products()->create([
             'product_id' => $product->getKey(),
             'quantity' => 3,
@@ -1068,7 +1068,7 @@ class OrderUpdateTest extends TestCase
     {
         $this->{$user}->givePermissionTo('orders.edit');
 
-        $product = Product::factory()->create(['public' => true]);
+        $product = Product::factory()->create();
         $orderProduct = $this->order->products()->create([
             'product_id' => $product->getKey(),
             'quantity' => 3,
@@ -1222,7 +1222,7 @@ class OrderUpdateTest extends TestCase
     {
         $this->{$user}->givePermissionTo('orders.edit');
 
-        $product = Product::factory()->create(['public' => true]);
+        $product = Product::factory()->create();
         $orderProduct = $this->order->products()->create([
             'product_id' => $product->getKey(),
             'quantity' => 3,

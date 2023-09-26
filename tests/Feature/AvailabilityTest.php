@@ -693,6 +693,7 @@ class AvailabilityTest extends TestCase
         $prices = array_map(fn (Currency $currency) => [
             'value' => '10.00',
             'currency' => $currency->value,
+            'sales_channel_id' => $this->salesChannel->id,
         ], Currency::cases());
 
         $this->actingAs($this->{$user})->postJson('/products', [
@@ -702,7 +703,6 @@ class AvailabilityTest extends TestCase
             'published' => [$this->lang],
             'slug' => 'test',
             'prices_base' => $prices,
-            'public' => false,
             'shipping_digital' => false,
             'sets' => [],
             'schemas' => array_keys($schemas),

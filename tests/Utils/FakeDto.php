@@ -14,6 +14,7 @@ use Domain\Product\Dtos\ProductCreateDto;
 use Domain\Product\Enums\ProductSalesChannelStatus;
 use Domain\ProductSchema\Dtos\SchemaDto;
 use Domain\ProductSchema\Dtos\SchemaUpdateDto;
+use Domain\SalesChannel\Models\SalesChannel;
 use Domain\SalesChannel\SalesChannelRepository;
 use Domain\ShippingMethod\Dtos\PriceRangeDto;
 use Domain\ShippingMethod\Dtos\ShippingMethodCreateDto;
@@ -78,17 +79,20 @@ final readonly class FakeDto
      * @throws RoundingNecessaryException
      * @throws UnknownCurrencyException
      */
-    public static function productCreateDto(array $data = [], bool $returnArray = false): ProductCreateDto|array
-    {
+    public static function productCreateDto(
+        array $data = [],
+        bool $returnArray = false,
+        ?SalesChannel $salesChannel = null
+    ): ProductCreateDto|array {
         $faker = App::make(Generator::class);
         $name = $faker->sentence(mt_rand(1, 3));
         $description = $faker->sentence(10);
 
-        $data['prices_base'] = self::generatePricesInAllCurrencies($data['prices_base'] ?? []);
+        $salesChannel = $salesChannel ?? app(SalesChannelRepository::class)->getDefault();
+
+        $data['prices_base'] = self::generatePricesInAllCurrencies($data['prices_base'] ?? [], null, $salesChannel);
 
         $langId = App::getLocale();
-
-        $defaultSalesChannel = app(SalesChannelRepository::class)->getDefault();
 
         $data = $data + [
             'translations' => [
@@ -103,7 +107,7 @@ final readonly class FakeDto
             'shipping_digital' => false,
             'sales_channels' => [
                 [
-                    'id' => $defaultSalesChannel->getKey(),
+                    'id' => $salesChannel->getKey(),
                     'availability_status' => ProductSalesChannelStatus::PUBLIC->value,
                 ]
             ]
@@ -123,7 +127,8 @@ final readonly class FakeDto
      */
     public static function generatePricesInAllCurrencies(
         array $data = [],
-        BigDecimal|int|float|null $amount = null
+        BigDecimal|int|float|null $amount = null,
+        ?SalesChannel $salesChannel = null,
     ): array {
         $prices = [];
         $usedCurrencies = [];
@@ -138,6 +143,7 @@ final readonly class FakeDto
                 $prices[] = [
                     'value' => $price->value->getAmount(),
                     'currency' => $price->currency->value,
+                    'sales_channel_id' => $price->sales_channel_id,
                 ];
             }
         }
@@ -149,10 +155,12 @@ final readonly class FakeDto
                 $price = PriceDto::from([
                     'value' => $amount,
                     'currency' => $case->value,
+                    'sales_channel_id' => $salesChannel?->id,
                 ]);
                 $prices[] = [
                     'value' => $price->value->getAmount(),
                     'currency' => $price->currency->value,
+                    'sales_channel_id' => $price->sales_channel_id,
                 ];
             }
         }
@@ -167,8 +175,10 @@ final readonly class FakeDto
         return Arr::only(self::schemaDto($data, true), $keys);
     }
 
-    public static function schemaDto(array $data = [], bool $returnArray = false): SchemaDto|array
-    {
+    public static function schemaDto(
+        array $data = [],
+        bool $returnArray = false,
+    ): SchemaDto|array {
         $data['prices'] = self::generatePricesInAllCurrencies($data['prices'] ?? []);
 
         $data = $data + Schema::factory()->definition();

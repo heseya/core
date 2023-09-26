@@ -8,8 +8,10 @@ use Brick\Money\AbstractMoney;
 use Brick\Money\Money;
 use Database\Factories\PriceFactory;
 use Domain\Price\Dtos\PriceDto;
+use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Spatie\LaravelData\WithData;
 
@@ -35,6 +37,7 @@ class Price extends Model
         'model_type',
         'price_type',
         'is_net',
+        'sales_channel_id',
     ];
 
     protected $casts = [
@@ -73,5 +76,10 @@ class Price extends Model
     public function model(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    public function salesChannel(): BelongsTo
+    {
+        return $this->belongsTo(SalesChannel::class, 'sales_channel_id');
     }
 }

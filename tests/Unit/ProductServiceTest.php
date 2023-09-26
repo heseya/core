@@ -13,6 +13,8 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
@@ -26,6 +28,7 @@ class ProductServiceTest extends TestCase
     private static int $price = 10;
     private Product $product;
     private SchemaCrudService $schemaCrudService;
+    private SalesChannel $salesChannel;
 
     /**
      * @throws RoundingNecessaryException
@@ -40,10 +43,15 @@ class ProductServiceTest extends TestCase
         $this->productService = App::make(ProductService::class);
         $this->schemaCrudService = App::make(SchemaCrudService::class);
 
+        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         // @var Product $product
-        $this->product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::fromMoney(Money::of(self::$price, self::$currency->value))],
-        ]));
+        $this->product = $this->productService->create(FakeDto::productCreateDto(
+            [
+                'prices_base' => [PriceDto::fromMoney(Money::of(self::$price, self::$currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
     }
 
     /**

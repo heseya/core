@@ -6,6 +6,7 @@ use App\Http\Requests\Contracts\MetadataRequestContract;
 use App\Http\Requests\Contracts\SeoRequestContract;
 use App\Rules\AttributeOptionExist;
 use App\Rules\Price;
+use App\Rules\PricesEveryChannel;
 use App\Rules\PricesEveryCurrency;
 use App\Rules\ProductAttributeOptions;
 use App\Rules\Translations;
@@ -42,8 +43,8 @@ class ProductCreateRequest extends FormRequest implements MetadataRequestContrac
 
                 'slug' => ['required', 'string', 'max:255', 'unique:products', 'alpha_dash'],
 
-                'prices_base' => ['required', new PricesEveryCurrency()],
-                'prices_base.*' => [new Price(['value'], min: BigDecimal::zero())],
+                'prices_base' => ['required', new PricesEveryCurrency(), new PricesEveryChannel()],
+                'prices_base.*' => [new Price(['value'], min: BigDecimal::zero(), with_channel: true)],
 
                 'shipping_digital' => ['required', 'boolean'],
 

@@ -200,9 +200,7 @@ class DiscountProductCacheTest extends TestCase
 
         $priceMin = 100;
         $priceMax = 200;
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
+        $product = Product::factory()->create();
         $this->productRepository->setProductPrices($product->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of($priceMin, $this->currency->value))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin, $this->currency->value))],

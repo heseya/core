@@ -63,8 +63,8 @@ class PricesTest extends TestCase
         $priceMin1 = '2500.00';
         $priceMax1 = '3000.00';
         $this->productRepository->setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))->withSalesChannel($this->salesChannel)],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))->withSalesChannel($this->salesChannel)],
         ]);
 
         $product2 = Product::factory()->create();
@@ -72,8 +72,8 @@ class PricesTest extends TestCase
         $priceMin2 = '1000.00';
         $priceMax2 = '1500.00';
         $this->productRepository->setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin2, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax2, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin2, $this->currency->value))->withSalesChannel($this->salesChannel)],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax2, $this->currency->value))->withSalesChannel($this->salesChannel)],
         ]);
 
         $this
@@ -92,11 +92,13 @@ class PricesTest extends TestCase
                             'currency' => Currency::DEFAULT,
                             'gross' => $priceMin1,
                             'net' => $priceMin1,
+                            'sales_channel_id' => $this->salesChannel->id,
                         ]],
                         'prices_max' => [[
                             'currency' => Currency::DEFAULT,
                             'gross' => $priceMax1,
                             'net' => $priceMax1,
+                            'sales_channel_id' => $this->salesChannel->id,
                         ]],
                     ],
                     [
@@ -105,11 +107,13 @@ class PricesTest extends TestCase
                             'currency' => Currency::DEFAULT,
                             'gross' => $priceMin2,
                             'net' => $priceMin2,
+                            'sales_channel_id' => $this->salesChannel->id,
                         ]],
                         'prices_max' => [[
                             'currency' => Currency::DEFAULT,
                             'gross' => $priceMax2,
                             'net' => $priceMax2,
+                            'sales_channel_id' => $this->salesChannel->id,
                         ]],
                     ],
                 ],
@@ -125,9 +129,7 @@ class PricesTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
-        $product1 = Product::factory()->create([
-            'public' => false,
-        ]);
+        $product1 = Product::factory()->create();
 
         $this
             ->actingAs($this->{$user})
@@ -173,8 +175,8 @@ class PricesTest extends TestCase
         $priceMin1 = 2500;
         $priceMax1 = 3000;
         $this->productRepository->setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))->withSalesChannel($this->salesChannel)],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))->withSalesChannel($this->salesChannel)],
         ]);
 
         $discountRate = 0.5;
@@ -231,8 +233,8 @@ class PricesTest extends TestCase
         $priceMin1 = 2500;
         $priceMax1 = 3000;
         $this->productRepository->setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))->withSalesChannel($this->salesChannel)],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))->withSalesChannel($this->salesChannel)],
         ]);
 
         $discountRate = 0.5;
@@ -299,12 +301,12 @@ class PricesTest extends TestCase
 
         $product1 = Product::factory()->create();
         $this->salesChannel->products()->attach($product1);
-        
+
         $priceMin1 = '2500.00';
         $priceMax1 = '3000.00';
         $this->productRepository->setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))->withSalesChannel($this->salesChannel)],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))->withSalesChannel($this->salesChannel)],
         ]);
 
         $discountRate = 0.5;
@@ -435,8 +437,8 @@ class PricesTest extends TestCase
         $priceMin1 = '2500.00';
         $priceMax1 = '3000.00';
         $this->productRepository->setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))->withSalesChannel($this->salesChannel)],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))->withSalesChannel($this->salesChannel)],
         ]);
 
         $discountRate = 0.5;

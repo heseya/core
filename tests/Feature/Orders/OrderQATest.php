@@ -18,6 +18,7 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
@@ -40,6 +41,7 @@ class OrderQATest extends TestCase
     ];
     private Product $product;
     private ShippingMethod $shippingMethod;
+    private SalesChannel $salesChannel;
 
     /**
      * @throws RoundingNecessaryException
@@ -56,9 +58,14 @@ class OrderQATest extends TestCase
         /** @var ProductService $productService */
         $productService = App::make(ProductService::class);
 
-        $this->product = $productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(100, $currency))],
-        ]));
+        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
+
+        $this->product = $productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(100, $currency))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $this->shippingMethod = ShippingMethod::factory()->create();
         $freeRange = PriceRange::query()->create([

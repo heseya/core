@@ -26,6 +26,7 @@ use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -56,6 +57,7 @@ class DiscountApplyTest extends TestCase
     private OrderProductDto $orderProductDtoWithSchemas;
     private $orderProduct;
     private Currency $currency;
+    private SalesChannel $salesChannel;
 
     public static function discountProductDataProvider(): array
     {
@@ -134,9 +136,14 @@ class DiscountApplyTest extends TestCase
         $this->schemaCrudService = App::make(SchemaCrudService::class);
         $this->optionService = App::make(OptionService::class);
 
-        $this->product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(120, $this->currency->value))],
-        ]));
+        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
+
+        $this->product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [PriceDto::from(Money::of(120, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $this->schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
@@ -191,9 +198,12 @@ class DiscountApplyTest extends TestCase
 
         $order = Order::factory()->create();
 
-        $this->productToOrderProduct = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(120, $this->currency->value))],
-        ]));
+        $this->productToOrderProduct = $this->productService->create(FakeDto::productCreateDto(
+            [
+                'prices_base' => [PriceDto::from(Money::of(120, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $this->orderProduct = OrderProduct::factory()->create([
             'order_id' => $order->getKey(),
@@ -247,9 +257,12 @@ class DiscountApplyTest extends TestCase
             'code' => null,
         ])->create();
 
-        $product1 = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(30, $this->currency->value))],
-        ]));
+        $product1 = $this->productService->create(FakeDto::productCreateDto(
+            [
+                'prices_base' => [PriceDto::from(Money::of(30, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $sale->products()->attach($product1);
 
@@ -260,15 +273,21 @@ class DiscountApplyTest extends TestCase
             'target_is_allow_list' => true,
         ])->create();
 
-        $product2 = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(40, $this->currency->value))],
-        ]));
+        $product2 = $this->productService->create(FakeDto::productCreateDto(
+            [
+                'prices_base' => [PriceDto::from(Money::of(40, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $coupon->products()->attach($product2);
 
-        $product3 = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(50, $this->currency->value))],
-        ]));
+        $product3 = $this->productService->create(FakeDto::productCreateDto(
+            [
+                'prices_base' => [PriceDto::from(Money::of(50, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $coupon2 = Discount::factory([
             'percentage' => '10.0',
@@ -400,9 +419,12 @@ class DiscountApplyTest extends TestCase
     {
         $this->product->schemas()->sync([$this->schema->getKey()]);
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(220, $this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            [
+                'prices_base' => [PriceDto::from(Money::of(220, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $code = $discountKind === 'coupon' ? [] : ['code' => null];
 
@@ -660,9 +682,12 @@ class DiscountApplyTest extends TestCase
     {
         $code = $discountKind === 'coupon' ? [] : ['code' => null];
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(220, $this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            [
+                'prices_base' => [PriceDto::from(Money::of(220, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $discount = Discount::factory(
             [
@@ -857,9 +882,12 @@ class DiscountApplyTest extends TestCase
     {
         $code = $discountKind === 'coupon' ? [] : ['code' => null];
 
-        $product = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(220, $this->currency->value))],
-        ]));
+        $product = $this->productService->create(FakeDto::productCreateDto(
+            [
+                'prices_base' => [PriceDto::from(Money::of(220, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $discount = Discount::factory(
             [
@@ -1193,13 +1221,19 @@ class DiscountApplyTest extends TestCase
             'target_is_allow_list' => false,
         ])->create();
 
-        $product1 = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(80, $this->currency->value))],
-        ]));
+        $product1 = $this->productService->create(FakeDto::productCreateDto(
+            [
+                'prices_base' => [PriceDto::from(Money::of(80, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
-        $product2 = $this->productService->create(FakeDto::productCreateDto([
-            'prices_base' => [PriceDto::from(Money::of(120, $this->currency->value))],
-        ]));
+        $product2 = $this->productService->create(FakeDto::productCreateDto(
+            [
+                'prices_base' => [PriceDto::from(Money::of(120, $this->currency->value))],
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $order = Order::factory()->create([
             'cart_total_initial' => 600.0,

@@ -39,14 +39,18 @@ final class SalesChannelsTest extends TestCase
         $productService = app(ProductService::class);
 
         // @phpstan-ignore-next-line
-        $product = $productService->create(FakeDto::productCreateDto([
-            'prices_base' => [
-                [
-                    'value' => 10,
-                    'currency' => $currency,
+        $product = $productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [
+                    [
+                        'value' => 10,
+                        'currency' => $currency,
+                        'sales_channel_id' => $channel->id,
+                    ],
                 ],
             ],
-        ]));
+            salesChannel: $channel
+        ));
 
         $this->{$user}->givePermissionTo('cart.verify');
         $this
@@ -98,14 +102,18 @@ final class SalesChannelsTest extends TestCase
         $productService = app(ProductService::class);
 
         // @phpstan-ignore-next-line
-        $product = $productService->create(FakeDto::productCreateDto([
-            'prices_base' => [
-                [
-                    'value' => 10,
-                    'currency' => $currency,
+        $product = $productService->create(FakeDto::productCreateDto(
+            data: [
+                'prices_base' => [
+                    [
+                        'value' => 10,
+                        'currency' => $currency,
+                        'sales_channel_id' => $channel->id,
+                    ],
                 ],
             ],
-        ]));
+            salesChannel: $channel
+        ));
 
         $this->{$user}->givePermissionTo('orders.add');
         $this

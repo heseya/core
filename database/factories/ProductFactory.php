@@ -25,7 +25,7 @@ class ProductFactory extends Factory
      */
     public function definition(): array
     {
-        $name = $this->faker->sentence(mt_rand(1, 3));
+        $name = $this->faker->sentence(mt_rand(2, 3));
 
         return [
             'name' => $name,

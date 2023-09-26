@@ -9,6 +9,8 @@ use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Domain\Currency\Currency;
+use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
@@ -20,6 +22,7 @@ class ItemProductTest extends TestCase
     private Product $product;
     private Collection $items;
     private array $prices;
+    private SalesChannel $salesChannel;
 
     /**
      * @throws RoundingNecessaryException
@@ -33,14 +36,18 @@ class ItemProductTest extends TestCase
         Product::query()->delete();
         Item::query()->delete();
 
+        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         /** @var ProductService $productService */
         $productService = App::make(ProductService::class);
         $this->product = $productService->create(FakeDto::productCreateDto());
 
         $this->items = Item::factory()->count(3)->create();
+
         $this->prices = array_map(fn (Currency $currency) => [
             'value' => '10.00',
             'currency' => $currency->value,
+            'sales_channel_id' => $this->salesChannel->id,
         ], Currency::cases());
     }
 

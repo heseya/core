@@ -326,9 +326,21 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         return $this->morphMany(Price::class, 'model');
     }
 
+    public function pricesForCurrentChannel(): MorphMany
+    {
+        $salesChannel = Config::get('sales-channel.model');
+
+        return $this->prices()->where('sales_channel_id', $salesChannel->getKey());
+    }
+
     public function pricesBase(): MorphMany
     {
         return $this->prices()->where('price_type', ProductPriceType::PRICE_BASE->value);
+    }
+
+    public function pricesBaseForCurrentChannel(): MorphMany
+    {
+        return $this->pricesForCurrentChannel()->where('price_type', ProductPriceType::PRICE_BASE->value);
     }
 
     public function pricesMin(): MorphMany
@@ -336,9 +348,19 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         return $this->prices()->where('price_type', ProductPriceType::PRICE_MIN->value);
     }
 
+    public function pricesMinForCurrentChannel(): MorphMany
+    {
+        return $this->pricesForCurrentChannel()->where('price_type', ProductPriceType::PRICE_MIN->value);
+    }
+
     public function pricesMax(): MorphMany
     {
         return $this->prices()->where('price_type', ProductPriceType::PRICE_MAX->value);
+    }
+
+    public function pricesMaxForCurrentChannel(): MorphMany
+    {
+        return $this->pricesForCurrentChannel()->where('price_type', ProductPriceType::PRICE_MAX->value);
     }
 
     public function pricesMinInitial(): MorphMany
@@ -346,9 +368,19 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         return $this->prices()->where('price_type', ProductPriceType::PRICE_MIN_INITIAL->value);
     }
 
+    public function pricesMinInitialForCurrentChannel(): MorphMany
+    {
+        return $this->pricesForCurrentChannel()->where('price_type', ProductPriceType::PRICE_MIN_INITIAL->value);
+    }
+
     public function pricesMaxInitial(): MorphMany
     {
         return $this->prices()->where('price_type', ProductPriceType::PRICE_MAX_INITIAL->value);
+    }
+
+    public function pricesMaxInitialForCurrentChannel(): MorphMany
+    {
+        return $this->pricesForCurrentChannel()->where('price_type', ProductPriceType::PRICE_MAX_INITIAL->value);
     }
 
     public function salesChannels(): BelongsToMany
@@ -360,5 +392,10 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
             'sales_channel_id',
         )->using(ProductSalesChannel::class)
             ->withPivot(['availability_status']);
+    }
+
+    public function publicSalesChannels(): BelongsToMany
+    {
+        return $this->salesChannels()->wherePivot('availability_status', ProductSalesChannelStatus::PUBLIC->value);
     }
 }

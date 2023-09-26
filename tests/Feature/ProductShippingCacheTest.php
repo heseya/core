@@ -6,10 +6,21 @@ use App\Models\Deposit;
 use App\Models\Item;
 use Carbon\Carbon;
 use Domain\Currency\Currency;
+use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Tests\TestCase;
 
 class ProductShippingCacheTest extends TestCase
 {
+    private SalesChannel $salesChannel;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
+    }
+
     /**
      * @dataProvider authProvider
      */
@@ -22,9 +33,11 @@ class ProductShippingCacheTest extends TestCase
             'unlimited_stock_shipping_time' => $time,
         ]);
 
-        $this
+        $response = $this
             ->actingAs($this->{$user})
-            ->postJson('/products', $this->productDataWithItem($item))
+            ->postJson('/products', $this->productDataWithItem($item));
+
+        $response->assertValid()
             ->assertCreated()
             ->assertJson([
                 'data' => [
@@ -124,6 +137,7 @@ class ProductShippingCacheTest extends TestCase
         $prices = array_map(fn (Currency $currency) => [
             'value' => '10.00',
             'currency' => $currency->value,
+            'sales_channel_id' => $this->salesChannel->id,
         ], Currency::cases());
 
         return [

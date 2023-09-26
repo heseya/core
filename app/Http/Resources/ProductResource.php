@@ -31,11 +31,6 @@ class ProductResource extends Resource
             'id' => $this->resource->getKey(),
             'slug' => $this->resource->slug,
             'name' => $this->resource->name,
-            'prices_base' => PriceResource::collection($this->resource->pricesBase),
-            'prices_min' => PriceResource::collection($this->resource->pricesMin ?? $this->resource->pricesMinInitial),
-            'prices_max' => PriceResource::collection($this->resource->pricesMax ?? $this->resource->pricesMaxInitial),
-            'prices_min_initial' => PriceResource::collection($this->resource->pricesMinInitial),
-            'prices_max_initial' => PriceResource::collection($this->resource->pricesMaxInitial),
             'public' => $this->resource->public,
             'visible' => $this->resource->public,
             'available' => $this->resource->available,
@@ -81,6 +76,11 @@ class ProductResource extends Resource
             : $this->resource->attachments;
 
         return [
+            'prices_base' => PriceResource::collection($this->resource->pricesBaseForCurrentChannel),
+            'prices_min' => PriceResource::collection($this->resource->pricesMinForCurrentChannel ?? $this->resource->pricesMinInitialForCurrentChannel),
+            'prices_max' => PriceResource::collection($this->resource->pricesMaxForCurrentChannel ?? $this->resource->pricesMaxInitialForCurrentChannel),
+            'prices_min_initial' => PriceResource::collection($this->resource->pricesMinInitialForCurrentChannel),
+            'prices_max_initial' => PriceResource::collection($this->resource->pricesMaxInitialForCurrentChannel),
             'order' => $this->resource->order,
             'description_html' => $this->resource->description_html,
             'description_short' => $this->resource->description_short,
@@ -100,6 +100,11 @@ class ProductResource extends Resource
     public function index(Request $request): array
     {
         return [
+            'prices_base' => PriceResource::collection($this->resource->pricesBase),
+            'prices_min' => PriceResource::collection($this->resource->pricesMin ?? $this->resource->pricesMinInitial),
+            'prices_max' => PriceResource::collection($this->resource->pricesMax ?? $this->resource->pricesMaxInitial),
+            'prices_min_initial' => PriceResource::collection($this->resource->pricesMinInitial),
+            'prices_max_initial' => PriceResource::collection($this->resource->pricesMaxInitial),
             'attributes' => ProductAttributeShortResource::collection($this->resource->attributes),
         ];
     }
