@@ -50,7 +50,6 @@ final class ShippingMethodCreateDto extends Data
     /**
      * @param string $name
      * @param bool $public
-     * @param ShippingType $shipping_type
      * @param DataCollection<int, PriceRangeDto> $price_ranges
      * @param bool $payment_on_delivery
      * @param int|Optional $shipping_time_min
@@ -58,9 +57,9 @@ final class ShippingMethodCreateDto extends Data
      * @param array<int>|Optional $payment_methods
      * @param array<string>|Optional $countries
      * @param array<array<string>>|Optional $shipping_points
-     * @param array|Optional $metadata_public
-     * @param array|Optional $metadata_private
-     * @param array|Optional $sales_channels
+     * @param array<string,string>|Optional $metadata_public
+     * @param array<string, string>|Optional $metadata_private
+     * @param string[]|Optional $sales_channels
      * @param string|null $integration_key
      * @param bool $block_list
      */
