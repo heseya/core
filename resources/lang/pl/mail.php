@@ -10,6 +10,7 @@ return [
     'delivery' => 'Dostawa',
     'products' => 'Zamówione produkty',
     'name' => 'Nazwa',
+    'product_name' => 'Nazwa',
     'quantity' => 'Ilość',
     'price' => 'Cena',
     'summary-products' => 'Wartość produktów',
@@ -22,6 +23,7 @@ return [
     'address' => 'Adres',
     'zip' => 'Kod pocztowy',
     'city' => 'Miejscowość',
+    'country' => 'Kraj',
     'phone' => 'Telefon kontaktowy',
     'regards' => 'Pozdrawiamy',
     'team' => 'zespół :team',
@@ -48,4 +50,8 @@ return [
     'benefits' => 'Logując się na swoje konto, uzyskasz dostęp do osobistego panelu klienta,
         gdzie będziesz widzieć wszystkie swoje zamówienia wraz z informacją o statusie ich realizacji.
         Konto klienta pozwala Ci również na zarządzanie danymi kontaktowymi oraz adresami dostaw.',
+
+    // order paid
+    'subject-order-paid' => 'Zamówienia :number zostało opłacone',
+    'order-paid' => 'Twoje zamówienie zostało opłacone.',
 ];

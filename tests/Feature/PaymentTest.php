@@ -11,12 +11,15 @@ use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\Status;
+use App\Notifications\OrderPaid;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class PaymentTest extends TestCase
@@ -498,6 +501,51 @@ class PaymentTest extends TestCase
             'external_id' => 'test',
             'method_id' => $paymentMethod->getKey(),
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testOrderPaid(string $user): void
+    {
+        $this->{$user}->givePermissionTo('payments.add');
+        $paymentMethod = PaymentMethod::factory()->create([
+            'app_id' => $this->{$user}->getKey(),
+        ]);
+
+        $this->order->update([
+            'paid' => false,
+            'summary' => 100,
+        ]);
+
+        Notification::fake();
+
+        $this->actingAs($this->{$user})->json('POST', '/payments', [
+            'amount' => 100,
+            'currency' => $this->order->currency->value,
+            'status' => PaymentStatus::SUCCESSFUL,
+            'order_id' => $this->order->id,
+            'external_id' => 'test',
+            'method_id' => $paymentMethod->getKey(),
+        ])
+            ->assertValid()
+            ->assertCreated()
+            ->assertJson([
+                'data' => [
+                    'amount' => 100,
+                    'currency' => $this->order->currency->value,
+                    'status' => PaymentStatus::SUCCESSFUL->value,
+                    'external_id' => 'test',
+                    'method_id' => $paymentMethod->getKey(),
+                ],
+            ]);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'paid' => true,
+        ]);
+
+        Notification::assertSentTo($this->order, OrderPaid::class);
     }
 
     public function testStoreUnauthorized(): void

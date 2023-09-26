@@ -277,7 +277,7 @@
                                     <table cellpadding="0" cellspacing="0" width="100%" border="0"
                                            style="color:#000000;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:22px;table-layout:auto;width:100%;border:none;">
                                         <tr style="border-bottom:1px solid #ecedee;text-align:left;padding:15px 0;">
-                                            <th style="text-align: center; padding: 0 15px 0 0;">@lang('mail.name')</th>
+                                            <th style="text-align: center; padding: 0 15px 0 0;">@lang('mail.product_name')</th>
                                             <th style="text-align: center; padding: 0 15px; width: 30px;">@lang('mail.quantity')</th>
                                             <th style="text-align: center; padding: 0 0 0 15px; width: 25%;">@lang('mail.price')</th>
                                         </tr> @foreach ($order->products as $item)
@@ -432,6 +432,10 @@
                                         <tr>
                                             <td style="width: 180px">@lang('mail.city'):</td>
                                             <td>{{ $order?->invoiceAddress?->city ?? $order?->deliveryAddress?->city ?? '-' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width: 180px">@lang('mail.country'):</td>
+                                            <td>{{ $order?->invoiceAddress?->country ?? $order?->deliveryAddress?->country ?? '-' }}</td>
                                         </tr>
                                         <tr>
                                             <td style="width: 180px">@lang('mail.phone'):</td>

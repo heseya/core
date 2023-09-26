@@ -50,6 +50,7 @@ final class ShippingMethodCreateDto extends Data
     /**
      * @param string $name
      * @param bool $public
+     * @param ShippingType $shipping_type
      * @param DataCollection<int, PriceRangeDto> $price_ranges
      * @param bool $payment_on_delivery
      * @param int|Optional $shipping_time_min
@@ -57,8 +58,9 @@ final class ShippingMethodCreateDto extends Data
      * @param array<int>|Optional $payment_methods
      * @param array<string>|Optional $countries
      * @param array<array<string>>|Optional $shipping_points
-     * @param array<string, string>|Optional $metadata_public
-     * @param array<string, string>|Optional $metadata_private
+     * @param array|Optional $metadata_public
+     * @param array|Optional $metadata_private
+     * @param array|Optional $sales_channels
      * @param string|null $integration_key
      * @param bool $block_list
      */
@@ -97,6 +99,9 @@ final class ShippingMethodCreateDto extends Data
         public readonly array|Optional $metadata_public,
         public readonly array|Optional $metadata_private,
 
+        #[ArrayType]
+        public readonly array|Optional $sales_channels,
+
         #[StringType, Nullable]
         public readonly string|null $integration_key = null,
 
@@ -127,17 +132,9 @@ final class ShippingMethodCreateDto extends Data
             'payment_methods' => ['array', 'prohibited_if:payment_on_delivery,true'],
             'payment_methods.*' => ['uuid', 'exists:payment_methods,id'],
             'shipping_points.*.id' => ['string', 'exists:addresses,id'],
+            'sales_channels' => ['array'],
+            'sales_channels.*' => ['string', 'exists:sales_channels,id'],
         ];
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    public function isPublic(): bool
-    {
-        return $this->public;
     }
 
     /**

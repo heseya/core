@@ -102,6 +102,9 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
         if (!$shippingMethodDto->getCountries() instanceof Optional) {
             $shippingMethod->countries()->sync($shippingMethodDto->getCountries());
         }
+        if (!($shippingMethodDto->sales_channels instanceof Optional)) {
+            $shippingMethod->salesChannels()->sync($shippingMethodDto->sales_channels);
+        }
 
         if (!($shippingMethodDto->metadata_computed instanceof Optional)) {
             $this->metadataService->sync($shippingMethod, $shippingMethodDto->metadata_computed);
@@ -148,6 +151,10 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
                     'currency' => $range->value->getCurrency(),
                 ]);
             }
+        }
+
+        if (!($shippingMethodDto->sales_channels instanceof Optional)) {
+            $shippingMethod->salesChannels()->sync($shippingMethodDto->sales_channels);
         }
 
         return $shippingMethod;
