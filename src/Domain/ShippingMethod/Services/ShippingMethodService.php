@@ -38,6 +38,7 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
             'metadata_private',
             'ids',
             'items',
+            'sales_channel_id',
         )->toArray();
 
         $query = ShippingMethod::query()
@@ -113,6 +114,9 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
         if (!$shippingMethodDto->getCountries() instanceof Optional) {
             $shippingMethod->countries()->sync($shippingMethodDto->getCountries());
         }
+        if (!($shippingMethodDto->sales_channels instanceof Optional)) {
+            $shippingMethod->salesChannels()->sync($shippingMethodDto->sales_channels);
+        }
 
         if (!($shippingMethodDto->getMetadata() instanceof Missing)) {
             $this->metadataService->sync($shippingMethod, $shippingMethodDto->getMetadata());
@@ -175,6 +179,10 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
 
         if (!($shippingMethodDto->product_set_ids instanceof Optional)) {
             $shippingMethod->productSets()->sync($shippingMethodDto->product_set_ids);
+        }
+
+        if (!($shippingMethodDto->sales_channels instanceof Optional)) {
+            $shippingMethod->salesChannels()->sync($shippingMethodDto->sales_channels);
         }
 
         return $shippingMethod;

@@ -24,7 +24,7 @@ class StoreException extends Exception
         parent::__construct(
             $this->exception instanceof Exceptions ? $this->exception->value : $this->exception,
             $this->exception instanceof Exceptions ? $this->exception->getCode() : 422,
-            $previous
+            $previous,
         );
     }
 
@@ -40,7 +40,7 @@ class StoreException extends Exception
                 . '(code: ' . $this->getCode()
                 . '): ' . $this->getMessage()
                 . ' at ' . $this->getFile()
-                . ':(' . $this->getLine() . ')'
+                . ':(' . $this->getLine() . ')',
         );
     }
 

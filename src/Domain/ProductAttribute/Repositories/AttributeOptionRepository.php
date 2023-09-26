@@ -18,7 +18,7 @@ final readonly class AttributeOptionRepository
                     'index' => AttributeOption::withTrashed()->where('attribute_id', '=', $dto->attribute_id)->count() + 1,
                 ],
                 $dto->toArray(),
-            )
+            ),
         );
 
         if ($dto->translations) {

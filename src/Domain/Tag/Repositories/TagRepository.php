@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tag\Repositories;
 
+use App\Exceptions\PublishingException;
+use App\Services\Contracts\TranslationServiceContract;
 use App\Traits\GetPublishedLanguageFilter;
 use Domain\Tag\Dtos\TagCreateDto;
 use Domain\Tag\Dtos\TagIndexDto;
@@ -17,6 +19,10 @@ final class TagRepository
 {
     use GetPublishedLanguageFilter;
 
+    public function __construct(
+        protected TranslationServiceContract $translationService,
+    ) {}
+
     /**
      * @return LengthAwarePaginator<Tag>
      */
@@ -28,6 +34,9 @@ final class TagRepository
             ->paginate(Config::get('pagination.per_page'));
     }
 
+    /**
+     * @throws PublishingException
+     */
     public function store(TagCreateDto $dto): Tag
     {
         $tag = new Tag($dto->toArray());
@@ -37,11 +46,17 @@ final class TagRepository
                 $tag->setTranslation($key, $lang, $translation);
             }
         }
+
+        $this->translationService->checkPublished($tag, ['name']);
+
         $tag->save();
 
         return $tag;
     }
 
+    /**
+     * @throws PublishingException
+     */
     public function update(Tag $tag, TagUpdateDto $dto): Tag
     {
         $tag->fill($dto->toArray());
@@ -52,6 +67,8 @@ final class TagRepository
                 }
             }
         }
+
+        $this->translationService->checkPublished($tag, ['name']);
 
         $tag->save();
 

@@ -30,7 +30,7 @@ final class LanguageController extends Controller
         }
 
         return LanguageResource::collection(
-            $query->paginate(Config::get('pagination.per_page'))
+            $query->paginate(Config::get('pagination.per_page')),
         );
     }
 

@@ -41,7 +41,7 @@ final class SalesChannelController extends Controller
     public function store(SalesChannelCreateDto $dto): SalesChannelResource
     {
         return new SalesChannelResource(
-            $this->salesChannelService->store($dto)
+            $this->salesChannelService->store($dto),
         );
     }
 

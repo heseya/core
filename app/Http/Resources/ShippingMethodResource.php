@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Traits\MetadataResource;
 use Brick\Money\Money;
+use Domain\SalesChannel\Resources\SalesChannelResource;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Http\Request;
 
@@ -42,6 +43,7 @@ class ShippingMethodResource extends Resource
             'shipping_points' => AddressResource::collection($this->resource->shippingPoints),
             'product_ids' => $this->resource->products->pluck('id'),
             'product_set_ids' => $this->resource->productSets->pluck('id'),
+            'sales_channels' => SalesChannelResource::collection($this->resource->salesChannels),
         ], $this->metadataResource('shipping_methods.show_metadata_private'));
     }
 }

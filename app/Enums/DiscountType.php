@@ -15,7 +15,7 @@ enum DiscountType: string
     {
         return match ($this) {
             self::AMOUNT => 0,
-            self::PERCENTAGE => 1
+            self::PERCENTAGE => 1,
         };
     }
 }

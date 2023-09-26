@@ -52,8 +52,9 @@ final class ShippingMethodCreateDto extends Data
      * @param array<array<string>>|Optional $shipping_points
      * @param array<string>|Optional $product_ids
      * @param array<string>|Optional $product_set_ids
+     * @param string[]|Optional $sales_channels
+     * @param string|null $integration_key
      * @param bool $block_list
-     * @param bool $is_blocklist
      * @param string|null $integration_key
      */
     public function __construct(
@@ -91,19 +92,22 @@ final class ShippingMethodCreateDto extends Data
         public readonly array|Optional $shipping_points,
 
         #[ArrayType]
+        public readonly array|Optional $sales_channels,
+
+        #[ArrayType]
         public readonly array|Optional $product_ids,
 
         #[ArrayType]
         public readonly array|Optional $product_set_ids,
 
         #[BooleanType]
-        public readonly bool $block_list = false,
-
-        #[BooleanType]
         public readonly bool $is_blocklist = true,
 
         #[StringType, Nullable]
         public readonly string|null $integration_key = null,
+
+        #[BooleanType]
+        public readonly bool $block_list = false,
     ) {
         /** @var User|App|null $user */
         $user = Auth::user();
@@ -128,17 +132,9 @@ final class ShippingMethodCreateDto extends Data
             'shipping_points.*.id' => ['string', 'exists:addresses,id'],
             'product_ids.*' => ['uuid', 'exists:products,id'],
             'product_set_ids.*' => ['uuid', 'exists:product_sets,id'],
+            'sales_channels' => ['array'],
+            'sales_channels.*' => ['string', 'exists:sales_channels,id'],
         ];
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    public function isPublic(): bool
-    {
-        return $this->public;
     }
 
     /**

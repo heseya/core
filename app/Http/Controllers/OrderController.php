@@ -65,6 +65,7 @@ class OrderController extends Controller
                 'status',
                 'shippingMethod',
                 'shippingMethod.paymentMethods',
+                'shippingMethod.salesChannels',
                 'digitalShippingMethod',
                 'digitalShippingMethod.paymentMethods',
                 'shippingAddress',
@@ -161,7 +162,7 @@ class OrderController extends Controller
         Gate::inspect('indexUserOrder', [Order::class]);
 
         return OrderResource::collection(
-            $this->orderService->indexUserOrder(OrderIndexDto::instantiateFromRequest($request))
+            $this->orderService->indexUserOrder(OrderIndexDto::instantiateFromRequest($request)),
         );
     }
 
@@ -224,14 +225,14 @@ class OrderController extends Controller
             $this->orderService->processOrderProductUrls(
                 OrderProductUpdateDto::instantiateFromRequest($request),
                 $product,
-            )
+            ),
         );
     }
 
     public function myOrderProducts(OrderProductSearchRequest $request): JsonResource
     {
         return OrderProductResourcePublic::collection(
-            $this->orderService->indexMyOrderProducts(OrderProductSearchDto::instantiateFromRequest($request))
+            $this->orderService->indexMyOrderProducts(OrderProductSearchDto::instantiateFromRequest($request)),
         );
     }
 

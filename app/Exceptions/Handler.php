@@ -235,13 +235,13 @@ final class Handler extends ExceptionHandler
                 'types' => $data,
             ],
             ValidationError::EXISTS => [
-                'table' => $data[0],
-                'field' => $data[1],
+                'table' => $data[0] ?? '',
+                'field' => $data[1] ?? '',
             ],
             ValidationError::GTE => [
                 'field' => $data[0],
             ],
-            default => []
+            default => [],
         };
     }
 }

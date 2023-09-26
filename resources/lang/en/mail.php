@@ -10,6 +10,7 @@ return [
     'delivery' => 'Delivery',
     'products' => 'Products',
     'name' => 'Name',
+    'product_name' => 'Title',
     'quantity' => 'Qty',
     'price' => 'Price',
     'summary-products' => 'Products',
@@ -17,11 +18,12 @@ return [
     'summary-discount' => 'Discount',
     'summary-paid' => 'Summary',
     'purchaser' => 'Purchaser',
-    'company' => 'Company',
+    'company' => 'Name',
     'name-surname' => 'Full name',
     'address' => 'Address',
     'zip' => 'Zip code',
     'city' => 'City',
+    'country' => 'Country',
     'phone' => 'Phone',
     'regards' => 'Best Regards',
     'team' => ':team crew',
@@ -46,4 +48,8 @@ return [
     'benefits' => 'By logging into your account, you will gain access to your personal customer panel.
         You will be able to see all of your orders, along with information on their status.
         The customer account also allows you to manage your contact information and delivery addresses.',
+
+    // order paid
+    'subject-order-paid' => 'Order :number has been paid',
+    'order-paid' => 'Your order has been paid.',
 ];

@@ -59,7 +59,7 @@ final class AttributeController extends Controller
 
     public function show(
         Request $request,
-        Attribute $attribute
+        Attribute $attribute,
     ): JsonResource {
         if (!$attribute->exists) {
             $attribute->refresh();

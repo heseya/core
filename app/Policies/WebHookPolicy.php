@@ -31,7 +31,7 @@ class WebHookPolicy
             $newWebHook['events'] ?? $webHook->events,
             $newWebHook['with_issuer'] ?? $webHook->with_issuer,
             $newWebHook['with_hidden'] ?? $webHook->with_hidden,
-            $user
+            $user,
         );
     }
 

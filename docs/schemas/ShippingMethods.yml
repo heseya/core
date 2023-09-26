@@ -60,6 +60,10 @@ ShippingMethod:
       items:
         type: string
         format: uuid
+    sales_channels:
+      type: array
+      items:
+        $ref: './SalesChannel.yml#/SalesChannel'
     metadata:
       $ref: './../schemas/Metadata.yml#/Metadata'
     metadata_private:

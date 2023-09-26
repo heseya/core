@@ -55,8 +55,8 @@ class Price extends Model
                 ],
                 default => [
                     'value' => $value,
-                ]
-            }
+                ],
+            },
         );
     }
 

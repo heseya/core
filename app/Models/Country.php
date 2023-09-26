@@ -41,7 +41,7 @@ class Country extends Model
             'shipping_method_id',
             'code',
             'id',
-            'countries'
+            'countries',
         );
     }
 
@@ -50,7 +50,7 @@ class Country extends Model
         return $this->hasMany(
             Address::class,
             'code',
-            'country'
+            'country',
         );
     }
 }

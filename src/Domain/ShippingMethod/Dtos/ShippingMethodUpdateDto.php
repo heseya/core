@@ -44,6 +44,7 @@ final class ShippingMethodUpdateDto extends Data
      * @param bool|Optional $payment_on_delivery
      * @param array<array<string>>|Optional $shipping_points
      * @param array<int>|Optional $payment_methods
+     * @param string[]|Optional $sales_channels
      * @param array<string>|Optional $countries
      * @param DataCollection<int, PriceRangeDto>|Optional $price_ranges
      * @param array<string>|Optional $product_ids
@@ -83,6 +84,9 @@ final class ShippingMethodUpdateDto extends Data
 
         #[ArrayType]
         public readonly array|Optional $payment_methods,
+
+        #[ArrayType]
+        public readonly array|Optional $sales_channels,
 
         #[ArrayType]
         public readonly array|Optional $countries,
@@ -125,17 +129,9 @@ final class ShippingMethodUpdateDto extends Data
             'payment_methods' => ['array', 'prohibited_if:payment_on_delivery,true'],
             'payment_methods.*' => ['uuid', 'exists:payment_methods,id'],
             'shipping_points.*.id' => ['string', 'exists:addresses,id'],
+            'sales_channels' => ['array'],
+            'sales_channels.*' => ['string', 'exists:sales_channels,id'],
         ];
-    }
-
-    public function getName(): Optional|string
-    {
-        return $this->name;
-    }
-
-    public function isPublic(): bool|Optional
-    {
-        return $this->public;
     }
 
     /**
@@ -168,10 +164,5 @@ final class ShippingMethodUpdateDto extends Data
     public function getShippingPoints(): array|Optional
     {
         return $this->shipping_points;
-    }
-
-    public function getAppId(): string|null
-    {
-        return $this->app_id;
     }
 }
