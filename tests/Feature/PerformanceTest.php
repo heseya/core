@@ -79,8 +79,7 @@ class PerformanceTest extends TestCase
             ->json('GET', '/products/id:' . $product->getKey())
             ->assertOk();
 
-        // TODO: From 31 up to 1533... prices as a relation kind of suck
-        $this->assertQueryCountLessThan(1536);
+        $this->assertQueryCountLessThan(37);
     }
 
     public function testIndexPerformanceListAttribute500(): void

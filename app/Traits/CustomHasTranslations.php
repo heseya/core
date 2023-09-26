@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Models\Discount;
+use App\Models\Option;
 use Domain\Language\LanguageService;
 use Domain\Seo\Models\SeoMetadata;
 use Illuminate\Support\Arr;
@@ -62,8 +63,13 @@ trait CustomHasTranslations
             $translations = $this->getTranslatedLocales($key);
         } else {
             // only published
-            /** @var array<int, string> $translations */
-            $translations = $this->published ?? [];
+            if ($this instanceof Option) {
+                /** @var array<int, string> $translations */
+                $translations = $this->schema->published ?? [];
+            } else {
+                /** @var array<int, string> $translations */
+                $translations = $this->published ?? [];
+            }
         }
 
         // check if they can be hidden

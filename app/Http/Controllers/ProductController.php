@@ -61,6 +61,7 @@ final class ProductController extends Controller
         if (Gate::denies('products.show_hidden') && !$product->public) {
             throw new NotFoundHttpException();
         }
+        $product->load(['schemas', 'schemas.options', 'schemas.options.schema', 'schemas.prices', 'schemas.options.prices']);
 
         return ProductResource::make($product);
     }
