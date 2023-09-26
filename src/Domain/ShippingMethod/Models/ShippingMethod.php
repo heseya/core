@@ -54,7 +54,8 @@ final class ShippingMethod extends Model
         'name',
         'public',
         'order',
-        'block_list',
+        'is_block_list_products',
+        'is_block_list_countries',
         'shipping_time_min',
         'shipping_time_max',
         'shipping_type',
@@ -70,8 +71,8 @@ final class ShippingMethod extends Model
      */
     protected $casts = [
         'public' => 'boolean',
-        'is_product_blocklist' => 'boolean',
-        'block_list' => 'boolean',
+        'is_block_list_products' => 'boolean',
+        'is_block_list_countries' => 'boolean',
         'shipping_type' => ShippingType::class,
         'payment_on_delivery' => 'boolean',
     ];
@@ -162,7 +163,7 @@ final class ShippingMethod extends Model
             return false;
         }
 
-        return $this->block_list
+        return $this->is_block_list_countries
             ? $this->countries->contains('code', $country)
             : !$this->countries->contains('code', $country);
     }

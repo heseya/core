@@ -70,11 +70,11 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
             $query->where(function (Builder $query) use ($country): void {
                 $query->where(function (Builder $query) use ($country): void {
                     $query
-                        ->where('block_list', false)
+                        ->where('is_block_list_countries', false)
                         ->whereHas('countries', fn ($query) => $query->where('code', $country));
                 })->orWhere(function (Builder $query) use ($country): void {
                     $query
-                        ->where('block_list', true)
+                        ->where('is_block_list_countries', true)
                         ->whereDoesntHave(
                             'countries',
                             fn ($query) => $query->where('code', $country),

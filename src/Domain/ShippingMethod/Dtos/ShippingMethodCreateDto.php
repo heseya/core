@@ -50,12 +50,12 @@ final class ShippingMethodCreateDto extends Data
      * @param array<int>|Optional $payment_methods
      * @param array<string>|Optional $countries
      * @param array<array<string>>|Optional $shipping_points
+     * @param string[]|Optional $sales_channels
      * @param array<string>|Optional $product_ids
      * @param array<string>|Optional $product_set_ids
-     * @param string[]|Optional $sales_channels
+     * @param bool $is_block_list_products
      * @param string|null $integration_key
-     * @param bool $block_list
-     * @param string|null $integration_key
+     * @param bool $is_block_list_countries
      */
     public function __construct(
         #[Required, StringType, Max(255)]
@@ -101,13 +101,13 @@ final class ShippingMethodCreateDto extends Data
         public readonly array|Optional $product_set_ids,
 
         #[BooleanType]
-        public readonly bool $is_blocklist = true,
+        public readonly bool $is_block_list_products = true,
 
         #[StringType, Nullable]
         public readonly string|null $integration_key = null,
 
         #[BooleanType]
-        public readonly bool $block_list = false,
+        public readonly bool $is_block_list_countries = false,
     ) {
         /** @var User|App|null $user */
         $user = Auth::user();

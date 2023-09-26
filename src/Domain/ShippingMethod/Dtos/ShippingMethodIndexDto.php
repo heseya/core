@@ -21,8 +21,8 @@ final class ShippingMethodIndexDto extends Data
      * @param array<string, string>|Optional $cart_value
      * @param array<string, string>|Optional $metadata
      * @param array<string, string>|Optional $metadata_private
-     * @param array<string> $items
      * @param string|Optional $sales_channel_id
+     * @param array<string> $items
      */
     public function __construct(
         #[StringType, Size(2), Exists('countries', 'code')]

@@ -14,9 +14,9 @@ ShippingMethod:
         $ref: './../schemas/Prices.yml#/PriceResource'
     public:
       type: boolean
-    block_list:
+    is_block_list_countries:
       type: boolean
-    is_blocklist:
+    is_block_list_products:
       type: boolean
     payment_methods:
       type: array

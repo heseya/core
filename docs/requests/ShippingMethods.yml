@@ -6,7 +6,7 @@ ShippingMethod:
       example: dpd
     public:
       type: boolean
-    block_list:
+    is_block_list_countries:
       type: boolean
     payment_methods:
       type: array
@@ -92,7 +92,7 @@ ShippingMethodStore:
                 $ref: './../schemas/Metadata.yml#/Metadata'
               metadata_private:
                 $ref: './../schemas/Metadata.yml#/Metadata'
-              is_product_blocklist:
+              is_blocklist:
                 type: boolean
               product_ids:
                 type: array
@@ -124,7 +124,7 @@ ShippingMethodUpdate:
             $ref: './../schemas/Metadata.yml#/Metadata'
           metadata_private:
             $ref: './../schemas/Metadata.yml#/Metadata'
-          is_product_blocklist:
+          is_blocklist:
             type: boolean
           product_ids:
             type: array

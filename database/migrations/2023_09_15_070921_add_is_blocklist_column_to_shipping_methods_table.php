@@ -11,7 +11,8 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('shipping_methods', function (Blueprint $table): void {
-            $table->boolean('is_blocklist')->default(true);
+            $table->boolean('is_block_list_products')->default(true);
+            $table->renameColumn('block_list', 'is_block_list_countries');
         });
 
         Schema::create('shipping_method_product', function (Blueprint $table): void {
@@ -41,7 +42,8 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::table('shipping_methods', function (Blueprint $table): void {
-            $table->dropColumn('is_blocklist');
+            $table->dropColumn('is_block_list_products');
+            $table->renameColumn('is_block_list_countries', 'block_list');
         });
 
         Schema::dropIfExists('shipping_method_product');
