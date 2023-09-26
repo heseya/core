@@ -71,7 +71,6 @@ class BannerTest extends TestCase
      */
     public function testIndex($user): void
     {
-        dd($this->lang, Language::all()->toArray());
         $this->{$user}->givePermissionTo('banners.show');
 
         Banner::factory()->count(4)->create();
