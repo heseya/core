@@ -6,19 +6,17 @@ namespace Domain\ShippingMethod\Services\Contracts;
 
 use Brick\Money\Money;
 use Domain\ShippingMethod\Dtos\ShippingMethodCreateDto;
+use Domain\ShippingMethod\Dtos\ShippingMethodIndexDto;
 use Domain\ShippingMethod\Dtos\ShippingMethodUpdateDto;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Spatie\LaravelData\Optional;
 
 interface ShippingMethodServiceContract
 {
     /**
-     * @param array<string, string>|null $search
-     *
      * @return LengthAwarePaginator<ShippingMethod>
      */
-    public function index(?array $search, Optional|string $country, ?Money $cartValue): LengthAwarePaginator;
+    public function index(ShippingMethodIndexDto $dto, ?Money $cartValue): LengthAwarePaginator;
 
     public function store(ShippingMethodCreateDto $shippingMethodDto): ShippingMethod;
 

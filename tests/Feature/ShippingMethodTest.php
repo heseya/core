@@ -9,11 +9,13 @@ use App\Models\App;
 use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\PriceRange;
+use App\Models\Product;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -40,7 +42,7 @@ class ShippingMethodTest extends TestCase
 
         $this->shipping_method = ShippingMethod::factory()->create([
             'public' => true,
-            'block_list' => true,
+            'is_block_list_countries' => true,
             'shipping_time_min' => 1,
             'shipping_time_max' => 2,
         ]);
@@ -60,7 +62,7 @@ class ShippingMethodTest extends TestCase
 
         $this->shipping_method_hidden = ShippingMethod::factory()->create([
             'public' => false,
-            'block_list' => true,
+            'is_block_list_countries' => true,
         ]);
 
         $lowRange = PriceRange::query()->create([
@@ -130,6 +132,136 @@ class ShippingMethodTest extends TestCase
                 'data' => [
                     0 => $this->expected,
                 ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexBlocklistProductsAndSets($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.show');
+
+        ShippingMethod::query()->delete();
+
+        $product1 = Product::factory()->create();
+        $product2 = Product::factory()->create();
+        $product3 = Product::factory()->create();
+        $product4 = Product::factory()->create();
+        $product5 = Product::factory()->create();
+
+        $productSet1 = ProductSet::factory()->create();
+        $productForSet1 = Product::factory()->create();
+        $productForSet2 = Product::factory()->create();
+        $productSet1->products()->sync([$productForSet1->getKey(), $productForSet2->getKey()]);
+
+        $productSet2 = ProductSet::factory()->create();
+        $productForSet3 = Product::factory()->create();
+        $productForSet4 = Product::factory()->create();
+        $productSet2->products()->sync([$productForSet3->getKey(), $productForSet4->getKey()]);
+
+        $productSet3 = ProductSet::factory()->create();
+        $productForSet5 = Product::factory()->create();
+        $productForSet6 = Product::factory()->create();
+        $productSet3->products()->sync([$productForSet5->getKey(), $productForSet6->getKey()]);
+
+        $shippingMethodAllowList = ShippingMethod::factory()->create([
+            'name' => 'Test Allow-list',
+            'is_block_list_products' => false,
+            'public' => true,
+        ]);
+
+        $shippingMethodAllowList->products()->sync([
+            $product1->getKey(),
+            $product2->getKey(),
+            $product5->getKey(),
+        ]);
+
+        $shippingMethodAllowList->productSets()->sync([
+            $productSet1->getKey(),
+            $productSet2->getKey(),
+            $productSet3->getKey(),
+        ]);
+
+        $shippingMethodBlocklist = ShippingMethod::factory()->create([
+            'name' => 'Test Block-list',
+            'is_block_list_products' => true,
+            'public' => true,
+        ]);
+
+        $shippingMethodBlocklist->products()->sync([
+            $product4->getKey(),
+            $product5->getKey(),
+        ]);
+
+        $shippingMethodBlocklist->productSets()->sync([
+            $productSet1->getKey(),
+            $productSet2->getKey(),
+        ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
+            'items' => [
+                $product1->getKey(),
+                $product5->getKey(),
+                $productForSet1->getKey(),
+                $productForSet2->getKey(),
+            ],
+        ])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonCount(3, 'data.0.product_ids')
+            ->assertJsonCount(3, 'data.0.product_set_ids')
+            ->assertJsonFragment([
+                'id' => $shippingMethodAllowList->getKey(),
+            ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
+            'items' => [
+                $product1->getKey(),
+                $product5->getKey(),
+                $productForSet1->getKey(),
+                $productForSet2->getKey(),
+                $product3->getKey(),
+            ],
+        ])
+            ->assertJsonCount(0, 'data');
+
+        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
+            'items' => [
+                $product3->getKey(),
+                $productForSet5->getKey(),
+                $productForSet6->getKey(),
+            ],
+        ])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $shippingMethodBlocklist->getKey(),
+            ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
+            'items' => [$product1->getKey(), $product2->getKey()],
+        ])
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'id' => $shippingMethodAllowList->getKey(),
+            ])
+            ->assertJsonFragment([
+                'id' => $shippingMethodBlocklist->getKey(),
+            ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
+            'items' => [$product1->getKey(), $product3->getKey()],
+        ])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $shippingMethodBlocklist->getKey(),
+            ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
+            'items' => [$product5->getKey()],
+        ])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $shippingMethodAllowList->getKey(),
             ]);
     }
 
@@ -341,14 +473,14 @@ class ShippingMethodTest extends TestCase
         // All countries without Germany
         $shippingMethod = ShippingMethod::factory()->create([
             'public' => true,
-            'block_list' => true,
+            'is_block_list_countries' => true,
         ]);
         $shippingMethod->countries()->sync(['DE']);
 
         // Only Germany
         $shippingMethod2 = ShippingMethod::factory()->create([
             'public' => true,
-            'block_list' => false,
+            'is_block_list_countries' => false,
         ]);
         $shippingMethod2->countries()->sync(['DE']);
 
@@ -542,7 +674,7 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test',
             'public' => true,
-            'block_list' => false,
+            'is_block_list_countries' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
             'shipping_type' => ShippingType::ADDRESS->value,
@@ -600,7 +732,7 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test',
             'public' => true,
-            'block_list' => false,
+            'is_block_list_countries' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
             'shipping_type' => ShippingType::ADDRESS->value,
@@ -664,6 +796,49 @@ class ShippingMethodTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateWithBlocklist($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.add');
+
+        ShippingMethod::query()->delete();
+
+        $product = Product::factory()->create();
+        $productSet = ProductSet::factory()->create();
+
+        $shipping_method = [
+            'name' => 'Test',
+            'public' => true,
+            'is_block_list_countries' => false,
+            'shipping_time_min' => 2,
+            'shipping_time_max' => 3,
+            'shipping_type' => ShippingType::ADDRESS->value,
+            'payment_on_delivery' => true,
+            'is_block_list_products' => true,
+            'product_ids' => [$product->getKey()],
+            'product_set_ids' => [$productSet->getKey()],
+        ];
+
+        $response = $this->actingAs($this->{$user})
+            ->postJson(
+                '/shipping-methods',
+                $shipping_method + [
+                    'price_ranges' => $this->priceRanges,
+                ]
+            );
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment(['is_block_list_products' => true]);
+
+        $shippingMethod = ShippingMethod::find($response->json('data.id'));
+
+        $this->assertTrue($shippingMethod->products()->count() === 1);
+        $this->assertTrue($shippingMethod->productSets()->count() === 1);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateWithMetadata($user): void
     {
         $this->{$user}->givePermissionTo('shipping_methods.add');
@@ -673,7 +848,7 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test',
             'public' => true,
-            'block_list' => false,
+            'is_block_list_countries' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
             'shipping_type' => ShippingType::ADDRESS->value,
@@ -707,7 +882,7 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test',
             'public' => true,
-            'block_list' => false,
+            'is_block_list_countries' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
             'shipping_type' => ShippingType::ADDRESS->value,
@@ -741,7 +916,7 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test Shipping Time',
             'public' => true,
-            'block_list' => false,
+            'is_block_list_countries' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
             'shipping_type' => ShippingType::ADDRESS->value,
@@ -777,7 +952,7 @@ class ShippingMethodTest extends TestCase
             ->json('POST', '/shipping-methods', [
                 'name' => 'Test Shipping Time',
                 'public' => true,
-                'block_list' => false,
+                'is_block_list_countries' => false,
                 'shipping_time_min' => 3,
                 'shipping_time_max' => 2,
                 'shipping_type' => ShippingType::ADDRESS->value,
@@ -798,7 +973,7 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test',
             'public' => true,
-            'block_list' => true,
+            'is_block_list_countries' => true,
             'shipping_time_min' => 2,
             'shipping_time_max' => 2,
             'shipping_type' => ShippingType::ADDRESS->value,
@@ -835,7 +1010,7 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test',
             'public' => true,
-            'block_list' => false,
+            'is_block_list_countries' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
             'shipping_type' => ShippingType::POINT->value,
@@ -1048,6 +1223,36 @@ class ShippingMethodTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateWithBlocklist($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.edit');
+
+        $this->shipping_method->update(['is_block_list_products' => false]);
+
+        $product = Product::factory()->create();
+        $productSet = ProductSet::factory()->create();
+
+        $response = $this->actingAs($this->{$user})->patchJson(
+            '/shipping-methods/id:' . $this->shipping_method->getKey(),
+            [
+                'price_ranges' => $this->priceRanges,
+                'is_block_list_products' => true,
+                'product_ids' => [$product->getKey()],
+                'product_set_ids' => [$productSet->getKey()],
+            ],
+        );
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['is_block_list_products' => true]);
+
+        $this->assertTrue($this->shipping_method->products()->count() === 1);
+        $this->assertTrue($this->shipping_method->productSets()->count() === 1);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdate($user): void
     {
         $this->{$user}->givePermissionTo('shipping_methods.edit');
@@ -1055,7 +1260,7 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test 2',
             'public' => false,
-            'block_list' => false,
+            'is_block_list_countries' => false,
         ];
 
         $response = $this->actingAs($this->{$user})->patchJson(
@@ -1109,7 +1314,7 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test 2',
             'public' => false,
-            'block_list' => false,
+            'is_block_list_countries' => false,
         ];
 
         $response = $this->actingAs($this->{$user})->patchJson(
@@ -1178,7 +1383,7 @@ class ShippingMethodTest extends TestCase
                     'id' => $this->shipping_method->getKey(),
                     'name' => $this->shipping_method->name,
                     'public' => $this->shipping_method->public,
-                    'block_list' => $this->shipping_method->block_list,
+                    'is_block_list_countries' => $this->shipping_method->is_block_list_countries,
                     'shipping_time_min' => $this->shipping_method->shipping_time_min,
                     'shipping_time_max' => $this->shipping_method->shipping_time_max,
                 ],
@@ -1212,7 +1417,7 @@ class ShippingMethodTest extends TestCase
             'id' => $this->shipping_method->getKey(),
             'name' => $this->shipping_method->name,
             'public' => $this->shipping_method->public,
-            'block_list' => $this->shipping_method->block_list,
+            'is_block_list_countries' => $this->shipping_method->is_block_list_countries,
             'shipping_time_min' => $this->shipping_method->shipping_time_min,
             'shipping_time_max' => $this->shipping_method->shipping_time_max,
         ]);
@@ -1225,12 +1430,12 @@ class ShippingMethodTest extends TestCase
     {
         $this->{$user}->givePermissionTo('shipping_methods.edit');
 
-        $this->shipping_method->update(['block_list' => false]);
+        $this->shipping_method->update(['is_block_list_countries' => false]);
 
         $shipping_method = [
             'name' => 'Test 2',
             'public' => false,
-            'block_list' => true,
+            'is_block_list_countries' => true,
         ];
 
         $response = $this->actingAs($this->{$user})->patchJson(

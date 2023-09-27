@@ -2013,7 +2013,7 @@ class OrderCreateTest extends TestCase
         ]);
 
         $this->shippingMethod->countries()->attach($country);
-        $this->shippingMethod->block_list = false;
+        $this->shippingMethod->is_block_list_countries = false;
         $this->shippingMethod->save();
 
         $this->address->country = $country->code;

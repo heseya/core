@@ -44,7 +44,8 @@ final class ShippingMethodUpdateDto extends Data
     /**
      * @param Optional|string $name
      * @param bool|Optional $public
-     * @param bool|Optional $block_list
+     * @param bool|Optional $is_block_list_countries
+     * @param bool|Optional $is_block_list_products
      * @param int|Optional $shipping_time_min
      * @param int|Optional $shipping_time_max
      * @param Optional|ShippingType $shipping_type
@@ -54,6 +55,8 @@ final class ShippingMethodUpdateDto extends Data
      * @param string[]|Optional $sales_channels
      * @param array<string>|Optional $countries
      * @param DataCollection<int, PriceRangeDto>|Optional $price_ranges
+     * @param array<string>|Optional $product_ids
+     * @param array<string>|Optional $product_set_ids
      * @param array<string, string>|Optional $metadata_public
      * @param array<string, string>|Optional $metadata_private
      * @param string|null $integration_key
@@ -67,7 +70,10 @@ final class ShippingMethodUpdateDto extends Data
         public readonly bool|Optional $public,
 
         #[BooleanType]
-        public readonly bool|Optional $block_list,
+        public readonly bool|Optional $is_block_list_countries,
+
+        #[BooleanType]
+        public readonly bool|Optional $is_block_list_products,
 
         #[IntegerType, Min(0)]
         public readonly int|Optional $shipping_time_min,
@@ -96,9 +102,17 @@ final class ShippingMethodUpdateDto extends Data
 
         #[DataCollectionOf(PriceRangeDto::class)]
         public readonly DataCollection|Optional $price_ranges,
+
+        #[ArrayType]
+        public readonly array|Optional $product_ids,
+
+        #[ArrayType]
+        public readonly array|Optional $product_set_ids,
+
         #[MapInputName('metadata')]
         public readonly array|Optional $metadata_public,
         public readonly array|Optional $metadata_private,
+
         #[StringType]
         public readonly string|null $integration_key = null,
 

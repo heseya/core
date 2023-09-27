@@ -13,6 +13,7 @@ use App\Services\Contracts\MetadataServiceContract;
 use Brick\Money\Money;
 use Domain\ShippingMethod\Dtos\PriceRangeDto;
 use Domain\ShippingMethod\Dtos\ShippingMethodCreateDto;
+use Domain\ShippingMethod\Dtos\ShippingMethodIndexDto;
 use Domain\ShippingMethod\Dtos\ShippingMethodUpdateDto;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Domain\ShippingMethod\Services\Contracts\ShippingMethodServiceContract;
@@ -29,10 +30,18 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
         private MetadataServiceContract $metadataService,
     ) {}
 
-    public function index(?array $search, Optional|string $country, ?Money $cartValue): LengthAwarePaginator
+    public function index(ShippingMethodIndexDto $dto, ?Money $cartValue): LengthAwarePaginator
     {
+        $search = $dto->only(
+            'metadata',
+            'metadata_private',
+            'ids',
+            'items',
+            'sales_channel_id',
+        )->toArray();
+
         $query = ShippingMethod::query()
-            ->searchByCriteria($search ?? [])
+            ->searchByCriteria($search)
             ->with('metadata')
             ->orderBy('order');
 
@@ -54,15 +63,17 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
             ]);
         }
 
+        $country = $dto->country;
+
         if (!$country instanceof Optional) {
             $query->where(function (Builder $query) use ($country): void {
                 $query->where(function (Builder $query) use ($country): void {
                     $query
-                        ->where('block_list', false)
+                        ->where('is_block_list_countries', false)
                         ->whereHas('countries', fn ($query) => $query->where('code', $country));
                 })->orWhere(function (Builder $query) use ($country): void {
                     $query
-                        ->where('block_list', true)
+                        ->where('is_block_list_countries', true)
                         ->whereDoesntHave(
                             'countries',
                             fn ($query) => $query->where('code', $country),
@@ -110,6 +121,14 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
             $this->metadataService->sync($shippingMethod, $shippingMethodDto->metadata_computed);
         }
 
+        if (!($shippingMethodDto->product_ids instanceof Optional)) {
+            $shippingMethod->products()->sync($shippingMethodDto->product_ids);
+        }
+
+        if (!($shippingMethodDto->product_set_ids instanceof Optional)) {
+            $shippingMethod->productSets()->sync($shippingMethodDto->product_set_ids);
+        }
+
         $shippingMethodDto->getPriceRanges()->each(
             fn (PriceRangeDto $range) => $shippingMethod->priceRanges()->firstOrCreate([
                 'start' => $range->start,
@@ -151,6 +170,14 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
                     'currency' => $range->value->getCurrency(),
                 ]);
             }
+        }
+
+        if (!($shippingMethodDto->product_ids instanceof Optional)) {
+            $shippingMethod->products()->sync($shippingMethodDto->product_ids);
+        }
+
+        if (!($shippingMethodDto->product_set_ids instanceof Optional)) {
+            $shippingMethod->productSets()->sync($shippingMethodDto->product_set_ids);
         }
 
         if (!($shippingMethodDto->sales_channels instanceof Optional)) {
