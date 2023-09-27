@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Dtos\ProductReorderDto;
 use App\Dtos\ProductSetDto;
 use App\Dtos\ProductSetUpdateDto;
 use App\Dtos\ProductsReorderDto;
@@ -17,7 +18,6 @@ use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -88,11 +88,13 @@ final readonly class ProductSetService implements ProductSetServiceContract
         ])->validate();
 
         /** @var ProductSet $set */
-        $set = ProductSet::query()->create($dto->toArray() + [
-            'order' => $order,
-            'slug' => $slug,
-            'public_parent' => $publicParent,
-        ]);
+        $set = ProductSet::query()->create(
+            $dto->toArray() + [
+                'order' => $order,
+                'slug' => $slug,
+                'public_parent' => $publicParent,
+            ],
+        );
 
         $attributes = null;
         if (!$dto->attributes_ids instanceof Missing) {
@@ -196,11 +198,13 @@ final readonly class ProductSetService implements ProductSetServiceContract
                 'order' => $rootOrder + $order,
             ]);
 
-        $set->update($dto->toArray() + [
-            'order' => $order,
-            'slug' => $slug,
-            'public_parent' => $publicParent,
-        ]);
+        $set->update(
+            $dto->toArray() + [
+                'order' => $order,
+                'slug' => $slug,
+                'public_parent' => $publicParent,
+            ],
+        );
 
         if (!($dto->getAttributesIds() instanceof Missing)) {
             $attributes = Collection::make($dto->getAttributesIds());
@@ -282,75 +286,49 @@ final readonly class ProductSetService implements ProductSetServiceContract
         return $sets->merge($this->flattenParentsSetsTree($parents));
     }
 
-    // TODO: fix this
     public function reorderProducts(ProductSet $set, ProductsReorderDto $dto): void
     {
-        if (!$dto->getProducts() instanceof Missing) {
-            /** @var Product $product */
-            $product = $set->products()->where('id', $dto->getProducts()[0]['id'])->firstOrFail();
-            $order = $dto->getProducts()[0]['order'];
-            $orderedProductsAmount = $set->products()
-                ->whereNotNull('product_set_product.order')
-                ->whereNot('product_id', $dto->getProducts()[0]['id'])
-                ->count();
+        $maxOrder = $set->products->count() - 1;
 
-            if ($order > $orderedProductsAmount) {
-                $order = $orderedProductsAmount;
+        $dto->products->each(function (ProductReorderDto $product) use ($set, $maxOrder): void {
+            $oldOrder = array_search($product->id, $set->products->pluck('id', 'pivot.order')->all());
+            $newOrder = min($product->order, $maxOrder);
+
+            $set->products()->updateExistingPivot($product->id, ['order' => $newOrder]);
+
+            $query = $set->products()->newPivotStatement()
+                ->where('product_set_id', $set->id)
+                ->where('product_id', '!=', $product->id);
+
+            if ($newOrder > $oldOrder) {
+                $query
+                    ->where('order', '<=', $newOrder)
+                    ->where('order', '>', $oldOrder)
+                    ->decrement('order');
             }
 
-            if ($product->pivot->order === null) {
-                $this->setOrder($order);
-            } else {
-                if ($order < $product->pivot->order) {
-                    $this->setHigherOrder($product, $order);
-                } else {
-                    $this->setLowerOrder($product, $order);
-                }
+            if ($newOrder < $oldOrder) {
+                $query
+                    ->where('order', '<=', $oldOrder)
+                    ->where('order', '>=', $newOrder)
+                    ->increment('order');
             }
 
-            $product->pivot->order = $order;
-            $product->pivot->save();
-
-            /** @var int $highestOrder */
-            $highestOrder = $set->products->max('pivot.order');
-
-            $this->assignOrderToNulls($highestOrder, $set->products->whereNull('pivot.order'));
-        }
-    }
-
-    private function setHigherOrder(Product $product, int $order): void
-    {
-        DB::table('product_set_product')->where([
-            ['order', '>=', $order],
-            ['order', '<', $product->pivot->order],
-        ])
-            ->increment('order');
-    }
-
-    private function setLowerOrder(Product $product, int $order): void
-    {
-        DB::table('product_set_product')->where([
-            ['order', '<=', $order],
-            ['order', '>', $product->pivot->order],
-        ])
-            ->decrement('order');
-    }
-
-    private function setOrder(int $order): void
-    {
-        DB::table('product_set_product')->where([
-            ['order', '>=', $order],
-        ])
-            ->increment('order');
-    }
-
-    private function assignOrderToNulls(int $highestOrder, Collection $products): void
-    {
-        $products->each(function (Product $product) use (&$highestOrder): void {
-            ++$highestOrder;
-            $product->pivot->order = $highestOrder;
-            $product->pivot->save();
+            $this->handleNullOrders($set);
         });
+    }
+
+    private function handleNullOrders(ProductSet $set): void
+    {
+        $existingOrder = $set->products->pluck('pivot.order')->filter(fn (?int $order) => $order !== null);
+        $missingOrders = array_diff(range(0, $set->products->count() - 1), $existingOrder->toArray());
+        $productsWithoutOrder = $set->products->filter(fn (Product $product) => $product->pivot->order === null);
+
+        foreach ($missingOrders as $missingOrder) {
+            /** @var Product $product */
+            $product = $productsWithoutOrder->shift();
+            $set->products()->updateExistingPivot($product->id, ['order' => $missingOrder]);
+        }
     }
 
     private function prepareSlug(
