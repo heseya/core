@@ -2,11 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Enums\ValidationError;
 use App\Models\Media;
 use Domain\Banner\Models\Banner;
 use Domain\Banner\Models\BannerMedia;
+use Domain\Language\Language;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -57,7 +58,6 @@ class BannerTest extends TestCase
             'published' => [$this->lang],
         ];
 
-
         $this->medias = [
             'media' => [
                 ['min_screen_width' => 200, 'media' => $this->media[0]->getKey()],
@@ -86,6 +86,60 @@ class BannerTest extends TestCase
             ->assertJsonFragment(['min_screen_width' => 100])
             ->assertJsonFragment(['min_screen_width' => 250])
             ->assertJsonFragment(['min_screen_width' => 400]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexByLanguage($user): void
+    {
+        $this->{$user}->givePermissionTo('banners.show');
+
+        $languages = Language::all();
+        App::setLocale($languages->first()->getKey());
+
+        BannerMedia::query()->delete();
+        Banner::query()->delete();
+
+        $banner1 = Banner::factory()->create();
+        $banner2 = Banner::factory()->create();
+        $banner3 = Banner::factory()->create();
+
+        $banner1->bannerMedia()->create([
+            'title' => 'title1',
+            'subtitle' => 'subtitle1',
+            'url' => 'url1',
+            'published' => [$languages->first()->getKey()],
+            'order' => 0,
+        ]);
+
+        $banner2->bannerMedia()->create([
+            'title' => 'title2',
+            'subtitle' => 'subtitle2',
+            'url' => 'url2',
+            'published' => [$languages->first()->getKey(), $languages->last()->getKey()],
+            'order' => 0,
+        ]);
+
+        $banner3->bannerMedia()->create([
+            'title' => 'title3',
+            'subtitle' => 'subtitle3',
+            'url' => 'url3',
+            'published' => [$languages->last()->getKey()],
+            'order' => 0,
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->getJson('/banners?with_translations=0')
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment(['title' => 'title1'])
+            ->assertJsonFragment(['title' => 'title2']);
+
+        $this
+            ->actingAs($this->{$user})
+            ->getJson('/banners?with_translations=1')
+            ->assertJsonCount(3, 'data');
     }
 
     /**
@@ -167,7 +221,9 @@ class BannerTest extends TestCase
             ->getJson("/banners/id:{$this->banner->getKey()}")
             ->assertOk()
             ->assertJsonFragment($this->banner->only(['slug', 'name', 'active']))
-            ->assertJsonFragment($this->bannerMedia->only(['title', 'subtitle', 'url']) + ['published' => [$this->lang]])
+            ->assertJsonFragment(
+                $this->bannerMedia->only(['title', 'subtitle', 'url']) + ['published' => [$this->lang]]
+            )
             ->assertJsonFragment(['min_screen_width' => 100])
             ->assertJsonFragment(['min_screen_width' => 250])
             ->assertJsonFragment(['min_screen_width' => 400]);
@@ -214,7 +270,9 @@ class BannerTest extends TestCase
             ->getJson("/banners/{$this->banner->slug}")
             ->assertOk()
             ->assertJsonFragment($this->banner->only(['slug', 'name', 'active']))
-            ->assertJsonFragment($this->bannerMedia->only(['title', 'subtitle', 'url']) + ['published' => [$this->lang]])
+            ->assertJsonFragment(
+                $this->bannerMedia->only(['title', 'subtitle', 'url']) + ['published' => [$this->lang]]
+            )
             ->assertJsonFragment(['min_screen_width' => 100])
             ->assertJsonFragment(['min_screen_width' => 250])
             ->assertJsonFragment(['min_screen_width' => 400]);
@@ -565,12 +623,13 @@ class BannerTest extends TestCase
             ->assertOk();
 
         $response
-            ->assertJson(['data' => [
-                'id' => $response->getData()->data->id,
-                'name' => $banner['name'],
-                'slug' => $this->banner->slug,
-                'active' => $banner['active'],
-            ],
+            ->assertJson([
+                'data' => [
+                    'id' => $response->getData()->data->id,
+                    'name' => $banner['name'],
+                    'slug' => $this->banner->slug,
+                    'active' => $banner['active'],
+                ],
             ])
             ->assertOk();
 
@@ -794,8 +853,8 @@ class BannerTest extends TestCase
                     'id' => $noExistingUUID,
                     'translations' => [
                         $this->lang => [
-                            'title' => 'No exist'
-                        ]
+                            'title' => 'No exist',
+                        ],
                     ],
                     'media' => [
                         ['min_screen_width' => 150, 'media' => $media->getKey()],
@@ -803,8 +862,8 @@ class BannerTest extends TestCase
                     'published' => [
                         $this->lang,
                     ],
-                ]
-            ]
+                ],
+            ],
         ];
 
         $this

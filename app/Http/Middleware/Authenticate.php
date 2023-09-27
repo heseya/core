@@ -4,8 +4,8 @@ namespace App\Http\Middleware;
 
 use App\Enums\TokenType;
 use App\Models\App;
-use App\Services\Contracts\AuthServiceContract;
 use Closure;
+use Domain\User\Services\Contracts\AuthServiceContract;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\Authenticate as Middleware;
 use Illuminate\Support\Facades\App as AppFacade;
