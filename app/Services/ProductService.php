@@ -186,6 +186,12 @@ final readonly class ProductService implements ProductServiceContract
         $this->discountService->applyDiscountsOnProduct($product);
     }
 
+    public function updateProductIndex(Product $product): void
+    {
+        $product = $this->prepareProductSearchValues($product);
+        $product->save();
+    }
+
     private function assignItems(Product $product, ?array $items): void
     {
         $items = Collection::make($items)->mapWithKeys(fn (array $item): array => [
