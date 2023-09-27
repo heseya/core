@@ -33,9 +33,9 @@ class UpdateProductsIndex extends Command
         if ($productId) {
             $query->where('id', '=', $productId);
         }
-        $products = $query->get();
+        $count = $query->count();
 
-        if ($products->count() === 0) {
+        if ($count === 0) {
             $this->info('No products find.');
 
             return;
@@ -44,12 +44,12 @@ class UpdateProductsIndex extends Command
         /** @var ProductServiceContract $productService */
         $productService = app(ProductServiceContract::class);
 
-        $bar = $this->output->createProgressBar($products->count());
+        $bar = $this->output->createProgressBar($count);
 
         $bar->start();
 
         /** @var Product $product */
-        foreach ($products as $product) {
+        foreach ($query->cursor() as $product) {
             $productService->updateProductIndex($product);
             $bar->advance();
         }
