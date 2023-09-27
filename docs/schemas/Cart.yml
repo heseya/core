@@ -5,17 +5,13 @@ Cart:
       type: string
       example: 'PLN'
     cart_total_initial:
-      type: string
-      example: '380.7'
+      $ref: './Prices.yml#/PriceResource'
     cart_total:
-      type: string
-      example: '180.7'
+      $ref: './Prices.yml#/PriceResource'
     shipping_price_initial:
-      type: string
-      example: '38.7'
+      $ref: './Prices.yml#/PriceResource'
     shipping_price:
-      type: string
-      example: '18.7'
+      $ref: './Prices.yml#/PriceResource'
     shipping_time:
       type: integer
       example: 5
@@ -24,8 +20,7 @@ Cart:
       format: date-time
       example: '2021-09-13T11:11'
     summary:
-      type: string
-      example: '189.4'
+      $ref: './Prices.yml#/PriceResource'
     items:
       type: array
       items:
@@ -46,11 +41,9 @@ CartItemResponse:
       type: string
       example: 1
     price:
-      type: string
-      example: '380.7'
+      $ref: './Prices.yml#/PriceResource'
     price_discounted:
-      type: string
-      example: '180.7'
+      $ref: './Prices.yml#/PriceResource'
     quantity:
       type: number
       example: 1
@@ -65,8 +58,7 @@ SalesShortResource:
       type: string
       example: 'Black Week'
     value:
-      type: string
-      example: '50.0'
+      $ref: './Prices.yml#/PriceResource'
 
 CouponShortResource:
   type: object

@@ -10,13 +10,13 @@ class CartResource extends Resource
     {
         return [
             'currency' => $this->resource->summary->getCurrency()->getCurrencyCode(),
-            'cart_total_initial' => $this->resource->cart_total_initial->getAmount(),
-            'cart_total' => $this->resource->cart_total->getAmount(),
-            'shipping_price_initial' => $this->resource->shipping_price_initial->getAmount(),
-            'shipping_price' => $this->resource->shipping_price->getAmount(),
+            'cart_total_initial' => PriceResource::make($this->resource->cart_total_initial),
+            'cart_total' => PriceResource::make($this->resource->cart_total),
+            'shipping_price_initial' => PriceResource::make($this->resource->shipping_price_initial),
+            'shipping_price' => PriceResource::make($this->resource->shipping_price),
             'shipping_time' => $this->resource->shipping_time,
             'shipping_date' => $this->resource->shipping_date,
-            'summary' => $this->resource->summary->getAmount(),
+            'summary' => PriceResource::make($this->resource->summary),
             'items' => CartItemResource::collection($this->resource->items),
             'coupons' => CouponShortResource::collection($this->resource->coupons),
             'sales' => SalesShortResource::collection($this->resource->sales),

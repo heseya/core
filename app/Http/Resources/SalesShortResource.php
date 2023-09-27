@@ -11,7 +11,7 @@ class SalesShortResource extends Resource
         return [
             'id' => $this->resource->id,
             'name' => $this->resource->name,
-            'value' => $this->resource->value->getAmount(),
+            'value' => PriceResource::make($this->resource->value),
         ];
     }
 }

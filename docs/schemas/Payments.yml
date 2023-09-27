@@ -10,8 +10,7 @@ Payment:
       type: string
       format: uuid
     amount:
-      type: string
-      example: '80.92'
+      $ref: './Prices.yml#/PriceResource'
     currency:
       type: string
       example: 'PLN'
