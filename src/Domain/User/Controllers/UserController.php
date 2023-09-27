@@ -1,33 +1,34 @@
 <?php
 
-namespace App\Http\Controllers;
+declare(strict_types=1);
 
-use App\Dtos\UserCreateDto;
-use App\Dtos\UserDto;
-use App\Http\Requests\SelfDeleteRequest;
-use App\Http\Requests\UserCreateRequest;
-use App\Http\Requests\UserIndexRequest;
-use App\Http\Requests\UserUpdateRequest;
+namespace Domain\User\Controllers;
+
+use App\Http\Controllers\Controller;
 use App\Http\Resources\ResourceCollection;
 use App\Http\Resources\UserResource;
 use App\Models\User;
-use App\Services\Contracts\AuthServiceContract;
-use App\Services\Contracts\UserServiceContract;
+use Domain\User\Dtos\UserCreateDto;
+use Domain\User\Dtos\UserIndexDto;
+use Domain\User\Dtos\UserSoftDeleteDto;
+use Domain\User\Dtos\UserUpdateDto;
+use Domain\User\Services\Contracts\AuthServiceContract;
+use Domain\User\Services\Contracts\UserServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
 
-class UserController extends Controller
+final class UserController extends Controller
 {
     public function __construct(
-        private UserServiceContract $userService,
-        private AuthServiceContract $authService,
+        private readonly UserServiceContract $userService,
+        private readonly AuthServiceContract $authService,
     ) {}
 
-    public function index(UserIndexRequest $request): JsonResource
+    public function index(UserIndexDto $dto): JsonResource
     {
         $paginator = $this->userService->index(
-            $request->only(
+            $dto->only(
                 'name',
                 'email',
                 'search',
@@ -38,13 +39,13 @@ class UserController extends Controller
                 'consent_id',
                 'roles',
             ),
-            $request->input('sort', 'created_at:asc'),
+            $dto->sort,
         );
 
         /** @var ResourceCollection $userCollection */
         $userCollection = UserResource::collection($paginator);
 
-        return $userCollection->full($request->boolean('full'));
+        return $userCollection->full($dto->full);
     }
 
     public function show(User $user): JsonResource
@@ -52,20 +53,18 @@ class UserController extends Controller
         return UserResource::make($user);
     }
 
-    public function store(UserCreateRequest $request): JsonResource
+    public function store(UserCreateDto $dto): JsonResource
     {
-        $user = $this->userService->create(
-            UserCreateDto::instantiateFromRequest($request),
-        );
+        $user = $this->userService->create($dto);
 
         return UserResource::make($user);
     }
 
-    public function update(User $user, UserUpdateRequest $request): JsonResource
+    public function update(UserUpdateDto $dto, User $user): JsonResource
     {
         $resultUser = $this->userService->update(
             $user,
-            UserDto::instantiateFromRequest($request),
+            $dto,
         );
 
         return UserResource::make($resultUser);
@@ -78,9 +77,9 @@ class UserController extends Controller
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
-    public function selfRemove(SelfDeleteRequest $request): JsonResponse
+    public function selfRemove(UserSoftDeleteDto $dto): JsonResponse
     {
-        $this->authService->selfRemove($request->input('password'));
+        $this->authService->selfRemove($dto->password);
 
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }

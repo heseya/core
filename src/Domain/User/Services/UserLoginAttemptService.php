@@ -1,16 +1,18 @@
 <?php
 
-namespace App\Services;
+declare(strict_types=1);
+
+namespace Domain\User\Services;
 
 use App\Events\NewLocalizationLoginAttempt;
 use App\Events\SuccessfulLoginAttempt;
 use App\Jobs\ProcessFailedLoginAttempts;
 use App\Models\User;
 use App\Models\UserLoginAttempt;
-use App\Services\Contracts\UserLoginAttemptServiceContract;
+use Domain\User\Services\Contracts\UserLoginAttemptServiceContract;
 use Illuminate\Support\Facades\Request;
 
-class UserLoginAttemptService implements UserLoginAttemptServiceContract
+final class UserLoginAttemptService implements UserLoginAttemptServiceContract
 {
     public function store(bool $logged = false): void
     {

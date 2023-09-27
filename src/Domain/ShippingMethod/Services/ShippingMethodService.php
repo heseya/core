@@ -16,7 +16,6 @@ use Domain\ShippingMethod\Dtos\ShippingMethodCreateDto;
 use Domain\ShippingMethod\Dtos\ShippingMethodUpdateDto;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Domain\ShippingMethod\Services\Contracts\ShippingMethodServiceContract;
-use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -107,8 +106,8 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
             $shippingMethod->salesChannels()->sync($shippingMethodDto->sales_channels);
         }
 
-        if (!($shippingMethodDto->getMetadata() instanceof Missing)) {
-            $this->metadataService->sync($shippingMethod, $shippingMethodDto->getMetadata());
+        if (!($shippingMethodDto->metadata_computed instanceof Optional)) {
+            $this->metadataService->sync($shippingMethod, $shippingMethodDto->metadata_computed);
         }
 
         $shippingMethodDto->getPriceRanges()->each(

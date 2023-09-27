@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Services;
+declare(strict_types=1);
 
-use App\Dtos\UserCreateDto;
-use App\Dtos\UserDto;
+namespace Domain\User\Services;
+
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
 use App\Events\UserCreated;
@@ -16,8 +16,10 @@ use App\Models\SavedAddress;
 use App\Models\User;
 use App\Models\UserPreference;
 use App\Services\Contracts\MetadataServiceContract;
-use App\Services\Contracts\UserServiceContract;
-use Heseya\Dto\Missing;
+use Domain\User\Dtos\UserCreateDto;
+use Domain\User\Dtos\UserIndexDto;
+use Domain\User\Dtos\UserUpdateDto;
+use Domain\User\Services\Contracts\UserServiceContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -26,16 +28,17 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\LaravelData\Optional;
 
-readonly class UserService implements UserServiceContract
+final readonly class UserService implements UserServiceContract
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
     ) {}
 
-    public function index(array $search, ?string $sort): LengthAwarePaginator
+    public function index(UserIndexDto $dto, ?string $sort): LengthAwarePaginator
     {
-        return User::searchByCriteria($search)
+        return User::searchByCriteria($dto->toArray())
             ->sort($sort)
             ->with('metadata')
             ->paginate(Config::get('pagination.per_page'));
@@ -46,9 +49,9 @@ readonly class UserService implements UserServiceContract
      */
     public function create(UserCreateDto $dto): User
     {
-        if (!$dto->getRoles() instanceof Missing) {
+        if (!$dto->roles instanceof Optional) {
             $roleModels = Role::query()
-                ->whereIn('id', $dto->getRoles())
+                ->whereIn('id', $dto->roles)
                 ->orWhere('type', RoleType::AUTHENTICATED->value)
                 ->get();
         } else {
@@ -58,7 +61,7 @@ readonly class UserService implements UserServiceContract
         }
 
         $permissions = $roleModels->flatMap(
-            fn ($role) => $role->type !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
+            fn (Role $role) => $role->type !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
         )->unique();
 
         if (!Auth::user()?->hasAllPermissions($permissions)) {
@@ -66,7 +69,7 @@ readonly class UserService implements UserServiceContract
         }
 
         $fields = $dto->toArray();
-        $fields['password'] = Hash::make($dto->getPassword());
+        $fields['password'] = Hash::make($dto->password);
         /** @var User $user */
         $user = User::query()->create($fields);
 
@@ -77,8 +80,8 @@ readonly class UserService implements UserServiceContract
 
         $user->syncRoles($roleModels);
 
-        if (!($dto->getMetadata() instanceof Missing)) {
-            $this->metadataService->sync($user, $dto->getMetadata());
+        if (!($dto->metadata_computed instanceof Optional)) {
+            $this->metadataService->sync($user, $dto->metadata_computed);
         }
 
         $user->save();
@@ -91,22 +94,24 @@ readonly class UserService implements UserServiceContract
     /**
      * @throws ClientException
      */
-    public function update(User $user, UserDto $dto): User
+    public function update(User $user, UserUpdateDto $dto): User
     {
         $authenticable = Auth::user();
 
-        if (!$dto->getRoles() instanceof Missing && $dto->getRoles() !== null) {
+        if (!$dto->roles instanceof Optional && $dto->roles !== null) {
             /** @var Collection<int, Role> $roleModels */
             $roleModels = Role::query()
-                ->whereIn('id', $dto->getRoles())
+                ->whereIn('id', $dto->roles)
                 ->orWhere('type', RoleType::AUTHENTICATED->value)
                 ->get();
 
             $newRoles = $roleModels->diff($user->roles);
+
+            /** @var Collection<int, Role> $removedRoles */
             $removedRoles = $user->roles->diff($roleModels);
 
             $permissions = $newRoles->flatMap(
-                fn ($role) => $role->type !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
+                fn (Role $role) => $role->type !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
             )->unique();
 
             if (!$authenticable?->hasAllPermissions($permissions)) {

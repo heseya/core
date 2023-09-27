@@ -55,14 +55,24 @@ class AuthTest extends TestCase
     private string $cipher;
     private string $webhookKey;
 
+    public static function tfaMethodProvider(): array
+    {
+        return [
+            'as app 2fa' => [TFAType::APP, 'secret'],
+            'as email 2fa' => [TFAType::EMAIL, null],
+        ];
+    }
+
     public function setUp(): void
     {
         parent::setUp();
-        $this->user->preferences()->associate(UserPreference::create([
-            'failed_login_attempt_alert' => false,
-            'new_localization_login_alert' => false,
-            'recovery_code_changed_alert' => false,
-        ]));
+        $this->user->preferences()->associate(
+            UserPreference::create([
+                'failed_login_attempt_alert' => false,
+                'new_localization_login_alert' => false,
+                'recovery_code_changed_alert' => false,
+            ])
+        );
         $this->user->save();
 
         $this->expectedLog = 'ClientException(code: 422): Invalid credentials at';
@@ -168,7 +178,7 @@ class AuthTest extends TestCase
         $this
             ->actingAs($this->user)
             ->withHeaders([
-                'User-Agent' => null
+                'User-Agent' => null,
             ])
             ->postJson('/login', [
                 'email' => $this->user->email,
@@ -1158,7 +1168,12 @@ class AuthTest extends TestCase
 
         Log::shouldReceive('error')
             ->once()
-            ->withArgs(fn ($message) => str_contains($message, 'App\Exceptions\ClientException(code: 422): Invalid password at'));
+            ->withArgs(
+                fn ($message) => str_contains(
+                    $message,
+                    'App\Exceptions\ClientException(code: 422): Invalid password at'
+                )
+            );
 
         $response = $this->actingAs($user)->json('PUT', '/users/password', [
             'password' => 'tests',
@@ -1318,9 +1333,9 @@ class AuthTest extends TestCase
         $this->{$user}->givePermissionTo('auth.check_identity');
 
         $token = $this->tokenService->createToken(
-            User::factory()->create(),
-            TokenType::IDENTITY,
-        ) . 'invalid_hash';
+                User::factory()->create(),
+                TokenType::IDENTITY,
+            ) . 'invalid_hash';
 
         $this
             ->actingAs($this->{$user})
@@ -1476,14 +1491,6 @@ class AuthTest extends TestCase
         $this->json('POST', '/auth/2fa/confirm', [
             'code' => '123456',
         ])->assertForbidden();
-    }
-
-    public static function tfaMethodProvider(): array
-    {
-        return [
-            'as app 2fa' => [TFAType::APP, 'secret'],
-            'as email 2fa' => [TFAType::EMAIL, null],
-        ];
     }
 
     /**
