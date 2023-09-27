@@ -55,10 +55,10 @@ final class ShippingMethodUpdateDto extends Data
      * @param string[]|Optional $sales_channels
      * @param array<string>|Optional $countries
      * @param DataCollection<int, PriceRangeDto>|Optional $price_ranges
-     * @param array<string, string>|Optional $metadata_public
-     * @param array<string, string>|Optional $metadata_private
      * @param array<string>|Optional $product_ids
      * @param array<string>|Optional $product_set_ids
+     * @param array<string, string>|Optional $metadata_public
+     * @param array<string, string>|Optional $metadata_private
      * @param string|null $integration_key
      * @param string|null $app_id
      */
