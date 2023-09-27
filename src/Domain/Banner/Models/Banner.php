@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Banner\Models;
 
+use App\Criteria\BannerWithTranslations;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\WhereInIds;
@@ -28,17 +29,16 @@ final class Banner extends Model
         'name',
         'active',
     ];
-
     protected $casts = [
         'active' => 'boolean',
     ];
-
     /** @var string[] */
     protected array $criteria = [
         'slug' => Like::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,
+        'with_translations' => BannerWithTranslations::class,
     ];
 
     /**
