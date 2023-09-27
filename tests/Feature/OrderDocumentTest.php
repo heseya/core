@@ -178,6 +178,7 @@ class OrderDocumentTest extends TestCase
 
         Http::fake(['*' => Http::response($file)]);
 
+        $this->order->update(['buyer_id' => $this->{$user}->id]);
         $this->order->documents()->attach($media, ['type' => MediaAttachmentType::INVOICE, 'name' => 'test']);
         $this
             ->actingAs($this->{$user})
@@ -187,12 +188,9 @@ class OrderDocumentTest extends TestCase
                 . $this->order->getKey() . '/docs/id:'
                 . $this->order->documents->last()->pivot->id
                 . '/download'
-            );
-
-        // TODO: don't work i don't now why
-
-        //            ->assertStatus(200)
-        //            ->assertHeader('content-disposition', 'attachment; filename=test.jpeg');
+            )
+            ->assertStatus(200)
+            ->assertHeader('content-disposition', 'attachment; filename=test.jpeg');
     }
 
     /**
