@@ -82,9 +82,17 @@ class SortService implements SortServiceContract
     private function addAttributeOrder(Builder $query, string $field, string $order): void
     {
         $query->leftJoin('product_attribute', function (JoinClause $join) use ($field): void {
+            $value = Str::after($field, 'attribute.');
             $join
                 ->on('product_attribute.product_id', 'products.id')
-                ->where('product_attribute.attribute_id', Str::after($field, 'attribute.'))
+                ->join('attributes', function (JoinClause $join): void {
+                    $join->on('attributes.id', '=', 'product_attribute.attribute_id');
+                })
+                ->where(function (JoinClause $join) use ($value): void {
+                    $join
+                        ->where('attributes.slug', $value)
+                        ->orWhere('product_attribute.attribute_id', $value);
+                })
                 ->join('product_attribute_attribute_option', function (JoinClause $join): void {
                     $join
                         ->on('product_attribute_attribute_option.product_attribute_id', 'product_attribute.id')
