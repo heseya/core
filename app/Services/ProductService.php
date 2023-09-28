@@ -83,8 +83,8 @@ final class ProductService
             $product->getKey(),
             null,
             null,
-            $productPricesMin->toArray(),
-            $productPricesMax->toArray(),
+            $productPricesMin?->toArray(),
+            $productPricesMax?->toArray(),
         );
 
         ProductCreated::dispatch($product);
@@ -133,10 +133,10 @@ final class ProductService
 
         ProductPriceUpdated::dispatch(
             $product->getKey(),
-            $oldPricesMin->toArray(),
-            $oldPricesMax->toArray(),
-            $newPricesMin->toArray(),
-            $newPricesMax->toArray(),
+            $oldPricesMin?->toArray(),
+            $oldPricesMax?->toArray(),
+            $newPricesMin?->toArray(),
+            $newPricesMax?->toArray(),
         );
 
         ProductUpdated::dispatch($product);

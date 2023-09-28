@@ -8,7 +8,7 @@ use Domain\Product\Enums\ProductSalesChannelStatus;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 
-readonly class PricesEveryChannel implements DataAwareRule, ValidationRule
+class PricesEveryChannel implements DataAwareRule, ValidationRule
 {
     public function __construct(
         private string $sales_channel_field = 'sales_channel_id',

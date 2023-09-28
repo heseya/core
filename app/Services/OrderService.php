@@ -68,8 +68,7 @@ final readonly class OrderService implements OrderServiceContract
         private DepositServiceContract $depositService,
         private ProductRepositoryContract $productRepository,
         private SalesChannelService $salesChannelService,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws MathException
@@ -210,8 +209,7 @@ final readonly class OrderService implements OrderServiceContract
                         $priceModel = $priceModel->firstOrFail();
                     }
 
-                    assert($priceModel instanceof Price);
-
+                    /** @var Price $priceModel */
                     $price = $priceModel->value;
 
                     $orderProduct = new OrderProduct([
@@ -543,11 +541,11 @@ final readonly class OrderService implements OrderServiceContract
             // Validate whether delivery methods are the proper type
             $shippingMethod = $dto->getShippingMethodId() instanceof Missing ? null :
                 ShippingMethod::whereNot('shipping_type', ShippingType::DIGITAL->value)
-                ->findOrFail($dto->getShippingMethodId());
+                    ->findOrFail($dto->getShippingMethodId());
 
             $digitalShippingMethod = $dto->getDigitalShippingMethodId() instanceof Missing ? null :
                 ShippingMethod::where('shipping_type', ShippingType::DIGITAL->value)
-                ->findOrFail($dto->getDigitalShippingMethodId());
+                    ->findOrFail($dto->getDigitalShippingMethodId());
         } catch (Throwable $e) {
             throw new OrderException(Exceptions::CLIENT_SHIPPING_METHOD_INVALID_TYPE);
         }
