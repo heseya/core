@@ -27,9 +27,11 @@ final class BannerService
              */
             foreach ($dto->banner_media as $index => $group) {
                 /** @var BannerMedia $bannerMedia */
-                $bannerMedia = $banner->bannerMedia()->make($group->toArray() + [
-                    'order' => $index + 1,
-                ]);
+                $bannerMedia = $banner->bannerMedia()->make(
+                    $group->toArray() + [
+                        'order' => $index + 1,
+                    ],
+                );
                 foreach ($group->translations as $lang => $translation) {
                     $bannerMedia->setLocale($lang)->fill($translation);
                 }
@@ -57,6 +59,7 @@ final class BannerService
 
         if (!($dto->banner_media instanceof Optional)) {
             $toSaveMediaIds = [];
+
             foreach ($dto->banner_media as $index => $group) {
                 $bannerMedia = null;
                 if (!($group->id instanceof Optional) && $group->id) {
@@ -67,11 +70,12 @@ final class BannerService
 
                 if (!$bannerMedia) {
                     /** @var BannerMedia $bannerMedia */
-                    $bannerMedia = $banner->bannerMedia()->make($group->toArray() + [
-                        'order' => $index + 1,
-                    ]);
+                    $bannerMedia = $banner->bannerMedia()->make(
+                        $group->toArray() + [
+                            'order' => $index + 1,
+                        ],
+                    );
                 }
-
                 if (!($group->translations instanceof Optional)) {
                     foreach ($group->translations as $lang => $translation) {
                         $bannerMedia->setLocale($lang)->fill($translation);

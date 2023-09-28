@@ -6,7 +6,6 @@ namespace Domain\Banner\Dtos;
 
 use Spatie\LaravelData\Attributes\Validation\AlphaDash;
 use Spatie\LaravelData\Attributes\Validation\ArrayType;
-use Spatie\LaravelData\Attributes\Validation\BooleanType;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
 use Spatie\LaravelData\Attributes\Validation\StringType;
@@ -21,7 +20,6 @@ final class BannerIndexDto extends Data
      * @param string[]|Optional|null $metadata
      * @param string[]|Optional|null $metadata_private
      * @param string[]|Optional $ids
-     * @param bool|Optional $with_translations
      */
     public function __construct(
         #[StringType, Nullable, Max(255), AlphaDash]
@@ -32,8 +30,6 @@ final class BannerIndexDto extends Data
         public readonly array|Optional|null $metadata_private,
         #[ArrayType]
         public readonly array|Optional $ids,
-        #[BooleanType]
-        public readonly bool|Optional $with_translations,
     ) {}
 
     /**
