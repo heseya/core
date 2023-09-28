@@ -7,7 +7,6 @@ use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\MediaType;
-use Domain\Price\Enums\ProductPriceType;
 use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
@@ -35,6 +34,7 @@ use Domain\Currency\Currency;
 use Domain\Language\Language;
 use Domain\Metadata\Enums\MetadataType;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\ProductPriceType;
 use Domain\Product\Enums\ProductSalesChannelStatus;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
@@ -256,8 +256,7 @@ class ProductTest extends TestCase
             ],
         ]);
 
-
-        $this->saleProduct = Product::factory()->create();
+        $this->saleProduct = Product::factory()->withoutPrice()->create();
         $this->salesChannel->products()->attach($this->saleProduct);
         $this->productRepository->setProductPrices($this->saleProduct->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(3000, $this->currency->value))->withSalesChannel($this->salesChannel)],

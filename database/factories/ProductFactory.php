@@ -8,6 +8,7 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
+use Domain\SalesChannel\SalesChannelRepository;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 
@@ -19,6 +20,8 @@ class ProductFactory extends Factory
      * @var string
      */
     protected $model = Product::class;
+
+    protected bool $withPrice = true;
 
     /**
      * Define the model's default state.
@@ -36,22 +39,35 @@ class ProductFactory extends Factory
         ];
     }
 
+    public function withPrice(bool $with = true): self
+    {
+        $this->withPrice = $with;
+        return $this;
+    }
+
+    public function withoutPrice(): self
+    {
+        return $this->withPrice(false);
+    }
+
     public function configure(): self
     {
         return $this->afterCreating(function (Product $product): void {
-            /** @var ProductRepositoryContract $productRepository */
-            $productRepository = App::make(ProductRepositoryContract::class);
+            if ($this->withPrice) {
+                /** @var ProductRepositoryContract $productRepository */
+                $productRepository = App::make(ProductRepositoryContract::class);
 
-            $price = PriceDto::from(Money::of(
-                round(mt_rand(500, 6000), -2),
-                Currency::DEFAULT->value,
-            ));
+                $price = PriceDto::from(Money::of(
+                    round(mt_rand(500, 6000), -2),
+                    Currency::DEFAULT->value,
+                ))->withSalesChannel(app(SalesChannelRepository::class)->getDefault());
 
-            $productRepository->setProductPrices($product->getKey(), [
-                ProductPriceType::PRICE_BASE->value => [$price],
-                ProductPriceType::PRICE_MIN_INITIAL->value => [$price],
-                ProductPriceType::PRICE_MAX_INITIAL->value => [$price],
-            ]);
+                $productRepository->setProductPrices($product->getKey(), [
+                    ProductPriceType::PRICE_BASE->value => [$price],
+                    ProductPriceType::PRICE_MIN_INITIAL->value => [$price],
+                    ProductPriceType::PRICE_MAX_INITIAL->value => [$price],
+                ]);
+            }
         });
     }
 }
