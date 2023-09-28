@@ -104,6 +104,9 @@ final class SalesChannel extends Model implements Translatable
             ->withPivot(['availability_status']);
     }
 
+    /**
+     * @return HasMany<Price>
+     */
     public function prices(): HasMany
     {
         return $this->hasMany(Price::class);

@@ -1047,14 +1047,6 @@ class OrderCreateTest extends TestCase
             ],
         ]);
 
-        $response->assertCreated()
-            ->assertJsonFragment([
-                'cart_total_initial' => '150.00',
-                'cart_total' => '0.01',
-                'shipping_price_initial' => '10.00',
-                'shipping_price' => '0.01',
-                'summary' => '0.02',
-            ]);
         $order = Order::find($response->getData()->data->id);
 
         $this->assertDatabaseHas('order_products', [
@@ -1080,6 +1072,15 @@ class OrderCreateTest extends TestCase
             'discount_id' => $couponShipping->getKey(),
             'applied_discount' => '999', // discount -15, but shipping_price_initial is 9.99
         ]);
+
+        $response->assertCreated()
+            ->assertJsonFragment([
+                'cart_total_initial' => '150.00',
+                'cart_total' => '0.01',
+                'shipping_price_initial' => '10.00',
+                'shipping_price' => '0.01',
+                'summary' => '0.02',
+            ]);
 
         Event::assertDispatched(OrderCreated::class);
     }

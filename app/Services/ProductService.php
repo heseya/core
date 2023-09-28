@@ -28,6 +28,7 @@ use Domain\Product\Dtos\ProductCreateDto;
 use Domain\Product\Dtos\ProductSalesChannelDto;
 use Domain\Product\Dtos\ProductUpdateDto;
 use Domain\ProductAttribute\Services\AttributeService;
+use Domain\SalesChannel\Models\SalesChannel;
 use Domain\Seo\SeoMetadataService;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Collection;
@@ -167,7 +168,7 @@ final class ProductService
     /**
      * @return array<int, PriceDto>
      */
-    public function getMinMaxPrices(Product $product, Currency $currency = Currency::DEFAULT): array
+    public function getMinMaxPrices(Product $product, Currency $currency = Currency::DEFAULT, ?SalesChannel $salesChannel = null): array
     {
         [$schemaMin, $schemaMax] = $this->getSchemasPrices(
             clone $product->schemas,
@@ -175,7 +176,7 @@ final class ProductService
             $currency,
         );
 
-        $price = $product->pricesBase->where('currency', $currency->value)->firstOrFail();
+        $price = $product->pricesBase->where('currency', $currency->value)->where('sales_channel_id', $salesChannel?->id)->firstOrFail();
 
         return [
             PriceDto::from($price->value->plus($schemaMin)),
@@ -189,11 +190,14 @@ final class ProductService
             ProductPriceType::PRICE_MIN_INITIAL->value => [],
             ProductPriceType::PRICE_MAX_INITIAL->value => [],
         ];
-        foreach (Currency::cases() as $currency) {
-            [$pricesMin, $pricesMax] = $this->getMinMaxPrices($product, $currency);
 
-            $pricesMinMax[ProductPriceType::PRICE_MIN_INITIAL->value][] = $pricesMin;
-            $pricesMinMax[ProductPriceType::PRICE_MAX_INITIAL->value][] = $pricesMax;
+        foreach ($product->enabledSalesChannels as $salesChannel) {
+            foreach (Currency::cases() as $currency) {
+                [$pricesMin, $pricesMax] = $this->getMinMaxPrices($product, $currency, $salesChannel);
+
+                $pricesMinMax[ProductPriceType::PRICE_MIN_INITIAL->value][] = $pricesMin;
+                $pricesMinMax[ProductPriceType::PRICE_MAX_INITIAL->value][] = $pricesMax;
+            }
         }
 
         $this->productRepository->setProductPrices($product->getKey(), $pricesMinMax);

@@ -79,9 +79,6 @@ class Price extends Model
         return $this->morphTo();
     }
 
-    /**
-     * @return HasMany<SalesChannel>
-     */
     public function salesChannel(): BelongsTo
     {
         return $this->belongsTo(SalesChannel::class);

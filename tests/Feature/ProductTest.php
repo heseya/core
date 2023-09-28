@@ -3022,21 +3022,21 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),
+            'currency' => $this->currency->value,
             'price_type' => ProductPriceType::PRICE_BASE,
             'value' => 100 * 100,
-            'currency' => $this->currency->value,
         ]);
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),
+            'currency' => $this->currency->value,
             'price_type' => ProductPriceType::PRICE_MIN,
             'value' => 100 * 100,
-            'currency' => $this->currency->value,
         ]);
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),
+            'currency' => $this->currency->value,
             'price_type' => ProductPriceType::PRICE_MAX,
             'value' => (100 + $schemaNewPrice) * 100,
-            'currency' => $this->currency->value,
         ]);
     }
 

@@ -399,6 +399,11 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
             ->withPivot(['availability_status']);
     }
 
+    public function enabledSalesChannels(): BelongsToMany
+    {
+        return $this->salesChannels()->wherePivot('availability_status', '!=', ProductSalesChannelStatus::DISABLED->value);
+    }
+
     public function publicSalesChannels(): BelongsToMany
     {
         return $this->salesChannels()->wherePivot('availability_status', ProductSalesChannelStatus::PUBLIC->value);
