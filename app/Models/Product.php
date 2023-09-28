@@ -224,9 +224,13 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         return $this->isPublicForSalesChannel();
     }
 
-    public function isPublicForSalesChannel(?SalesChannel $salesChannel = null): bool
+    public function isPublicForSalesChannel(SalesChannel|string|null $salesChannel = null): bool
     {
         $salesChannel ??= Config::get('sales-channel.model');
+
+        if (is_string($salesChannel)) {
+            $salesChannel = SalesChannel::find($salesChannel);
+        }
 
         if ($salesChannel instanceof SalesChannel) {
             $productSalesChannel = $this->salesChannels->where('id', $salesChannel->getKey())->first();
@@ -329,6 +333,8 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     public function pricesForCurrentChannel(): MorphMany
     {
         $salesChannel = Config::get('sales-channel.model');
+
+        var_dump($salesChannel?->id);
 
         return $this->prices()->where('sales_channel_id', $salesChannel->getKey());
     }

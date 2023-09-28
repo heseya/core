@@ -3,10 +3,13 @@
 namespace App\Rules;
 
 use App\Models\Product;
+use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\Rule;
 
-class ProductPublic implements Rule
+class ProductPublic implements DataAwareRule, Rule
 {
+    private array $data;
+
     /**
      * Determine if the validation rule passes.
      *
@@ -21,7 +24,14 @@ class ProductPublic implements Rule
             return false;
         }
 
-        return $product->public;
+        return !empty($this->data['sales_channel_id'])
+            ? $product->isPublicForSalesChannel($this->data['sales_channel_id'])
+            : $product->public;
+    }
+
+    public function setData(array $data): void
+    {
+        $this->data = $data;
     }
 
     public function message(): string

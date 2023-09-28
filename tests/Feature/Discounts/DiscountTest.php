@@ -27,6 +27,8 @@ use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\ProductSet\ProductSet;
+use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Dto\DtoException;
 use Illuminate\Events\CallQueuedListener;
@@ -55,6 +57,7 @@ class DiscountTest extends TestCase
     private array $expectedStructure;
     private ProductRepositoryContract $productRepository;
     private Currency $currency;
+    private SalesChannel $salesChannel;
 
     public static function couponOrSaleProvider(): array
     {
@@ -137,6 +140,8 @@ class DiscountTest extends TestCase
         $this->productRepository = App::make(ProductRepositoryContract::class);
         $this->currency = Currency::DEFAULT;
 
+        $this->salesChannel = app(SalesChannelRepository::class)->getDefault();
+
         // coupons
         Discount::factory()->count(10)->create();
         // sales
@@ -148,6 +153,9 @@ class DiscountTest extends TestCase
         $this->role = Role::factory()->create();
         $this->conditionUser = User::factory()->create();
         $this->conditionProduct = Product::factory()->create();
+
+        $this->salesChannel->products()->attach($this->conditionProduct);
+
         $this->conditionProductSet = ProductSet::factory()->create();
 
         $this->conditions = [
@@ -889,6 +897,8 @@ class DiscountTest extends TestCase
         }
 
         $product = Product::factory()->create();
+        $this->salesChannel->products()->attach($product);
+
         $this->productRepository->setProductPrices($product->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(1000, $this->currency->value))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(900, $this->currency->value))],
@@ -926,6 +936,7 @@ class DiscountTest extends TestCase
                         'currency' => $this->currency->value,
                         'net' => "{$minPriceDiscounted}.00",
                         'gross' => "{$minPriceDiscounted}.00",
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
                 'prices_max' => [
@@ -933,6 +944,7 @@ class DiscountTest extends TestCase
                         'currency' => $this->currency->value,
                         'net' => "{$maxPriceDiscounted}.00",
                         'gross' => "{$maxPriceDiscounted}.00",
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
             ])
@@ -992,7 +1004,9 @@ class DiscountTest extends TestCase
         }
 
         $product = Product::factory()->create();
-        $this->productRepository->setProductPrices($product->getKey(), [
+        $this->salesChannel->products()->attach($product);
+
+        $this->productRepository->setProductPrices($product, [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(1000, $this->currency->value))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(900, $this->currency->value))],
             ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(1200, $this->currency->value))],
@@ -1029,6 +1043,7 @@ class DiscountTest extends TestCase
                         'currency' => $this->currency->value,
                         'net' => "{$minPriceDiscounted}.00",
                         'gross' => "{$minPriceDiscounted}.00",
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
                 'prices_max' => [
@@ -1036,6 +1051,7 @@ class DiscountTest extends TestCase
                         'currency' => $this->currency->value,
                         'net' => "{$maxPriceDiscounted}.00",
                         'gross' => "{$maxPriceDiscounted}.00",
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
             ])
@@ -1084,6 +1100,8 @@ class DiscountTest extends TestCase
 
         /** @var Product $product */
         $product = Product::factory()->create();
+        $this->salesChannel->products()->attach($product);
+
         $this->productRepository->setProductPrices($product->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(1000, $this->currency->value))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(900, $this->currency->value))],
@@ -1159,6 +1177,8 @@ class DiscountTest extends TestCase
 
         /** @var Product $product */
         $product = Product::factory()->create();
+        $this->salesChannel->products()->attach($product);
+
         $this->productRepository->setProductPrices($product->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(1000, $this->currency->value))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(900, $this->currency->value))],
@@ -1516,11 +1536,13 @@ class DiscountTest extends TestCase
                         'currency' => 'PLN',
                         'gross' => '100.00',
                         'net' => '100.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                     [
                         'currency' => 'EUR',
                         'gross' => '25.00',
                         'net' => '25.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
                 'max_values' => [
@@ -1528,11 +1550,13 @@ class DiscountTest extends TestCase
                         'currency' => 'PLN',
                         'gross' => '500.00',
                         'net' => '500.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                     [
                         'currency' => 'EUR',
                         'gross' => '125.00',
                         'net' => '125.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
             ]);
@@ -1687,6 +1711,7 @@ class DiscountTest extends TestCase
     public function testCreateSaleAddToCache($user, $condition): void
     {
         Carbon::setTestNow('2022-05-12T12:00:00'); // Thursday
+
         $this->{$user}->givePermissionTo('sales.add');
 
         $discount = [
@@ -1738,6 +1763,8 @@ class DiscountTest extends TestCase
         $this->{$user}->givePermissionTo('sales.add');
 
         $product = Product::factory()->create();
+        $this->salesChannel->products()->attach($product);
+
         $this->productRepository->setProductPrices($product->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(1000, $this->currency->value))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(1000, $this->currency->value))],
@@ -2115,11 +2142,13 @@ class DiscountTest extends TestCase
                         'currency' => 'PLN',
                         'gross' => '100.00',
                         'net' => '100.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                     [
                         'currency' => 'EUR',
                         'gross' => '25.00',
                         'net' => '25.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
                 'max_values' => [
@@ -2127,11 +2156,13 @@ class DiscountTest extends TestCase
                         'currency' => 'PLN',
                         'gross' => '500.00',
                         'net' => '500.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                     [
                         'currency' => 'EUR',
                         'gross' => '125.00',
                         'net' => '125.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
             ]);
@@ -2392,30 +2423,35 @@ class DiscountTest extends TestCase
                     [
                         'currency' => $this->currency->value,
                         'gross' => '200.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
                 'prices_min_initial' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '150.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
                 'prices_max_initial' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '190.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
                 'prices_min' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '140.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
                 'prices_max' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '180.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
             ])
@@ -2425,30 +2461,35 @@ class DiscountTest extends TestCase
                     [
                         'currency' => $this->currency->value,
                         'gross' => '300.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
                 'prices_min_initial' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '290.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
                 'prices_max_initial' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '350.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
                 'prices_min' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '280.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
                 'prices_max' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '340.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
             ]);
@@ -2572,30 +2613,35 @@ class DiscountTest extends TestCase
                     [
                         'currency' => $this->currency->value,
                         'gross' => '200.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
                 'prices_min_initial' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '190.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
                 'prices_max_initial' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '250.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
                 'prices_min' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '190.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
                 'prices_max' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '250.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
             ])
@@ -2605,30 +2651,35 @@ class DiscountTest extends TestCase
                     [
                         'currency' => $this->currency->value,
                         'gross' => '300.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
                 'prices_min_initial' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '290.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
                 'prices_max_initial' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '350.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
                 'prices_min' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '290.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
                 'prices_max' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '350.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
             ]);

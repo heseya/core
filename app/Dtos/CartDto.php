@@ -11,6 +11,7 @@ use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
 
 class CartDto extends CartOrderDto implements InstantiateFromRequest
 {
@@ -42,7 +43,7 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
             coupons: $request->input('coupons', new Missing()),
             shipping_method_id: $request->input('shipping_method_id', new Missing()),
             digital_shipping_method_id: $request->input('digital_shipping_method_id', new Missing()),
-            sales_channel_id: $request->input('sales_channel_id'),
+            sales_channel_id: Config::get('sales-channel.model')?->id ?? $request->input('sales_channel_id'),
         );
     }
 

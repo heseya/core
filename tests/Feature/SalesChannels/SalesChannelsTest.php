@@ -53,8 +53,9 @@ final class SalesChannelsTest extends TestCase
         ));
 
         $this->{$user}->givePermissionTo('cart.verify');
-        $this
+        $response = $this
             ->actingAs($this->{$user})
+            ->withHeader('Sales-Channel', $channel->id)
             ->json('POST', '/cart/process', [
                 'currency' => $currency,
                 'sales_channel_id' => $channel->getKey(),
@@ -66,7 +67,9 @@ final class SalesChannelsTest extends TestCase
                         'quantity' => 2,
                     ],
                 ],
-            ])
+            ]);
+
+        $response->assertValid()
             ->assertOk()
             ->assertJsonFragment(['shipping_price' => '10.00']) // shipping price should remain the same
             ->assertJsonFragment(['price_discounted' => '12.30']) // single product price
@@ -116,8 +119,9 @@ final class SalesChannelsTest extends TestCase
         ));
 
         $this->{$user}->givePermissionTo('orders.add');
-        $this
+        $response = $this
             ->actingAs($this->{$user})
+            ->withHeader('Sales-Channel', $channel->id)
             ->json('POST', '/orders', [
                 'currency' => $currency,
                 'email' => 'test@example.com',
@@ -138,7 +142,11 @@ final class SalesChannelsTest extends TestCase
                         'quantity' => 2,
                     ],
                 ],
-            ])
+            ]);
+
+        $response->getContent();
+
+        $response->assertValid()
             ->assertCreated();
 
         $this->assertDatabaseHas('orders', [

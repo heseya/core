@@ -11,6 +11,7 @@ use App\Traits\MapMetadata;
 use Domain\Currency\Currency;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Config;
 
 class OrderDto extends CartOrderDto implements InstantiateFromRequest
 {
@@ -67,7 +68,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
                 : $request->input('shipping_place', new Missing()) ?? new Missing(),
             invoice_requested: $request->input('invoice_requested', new Missing()),
             metadata: self::mapMetadata($request),
-            sales_channel_id: $request->input('sales_channel_id'),
+            sales_channel_id: Config::get('sales-channel.model')?->id ?? $request->input('sales_channel_id'),
         );
     }
 

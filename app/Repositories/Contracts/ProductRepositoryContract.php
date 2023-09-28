@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Contracts;
 
+use App\Models\Product;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
@@ -20,7 +21,7 @@ interface ProductRepositoryContract
     /**
      * @param array<string, PriceDto[]> $priceMatrix
      */
-    public function setProductPrices(string $productId, array $priceMatrix): void;
+    public function setProductPrices(Product|string $product, array $priceMatrix): void;
 
     /**
      * @param ProductPriceType[] $priceTypes
@@ -30,7 +31,7 @@ interface ProductRepositoryContract
      * @throws DtoException
      */
     public function getProductPrices(
-        string $productId,
+        Product|string $product,
         array $priceTypes,
         ?Currency $currency = null,
         ?SalesChannel $salesChannel = null,

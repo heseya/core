@@ -35,17 +35,26 @@ final class PriceRepository
         foreach ($priceMatrix as $type => $prices) {
             $prices = new DataCollection(PriceDto::class, $prices);
             foreach ($prices as $price) {
-                // @var PriceDto $price
-                $rows[] = [
+                /** @var PriceDto $price */
+                $row = [
                     'id' => Uuid::uuid4(),
-                    'model_id' => $model instanceof ModelIdentityDto ? $model->uuid : $model->getKey(),
-                    'model_type' => $model instanceof ModelIdentityDto ? $model->class : $model->getMorphClass(),
+                    'model_id' => $model->getKey(),
+                    'model_type' => $model->getMorphClass(),
                     'price_type' => $type,
                     'currency' => $price->value->getCurrency()->getCurrencyCode(),
                     'value' => (string) $price->value->getMinorAmount(),
                     'is_net' => false,
-                    'sales_channel_id' => $price->sales_channel_id ?? ($model instanceof Product ? $model->salesChannels->first()?->getKey() : null),
+                    'sales_channel_id' => $price->sales_channel_id,
                 ];
+
+                if ($row['sales_channel_id'] === null && ($model instanceof Product || ($model instanceof ModelIdentityDto && $model->class === Product::class))) {
+                    $model = $model instanceof Product ? $model : $model->getInstance();
+                    if ($model instanceof Product) {
+                        $row['sales_channel_id'] = $model->publicSalesChannels->first()?->id;
+                    }
+                }
+
+                $rows[] = $row;
             }
         }
 
@@ -65,8 +74,8 @@ final class PriceRepository
     {
         /** @var Builder<Price> $query */
         $query = Price::query()
-            ->where('model_id', $model instanceof ModelIdentityDto ? $model->uuid : $model->getKey())
-            ->where('model_type', $model instanceof ModelIdentityDto ? $model->class : $model->getMorphClass())
+            ->where('model_id', $model->getKey())
+            ->where('model_type', $model->getMorphClass())
             ->whereIn('price_type', Arr::map($priceTypes, fn (DiscountConditionPriceType|OptionPriceType|ProductPriceType|SchemaPriceType|string $item) => is_string($item) ? $item : $item->value));
 
         if ($currency !== null) {
