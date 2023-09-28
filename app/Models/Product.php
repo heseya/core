@@ -334,6 +334,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     public function pricesForCurrentChannel(): MorphMany
     {
         $salesChannel = Config::get('sales-channel.model') ?? app(SalesChannelRepository::class)->getDefault();
+
         return $this->prices()->where('sales_channel_id', $salesChannel?->getKey());
     }
 

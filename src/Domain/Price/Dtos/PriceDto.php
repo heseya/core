@@ -38,7 +38,7 @@ final class PriceDto extends Data
         return new self($money, Currency::from($money->getCurrency()->getCurrencyCode()));
     }
 
-    public function withSalesChannel(SalesChannel|string|null $salesChannel): self
+    public function withSalesChannel(Optional|SalesChannel|string|null $salesChannel): self
     {
         $this->sales_channel_id = $salesChannel instanceof SalesChannel ? $salesChannel->getKey() : $salesChannel;
 

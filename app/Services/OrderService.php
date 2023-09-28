@@ -28,6 +28,7 @@ use App\Models\CartResource;
 use App\Models\Option;
 use App\Models\Order;
 use App\Models\OrderProduct;
+use App\Models\Price;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Models\Status;
@@ -67,7 +68,8 @@ final readonly class OrderService implements OrderServiceContract
         private DepositServiceContract $depositService,
         private ProductRepositoryContract $productRepository,
         private SalesChannelService $salesChannelService,
-    ) {}
+    ) {
+    }
 
     /**
      * @throws MathException
@@ -163,7 +165,8 @@ final readonly class OrderService implements OrderServiceContract
             $status = Status::query()
                 ->select('id')
                 ->orderBy('order')
-                ->firstOr(callback: fn () => throw new ServerException(Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED)
+                ->firstOr(
+                    callback: fn () => throw new ServerException(Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED)
                 );
 
             /** @var User|App $buyer */
@@ -202,8 +205,14 @@ final readonly class OrderService implements OrderServiceContract
                         ProductPriceType::PRICE_BASE,
                     ], $currency);
 
-                    /** @var Money $price */
-                    $price = $prices->get(ProductPriceType::PRICE_BASE->value)->firstOrFail()->value;
+                    $priceModel = $prices->get(ProductPriceType::PRICE_BASE->value);
+                    if ($priceModel instanceof Collection) {
+                        $priceModel = $priceModel->firstOrFail();
+                    }
+
+                    assert($priceModel instanceof Price);
+
+                    $price = $priceModel->value;
 
                     $orderProduct = new OrderProduct([
                         'product_id' => $item->getProductId(),
@@ -534,11 +543,11 @@ final readonly class OrderService implements OrderServiceContract
             // Validate whether delivery methods are the proper type
             $shippingMethod = $dto->getShippingMethodId() instanceof Missing ? null :
                 ShippingMethod::whereNot('shipping_type', ShippingType::DIGITAL->value)
-                    ->findOrFail($dto->getShippingMethodId());
+                ->findOrFail($dto->getShippingMethodId());
 
             $digitalShippingMethod = $dto->getDigitalShippingMethodId() instanceof Missing ? null :
                 ShippingMethod::where('shipping_type', ShippingType::DIGITAL->value)
-                    ->findOrFail($dto->getDigitalShippingMethodId());
+                ->findOrFail($dto->getDigitalShippingMethodId());
         } catch (Throwable $e) {
             throw new OrderException(Exceptions::CLIENT_SHIPPING_METHOD_INVALID_TYPE);
         }

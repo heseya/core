@@ -130,7 +130,7 @@ readonly class Price implements ValidationRule
             return null;
         }
 
-        $sales_channel = SalesChannel::find($value['sales_channel_id']);
+        $sales_channel = SalesChannel::query()->whereKey('id', $value['sales_channel_id'])->first();
         if (empty($sales_channel)) {
             $fail("The :attribute sales_channel_id {$value['sales_channel_id']} does not exist");
         }

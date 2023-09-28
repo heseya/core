@@ -10,12 +10,11 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 readonly class PricesEveryChannel implements DataAwareRule, ValidationRule
 {
-    protected array $data;
-
     public function __construct(
         private string $sales_channel_field = 'sales_channel_id',
         private string $channel_list_field = 'sales_channels',
         private Product|null $product = null,
+        private array $data = [],
     ) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void

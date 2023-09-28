@@ -105,7 +105,7 @@ class ProductResource extends Resource
             'prices_max' => PriceWithSalesChannelResource::collection($this->resource->pricesMax ?? $this->resource->pricesMaxInitial),
             'prices_min_initial' => PriceWithSalesChannelResource::collection($this->resource->pricesMinInitial),
             'prices_max_initial' => PriceWithSalesChannelResource::collection($this->resource->pricesMaxInitial),
-            'attributes' => ProductAttributeResource::collection($this->resource->attributes),
+            'attributes' => ProductAttributeShortResource::collection($this->resource->attributes),
         ];
     }
 }

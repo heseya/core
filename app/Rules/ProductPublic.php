@@ -29,9 +29,11 @@ class ProductPublic implements DataAwareRule, Rule
             : $product->public;
     }
 
-    public function setData(array $data): void
+    public function setData(array $data): self|static
     {
         $this->data = $data;
+
+        return $this;
     }
 
     public function message(): string
