@@ -288,6 +288,19 @@ final readonly class ProductSetService implements ProductSetServiceContract
 
     public function reorderProducts(ProductSet $set, ProductsReorderDto $dto): void
     {
+        $productsWithoutOrder = $set->products->filter(fn (Product $product) => $product->pivot->order === null);
+
+        if ($productsWithoutOrder->isNotEmpty()) {
+            $this->fixNullOrders(
+                $set,
+                $productsWithoutOrder,
+            );
+        }
+
+        if ($this->hasSameOrderProducts($set)) {
+            $this->fixSameOrder($set);
+        }
+
         $maxOrder = $set->products->count() - 1;
 
         $dto->products->each(function (ProductReorderDto $product) use ($set, $maxOrder): void {
@@ -313,22 +326,35 @@ final readonly class ProductSetService implements ProductSetServiceContract
                     ->where('order', '>=', $newOrder)
                     ->increment('order');
             }
-
-            $this->handleNullOrders($set);
         });
     }
 
-    private function handleNullOrders(ProductSet $set): void
+    private function fixNullOrders(ProductSet $set, Collection $productsWithoutOrder): void
     {
         $existingOrder = $set->products->pluck('pivot.order')->filter(fn (?int $order) => $order !== null);
         $missingOrders = array_diff(range(0, $set->products->count() - 1), $existingOrder->toArray());
-        $productsWithoutOrder = $set->products->filter(fn (Product $product) => $product->pivot->order === null);
 
-        foreach ($missingOrders as $missingOrder) {
-            /** @var Product $product */
-            $product = $productsWithoutOrder->shift();
-            $set->products()->updateExistingPivot($product->id, ['order' => $missingOrder]);
-        }
+        $productsWithoutOrder->each(function (Product $product) use (&$missingOrders): void {
+            $product->pivot->update(['order' => array_shift($missingOrders)]);
+        });
+
+        $set->refresh();
+    }
+
+    private function hasSameOrderProducts(ProductSet $set): bool
+    {
+        $groupedProducts = $set->products->groupBy('pivot.order');
+
+        return $groupedProducts->contains(fn (Collection $products): bool => $products->count() > 1);
+    }
+
+    private function fixSameOrder(ProductSet $set): void
+    {
+        $set->products->each(function (Product $product, int $index): void {
+            $product->pivot->update(['order' => $index]);
+        });
+
+        $set->refresh();
     }
 
     private function prepareSlug(
