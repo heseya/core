@@ -81,6 +81,6 @@ class Price extends Model
 
     public function salesChannel(): BelongsTo
     {
-        return $this->belongsTo(SalesChannel::class, 'sales_channel_id');
+        return $this->belongsTo(SalesChannel::class);
     }
 }

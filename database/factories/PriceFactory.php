@@ -27,6 +27,7 @@ class PriceFactory extends Factory
             'price_type' => ProductPriceType::PRICE_BASE->value,
             'value' => mt_rand(0, 1337),
             'currency' => Currency::getRandomValue(),
+            'sales_channel_id' => null,
         ];
     }
 
@@ -34,7 +35,7 @@ class PriceFactory extends Factory
     {
         return $this->state([
             'model_id' => $model->getKey(),
-            'model_type' => $model::class,
+            'model_type' => $model->getMorphClass(),
         ]);
     }
 
@@ -56,6 +57,7 @@ class PriceFactory extends Factory
                 'value' => $price->value,
                 'price_type' => $price->price_type,
                 'currency' => $price->currency,
+                'sales_channel_id' => $price->sales_channel_id,
             ]);
     }
 }

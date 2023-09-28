@@ -7,6 +7,7 @@ namespace Domain\SalesChannel\Models;
 use App\Models\Country;
 use App\Models\Interfaces\Translatable;
 use App\Models\Model;
+use App\Models\Price;
 use App\Models\Product;
 use App\Traits\CustomHasTranslations;
 use Domain\Language\Language;
@@ -17,6 +18,7 @@ use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Support\Enum\Status;
 
 /**
@@ -100,5 +102,10 @@ final class SalesChannel extends Model implements Translatable
         )
             ->using(ProductSalesChannel::class)
             ->withPivot(['availability_status']);
+    }
+
+    public function prices(): HasMany
+    {
+        return $this->hasMany(Price::class);
     }
 }

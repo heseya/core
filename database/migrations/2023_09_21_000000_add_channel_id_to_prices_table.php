@@ -14,6 +14,8 @@ return new class extends Migration
     {
         Schema::table((new Price())->getTable(), function (Blueprint $table) {
             $table->uuid('sales_channel_id')->nullable();
+            $table->dropUnique(['model_id', 'price_type', 'currency']);
+            $table->unique(['model_id', 'price_type', 'currency', 'sales_channel_id']);
         });
     }
 
@@ -23,7 +25,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table((new Price())->getTable(), function (Blueprint $table) {
+            $table->dropUnique(['model_id', 'price_type', 'currency', 'sales_channel_id']);
             $table->dropColumn('sales_channel_id');
+            $table->unique(['model_id', 'price_type', 'currency']);
         });
     }
 };

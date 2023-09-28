@@ -35,6 +35,7 @@ final class PriceRepository
         $fallback_sales_channel_id = null;
         if ($model instanceof Product || ($model instanceof ModelIdentityDto && $model->class === Product::class)) {
             $product = $model instanceof Product ? $model : $model->getInstance();
+
             if ($product instanceof Product) {
                 $fallback_sales_channel_id = $product->publicSalesChannels->first()?->getKey();
             }

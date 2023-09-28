@@ -673,7 +673,7 @@ readonly class DiscountService implements DiscountServiceContract
             $productSales,
         ] = $this->calcAllDiscountsOnProduct($product, $salesWithBlockList, false);
 
-        $this->productRepository->setProductPrices($product->getKey(), [
+        $this->productRepository->setProductPrices($product, [
             ProductPriceType::PRICE_MIN->value => $minPricesDiscounted,
             ProductPriceType::PRICE_MAX->value => $maxPricesDiscounted,
         ]);
@@ -1009,8 +1009,8 @@ readonly class DiscountService implements DiscountServiceContract
         $sales = $this->sortDiscounts($product->allProductSales($salesWithBlockList));
 
         $prices = $this->productRepository->getProductPrices(
-            $product->getKey(),
-            [
+            product: $product,
+            priceTypes: [
                 ProductPriceType::PRICE_MIN_INITIAL,
                 ProductPriceType::PRICE_MAX_INITIAL,
             ],

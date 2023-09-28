@@ -102,11 +102,14 @@ class ProductTest extends TestCase
         /** @var AvailabilityServiceContract $availabilityService */
         $availabilityService = App::make(AvailabilityServiceContract::class);
 
-        $this->product = $this->productService->create(FakeDto::productCreateDto([
-            'shipping_digital' => false,
-            'order' => 1,
-            'prices_base' => $this->productPrices,
-        ]));
+        $this->product = $this->productService->create(FakeDto::productCreateDto(
+            data: [
+                'shipping_digital' => false,
+                'order' => 1,
+                'prices_base' => $this->productPrices,
+            ],
+            salesChannel: $this->salesChannel
+        ));
 
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'name' => 'Rozmiar',
@@ -253,13 +256,13 @@ class ProductTest extends TestCase
             ],
         ]);
 
+
         $this->saleProduct = Product::factory()->create();
         $this->salesChannel->products()->attach($this->saleProduct);
-
         $this->productRepository->setProductPrices($this->saleProduct->getKey(), [
-            ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(3000, $this->currency->value))],
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(2500, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(3500, $this->currency->value))],
+            ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(3000, $this->currency->value))->withSalesChannel($this->salesChannel)],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(2500, $this->currency->value))->withSalesChannel($this->salesChannel)],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(3500, $this->currency->value))->withSalesChannel($this->salesChannel)],
         ]);
     }
 
