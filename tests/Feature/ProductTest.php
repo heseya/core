@@ -59,6 +59,7 @@ class ProductTest extends TestCase
 {
     private Product $product;
     private Product $hidden_product;
+    private Product $saleProduct;
 
     private SalesChannel $salesChannel;
 
@@ -66,7 +67,6 @@ class ProductTest extends TestCase
     private array $expected_short;
 
     private Currency $currency;
-    private Product $saleProduct;
     private array $productPrices;
 
     private ProductService $productService;

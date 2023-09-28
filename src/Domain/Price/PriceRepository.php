@@ -52,7 +52,7 @@ final class PriceRepository
                     'currency' => $price->value->getCurrency()->getCurrencyCode(),
                     'value' => (string) $price->value->getMinorAmount(),
                     'is_net' => false,
-                    'sales_channel_id' => $price->sales_channel_id ?? $fallback_sales_channel_id,
+                    'sales_channel_id' => is_string($price->sales_channel_id) ? $price->sales_channel_id : $fallback_sales_channel_id,
                 ];
             }
         }

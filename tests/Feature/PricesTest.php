@@ -94,13 +94,11 @@ class PricesTest extends TestCase
                             'currency' => Currency::DEFAULT,
                             'gross' => $priceMin1,
                             'net' => $priceMin1,
-                            'sales_channel_id' => $this->salesChannel->id,
                         ]],
                         'prices_max' => [[
                             'currency' => Currency::DEFAULT,
                             'gross' => $priceMax1,
                             'net' => $priceMax1,
-                            'sales_channel_id' => $this->salesChannel->id,
                         ]],
                     ],
                     [
@@ -109,13 +107,11 @@ class PricesTest extends TestCase
                             'currency' => Currency::DEFAULT,
                             'gross' => $priceMin2,
                             'net' => $priceMin2,
-                            'sales_channel_id' => $this->salesChannel->id,
                         ]],
                         'prices_max' => [[
                             'currency' => Currency::DEFAULT,
                             'gross' => $priceMax2,
                             'net' => $priceMax2,
-                            'sales_channel_id' => $this->salesChannel->id,
                         ]],
                     ],
                 ],
