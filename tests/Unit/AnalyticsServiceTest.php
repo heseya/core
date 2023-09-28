@@ -83,7 +83,7 @@ class AnalyticsServiceTest extends TestCase
                 [
                     'amount' => 0,
                     'count' => 0,
-                    'currency' => Currency::EUR->value,
+                    'currency' => Currency::GBP->value,
                 ]
             ],
         ], $this->analyticsService->getPaymentsOverPeriod($from, $to, 'total'));
@@ -208,7 +208,7 @@ class AnalyticsServiceTest extends TestCase
                 [
                     'amount' => 0,
                     'count' => 0,
-                    'currency' => Currency::EUR->value,
+                    'currency' => Currency::GBP->value,
                 ]
             ],
             $labelTwo => [
@@ -220,7 +220,7 @@ class AnalyticsServiceTest extends TestCase
                 [
                     'amount' => 0,
                     'count' => 0,
-                    'currency' => Currency::EUR->value,
+                    'currency' => Currency::GBP->value,
                 ]
             ],
         ], $this->analyticsService->getPaymentsOverPeriod($groupOne0, $groupTwo1, $group));

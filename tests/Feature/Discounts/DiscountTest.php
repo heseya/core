@@ -161,7 +161,7 @@ class DiscountTest extends TestCase
                         'value' => "100.00",
                     ],
                     [
-                        'currency' => Currency::EUR->value,
+                        'currency' => Currency::GBP->value,
                         'value' => "25.00",
                     ],
                 ],
@@ -171,7 +171,7 @@ class DiscountTest extends TestCase
                         'value' => "500.00",
                     ],
                     [
-                        'currency' => Currency::EUR->value,
+                        'currency' => Currency::GBP->value,
                         'value' => "125.00",
                     ],
                 ],
@@ -1528,7 +1528,7 @@ class DiscountTest extends TestCase
                         'net' => '100.00',
                     ],
                     [
-                        'currency' => 'EUR',
+                        'currency' => 'GBP',
                         'gross' => '25.00',
                         'net' => '25.00',
                     ],
@@ -1540,7 +1540,7 @@ class DiscountTest extends TestCase
                         'net' => '500.00',
                     ],
                     [
-                        'currency' => 'EUR',
+                        'currency' => 'GBP',
                         'gross' => '125.00',
                         'net' => '125.00',
                     ],
@@ -2129,7 +2129,7 @@ class DiscountTest extends TestCase
                         'net' => '100.00',
                     ],
                     [
-                        'currency' => 'EUR',
+                        'currency' => 'GBP',
                         'gross' => '25.00',
                         'net' => '25.00',
                     ],
@@ -2141,7 +2141,7 @@ class DiscountTest extends TestCase
                         'net' => '500.00',
                     ],
                     [
-                        'currency' => 'EUR',
+                        'currency' => 'GBP',
                         'gross' => '125.00',
                         'net' => '125.00',
                     ],
@@ -2183,7 +2183,7 @@ class DiscountTest extends TestCase
                     'value' => "100.00",
                 ],
                 [
-                    'currency' => Currency::EUR->value,
+                    'currency' => Currency::GBP->value,
                     'value' => "25.00",
                 ],
             ],
@@ -2193,7 +2193,7 @@ class DiscountTest extends TestCase
                     'value' => "500.00",
                 ],
                 [
-                    'currency' => Currency::EUR->value,
+                    'currency' => Currency::GBP->value,
                     'value' => "125.00",
                 ],
             ],
@@ -2214,7 +2214,7 @@ class DiscountTest extends TestCase
         ]);
         $condition->pricesMin()->create([
             'value' => 2500,
-            'currency' => Currency::EUR->value,
+            'currency' => Currency::GBP->value,
             'price_type' => DiscountConditionPriceType::PRICE_MIN->value,
         ]);
         $condition->pricesMax()->create([
@@ -2224,7 +2224,7 @@ class DiscountTest extends TestCase
         ]);
         $condition->pricesMin()->create([
             'value' => 12500,
-            'currency' => Currency::EUR->value,
+            'currency' => Currency::GBP->value,
             'price_type' => DiscountConditionPriceType::PRICE_MAX->value,
         ]);
 
@@ -2245,7 +2245,7 @@ class DiscountTest extends TestCase
                                     'value' => "500.00",
                                 ],
                                 [
-                                    'currency' => Currency::EUR->value,
+                                    'currency' => Currency::GBP->value,
                                     'value' => "125.00",
                                 ],
                             ],
@@ -2278,7 +2278,7 @@ class DiscountTest extends TestCase
                     'net' => '500.00',
                 ],
                 [
-                    'currency' => 'EUR',
+                    'currency' => 'GBP',
                     'gross' => '125.00',
                     'net' => '125.00',
                 ],

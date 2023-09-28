@@ -539,7 +539,7 @@ class ShippingMethodTest extends TestCase
             $shipping_method + [
                 'price_ranges' => [
                     [
-                        'currency' => Currency::EUR->value,
+                        'currency' => Currency::GBP->value,
                         'start' => '0',
                         'value' => '0',
                     ],
@@ -557,13 +557,13 @@ class ShippingMethodTest extends TestCase
             ->assertJsonFragment([
                 'start' => [
                     'gross' => '0.00',
-                    'currency' => Currency::EUR->value,
+                    'currency' => Currency::GBP->value,
                 ],
             ])
             ->assertJsonFragment([
                 'value' => [
                     'gross' => '0.00',
-                    'currency' => Currency::EUR->value,
+                    'currency' => Currency::GBP->value,
                 ],
             ])
             ->assertJsonFragment([
@@ -1322,7 +1322,7 @@ class ShippingMethodTest extends TestCase
             $shipping_method + [
                 'price_ranges' => [
                     [
-                        'currency' => Currency::EUR->value,
+                        'currency' => Currency::GBP->value,
                         'start' => '0',
                         'value' => '0',
                     ],
@@ -1341,13 +1341,13 @@ class ShippingMethodTest extends TestCase
             ->assertJsonFragment([
                 'start' => [
                     'gross' => '0.00',
-                    'currency' => Currency::EUR->value,
+                    'currency' => Currency::GBP->value,
                 ],
             ])
             ->assertJsonFragment([
                 'value' => [
                     'gross' => '0.00',
-                    'currency' => Currency::EUR->value,
+                    'currency' => Currency::GBP->value,
                 ],
             ])
             ->assertJsonFragment([
