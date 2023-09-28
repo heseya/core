@@ -15,6 +15,9 @@ Product:
           currency:
             type: string
             example: "PLN"
+          sales_channel_id:
+            type: string
+            format: uuid
     public:
       type: boolean
     descriptions:

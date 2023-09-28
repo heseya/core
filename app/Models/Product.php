@@ -38,6 +38,7 @@ use Domain\Product\Models\ProductSalesChannel;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Domain\Tag\Models\Tag;
 use Heseya\Searchable\Criteria\Equals;
 use Heseya\Searchable\Criteria\Like;
@@ -332,11 +333,8 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
 
     public function pricesForCurrentChannel(): MorphMany
     {
-        $salesChannel = Config::get('sales-channel.model');
-
-        var_dump($salesChannel?->id);
-
-        return $this->prices()->where('sales_channel_id', $salesChannel->getKey());
+        $salesChannel = Config::get('sales-channel.model') ?? app(SalesChannelRepository::class)->getDefault();
+        return $this->prices()->where('sales_channel_id', $salesChannel?->getKey());
     }
 
     public function pricesBase(): MorphMany

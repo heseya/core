@@ -5,25 +5,41 @@ ProductPrice:
       type: string
       format: uuid
     prices_min:
-      description: 'Min prices after applied all sales'
+      description: "Min prices after applied all sales"
       type: array
       items:
-        $ref: ./Prices.yml#/PriceResource
+        $ref: ./Prices.yml#/PriceWithSalesChannelResource
     prices_max:
-      description: 'Max prices after applied all sales'
+      description: "Max prices after applied all sales"
       type: array
       items:
-        $ref: ./Prices.yml#/PriceResource
+        $ref: ./Prices.yml#/PriceWithSalesChannelResource
 
 PriceResource:
   type: object
   properties:
     net:
       type: string
-      example: '19.99'
+      example: "19.99"
     gross:
       type: string
-      example: '23.99'
+      example: "23.99"
     currency:
       type: string
-      example: 'PLN'
+      example: "PLN"
+
+PriceWithSalesChannelResource:
+  type: object
+  properties:
+    net:
+      type: string
+      example: "19.99"
+    gross:
+      type: string
+      example: "23.99"
+    currency:
+      type: string
+      example: "PLN"
+    sales_channel_id:
+      type: string
+      format: uuid

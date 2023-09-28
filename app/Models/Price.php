@@ -18,6 +18,7 @@ use Spatie\LaravelData\WithData;
 /**
  * @property Money $value
  * @property string $currency
+ * @property string $sales_channel_id
  *
  * @method static PriceFactory factory()
  *

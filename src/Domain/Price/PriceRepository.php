@@ -43,7 +43,7 @@ final class PriceRepository
         foreach ($priceMatrix as $type => $prices) {
             $prices = new DataCollection(PriceDto::class, $prices);
             foreach ($prices as $price) {
-                /** @var PriceDto $price */
+                // @var PriceDto $price
                 $rows[] = [
                     'id' => Uuid::uuid4(),
                     'model_id' => $model->getKey(),

@@ -5,57 +5,57 @@ Product:
       type: string
       format: uuid
     slug:
-      description: 'Name used in the URL path'
+      description: "Name used in the URL path"
       type: string
       example: white-socks
     name:
-      description: 'Displayed product name'
+      description: "Displayed product name"
       type: string
-      example: 'White socks'
+      example: "White socks"
     prices_base:
-      description: 'Base prices of the product excluding schemas'
+      description: "Base prices of the product excluding schemas"
       type: array
       items:
-        $ref: './../schemas/Prices.yml#/PriceResource'
+        $ref: "./../schemas/Prices.yml#/PriceWithSalesChannelResource"
     prices_min:
-      description: 'Min prices after applied all sales'
+      description: "Min prices after applied all sales"
       type: array
       items:
-        $ref: './../schemas/Prices.yml#/PriceResource'
+        $ref: "./../schemas/Prices.yml#/PriceWithSalesChannelResource"
     prices_max:
-      description: 'Max prices after applied all sales'
+      description: "Max prices after applied all sales"
       type: array
       items:
-        $ref: './../schemas/Prices.yml#/PriceResource'
+        $ref: "./../schemas/Prices.yml#/PriceWithSalesChannelResource"
     prices_min_initial:
-      description: 'Minimum available product prices accounting for schemas'
+      description: "Minimum available product prices accounting for schemas"
       type: array
       items:
-        $ref: './../schemas/Prices.yml#/PriceResource'
+        $ref: "./../schemas/Prices.yml#/PriceWithSalesChannelResource"
     prices_max_initial:
-      description: 'Maximum available product prices accounting for schemas'
+      description: "Maximum available product prices accounting for schemas"
       type: array
       items:
-        $ref: './../schemas/Prices.yml#/PriceResource'
+        $ref: "./../schemas/Prices.yml#/PriceWithSalesChannelResource"
     public:
-      description: 'Whether product is not set to be hidden.'
+      description: "Whether product is not set to be hidden."
       type: boolean
     visible:
-      description: 'Whether product is visible due to public setting and set visibility'
+      description: "Whether product is visible due to public setting and set visibility"
       type: boolean
     available:
-      description: 'Whether all parts for minimum product config are available'
+      description: "Whether all parts for minimum product config are available"
       type: boolean
     quantity_step:
-      description: 'In what increments can you increase the product quantity'
+      description: "In what increments can you increase the product quantity"
       type: number
       example: 0.05
     quantity:
-      description: 'Product quantity summary'
+      description: "Product quantity summary"
       type: number
       example: 20
     google_product_category:
-      description: 'Google product category identification number'
+      description: "Google product category identification number"
       type: number
       example: 2271
     shipping_time:
@@ -64,41 +64,41 @@ Product:
     shipping_date:
       type: string
       format: date-time
-      example: '2021-09-13T11:11'
+      example: "2021-09-13T11:11"
     shipping_digital:
-      description: 'Whether product is digital and not delivered by physical means'
+      description: "Whether product is digital and not delivered by physical means"
       type: boolean
     purchase_limit_per_user:
       type: number
       example: 5
     cover:
-      $ref: './Media.yml#/Media'
+      $ref: "./Media.yml#/Media"
     tags:
-      description: 'Ids of assigned subsets'
+      description: "Ids of assigned subsets"
       type: array
       items:
-        $ref: './Tags.yml#/Tag'
+        $ref: "./Tags.yml#/Tag"
     metadata:
-      $ref: './../schemas/Metadata.yml#/Metadata'
+      $ref: "./../schemas/Metadata.yml#/Metadata"
     metadata_private:
-      $ref: './../schemas/Metadata.yml#/Metadata'
+      $ref: "./../schemas/Metadata.yml#/Metadata"
     has_schemas:
-      description: 'Does product has any attached schema'
+      description: "Does product has any attached schema"
       type: boolean
     translations:
       type: array
-      description: 'Translation table for languages. Array key is language UUID'
+      description: "Translation table for languages. Array key is language UUID"
       items:
         type: object
         properties:
           name:
-            description: 'Product name'
+            description: "Product name"
             type: string
-            example: 'Shirt'
+            example: "Shirt"
           description_html:
-            description: 'HTML formatted text'
+            description: "HTML formatted text"
             type: string
-            example: '<h1>Lorem ipsum dolor sit amet</h1>'
+            example: "<h1>Lorem ipsum dolor sit amet</h1>"
           description_short:
             type: string
     published:
@@ -110,7 +110,7 @@ Product:
 ProductView:
   type: object
   allOf:
-    - $ref: '#/Product'
+    - $ref: "#/Product"
     - properties:
         order:
           type: integer
@@ -119,66 +119,66 @@ ProductView:
           type: string
           format: uuid
         description_html:
-          description: 'HTML formatted text to be displayed as a product description'
+          description: "HTML formatted text to be displayed as a product description"
           type: string
-          example: '<h1>Lorem ipsum dolor sit amet</h1>'
+          example: "<h1>Lorem ipsum dolor sit amet</h1>"
         description_short:
-          description: 'Plain text short product description'
+          description: "Plain text short product description"
           type: string
         descriptions:
           type: array
           items:
-            $ref: './Pages.yml#/Page'
+            $ref: "./Pages.yml#/Page"
         items:
-          $ref: './Items.yml#/ItemWithRequiredQuantity'
+          $ref: "./Items.yml#/ItemWithRequiredQuantity"
         gallery:
-          description: 'Ids of assigned subsets'
+          description: "Ids of assigned subsets"
           type: array
           items:
-            $ref: './Media.yml#/Media'
+            $ref: "./Media.yml#/Media"
         schemas:
-          description: 'Ids of assigned subsets'
+          description: "Ids of assigned subsets"
           type: array
           items:
-            $ref: './../api.yml#/components/schemas/Schema'
+            $ref: "./../api.yml#/components/schemas/Schema"
         sets:
-          description: 'Assigned product sets'
+          description: "Assigned product sets"
           type: array
           items:
-            $ref: './ProductSets.yml#/ProductSet'
+            $ref: "./ProductSets.yml#/ProductSet"
         related_sets:
-          description: 'Sets with products related to this one'
+          description: "Sets with products related to this one"
           type: array
           items:
-            $ref: './ProductSets.yml#/ProductSet'
+            $ref: "./ProductSets.yml#/ProductSet"
         attributes:
-          description: 'Array of assigned attributes'
+          description: "Array of assigned attributes"
           type: array
           items:
-            $ref: './Attributes.yml#/AttributeProduct'
+            $ref: "./Attributes.yml#/AttributeProduct"
         seo:
-          $ref: './Seo.yml#/SeoView'
+          $ref: "./Seo.yml#/SeoView"
         sales:
-          description: 'List of all applied sales'
+          description: "List of all applied sales"
           type: array
           items:
-            $ref: './Sales.yml#/Sale'
+            $ref: "./Sales.yml#/Sale"
         attachments:
-          description: 'List of all media attachments'
+          description: "List of all media attachments"
           type: array
           items:
-            $ref: './MediaAttachments.yml#/MediaAttachment'
+            $ref: "./MediaAttachments.yml#/MediaAttachment"
 
 ProductIndex:
   type: object
   allOf:
-    - $ref: '#/Product'
+    - $ref: "#/Product"
     - properties:
         attributes:
-          description: 'Array of assigned attributes'
+          description: "Array of assigned attributes"
           type: array
           items:
-            $ref: './Attributes.yml#/AttributeProductList'
+            $ref: "./Attributes.yml#/AttributeProductList"
 
 ProductShort:
   type: object
@@ -187,40 +187,40 @@ ProductShort:
       type: string
       format: uuid
     slug:
-      description: 'Name used in the URL path'
+      description: "Name used in the URL path"
       type: string
       example: white-socks
     name:
-      description: 'Displayed product name'
+      description: "Displayed product name"
       type: string
-      example: 'White socks'
+      example: "White socks"
     prices_base:
-      description: 'Base prices of the product excluding schemas'
+      description: "Base prices of the product excluding schemas"
       type: array
       items:
-        $ref: './../schemas/Prices.yml#/PriceResource'
+        $ref: "./../schemas/Prices.yml#/PriceResource"
     prices_min:
-      description: 'Min prices after applied all sales'
+      description: "Min prices after applied all sales"
       type: array
       items:
-        $ref: './../schemas/Prices.yml#/PriceResource'
+        $ref: "./../schemas/Prices.yml#/PriceResource"
     prices_max:
-      description: 'Max prices after applied all sales'
+      description: "Max prices after applied all sales"
       type: array
       items:
-        $ref: './../schemas/Prices.yml#/PriceResource'
+        $ref: "./../schemas/Prices.yml#/PriceResource"
     public:
-      description: 'Whether product is not set to be hidden.'
+      description: "Whether product is not set to be hidden."
       type: boolean
     visible:
-      description: 'Whether product is visible due to public setting and set visibility'
+      description: "Whether product is visible due to public setting and set visibility"
       type: boolean
     available:
-      description: 'Whether all parts for minimum product config are available'
+      description: "Whether all parts for minimum product config are available"
       type: boolean
     quantity:
-      description: 'Product quantity summary'
+      description: "Product quantity summary"
       type: number
       example: 20
     cover:
-      $ref: './Media.yml#/Media'
+      $ref: "./Media.yml#/Media"
