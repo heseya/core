@@ -282,6 +282,7 @@ class ProductTest extends TestCase
                     'net' => '100.00',
                     'gross' => '100.00',
                     'currency' => 'PLN',
+                    'sales_channel_id' => $this->salesChannel->id,
                 ],
             ]);
 
@@ -325,6 +326,7 @@ class ProductTest extends TestCase
                     'net' => '100.00',
                     'gross' => '100.00',
                     'currency' => 'PLN',
+                    'sales_channel_id' => $this->salesChannel->id,
                 ],
             ]);
 
@@ -978,22 +980,27 @@ class ProductTest extends TestCase
                 'prices_base' => [[
                     'gross' => '3000.00',
                     'currency' => Currency::DEFAULT->value,
+                    'sales_channel_id' => $this->salesChannel->id,
                 ]],
                 'prices_min_initial' => [[
                     'gross' => '2500.00',
                     'currency' => Currency::DEFAULT->value,
+                    'sales_channel_id' => $this->salesChannel->id,
                 ]],
                 'prices_max_initial' => [[
                     'gross' => '3500.00',
                     'currency' => Currency::DEFAULT->value,
+                    'sales_channel_id' => $this->salesChannel->id,
                 ]],
                 'prices_min' => [[
                     'gross' => '2250.00',
                     'currency' => Currency::DEFAULT->value,
+                    'sales_channel_id' => $this->salesChannel->id,
                 ]],
                 'prices_max' => [[
                     'gross' => '3150.00',
                     'currency' => Currency::DEFAULT->value,
+                    'sales_channel_id' => $this->salesChannel->id,
                 ]],
             ])
             ->assertJsonFragment([
@@ -1152,26 +1159,31 @@ class ProductTest extends TestCase
                     'net' => '3000.00',
                     'gross' => '3000.00',
                     'currency' => Currency::DEFAULT->value,
+                    'sales_channel_id' => $this->salesChannel->id,
                 ]],
                 'prices_min_initial' => [[
                     'net' => '2500.00',
                     'gross' => '2500.00',
                     'currency' => Currency::DEFAULT->value,
+                    'sales_channel_id' => $this->salesChannel->id,
                 ]],
                 'prices_max_initial' => [[
                     'net' => '3500.00',
                     'gross' => '3500.00',
                     'currency' => Currency::DEFAULT->value,
+                    'sales_channel_id' => $this->salesChannel->id,
                 ]],
                 'prices_min' => [[
                     'net' => '2137.50',
                     'gross' => '2137.50',
                     'currency' => Currency::DEFAULT->value,
+                    'sales_channel_id' => $this->salesChannel->id,
                 ]],
                 'prices_max' => [[
                     'net' => '2992.50',
                     'gross' => '2992.50',
                     'currency' => Currency::DEFAULT->value,
+                    'sales_channel_id' => $this->salesChannel->id,
                 ]],
             ])
             ->assertJsonFragment([
@@ -1259,26 +1271,31 @@ class ProductTest extends TestCase
                     'net' => '3000.00',
                     'gross' => '3000.00',
                     'currency' => Currency::DEFAULT->value,
+                    'sales_channel_id' => $this->salesChannel->id,
                 ]],
                 'prices_min_initial' => [[
                     'net' => '2500.00',
                     'gross' => '2500.00',
                     'currency' => Currency::DEFAULT->value,
+                    'sales_channel_id' => $this->salesChannel->id,
                 ]],
                 'prices_max_initial' => [[
                     'net' => '3500.00',
                     'gross' => '3500.00',
                     'currency' => Currency::DEFAULT->value,
+                    'sales_channel_id' => $this->salesChannel->id,
                 ]],
                 'prices_min' => [[
                     'net' => '2250.00',
                     'gross' => '2250.00',
                     'currency' => Currency::DEFAULT->value,
+                    'sales_channel_id' => $this->salesChannel->id,
                 ]],
                 'prices_max' => [[
                     'net' => '3150.00',
                     'gross' => '3150.00',
                     'currency' => Currency::DEFAULT->value,
+                    'sales_channel_id' => $this->salesChannel->id,
                 ]],
             ])
             ->assertJsonFragment([
@@ -1335,6 +1352,7 @@ class ProductTest extends TestCase
             ->assertJsonFragment([
                 'gross' => '100.00',
                 'currency' => $this->currency->value,
+                'sales_channel_id' => $this->salesChannel->id,
             ]);
 
         $this->assertDatabaseHas('products', [

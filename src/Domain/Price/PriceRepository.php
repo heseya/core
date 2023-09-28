@@ -32,11 +32,19 @@ final class PriceRepository
     {
         $rows = [];
 
+        $fallback_sales_channel_id = null;
+        if ($model instanceof Product || ($model instanceof ModelIdentityDto && $model->class === Product::class)) {
+            $product = $model instanceof Product ? $model : $model->getInstance();
+            if ($product instanceof Product) {
+                $fallback_sales_channel_id = $product->publicSalesChannels->first()?->getKey();
+            }
+        }
+
         foreach ($priceMatrix as $type => $prices) {
             $prices = new DataCollection(PriceDto::class, $prices);
             foreach ($prices as $price) {
                 /** @var PriceDto $price */
-                $row = [
+                $rows[] = [
                     'id' => Uuid::uuid4(),
                     'model_id' => $model->getKey(),
                     'model_type' => $model->getMorphClass(),
@@ -44,17 +52,8 @@ final class PriceRepository
                     'currency' => $price->value->getCurrency()->getCurrencyCode(),
                     'value' => (string) $price->value->getMinorAmount(),
                     'is_net' => false,
-                    'sales_channel_id' => $price->sales_channel_id,
+                    'sales_channel_id' => $price->sales_channel_id ?? $fallback_sales_channel_id,
                 ];
-
-                if ($row['sales_channel_id'] === null && ($model instanceof Product || ($model instanceof ModelIdentityDto && $model->class === Product::class))) {
-                    $model = $model instanceof Product ? $model : $model->getInstance();
-                    if ($model instanceof Product) {
-                        $row['sales_channel_id'] = $model->publicSalesChannels->first()?->id;
-                    }
-                }
-
-                $rows[] = $row;
             }
         }
 

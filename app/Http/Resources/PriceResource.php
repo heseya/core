@@ -16,7 +16,6 @@ class PriceResource extends Resource
             'net' => $this->resource->value->getAmount(),
             'gross' => $this->resource->value->getAmount(),
             'currency' => $this->resource->value->getCurrency()->getCurrencyCode(),
-            'sales_channel_id' => $this->resource->sales_channel_id,
         ];
     }
 }

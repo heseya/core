@@ -1350,6 +1350,7 @@ class DiscountTest extends TestCase
             'currency' => $amount['currency'],
             'gross' => $amount['value'],
             'net' => $amount['value'],
+            'sales_channel_id' => null,
         ]);
 
         $response
@@ -1536,13 +1537,13 @@ class DiscountTest extends TestCase
                         'currency' => 'PLN',
                         'gross' => '100.00',
                         'net' => '100.00',
-                        'sales_channel_id' => $this->salesChannel->id,
+                        'sales_channel_id' => null,
                     ],
                     [
                         'currency' => 'EUR',
                         'gross' => '25.00',
                         'net' => '25.00',
-                        'sales_channel_id' => $this->salesChannel->id,
+                        'sales_channel_id' => null,
                     ],
                 ],
                 'max_values' => [
@@ -1550,13 +1551,13 @@ class DiscountTest extends TestCase
                         'currency' => 'PLN',
                         'gross' => '500.00',
                         'net' => '500.00',
-                        'sales_channel_id' => $this->salesChannel->id,
+                        'sales_channel_id' => null,
                     ],
                     [
                         'currency' => 'EUR',
                         'gross' => '125.00',
                         'net' => '125.00',
-                        'sales_channel_id' => $this->salesChannel->id,
+                        'sales_channel_id' => null,
                     ],
                 ],
             ]);
@@ -2142,13 +2143,13 @@ class DiscountTest extends TestCase
                         'currency' => 'PLN',
                         'gross' => '100.00',
                         'net' => '100.00',
-                        'sales_channel_id' => $this->salesChannel->id,
+                        'sales_channel_id' => null,
                     ],
                     [
                         'currency' => 'EUR',
                         'gross' => '25.00',
                         'net' => '25.00',
-                        'sales_channel_id' => $this->salesChannel->id,
+                        'sales_channel_id' => null,
                     ],
                 ],
                 'max_values' => [
@@ -2156,13 +2157,13 @@ class DiscountTest extends TestCase
                         'currency' => 'PLN',
                         'gross' => '500.00',
                         'net' => '500.00',
-                        'sales_channel_id' => $this->salesChannel->id,
+                        'sales_channel_id' => null,
                     ],
                     [
                         'currency' => 'EUR',
                         'gross' => '125.00',
                         'net' => '125.00',
-                        'sales_channel_id' => $this->salesChannel->id,
+                        'sales_channel_id' => null,
                     ],
                 ],
             ]);

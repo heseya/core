@@ -60,6 +60,7 @@ class PricesTest extends TestCase
 
         $product1 = Product::factory()->create();
         $this->salesChannel->products()->attach($product1);
+
         $priceMin1 = '2500.00';
         $priceMax1 = '3000.00';
         $this->productRepository->setProductPrices($product1->getKey(), [
@@ -69,6 +70,7 @@ class PricesTest extends TestCase
 
         $product2 = Product::factory()->create();
         $this->salesChannel->products()->attach($product2);
+
         $priceMin2 = '1000.00';
         $priceMax2 = '1500.00';
         $this->productRepository->setProductPrices($product2->getKey(), [
