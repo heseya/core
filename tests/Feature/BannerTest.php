@@ -94,63 +94,61 @@ class BannerTest extends TestCase
   {
     $this->{$user}->givePermissionTo('banners.show');
 
-    $language1 = Language::query()->get()->first();
-    $language2 = Language::query()->get()->last();
+    $otherLang = Language::query()->whereNot('id', $this->lang)->first()->getKey();
 
     BannerMedia::query()->delete();
     Banner::query()->delete();
 
-    $banner1 = Banner::factory()->create(['id' => 1]);
-    $banner2 = Banner::factory()->create(['id' => 2]);
-    $banner3 = Banner::factory()->create(['id' => 3]);
+    $banner = Banner::factory()->create();
 
-    $banner1->bannerMedia()->create([
+    $banner->bannerMedia()->create([
       'title' => 'title1',
       'subtitle' => 'subtitle1',
       'url' => 'url1',
-      'published' => [$language1->getKey(), $language2->getKey()],
+      'published' => [$this->lang],
       'order' => 0,
     ]);
 
-    $banner2->bannerMedia()->create([
-      'title' => 'title2',
-      'subtitle' => 'subtitle2',
-      'url' => 'url2',
-      'published' => [$language1->getKey()],
-      'order' => 0,
-    ]);
-
-    $banner3->bannerMedia()->create([
-      'title' => 'title3',
-      'subtitle' => 'subtitle3',
-      'url' => 'url3',
-      'published' => [$language2->getKey()],
-      'order' => 0,
-    ]);
-
-    $res = $this
+    $this
       ->actingAs($this->{$user})
       ->getJson('/banners')
-      ->assertJsonCount(3, 'data')
-      ->assertJsonCount(1, 'data.0.banner_media')
-      ->assertJsonCount(1, 'data.1.banner_media')
-      ->assertJsonCount(0, 'data.2.banner_media');
+      ->assertJsonCount(1, 'data.0.banner_media');
 
     $this
       ->actingAs($this->{$user})
       ->getJson('/banners?with_translations=0')
-      ->assertJsonCount(3, 'data')
-      ->assertJsonCount(1, 'data.0.banner_media')
-      ->assertJsonCount(1, 'data.1.banner_media')
-      ->assertJsonCount(0, 'data.2.banner_media');
+      ->assertJsonCount(1, 'data.0.banner_media');
 
     $this
       ->actingAs($this->{$user})
       ->getJson('/banners?with_translations=1')
-      ->assertJsonCount(3, 'data')
-      ->assertJsonCount(1, 'data.0.banner_media')
-      ->assertJsonCount(1, 'data.1.banner_media')
-      ->assertJsonCount(1, 'data.2.banner_media');
+      ->assertJsonCount(1, 'data.0.banner_media');
+
+    Banner::query()->delete();
+
+    $banner = Banner::factory()->create();
+    $banner->bannerMedia()->create([
+      'title' => 'title1',
+      'subtitle' => 'subtitle1',
+      'url' => 'url1',
+      'published' => [$otherLang],
+      'order' => 0,
+    ]);
+
+    $this
+      ->actingAs($this->{$user})
+      ->getJson('/banners')
+      ->assertJsonCount(0, 'data.0.banner_media');
+
+    $this
+      ->actingAs($this->{$user})
+      ->getJson('/banners?with_translations=0')
+      ->assertJsonCount(0, 'data.0.banner_media');
+
+    $this
+      ->actingAs($this->{$user})
+      ->getJson('/banners?with_translations=1')
+      ->assertJsonCount(1, 'data.0.banner_media');
   }
 
   /**
