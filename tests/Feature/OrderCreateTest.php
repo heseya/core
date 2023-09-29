@@ -114,7 +114,7 @@ class OrderCreateTest extends TestCase
 
         $this->address = Address::factory()->make();
 
-        $this->product = Product::factory()->create();
+        $this->product = Product::factory()->withoutPrice()->create();
         $this->product->salesChannels()->attach($this->salesChannel);
 
         /** @var ProductRepositoryContract $productRepository */
@@ -122,7 +122,7 @@ class OrderCreateTest extends TestCase
         $this->currency = Currency::DEFAULT;
 
         $productRepository->setProductPrices($this->product->getKey(), [
-            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10, salesChannel: $this->salesChannel),
         ]);
 
         $prices = $productRepository->getProductPrices($this->product->getKey(), [

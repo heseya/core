@@ -30,12 +30,13 @@ class DiscountRepository
                 'currency' => $amount->value->getCurrency()->getCurrencyCode(),
                 'value' => $amount->value->getMinorAmount(),
                 'is_net' => false,
+                'sales_channel_id' => null,
             ];
         }
 
         Price::query()->upsert(
             $rows,
-            ['model_id', 'price_type', 'currency'],
+            ['model_id', 'price_type', 'currency', 'sales_channel_id'],
             ['value', 'is_net'],
         );
     }
