@@ -190,11 +190,15 @@ final class ProductService
             ProductPriceType::PRICE_MIN_INITIAL->value => [],
             ProductPriceType::PRICE_MAX_INITIAL->value => [],
         ];
-
-        foreach ($product->enabledSalesChannels as $salesChannel) {
-            foreach (Currency::cases() as $currency) {
-                [$pricesMin, $pricesMax] = $this->getMinMaxPrices($product, $currency, $salesChannel);
-
+        foreach (Currency::cases() as $currency) {
+            if ($product->enabledSalesChannels->count() > 0) {
+                foreach ($product->enabledSalesChannels as $salesChannel) {
+                    [$pricesMin, $pricesMax] = $this->getMinMaxPrices($product, $currency, $salesChannel);
+                    $pricesMinMax[ProductPriceType::PRICE_MIN_INITIAL->value][] = $pricesMin;
+                    $pricesMinMax[ProductPriceType::PRICE_MAX_INITIAL->value][] = $pricesMax;
+                }
+            } else {
+                [$pricesMin, $pricesMax] = $this->getMinMaxPrices($product, $currency);
                 $pricesMinMax[ProductPriceType::PRICE_MIN_INITIAL->value][] = $pricesMin;
                 $pricesMinMax[ProductPriceType::PRICE_MAX_INITIAL->value][] = $pricesMax;
             }
