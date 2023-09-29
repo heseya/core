@@ -56,8 +56,8 @@ class ProductSortTest extends TestCase
             ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(3, $this->currency->value))],
         ]);
         $this->productRepository->setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(11, Currency::EUR->toCurrencyInstance()))],
-            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(1, Currency::EUR->toCurrencyInstance()))],
+            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(11, Currency::GBP->toCurrencyInstance()))],
+            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(1, Currency::GBP->toCurrencyInstance()))],
         ]);
         $product2 = Product::factory()->create([
             'public' => true,
@@ -67,8 +67,8 @@ class ProductSortTest extends TestCase
             ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(2, $this->currency->value))],
         ]);
         $this->productRepository->setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(12, Currency::EUR->toCurrencyInstance()))],
-            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(2, Currency::EUR->toCurrencyInstance()))],
+            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(12, Currency::GBP->toCurrencyInstance()))],
+            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(2, Currency::GBP->toCurrencyInstance()))],
         ]);
         $product3 = Product::factory()->create([
             'public' => true,
@@ -78,8 +78,8 @@ class ProductSortTest extends TestCase
             ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(1, $this->currency->value))],
         ]);
         $this->productRepository->setProductPrices($product3->getKey(), [
-            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(13, Currency::EUR->toCurrencyInstance()))],
-            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(3, Currency::EUR->toCurrencyInstance()))],
+            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(13, Currency::GBP->toCurrencyInstance()))],
+            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(3, Currency::GBP->toCurrencyInstance()))],
         ]);
 
         $response = $this
@@ -130,7 +130,7 @@ class ProductSortTest extends TestCase
 
         $response = $this
             ->actingAs($this->{$user})
-            ->json('GET', '/products', ['sort' => 'price:EUR:asc']);
+            ->json('GET', '/products', ['sort' => 'price:GBP:asc']);
 
         $response->assertOk()
             ->assertJson([
@@ -152,7 +152,7 @@ class ProductSortTest extends TestCase
 
         $response = $this
             ->actingAs($this->{$user})
-            ->json('GET', '/products', ['sort' => 'price:EUR:desc']);
+            ->json('GET', '/products', ['sort' => 'price:GBP:desc']);
 
         $response->assertOk()
             ->assertJson([
