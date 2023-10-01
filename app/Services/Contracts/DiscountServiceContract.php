@@ -12,6 +12,7 @@ use App\Dtos\OrderProductDto;
 use App\Dtos\ProductPriceDto;
 use App\Dtos\SaleDto;
 use App\Dtos\SaleIndexDto;
+use App\Enums\DiscountTargetType;
 use App\Models\CartItemResponse;
 use App\Models\CartResource;
 use App\Models\ConditionGroup;
@@ -21,8 +22,13 @@ use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
 use Brick\Math\BigDecimal;
+use Brick\Math\Exception\MathException;
+use Brick\Money\Exception\MoneyMismatchException;
+use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\ProductPriceType;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
@@ -37,6 +43,37 @@ interface DiscountServiceContract
     public function update(Discount $discount, CouponDto|SaleDto $dto): Discount;
 
     public function destroy(Discount $discount): void;
+
+    /**
+     * @param string[] $productIds
+     * @param string[] $couponCodes
+     *
+     * @return Discount[]
+     */
+    public function getAllDiscountsForProducts(array $productIds, array $couponCodes = []): array;
+
+    /**
+     * @param array<string, array<ProductPriceType, PriceDto[]>> $pricesMatrix
+     * @param Discount[] $discounts
+     *
+     * @return array<string, array<ProductPriceType, PriceDto[]>> $pricesMatrix
+     */
+    public function discountProductPrices(array $pricesMatrix, array $discounts): array;
+
+    /**
+     * @param string[] $couponCodes
+     *
+     * @return Discount[]
+     */
+    public function getAllDiscountsOfType(DiscountTargetType $discountType, array $couponCodes = []): array;
+
+    /**
+     * @param array<string, array<string, PriceDto[]>> $pricesMatrix
+     * @param Discount[] $discounts
+     *
+     * @return array<string, array<string, PriceDto[]>> $pricesMatrix
+     */
+    public function discountPricesRaw(array $pricesMatrix, array $discounts): array;
 
     public function checkCondition(
         DiscountCondition $condition,

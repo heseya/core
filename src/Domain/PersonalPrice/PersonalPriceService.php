@@ -36,6 +36,7 @@ final readonly class PersonalPriceService
             throw new ClientException(Exceptions::PRODUCT_NOT_FOUND);
         }
 
-        return $this->discountService->calcProductsListDiscounts($products);
+        // TODO: Use new methods
+//        return $this->discountService->calcProductsListDiscounts($products);
     }
 }

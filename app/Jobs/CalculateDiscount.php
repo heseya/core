@@ -3,18 +3,20 @@
 namespace App\Jobs;
 
 use App\Models\Discount;
-use App\Services\DiscountService;
+use App\Models\Product;
+use App\Services\ProductService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class CalculateDiscount implements ShouldQueue
+class CalculateDiscount
+//    implements ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;
-    use Queueable;
+//    use Queueable;
     use SerializesModels;
 
     protected Discount $discount;
@@ -34,8 +36,21 @@ class CalculateDiscount implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(DiscountService $discountService): void
+    public function handle(ProductService $productService): void
     {
-        $discountService->calculateDiscount($this->discount, $this->updated);
+//        $discountService->calculateDiscount($this->discount, $this->updated);
+
+        // TODO: Wtf is this?
+//        if ($this->updated) {
+//
+//        }
+
+        $productIds = $this->discount->products->pluck('id');
+
+        if (!$this->discount->target_is_allow_list) {
+            $productIds = Product::query()->whereNotIn('id', $productIds)->pluck('id');
+        }
+
+        $productService->updateProductsDiscountedPrices($productIds->toArray());
     }
 }

@@ -20,6 +20,7 @@ use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
 use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
+use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
@@ -164,6 +165,35 @@ final class ProductService
     }
 
     /**
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws MoneyMismatchException
+     */
+    public function updateProductsDiscountedPrices(array $productIds): void
+    {
+        $discounts = $this->discountService->getAllDiscountsForProducts($productIds);
+
+        // This doesn't work for create because then min and max aren't set
+//        if (count($discounts) === 0) {
+//            return;
+//        }
+
+        $prices = $this->productRepository->getProductsPrices($productIds, [
+            ProductPriceType::PRICE_MIN_INITIAL,
+            ProductPriceType::PRICE_MAX_INITIAL,
+        ]);
+
+        $discountedPrices = $this->discountService->discountProductPrices($prices, $discounts);
+
+        $discountedPrices = array_map(fn ($prices) => [
+            ProductPriceType::PRICE_MIN->value => $prices[ProductPriceType::PRICE_MIN_INITIAL->value],
+            ProductPriceType::PRICE_MAX->value => $prices[ProductPriceType::PRICE_MAX_INITIAL->value],
+        ], $discountedPrices);
+
+        $this->productRepository->setProductsPrices($discountedPrices);
+    }
+
+    /**
      * @return array<int, PriceDto>
      */
     public function getMinMaxPrices(Product $product, Currency $currency = Currency::DEFAULT): array
@@ -182,6 +212,11 @@ final class ProductService
         ];
     }
 
+    /**
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws MoneyMismatchException
+     */
     public function updateMinMaxPrices(Product $product): void
     {
         $pricesMinMax = [
@@ -197,9 +232,16 @@ final class ProductService
 
         $this->productRepository->setProductPrices($product->getKey(), $pricesMinMax);
 
-        $this->discountService->applyDiscountsOnProduct($product);
+//        $this->discountService->applyDiscountsOnProduct($product);
+
+        $this->updateProductsDiscountedPrices([$product->getKey()]);
     }
 
+    /**
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws MoneyMismatchException
+     */
     private function setup(Product $product, ProductCreateDto|ProductUpdateDto $dto): Product
     {
         if (!($dto->schemas instanceof Optional)) {

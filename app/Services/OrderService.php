@@ -4,12 +4,14 @@ namespace App\Services;
 
 use App\Dtos\AddressDto;
 use App\Dtos\CartDto;
+use App\Dtos\CartItemDto;
 use App\Dtos\OrderDto;
 use App\Dtos\OrderIndexDto;
 use App\Dtos\OrderProductSearchDto;
 use App\Dtos\OrderProductUpdateDto;
 use App\Dtos\OrderProductUrlDto;
 use App\Dtos\OrderUpdateDto;
+use App\Enums\DiscountTargetType;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\SchemaType;
 use App\Enums\ShippingType;
@@ -24,11 +26,14 @@ use App\Exceptions\StoreException;
 use App\Http\Resources\OrderResource;
 use App\Models\Address;
 use App\Models\App;
+use App\Models\CartItemResponse;
 use App\Models\CartResource;
+use App\Models\CouponShortResource;
 use App\Models\Option;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
+use App\Models\SalesShortResource;
 use App\Models\Schema;
 use App\Models\Status;
 use App\Models\User;
@@ -40,9 +45,11 @@ use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
+use Brick\Math\BigDecimal;
 use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
+use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\SalesChannel\SalesChannelService;
 use Domain\ShippingMethod\Models\ShippingMethod;
@@ -55,6 +62,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\ItemNotFoundException;
 use Throwable;
 
 final readonly class OrderService implements OrderServiceContract
@@ -84,8 +92,6 @@ final readonly class OrderService implements OrderServiceContract
         foreach ($order->discounts as $discount) {
             $value = $value->minus($this->discountService->calc($value, $discount));
         }
-
-        // return round($value, 2, PHP_ROUND_HALF_UP);
 
         return $order->shipping_price->plus(Money::max($value, Money::zero($order->currency->value)));
     }
@@ -190,20 +196,30 @@ final readonly class OrderService implements OrderServiceContract
                 ] + $dto->toArray(),
             );
 
+            if (!($dto->getMetadata() instanceof Missing)) {
+                $this->metadataService->sync($order, $dto->getMetadata());
+            }
+
             // Add products to order
-            $cartValueInitial = Money::zero($currency->value);
             $tempSchemaOrderProduct = [];
+
+            // Used to calc products discounts
+            $priceMatrix = [];
+            $productIds = [];
+
             try {
                 foreach ($items as $item) {
                     /** @var Product $product */
                     $product = $products->firstWhere('id', $item->getProductId());
+                    $productIds[] = $item->getProductId();
 
                     $prices = $this->productRepository->getProductPrices($product->getKey(), [
                         ProductPriceType::PRICE_BASE,
                     ], $currency);
 
-                    /** @var Money $price */
-                    $price = $prices->get(ProductPriceType::PRICE_BASE->value)->firstOrFail()->value;
+                    /** @var PriceDto $priceDto */
+                    $priceDto = $prices->get(ProductPriceType::PRICE_BASE->value)->firstOrFail();
+                    $price = $priceDto->value;
 
                     $orderProduct = new OrderProduct([
                         'product_id' => $item->getProductId(),
@@ -219,7 +235,6 @@ final readonly class OrderService implements OrderServiceContract
                     ]);
 
                     $order->products()->save($orderProduct);
-                    $cartValueInitial = $cartValueInitial->plus($price->multipliedBy($item->getQuantity()));
 
                     $schemaProductPrice = Money::zero($currency->value);
                     // Add schemas to products
@@ -243,7 +258,6 @@ final readonly class OrderService implements OrderServiceContract
                         ]);
 
                         $schemaProductPrice = $schemaProductPrice->plus($price);
-                        $cartValueInitial = $cartValueInitial->plus($price->multipliedBy($item->getQuantity()));
                     }
 
                     if ($schemaProductPrice->isPositive()) {
@@ -251,29 +265,93 @@ final readonly class OrderService implements OrderServiceContract
                         $orderProduct->price_initial = $schemaProductPrice->plus($orderProduct->price_initial);
                         $orderProduct->save();
                     }
+
+                    $priceMatrix[$item->getProductId()] = [
+                        'base_price' => [$priceDto],
+                        'price' => [PriceDto::fromMoney($orderProduct->price)],
+                    ];
                 }
 
-                if (!($dto->getMetadata() instanceof Missing)) {
-                    $this->metadataService->sync($order, $dto->getMetadata());
+                $productDiscounts = $this->discountService->getAllDiscountsForProducts($productIds, $dto->getCoupons());
+
+                $discountedProductPrices = $this->discountService->discountProductPrices($priceMatrix, $productDiscounts);
+
+                // Discount cheapest product
+                $cheapestProductId = null;
+                /** @var PriceDto[][] $cheapestPrices */
+                $cheapestPrices = null;
+                foreach ($discountedProductPrices as $productId => $typedPrices) {
+                    /**
+                     * @var Money $cheapestPrice
+                     */
+                    $cheapestPrice = $cheapestPrices['price']->value;
+                    /**
+                     * @var Money $currentMoney
+                     */
+                    $currentMoney = $typedPrices['price']->value;
+                    if ($cheapestPrice === null || $currentMoney->isLessThan($cheapestPrice)) {
+                        $cheapestPrices = $typedPrices;
+                        $cheapestProductId = $productId;
+                    }
                 }
 
-                $order->cart_total_initial = $cartValueInitial;
-                $order->cart_total = $cartValueInitial;
+                $cheapestProductDiscounts = $this->discountService->getAllDiscountsOfType(
+                    DiscountTargetType::CHEAPEST_PRODUCT,
+                    $dto->getCoupons(),
+                );
 
-                // Apply discounts to order/products
-                $order = $this->discountService->calcOrderProductsAndTotalDiscounts($order, $dto);
+                $discountedCheapestProduct = $this->discountService->discountPricesRaw([
+                    $cheapestProductId => $cheapestPrices,
+                ], $cheapestProductDiscounts);
+
+                $discountedProductPrices = $discountedCheapestProduct + $discountedProductPrices;
+
+                // Update order products prices
+                $cartValue = Money::zero($currency->value);
+                $rows = $order->products->map(function (OrderProduct $product) use ($discountedProductPrices, &$cartValue) {
+                    $price = $discountedProductPrices[$product->product_id]['price'][0]->value;
+                    $cartValue = $cartValue->plus($price->multipliedBy($product->quantity));
+
+                    return [
+                        'id' => $product->getKey(),
+                        'price' => $price,
+                    ];
+                });
+                OrderProduct::query()->upsert($rows, ['id']);
+
+                $orderDiscounts = $this->discountService->getAllDiscountsOfType(
+                    DiscountTargetType::ORDER_VALUE,
+                    $dto->getCoupons(),
+                );
+                [[$cartValueDiscounted]] = $this->discountService->discountPricesRaw([[
+                    PriceDto::fromMoney($cartValue),
+                ]], $orderDiscounts);
+
+                $order->cart_total_initial = $cartValue;
+                $order->cart_total = $cartValueDiscounted;
+
+//                // Apply discounts to order/products
+//                $order = $this->discountService->calcOrderProductsAndTotalDiscounts($order, $dto);
 
                 $shippingPrice = $shippingMethod?->getPrice($order->cart_total) ?? Money::zero($currency->value);
                 $shippingPrice = $shippingPrice->plus(
                     $digitalShippingMethod?->getPrice($order->cart_total) ?? Money::zero($currency->value),
                 );
 
+                $shippingDiscounts = $this->discountService->getAllDiscountsOfType(
+                    DiscountTargetType::SHIPPING_PRICE,
+                    $dto->getCoupons(),
+                );
+                [[$shippingPriceDiscounted]] = $this->discountService->discountPricesRaw([[
+                    PriceDto::fromMoney($cartValue),
+                ]], $shippingDiscounts);
+
                 // Always gross
                 $order->shipping_price_initial = $shippingPrice;
-                $order->shipping_price = $shippingPrice;
+                $order->shipping_price = $shippingPriceDiscounted;
 
-                // Apply discounts to order
-                $order = $this->discountService->calcOrderShippingDiscounts($order, $dto);
+//                // Apply discounts to order
+//                $order = $this->discountService->calcOrderShippingDiscounts($order, $dto);
 
                 foreach ($order->products as $orderProduct) {
                     // Remove items from warehouse
@@ -324,7 +402,6 @@ final readonly class OrderService implements OrderServiceContract
                     $vat_rate,
                 );
 
-                // shipping price magic 🙈
                 $order->summary = $order->shipping_price->plus($order->cart_total);
 
                 $order->push();
@@ -468,7 +545,137 @@ final readonly class OrderService implements OrderServiceContract
             $this->getDeliveryMethods($cartDto, $products, false);
         }
 
-        return $this->discountService->calcCartDiscounts($cartDto, $products, $vat_rate);
+        return $this->calcCartDiscounts($cartDto, $products, $vat_rate);
+    }
+
+    /**
+    //     * @throws MathException
+    //     * @throws StoreException
+    //     * @throws MoneyMismatchException
+    //     * @throws UnknownCurrencyException
+    //     * @throws DtoException
+    //     */
+    private function calcCartDiscounts(CartDto $cart, Collection $products, BigDecimal $vat_rate): CartResource
+    {
+        $discounts = $this->getActiveSalesAndCoupons($cart->getCoupons());
+
+        /** @var ?ShippingMethod $shippingMethod */
+        $shippingMethod = is_string($cart->getShippingMethodId())
+            ? ShippingMethod::query()->findOrFail($cart->getShippingMethodId())
+            : null;
+
+        /** @var ?ShippingMethod $shippingMethodDigital */
+        $shippingMethodDigital = is_string($cart->getDigitalShippingMethodId())
+            ? ShippingMethod::query()->findOrFail($cart->getDigitalShippingMethodId())
+            : null;
+
+        $currency = $cart->currency;
+        $cartItems = [];
+
+        foreach ($cart->getItems() as $cartItem) {
+            $product = $products->firstWhere('id', $cartItem->getProductId());
+
+            if (!($product instanceof Product)) {
+                // skip when product is not available
+                continue;
+            }
+
+            $prices = $this->productRepository->getProductPrices($product->getKey(), [
+                ProductPriceType::PRICE_BASE,
+            ], $currency);
+
+            /** @var Money $price */
+            $price = $prices->get(ProductPriceType::PRICE_BASE->value)?->firstOrFail(
+            )?->value ?? throw new ItemNotFoundException();
+
+            foreach ($cartItem->getSchemas() as $schemaId => $value) {
+                /** @var Schema $schema */
+                $schema = $product->schemas()->findOrFail($schemaId);
+
+                $price = $price->plus(
+                    $schema->getPrice($value, $cartItem->getSchemas(), $currency),
+                );
+            }
+
+//            $cartValue = $cartValue->plus($price->multipliedBy($cartItem->getQuantity()));
+            $cartItems[] = new CartItemResponse(
+                $cartItem->getCartItemId(),
+                $price,
+                $price,
+                $cartItem->getQuantity(),
+            );
+        }
+        $cartShippingTimeAndDate = $this->shippingTimeDateService->getTimeAndDateForCart($cart, $products);
+
+        $shippingPrice = $shippingMethod?->getPrice($cartValue) ?? Money::zero($currency->value);
+        $shippingPrice = $shippingPrice->plus(
+            $shippingMethodDigital?->getPrice($cartValue) ?? Money::zero($currency->value),
+        );
+
+        $summary = $cartValue->plus($shippingPrice);
+
+        $cartResource = new CartResource(
+            Collection::make($cartItems),
+            Collection::make(),
+            Collection::make(),
+            $cartValue,
+            $cartValue,
+            $shippingPrice,
+            $shippingPrice,
+            $summary,
+            $cartShippingTimeAndDate['shipping_time'] ?? null,
+            $cartShippingTimeAndDate['shipping_date'] ?? null,
+        );
+
+        if ($cartResource->items->isEmpty()) {
+            return $cartResource;
+        }
+
+//        foreach ($discounts as $discount) {
+//            if (
+//                $this->checkDiscountTarget($discount, $cart)
+//                && $this->checkConditionGroups($discount, $cart, $cartResource->cart_total)
+//            ) {
+//                $cartResource = $this->applyDiscountOnCart($discount, $cart, $cartResource);
+//                $newSummary = $cartResource->cart_total->plus($cartResource->shipping_price);
+//                $appliedDiscount = $summary->minus($newSummary);
+//
+//                if ($discount->code !== null) {
+//                    $cartResource->coupons->push(
+//                        new CouponShortResource(
+//                            $discount->getKey(),
+//                            $discount->name,
+//                            $appliedDiscount,
+//                            $discount->code,
+//                        ),
+//                    );
+//                } else {
+//                    $cartResource->sales->push(
+//                        new SalesShortResource(
+//                            $discount->getKey(),
+//                            $discount->name,
+//                            $appliedDiscount,
+//                        ),
+//                    );
+//                }
+//
+//                $summary = $newSummary;
+//            }
+//        }
+
+        foreach ($cartResource->items as $item) {
+            $item->price = $this->salesChannelService->addVat($item->price, $vat_rate);
+            $item->price_discounted = $this->salesChannelService->addVat($item->price_discounted, $vat_rate);
+        }
+
+        $cartResource->cart_total_initial = $this->salesChannelService->addVat(
+            $cartResource->cart_total_initial,
+            $vat_rate,
+        );
+        $cartResource->cart_total = $this->salesChannelService->addVat($cartResource->cart_total, $vat_rate);
+        $cartResource->summary = $cartResource->cart_total->plus($cartResource->shipping_price);
+
+        return $cartResource;
     }
 
     public function processOrderProductUrls(OrderProductUpdateDto $dto, OrderProduct $product): OrderProduct
