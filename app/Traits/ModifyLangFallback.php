@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-use Domain\Language\Language;
+use Domain\Language\LanguageService;
 use Illuminate\Support\Facades\Config;
 
 trait ModifyLangFallback
@@ -25,6 +25,7 @@ trait ModifyLangFallback
 
     protected function setAnyLangFallback(): void
     {
-        $this->setLangFallbackSettings(Language::where('default', true)->first()?->getKey(), true, 'any');
+        $languageService = app(LanguageService::class);
+        $this->setLangFallbackSettings($languageService->defaultLanguage()->getKey(), true, 'any');
     }
 }
