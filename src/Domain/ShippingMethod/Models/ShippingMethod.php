@@ -30,6 +30,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -44,6 +45,7 @@ final class ShippingMethod extends Model
     use HasDiscounts;
     use HasFactory;
     use HasMetadata;
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.

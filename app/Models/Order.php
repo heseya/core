@@ -173,12 +173,12 @@ class Order extends Model implements SortableContract
 
     public function shippingMethod(): BelongsTo
     {
-        return $this->belongsTo(ShippingMethod::class, 'shipping_method_id');
+        return $this->belongsTo(ShippingMethod::class, 'shipping_method_id')->withTrashed();
     }
 
     public function digitalShippingMethod(): BelongsTo
     {
-        return $this->belongsTo(ShippingMethod::class, 'digital_shipping_method_id');
+        return $this->belongsTo(ShippingMethod::class, 'digital_shipping_method_id')->withTrashed();
     }
 
     public function shippingAddress(): HasOne
