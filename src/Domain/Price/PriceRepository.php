@@ -35,6 +35,7 @@ final class PriceRepository
     {
         $rows = [];
         $currencies = [];
+        $types = [];
 
         $fallback_sales_channel_id = null;
         if ($model instanceof Product || ($model instanceof ModelIdentityDto && $model->class === Product::class)) {
@@ -67,7 +68,7 @@ final class PriceRepository
 
         DB::transaction(function () use ($model, $currencies, $types, $rows): void {
             // Upsert using 'on duplicate key update' in MySQL ignores null columns, so unless all prices have sales_channel_id we have to manually delete old entries
-            if (!$model instanceof Product || !($model instanceof ModelIdentityDto && $model->class === Product::class)) {
+            if (!($model instanceof Product) && !($model instanceof ModelIdentityDto) || $model->class !== Product::class) {
                 Price::query()
                     ->where([
                         'model_id' => $model->getKey(),
