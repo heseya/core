@@ -40,6 +40,7 @@ class ShippingMethodResource extends Resource
             'shipping_type' => $this->resource->shipping_type,
             'integration_key' => $this->resource->integration_key,
             'deletable' => $this->resource->deletable,
+            'deleted_at' => $this->resource->deleted_at,
             'shipping_points' => AddressResource::collection($this->resource->shippingPoints),
             'product_ids' => $this->resource->products->pluck('id'),
             'product_set_ids' => $this->resource->productSets->pluck('id'),

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\ShippingMethod\Services;
 
 use App\Enums\ExceptionsEnums\Exceptions;
-use App\Exceptions\ClientException;
 use App\Exceptions\StoreException;
 use App\Models\Address;
 use App\Models\User;
@@ -196,13 +195,12 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
 
     public function destroy(ShippingMethod $shippingMethod): void
     {
-        if ($shippingMethod->orders()->count() > 0) {
-            throw new ClientException(Exceptions::CLIENT_DELETE_WHEN_RELATION_EXISTS);
-        }
         if (!$shippingMethod->deletable) {
             throw new StoreException(Exceptions::CLIENT_SHIPPING_METHOD_NOT_OWNER);
         }
-
+        if ($shippingMethod->orders()->count() === 0) {
+            $shippingMethod->forceDelete();
+        }
         $shippingMethod->delete();
     }
 
