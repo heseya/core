@@ -38,6 +38,8 @@ paths:
     $ref: './paths/Auth.yml#/BillingAddresses'
   /auth/profile/billing-addresses/id:{id}:
     $ref: './paths/Auth.yml#/BillingAddressesParams'
+  /auth/profile/roles:
+    $ref: './paths/Auth.yml#/SelfUpdateRoles'
   /auth/check:
     $ref: './paths/Auth.yml#/Check'
   '/auth/check/{identity_token}':
