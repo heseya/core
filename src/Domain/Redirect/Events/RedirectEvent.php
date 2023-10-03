@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\Redirect\Events;
 
 use App\Events\WebHookEvent;
@@ -16,6 +18,9 @@ abstract class RedirectEvent extends WebHookEvent
         $this->redirect = $redirect;
     }
 
+    /**
+     * @return array<string,mixed>
+     */
     public function getDataContent(): array
     {
         return RedirectResource::make($this->redirect)->resolve();

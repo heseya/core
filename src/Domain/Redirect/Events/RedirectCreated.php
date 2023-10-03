@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\Redirect\Events;
 
-class RedirectCreated extends RedirectEvent {}
+final class RedirectCreated extends RedirectEvent {}

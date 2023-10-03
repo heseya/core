@@ -173,13 +173,6 @@ class OrderController extends Controller
         return OrderResource::make($order);
     }
 
-    public function shippingLists(Order $order, OrderShippingListRequest $request): JsonResource
-    {
-        return OrderResource::make(
-            $this->orderService->shippingList($order, $request->package_template_id),
-        );
-    }
-
     public function storeDocument(OrderDocumentRequest $request, Order $order): JsonResource
     {
         /** @var UploadedFile $file */

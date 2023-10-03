@@ -7,6 +7,7 @@ namespace Domain\Setting\Services;
 use Domain\Setting\Models\Setting;
 use Domain\Setting\Services\Contracts\SettingsServiceContract;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 
 final class SettingsService implements SettingsServiceContract

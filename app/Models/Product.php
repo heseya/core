@@ -46,8 +46,6 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
-use OwenIt\Auditing\Auditable;
-use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @property string $name
@@ -58,9 +56,8 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  *
  * @mixin IdeHelperProduct
  */
-class Product extends Model implements AuditableContract, SeoContract, SortableContract, Translatable
+class Product extends Model implements SeoContract, SortableContract, Translatable
 {
-    use Auditable;
     use CustomHasTranslations;
     use HasCriteria;
     use HasDiscountConditions;
@@ -73,7 +70,6 @@ class Product extends Model implements AuditableContract, SeoContract, SortableC
     use Sortable;
 
     public const HIDDEN_PERMISSION = 'products.show_hidden';
-
     protected $fillable = [
         'id',
         'name',
@@ -96,7 +92,6 @@ class Product extends Model implements AuditableContract, SeoContract, SortableC
         'published',
         'search_values',
     ];
-
     protected array $translatable = [
         'name',
         'description_html',
@@ -107,7 +102,6 @@ class Product extends Model implements AuditableContract, SeoContract, SortableC
         'price_max',
         'available',
     ];
-
     protected $casts = [
         'shipping_date' => 'date',
         'public' => 'bool',
@@ -119,7 +113,6 @@ class Product extends Model implements AuditableContract, SeoContract, SortableC
         'shipping_digital' => 'bool',
         'purchase_limit_per_user' => 'float',
     ];
-
     protected array $sortable = [
         'id',
         'name' => TranslatedColumn::class,
@@ -131,7 +124,6 @@ class Product extends Model implements AuditableContract, SeoContract, SortableC
         'set.*',
         'price' => PriceColumn::class,
     ];
-
     protected array $criteria = [
         'search' => ProductSearch::class,
         'ids' => WhereInIds::class,
@@ -156,7 +148,6 @@ class Product extends Model implements AuditableContract, SeoContract, SortableC
         'published' => Like::class,
         'products.published' => Like::class,
     ];
-
     protected string $defaultSortBy = 'products.order';
     protected string $defaultSortDirection = 'desc';
 
@@ -295,11 +286,6 @@ class Product extends Model implements AuditableContract, SeoContract, SortableC
         return $sales->unique('id');
     }
 
-    private function prices(): MorphMany
-    {
-        return $this->morphMany(Price::class, 'model');
-    }
-
     public function pricesBase(): MorphMany
     {
         return $this->prices()->where('price_type', ProductPriceType::PRICE_BASE->value);
@@ -323,5 +309,10 @@ class Product extends Model implements AuditableContract, SeoContract, SortableC
     public function pricesMaxInitial(): MorphMany
     {
         return $this->prices()->where('price_type', ProductPriceType::PRICE_MAX_INITIAL->value);
+    }
+
+    private function prices(): MorphMany
+    {
+        return $this->morphMany(Price::class, 'model');
     }
 }

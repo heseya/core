@@ -18,5 +18,8 @@ interface SettingsServiceContract
 
     public function getMinimalPrice(string $name): float;
 
+    /**
+     * @return string[]
+     */
     public function getAdminMails(): array;
 }

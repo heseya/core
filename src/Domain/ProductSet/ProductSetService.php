@@ -6,7 +6,6 @@ namespace Domain\ProductSet;
 
 use App\Dtos\ProductReorderDto;
 use App\Dtos\ProductsReorderDto;
-use App\Dtos\ProductSetDto;
 use App\Models\Product;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Traits\GetPublishedLanguageFilter;
@@ -16,7 +15,6 @@ use Domain\ProductSet\Events\ProductSetCreated;
 use Domain\ProductSet\Events\ProductSetDeleted;
 use Domain\ProductSet\Events\ProductSetUpdated;
 use Domain\Seo\SeoMetadataService;
-use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
@@ -198,7 +196,7 @@ final readonly class ProductSetService
             $rootOrder = ProductSet::reversed()->first()?->order + 1;
 
             $productIds = $set->allProductsIds()->merge($set->relatedProducts->pluck('id'));
-        $set->children()
+            $set->children()
                 ->whereNotIn('id', $dto->children_ids)
                 ->update([
                     'parent_id' => null,
@@ -317,7 +315,7 @@ final readonly class ProductSetService
         $maxOrder = $set->products->count() - 1;
 
         $dto->products->each(function (ProductReorderDto $product) use ($set, $maxOrder): void {
-            $oldOrder = array_search($product->id, $set->products->pluck('id', 'pivot.order')->all());
+            $oldOrder = array_search($product->id, $set->products->pluck('id', 'pivot.order')->all(), true);
             $newOrder = min($product->order, $maxOrder);
 
             $set->products()->updateExistingPivot($product->id, ['order' => $newOrder]);

@@ -21,6 +21,7 @@ use App\Events\PasswordReset;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductPriceUpdated;
+use App\Events\ProductSearchValueEvent;
 use App\Events\ProductUpdated;
 use App\Events\SaleCreated;
 use App\Events\SaleDeleted;
@@ -97,7 +98,6 @@ class EventServiceProvider extends ServiceProvider
             ProductSearchValueListener::class,
         ],
     ];
-
     /** @var array<class-string> */
     private array $webhookEvents = [
         CouponCreated::class,

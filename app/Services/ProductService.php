@@ -36,7 +36,7 @@ use Illuminate\Support\Facades\DB;
 use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\Optional;
 
-final readonly class ProductService implements ProductServiceContract
+final readonly class ProductService
 {
     public function __construct(
         private MediaServiceContract $mediaService,
@@ -202,6 +202,12 @@ final readonly class ProductService implements ProductServiceContract
         $this->discountService->applyDiscountsOnProduct($product);
     }
 
+    public function updateProductIndex(Product $product): void
+    {
+        $product = $this->prepareProductSearchValues($product);
+        $product->save();
+    }
+
     private function setup(Product $product, ProductCreateDto|ProductUpdateDto $dto): Product
     {
         if (!($dto->schemas instanceof Optional)) {
@@ -261,12 +267,6 @@ final readonly class ProductService implements ProductServiceContract
         return $product;
     }
 
-    public function updateProductIndex(Product $product): void
-    {
-        $product = $this->prepareProductSearchValues($product);
-        $product->save();
-    }
-
     private function assignItems(Product $product, ?array $items): void
     {
         $items = Collection::make($items)->mapWithKeys(fn (array $item): array => [
@@ -323,11 +323,13 @@ final readonly class ProductService implements ProductServiceContract
             };
         } else {
             $price = $allSchemas->reduce(
-                fn (Money $carry, Schema $current) => $carry->plus($current->getPrice(
-                    $values[$current->getKey()],
-                    $values,
-                    $currency,
-                )),
+                fn (Money $carry, Schema $current) => $carry->plus(
+                    $current->getPrice(
+                        $values[$current->getKey()],
+                        $values,
+                        $currency,
+                    ),
+                ),
                 Money::zero($currency->value),
             );
 
@@ -353,16 +355,18 @@ final readonly class ProductService implements ProductServiceContract
         array $values,
         Currency $currency,
     ): array {
-        return $this->bestMinMax(Collection::make($values)->map(
-            fn ($value) => $this->getSchemasPrices(
-                $allSchemas,
-                clone $remainingSchemas,
-                $currency,
-                $currentValues + [
-                    $schema->getKey() => $value,
-                ],
+        return $this->bestMinMax(
+            Collection::make($values)->map(
+                fn ($value) => $this->getSchemasPrices(
+                    $allSchemas,
+                    clone $remainingSchemas,
+                    $currency,
+                    $currentValues + [
+                        $schema->getKey() => $value,
+                    ],
+                ),
             ),
-        ));
+        );
     }
 
     /**

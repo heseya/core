@@ -11,7 +11,6 @@ use Domain\ProductSet\Dtos\ProductSetCreateDto;
 use Domain\ProductSet\Dtos\ProductSetUpdateDto;
 use Domain\ProductSet\Requests\ProductSetAttachRequest;
 use Domain\ProductSet\Requests\ProductSetIndexRequest;
-use Domain\ProductSet\Requests\ProductSetProductReorderRequest;
 use Domain\ProductSet\Requests\ProductSetReorderRequest;
 use Domain\ProductSet\Resources\ProductSetParentResource;
 use Domain\ProductSet\Resources\ProductSetResource;

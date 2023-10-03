@@ -10,6 +10,7 @@ use App\Criteria\MetadataSearch;
 use App\Criteria\WhereInIds;
 use App\Models\Interfaces\Translatable;
 use App\Models\Model;
+use App\Models\ProductAttribute;
 use App\Traits\CustomHasTranslations;
 use App\Traits\HasMetadata;
 use Heseya\Searchable\Criteria\Like;
@@ -33,7 +34,6 @@ final class AttributeOption extends Model implements Translatable
     use SoftDeletes;
 
     public const HIDDEN_PERMISSION = 'attributes.show_hidden';
-
     protected $fillable = [
         'id',
         'name',
@@ -43,18 +43,15 @@ final class AttributeOption extends Model implements Translatable
         'attribute_id',
         'order',
     ];
-
     /** @var string[] */
     protected array $translatable = [
         'name',
     ];
-
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'value_number' => 'float',
     ];
-
     /** @var string[] */
     protected array $criteria = [
         'search' => AttributeOptionSearch::class,
@@ -72,6 +69,9 @@ final class AttributeOption extends Model implements Translatable
         return $this->belongsTo(Attribute::class);
     }
 
+    /**
+     * @return BelongsToMany<ProductAttribute>
+     */
     public function productAttributes(): BelongsToMany
     {
         return $this->belongsToMany(

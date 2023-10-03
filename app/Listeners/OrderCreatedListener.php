@@ -5,12 +5,12 @@ namespace App\Listeners;
 use App\Events\OrderCreated as OrderCreatedEvent;
 use App\Models\User;
 use App\Notifications\OrderCreated;
-use App\Services\Contracts\SettingsServiceContract;
+use Domain\Setting\Services\Contracts\SettingsServiceContract;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Throwable;
 
-class OrderCreatedListener
+readonly class OrderCreatedListener
 {
     public function __construct(
         private SettingsServiceContract $settingsService,

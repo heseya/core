@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\Redirect\Services;
 
 use Domain\Redirect\Dtos\RedirectCreateDto;
@@ -12,8 +14,11 @@ use Domain\Redirect\Models\Redirect;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Config;
 
-class RedirectService
+final class RedirectService
 {
+    /**
+     * @return LengthAwarePaginator<Redirect>
+     */
     public function getPaginated(RedirectIndexDto $dto): LengthAwarePaginator
     {
         return Redirect::searchByCriteria($dto->toArray())->paginate(Config::get('pagination.per_page'));

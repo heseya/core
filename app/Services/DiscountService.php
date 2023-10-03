@@ -89,7 +89,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ItemNotFoundException;
 use Illuminate\Support\Str;
-use Money\Exception\UnknownCurrencyException;
 
 readonly class DiscountService implements DiscountServiceContract
 {
@@ -1616,7 +1615,8 @@ readonly class DiscountService implements DiscountServiceContract
             } else {
                 /** @var CartItemDto $item */
                 foreach ($cart->getItems() as $item) {
-                    if ($discount->allProductsIds()->doesntContain(fn ($value): bool => $value === $item->getProductId(),
+                    if ($discount->allProductsIds()->doesntContain(
+                        fn ($value): bool => $value === $item->getProductId(),
                     )) {
                         return true;
                     }

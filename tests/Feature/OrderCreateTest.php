@@ -30,7 +30,6 @@ use App\Models\WebHook;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Repositories\DiscountRepository;
 use App\Repositories\ProductRepository;
-use App\Services\Contracts\ProductServiceContract;
 use App\Services\ProductService;
 use App\Services\SchemaCrudService;
 use BenSampo\Enum\Exceptions\InvalidEnumMemberException;
@@ -1177,19 +1176,21 @@ class OrderCreateTest extends TestCase
 
         $this
             ->actingAs($this->{$user})
-            ->postJson('/orders', [
-                'currency' => $this->currency,
-                'sales_channel_id' => SalesChannel::query()->value('id'),
-                'email' => $this->email,
-                'shipping_method_id' => $this->shippingMethod->getKey(),
-                'shipping_address' => $this->address->toArray(),
-                'items' => [
-                    [
-                        'product_id' => $this->product->getKey(),
-                        'quantity' => 20,
+            ->postJson(
+                '/orders',
+                [
+                    'currency' => $this->currency,
+                    'sales_channel_id' => SalesChannel::query()->value('id'),
+                    'email' => $this->email,
+                    'shipping_method_id' => $this->shippingMethod->getKey(),
+                    'shipping_address' => $this->address->toArray(),
+                    'items' => [
+                        [
+                            'product_id' => $this->product->getKey(),
+                            'quantity' => 20,
+                        ],
                     ],
                 ],
-            ],
             )
             ->assertUnprocessable();
 
