@@ -19,6 +19,7 @@ use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Ramsey\Uuid\Uuid;
 use Spatie\LaravelData\DataCollection;
 use Support\Dtos\ModelIdentityDto;
@@ -27,10 +28,13 @@ final class PriceRepository
 {
     /**
      * @param array<ProductPriceType|SchemaPriceType|OptionPriceType|DiscountConditionPriceType|string,PriceDto[]> $priceMatrix
+     *
+     * TODO: fix this method if all prices will require sales_channel_id, and not only Product prices
      */
     public function setModelPrices(DiscountCondition|ModelIdentityDto|Option|Product|Schema $model, array $priceMatrix): void
     {
         $rows = [];
+        $currencies = [];
 
         $fallback_sales_channel_id = null;
         if ($model instanceof Product || ($model instanceof ModelIdentityDto && $model->class === Product::class)) {
@@ -43,6 +47,7 @@ final class PriceRepository
 
         foreach ($priceMatrix as $type => $prices) {
             $prices = new DataCollection(PriceDto::class, $prices);
+            $types[] = $type;
             foreach ($prices as $price) {
                 // @var PriceDto $price
                 $rows[] = [
@@ -55,14 +60,32 @@ final class PriceRepository
                     'is_net' => false,
                     'sales_channel_id' => is_string($price->sales_channel_id) ? $price->sales_channel_id : $fallback_sales_channel_id,
                 ];
+
+                $currencies[] = $price->value->getCurrency()->getCurrencyCode();
             }
         }
 
-        Price::query()->upsert(
-            $rows,
-            ['model_id', 'price_type', 'currency', 'sales_channel_id'],
-            ['value', 'is_net'],
-        );
+        DB::transaction(function () use ($model, $currencies, $types, $rows): void {
+            // Upsert using 'on duplicate key update' in MySQL ignores null columns, so unless all prices have sales_channel_id we have to manually delete old entries
+            if (!$model instanceof Product || !($model instanceof ModelIdentityDto && $model->class === Product::class)) {
+                Price::query()
+                    ->where([
+                        'model_id' => $model->getKey(),
+                        'model_type' => $model->getMorphClass(),
+                        'sales_channel_id' => null,
+                    ])
+                    ->whereIn('currency', array_unique($currencies))
+                    ->whereIn('price_type', array_unique($types))
+                    ->delete();
+            }
+
+            Price::query()
+                ->upsert(
+                    $rows,
+                    ['model_id', 'price_type', 'currency', 'sales_channel_id'],
+                    ['value', 'is_net'],
+                );
+        });
     }
 
     /**

@@ -179,11 +179,11 @@ final class ProductService
         if ($salesChannel !== null) {
             $price = $product->pricesBase->where('currency', $currency->value)->where('sales_channel_id', $salesChannel->id)->first();
         }
-        $price ??= $product->pricesBase->where('currency', $currency->value)->firstOrFail();
+        $price ??= $product->pricesBase->where('currency', $currency->value)->whereNull('sales_channel_id')->first() ?? $product->pricesBase->where('currency', $currency->value)->firstOrFail();
 
         return [
-            PriceDto::from($price->value->plus($schemaMin)),
-            PriceDto::from($price->value->plus($schemaMax)),
+            PriceDto::from($price->value->plus($schemaMin))->withSalesChannel($salesChannel),
+            PriceDto::from($price->value->plus($schemaMax))->withSalesChannel($salesChannel),
         ];
     }
 

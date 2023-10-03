@@ -190,9 +190,7 @@ final readonly class FakeDto
 
         if (array_key_exists('options', $data)) {
             foreach ($data['options'] as &$option) {
-                $option['translations'][$langId]['name'] = $option['translations'][$langId]['name'] ?? $option['name'] ?? Str::random(
-                    4
-                );
+                $option['translations'][$langId]['name'] = $option['translations'][$langId]['name'] ?? $option['name'] ?? Str::random(4);
 
                 $option['prices'] = self::generatePricesInAllCurrencies($option['prices'] ?? []);
             }

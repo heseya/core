@@ -35,6 +35,7 @@ use Domain\Language\Language;
 use Domain\Metadata\Enums\MetadataType;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
+use Domain\Price\Enums\SchemaPriceType;
 use Domain\Product\Enums\ProductSalesChannelStatus;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
@@ -2998,28 +2999,6 @@ class ProductTest extends TestCase
      */
     public function testUpdateSchemaMinMaxPrice(string $user): void
     {
-        $this->{$user}->givePermissionTo('products.edit');
-
-        $schemaPrice = 50;
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => 0,
-            'required' => true,
-            'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
-        ]));
-
-        $this->product->schemas()->attach($schema->getKey());
-        $this->productService->updateMinMaxPrices($this->product);
-
-        $schemaNewPrice = 75;
-        $response = $this->actingAs($this->{$user})->patchJson('/schemas/id:' . $schema->getKey(), FakeDto::schemaData([
-            'name' => 'Test Updated',
-            'prices' => [['value' => $schemaNewPrice, 'currency' => Currency::DEFAULT->value]],
-            'type' => 'string',
-            'required' => false,
-        ]));
-
-        $response->assertValid()->assertOk();
-
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),
             'currency' => $this->currency->value,
@@ -3032,10 +3011,70 @@ class ProductTest extends TestCase
             'price_type' => ProductPriceType::PRICE_MIN,
             'value' => 100 * 100,
         ]);
+
+        $this->{$user}->givePermissionTo('products.edit');
+
+        $schemaPrice = 50;
+        $dto = FakeDto::schemaDto([
+            'type' => 0,
+            'required' => true,
+            'prices' => [['value' => $schemaPrice, 'currency' => $this->currency->value]],
+        ]);
+        $schema = $this->schemaCrudService->store($dto);
+        $this->product->schemas()->attach($schema->getKey());
+        $this->product->refresh();
+        $this->productService->updateMinMaxPrices($this->product);
+
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $this->product->getKey(),
+            'currency' => $this->currency->value,
+            'price_type' => ProductPriceType::PRICE_BASE,
+            'value' => 100 * 100,
+        ]);
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $this->product->getKey(),
+            'currency' => $this->currency->value,
+            'price_type' => ProductPriceType::PRICE_MIN,
+            'value' => (100 + $schemaPrice) * 100, // because schema is required
+        ]);
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),
             'currency' => $this->currency->value,
             'price_type' => ProductPriceType::PRICE_MAX,
+            'value' => (100 + $schemaPrice) * 100,
+        ]);
+
+        $schemaNewPrice = 75;
+        $response = $this->actingAs($this->{$user})->patchJson('/schemas/id:' . $schema->getKey(), FakeDto::schemaData([
+            'name' => 'Test Updated',
+            'prices' => [['value' => $schemaNewPrice, 'currency' => $this->currency->value]],
+            'type' => 'string',
+            'required' => false,
+        ]));
+        $response->assertValid()->assertOk();
+
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $schema->getKey(),
+            'currency' => $this->currency->value,
+            'price_type' => SchemaPriceType::PRICE_BASE->value,
+            'value' => $schemaNewPrice * 100,
+        ]);
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $this->product->getKey(),
+            'currency' => $this->currency->value,
+            'price_type' => ProductPriceType::PRICE_BASE->value,
+            'value' => 100 * 100,
+        ]);
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $this->product->getKey(),
+            'currency' => $this->currency->value,
+            'price_type' => ProductPriceType::PRICE_MIN->value,
+            'value' => 100 * 100,  // because schema is no longer required
+        ]);
+        $this->assertDatabaseHas('prices', [
+            'model_id' => $this->product->getKey(),
+            'currency' => $this->currency->value,
+            'price_type' => ProductPriceType::PRICE_MAX->value,
             'value' => (100 + $schemaNewPrice) * 100,
         ]);
     }
