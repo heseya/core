@@ -56,10 +56,8 @@ class ProductTest extends TestCase
 {
     private Product $product;
     private Product $hidden_product;
-
     private array $expected;
     private array $expected_short;
-
     private Currency $currency;
     private Product $saleProduct;
     private array $productPrices;
@@ -68,6 +66,16 @@ class ProductTest extends TestCase
     private DiscountServiceContract $discountService;
     private ProductRepositoryContract $productRepository;
     private SchemaCrudService $schemaCrudService;
+
+    public static function noIndexProvider(): array
+    {
+        return [
+            'as user no index' => ['user', true],
+            'as application no index' => ['application', true],
+            'as user index' => ['user', false],
+            'as application index' => ['application', false],
+        ];
+    }
 
     /**
      * @throws UnknownCurrencyException
@@ -97,7 +105,7 @@ class ProductTest extends TestCase
         $this->product = $this->productService->create(FakeDto::productCreateDto([
             'shipping_digital' => false,
             'public' => true,
-            'order' => 1,
+            'created_at' => now()->subHours(5),
             'prices_base' => $this->productPrices,
         ]));
 
@@ -224,11 +232,11 @@ class ProductTest extends TestCase
                             //'prices' => [['value' => 0, 'currency' => $this->currency->value]],
                             'disabled' => false,
                             'available' => true,
-                            'items' => [[
-                                'name' => 'Koszulka XL',
+                            'items' => [
+                                ['name' => 'Koszulka XL',
                                 'sku' => 'K001/XL',
                             ]],
-                            'metadata' => [],
+                                'metadata' => [],
                         ],
                         [
                             'name' => 'L',
@@ -311,12 +319,8 @@ class ProductTest extends TestCase
             ->json('GET', '/products', ['limit' => 100])
             ->assertOk()
             ->assertJsonCount(3, 'data')
-            ->assertJson([
-                'data' => [
-                    0 => $this->expected_short,
-                ],
-            ])
             ->assertJsonFragment([
+                ...$this->expected_short,
                 [
                     'net' => '100.00',
                     'gross' => '100.00',
@@ -781,9 +785,10 @@ class ProductTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonFragment(['metadata_private' => [
-                $privateMetadata->name => $privateMetadata->value,
-            ]]);
+            ->assertJsonFragment([
+                'metadata_private' => [
+                    $privateMetadata->name => $privateMetadata->value,
+                ]]);
     }
 
     /**
@@ -843,16 +848,6 @@ class ProductTest extends TestCase
         $response->assertOk();
     }
 
-    public static function noIndexProvider(): array
-    {
-        return [
-            'as user no index' => ['user', true],
-            'as application no index' => ['application', true],
-            'as user index' => ['user', false],
-            'as application index' => ['application', false],
-        ];
-    }
-
     /**
      * @dataProvider noIndexProvider
      */
@@ -884,7 +879,8 @@ class ProductTest extends TestCase
                 'keywords' => $seo->keywords,
                 'header_tags' => ['test1', 'test2'],
                 'published' => [$this->lang],
-            ]]);
+            ],
+            ]);
     }
 
     /**
@@ -1324,16 +1320,17 @@ class ProductTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJson(['data' => [
-                'slug' => 'test',
-                'name' => 'Test',
-                'public' => true,
-                'shipping_digital' => false,
-                'description_html' => '<h1>Description</h1>',
-                'description_short' => 'So called short description...',
-                'cover' => null,
-                'gallery' => [],
-            ]])
+            ->assertJson([
+                'data' => [
+                    'slug' => 'test',
+                    'name' => 'Test',
+                    'public' => true,
+                    'shipping_digital' => false,
+                    'description_html' => '<h1>Description</h1>',
+                    'description_short' => 'So called short description...',
+                    'cover' => null,
+                    'gallery' => [],
+                ]])
             ->assertJsonFragment([
                 'gross' => '100.00',
                 'currency' => $this->currency->value,
@@ -1474,15 +1471,16 @@ class ProductTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJson(['data' => [
-                'slug' => 'test',
-                'name' => 'Test',
-                'public' => true,
-                'shipping_digital' => false,
-                'description_html' => '<h1>Description</h1>',
-                'cover' => null,
-                'gallery' => [],
-            ]]);
+            ->assertJson([
+                'data' => [
+                    'slug' => 'test',
+                    'name' => 'Test',
+                    'public' => true,
+                    'shipping_digital' => false,
+                    'description_html' => '<h1>Description</h1>',
+                    'cover' => null,
+                    'gallery' => [],
+                ]]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
@@ -1550,15 +1548,16 @@ class ProductTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJson(['data' => [
-                'slug' => 'test',
-                'name' => 'Test',
-                'public' => true,
-                'shipping_digital' => false,
-                'description_html' => '<h1>Description</h1>',
-                'cover' => null,
-                'gallery' => [],
-            ]]);
+            ->assertJson([
+                'data' => [
+                    'slug' => 'test',
+                    'name' => 'Test',
+                    'public' => true,
+                    'shipping_digital' => false,
+                    'description_html' => '<h1>Description</h1>',
+                    'cover' => null,
+                    'gallery' => [],
+                ]]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
@@ -1694,15 +1693,16 @@ class ProductTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJson(['data' => [
-                'slug' => 'test',
-                'name' => 'Test',
-                'public' => false,
-                'shipping_digital' => false,
-                'description_html' => '<h1>Description</h1>',
-                'cover' => null,
-                'gallery' => [],
-            ]]);
+            ->assertJson([
+                'data' => [
+                    'slug' => 'test',
+                    'name' => 'Test',
+                    'public' => false,
+                    'shipping_digital' => false,
+                    'description_html' => '<h1>Description</h1>',
+                    'cover' => null,
+                    'gallery' => [],
+                ]]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
@@ -1757,13 +1757,15 @@ class ProductTest extends TestCase
                 'shipping_digital' => false,
             ])
             ->assertCreated()
-            ->assertJson(['data' => [
-                'id' => $uuid,
-                'slug' => 'test',
-                'name' => 'Test',
-                'public' => true,
-                'shipping_digital' => false,
-            ]]);
+            ->assertJson([
+                'data' => [
+                    'id' => $uuid,
+                    'slug' => 'test',
+                    'name' => 'Test',
+                    'public' => true,
+                    'shipping_digital' => false,
+                ],
+            ]);
 
         $this->assertDatabaseHas('products', [
             'id' => $uuid,
@@ -1950,13 +1952,70 @@ class ProductTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment([
-                'title' => 'seo title',
-                'description' => 'seo description',
-                'no_index' => $booleanValue,
+            ->assertJson([
+                'data' => [
+                    'slug' => 'test',
+                    'name' => 'Test',
+                    'price' => 100,
+                    'public' => $booleanValue,
+                    'shipping_digital' => false,
+                    'description_html' => '<h1>Description</h1>',
+                    'cover' => null,
+                    'gallery' => [],
+                    'seo' => [
+                        'title' => 'seo title',
+                        'description' => 'seo description',
+                        'og_image' => [
+                            'id' => $media->getKey(),
+                        ],
+                        'no_index' => $booleanValue,
+                        'header_tags' => ['test1', 'test2'],
+                    ],
+                ],
             ]);
 
-        $product = Product::query()->find($response->json('data.id'))->first();
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 100,
+            'public' => $booleanValue,
+            'shipping_digital' => false,
+            'description_html' => '<h1>Description</h1>',
+        ]);
+
+        $this->assertDatabaseHas('seo_metadata', [
+            'title' => 'seo title',
+            'description' => 'seo description',
+            'model_id' => $response->getData()->data->id,
+            'model_type' => Product::class,
+            'no_index' => $booleanValue,
+        ]);
+
+        $this->assertDatabaseCount('seo_metadata', 2);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithSeoDefaultIndex($user): void
+    {
+        $this->{$user}->givePermissionTo('products.add');
+
+        $response = $this->actingAs($this->{$user})->json('POST', '/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 100.00,
+            'description_html' => '<h1>Description</h1>',
+            'public' => true,
+            'shipping_digital' => false,
+            'seo' => [
+                'title' => 'seo title',
+                'description' => 'seo description',
+            ],
+        ]);
+
+        $product = Product::query()->find($response->json(
+                'data.id'))->first();
 
         $this->assertDatabaseHas('seo_metadata', [
             "title->{$this->lang}" => 'seo title',
@@ -2686,7 +2745,6 @@ class ProductTest extends TestCase
             'slug' => 'created',
             'description_html' => '<h1>Description</h1>',
             'public' => false,
-            'order' => 1,
         ]);
 
         $this->product->seo()->save(SeoMetadata::factory()->make());
@@ -3099,7 +3157,6 @@ class ProductTest extends TestCase
             'slug' => 'created',
             'description_html' => '<h1>Description</h1>',
             'public' => false,
-            'order' => 1,
         ])->create();
 
         $seo = SeoMetadata::factory()->create();
@@ -3141,7 +3198,6 @@ class ProductTest extends TestCase
             'slug' => 'Delete-with-media',
             'description_html' => '<h1>Description</h1>',
             'public' => false,
-            'order' => 1,
         ])->create();
 
         $product->media()->sync($media);

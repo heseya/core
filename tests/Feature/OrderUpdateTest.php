@@ -945,6 +945,82 @@ class OrderUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testShippingListDispatched($user): void
+    {
+        $this->{$user}->givePermissionTo(['orders.edit', 'orders.edit.status']);
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrderRequestedShipping',
+            ],
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        $package = PackageTemplate::factory()->create();
+
+        Event::fake([OrderRequestedShipping::class]);
+
+        $this->actingAs($this->{$user})
+            ->postJson(
+                '/orders/id:' . $this->order->getKey() . '/shipping-lists',
+                [
+                    'package_template_id' => $package->getKey(),
+                ],
+            )->assertOk()
+            ->assertJsonFragment([
+                'id' => $this->order->getKey(),
+            ]);
+
+        Event::assertDispatched(OrderRequestedShipping::class);
+
+        Bus::fake();
+
+        $event = new OrderRequestedShipping($this->order, $package);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $package) {
+            $payload = $job->payload;
+
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['order']['id'] === $this->order->getKey()
+                && $payload['data']['package']['id'] === $package->getKey()
+                && $payload['data_type'] === 'ShippingRequest'
+                && $payload['event'] === 'OrderRequestedShipping';
+        });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShippingListNotExistingPackageTemplate($user): void
+    {
+        $this->{$user}->givePermissionTo(['orders.edit', 'orders.edit.status']);
+
+        Event::fake([OrderRequestedShipping::class]);
+
+        $package = PackageTemplate::factory()->create();
+        $package->delete();
+
+        $this->actingAs($this->{$user})
+            ->postJson(
+                '/orders/id:' . $this->order->getKey() . '/shipping-lists',
+                [
+                    'package_template_id' => $package->getKey(),
+                ],
+            )->assertUnprocessable();
+
+        Event::assertNotDispatched(OrderRequestedShipping::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateOrderByShippingNumber($user): void
     {
         $this->{$user}->givePermissionTo('orders.edit');
@@ -1034,7 +1110,7 @@ class OrderUpdateTest extends TestCase
                         'first_url' => 'https://example.com',
                         'second_url' => 'https://example2.com',
                     ],
-                ]
+                ],
             )
             ->assertOk();
 
@@ -1090,7 +1166,7 @@ class OrderUpdateTest extends TestCase
                     'urls' => [
                         'updated_url' => 'https://updated.com',
                     ],
-                ]
+                ],
             )
             ->assertOk();
 
@@ -1149,7 +1225,7 @@ class OrderUpdateTest extends TestCase
                 "/orders/id:{$order->getKey()}",
                 [
                     'digital_shipping_method_id' => $digitalShippingMethodNew->getKey(),
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonFragment([
@@ -1198,7 +1274,7 @@ class OrderUpdateTest extends TestCase
                 "/orders/id:{$order->getKey()}",
                 [
                     'comment' => 'New comment',
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonFragment([
@@ -1241,7 +1317,7 @@ class OrderUpdateTest extends TestCase
                         'old_url' => null,
                         'second_url' => 'https://example2.com',
                     ],
-                ]
+                ],
             )
             ->assertOk();
 

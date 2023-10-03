@@ -29,7 +29,7 @@ class ProductRepository implements ProductRepositoryContract
 {
     use GetPublishedLanguageFilter;
 
-    public function __construct(private PriceRepository $priceRepository) {}
+    public function __construct(private readonly PriceRepository $priceRepository) {}
 
     public function search(ProductSearchDto $dto): LengthAwarePaginator
     {

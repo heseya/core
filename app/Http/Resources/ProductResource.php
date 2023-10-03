@@ -86,7 +86,6 @@ class ProductResource extends Resource
         $this->setLangFallbackSettings(...$previousSettings);
 
         return [
-            'order' => $this->resource->order,
             'description_html' => $this->resource->description_html,
             'description_short' => $this->resource->description_short,
             'descriptions' => PageResource::collection($this->resource->pages),

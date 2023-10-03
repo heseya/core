@@ -25,7 +25,7 @@ class AttributeSearchTest extends UnitTestCase
                 'value' => [
                     'min' => 1,
                 ],
-            ]
+            ],
         ));
     }
 

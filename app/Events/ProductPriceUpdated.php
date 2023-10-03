@@ -3,9 +3,12 @@
 namespace App\Events;
 
 use App\Http\Resources\PriceResource;
+use Illuminate\Support\Carbon;
 
 class ProductPriceUpdated extends WebHookEvent
 {
+    private string $updatedAt;
+
     public function __construct(
         private readonly string $id,
         private readonly ?array $oldPricesMin,
@@ -13,6 +16,7 @@ class ProductPriceUpdated extends WebHookEvent
         private readonly array $newPricesMin,
         private readonly array $newPricesMax,
     ) {
+        $this->updatedAt = Carbon::now()->toIso8601String();
         parent::__construct();
     }
 
@@ -24,6 +28,7 @@ class ProductPriceUpdated extends WebHookEvent
             'prices_max_old' => $this->oldPricesMin ? PriceResource::collection($this->oldPricesMax) : [],
             'prices_min_new' => PriceResource::collection($this->newPricesMin),
             'prices_max_new' => PriceResource::collection($this->newPricesMax),
+            'updated_at' => $this->updatedAt,
         ];
     }
 

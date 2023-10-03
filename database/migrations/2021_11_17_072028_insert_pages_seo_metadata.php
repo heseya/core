@@ -16,7 +16,7 @@ class InsertPagesSeoMetadata extends Migration
                     'global' => false,
                     'model_id' => $page->getKey(),
                     'model_type' => Page::class,
-                ])
+                ]),
             ));
         }
     }

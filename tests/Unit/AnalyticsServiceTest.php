@@ -160,7 +160,7 @@ class AnalyticsServiceTest extends TestCase
         Carbon $groupTwo1,
         string $labelOne,
         string $labelTwo,
-        string $group
+        string $group,
     ): void {
         $order = Order::factory()->create([
             'currency' => Currency::PLN->value,

@@ -102,8 +102,7 @@ class Order extends Model implements SortableContract
         'email',
         'summary',
     ];
-    protected string $defaultSortBy = 'created_at';
-    protected string $defaultSortDirection = 'desc';
+
     protected $casts = [
         'paid' => 'boolean',
         'invoice_requested' => 'boolean',

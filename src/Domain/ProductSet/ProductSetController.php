@@ -88,9 +88,8 @@ final class ProductSetController extends Controller
         return ProductResource::collection($products);
     }
 
-    public function reorderProducts(ProductSet $productSet, ProductSetProductReorderRequest $request): JsonResponse
+    public function reorderProducts(ProductSet $productSet, ProductsReorderDto $dto): JsonResponse
     {
-        $dto = ProductsReorderDto::instantiateFromRequest($request);
         $this->productSetService->reorderProducts($productSet, $dto);
 
         return Response::json(null, ResponseAlias::HTTP_NO_CONTENT);

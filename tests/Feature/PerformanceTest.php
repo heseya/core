@@ -530,7 +530,7 @@ class PerformanceTest extends TestCase
                 'target_type' => $discountOrder->target_type,
                 'applied_discount' => $order->shipping_price_initial,
                 'code' => $discountOrder->code,
-            ]
+            ],
         );
 
         $discountProduct = Discount::factory()->create([

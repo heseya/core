@@ -20,7 +20,7 @@
     "heseya/laravel-searchable": "^2.0",
     "heseya/pagination": "^1.0.3",
     "heseya/resource": "^1.0",
-    "laravel/framework": "^10.3.0",
+    "laravel/framework": "10.3.*",
     "laravel/socialite": "^5.5",
     "league/omnipay": "^3.2",
     "omnipay/common": "^3.2",

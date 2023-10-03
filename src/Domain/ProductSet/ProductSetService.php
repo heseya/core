@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\ProductSet;
 
+use App\Dtos\ProductReorderDto;
 use App\Dtos\ProductsReorderDto;
+use App\Dtos\ProductSetDto;
 use App\Models\Product;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Traits\GetPublishedLanguageFilter;
@@ -18,7 +20,6 @@ use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -91,11 +92,13 @@ final readonly class ProductSetService
             'slug' => 'unique:product_sets,slug',
         ])->validate();
 
-        $set = new ProductSet($dto->toArray() + [
-            'order' => $order,
-            'slug' => $slug,
-            'public_parent' => $publicParent,
-        ]);
+        $set = new ProductSet(
+            $dto->toArray() + [
+                'order' => $order,
+                'slug' => $slug,
+                'public_parent' => $publicParent,
+            ],
+        );
 
         foreach ($dto->translations as $lang => $translations) {
             $set->setLocale($lang)->fill($translations);
@@ -194,7 +197,8 @@ final readonly class ProductSetService
 
             $rootOrder = ProductSet::reversed()->first()?->order + 1;
 
-            $set->children()
+            $productIds = $set->allProductsIds()->merge($set->relatedProducts->pluck('id'));
+        $set->children()
                 ->whereNotIn('id', $dto->children_ids)
                 ->update([
                     'parent_id' => null,
@@ -202,11 +206,13 @@ final readonly class ProductSetService
                 ]);
         }
 
-        $set->fill($dto->toArray() + [
-            'order' => $order,
-            'slug' => $slug,
-            'public_parent' => $publicParent,
-        ]);
+        $set->fill(
+            $dto->toArray() + [
+                'order' => $order,
+                'slug' => $slug,
+                'public_parent' => $publicParent,
+            ],
+        );
 
         foreach ($dto->translations as $lang => $translations) {
             $set->setLocale($lang)->fill($translations);
@@ -293,75 +299,75 @@ final readonly class ProductSetService
         return $sets->merge($this->flattenParentsSetsTree($parents));
     }
 
-    // TODO: fix this
     public function reorderProducts(ProductSet $set, ProductsReorderDto $dto): void
     {
-        if (!$dto->getProducts() instanceof Missing) {
-            /** @var Product $product */
-            $product = $set->products()->where('id', $dto->getProducts()[0]['id'])->firstOrFail();
-            $order = $dto->getProducts()[0]['order'];
-            $orderedProductsAmount = $set->products()
-                ->whereNotNull('product_set_product.order')
-                ->whereNot('product_id', $dto->getProducts()[0]['id'])
-                ->count();
+        $productsWithoutOrder = $set->products->filter(fn (Product $product) => $product->pivot->order === null);
 
-            if ($order > $orderedProductsAmount) {
-                $order = $orderedProductsAmount;
-            }
-
-            if ($product->pivot->order === null) {
-                $this->setOrder($order);
-            } else {
-                if ($order < $product->pivot->order) {
-                    $this->setHigherOrder($product, $order);
-                } else {
-                    $this->setLowerOrder($product, $order);
-                }
-            }
-
-            $product->pivot->order = $order;
-            $product->pivot->save();
-
-            /** @var int $highestOrder */
-            $highestOrder = $set->products->max('pivot.order');
-
-            $this->assignOrderToNulls($highestOrder, $set->products->whereNull('pivot.order'));
+        if ($productsWithoutOrder->isNotEmpty()) {
+            $this->fixNullOrders(
+                $set,
+                $productsWithoutOrder,
+            );
         }
-    }
 
-    private function setHigherOrder(Product $product, int $order): void
-    {
-        DB::table('product_set_product')->where([
-            ['order', '>=', $order],
-            ['order', '<', $product->pivot->order],
-        ])
-            ->increment('order');
-    }
+        if ($this->hasSameOrderProducts($set)) {
+            $this->fixSameOrder($set);
+        }
 
-    private function setLowerOrder(Product $product, int $order): void
-    {
-        DB::table('product_set_product')->where([
-            ['order', '<=', $order],
-            ['order', '>', $product->pivot->order],
-        ])
-            ->decrement('order');
-    }
+        $maxOrder = $set->products->count() - 1;
 
-    private function setOrder(int $order): void
-    {
-        DB::table('product_set_product')->where([
-            ['order', '>=', $order],
-        ])
-            ->increment('order');
-    }
+        $dto->products->each(function (ProductReorderDto $product) use ($set, $maxOrder): void {
+            $oldOrder = array_search($product->id, $set->products->pluck('id', 'pivot.order')->all());
+            $newOrder = min($product->order, $maxOrder);
 
-    private function assignOrderToNulls(int $highestOrder, Collection $products): void
-    {
-        $products->each(function (Product $product) use (&$highestOrder): void {
-            ++$highestOrder;
-            $product->pivot->order = $highestOrder;
-            $product->pivot->save();
+            $set->products()->updateExistingPivot($product->id, ['order' => $newOrder]);
+
+            $query = $set->products()->newPivotStatement()
+                ->where('product_set_id', $set->id)
+                ->where('product_id', '!=', $product->id);
+
+            if ($newOrder > $oldOrder) {
+                $query
+                    ->where('order', '<=', $newOrder)
+                    ->where('order', '>', $oldOrder)
+                    ->decrement('order');
+            }
+
+            if ($newOrder < $oldOrder) {
+                $query
+                    ->where('order', '<=', $oldOrder)
+                    ->where('order', '>=', $newOrder)
+                    ->increment('order');
+            }
         });
+    }
+
+    private function fixNullOrders(ProductSet $set, Collection $productsWithoutOrder): void
+    {
+        $existingOrder = $set->products->pluck('pivot.order')->filter(fn (?int $order) => $order !== null);
+        $missingOrders = array_diff(range(0, $set->products->count() - 1), $existingOrder->toArray());
+
+        $productsWithoutOrder->each(function (Product $product) use (&$missingOrders): void {
+            $product->pivot->update(['order' => array_shift($missingOrders)]);
+        });
+
+        $set->refresh();
+    }
+
+    private function hasSameOrderProducts(ProductSet $set): bool
+    {
+        $groupedProducts = $set->products->groupBy('pivot.order');
+
+        return $groupedProducts->contains(fn (Collection $products): bool => $products->count() > 1);
+    }
+
+    private function fixSameOrder(ProductSet $set): void
+    {
+        $set->products->each(function (Product $product, int $index): void {
+            $product->pivot->update(['order' => $index]);
+        });
+
+        $set->refresh();
     }
 
     private function prepareSlug(

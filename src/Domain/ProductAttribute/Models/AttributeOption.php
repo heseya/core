@@ -16,6 +16,7 @@ use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -69,5 +70,15 @@ final class AttributeOption extends Model implements Translatable
     public function attribute(): BelongsTo
     {
         return $this->belongsTo(Attribute::class);
+    }
+
+    public function productAttributes(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            ProductAttribute::class,
+            'product_attribute_attribute_option',
+            'attribute_option_id',
+            'product_attribute_id',
+        );
     }
 }

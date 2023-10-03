@@ -89,6 +89,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ItemNotFoundException;
 use Illuminate\Support\Str;
+use Money\Exception\UnknownCurrencyException;
 
 readonly class DiscountService implements DiscountServiceContract
 {

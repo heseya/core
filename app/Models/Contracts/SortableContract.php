@@ -9,8 +9,4 @@ interface SortableContract
     public function scopeSort(Builder $query, ?string $sortString = null): Builder;
 
     public function getSortable(): array;
-
-    public function getDefaultSortBy(): string;
-
-    public function getDefaultSortDirection(): string;
 }

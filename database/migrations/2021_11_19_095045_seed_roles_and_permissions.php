@@ -210,7 +210,7 @@ class SeedRolesAndPermissions extends Migration
 
     public function down(): void
     {
-        Permission::truncate();
-        Role::truncate();
+        Permission::query()->delete();
+        Role::query()->delete();
     }
 }

@@ -55,4 +55,23 @@ final class SettingsService implements SettingsServiceContract
 
         return $setting;
     }
+
+    public function getMinimalPrice(string $name): float
+    {
+        $value = Cache::get($name);
+        if ($value === null) {
+            $value = (float) $this->getSetting($name)->value;
+            Cache::put($name, $value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getAdminMails(): array
+    {
+        return explode(';', $this->getSetting('admin_mails')->value);
+    }
 }

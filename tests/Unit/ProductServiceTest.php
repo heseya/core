@@ -83,7 +83,7 @@ class ProductServiceTest extends TestCase
                     false,
                     PriceDto::fromMoney(Money::of(self::$price, self::$currency->value)),
                     PriceDto::fromMoney(Money::of(self::$price + $schemaPrice, self::$currency->value)),
-                ]
+                ],
             ),
             'boolean schema' => array_merge(
                 $base,

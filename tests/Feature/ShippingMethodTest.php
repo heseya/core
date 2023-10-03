@@ -1373,7 +1373,7 @@ class ShippingMethodTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->patchJson(
             '/shipping-methods/id:' . $this->shipping_method->getKey(),
-            []
+            [],
         );
 
         $response

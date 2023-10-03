@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\ProductSet;
 use App\Rules\WhereIn;
 use App\Services\Contracts\SortServiceContract;
 use App\SortColumnTypes\SortableColumn;
@@ -98,7 +99,6 @@ class SortService implements SortServiceContract
         )->validate();
     }
 
-    // TODO: refactor this
     private function addOrder(Builder $query, string $field, string $order): void
     {
         if (Str::startsWith($field, 'set.')) {
@@ -116,15 +116,17 @@ class SortService implements SortServiceContract
 
     private function addSetOrder(Builder $query, string $field, string $order): void
     {
-        $query->leftJoin('product_set_product', function (JoinClause $join) use ($field): void {
+        /** @var ProductSet $set */
+        $set = ProductSet::query()->where('slug', '=', Str::after($field, 'set.'))->select('id')->first();
+        $searchedProductSetsIds = $set->allChildrenIds('children')->push($set->getKey());
+
+        $query->leftJoin('product_set_product', function (JoinClause $join) use ($searchedProductSetsIds): void {
             $join->on('product_set_product.product_id', 'products.id')
-                ->join('product_sets', function (JoinClause $join) use ($field): void {
-                    $join->on('product_sets.id', 'product_set_product.product_set_id')
-                        ->where('product_sets.slug', Str::after($field, 'set.'));
-                });
+                ->whereIn('product_set_product.product_set_id', $searchedProductSetsIds);
         })
             ->addSelect('products.*')
             ->addSelect('product_set_product.order AS set_order')
+            ->orderBy('product_set_product.product_set_id', $order)
             ->orderBy('set_order', $order);
     }
 

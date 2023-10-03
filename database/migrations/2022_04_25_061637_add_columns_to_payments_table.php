@@ -47,6 +47,7 @@ return new class extends Migration {
         Permission::findByName('payments.show_details')->delete();
 
         Schema::table('payments', function (Blueprint $table): void {
+            $table->dropForeign('payments_method_id_foreign');
             $table->dropColumn('status');
             $table->dropColumn('method_id');
         });

@@ -38,6 +38,7 @@ use App\Listeners\ItemUpdatedQuantityListener;
 use App\Listeners\OrderCreatedListener;
 use App\Listeners\OrderPaidListener;
 use App\Listeners\OrderUpdatedStatusListener;
+use App\Listeners\ProductSearchValueListener;
 use App\Listeners\UserCreatedListener;
 use App\Listeners\WebHookEventListener;
 use App\Listeners\WebHookFailedListener;
@@ -91,6 +92,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         OrderUpdatedPaid::class => [
             OrderPaidListener::class,
+        ],
+        ProductSearchValueEvent::class => [
+            ProductSearchValueListener::class,
         ],
     ];
 
