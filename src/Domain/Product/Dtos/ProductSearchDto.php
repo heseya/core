@@ -62,6 +62,7 @@ final class ProductSearchDto extends Data
         #[WithCast(ArrayWrapCast::class)]
         public array|Optional $metadata_public,
         public Optional|ProductSearchPriceDto $price,
+        public bool|Optional $full,
     ) {
         if ($this->sort instanceof Optional) {
             $this->sort = null;
