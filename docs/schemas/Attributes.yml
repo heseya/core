@@ -87,6 +87,10 @@ AttributeProductList:
       description: 'Name of attribute'
       type: string
       example: 'Screen size'
+    slug:
+      description: 'Slug of name attribute'
+      type: string
+      example: 'screen-size'
     selected_options:
       description: 'Array options of attribute'
       $ref: '#/AttributeOptionMetadata'
