@@ -43,10 +43,12 @@ class ProductFactory extends Factory
             /** @var ProductRepositoryContract $productRepository */
             $productRepository = App::make(ProductRepositoryContract::class);
 
-            $price = PriceDto::from(Money::of(
-                round(mt_rand(500, 6000), -2),
-                Currency::DEFAULT->value,
-            ));
+            $price = PriceDto::from(
+                Money::of(
+                    round(mt_rand(500, 6000), -2),
+                    Currency::DEFAULT->value,
+                )
+            );
 
             $productRepository->setProductPrices($product->getKey(), [
                 ProductPriceType::PRICE_BASE->value => [$price],

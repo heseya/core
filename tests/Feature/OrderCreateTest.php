@@ -44,6 +44,7 @@ use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\Setting\Models\Setting;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -264,7 +265,9 @@ class OrderCreateTest extends TestCase
         Notification::fake();
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => $this->email,
+            'currency' => $this->currency,
             'shipping_method_id' => $this->shippingMethod->getKey(),
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_place' => $this->address->toArray(),
             'billing_address' => $this->address->toArray(),
             'items' => [
