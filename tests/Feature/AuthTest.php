@@ -30,6 +30,7 @@ use App\Notifications\TFASecurityCode;
 use App\Notifications\UserRegistered;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -106,6 +107,7 @@ class AuthTest extends TestCase
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => Hash::make('password'),
+            'email_verified_at' => Carbon::now(),
         ]);
 
         $this
@@ -114,6 +116,7 @@ class AuthTest extends TestCase
                 'email' => 'test@example.com',
                 'password' => 'password',
             ])
+            ->assertValid()
             ->assertOk();
     }
 
@@ -850,6 +853,8 @@ class AuthTest extends TestCase
             'password' => $this->password,
         ]);
 
+        $response->assertValid()->assertOk();
+
         $token = $response->getData()->data->token;
         $refreshToken = $response->getData()->data->refresh_token;
 
@@ -1333,9 +1338,9 @@ class AuthTest extends TestCase
         $this->{$user}->givePermissionTo('auth.check_identity');
 
         $token = $this->tokenService->createToken(
-                User::factory()->create(),
-                TokenType::IDENTITY,
-            ) . 'invalid_hash';
+            User::factory()->create(),
+            TokenType::IDENTITY,
+        ) . 'invalid_hash';
 
         $this
             ->actingAs($this->{$user})

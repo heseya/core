@@ -16,6 +16,7 @@ use Domain\User\Dtos\TFAConfirmDto;
 use Domain\User\Dtos\TFAPasswordDto;
 use Domain\User\Dtos\TFASetupDto;
 use Domain\User\Dtos\TokenRefreshDto;
+use Domain\User\Dtos\VerifyEmailDto;
 use Illuminate\Contracts\Auth\Authenticatable;
 
 interface AuthServiceContract
@@ -77,4 +78,6 @@ interface AuthServiceContract
     public function updateProfile(ProfileUpdateDto $dto): User;
 
     public function selfRemove(string $password): void;
+
+    public function verifyEmail(VerifyEmailDto $dto): void;
 }
