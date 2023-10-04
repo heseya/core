@@ -131,6 +131,17 @@ final class LanguageService
         }
     }
 
+    public function defaultLanguage(): Language
+    {
+        $defaultLanguage = Cache::get('languages.default');
+        if (!$defaultLanguage) {
+            $defaultLanguage = Language::where('default', true)->first();
+            Cache::put('languages.default', $defaultLanguage);
+        }
+
+        return $defaultLanguage;
+    }
+
     public function firstByIsoOrDefault(string $iso): Language
     {
         /** @var Language|null $language */
@@ -139,7 +150,7 @@ final class LanguageService
             return $language;
         }
 
-        return Language::query()->where('default', '=', true)->firstOrFail();
+        return $this->defaultLanguage();
     }
 
     private function updateHiddenLanguagesCache(string $uuid): void
@@ -164,5 +175,7 @@ final class LanguageService
         Language::query()
             ->where('id', '!=', $language->getKey())
             ->update(['default' => false]);
+
+        Cache::put('languages.default', $language);
     }
 }
