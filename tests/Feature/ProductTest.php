@@ -189,6 +189,7 @@ class ProductTest extends TestCase
             'attributes' => [
                 [
                     'name' => $attribute->name,
+                    'slug' => $attribute->slug,
                     'selected_options' => [
                         [
                             'id' => $option->getKey(),
