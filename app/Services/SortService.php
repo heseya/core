@@ -107,7 +107,11 @@ class SortService implements SortServiceContract
                 });
         })
             ->addSelect('products.*')
+            ->addSelect('attribute_options.value_number AS attribute_order_number')
+            ->addSelect('attribute_options.value_date AS attribute_order_date')
             ->addSelect('attribute_options.name AS attribute_order')
+            ->orderBy('attribute_order_number', $order)
+            ->orderBy('attribute_order_date', $order)
             ->orderBy('attribute_order', $order);
     }
 }
