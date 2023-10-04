@@ -78,6 +78,8 @@ class SortService implements SortServiceContract
         })
             ->addSelect('products.*')
             ->addSelect('product_set_product.order AS set_order')
+            ->selectRaw('(product_set_product.product_set_id = ?) AS is_main_set', [$set->getKey()])
+            ->orderBy('is_main_set', 'desc')
             ->orderBy('product_set_product.product_set_id', $order)
             ->orderBy('set_order', $order);
     }

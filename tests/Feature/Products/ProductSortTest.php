@@ -88,7 +88,7 @@ class ProductSortTest extends TestCase
         $this->{$user}->givePermissionTo('products.show');
 
         $set1 = ProductSet::factory()->create([
-            'id' => 'aaaaaaaa-56d6-4174-9840-39231e0c3f2f',
+            'id' => 'bbbbbbbb-56d6-4174-9840-39231e0c3f2f',
             'public' => true,
             'slug' => 'set-1',
         ]);
@@ -102,7 +102,7 @@ class ProductSortTest extends TestCase
         $set1->products()->attach($product3ForSet1->getKey(), ['order' => 0]);
 
         $set2 = ProductSet::factory()->create([
-            'id' => 'bbbbbbbb-56d6-4174-9840-39231e0c3f2f',
+            'id' => 'aaaaaaaa-56d6-4174-9840-39231e0c3f2f',
             'public' => true,
             'slug' => 'set-2',
         ]);
