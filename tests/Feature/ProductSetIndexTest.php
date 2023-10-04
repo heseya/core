@@ -24,12 +24,14 @@ class ProductSetIndexTest extends TestCase
             'public' => true,
             'public_parent' => true,
             'order' => 10,
+            'created_at' => now()->subDays(4),
         ]);
 
         $this->privateSet = ProductSet::factory()->create([
             'public' => false,
             'public_parent' => true,
             'order' => 11,
+            'created_at' => now()->subDays(3),
         ]);
 
         $this->childSet = ProductSet::factory()->create([
@@ -37,6 +39,7 @@ class ProductSetIndexTest extends TestCase
             'public_parent' => true,
             'parent_id' => $this->set->getKey(),
             'order' => 12,
+            'created_at' => now()->subDays(2),
         ]);
 
         $this->subChildSet = ProductSet::factory()->create([
@@ -44,6 +47,7 @@ class ProductSetIndexTest extends TestCase
             'public_parent' => true,
             'parent_id' => $this->childSet->getKey(),
             'order' => 13,
+            'created_at' => now()->subDays(1),
         ]);
     }
 
@@ -346,6 +350,54 @@ class ProductSetIndexTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $set->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexPagination(string $user): void
+    {
+        $this->{$user}->givePermissionTo('product_sets.show');
+
+        $this->set->update([
+            'name' => 'first',
+            'public' => true,
+            'order' => 0,
+        ]);
+
+        $this->privateSet->update([
+            'name' => 'second',
+            'public' => true,
+            'order' => 0,
+        ]);
+
+        $this->childSet->update([
+            'name' => 'third',
+            'public' => true,
+            'order' => 0,
+        ]);
+
+        $this->subChildSet->update([
+            'name' => 'fourth',
+            'public' => true,
+            'order' => 0,
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/product-sets', ['limit' => 2])
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonPath('data.0.id', $this->set->getKey())
+            ->assertJsonPath('data.1.id', $this->privateSet->getKey());
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/product-sets', ['limit' => 2, 'page' => 2])
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonPath('data.0.id', $this->childSet->getKey())
+            ->assertJsonPath('data.1.id', $this->subChildSet->getKey());
     }
 
     private function prepareProductSets(): Collection
