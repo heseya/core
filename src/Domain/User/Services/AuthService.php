@@ -38,6 +38,7 @@ use Domain\User\Dtos\TFAConfirmDto;
 use Domain\User\Dtos\TFAPasswordDto;
 use Domain\User\Dtos\TFASetupDto;
 use Domain\User\Dtos\TokenRefreshDto;
+use Domain\User\Dtos\VerifyEmailDto;
 use Domain\User\Services\Contracts\AuthServiceContract;
 use Domain\User\Services\Contracts\UserLoginAttemptServiceContract;
 use Domain\User\Services\Contracts\UserServiceContract;
@@ -86,6 +87,11 @@ final class AuthService implements AuthServiceContract
 
         $this->verifyTFA($dto->code);
 
+        if (!Auth::user()?->hasVerifiedEmail()) {
+            $this->userLoginAttemptService->store();
+            throw new ClientException(Exceptions::CLIENT_UNVERIFIED_EMAIL, simpleLogs: true);
+        }
+
         $this->userLoginAttemptService->store(true);
 
         return $this->createTokens($token, $uuid);
@@ -100,7 +106,9 @@ final class AuthService implements AuthServiceContract
             'typ' => TokenType::ACCESS->value,
             'jti' => $uuid,
         ]);
+
         Auth::login($user);
+
         /** @phpstan-ignore-next-line */
         $token = Auth::fromUser($user);
 
@@ -648,5 +656,14 @@ final class AuthService implements AuthServiceContract
             'identity_token' => $identityToken,
             'refresh_token' => $refreshToken,
         ];
+    }
+
+    public function verifyEmail(VerifyEmailDto $dto): void
+    {
+        /** @var ?User $user */
+        $user = User::where('email_verify_token', $dto->token)->first();
+        if ($user) {
+            $user->markEmailAsVerified();
+        }
     }
 }

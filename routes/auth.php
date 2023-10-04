@@ -33,6 +33,8 @@ Route::prefix('auth')->group(function (): void {
         });
 
     Route::post('refresh', [AuthController::class, 'refresh']);
+    Route::post('verify', [AuthController::class, 'verifyEmail']);
+
     Route::get('check', [AuthController::class, 'checkIdentity'])
         ->middleware('can:auth.check_identity');
     Route::get('check/{identity_token}', [AuthController::class, 'checkIdentity'])
