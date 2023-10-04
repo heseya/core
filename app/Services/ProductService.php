@@ -366,6 +366,7 @@ final readonly class ProductService
                     ],
                 ),
             ),
+            $currency,
         );
     }
 

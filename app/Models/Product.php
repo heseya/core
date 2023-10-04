@@ -96,11 +96,6 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'name',
         'description_html',
         'description_short',
-        'public',
-        'quantity_step',
-        'price_min',
-        'price_max',
-        'available',
     ];
     protected $casts = [
         'shipping_date' => 'date',

@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
-use App\Models\ProductSet;
 use App\Rules\WhereIn;
 use App\Services\Contracts\SortServiceContract;
 use App\SortColumnTypes\SortableColumn;
 use App\SortColumnTypes\TranslatedColumn;
 use Domain\ProductAttribute\Repositories\AttributeRepository;
+use Domain\ProductSet\ProductSet;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Arr;
@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
-class SortService implements SortServiceContract
+readonly class SortService implements SortServiceContract
 {
     public function __construct(private AttributeRepository $attributeRepository) {}
 
@@ -54,7 +54,10 @@ class SortService implements SortServiceContract
 
     private function getSortableColumnNames(array $sortable): array
     {
-        return Arr::map($sortable, fn ($value, $key) => is_a($value, SortableColumn::class, true) ? $value::getColumnName($key) : $value);
+        return Arr::map(
+            $sortable,
+            fn ($value, $key) => is_a($value, SortableColumn::class, true) ? $value::getColumnName($key) : $value,
+        );
     }
 
     private function getSortableColumnSettingsValidation(string $key, array $sortable): array
