@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Products;
 
+use App\Enums\AttributeType;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
 use App\Models\Product;
@@ -58,6 +59,43 @@ class ProductSortTest extends TestCase
         $product1 = $this->createProductWithAttribute($attribute, '2023-12-12');
         $product2 = $this->createProductWithAttribute($attribute, '2023-05-05');
         $product3 = $this->createProductWithAttribute($attribute, '2023-01-02');
+
+        $response = $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products', [
+                'sort' => "attribute.{$attribute->slug}:desc",
+            ]);
+
+        $this->assertEquals($product1->getKey(), $response->json('data.0.id'));
+        $this->assertEquals($product2->getKey(), $response->json('data.1.id'));
+        $this->assertEquals($product3->getKey(), $response->json('data.2.id'));
+
+        $response = $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products', [
+                'sort' => "attribute.{$attribute->slug}:asc",
+            ]);
+
+        $this->assertEquals($product3->getKey(), $response->json('data.0.id'));
+        $this->assertEquals($product2->getKey(), $response->json('data.1.id'));
+        $this->assertEquals($product1->getKey(), $response->json('data.2.id'));
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSortByAttributeDate(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.show');
+
+        /** @var Attribute $attribute */
+        $attribute = Attribute::factory()->create([
+            'type' => AttributeType::DATE->value,
+        ]);
+
+        $product1 = $this->createProductWithAttribute($attribute, '2023-12-12', 'value_date');
+        $product2 = $this->createProductWithAttribute($attribute, '2023-05-05', 'value_date');
+        $product3 = $this->createProductWithAttribute($attribute, '2023-01-02', 'value_date');
 
         $response = $this
             ->actingAs($this->{$user})
@@ -151,14 +189,19 @@ class ProductSortTest extends TestCase
             ->assertJsonPath('data.8.id', $product3ForSet3->getKey());
     }
 
-    private function createProductWithAttribute(Attribute $attribute, string $optionName): Product
+    private function createProductWithAttribute(Attribute $attribute, string $optionName, string $optionKey = 'name'): Product
     {
+        $optionValues = [
+            'name' => null,
+            'value_date' => null,
+            'value_number' => null,
+        ];
         /** @var AttributeOption $option */
-        $option = AttributeOption::factory()->create([
-            'name' => $optionName,
+        $option = AttributeOption::factory()->create(array_merge($optionValues, [
+            $optionKey => $optionName,
             'attribute_id' => $attribute->getKey(),
             'index' => 0,
-        ]);
+        ]));
 
         /** @var Product $product */
         $product = Product::factory()->create([
