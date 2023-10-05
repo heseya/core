@@ -19,7 +19,7 @@
                 <mj-text align="center" color="#333" font-family="Arial, sans-serif" font-size="16px" line-height="22px">
                     <p>
                         @lang('mail.status-changed')<br />
-                        @lang('mail.status'): <b>{{ $order->status->name }}</b>
+                        @lang('mail.status'): <b>{{ $status }}</b>
                     </p>
                 </mj-text>
             </mj-column>

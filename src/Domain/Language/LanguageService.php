@@ -142,6 +142,17 @@ final class LanguageService
         return $defaultLanguage;
     }
 
+    public function firstByIsoOrDefault(string $iso): Language
+    {
+        /** @var Language|null $language */
+        $language = Language::query()->where('iso', '=', $iso)->first();
+        if ($language) {
+            return $language;
+        }
+
+        return $this->defaultLanguage();
+    }
+
     private function updateHiddenLanguagesCache(string $uuid): void
     {
         $hiddenLanguages = Cache::get('languages.hidden');
