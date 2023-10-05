@@ -92,7 +92,7 @@ class Discount extends Model implements SeoContract, Translatable
 
     public function orders(): MorphToMany
     {
-        return $this->morphedByMany(Order::class, 'model', 'order_discounts');
+        return $this->morphedByMany(Order::class, 'model', 'order_discounts')->withPivot(['currency', 'amount', 'percentage', 'name', 'code', 'target_type', 'applied_discount']);
     }
 
     public function products(): MorphToMany
