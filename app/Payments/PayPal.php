@@ -100,8 +100,7 @@ class PayPal implements PaymentMethod
         $variables = explode('&', $variablesString);
         $result = [];
 
-        foreach ($variables as $variable)
-        {
+        foreach ($variables as $variable) {
             $explode = explode('=', $variable);
             $result[$explode[0]] = $explode[1];
         }
