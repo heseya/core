@@ -31,6 +31,7 @@ class Payment extends Model
         'status',
         'order_id',
         'method_id',
+        'additional_data',
     ];
 
     protected $casts = [

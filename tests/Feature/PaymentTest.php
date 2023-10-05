@@ -292,6 +292,21 @@ class PaymentTest extends TestCase
         Event::assertDispatched(OrderUpdatedPaid::class);
     }
 
+    public function testPayPalNotificationCancelAndBack(): void
+    {
+        $payment = Payment::factory()->make([
+            'status' => PaymentStatus::PENDING,
+            'currency' => $this->order->currency,
+            'additional_data' => 'random_token'
+        ]);
+
+        $this->order->payments()->save($payment);
+
+        $response = $this->getJson('/payments/paypal?token=random_token');
+
+        $response->assertStatus(302);
+    }
+
     /**
      * @dataProvider authProvider
      */
