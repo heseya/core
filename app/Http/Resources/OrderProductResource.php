@@ -2,10 +2,14 @@
 
 namespace App\Http\Resources;
 
+use App\Models\OrderProduct;
 use Domain\ProductSet\Resources\ProductSetResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
+/**
+ * @property OrderProduct $resource
+ */
 class OrderProductResource extends Resource
 {
     public function base(Request $request): array
@@ -23,13 +27,15 @@ class OrderProductResource extends Resource
             'shipping_digital' => $this->resource->shipping_digital,
             'is_delivered' => $this->resource->is_delivered,
             'urls' => OrderProductUrlResource::collection($this->resource->urls),
-            'product' => ProductResource::make($this->resource->product)->baseOnly()->toArray($request) + [
-                'sets' => ProductSetResource::collection(
-                    Gate::denies('product_sets.show_hidden')
-                    ? $this->resource->product->sets->where('public', true)
-                    : $this->resource->product->sets,
-                ),
-            ],
+            'product' => $this->resource->product
+                ? (ProductResource::make($this->resource->product)->baseOnly()->toArray($request) + [
+                    'sets' => ProductSetResource::collection(
+                        Gate::denies('product_sets.show_hidden')
+                            ? $this->resource->product->sets->where('public', true)
+                            : $this->resource->product->sets,
+                    ),
+                ])
+                : null,
         ];
     }
 }

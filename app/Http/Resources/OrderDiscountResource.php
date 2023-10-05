@@ -2,12 +2,16 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Discount;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Illuminate\Http\Request;
 
+/**
+ * @property Discount $resource
+ */
 class OrderDiscountResource extends Resource
 {
     /**
@@ -22,10 +26,10 @@ class OrderDiscountResource extends Resource
             $this->resource->pivot->currency,
         ) : null;
 
-        $applied_discount = Money::ofMinor(
+        $applied_discount = $this->resource->pivot->applied_discount ? Money::ofMinor(
             $this->resource->pivot->applied_discount,
             $this->resource->pivot->currency,
-        );
+        ) : null;
 
         return [
             'discount' => $this->resource->code !== null
@@ -36,7 +40,7 @@ class OrderDiscountResource extends Resource
             'percentage' => $this->resource->pivot->percentage,
             'amount' => $amount?->getAmount(),
             'target_type' => $this->resource->pivot->target_type,
-            'applied_discount' => $applied_discount->getAmount(),
+            'applied_discount' => $applied_discount?->getAmount(),
         ];
     }
 }
