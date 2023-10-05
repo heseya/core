@@ -52,14 +52,16 @@ final class ProductSetUpdateTest extends TestCase
                 'slug_override' => false,
             ])
             ->assertOk()
-            ->assertJson(['data' => [
-                'name' => 'Test Edit',
-                'parent' => null,
-                'children_ids' => [],
-                'slug' => 'test-edit',
-                'slug_suffix' => 'test-edit',
-                'slug_override' => false,
-            ]]);
+            ->assertJson([
+                'data' => [
+                    'name' => 'Test Edit',
+                    'parent' => null,
+                    'children_ids' => [],
+                    'slug' => 'test-edit',
+                    'slug_suffix' => 'test-edit',
+                    'slug_override' => false,
+                ],
+            ]);
 
         $this->assertDatabaseHas('product_sets', [
             "name->{$this->lang}" => 'Test Edit',
@@ -98,10 +100,12 @@ final class ProductSetUpdateTest extends TestCase
                 ],
             ])
             ->assertOk()
-            ->assertJson(['data' => [
-                'name' => 'Test Edit',
-                'description_html' => '',
-            ]]);
+            ->assertJson([
+                'data' => [
+                    'name' => 'Test Edit',
+                    'description_html' => '',
+                ],
+            ]);
 
         $this->assertDatabaseHas('product_sets', [
             "name->{$this->lang}" => 'Test Edit',
@@ -126,8 +130,12 @@ final class ProductSetUpdateTest extends TestCase
         ]);
 
         $set = [
-            'name' => 'Test Edit',
             'public' => true,
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test Edit',
+                ],
+            ],
         ];
 
         $parentId = [
@@ -146,20 +154,23 @@ final class ProductSetUpdateTest extends TestCase
             )
             ->assertOk()
             ->assertJson([
-                'data' => $set + [
-                        'parent' => null,
-                        'children_ids' => [],
-                        'slug' => 'test-edit',
-                        'slug_suffix' => 'test-edit',
-                        'slug_override' => false,
-                    ],
+                'data' => [
+                    'public' => true,
+                    'parent' => null,
+                    'children_ids' => [],
+                    'slug' => 'test-edit',
+                    'slug_suffix' => 'test-edit',
+                    'slug_override' => false,
+                ],
             ])
             ->assertJsonMissing(['data' => 'children']);
 
         $this->assertDatabaseHas(
             'product_sets',
-            $set + $parentId + [
+            $parentId + [
+                'public' => true,
                 'slug' => 'test-edit',
+                "name->{$this->lang}" => 'Test Edit',
             ],
         );
 

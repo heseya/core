@@ -2,8 +2,6 @@
 
 namespace Tests\Feature;
 
-use Domain\Price\Dtos\PriceDto;
-use Domain\Price\Enums\ProductPriceType;
 use App\Models\Media;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryContract;
@@ -12,6 +10,8 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\ProductPriceType;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
@@ -98,16 +98,24 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
-        Product::factory()->create([
+        $product1 = Product::factory()->create([
             'public' => true,
             'name' => 'First',
         ]);
 
-        Product::factory()->create([
+        $product2 = Product::factory()->create([
             'public' => true,
             'created_at' => Carbon::now()->addHour(),
             'name' => 'Second',
         ]);
+
+        $attribute = Attribute::factory()->create([
+            'name' => 'data wydania',
+            'slug' => 'data-wydania',
+        ]);
+
+        $product1->attributes()->attach($attribute->getKey());
+        $product2->attributes()->attach($attribute->getKey());
 
         // This test check if there is no SQL error that 'name' is ambiguous
         $this
@@ -645,11 +653,13 @@ class ProductSearchDatabaseTest extends TestCase
 
         $this
             ->actingAs($this->{$user})
-            ->json('GET', '/products', ['price' => [
-                'min' => '100.00',
-                'max' => '200.00',
-                'currency' => $currency->value,
-            ]])
+            ->json('GET', '/products', [
+                'price' => [
+                    'min' => '100.00',
+                    'max' => '200.00',
+                    'currency' => $currency->value,
+                ],
+            ])
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $product->getKey()]);

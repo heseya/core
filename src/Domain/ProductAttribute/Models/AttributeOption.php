@@ -8,11 +8,14 @@ use App\Criteria\AttributeOptionSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\WhereInIds;
+use App\Models\Contracts\SortableContract;
 use App\Models\Interfaces\Translatable;
 use App\Models\Model;
 use App\Models\ProductAttribute;
+use App\SortColumnTypes\TranslatedColumn;
 use App\Traits\CustomHasTranslations;
 use App\Traits\HasMetadata;
+use App\Traits\Sortable;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -25,13 +28,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  *
  * @mixin IdeHelperAttributeOption
  */
-final class AttributeOption extends Model implements Translatable
+final class AttributeOption extends Model implements SortableContract, Translatable
 {
     use CustomHasTranslations;
     use HasCriteria;
     use HasFactory;
     use HasMetadata;
     use SoftDeletes;
+    use Sortable;
 
     public const HIDDEN_PERMISSION = 'attributes.show_hidden';
     protected $fillable = [
@@ -59,6 +63,10 @@ final class AttributeOption extends Model implements Translatable
         'metadata_private' => MetadataPrivateSearch::class,
         'name' => Like::class,
         'ids' => WhereInIds::class,
+    ];
+    /** @var string[] */
+    protected array $sortable = [
+        'name' => TranslatedColumn::class,
     ];
 
     /**

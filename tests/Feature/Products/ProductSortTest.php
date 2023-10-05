@@ -6,11 +6,79 @@ use App\Models\Product;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
-use App\Models\ProductSet;
+use Domain\ProductSet\ProductSet;
 use Tests\TestCase;
 
 class ProductSortTest extends TestCase
 {
+    public static function attributeProvider(): array
+    {
+        return [
+            'as user single option' => [
+                'user',
+                AttributeType::SINGLE_OPTION,
+                'name',
+                [
+                    'ccc',
+                    'bbb',
+                    'aaa',
+                ],
+            ],
+            'as user multi option' => [
+                'user',
+                AttributeType::MULTI_CHOICE_OPTION,
+                'name',
+                [
+                    'ccc',
+                    'bbb',
+                    'aaa',
+                ],
+            ],
+            'as user number' => ['user', AttributeType::NUMBER, 'value_number', [3, 2, 1,],],
+            'as user date' => [
+                'user',
+                AttributeType::DATE,
+                'value_date',
+                [
+                    '2023-12-12',
+                    '2023-05-05',
+                    '2023-01-02',
+                ],
+            ],
+            'as app single option' => [
+                'application',
+                AttributeType::SINGLE_OPTION,
+                'name',
+                [
+                    'ccc',
+                    'bbb',
+                    'aaa',
+                ],
+            ],
+            'as app multi option' => [
+                'application',
+                AttributeType::MULTI_CHOICE_OPTION,
+                'name',
+                [
+                    'ccc',
+                    'bbb',
+                    'aaa',
+                ],
+            ],
+            'as app number' => ['application', AttributeType::NUMBER, 'value_number', [3, 2, 1]],
+            'as app date' => [
+                'application',
+                AttributeType::DATE,
+                'value_date',
+                [
+                    '2023-12-12',
+                    '2023-05-05',
+                    '2023-01-02',
+                ],
+            ],
+        ];
+    }
+
     /**
      * @dataProvider authProvider
      */
@@ -49,18 +117,20 @@ class ProductSortTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider attributeProvider
      */
-    public function testSortByAttributeWithSlug(string $user): void
+    public function testSortByAttributeWithSlug(string $user, AttributeType $type, string $field, array $values): void
     {
         $this->{$user}->givePermissionTo('products.show');
 
         /** @var Attribute $attribute */
-        $attribute = Attribute::factory()->create();
+        $attribute = Attribute::factory()->create([
+            'type' => $type,
+        ]);
 
-        $product1 = $this->createProductWithAttribute($attribute, '2023-12-12');
-        $product2 = $this->createProductWithAttribute($attribute, '2023-05-05');
-        $product3 = $this->createProductWithAttribute($attribute, '2023-01-02');
+        $product1 = $this->createProductWithAttribute($attribute, $values[0], $field);
+        $product2 = $this->createProductWithAttribute($attribute, $values[1], $field);
+        $product3 = $this->createProductWithAttribute($attribute, $values[2], $field);
 
         $response = $this
             ->actingAs($this->{$user})
@@ -154,11 +224,14 @@ class ProductSortTest extends TestCase
             ->assertJsonPath('data.8.id', $product3ForSet3->getKey());
     }
 
-    private function createProductWithAttribute(Attribute $attribute, string $optionName): Product
-    {
+    private function createProductWithAttribute(
+        Attribute $attribute,
+        string $optionName,
+        string $field = 'name',
+    ): Product {
         /** @var AttributeOption $option */
         $option = AttributeOption::factory()->create([
-            'name' => $optionName,
+            $field => $optionName,
             'attribute_id' => $attribute->getKey(),
             'index' => 0,
         ]);

@@ -6,6 +6,7 @@ use App\Rules\WhereIn;
 use App\Services\Contracts\SortServiceContract;
 use App\SortColumnTypes\SortableColumn;
 use App\SortColumnTypes\TranslatedColumn;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductAttribute\Repositories\AttributeRepository;
 use Domain\ProductSet\ProductSet;
 use Illuminate\Database\Eloquent\Builder;
@@ -137,8 +138,17 @@ readonly class SortService implements SortServiceContract
 
     private function addAttributeOrder(Builder $query, string $field, string $order): void
     {
-        $attribute = $this->attributeRepository->getOne(Str::after($field, 'attribute.'));
+        $attribute = $this->attributeRepository->getOne(
+            Str::after($field, 'attribute.'),
+        );
+
         $sortField = $attribute->type->getOptionFieldByType();
+
+        if (array_key_exists($sortField, (new AttributeOption())->getSortable())
+            && (new AttributeOption())->getSortable()[$sortField] === TranslatedColumn::class
+        ) {
+            $sortField = TranslatedColumn::getColumnName($sortField);
+        }
 
         $query->leftJoin('product_attribute', function (JoinClause $join) use ($attribute): void {
             $join
@@ -148,7 +158,10 @@ readonly class SortService implements SortServiceContract
                     $join
                         ->on('product_attribute_attribute_option.product_attribute_id', 'product_attribute.id')
                         ->join('attribute_options', function (JoinClause $join): void {
-                            $join->on('product_attribute_attribute_option.attribute_option_id', 'attribute_options.id');
+                            $join->on(
+                                'product_attribute_attribute_option.attribute_option_id',
+                                'attribute_options.id',
+                            );
                         });
                 });
         })

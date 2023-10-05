@@ -63,7 +63,6 @@ final readonly class ProductService
         foreach ($dto->translations as $lang => $translations) {
             $product->setLocale($lang)->fill($translations);
         }
-
         $this->translationService->checkPublished($product, ['name']);
 
         $product->save();
