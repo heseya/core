@@ -64,14 +64,15 @@ trait CustomHasTranslations
             $translations = $this->getTranslatedLocales($key);
         } else {
             // only published
+            /** @var array<int, string> $translations */
+            $translations = $this->published ?? [];
             if ($this instanceof Option) {
                 /** @var array<int, string> $translations */
                 $translations = $this->schema->published ?? [];
-            } elseif ($this instanceof AttributeOption) {
-                $translations = $this->attribute->published ?? [];
-            } else {
+            }
+            if ($this instanceof AttributeOption) {
                 /** @var array<int, string> $translations */
-                $translations = $this->published ?? [];
+                $translations = $this->attribute->published ?? [];
             }
         }
 
