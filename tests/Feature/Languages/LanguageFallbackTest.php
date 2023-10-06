@@ -789,8 +789,13 @@ class LanguageFallbackTest extends TestCase
         $product->save();
 
         $attribute = Attribute::factory()->create([
-            'name' => 'Atrybut',
+            'name' => 'Atrybut 1',
+            'published' => [$this->lang, $en->getKey()],
         ]);
+        $attribute->setLocale($en->getKey())->fill([
+            'name' => 'Attribute 1',
+        ]);
+        $attribute->save();
         $attributeOption = AttributeOption::factory()->create([
             'index' => 1,
             'name' => 'Opcja 1',
@@ -812,7 +817,7 @@ class LanguageFallbackTest extends TestCase
             ])
             ->assertJsonFragment([
                 'id' => $attribute->getKey(),
-                'name' => 'Atrybut',
+                'name' => 'Attribute 1',
             ])
             ->assertJsonFragment([
                 'id' => $product->getKey(),
