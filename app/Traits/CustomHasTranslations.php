@@ -58,7 +58,7 @@ trait CustomHasTranslations
         if ($this instanceof SeoMetadata && !$this->global && $this->model_type) {
             $permission = Config::get('relation-aliases.' . $this->model_type)::HIDDEN_PERMISSION;
         }
-        if (Auth::user() && Auth::user()->hasPermissionTo($permission)) {
+        if ((Auth::user() && Auth::user()->hasPermissionTo($permission)) || $this instanceof AttributeOption) {
             // published and no published
             /** @var Collection<int, string> $translations */
             $translations = $this->getTranslatedLocales($key);
@@ -69,10 +69,6 @@ trait CustomHasTranslations
             if ($this instanceof Option) {
                 /** @var array<int, string> $translations */
                 $translations = $this->schema->published ?? [];
-            }
-            if ($this instanceof AttributeOption) {
-                /** @var array<int, string> $translations */
-                $translations = $this->attribute->published ?? [];
             }
         }
 
