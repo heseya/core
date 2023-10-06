@@ -19,6 +19,7 @@ use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
@@ -37,10 +38,12 @@ class ProductRepository implements ProductRepositoryContract
         if (!$dto->full instanceof Optional && $dto->full) {
             $additionalRelations = [
                 'items',
+                'items.deposits',
                 'schemas',
                 'schemas.options',
                 'schemas.options.schema',
                 'schemas.options.items',
+                'schemas.options.items.deposits',
                 'schemas.options.metadata',
                 'schemas.options.metadataPrivate',
                 'schemas.options.prices',
@@ -97,6 +100,7 @@ class ProductRepository implements ProductRepositoryContract
                 'pricesMinInitial',
                 'pricesMaxInitial',
                 'attributes',
+                // TODO to nie pobiera options z pivota, tylko bezpośrednio z attribute
                 'attributes.options',
                 'attributes.options.metadata',
                 'attributes.options.metadataPrivate',

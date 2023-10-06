@@ -40,6 +40,7 @@ use Domain\ProductSet\ProductSet;
 use Domain\Seo\Models\SeoMetadata;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Domain\Tag\Models\Tag;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
@@ -887,25 +888,39 @@ class PerformanceTest extends TestCase
             ])->count(3)->create();
             $categories = $categories->merge($children);
         }
+        $categories->each(fn (ProductSet $set) => $set->metadata()->saveMany(Metadata::factory()->count(mt_rand(1, 4))->make()));
 
         $sales = Discount::factory()->count(5)->create([
             'code' => null,
+            'target_type' => DiscountTargetType::PRODUCTS->value,
         ]);
+        $sales->each(fn (Discount $sale) => $sale->metadata()->saveMany(Metadata::factory()->count(mt_rand(1, 4))->make()));
 
         $tags = Tag::factory()->count(10)->create();
         $pages = Page::factory()->count(10)->create();
+        $pages->each(fn (Page $page) => $page->metadata()->saveMany(Metadata::factory()->count(mt_rand(1, 4))->make()));
 
         $items = Item::factory()->count(10)->create();
+
+        $attributes = Attribute::factory()->count(10)->create();
+        $attributes->each(function (Attribute $attribute) {
+            $attribute->metadata()->saveMany(Metadata::factory()->count(mt_rand(1, 4))->make());
+            $options = AttributeOption::factory()->count(mt_rand(1, 4))->create(
+                ['attribute_id' => $attribute->getKey(), 'index' => 1]
+            );
+            $options->each(fn (AttributeOption $option) => $option->metadata()->saveMany(Metadata::factory()->count(mt_rand(1, 4))->make()));
+        });
 
         /** @var ProductService $productService */
         $productService = App::make(ProductService::class);
         /** @var ProductRepositoryContract $productRepository */
         $productRepository = App::make(ProductRepositoryContract::class);
-        $products->each(function (Product $product) use ($categories, $productService, $productRepository, $sales, $tags, $pages, $items) {
+        $products->each(function (Product $product) use ($categories, $productService, $productRepository, $sales, $tags, $pages, $items, $attributes) {
             $this->prepareProductSchemas($product);
 
             for ($i = 0; $i < 5; ++$i) {
                 $media = Media::factory()->create();
+                $media->metadata()->saveMany(Metadata::factory()->count(mt_rand(1, 4))->make());
                 $product->media()->attach($media);
             }
 
@@ -914,10 +929,13 @@ class PerformanceTest extends TestCase
                 $product->relatedSets()->syncWithoutDetaching($categories->random());
                 $product->sales()->syncWithoutDetaching($sales->random());
                 $product->tags()->syncWithoutDetaching($tags->random());
-                $product->metadata()->save(Metadata::factory()->make());
+                $product->metadata()->saveMany(Metadata::factory()->count(mt_rand(1, 4))->make());
                 $product->pages()->syncWithoutDetaching($pages->random());
                 $product->items()->attach($items->random(), ['required_quantity' => mt_rand(1, 4)]);
             }
+
+            $product->seo()->save(SeoMetadata::factory()->create());
+            $this->attachAttributes($product, $attributes);
 
             $product->save();
             $product->refresh();
@@ -934,6 +952,15 @@ class PerformanceTest extends TestCase
         });
     }
 
+    private function attachAttributes(Product $product, Collection $attributes)
+    {
+        $selectedAttributes = $attributes->random(3);
+        foreach ($selectedAttributes as $attribute) {
+            $product->attributes()->attach($attribute);
+        }
+        $product->attributes->each(fn ($attribute) => $attribute->pivot->options()->attach($attribute->options->random()));
+    }
+
     private function prepareProductSchemas(Product $product): void
     {
         $schemas = Schema::factory()
@@ -943,6 +970,7 @@ class PerformanceTest extends TestCase
             ->create();
 
         $schemas->each(function ($schema) use ($product) {
+            $schema->metadata()->saveMany(Metadata::factory()->count(mt_rand(1, 4))->make());
             $priceRepository = App::make(PriceRepository::class);
             $priceRepository->setModelPrices($schema, [
                 ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(),
@@ -954,12 +982,17 @@ class PerformanceTest extends TestCase
                 /** @var Item $item */
                 $item = Item::factory()->create();
                 $item->deposits()->saveMany(Deposit::factory()->count(2)->make());
+                $item->metadata()->saveMany(Metadata::factory()->count(mt_rand(1, 4))->make());
 
-                Option::factory([
+                $options = Option::factory([
                     'schema_id' => $schema->getKey(),
                 ])
                     ->has(Price::factory()->forAllCurrencies())
                     ->count(3)->create();
+                $options->each(function (Option $option) {
+                    $option->metadata()->saveMany(Metadata::factory()->count(mt_rand(1, 4))->make());
+                    $option->items()->saveMany(Item::factory()->count(mt_rand(1, 4))->create());
+                });
             }
         });
     }
