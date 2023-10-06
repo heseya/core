@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Enums\UserRegisteredTemplate;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -12,6 +13,10 @@ class UserRegistered extends Notification
 {
     use Queueable;
 
+    public function __construct(
+        protected UserRegisteredTemplate $template = UserRegisteredTemplate::DEFAULT,
+    ) {}
+
     public function via(mixed $notifiable): array
     {
         return ['mail'];
@@ -19,32 +24,33 @@ class UserRegistered extends Notification
 
     public function toMail(mixed $notifiable): MailMessage
     {
-        if (Config::get('client.mails')) {
-            if ($notifiable?->metadataPersonal->where('name', 'partner')?->first()?->value) {
-                /** @var string $subject */
-                $subject = Lang::get('mail.client.partner-register.subject');
-                $view = 'mail.client.partner-register';
-                $url = Config::get('app.admin_url');
-            } else {
-                /** @var string $subject */
-                $subject = Lang::get('mail.client.user-register.subject');
-                $view = 'mail.client.user-register';
-                $url = Config::get('app.store_url');
-            }
+        [$subject, $view, $url] = match ($this->template) {
+            UserRegisteredTemplate::CLIENT_PARTNER => [
+                Lang::get('mail.client.partner-register.subject'),
+                'mail.client.partner-register',
+                Config::get('app.admin_url'),
+            ],
+            UserRegisteredTemplate::CLIENT_INSIDER => [
+                Lang::get('mail.client.user-register.subject'),
+                'mail.client.user-register',
+                Config::get('app.store_url'),
+            ],
+            default => [
+                Lang::get('mail.subject-user-registered'),
+                'mail.user-registered',
+                null,
+            ],
+        };
 
-            return (new MailMessage())
-                ->subject($subject)
-                ->view($view, [
-                    'name' => $notifiable?->name,
-                    'url' => $url,
-                ]);
+        if (is_array($subject)) {
+            $subject = implode($subject);
         }
-
-        /** @var string $subject */
-        $subject = Lang::get('mail.subject-user-registered');
 
         return (new MailMessage())
             ->subject($subject)
-            ->view('mail.user-registered');
+            ->view($view, [
+                'name' => $notifiable?->name ?? $notifiable?->email,
+                'url' => $url,
+            ]);
     }
 }
