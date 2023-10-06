@@ -22,6 +22,7 @@ use Spatie\LaravelData\Attributes\Validation\Email;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Required;
 use Spatie\LaravelData\Attributes\Validation\StringType;
+use Spatie\LaravelData\Attributes\Validation\Url;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
@@ -57,6 +58,8 @@ final class UserCreateDto extends Data
         public string $name,
         #[Required, StringType, Email, Max(255)]
         public string $email,
+        #[Required, StringType, Url, Max(255)]
+        public string $email_verify_url,
         #[Required, StringType, Max(255)]
         public string $password,
         #[ArrayType]
@@ -89,6 +92,12 @@ final class UserCreateDto extends Data
                 'email',
                 'max:255',
                 ValidationRule::unique('users')->whereNull('deleted_at'),
+            ],
+            'email_verify_url' => [
+                'required',
+                'url',
+                'max:255',
+                'required_with:email',
             ],
             'password' => [Password::defaults()],
             'roles.*' => [

@@ -33,7 +33,7 @@ final class AttributeOptionController extends Controller
             ->options()
             ->searchByCriteria($request->validated())
             ->orderBy('order')
-            ->with(['metadata', 'metadataPrivate']);
+            ->with(['metadata', 'metadataPrivate', 'attribute']);
 
         return AttributeOptionResource::collection(
             $query->paginate(Config::get('pagination.per_page')),

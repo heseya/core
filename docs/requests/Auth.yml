@@ -36,7 +36,10 @@ Register:
             example: 'Registered user'
           email:
             type: string
-            example: admin@example.com
+            example: admin@example.com          
+          email_verify_url:
+            type: string
+            example: https://localhost/frontend/verify
           password:
             type: string
             example: secret

@@ -33,23 +33,76 @@ class ProductRepository implements ProductRepositoryContract
 
     public function search(ProductSearchDto $dto): LengthAwarePaginator
     {
-        $query = Product::searchByCriteria(
-            $dto->except('sort')->toArray() + $this->getPublishedLanguageFilter('products'),
-        )
-            ->with(
-                [
-                    'attributes',
-                    'metadata',
-                    'media',
-                    'publishedTags',
-                    'items',
-                    'pricesBase',
-                    'pricesMin',
-                    'pricesMax',
-                    'pricesMinInitial',
-                    'pricesMaxInitial',
-                ],
-            );
+        $additionalRelations = [];
+        if (!$dto->full instanceof Optional && $dto->full) {
+            $additionalRelations = [
+                'items',
+                'schemas',
+                'schemas.options',
+                'schemas.options.schema',
+                'schemas.options.items',
+                'schemas.options.metadata',
+                'schemas.options.metadataPrivate',
+                'schemas.options.prices',
+                'schemas.prices',
+                'schemas.metadata',
+                'schemas.metadataPrivate',
+                'schemas.usedSchemas',
+                'sets',
+                'sets.metadata',
+                'sets.metadataPrivate',
+                'sets.media',
+                'sets.media.metadata',
+                'sets.media.metadataPrivate',
+                'sets.childrenPublic',
+                'sets.parent',
+                'relatedSets',
+                'relatedSets.media',
+                'relatedSets.media.metadata',
+                'relatedSets.media.metadataPrivate',
+                'relatedSets.metadata',
+                'relatedSets.metadataPrivate',
+                'relatedSets.childrenPublic',
+                'relatedSets.parent',
+                'sales',
+                'sales.metadata',
+                'sales.metadataPrivate',
+                'sales.amounts',
+                'sales.orders',
+                'pages',
+                'pages.metadata',
+                'pages.metadataPrivate',
+                'attachments',
+                'attachments.media',
+                'attachments.media.metadata',
+                'attachments.media.metadataPrivate',
+                'seo',
+                'seo.media',
+                'seo.media.metadata',
+                'seo.media.metadataPrivate',
+                'attributes.metadata',
+                'attributes.metadataPrivate',
+            ];
+        }
+
+        $query = Product::searchByCriteria($dto->except('sort')->toArray() + $this->getPublishedLanguageFilter('products'))
+            ->with(array_merge([
+                'media',
+                'media.metadata',
+                'media.metadataPrivate',
+                'publishedTags',
+                'pricesBase',
+                'pricesMin',
+                'pricesMax',
+                'pricesMinInitial',
+                'pricesMaxInitial',
+                'attributes',
+                'attributes.options',
+                'attributes.options.metadata',
+                'attributes.options.metadataPrivate',
+                'metadata',
+                'metadataPrivate',
+            ], $additionalRelations));
 
         if (Gate::denies('products.show_hidden')) {
             $query->where('products.public', true);

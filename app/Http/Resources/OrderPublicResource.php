@@ -2,11 +2,15 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Order;
 use App\Traits\MetadataResource;
 use Domain\Order\Resources\OrderStatusResource;
 use Domain\SalesChannel\Resources\SalesChannelResource;
 use Illuminate\Http\Request;
 
+/**
+ * @property Order $resource
+ */
 class OrderPublicResource extends Resource
 {
     use MetadataResource;

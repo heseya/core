@@ -8,6 +8,8 @@ use App\Models\Product;
 use App\Models\Schema;
 use Domain\Language\Enums\LangFallbackType;
 use Domain\Language\Language;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
 
@@ -753,6 +755,64 @@ class LanguageFallbackTest extends TestCase
             ->assertJsonFragment([
                 'id' => $schema->getKey(),
                 'name' => 'Schemat',
+            ])
+            ->assertJsonFragment([
+                'id' => $product->getKey(),
+                'name' => 'Test ES',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductWithAttributeOptionFallback(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.show_details');
+
+        /** @var Language $en */
+        $en = Language::create([
+            'iso' => 'es',
+            'name' => 'English',
+            'default' => false,
+            'hidden' => false,
+        ]);
+
+        /** @var Product $product */
+        $product = Product::factory()->create([
+            'public' => true,
+            'name' => 'Test PL',
+            'published' => json_encode([$this->language->getKey(), $en->getKey()]),
+        ]);
+        $product->setLocale($en->getKey())->fill([
+            'name' => 'Test ES',
+        ]);
+        $product->save();
+
+        $attribute = Attribute::factory()->create([
+            'name' => 'Atrybut',
+        ]);
+        $attributeOption = AttributeOption::factory()->create([
+            'index' => 1,
+            'name' => 'Opcja 1',
+            'attribute_id' => $attribute->getKey(),
+        ]);
+
+        $product->attributes()->attach($attribute);
+        $product->attributes->first()->pivot->options()->attach($attributeOption->getKey());
+
+        // For some reasons in test Config::set not working properly
+        App::setFallbackLocale($this->language->getKey());
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products/id:' . $product->getKey(), headers: ['Accept-Language' => 'es'])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $attributeOption->getKey(),
+                'name' => 'Opcja 1',
+            ])
+            ->assertJsonFragment([
+                'id' => $attribute->getKey(),
+                'name' => 'Atrybut',
             ])
             ->assertJsonFragment([
                 'id' => $product->getKey(),

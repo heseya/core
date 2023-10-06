@@ -1506,7 +1506,18 @@ class ShippingMethodTest extends TestCase
 
         $response = $this->actingAs($this->{$user})
             ->deleteJson('/shipping-methods/id:' . $this->shipping_method->getKey());
-        $response->assertStatus(400);
-        $this->assertDatabaseHas('shipping_methods', $this->shipping_method->toArray());
+        $response->assertStatus(204);
+
+        $this->assertDatabaseHas('shipping_methods', [
+            'id' => $this->shipping_method->getKey(),
+        ]);
+        $this->assertDatabaseMissing('shipping_methods', [
+            'id' => $this->shipping_method->getKey(),
+            'deleted_at' => null,
+        ]);
+
+        $this->shipping_method->refresh();
+
+        $this->assertTrue($this->shipping_method->trashed());
     }
 }

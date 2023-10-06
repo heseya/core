@@ -139,7 +139,7 @@
                                     <div
                                         style="font-family:Arial, sans-serif;font-size:16px;line-height:22px;text-align:center;color:#333333;">
                                         <p> @lang('mail.status-changed')<br> @lang('mail.status'):
-                                            <b>{{ $order->status->name }}</b>
+                                            <b>{{ $status }}</b>
                                         </p>
                                     </div>
                                 </td>

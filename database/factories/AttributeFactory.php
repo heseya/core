@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 
 class AttributeFactory extends Factory
@@ -29,6 +30,7 @@ class AttributeFactory extends Factory
             'type' => AttributeType::getRandomInstance(),
             'global' => $this->faker->boolean,
             'sortable' => $this->faker->boolean,
+            'published' => [App::getLocale()],
         ];
     }
 }

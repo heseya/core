@@ -86,6 +86,9 @@ final readonly class UserService implements UserServiceContract
 
         $user->save();
 
+        $user->markEmailAsUnverified();
+        $user->sendEmailVerificationNotification();
+
         UserCreated::dispatch($user);
 
         return $user;
@@ -156,6 +159,11 @@ final readonly class UserService implements UserServiceContract
         $user->update($dto->toArray());
 
         UserUpdated::dispatch($user);
+
+        if ($user->wasChanged('email')) {
+            $user->markEmailAsUnverified();
+            $user->sendEmailVerificationNotification();
+        }
 
         return $user;
     }
