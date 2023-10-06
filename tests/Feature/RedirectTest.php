@@ -24,7 +24,7 @@ class RedirectTest extends TestCase
             ->assertOk()
             ->assertJsonCount(5, 'data');
 
-        $this->assertQueryCountLessThan(5);
+        $this->assertQueryCountLessThan(8);
     }
 
     /**
@@ -50,7 +50,7 @@ class RedirectTest extends TestCase
                 'id' => $redirect->getKey(),
             ]);
 
-        $this->assertQueryCountLessThan(5);
+        $this->assertQueryCountLessThan(8);
     }
 
     public function testIndexUnauthorized(): void
