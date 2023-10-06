@@ -5,6 +5,7 @@ namespace App\Traits;
 use App\Models\Discount;
 use App\Models\Option;
 use Domain\Language\LanguageService;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\Seo\Models\SeoMetadata;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -66,6 +67,8 @@ trait CustomHasTranslations
             if ($this instanceof Option) {
                 /** @var array<int, string> $translations */
                 $translations = $this->schema->published ?? [];
+            } elseif ($this instanceof AttributeOption) {
+                $translations = $this->attribute->published ?? [];
             } else {
                 /** @var array<int, string> $translations */
                 $translations = $this->published ?? [];

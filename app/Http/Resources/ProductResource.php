@@ -83,6 +83,7 @@ class ProductResource extends Resource
         $previousSettings = $this->getCurrentLangFallbackSettings();
         $this->setAnyLangFallback();
         $schemas = SchemaResource::collection($this->resource->schemas);
+        $attributes = ProductAttributeResource::collection($this->resource->attributes);
         $this->setLangFallbackSettings(...$previousSettings);
 
         return [
@@ -95,7 +96,7 @@ class ProductResource extends Resource
             'schemas' => $schemas,
             'sets' => ProductSetResource::collection($sets),
             'related_sets' => ProductSetResource::collection($relatedSets),
-            'attributes' => ProductAttributeResource::collection($this->resource->attributes),
+            'attributes' => $attributes,
             'seo' => SeoMetadataResource::make($this->resource->seo),
             'sales' => SaleResource::collection($this->resource->sales),
             'attachments' => MediaAttachmentResource::collection($attachments),
