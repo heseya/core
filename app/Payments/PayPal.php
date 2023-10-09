@@ -44,7 +44,7 @@ class PayPal implements PaymentMethod
         return [
             'external_id' => $response->getData()['id'],
             'redirect_url' => $response->getRedirectUrl(),
-            'additional_data' => PayPal::getTokenTransaction($response->getData()),
+            'additional_data' => self::getTokenTransaction($response->getData()),
         ];
     }
 
@@ -120,7 +120,7 @@ class PayPal implements PaymentMethod
                 continue;
             }
 
-            if ($link['rel'] !== PayPal::APPROVAL_URL) {
+            if ($link['rel'] !== self::APPROVAL_URL) {
                 continue;
             }
 
@@ -130,7 +130,7 @@ class PayPal implements PaymentMethod
                 return null;
             }
 
-            $queryVariables = PayPal::getUrlQueryVariables($urlQueryString);
+            $queryVariables = self::getUrlQueryVariables($urlQueryString);
 
             if (!array_key_exists('token', $queryVariables)) {
                 return null;
