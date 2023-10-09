@@ -7,7 +7,6 @@ use App\Models\MediaAttachment;
 use App\Models\Product;
 use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
-use App\Traits\ModifyLangFallback;
 use Domain\Page\PageResource;
 use Domain\ProductSet\ProductSet;
 use Domain\ProductSet\Resources\ProductSetResource;
@@ -24,7 +23,6 @@ class ProductResource extends Resource
     use GetAllTranslations;
 
     use MetadataResource;
-    use ModifyLangFallback;
 
     public function base(Request $request): array
     {
@@ -80,12 +78,6 @@ class ProductResource extends Resource
             )
             : $this->resource->attachments;
 
-        $previousSettings = $this->getCurrentLangFallbackSettings();
-        $this->setAnyLangFallback();
-        $schemas = SchemaResource::collection($this->resource->schemas);
-        $attributes = ProductAttributeResource::collection($this->resource->attributes);
-        $this->setLangFallbackSettings(...$previousSettings);
-
         return [
             'order' => $this->resource->order,
             'description_html' => $this->resource->description_html,
@@ -93,10 +85,10 @@ class ProductResource extends Resource
             'descriptions' => PageResource::collection($this->resource->pages),
             'items' => ProductItemResource::collection($this->resource->items),
             'gallery' => MediaResource::collection($this->resource->media),
-            'schemas' => $schemas,
+            'schemas' => ProductSchemaResource::collection($this->resource->schemas),
             'sets' => ProductSetResource::collection($sets),
             'related_sets' => ProductSetResource::collection($relatedSets),
-            'attributes' => $attributes,
+            'attributes' => ProductAttributeResource::collection($this->resource->attributes),
             'seo' => SeoMetadataResource::make($this->resource->seo),
             'sales' => SaleResource::collection($this->resource->sales),
             'attachments' => MediaAttachmentResource::collection($attachments),

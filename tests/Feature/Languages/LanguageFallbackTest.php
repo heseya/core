@@ -742,8 +742,6 @@ class LanguageFallbackTest extends TestCase
 
         $product->schemas()->save($schema);
 
-        // For some reasons in test Config::set not working properly
-        App::setFallbackLocale($this->language->getKey());
         $this
             ->actingAs($this->{$user})
             ->json('GET', '/products/id:' . $product->getKey(), headers: ['Accept-Language' => 'es'])
@@ -805,8 +803,6 @@ class LanguageFallbackTest extends TestCase
         $product->attributes()->attach($attribute);
         $product->attributes->first()->pivot->options()->attach($attributeOption->getKey());
 
-        // For some reasons in test Config::set not working properly
-        App::setFallbackLocale($this->language->getKey());
         $this
             ->actingAs($this->{$user})
             ->json('GET', '/products/id:' . $product->getKey(), headers: ['Accept-Language' => 'es'])
