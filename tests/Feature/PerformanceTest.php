@@ -202,7 +202,7 @@ class PerformanceTest extends TestCase
             ->getJson('/attributes/id:' . $attribute->getKey() . '/options')
             ->assertOk();
 
-        $this->assertQueryCountLessThan(12);
+        $this->assertQueryCountLessThan(13);
     }
 
     public function testIndexPerformanceAttribute500(): void

@@ -3,22 +3,17 @@
 namespace App\Http\Resources;
 
 use App\Traits\ModifyLangFallback;
-use Domain\ProductAttribute\Resources\AttributeOptionResource;
 use Illuminate\Http\Request;
 
-class ProductAttributeShortResource extends Resource
+class ProductSchemaResource extends SchemaResource
 {
     use ModifyLangFallback;
 
     public function base(Request $request): array
     {
-        return [
-            'name' => $this->resource->name,
-            'slug' => $this->resource->slug,
-            'selected_options' => AttributeOptionResource::collection(
-                $this->resource->pivot->options ?? $this->resource->options,
-            ),
-        ];
+        return array_merge(parent::base($request), [
+            'options' => ProductSchemaOptionResource::collection($this->resource->options),
+        ]);
     }
 
     public function toArray($request): array
