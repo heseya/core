@@ -34,7 +34,6 @@ final class SettingUpdateDto extends Data
     {
         /** @var array<string, mixed> $settingsArray */
         $settingsArray = Config::get('settings');
-
         /** @var Collection<string, mixed> $settings */
         $settings = Collection::make($settingsArray);
 
@@ -44,7 +43,7 @@ final class SettingUpdateDto extends Data
         return [
             'name' => [
                 Rule::notIn(
-                    $settings->except($currentSetting)->keys()->toArray(),
+                    $settings->except([$currentSetting])->keys()->toArray(),
                 ),
             ],
         ];

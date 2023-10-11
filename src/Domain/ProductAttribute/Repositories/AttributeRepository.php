@@ -11,9 +11,12 @@ use Spatie\LaravelData\Optional;
 
 final readonly class AttributeRepository
 {
-    public function getOne(string $id): Attribute
+    public function getOne(string $search): Attribute
     {
-        return Attribute::query()->findOrFail($id);
+        return Attribute::query()
+            ->where('id', $search)
+            ->orWhere('slug', $search)
+            ->firstOrFail();
     }
 
     public function create(AttributeCreateDto $dto): Attribute

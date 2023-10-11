@@ -14,7 +14,7 @@ class WebHookFailedListener implements ShouldQueue
     {
         WebHookEventLogEntry::query()->create([
             'id' => $event->uuid,
-            'event' => Arr::get($event->payload, 'event'),
+            'event' => is_array($event->payload) ? Arr::get($event->payload, 'event') : null,
             'web_hook_id' => Arr::get($event->meta, 'web_hook_id'),
             'triggered_at' => Arr::get($event->meta, 'triggered_at', Carbon::now()),
             'url' => $event->webhookUrl,

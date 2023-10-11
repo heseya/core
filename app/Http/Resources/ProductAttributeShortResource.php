@@ -11,6 +11,7 @@ class ProductAttributeShortResource extends Resource
     {
         return [
             'name' => $this->resource->name,
+            'slug' => $this->resource->slug,
             'selected_options' => AttributeOptionResource::collection(
                 $this->resource->pivot->options ?? $this->resource->options,
             ),

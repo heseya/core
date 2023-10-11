@@ -1,0 +1,18 @@
+Redirect:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string
+      example: 'Example redirect name'
+    type:
+      type: integer
+      example: 308
+    url:
+      type: string
+      example: 'https://example.com'
+    slug:
+      type: string
+      example: 'test-slug'

@@ -18,6 +18,46 @@ class MediaTest extends TestCase
 {
     private Media $media;
 
+    public static function deleteProvider(): array
+    {
+        return [
+            'as user pages add permission' => ['user', 'pages.add'],
+            'as app pages add permission' => ['application', 'pages.add'],
+            'as user pages edit permission' => ['user', 'pages.edit'],
+            'as app pages edit permission' => ['application', 'pages.edit'],
+            'as user products add permission' => ['user', 'products.add'],
+            'as app products add permission' => ['application', 'products.add'],
+        ];
+    }
+
+    public static function videoProvider(): array
+    {
+        return [
+            'as user mp4' => ['user', '.mp4', 'video/mp4'],
+            'as user webm' => ['user', '.webm', 'video/webm'],
+            'as user ogv' => ['user', '.ogv', 'video/ogg'],
+            'as user ogg' => ['user', '.ogg', 'video/ogg'],
+            'as user mov' => ['user', '.mov', 'video/quicktime'],
+            'as user wmv' => ['user', '.wmv', 'video/x-ms-wmv'],
+            'as app mp4' => ['application', '.mp4', 'video/mp4'],
+            'as app webm' => ['application', '.webm', 'video/webm'],
+            'as app ogv' => ['application', '.ogv', 'video/ogg'],
+            'as app ogg' => ['application', '.ogg', 'video/ogg'],
+            'as app mov' => ['application', '.mov', 'video/quicktime'],
+            'as app wmv' => ['application', '.wmv', 'video/x-ms-wmv'],
+        ];
+    }
+
+    public static function invalidVideoProvider(): array
+    {
+        return [
+            'as user avi' => ['user', '.avi', 'video/x-msvideo'],
+            'as user ogg audio' => ['user', '.ogg', 'audio/ogg'],
+            'as app avi' => ['application', '.avi', 'video/x-msvideo'],
+            'as app ogg audio' => ['application', '.ogg', 'audio/ogg'],
+        ];
+    }
+
     public function setUp(): void
     {
         parent::setUp();
@@ -67,6 +107,99 @@ class MediaTest extends TestCase
         $response->assertJsonCount(2, 'data')
             ->assertJsonFragment([
                 'relations_count' => 0,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexFewFilters($user): void
+    {
+        $this->{$user}->givePermissionTo('media.show');
+
+        Media::query()->delete();
+
+        $media1 = Media::factory()->create([
+            'type' => MediaType::OTHER,
+            'alt' => 'Instrukcja',
+        ]);
+
+        $media1->products()->save(Product::factory()->create());
+
+        $expected = Media::factory()->create([
+            'type' => MediaType::VIDEO,
+            'alt' => 'Instrukcja',
+        ]);
+
+        $expected->products()->save(Product::factory()->create());
+
+        Media::factory()->create([
+            'type' => MediaType::PHOTO,
+            'alt' => 'test',
+        ]);
+
+        $response = $this->actingAs($this->{$user})->json('GET', '/media?search=Instrukcja&type=video&has_relationships=1');
+        $response->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $expected->getKey(),
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexWithSearchParameter($user): void
+    {
+        $this->{$user}->givePermissionTo('media.show');
+
+        Media::query()->delete();
+
+        $mediaOne = Media::factory()->create([
+            'type' => MediaType::OTHER,
+        ]);
+
+        $mediaTwo = Media::factory()->create([
+            'url' => 'https://example.com',
+        ]);
+
+        $mediaThree = Media::factory()->create([
+            'alt' => 'alt_value',
+        ]);
+
+        $mediaFour = Media::factory()->create([
+            'slug' => 'slug_value',
+        ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/media', [
+            'search' => 'oth',
+        ])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $mediaOne->getKey(),
+            ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/media', [
+            'search' => 'xampl',
+        ])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $mediaTwo->getKey(),
+            ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/media', [
+            'search' => 'alt_val',
+        ])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $mediaThree->getKey(),
+            ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/media', [
+            'search' => 'slug_val',
+        ])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $mediaFour->getKey(),
             ]);
     }
 
@@ -209,14 +342,15 @@ class MediaTest extends TestCase
                     'test' => 'value',
                 ],
             ])
-            ->assertJsonStructure(['data' => [
-                'id',
-                'type',
-                'url',
-                'slug',
-                'alt',
-                'metadata',
-            ],
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'type',
+                    'url',
+                    'slug',
+                    'alt',
+                    'metadata',
+                ],
             ]);
     }
 
@@ -291,14 +425,15 @@ class MediaTest extends TestCase
         $response
             ->assertCreated()
             ->assertJsonFragment(['type' => MediaType::DOCUMENT])
-            ->assertJsonStructure(['data' => [
-                'id',
-                'type',
-                'url',
-                'slug',
-                'alt',
-                'metadata',
-            ],
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'type',
+                    'url',
+                    'slug',
+                    'alt',
+                    'metadata',
+                ],
             ]);
     }
 
@@ -352,18 +487,6 @@ class MediaTest extends TestCase
         $this->actingAs($this->{$user})->postJson('/media', [
             'file' => UploadedFile::fake()->image('image.jpeg'),
         ])->assertForbidden();
-    }
-
-    public static function deleteProvider(): array
-    {
-        return [
-            'as user pages add permission' => ['user', 'pages.add'],
-            'as app pages add permission' => ['application', 'pages.add'],
-            'as user pages edit permission' => ['user', 'pages.edit'],
-            'as app pages edit permission' => ['application', 'pages.edit'],
-            'as user products add permission' => ['user', 'products.add'],
-            'as app products add permission' => ['application', 'products.add'],
-        ];
     }
 
     public function testDeleteUnauthorized(): void
@@ -455,24 +578,6 @@ class MediaTest extends TestCase
         $this->assertDatabaseMissing('media', ['id' => $media->getKey()]);
     }
 
-    public static function videoProvider(): array
-    {
-        return [
-            'as user mp4' => ['user', '.mp4', 'video/mp4'],
-            'as user webm' => ['user', '.webm', 'video/webm'],
-            'as user ogv' => ['user', '.ogv', 'video/ogg'],
-            'as user ogg' => ['user', '.ogg', 'video/ogg'],
-            'as user mov' => ['user', '.mov', 'video/quicktime'],
-            'as user wmv' => ['user', '.wmv', 'video/x-ms-wmv'],
-            'as app mp4' => ['application', '.mp4', 'video/mp4'],
-            'as app webm' => ['application', '.webm', 'video/webm'],
-            'as app ogv' => ['application', '.ogv', 'video/ogg'],
-            'as app ogg' => ['application', '.ogg', 'video/ogg'],
-            'as app mov' => ['application', '.mov', 'video/quicktime'],
-            'as app wmv' => ['application', '.wmv', 'video/x-ms-wmv'],
-        ];
-    }
-
     /**
      * @dataProvider videoProvider
      */
@@ -492,22 +597,13 @@ class MediaTest extends TestCase
         $response
             ->assertCreated()
             ->assertJsonFragment(['type' => MediaType::VIDEO])
-            ->assertJsonStructure(['data' => [
-                'id',
-                'type',
-                'url',
-            ],
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'type',
+                    'url',
+                ],
             ]);
-    }
-
-    public static function invalidVideoProvider(): array
-    {
-        return [
-            'as user avi' => ['user', '.avi', 'video/x-msvideo'],
-            'as user ogg audio' => ['user', '.ogg', 'audio/ogg'],
-            'as app avi' => ['application', '.avi', 'video/x-msvideo'],
-            'as app ogg audio' => ['application', '.ogg', 'audio/ogg'],
-        ];
     }
 
     /**

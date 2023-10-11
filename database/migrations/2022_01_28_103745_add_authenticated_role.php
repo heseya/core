@@ -20,7 +20,7 @@ class AddAuthenticatedRole extends Migration
 
     public function down(): void
     {
-        $authenticated = Role::where('type', '=', RoleType::AUTHENTICATED->value)->firstOrFail();
+        $authenticated = Role::where('type', '=', RoleType::AUTHENTICATED)->first();
         foreach (User::all() as $user) {
             $user->removeRole($authenticated);
         }

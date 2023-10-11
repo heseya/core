@@ -44,5 +44,7 @@ return new class extends Migration {
             $table->dropColumn('price_min_initial');
             $table->dropColumn('price_max_initial');
         });
+
+        Schema::dropIfExists('product_sales');
     }
 };

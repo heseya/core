@@ -45,7 +45,7 @@ class OptionFactory extends Factory
             $prices = FakeDto::generatePricesInAllCurrencies($prices);
 
             $result->each(fn (Option $option) => $priceRepository->setModelPrices($option, [
-                ProductPriceType::PRICE_BASE->value => $prices
+                ProductPriceType::PRICE_BASE->value => $prices,
             ]));
         }
 

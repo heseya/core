@@ -18,7 +18,7 @@ class OrderIndexDto extends Dto implements InstantiateFromRequest
     {
         return new self(
             search: $request->input('search'),
-            sort: $request->input('sort'),
+            sort: $request->input('sort', 'created_at:desc'),
             status_id: $request->input('status_id'),
             shipping_method_id: $request->input('shipping_method_id'),
         );

@@ -29,7 +29,7 @@ class ProductRepository implements ProductRepositoryContract
 {
     use GetPublishedLanguageFilter;
 
-    public function __construct(private PriceRepository $priceRepository) {}
+    public function __construct(private readonly PriceRepository $priceRepository) {}
 
     public function search(ProductSearchDto $dto): LengthAwarePaginator
     {
@@ -111,12 +111,18 @@ class ProductRepository implements ProductRepositoryContract
         if (is_string($dto->price_sort_direction)) {
             if ($dto->price_sort_direction === 'price:asc') {
                 $query->withMin([
-                    'pricesMin as price' => fn (Builder $subquery) => $subquery->where('currency', $dto->price_sort_currency ?? Currency::DEFAULT->value),
+                    'pricesMin as price' => fn (Builder $subquery) => $subquery->where(
+                        'currency',
+                        $dto->price_sort_currency ?? Currency::DEFAULT->value,
+                    ),
                 ], 'value');
             }
             if ($dto->price_sort_direction === 'price:desc') {
                 $query->withMax([
-                    'pricesMax as price' => fn (Builder $subquery) => $subquery->where('currency', $dto->price_sort_currency ?? Currency::DEFAULT->value),
+                    'pricesMax as price' => fn (Builder $subquery) => $subquery->where(
+                        'currency',
+                        $dto->price_sort_currency ?? Currency::DEFAULT->value,
+                    ),
                 ], 'value');
             }
         }
@@ -132,7 +138,10 @@ class ProductRepository implements ProductRepositoryContract
      */
     public function setProductPrices(string $productId, array $priceMatrix): void
     {
-        $this->priceRepository->setModelPrices(new ModelIdentityDto($productId, (new Product())->getMorphClass()), $priceMatrix);
+        $this->priceRepository->setModelPrices(
+            new ModelIdentityDto($productId, (new Product())->getMorphClass()),
+            $priceMatrix,
+        );
     }
 
     /**
@@ -143,9 +152,16 @@ class ProductRepository implements ProductRepositoryContract
      * @throws DtoException
      * @throws ServerException
      */
-    public function getProductPrices(string $productId, array $priceTypes, ?Currency $currency = null): Collection|EloquentCollection
-    {
-        $prices = $this->priceRepository->getModelPrices(new ModelIdentityDto($productId, (new Product())->getMorphClass()), $priceTypes, $currency);
+    public function getProductPrices(
+        string $productId,
+        array $priceTypes,
+        ?Currency $currency = null,
+    ): Collection|EloquentCollection {
+        $prices = $this->priceRepository->getModelPrices(
+            new ModelIdentityDto($productId, (new Product())->getMorphClass()),
+            $priceTypes,
+            $currency,
+        );
 
         $groupedPrices = $prices->mapToGroups(fn (Price $price) => [$price->price_type => PriceDto::from($price)]);
 

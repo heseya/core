@@ -23,7 +23,7 @@ class ProductIndexRequest extends FormRequest
         }
 
         return [
-            'search' => ['nullable', 'string', 'max:255'],
+            'search' => ['sometimes', 'string', 'max:255'],
 
             'ids' => ['array'],
             'ids.*' => ['uuid'],

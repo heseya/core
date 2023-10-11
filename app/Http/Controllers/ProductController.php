@@ -61,7 +61,9 @@ final class ProductController extends Controller
         if (Gate::denies('products.show_hidden') && !$product->public) {
             throw new NotFoundHttpException();
         }
-        $product->load(['schemas', 'schemas.options', 'schemas.options.schema', 'schemas.prices', 'schemas.options.prices']);
+        $product->load(
+            ['schemas', 'schemas.options', 'schemas.options.schema', 'schemas.prices', 'schemas.options.prices'],
+        );
 
         return ProductResource::make($product);
     }
@@ -103,8 +105,11 @@ final class ProductController extends Controller
     }
 
     // TODO: add auth check
-    public function editAttachment(MediaAttachmentUpdateRequest $request, Product $product, MediaAttachment $attachment): JsonResource
-    {
+    public function editAttachment(
+        MediaAttachmentUpdateRequest $request,
+        Product $product,
+        MediaAttachment $attachment,
+    ): JsonResource {
         $attachment = $this->attachmentService->editAttachment(
             $attachment,
             MediaAttachmentUpdateDto::instantiateFromRequest($request),

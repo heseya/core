@@ -1615,7 +1615,8 @@ readonly class DiscountService implements DiscountServiceContract
             } else {
                 /** @var CartItemDto $item */
                 foreach ($cart->getItems() as $item) {
-                    if ($discount->allProductsIds()->doesntContain(fn ($value): bool => $value === $item->getProductId(),
+                    if ($discount->allProductsIds()->doesntContain(
+                        fn ($value): bool => $value === $item->getProductId(),
                     )) {
                         return true;
                     }

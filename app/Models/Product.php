@@ -70,7 +70,6 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     use Sortable;
 
     public const HIDDEN_PERMISSION = 'products.show_hidden';
-
     protected $fillable = [
         'id',
         'name',
@@ -82,6 +81,8 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'google_product_category',
         'available',
         'order',
+        'price_min_initial',
+        'price_max_initial',
         'shipping_time',
         'shipping_date',
         'has_schemas',
@@ -89,14 +90,13 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'shipping_digital',
         'purchase_limit_per_user',
         'published',
+        'search_values',
     ];
-
     protected array $translatable = [
         'name',
         'description_html',
         'description_short',
     ];
-
     protected $casts = [
         'shipping_date' => 'date',
         'public' => 'bool',
@@ -108,20 +108,17 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'shipping_digital' => 'bool',
         'purchase_limit_per_user' => 'float',
     ];
-
     protected array $sortable = [
         'id',
         'name' => TranslatedColumn::class,
         'created_at',
         'updated_at',
-        'order',
         'public',
         'available',
         'attribute.*',
         'set.*',
         'price' => PriceColumn::class,
     ];
-
     protected array $criteria = [
         'search' => ProductSearch::class,
         'ids' => WhereInIds::class,
@@ -146,7 +143,6 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'published' => Like::class,
         'products.published' => Like::class,
     ];
-
     protected string $defaultSortBy = 'products.order';
     protected string $defaultSortDirection = 'desc';
 
@@ -240,19 +236,6 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         );
     }
 
-    public function productSetSales(): Collection
-    {
-        $sales = Collection::make();
-        $sets = $this->sets;
-
-        /** @var ProductSet $set */
-        foreach ($sets as $set) {
-            $sales = $sales->merge($set->allProductsSales());
-        }
-
-        return $sales->unique('id');
-    }
-
     public function allProductSales(Collection $salesWithBlockList): Collection
     {
         $sales = $this->discounts->filter(
@@ -285,9 +268,17 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         return $sales->unique('id');
     }
 
-    private function prices(): MorphMany
+    public function productSetSales(): Collection
     {
-        return $this->morphMany(Price::class, 'model');
+        $sales = Collection::make();
+        $sets = $this->sets;
+
+        /** @var ProductSet $set */
+        foreach ($sets as $set) {
+            $sales = $sales->merge($set->allProductsSales());
+        }
+
+        return $sales->unique('id');
     }
 
     public function pricesBase(): MorphMany
@@ -313,5 +304,10 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     public function pricesMaxInitial(): MorphMany
     {
         return $this->prices()->where('price_type', ProductPriceType::PRICE_MAX_INITIAL->value);
+    }
+
+    private function prices(): MorphMany
+    {
+        return $this->morphMany(Price::class, 'model');
     }
 }

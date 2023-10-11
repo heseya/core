@@ -94,7 +94,7 @@ class OrderSeeder extends Seeder
                     for ($i = 0; $i < mt_rand(0, 5); ++$i) {
                         $order->payments()->save(Payment::factory(['currency' => $order->currency])->make());
                     }
-                }
+                },
             );
     }
 
@@ -106,7 +106,7 @@ class OrderSeeder extends Seeder
                 fn ($sequence) => [
                     'product_id' => Product::where('shipping_digital', $digital)->inRandomOrder()->first()->getKey(),
                     'shipping_digital' => $digital,
-                ]
+                ],
             )
             ->make([
                 'currency' => $order->currency,

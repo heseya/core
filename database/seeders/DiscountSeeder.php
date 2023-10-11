@@ -62,7 +62,7 @@ class DiscountSeeder extends Seeder
                     [
                         DiscountTargetType::ORDER_VALUE,
                         DiscountTargetType::SHIPPING_PRICE,
-                    ]
+                    ],
                 )
                 ->random();
 

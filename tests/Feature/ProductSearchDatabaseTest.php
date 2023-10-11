@@ -2,8 +2,6 @@
 
 namespace Tests\Feature;
 
-use Domain\Price\Dtos\PriceDto;
-use Domain\Price\Enums\ProductPriceType;
 use App\Models\Media;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryContract;
@@ -12,6 +10,8 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\ProductPriceType;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
@@ -60,25 +60,6 @@ class ProductSearchDatabaseTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testSearch($user): void
-    {
-        $this->{$user}->givePermissionTo('products.show');
-
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
-
-        $this
-            ->actingAs($this->{$user})
-            ->json('GET', '/products', ['search' => $product->name])
-            ->assertOk()
-            ->assertJsonCount(1, 'data')
-            ->assertJsonFragment(['id' => $product->getKey()]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testIndexIdsSearch($user): void
     {
         $this->{$user}->givePermissionTo('products.show');
@@ -108,6 +89,42 @@ class ProductSearchDatabaseTest extends TestCase
             ])
             ->assertOk()
             ->assertJsonCount(2, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearch($user): void
+    {
+        $this->{$user}->givePermissionTo('products.show');
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+            'name' => 'First',
+        ]);
+
+        $product2 = Product::factory()->create([
+            'public' => true,
+            'created_at' => Carbon::now()->addHour(),
+            'name' => 'Second',
+        ]);
+
+        $attribute = Attribute::factory()->create([
+            'name' => 'data wydania',
+            'slug' => 'data-wydania',
+        ]);
+
+        $product1->attributes()->attach($attribute->getKey());
+        $product2->attributes()->attach($attribute->getKey());
+
+        // This test check if there is no SQL error that 'name' is ambiguous
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products', [
+                'search' => 'First',
+                'sort' => 'attribute.data-wydania:desc',
+            ])
+            ->assertOk();
     }
 
     /**
@@ -636,11 +653,13 @@ class ProductSearchDatabaseTest extends TestCase
 
         $this
             ->actingAs($this->{$user})
-            ->json('GET', '/products', ['price' => [
-                'min' => '100.00',
-                'max' => '200.00',
-                'currency' => $currency->value,
-            ]])
+            ->json('GET', '/products', [
+                'price' => [
+                    'min' => '100.00',
+                    'max' => '200.00',
+                    'currency' => $currency->value,
+                ],
+            ])
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $product->getKey()]);
@@ -689,8 +708,15 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
-        $products = Product::factory()->count(2)->create([
-            'public' => true,
+        $products = collect([
+            Product::factory()->create([
+                'public' => true,
+                'created_at' => now()->subHour(),
+            ]),
+            Product::factory()->create([
+                'public' => true,
+                'created_at' => now(),
+            ]),
         ]);
 
         $attribute = Attribute::factory()->create([
@@ -720,7 +746,7 @@ class ProductSearchDatabaseTest extends TestCase
                     'attribute' => [
                         $attribute->slug => $options[0]->getKey(),
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -786,7 +812,7 @@ class ProductSearchDatabaseTest extends TestCase
                             $option2->getKey(),
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
@@ -851,7 +877,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'max' => 2137,
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -878,7 +904,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'min' => 1337,
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
@@ -905,7 +931,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'min' => 2337,
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(0, 'data');
@@ -921,7 +947,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'max' => 1337,
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(0, 'data');
@@ -975,7 +1001,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'max' => '2022-09-30',
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -1003,7 +1029,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'max' => '2022-11-30',
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
@@ -1030,7 +1056,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'min' => '2022-12-01',
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(0, 'data');
@@ -1046,7 +1072,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'max' => '2022-09-10',
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(0, 'data');
@@ -1090,7 +1116,7 @@ class ProductSearchDatabaseTest extends TestCase
                     'attribute_not' => [
                         $attribute->slug => $options[0]->getKey(),
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -1150,7 +1176,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'max' => 2137,
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -1172,7 +1198,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'min' => 1337,
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(0, 'data');
@@ -1188,7 +1214,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'min' => 2337,
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
@@ -1210,7 +1236,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'max' => 1337,
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
@@ -1270,7 +1296,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'max' => '2022-09-30',
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -1293,7 +1319,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'max' => '2022-11-30',
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(0, 'data');
@@ -1309,7 +1335,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'min' => '2022-12-01',
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
@@ -1331,7 +1357,7 @@ class ProductSearchDatabaseTest extends TestCase
                             'max' => '2022-09-10',
                         ],
                     ],
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')

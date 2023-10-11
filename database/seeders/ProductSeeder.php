@@ -57,7 +57,7 @@ class ProductSeeder extends Seeder
             ->has(Price::factory()->forAllCurrencies(), 'pricesBase')
             ->create();
 
-        $sets = ProductSet::all();
+            $sets = ProductSet::all();
 
         $brands = ProductSet::factory([
             'name' => 'Brands',

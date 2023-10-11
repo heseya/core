@@ -15,11 +15,11 @@ class AddProfilePermissionAndAddItToAuthenticatedRole extends Migration
         // Saved Addresses
         Permission::create(['name' => 'profile.addresses_manage', 'display_name' => 'Możliwość zarządzania swoimi zapisanymi adresami']);
 
-        $authenticated = Role::where('type', RoleType::AUTHENTICATED->value)->firstOrFail();
+        $authenticated = Role::where('type', RoleType::AUTHENTICATED)->firstOrFail();
         $authenticated->givePermissionTo('profile.addresses_manage');
         $authenticated->save();
 
-        $owner = Role::where('type', RoleType::OWNER->value)->first();
+        $owner = Role::where('type', RoleType::OWNER)->first();
         $owner->givePermissionTo([
             'profile.addresses_manage',
         ]);

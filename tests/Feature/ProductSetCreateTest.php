@@ -148,7 +148,8 @@ class ProductSetCreateTest extends TestCase
         $this->assertDatabaseHas('product_sets', $defaults + [
             "name->{$this->lang}" => 'Test',
             'parent_id' => null,
-        ]);
+        ],
+        );
 
         Event::assertDispatched(ProductSetCreated::class);
     }

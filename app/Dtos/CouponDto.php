@@ -39,7 +39,8 @@ final class CouponDto extends SaleDto implements InstantiateFromRequest
         ) : new Missing();
 
         $seo = $request->has('seo')
-            ? ($request->input('seo') !== null ? SeoMetadataDto::instantiateFromRequest($request) : null) : new Missing();
+            ? ($request->input('seo') !== null ?
+                SeoMetadataDto::instantiateFromRequest($request) : null) : new Missing();
 
         return new self(
             code: $request->input('code', new Missing()),

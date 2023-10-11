@@ -16,11 +16,17 @@ class AddUserAgentAndIpToOauthAccessTokensTable extends Migration
 
     public function down(): void
     {
-        Schema::table('oauth_access_tokens', function (Blueprint $table): void {
-            $table->dropColumn([
-                'ip',
-                'user_agent',
-            ]);
-        });
+        if (Schema::hasTable('oauth_access_tokens')) {
+            if (Schema::hasColumn('oauth_access_tokens', 'ip')) {
+                Schema::table('oauth_access_tokens', function (Blueprint $table): void {
+                    $table->dropColumn('ip');
+                });
+            }
+            if (Schema::hasColumn('oauth_access_tokens', 'user_agent')) {
+                Schema::table('oauth_access_tokens', function (Blueprint $table): void {
+                    $table->dropColumn('user_agent');
+                });
+            }
+        }
     }
 }

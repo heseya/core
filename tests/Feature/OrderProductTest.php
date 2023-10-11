@@ -209,7 +209,7 @@ class OrderProductTest extends TestCase
             ->actingAs($this->{$user})
             ->json(
                 'POST',
-                '/orders/id:' . $this->order->getKey() . '/send-urls'
+                '/orders/id:' . $this->order->getKey() . '/send-urls',
             )->assertOk();
 
         $this->assertDatabaseHas('order_products', [
@@ -240,7 +240,7 @@ class OrderProductTest extends TestCase
             ->actingAs($this->{$user})
             ->json(
                 'POST',
-                '/orders/id:' . $this->order->getKey() . '/send-urls'
+                '/orders/id:' . $this->order->getKey() . '/send-urls',
             )->assertOk();
 
         $this->assertDatabaseHas('order_products', [

@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: Heseya Store API
+  title: 'Heseya Store API'
   description: "IMPORTANT! You need specific permissions to access each endpoint: <https://escl24.atlassian.net/wiki/spaces/HES/pages/6476169217/Autoryzacja>"
   version: 6.0.0
 paths:
@@ -235,7 +235,7 @@ paths:
   /coupons/id:{id}/metadata:
     $ref: ./paths/Metadata.yml#/Metadata
   /coupons/id:{id}/metadata-private:
-     $ref: ./paths/Metadata.yml#/Metadata
+    $ref: ./paths/Metadata.yml#/Metadata
   /items/id:{id}/metadata:
     $ref: ./paths/Metadata.yml#/Metadata
   /items/id:{id}/metadata-private:
@@ -330,6 +330,10 @@ paths:
     $ref: ./paths/SalesChannels.yml#/SalesChannels
   /sales-channels/id:{id}:
     $ref: ./paths/SalesChannels.yml#/SalesChannelsId
+  /redirects:
+    $ref: './paths/Redirects.yml#/Redirects'
+  '/redirects/id:{id}':
+    $ref: './paths/Redirects.yml#/RedirectsParams'
 components:
   schemas:
     Error:
@@ -436,6 +440,8 @@ components:
       $ref: ./schemas/Wishlist.yml#/WishlistProduct
     UserPreferences:
       $ref: ./schemas/Auth.yml#/Preferences
+    Redirect:
+      $ref: ./schemas/Redirects.yml#/Redirect
   requestBodies:
     AppStore:
       $ref: ./requests/Apps.yml#/AppStore

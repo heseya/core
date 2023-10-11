@@ -1473,7 +1473,7 @@ class DiscountTest extends TestCase
                         ConditionType::PRODUCT_IN,
                         ConditionType::PRODUCT_IN_SET,
                         ConditionType::ORDER_VALUE,
-                    ]
+                    ],
                 )
             ) {
                 $response->assertJsonFragment($condition);
@@ -2013,7 +2013,7 @@ class DiscountTest extends TestCase
             [
                 'type' => ConditionType::MAX_USES,
                 'value' => ['max_uses' => 1000],
-            ]
+            ],
         );
 
         $discount->conditionGroups()->attach($conditionGroup);
@@ -2074,7 +2074,7 @@ class DiscountTest extends TestCase
                         ConditionType::PRODUCT_IN,
                         ConditionType::PRODUCT_IN_SET,
                         ConditionType::ORDER_VALUE,
-                    ]
+                    ],
                 )
             ) {
                 $response->assertJsonFragment($condition);

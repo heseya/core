@@ -270,7 +270,7 @@ class ProviderTest extends TestCase
             "auth/providers/{$key}/login",
             [
                 'return_url' => 'https://example.com?code=test',
-            ]
+            ],
         );
 
         $response->assertJsonStructure(
@@ -290,7 +290,7 @@ class ProviderTest extends TestCase
                         'permissions',
                     ],
                 ],
-            ]
+            ],
         );
     }
 
@@ -327,7 +327,7 @@ class ProviderTest extends TestCase
             "auth/providers/{$key}/login",
             [
                 'return_url' => 'https://example.com?code=test',
-            ]
+            ],
         );
 
         $response->assertJsonStructure(
@@ -347,7 +347,7 @@ class ProviderTest extends TestCase
                         'permissions',
                     ],
                 ],
-            ]
+            ],
         );
     }
 
@@ -378,7 +378,7 @@ class ProviderTest extends TestCase
             "auth/providers/{$key}/login",
             [
                 'return_url' => 'https://example.com?code=test',
-            ]
+            ],
         )
             ->assertStatus(JsonResponse::HTTP_UNPROCESSABLE_ENTITY)
             ->assertJsonFragment(['message' => Exceptions::CLIENT_ALREADY_HAS_ACCOUNT]);
@@ -429,7 +429,7 @@ class ProviderTest extends TestCase
             "auth/providers/{$key}/login",
             [
                 'return_url' => 'https://example.com?code=test',
-            ]
+            ],
         )
             ->assertStatus(JsonResponse::HTTP_UNPROCESSABLE_ENTITY)
             ->assertJsonFragment(['message' => Exceptions::CLIENT_ALREADY_HAS_ACCOUNT]);

@@ -6,7 +6,9 @@ use App\Rules\WhereIn;
 use App\Services\Contracts\SortServiceContract;
 use App\SortColumnTypes\SortableColumn;
 use App\SortColumnTypes\TranslatedColumn;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductAttribute\Repositories\AttributeRepository;
+use Domain\ProductSet\ProductSet;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Arr;
@@ -14,7 +16,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
-class SortService implements SortServiceContract
+readonly class SortService implements SortServiceContract
 {
     public function __construct(private AttributeRepository $attributeRepository) {}
 
@@ -53,7 +55,10 @@ class SortService implements SortServiceContract
 
     private function getSortableColumnNames(array $sortable): array
     {
-        return Arr::map($sortable, fn ($value, $key) => is_a($value, SortableColumn::class, true) ? $value::getColumnName($key) : $value);
+        return Arr::map(
+            $sortable,
+            fn ($value, $key) => is_a($value, SortableColumn::class, true) ? $value::getColumnName($key) : $value,
+        );
     }
 
     private function getSortableColumnSettingsValidation(string $key, array $sortable): array
@@ -98,7 +103,6 @@ class SortService implements SortServiceContract
         )->validate();
     }
 
-    // TODO: refactor this
     private function addOrder(Builder $query, string $field, string $order): void
     {
         if (Str::startsWith($field, 'set.')) {
@@ -116,22 +120,35 @@ class SortService implements SortServiceContract
 
     private function addSetOrder(Builder $query, string $field, string $order): void
     {
-        $query->leftJoin('product_set_product', function (JoinClause $join) use ($field): void {
+        /** @var ProductSet $set */
+        $set = ProductSet::query()->where('slug', '=', Str::after($field, 'set.'))->select('id')->first();
+        $searchedProductSetsIds = $set->allChildrenIds('children')->push($set->getKey());
+
+        $query->leftJoin('product_set_product', function (JoinClause $join) use ($searchedProductSetsIds): void {
             $join->on('product_set_product.product_id', 'products.id')
-                ->join('product_sets', function (JoinClause $join) use ($field): void {
-                    $join->on('product_sets.id', 'product_set_product.product_set_id')
-                        ->where('product_sets.slug', Str::after($field, 'set.'));
-                });
+                ->whereIn('product_set_product.product_set_id', $searchedProductSetsIds);
         })
             ->addSelect('products.*')
             ->addSelect('product_set_product.order AS set_order')
+            ->selectRaw('(product_set_product.product_set_id = ?) AS is_main_set', [$set->getKey()])
+            ->orderBy('is_main_set', 'desc')
+            ->orderBy('product_set_product.product_set_id', $order)
             ->orderBy('set_order', $order);
     }
 
     private function addAttributeOrder(Builder $query, string $field, string $order): void
     {
-        $attribute = $this->attributeRepository->getOne(Str::after($field, 'attribute.'));
+        $attribute = $this->attributeRepository->getOne(
+            Str::after($field, 'attribute.'),
+        );
+
         $sortField = $attribute->type->getOptionFieldByType();
+
+        if (array_key_exists($sortField, (new AttributeOption())->getSortable())
+            && (new AttributeOption())->getSortable()[$sortField] === TranslatedColumn::class
+        ) {
+            $sortField = TranslatedColumn::getColumnName($sortField);
+        }
 
         $query->leftJoin('product_attribute', function (JoinClause $join) use ($attribute): void {
             $join
@@ -141,7 +158,10 @@ class SortService implements SortServiceContract
                     $join
                         ->on('product_attribute_attribute_option.product_attribute_id', 'product_attribute.id')
                         ->join('attribute_options', function (JoinClause $join): void {
-                            $join->on('product_attribute_attribute_option.attribute_option_id', 'attribute_options.id');
+                            $join->on(
+                                'product_attribute_attribute_option.attribute_option_id',
+                                'attribute_options.id',
+                            );
                         });
                 });
         })

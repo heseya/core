@@ -37,6 +37,8 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::table('shipping_methods', function (Blueprint $table): void {
+            $table->dropForeign('shipping_methods_app_id_foreign');
+
             $table->dropColumn('shipping_type');
             $table->dropColumn('integration_key');
             $table->dropColumn('app_id');

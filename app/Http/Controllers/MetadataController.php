@@ -33,7 +33,8 @@ class MetadataController extends Controller
         $public = Collection::make($request->segments())->last() === 'metadata';
         foreach ($request->all() as $key => $value) {
             $dto = new MetadataUpdateDto($key, $value, $public, MetadataType::matchType($value));
-            $this->metadataService->updateOrCreate($model, $dto);
+            $this->metadataService->updateOrCreate($model, $dto,
+            );
         }
 
         $model->refresh();

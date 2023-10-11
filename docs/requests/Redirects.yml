@@ -1,0 +1,50 @@
+RedirectStore:
+  content:
+    application/json:
+      schema:
+        required:
+          - name
+          - slug
+          - url
+          - type
+        type: object
+        properties:
+          name:
+            description: 'Redirect name'
+            type: string
+            example: 'Redirect Test'
+          slug:
+            description: 'Name used in the URL path'
+            type: string
+            example: redirect-test
+          url:
+            description: 'Redirect url'
+            type: string
+            example: 'https://example.com'
+          type:
+            description: 'Redirect type'
+            type: integer
+            example: 307
+
+RedirectUpdate:
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          name:
+            description: 'Redirect name'
+            type: string
+            example: 'Redirect Test'
+          slug:
+            description: 'Name used in the URL path'
+            type: string
+            example: redirect-test
+          url:
+            description: 'Redirect url'
+            type: string
+            example: 'https://example.com'
+          type:
+            description: 'Redirect type'
+            type: integer
+            example: 307
