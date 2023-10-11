@@ -688,6 +688,17 @@ readonly class DiscountService implements DiscountServiceContract
         $product->sales()->attach($productSales->pluck('id'));
     }
 
+    public function getSalesWithBlockList(): Collection
+    {
+        return Discount::query()
+            ->whereNull('code')
+            ->where('active', '=', true)
+            ->where('target_type', '=', DiscountTargetType::PRODUCTS)
+            ->where('target_is_allow_list', '=', false)
+            ->with(['products', 'productSets', 'productSets.products'])
+            ->get();
+    }
+
     private function checkDiscountTarget(Discount $discount, CartDto $cart): bool
     {
         if ($discount->target_type->is(DiscountTargetType::PRODUCTS)) {
@@ -1519,17 +1530,6 @@ readonly class DiscountService implements DiscountServiceContract
         }
 
         return false;
-    }
-
-    private function getSalesWithBlockList(): Collection
-    {
-        return Discount::query()
-            ->whereNull('code')
-            ->where('active', '=', true)
-            ->where('target_type', '=', DiscountTargetType::PRODUCTS)
-            ->where('target_is_allow_list', '=', false)
-            ->with(['products', 'productSets', 'productSets.products'])
-            ->get();
     }
 
     private function applyDiscountsOnProductsLazy(Collection $productIds, Collection $salesWithBlockList): void
