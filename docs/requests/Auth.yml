@@ -30,6 +30,10 @@ Register:
     application/json:
       schema:
         type: object
+        required:
+          - name
+          - email
+          - password
         properties:
           name:
             type: string
@@ -63,6 +67,8 @@ Register:
               02b97693-857c-4fb9-9999-47400ac5fbef:
                 type: boolean
             type: object
+          metadata_personal:
+            $ref: './../schemas/Metadata.yml#/Metadata'
 
 UpdateProfile:
   content:

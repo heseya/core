@@ -949,7 +949,7 @@ readonly class DiscountService implements DiscountServiceContract
         return $conditionGroup;
     }
 
-    private function getSalesWithBlockList(): Collection
+    public function getSalesWithBlockList(): Collection
     {
         return Discount::query()
             ->whereNull('code')
