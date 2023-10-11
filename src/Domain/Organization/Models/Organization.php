@@ -33,9 +33,7 @@ final class Organization extends Model
         'updated_at' => 'datetime',
     ];
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     protected array $criteria = [
         'status',
     ];
