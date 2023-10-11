@@ -1,0 +1,36 @@
+Organization:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string
+      example: 'Heseya'
+    description:
+      type: string
+    email:
+      type: string
+      example: admin@example.com
+    phone:
+      type: string
+      example: '+48123123123'
+    address:
+      $ref: './Addresses.yml#/Address'
+    status:
+      type: string
+      enum: [ 'Verified', 'Unverified', 'Rejected' ]
+
+OrganizationView:
+  type: object
+  allOf:
+    - $ref: '#/Organization'
+    - properties:
+        assistants:
+          type: array
+          items:
+            $ref: './Users.yml#/User'
+        users:
+          type: array
+          items:
+            $ref: './Users.yml#/User'

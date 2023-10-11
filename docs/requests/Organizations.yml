@@ -1,0 +1,44 @@
+OrganizationCreate:
+  content:
+    application/json:
+      schema:
+        type: object
+        required:
+          - name
+          - email
+          - phone
+          - address
+        properties:
+          name:
+            type: string
+            example: 'Heseya'
+          email:
+            type: string
+            example: admin@example.com
+          phone:
+            type: string
+            example: '+48123123123'
+          description:
+            type: string
+          address:
+            $ref: './../schemas/Addresses.yml#/Address'
+
+OrganizationUpdate:
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          name:
+            type: string
+            example: 'Heseya'
+          email:
+            type: string
+            example: admin@example.com
+          phone:
+            type: string
+            example: '+48123123123'
+          description:
+            type: string
+          address:
+            $ref: './../schemas/Addresses.yml#/Address'
