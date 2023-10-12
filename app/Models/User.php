@@ -20,6 +20,7 @@ use App\Traits\Sortable;
 use Domain\Consent\Models\Consent;
 use Domain\Consent\Models\ConsentUser;
 use Domain\Metadata\Models\MetadataPersonal;
+use Domain\Organization\Models\Organization;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Auth\Authenticatable;
@@ -182,5 +183,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     public function metadataPersonal(): MorphMany
     {
         return $this->morphMany(MetadataPersonal::class, 'model', 'model_type', 'model_id');
+    }
+
+    public function organizations(): BelongsToMany
+    {
+        return $this->belongsToMany(Organization::class, 'organization_user');
     }
 }

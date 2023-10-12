@@ -4,10 +4,12 @@ namespace App\DTO\Auth;
 
 use App\Rules\ConsentsExists;
 use App\Rules\IsRegistrationRole;
+use App\Rules\OrganizationTokenEmail;
 use App\Rules\RequiredConsents;
 use Illuminate\Validation\Rule as ValidationRule;
 use Illuminate\Validation\Rules\Password;
 use Spatie\LaravelData\Attributes\Validation\BeforeOrEqual;
+use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -28,6 +30,8 @@ class RegisterDto extends Data
 
         public readonly array $consents = [],
         public readonly array $roles = [],
+        #[Exists('organization_tokens', 'token')]
+        public readonly string|Optional $organization_token,
     ) {
         $this->metadata_personal = Map::toMetadataPersonal($this->metadata_personal);
     }
@@ -40,6 +44,7 @@ class RegisterDto extends Data
                 'email',
                 'max:255',
                 ValidationRule::unique('users')->whereNull('deleted_at'),
+                new OrganizationTokenEmail(),
             ],
             'password' => ['required', 'string', Password::defaults()],
             'consents' => ['array', new RequiredConsents()],

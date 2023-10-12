@@ -338,6 +338,9 @@ class AuthService implements AuthServiceContract
             $this->metadataService->sync($user, $dto->metadata_personal);
         }
 
+        // TODO if $dto->organization_token to pobierz organizacje i przypisz do niej usera
+        // W teori jak się rejestruje to powinien mieć co najwyżej jedną organizacje, czyli na podstawie tego można sprawdzać, czy wysłać maila, event musi się wywołać, bo idzie do webhooków, więc trzeba w samej notifikacji/listenerze sprawdzać
+
         $user->save();
 
         UserCreated::dispatch($user);

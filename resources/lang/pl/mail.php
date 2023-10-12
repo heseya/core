@@ -48,4 +48,15 @@ return [
     'benefits' => 'Logując się na swoje konto, uzyskasz dostęp do osobistego panelu klienta,
         gdzie będziesz widzieć wszystkie swoje zamówienia wraz z informacją o statusie ich realizacji.
         Konto klienta pozwala Ci również na zarządzanie danymi kontaktowymi oraz adresami dostaw.',
+
+    // organization accepted
+    'subject-organization-accepted' => 'Organizacja zaakceptowana',
+    'organization-accepted' => 'Organizacja :name została zaakceptowana.',
+    'organization-accepted-invitation' => 'Twoja organizacja została pomyślnie zaakceptowana. Teraz możesz zarejestrować konto.',
+    'organization-accepted-link' => 'Aby zarejestrować się kliknij w link',
+    'organization-register' => 'zarejestruj się',
+
+    // organization rejected
+    'subject-organization-rejected' => 'Organizacja odrzucona',
+    'organization-rejected' => 'Organizacja :name została odrzucona.',
 ];

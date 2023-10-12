@@ -11,12 +11,17 @@ use Domain\Organization\Enums\OrganizationStatus;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 
 final class Organization extends Model
 {
     use HasCriteria;
     use HasFactory;
+    use Notifiable;
 
     protected $fillable = [
         'name',
@@ -60,5 +65,23 @@ final class Organization extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'organization_user');
+    }
+
+    public function preferredLocale(): string
+    {
+        $country = Str::of($this->address?->country ?? '')
+            ->limit(2, '')
+            ->lower()
+            ->toString();
+
+        return match ($country) {
+            'pl', 'en' => $country,
+            default => Config::get('app.locale'),
+        };
+    }
+
+    public function tokens(): HasMany
+    {
+        return $this->hasMany(OrganizationToken::class);
     }
 }

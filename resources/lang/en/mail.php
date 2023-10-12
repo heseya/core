@@ -46,4 +46,15 @@ return [
     'benefits' => 'By logging into your account, you will gain access to your personal customer panel.
         You will be able to see all of your orders, along with information on their status.
         The customer account also allows you to manage your contact information and delivery addresses.',
+
+    // organization accepted
+    'subject-organization-accepted' => 'Organization accepted',
+    'organization-accepted' => 'The organization :name has been accepted.',
+    'organization-accepted-invitation' => 'Your organization has been accepted. Now you can register account.',
+    'organization-accepted-link' => 'Click thus link to register account',
+    'organization-register' => 'register',
+
+    // organization rejected
+    'subject-organization-rejected' => 'Organization rejected',
+    'organization-rejected' => 'The organization :name has been rejected.',
 ];

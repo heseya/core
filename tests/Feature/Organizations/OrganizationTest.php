@@ -188,4 +188,9 @@ class OrganizationTest extends TestCase
             'name' => $this->organization->name,
         ]);
     }
+
+   // TODO dodać testy do odrzucenia organizacji (sprawdzić mail czy się dobrze wysyła)
+    //// TODO test akceptacji organizacji (sprawdzić, czy mail się dobrze wysyła z linkiem i tokenem i mailem)
+    /// TODO test rejestracji z tokenem organizacji (1x z poprawnym mailem, 1x z niepoprawnym mailem)
+    /// TODO sprawdzić po poprawnym mailu czy user jest do organizacji przypisany
 }
