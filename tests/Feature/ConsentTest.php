@@ -243,6 +243,7 @@ class ConsentTest extends TestCase
             'consents' => [
                 $this->requiredConsent->getKey() => true,
             ],
+            'email_verify_url' => 'http://localhost/email/verify',
         ]);
 
         $response

@@ -82,6 +82,7 @@ class AuthClientTest extends TestCase
             'metadata_personal' => [
                 'partner' => true,
             ],
+            'email_verify_url' => 'http://localhost/email/verify',
         ])
             ->assertCreated()
             ->assertJsonFragment([
@@ -126,6 +127,7 @@ class AuthClientTest extends TestCase
             'metadata_personal' => [
                 'partner' => false,
             ],
+            'email_verify_url' => 'http://localhost/email/verify',
         ])
             ->assertCreated()
             ->assertJsonFragment([
