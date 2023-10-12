@@ -170,14 +170,14 @@ final class AuthController extends Controller
         return UserResource::make($this->authService->register($dto));
     }
 
-    public function storeSavedAddress(SavedAddressStoreDto $dto): JsonResource
+    public function storeSavedAddress(SavedAddressStoreDto $dto, SavedAddressType $type): JsonResource
     {
-        $this->savedAddersService->storeAddress($dto);
+        $this->savedAddersService->storeAddress($dto, $type);
 
         return SavedAddressResource::collection(
             SavedAddress::query()->where([
                 'user_id' => Auth::id(),
-                'type' => $dto->type,
+                'type' => $type,
             ])->get(),
         );
     }

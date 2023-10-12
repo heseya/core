@@ -19,22 +19,22 @@ use Spatie\LaravelData\Optional;
 
 final class SavedAddressService implements SavedAddressServiceContract
 {
-    public function storeAddress(SavedAddressStoreDto $dto): ?SavedAddress
+    public function storeAddress(SavedAddressStoreDto $dto, SavedAddressType $type): ?SavedAddress
     {
-        $savedAddress = DB::transaction(function () use ($dto): SavedAddress {
+        $savedAddress = DB::transaction(function () use ($dto, $type): SavedAddress {
             $address = Address::create($dto->address->toArray());
 
             return SavedAddress::create([
                 'default' => $dto->default,
                 'name' => $dto->name,
-                'type' => $dto->type,
+                'type' => $type,
                 'user_id' => Auth::id(),
                 'address_id' => $address->getKey(),
             ]);
         });
 
         if ($savedAddress->default) {
-            $this->defaultSet($savedAddress, $dto->type);
+            $this->defaultSet($savedAddress, $type);
         }
 
         return $savedAddress;
