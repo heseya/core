@@ -24,6 +24,7 @@ use Domain\User\Dtos\LoginDto;
 use Domain\User\Dtos\PasswordResetDto;
 use Domain\User\Dtos\PasswordResetSaveDto;
 use Domain\User\Dtos\ProfileUpdateDto;
+use Domain\User\Dtos\ResentEmailVerify;
 use Domain\User\Dtos\SavedAddressStoreDto;
 use Domain\User\Dtos\SavedAddressUpdateDto;
 use Domain\User\Dtos\ShowResetPasswordFormDto;
@@ -223,6 +224,13 @@ final class AuthController extends Controller
     public function verifyEmail(VerifyEmailDto $dto): HttpResponse
     {
         $this->authService->verifyEmail(${$dto});
+
+        return Response::noContent();
+    }
+
+    public function resentEmailVerify(ResentEmailVerify $dto): HttpResponse
+    {
+        $this->authService->resentVerifyEmail($dto);
 
         return Response::noContent();
     }

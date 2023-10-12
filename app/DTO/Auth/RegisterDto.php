@@ -8,7 +8,11 @@ use App\Rules\RequiredConsents;
 use Illuminate\Validation\Rule as ValidationRule;
 use Illuminate\Validation\Rules\Password;
 use Spatie\LaravelData\Attributes\Validation\BeforeOrEqual;
+use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Required;
 use Spatie\LaravelData\Attributes\Validation\Rule;
+use Spatie\LaravelData\Attributes\Validation\StringType;
+use Spatie\LaravelData\Attributes\Validation\Url;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
@@ -25,6 +29,8 @@ class RegisterDto extends Data
         #[Rule('phone:AUTO')]
         public readonly Optional|string $phone,
         public array|Optional $metadata_personal,
+        #[Required, StringType, Url, Max(255)]
+        public readonly string $email_verify_url,
 
         public readonly array $consents = [],
         public readonly array $roles = [],

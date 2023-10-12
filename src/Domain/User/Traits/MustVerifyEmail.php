@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\User\Traits;
 
-use App\Models\Model;
+use App\Notifications\VerifyEmail;
 use Illuminate\Auth\MustVerifyEmail as IlluminateMustVerifyEmail;
 
 trait MustVerifyEmail
@@ -34,5 +34,10 @@ trait MustVerifyEmail
             'email_verify_token' => null,
             'email_verify_url' => null,
         ])->save();
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerifyEmail());
     }
 }

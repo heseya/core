@@ -28,6 +28,7 @@ use App\Notifications\TFAInitialization;
 use App\Notifications\TFARecoveryCodes;
 use App\Notifications\TFASecurityCode;
 use App\Notifications\UserRegistered;
+use App\Notifications\VerifyEmail;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Carbon;
@@ -2248,6 +2249,7 @@ class AuthTest extends TestCase
             'name' => 'Registered user',
             'email' => $email,
             'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+            'email_verify_url' => 'http://localhost/email/verify',
         ])
             ->assertCreated()
             ->assertJsonStructure([
@@ -2286,6 +2288,11 @@ class AuthTest extends TestCase
         Notification::assertSentTo(
             [$user],
             UserRegistered::class,
+        );
+
+        Notification::assertSentTo(
+            [$user],
+            VerifyEmail::class,
         );
     }
 
@@ -2353,6 +2360,7 @@ class AuthTest extends TestCase
                 'roles' => [
                     $newRole->getKey(),
                 ],
+                'email_verify_url' => 'http://localhost/email/verify',
             ])
             ->assertStatus(Response::HTTP_CREATED)
             ->assertJsonFragment([
@@ -2387,6 +2395,7 @@ class AuthTest extends TestCase
             'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
             'phone' => '+48123456789',
             'birthday_date' => '1990-01-01',
+            'email_verify_url' => 'http://localhost/email/verify',
         ])
             ->assertCreated()
             ->assertJsonStructure([
@@ -2442,6 +2451,7 @@ class AuthTest extends TestCase
             'metadata_personal' => [
                 'meta_personal' => 'test2',
             ],
+            'email_verify_url' => 'http://localhost/email/verify',
         ])
             ->assertCreated()
             ->assertJsonFragment([
@@ -2484,6 +2494,38 @@ class AuthTest extends TestCase
             [$user],
             UserRegistered::class,
         );
+    }
+
+    public function testResentVerifyEmail(): void
+    {
+        Notification::fake();
+
+        $user = User::factory()->create([
+            'email_verified_at' => null,
+        ]);
+
+        $this->json('POST', '/users/resent-verify-email', [
+            'email' => $user->email,
+            'email_verify_url' => 'http://localhost/email/verify'
+        ])->assertNoContent();
+
+        Notification::assertSentTo([$user], VerifyEmail::class);
+    }
+
+    public function testResentAlreadyVerifyEmail(): void
+    {
+        Notification::fake();
+
+        $user = User::factory()->create([
+            'email_verified_at' => now(),
+        ]);
+
+        $this->json('POST', '/users/resent-verify-email', [
+            'email' => $user->email,
+            'email_verify_url' => 'http://localhost/email/verify'
+        ])->assertUnprocessable();
+
+        Notification::assertNotSentTo([$user], VerifyEmail::class);
     }
 
     private function decryptData(string $data): array|false

@@ -77,6 +77,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'phone_country',
         'phone_number',
         'email_verified_at',
+        'email_verify_url',
     ];
 
     protected $hidden = [

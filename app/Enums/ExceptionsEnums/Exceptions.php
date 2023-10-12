@@ -134,6 +134,7 @@ enum Exceptions: string
     case CLIENT_PROVIDER_MERGE_TOKEN_INVALID = 'Provider merge token is invalid';
     case CLIENT_PROVIDER_MERGE_TOKEN_MISMATCH = 'Provider merge token is for an account with different email address';
     case PUBLISHING_TRANSLATION_EXCEPTION = "Model doesn't have all required translations to be published";
+    case CLIENT_VERIFIED_EMAIL = 'User already verified email';
 
     // Aliases
     public const CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT = self::CLIENT_NO_ACCESS;

@@ -69,3 +69,4 @@ Route::post('register', [AuthController::class, 'register'])
     ->middleware(['app.restrict', 'can:auth.register']);
 Route::put('users/password', [AuthController::class, 'changePassword'])
     ->middleware(['app.restrict', 'can:auth.password_change']);
+Route::post('users/resent-verify-email', [AuthController::class, 'resentEmailVerify']);

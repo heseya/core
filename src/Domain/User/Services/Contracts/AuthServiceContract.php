@@ -11,6 +11,7 @@ use Domain\User\Dtos\LoginDto;
 use Domain\User\Dtos\PasswordResetDto;
 use Domain\User\Dtos\PasswordResetSaveDto;
 use Domain\User\Dtos\ProfileUpdateDto;
+use Domain\User\Dtos\ResentEmailVerify;
 use Domain\User\Dtos\ShowResetPasswordFormDto;
 use Domain\User\Dtos\TFAConfirmDto;
 use Domain\User\Dtos\TFAPasswordDto;
@@ -80,4 +81,6 @@ interface AuthServiceContract
     public function selfRemove(string $password): void;
 
     public function verifyEmail(VerifyEmailDto $dto): void;
+
+    public function resentVerifyEmail(ResentEmailVerify $dto): void;
 }

@@ -33,6 +33,7 @@ use Domain\User\Dtos\LoginDto;
 use Domain\User\Dtos\PasswordResetDto;
 use Domain\User\Dtos\PasswordResetSaveDto;
 use Domain\User\Dtos\ProfileUpdateDto;
+use Domain\User\Dtos\ResentEmailVerify;
 use Domain\User\Dtos\ShowResetPasswordFormDto;
 use Domain\User\Dtos\TFAConfirmDto;
 use Domain\User\Dtos\TFAPasswordDto;
@@ -377,6 +378,9 @@ final class AuthService implements AuthServiceContract
 
         $user->save();
 
+        $user->markEmailAsUnverified();
+        $user->sendEmailVerificationNotification();
+
         UserCreated::dispatch($user);
 
         return $user;
@@ -664,6 +668,22 @@ final class AuthService implements AuthServiceContract
         $user = User::where('email_verify_token', $dto->token)->first();
         if ($user) {
             $user->markEmailAsVerified();
+        }
+    }
+
+    /**
+     * @throws ClientException
+     */
+    public function resentVerifyEmail(ResentEmailVerify $dto): void
+    {
+        $user = $this->getUserByEmail($dto->email);
+        if (!$user->email_verified_at) {
+            $user->update($dto->toArray());
+
+            $user->markEmailAsUnverified();
+            $user->sendEmailVerificationNotification();
+        } else {
+            throw new ClientException(Exceptions::CLIENT_VERIFIED_EMAIL);
         }
     }
 }

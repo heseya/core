@@ -54,4 +54,11 @@ return [
     // order paid
     'subject-order-paid' => 'Zamówienia :number zostało opłacone',
     'order-paid' => 'Twoje zamówienie zostało opłacone.',
+
+    // verify email
+    'subject-verify-email' => 'Zweryfikuj adres email',
+    'verify-email-hello' => 'Witaj',
+    'verify-email-message' => 'Aby zweryfikować adres email kliknij w link',
+    'verify-email-link' => 'zweryfikuj adres email',
+    'verify-email-warning' => 'Jeśli zgłoszenie nie pochodzi od Ciebie zignoruj tego maila.',
 ];

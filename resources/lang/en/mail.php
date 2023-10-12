@@ -83,4 +83,11 @@ return [
             'footer-3' => 'Please note that the password reset link will expire after 60 mins, so we recommend completing the password reset as soon as possible.',
         ],
     ],
+
+    // verify email
+    'subject-verify-email' => 'Verify email address',
+    'verify-email-hello' => 'Hello',
+    'verify-email-message' => 'Please click the button below to verify your email address',
+    'verify-email-link' => 'verify email address',
+    'verify-email-warning' => 'If you did not create an account, no further action is required.',
 ];
