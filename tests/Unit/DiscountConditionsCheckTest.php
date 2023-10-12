@@ -798,6 +798,8 @@ class DiscountConditionsCheckTest extends TestCase
 
     public static function dateBetweenPassProvider(): array
     {
+        Carbon::setTestNow('2022-03-04T12:00:00'); // piątek
+
         return [
             'in range' => [
                 [
@@ -859,6 +861,8 @@ class DiscountConditionsCheckTest extends TestCase
      */
     public function testCheckConditionDateBetweenPass($value): void
     {
+        Carbon::setTestNow('2022-03-04T12:00:00');
+
         $discountCondition = $this->conditionGroup->conditions()->create([
             'type' => ConditionType::DATE_BETWEEN,
             'value' => $value,
@@ -869,6 +873,8 @@ class DiscountConditionsCheckTest extends TestCase
 
     public static function dateBetweenFailProvider(): array
     {
+        Carbon::setTestNow('2022-03-04T12:00:00');
+
         return [
             'in range' => [
                 [
@@ -930,6 +936,8 @@ class DiscountConditionsCheckTest extends TestCase
      */
     public function testCheckConditionDateBetweenNotInRangePass($value): void
     {
+        Carbon::setTestNow('2022-03-04T12:00:00');
+
         $discountCondition = $this->conditionGroup->conditions()->create([
             'type' => ConditionType::DATE_BETWEEN,
             'value' => $value,

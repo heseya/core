@@ -481,7 +481,8 @@ readonly class DiscountService implements DiscountServiceContract
         if (
             ($discount->target_type->value === DiscountTargetType::ORDER_VALUE
                 || $discount->target_type->value === DiscountTargetType::SHIPPING_PRICE)
-            && $refreshedOrder?->discounts->count() === 0) {
+            && $refreshedOrder?->discounts->count() === 0
+        ) {
             $order = $this->roundProductPrices($order);
         }
 
