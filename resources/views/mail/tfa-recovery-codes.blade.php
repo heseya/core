@@ -176,10 +176,8 @@
                                     style="font-size:0px;padding:10px 25px;padding-top:10px;padding-bottom:10px;word-break:break-word;">
                                     <div
                                         style="font-family:Arial, sans-serif;font-size:16px;line-height:22px;text-align:left;color:#333333;">
-                                        <p>Dear user,<br>Your 2FA recovery codes have been changed!</p><br><br>If you
-                                        did't try to log in, that means someone has broken your password and is trying
-                                        to access your account.<br>Please change your password as soon as possible!
-                                        <p></p></div>
+                                        <p>@lang('mail.recovery-codes-hello')</p><br><br>
+                                        <p>@lang('mail.recovery-codes-message')</p></div>
                                 </td>
                             </tr>
                             </tbody>

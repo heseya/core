@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Enums\UserRegisteredTemplate;
+use App\Traits\GetLocale;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -11,11 +12,14 @@ use Illuminate\Support\Facades\Lang;
 
 class UserRegistered extends Notification
 {
+    use GetLocale;
     use Queueable;
 
     public function __construct(
         protected UserRegisteredTemplate $template = UserRegisteredTemplate::DEFAULT,
-    ) {}
+    ) {
+        $this->locale = $this->getLocaleFromRequest();
+    }
 
     public function via(mixed $notifiable): array
     {
@@ -26,17 +30,17 @@ class UserRegistered extends Notification
     {
         [$subject, $view, $url] = match ($this->template) {
             UserRegisteredTemplate::CLIENT_PARTNER => [
-                Lang::get('mail.client.partner-register.subject'),
+                Lang::get('mail.client.partner-register.subject', [], $this->locale),
                 'mail.client.partner-register',
                 Config::get('app.admin_url'),
             ],
             UserRegisteredTemplate::CLIENT_INSIDER => [
-                Lang::get('mail.client.user-register.subject'),
+                Lang::get('mail.client.user-register.subject', [], $this->locale),
                 'mail.client.user-register',
                 Config::get('app.store_url'),
             ],
             default => [
-                Lang::get('mail.subject-user-registered'),
+                Lang::get('mail.subject-user-registered', [], $this->locale),
                 'mail.user-registered',
                 null,
             ],

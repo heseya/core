@@ -54,4 +54,27 @@ return [
     // order paid
     'subject-order-paid' => 'Zamówienia :number zostało opłacone',
     'order-paid' => 'Twoje zamówienie zostało opłacone.',
+
+    // send-urls
+    'subject-send-urls' => 'Produkty cyfrowe zamówienia :code',
+    'send-url-header' => 'Twoja lista cyfrowych produktów z zamówienia :code',
+    'send-url-message' => 'Poniżej znajduje się lista zakupionych produktów z zamówienia <strong>:code</strong>, wraz z linkami do ich pobrania.',
+    'send-url-ordered-products' => 'ZAMÓWIONE PRODUKTY:',
+    'send-url-download' => 'Pobierz',
+    'send-url-regards' => 'Pozdrawiamy,<br>Zespół :team',
+
+    // 2FA initialization
+    'subject-tfa-initialization' => 'Potwierdzenie 2FA',
+    'tfa-initialization-hello' => "Drogi użytkowniku,<br/>Oto Twój jednorazowy kod bezpieczeństwa:",
+    'tfa-initialization-message' => 'Użyj go, aby zakończyć proces konfiguracji uwierzytelniania dwuskładnikowego.<br/><br/>Jeśli ta wiadomość nie jest do Ciebie, zignoruj ją.',
+
+    // 2FA recovery codes
+    'subject-recovery-codes' => 'Kody odzyskiwania 2FA',
+    'recovery-codes-hello' => 'Drogi użytkowniku,<br />Twoje kody 2FA zostały zmienione!',
+    'recovery-codes-message' => "Jeśli nie próbowałeś się zalogować, oznacza to, że ktoś złamał twoje hasło i próbuje uzyskać dostęp do Twojego konta.<br/>Prosimy o jak najszybszą zmianę hasła!",
+
+    // 2FA security code
+    'subject-security-code' => 'Kod bezpieczeństwa 2FA',
+    'security-code-hello' => "Drogi użytkowniku,<br />Oto Twój jednorazowy kod bezpieczeństwa:",
+    'security-code-message' => "Użyj go do uwierzytelnienia operacji.<br/><br/>Jeśli nie próbowałeś się zalogować, oznacza to, że ktoś złamał twoje hasło i próbuje uzyskać dostęp do Twojego konta.<br/>Prosimy o jak najszybszą zmianę hasła!"
 ];

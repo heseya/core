@@ -14,18 +14,13 @@
       <mj-column>
         <mj-text align="left" color="#333" font-family="Arial, sans-serif" font-size="16px" line-height="22px" padding-bottom="10px" padding-top="10px" padding="10px 25px">
           <p>
-            Dear user,<br />
-            Here's your one-time security code:
+            @lang('mail.security-code-hello')
           </p>
 
           <p style="line-height: 30px; margin: 10px 0; text-align: center; color:#151e23; font-size:30p; font-family:Arial,sans-serif"><b>{{ $code }}</b></p>
 
           <p>
-            Use it to authenticate your operation.
-            <br/><br/>
-            If you did't try to log in, that means someone has broken your password
-            and is trying to access your account.<br/>
-            Please change your password as soon as possible!
+            @lang('mail.security-code-message')
           </p>
         </mj-text>
       </mj-column>
