@@ -571,7 +571,11 @@ class PaymentTest extends TestCase
             ->assertCreated()
             ->assertJson([
                 'data' => [
-                    'amount' => 100,
+                    'amount' => [
+                        'net' => '100.00',
+                        'gross' => '100.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
                     'currency' => $this->order->currency->value,
                     'status' => PaymentStatus::SUCCESSFUL->value,
                     'external_id' => 'test',
