@@ -24,7 +24,6 @@ enum Exceptions: string
     case CLIENT_INVALID_PASSWORD = 'Invalid password';
     case CLIENT_INVALID_TOKEN = 'Invalid token';
     case CLIENT_INVALID_IDENTITY_TOKEN = 'Invalid identity token';
-    case CLIENT_UNVERIFIED_EMAIL = 'User email is not verified';
     case CLIENT_USER_DOESNT_EXIST = 'User doesn\'t exist';
     case CLIENT_TOKEN_INVALID_OR_INACTIVE = 'The token is invalid or inactive. Try to reset your password again';
 
