@@ -30,7 +30,6 @@ class SavedAddressTest extends TestCase
             'name' => 'test',
             'default' => false,
             'address_id' => $this->address->getKey(),
-            'type' => SavedAddressType::SHIPPING,
         ])->assertForbidden();
     }
 
@@ -44,7 +43,6 @@ class SavedAddressTest extends TestCase
         $response = $this->actingAs($this->{$user})->postJson('/auth/profile/shipping-addresses', [
             'name' => 'test',
             'default' => false,
-            'type' => SavedAddressType::SHIPPING,
             'address' => [
                 'name' => 'test',
                 'phone' => '123456789',
@@ -95,7 +93,6 @@ class SavedAddressTest extends TestCase
         $this->actingAs($this->{$user})->postJson('/auth/profile/shipping-addresses', [
             'name' => 'test2',
             'default' => true,
-            'type' => SavedAddressType::SHIPPING,
             'address' => [
                 'name' => 'test',
                 'phone' => '123456789',
@@ -139,7 +136,6 @@ class SavedAddressTest extends TestCase
             'name' => 'test',
             'default' => false,
             'address_id' => $this->address->getKey(),
-            'type' => SavedAddressType::SHIPPING,
         ])->assertForbidden();
     }
 
@@ -162,7 +158,6 @@ class SavedAddressTest extends TestCase
             ->patchJson('/auth/profile/shipping-addresses/id:' . $savedAddress->getKey(), [
                 'name' => 'test2',
                 'default' => true,
-                'type' => SavedAddressType::SHIPPING,
                 'address' => [
                     'name' => 'test',
                     'phone' => '123456789',
@@ -216,7 +211,6 @@ class SavedAddressTest extends TestCase
         $this->actingAs($this->{$user})->postJson('/auth/profile/shipping-addresses', [
             'name' => 'test2',
             'default' => false,
-            'type' => SavedAddressType::SHIPPING,
             'address' => [
                 'name' => 'test',
                 'phone' => '123456789',
@@ -238,7 +232,6 @@ class SavedAddressTest extends TestCase
             ->patchJson('/auth/profile/shipping-addresses/id:' . $savedAddress->getKey(), [
                 'name' => 'test2',
                 'default' => true,
-                'type' => SavedAddressType::SHIPPING,
                 'address' => [
                     'name' => 'test2',
                     'phone' => '987654321',
@@ -299,7 +292,6 @@ class SavedAddressTest extends TestCase
         $this->actingAs($this->{$user})->patchJson('/auth/profile/shipping-addresses/id:' . $savedAddress->getKey(), [
             'name' => 'test2',
             'default' => false,
-            'type' => SavedAddressType::SHIPPING,
             'address' => [
                 'name' => 'test',
                 'phone' => '123456789',
@@ -332,7 +324,6 @@ class SavedAddressTest extends TestCase
             ->patchJson('/auth/profile/shipping-addresses/id:' . $savedAddress->getKey(), [
                 'name' => 'test2',
                 'default' => true,
-                'type' => SavedAddressType::SHIPPING,
                 'address' => [
                     'name' => 'test',
                     'phone' => '123456789',
@@ -424,7 +415,6 @@ class SavedAddressTest extends TestCase
         $this->actingAs($this->{$user})->postJson('/auth/profile/shipping-addresses', [
             'name' => 'test',
             'default' => true,
-            'type' => SavedAddressType::SHIPPING,
             'address' => [
                 'name' => 'test',
                 'phone' => '123456789',
@@ -439,7 +429,6 @@ class SavedAddressTest extends TestCase
         $this->actingAs($this->{$user})->postJson('/auth/profile/billing-addresses', [
             'name' => 'test2',
             'default' => true,
-            'type' => SavedAddressType::BILLING,
             'address' => [
                 'name' => 'test',
                 'phone' => '123456789',
