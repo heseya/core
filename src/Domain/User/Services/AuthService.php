@@ -87,11 +87,6 @@ final class AuthService implements AuthServiceContract
 
         $this->verifyTFA($dto->code);
 
-        if (!Auth::user()?->hasVerifiedEmail()) {
-            $this->userLoginAttemptService->store();
-            throw new ClientException(Exceptions::CLIENT_UNVERIFIED_EMAIL, simpleLogs: true);
-        }
-
         $this->userLoginAttemptService->store(true);
 
         return $this->createTokens($token, $uuid);
