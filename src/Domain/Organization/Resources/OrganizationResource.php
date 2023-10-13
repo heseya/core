@@ -7,6 +7,7 @@ namespace Domain\Organization\Resources;
 use App\Http\Resources\AddressResource;
 use App\Http\Resources\Resource;
 use App\Http\Resources\UserResource;
+use Domain\SalesChannel\Resources\SalesChannelResource;
 use Illuminate\Http\Request;
 
 final class OrganizationResource extends Resource
@@ -24,6 +25,7 @@ final class OrganizationResource extends Resource
             'phone' => $this->resource->phone,
             'email' => $this->resource->email,
             'address' => AddressResource::make($this->resource->address),
+            'sales_channel' => SalesChannelResource::make($this->resource->salesChannel),
         ];
     }
 

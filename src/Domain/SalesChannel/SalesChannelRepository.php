@@ -54,6 +54,12 @@ final class SalesChannelRepository
             ->paginate(Config::get('pagination.per_page'));
     }
 
+    public function getDefault(): SalesChannel
+    {
+        return SalesChannel::query()->where('slug', 'default')->first()
+            ?? SalesChannel::query()->where('status', '=', Status::ACTIVE->value)->firstOrFail();
+    }
+
     public function store(SalesChannelCreateDto $dto): SalesChannel
     {
         $channel = new SalesChannel($dto->toArray());

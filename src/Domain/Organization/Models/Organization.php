@@ -8,10 +8,11 @@ use App\Models\Address;
 use App\Models\Model;
 use App\Models\User;
 use Domain\Organization\Enums\OrganizationStatus;
+use Domain\SalesChannel\Models\SalesChannel;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 final class Organization extends Model
 {
@@ -25,6 +26,7 @@ final class Organization extends Model
         'email',
         'address_id',
         'status',
+        'sales_channel_id',
     ];
 
     protected $casts = [
@@ -39,11 +41,11 @@ final class Organization extends Model
     ];
 
     /**
-     * @return HasOne<Address>
+     * @return BelongsTo<Address, self>
      */
-    public function address(): HasOne
+    public function address(): BelongsTo
     {
-        return $this->hasOne(Address::class, 'id', 'address_id');
+        return $this->belongsTo(Address::class);
     }
 
     /**
@@ -60,5 +62,13 @@ final class Organization extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'organization_user');
+    }
+
+    /**
+     * @return BelongsTo<SalesChannel, self>
+     */
+    public function salesChannel(): BelongsTo
+    {
+        return $this->belongsTo(SalesChannel::class);
     }
 }

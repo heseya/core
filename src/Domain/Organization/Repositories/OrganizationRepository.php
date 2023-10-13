@@ -10,8 +10,10 @@ use Domain\Organization\Dtos\OrganizationIndexDto;
 use Domain\Organization\Dtos\OrganizationUpdateDto;
 use Domain\Organization\Enums\OrganizationStatus;
 use Domain\Organization\Models\Organization;
+use Domain\SalesChannel\SalesChannelRepository;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Config;
+use Spatie\LaravelData\Optional;
 
 final readonly class OrganizationRepository
 {
@@ -25,11 +27,15 @@ final readonly class OrganizationRepository
 
     public function create(OrganizationCreateDto $dto): Organization
     {
+        $salesChannelId = $dto->sales_channel_id instanceof Optional
+            ? app(SalesChannelRepository::class)->getDefault()->getKey()
+            : $dto->sales_channel_id;
         $address = Address::query()->firstOrCreate($dto->address);
 
         return Organization::query()->create(array_merge($dto->toArray(), [
             'address_id' => $address->getKey(),
             'status' => OrganizationStatus::UNVERIFIED->value,
+            'sales_channel_id' => $salesChannelId,
         ]));
     }
 

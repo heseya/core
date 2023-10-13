@@ -5,6 +5,7 @@ namespace Tests\Feature\Organizations;
 use App\Models\Address;
 use Domain\Organization\Enums\OrganizationStatus;
 use Domain\Organization\Models\Organization;
+use Domain\SalesChannel\Models\SalesChannel;
 use Tests\TestCase;
 
 class OrganizationTest extends TestCase
@@ -18,7 +19,10 @@ class OrganizationTest extends TestCase
 
         $this->address = Address::factory()->create();
 
-        $this->organization = Organization::factory()->create(['address_id' => $this->address->getKey()]);
+        $this->organization = Organization::factory()->create([
+            'address_id' => $this->address->getKey(),
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+        ]);
     }
 
     public function testIndexUnauthorized(): void
@@ -33,7 +37,9 @@ class OrganizationTest extends TestCase
     {
         $this->{$user}->givePermissionTo('organizations.show');
 
-        Organization::factory()->count(10)->create();
+        Organization::factory()->count(10)->create([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+        ]);
 
         $this->actingAs($this->{$user})->json('GET', '/organizations')->assertOk()->assertJsonCount(11, 'data');
     }
@@ -51,6 +57,7 @@ class OrganizationTest extends TestCase
 
         Organization::factory()->count(10)->create([
             'status' => OrganizationStatus::UNVERIFIED,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
         ]);
 
         $this->actingAs($this->{$user})->json('GET', '/organizations', ['status' => OrganizationStatus::VERIFIED->value])->assertOk()->assertJsonCount(1, 'data');
