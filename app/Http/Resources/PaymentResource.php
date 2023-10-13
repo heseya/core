@@ -14,7 +14,7 @@ class PaymentResource extends Resource
             'method' => $this->resource->paymentMethod->name ?? $this->resource->method,
             'method_id' => $this->resource->paymentMethod?->getKey() ?? null,
             'status' => $this->resource->status,
-            'amount' => $this->resource->amount->getAmount(),
+            'amount' => PriceResource::make($this->resource->amount),
             'currency' => $this->resource->amount->getCurrency()->getCurrencyCode(),
             'redirect_url' => $this->resource->redirect_url,
             'continue_url' => $this->resource->continue_url,

@@ -40,7 +40,7 @@ class OrderDiscountResource extends Resource
             'percentage' => $this->resource->pivot->percentage,
             'amount' => $amount?->getAmount(),
             'target_type' => $this->resource->pivot->target_type,
-            'applied_discount' => $applied_discount?->getAmount(),
+            'applied_discount' => PriceResource::make($applied_discount),
         ];
     }
 }

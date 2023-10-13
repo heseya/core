@@ -122,7 +122,11 @@ class PaymentTest extends TestCase
             ->assertJsonFragment([
                 'method' => 'payu',
                 'status' => PaymentStatus::PENDING->value,
-                'amount' => (string) $this->order->summary->getAmount(),
+                'amount' => [
+                    'currency' => Currency::DEFAULT->value,
+                    'gross' => (string) $this->order->summary->getAmount(),
+                    'net' => (string) $this->order->summary->getAmount(),
+                ],
                 'date' => $payment->created_at,
                 'redirect_url' => 'payment_url',
                 'continue_url' => 'continue_url',
@@ -219,7 +223,11 @@ class PaymentTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment([
                 'method' => 'payu',
-                'amount' => (string) $this->order->summary->getAmount(),
+                'amount' => [
+                    'currency' => Currency::DEFAULT->value,
+                    'gross' => (string) $this->order->summary->getAmount(),
+                    'net' => (string) $this->order->summary->getAmount(),
+                ],
                 'redirect_url' => 'payment_url',
                 'continue_url' => 'continue_url',
             ]);
@@ -340,7 +348,11 @@ class PaymentTest extends TestCase
         $response->assertJsonFragment([
             'method' => 'offline',
             'status' => PaymentStatus::SUCCESSFUL->value,
-            'amount' => (string) $this->order->summary->getAmount(),
+            'amount' => [
+                'currency' => Currency::DEFAULT->value,
+                'gross' => (string) $this->order->summary->getAmount(),
+                'net' => (string) $this->order->summary->getAmount(),
+            ],
             'date' => $payment->created_at,
             'redirect_url' => null,
             'continue_url' => null,
@@ -410,7 +422,11 @@ class PaymentTest extends TestCase
             ->assertJsonFragment([
                 'method' => 'offline',
                 'status' => PaymentStatus::SUCCESSFUL->value,
-                'amount' => "$amount",
+                'amount' => [
+                    'currency' => Currency::DEFAULT->value,
+                    'gross' => "$amount",
+                    'net' => "$amount",
+                ],
                 'date' => $payment->created_at,
                 'redirect_url' => null,
                 'continue_url' => null,
@@ -468,7 +484,11 @@ class PaymentTest extends TestCase
                 'external_id' => $payment->external_id,
                 'method' => $payment->method,
                 'status' => $payment->status->value,
-                'amount' => $payment->amount->getAmount(),
+                'amount' => [
+                    'currency' => Currency::DEFAULT->value,
+                    'gross' => $payment->amount->getAmount(),
+                    'net' => $payment->amount->getAmount(),
+                ],
                 'currency' => $payment->currency->value,
                 'redirect_url' => $payment->redirect_url,
                 'continue_url' => $payment->continue_url,
@@ -500,7 +520,11 @@ class PaymentTest extends TestCase
 
         $response->assertJson([
             'data' => [
-                'amount' => 100,
+                'amount' => [
+                    'currency' => Currency::DEFAULT->value,
+                    'gross' => '100.00',
+                    'net' => '100.00',
+                ],
                 'currency' => $this->order->currency->value,
                 'status' => PaymentStatus::PENDING->value,
                 'external_id' => 'test',
@@ -604,7 +628,11 @@ class PaymentTest extends TestCase
                 'method' => $paymentMethod->name,
                 'method_id' => $paymentMethod->getKey(),
                 'status' => PaymentStatus::PENDING->value,
-                'amount' => 100,
+                'amount' => [
+                    'currency' => Currency::DEFAULT->value,
+                    'gross' => '100.00',
+                    'net' => '100.00',
+                ],
             ],
         ]);
 
@@ -694,7 +722,11 @@ class PaymentTest extends TestCase
                 'data' => [
                     'method_id' => $paymentMethod->getKey(),
                     'status' => PaymentStatus::SUCCESSFUL->value,
-                    'amount' => 100,
+                    'amount' => [
+                        'currency' => Currency::DEFAULT->value,
+                        'gross' => '100.00',
+                        'net' => '100.00',
+                    ],
                     'redirect_url' => 'redirect_url',
                     'continue_url' => 'continue_url',
                 ],

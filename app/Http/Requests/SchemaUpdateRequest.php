@@ -27,8 +27,9 @@ class SchemaUpdateRequest extends FormRequest
             'prices' => [new PricesEveryCurrency()],
             'prices.*' => [new Price(['value'], min: BigDecimal::zero())],
 
-            'hidden' => ['nullable', 'boolean'],
+            'hidden' => ['nullable', 'boolean', 'declined_if:required,yes,on,1,true'],
             'required' => ['nullable', 'boolean'],
+
             'min' => ['nullable', 'numeric', 'min:-100000', 'max:100000'],
             'max' => ['nullable', 'numeric', 'min:-100000', 'max:100000'],
             'step' => ['nullable', 'numeric', 'min:0', 'max:100000'],

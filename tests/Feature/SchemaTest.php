@@ -509,7 +509,7 @@ class SchemaTest extends TestCase
                 'published' => [$this->lang],
                 'type' => SchemaType::SELECT->name,
                 'prices' => [['value' => 120, 'currency' => $this->currency->value]],
-                'hidden' => true,
+                'hidden' => false,
                 'required' => true,
                 'metadata' => [
                     'attributeMeta' => 'attributeValue',
@@ -588,7 +588,7 @@ class SchemaTest extends TestCase
             'published' => [$this->lang],
             'type' => SchemaType::SELECT->name,
             'prices' => [['value' => 120, 'currency' => $this->currency->value]],
-            'hidden' => $boolean,
+            'hidden' => !$boolean,
             'required' => $boolean,
             'metadata_private' => [
                 'attributeMetaPriv' => 'attributeValue',
@@ -600,7 +600,7 @@ class SchemaTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment([
                 'name' => 'Test',
-                'hidden' => $booleanValue,
+                'hidden' => !$booleanValue,
                 'required' => $booleanValue,
             ])
             ->assertJsonFragment([
@@ -627,7 +627,7 @@ class SchemaTest extends TestCase
                 'published' => [$this->lang],
                 'type' => SchemaType::SELECT->name,
                 'prices' => [['value' => 120, 'currency' => $this->currency->value]],
-                'hidden' => $boolean,
+                'hidden' => !$boolean,
                 'required' => $boolean,
                 'options' => [
                     [
@@ -648,7 +648,7 @@ class SchemaTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment([
                 'name' => 'Test',
-                'hidden' => $booleanValue,
+                'hidden' => !$booleanValue,
                 'required' => $booleanValue,
             ])
             ->assertJsonFragment([
