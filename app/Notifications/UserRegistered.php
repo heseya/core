@@ -12,8 +12,8 @@ use Illuminate\Support\Facades\Lang;
 
 class UserRegistered extends Notification
 {
-    use Queueable;
     use GetLocale;
+    use Queueable;
 
     public function __construct(
         protected UserRegisteredTemplate $template = UserRegisteredTemplate::DEFAULT,

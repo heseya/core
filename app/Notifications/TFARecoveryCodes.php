@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\Lang;
 
 class TFARecoveryCodes extends Notification
 {
-    use Queueable;
     use GetLocale;
+    use Queueable;
 
     public function __construct()
     {

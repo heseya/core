@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\Lang;
 
 class TFASecurityCode extends Notification
 {
-    use Queueable;
     use GetLocale;
+    use Queueable;
 
     private string $code;
 
