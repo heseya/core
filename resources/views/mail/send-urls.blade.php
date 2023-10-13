@@ -144,7 +144,7 @@
                                     style="font-size:0px;padding:10px 25px;padding-top:0px;padding-bottom:20px;word-break:break-word;">
                                     <div
                                         style="font-family:Arial, sans-serif;font-size:26px;font-weight:bold;line-height:28px;text-align:center;text-transform:uppercase;color:#000000;">
-                                        Twoja lista cyfrowych produktów z zamówienia {{ $order->code }}</div>
+                                        @lang('mail.send-url-header', ['code' => $order->code])</div>
                                 </td>
                             </tr>
                             </tbody>
@@ -181,8 +181,7 @@
                                     <div
                                         style="font-family:Arial, sans-serif;font-size:30px;line-height:22px;text-align:left;color:#55575d;">
                                         <p style="line-height: 30px; margin: 10px 0; text-align: center; color:#000; font-size:22px; font-family:Arial,sans-serif">
-                                            Poniżej znajduje się lista zakupionych produktów z zamówienia
-                                            <b>{{ $order->code }}</b>, wraz z linkami do ich pobrania.</p></div>
+                                            @lang('mail.send-url-message', ['code' => $order->code])</p></div>
                                 </td>
                             </tr>
                             </tbody>
@@ -219,7 +218,7 @@
                                     <div
                                         style="font-family:Arial, sans-serif;font-size:16px;line-height:22px;text-align:left;color:#333333;">
                                         <p style="text-align: center; background-color: #244d8b; color: #fff; font-size:14px">
-                                            ZAMÓWIONE PRODUKTY:</p></div>
+                                            @lang('mail.send-url-ordered-products')</p></div>
                                 </td>
                             </tr>
                             <tr>
@@ -232,7 +231,7 @@
                                             </tr>@foreach ($product->urls as $url)
                                                 <tr style="line-height: 38px;">
                                                     <td style="padding: 0 15px 0 0;">{{ $url->name }}</td>
-                                                    <td style="text-align: right"><a href="{{ $url->url }}">Pobierz</a>
+                                                    <td style="text-align: right"><a href="{{ $url->url }}">@lang('mail.send-url-download')</a>
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -272,7 +271,7 @@
                                     <div
                                         style="font-family:Arial, sans-serif;font-size:14px;line-height:22px;text-align:right;color:#000000;">
                                         <p>
-                                            Pozdrawiamy,<br>Zespół {{ $settingsService->getSetting('store_name')->value }}
+                                            @lang('mail.send-url-regards', ['team' => $settingsService->getSetting('store_name')->value])
                                         </p></div>
                                 </td>
                             </tr>

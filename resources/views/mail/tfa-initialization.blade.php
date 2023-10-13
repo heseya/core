@@ -176,11 +176,10 @@
                                     style="font-size:0px;padding:10px 25px;padding-top:10px;padding-bottom:10px;word-break:break-word;">
                                     <div
                                         style="font-family:Arial, sans-serif;font-size:16px;line-height:22px;text-align:left;color:#333333;">
-                                        <p>Dear user,<br>Here's your one-time security code:</p>
+                                        <p>@lang('mail.tfa-initialization-hello')</p>
                                         <p style="line-height: 30px; margin: 10px 0; text-align: center; color:#151e23; font-size:30p; font-family:Arial,sans-serif">
                                             <b>{{ $code }}</b></p>
-                                        <p>Use it to finish your Two-Factor Authentication setup process.<br><br>If this
-                                            message is not for you, please ignore it.</p></div>
+                                        <p>@lang('mail.tfa-initialization-message')</p></div>
                                 </td>
                             </tr>
                             </tbody>
