@@ -144,7 +144,7 @@
                                         <p>
                                             @lang('mail.organization-accepted-invitation')<br />
                                             @lang('mail.organization-accepted-link')
-                                            <a href="{{ $url . '?organization_token=' . $token . '&amp;email=' . $email }}" target="_blank">@lang('mail.organization-register')</a>
+                                            <a href="{{ $url . '?' . $params }}" target="_blank">@lang('mail.organization-register')</a>
                                         </p>
                                     </div>
                                 </td>

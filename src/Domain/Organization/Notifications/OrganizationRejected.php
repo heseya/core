@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\Organization\Notifications;
 
 use Domain\Organization\Models\Organization;
@@ -7,10 +9,10 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Lang;
 
-class OrganizationRejected extends Notification
+final class OrganizationRejected extends Notification
 {
     public function __construct(
-        private Organization $organization
+        private Organization $organization,
     ) {
         $this->locale = $organization->preferredLocale();
     }
@@ -31,7 +33,7 @@ class OrganizationRejected extends Notification
         return (new MailMessage())
             ->subject($subject)
             ->view('mail.organization-rejected', [
-                'organization' => $this->organization
+                'organization' => $this->organization,
             ]);
     }
 }

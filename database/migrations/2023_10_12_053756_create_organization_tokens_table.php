@@ -12,12 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('organization_tokens', function (Blueprint $table) {
+            $table->uuid('id')->primary();
             $table->foreignUuid('organization_id')->references('id')->on('organizations')->onDelete('cascade');
             $table->string('email');
             $table->string('token');
             $table->dateTime('expires_at')->nullable();
-
-            $table->primary(['organization_id', 'email']);
 
             $table->timestamps();
         });

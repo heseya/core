@@ -2,6 +2,7 @@
 
 namespace App\Rules;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use Closure;
 use Domain\Organization\Models\OrganizationToken;
 use Illuminate\Contracts\Validation\DataAwareRule;
@@ -17,18 +18,15 @@ class OrganizationTokenEmail implements DataAwareRule, ValidationRule
             $organizationToken = OrganizationToken::query()->where('token', '=', $this->data['organization_token'])->firstOrFail();
 
             if ($organizationToken->email !== $value) {
-                $fail('The email provided does not match the organization');
+                $fail(Exceptions::CLIENT_ORGANIZATION_TOKEN_EMAIL->value);
             }
         }
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function setData(array $data): array
+    public function setData(array $data): self
     {
         $this->data = $data;
 
-        return $data;
+        return $this;
     }
 }

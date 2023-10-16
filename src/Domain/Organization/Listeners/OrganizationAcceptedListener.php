@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\Organization\Listeners;
 
 use Domain\Organization\Events\OrganizationAccepted;
@@ -7,7 +9,7 @@ use Domain\Organization\Notifications\OrganizationAccepted as OrganizationAccept
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class OrganizationAcceptedListener
+final class OrganizationAcceptedListener
 {
     public function handle(OrganizationAccepted $event): void
     {

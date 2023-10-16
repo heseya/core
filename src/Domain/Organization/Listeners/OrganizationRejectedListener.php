@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\Organization\Listeners;
 
 use Domain\Organization\Events\OrganizationRejected;
@@ -7,7 +9,7 @@ use Domain\Organization\Notifications\OrganizationRejected as OrganizationReject
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class OrganizationRejectedListener
+final class OrganizationRejectedListener
 {
     public function handle(OrganizationRejected $event): void
     {

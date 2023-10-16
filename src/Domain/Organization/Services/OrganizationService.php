@@ -6,6 +6,7 @@ namespace Domain\Organization\Services;
 
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
+use App\Models\User;
 use Domain\Organization\Dtos\OrganizationAcceptDto;
 use Domain\Organization\Dtos\OrganizationCreateDto;
 use Domain\Organization\Dtos\OrganizationIndexDto;
@@ -67,7 +68,7 @@ final readonly class OrganizationService
         //  tu trzeba dodawać link do maila, żeby kierował na właściwą stronę (może niech sie po prostu przekazuje w requeście do akceptacji ??)
         // OrganizationToken z email z Organization
         $token = Str::random(128);
-        $organization->tokens()->save(OrganizationToken::make([
+        $organization->tokens()->save(new OrganizationToken([
             'email' => $organization->email,
             'token' => $token,
             'expires_at' => Carbon::now()->addSeconds(Config::get('organization.token_expires_time')),
@@ -88,6 +89,16 @@ final readonly class OrganizationService
         OrganizationRejected::dispatch($organization);
 
         return $organization;
+    }
+
+    public function attachUser(User $user, string $token): void
+    {
+        /** @var OrganizationToken $organizationToken */
+        $organizationToken = OrganizationToken::query()->where('token', '=', $token)->firstOrFail();
+
+        $organizationToken->organization?->users()->attach($user);
+
+        $organizationToken->delete();
     }
 
     /**

@@ -62,7 +62,7 @@ final class OrganizationController extends Controller
     /**
      * @throws ClientException
      */
-    public function reject(Organization $organization)
+    public function reject(Organization $organization): JsonResource
     {
         return OrganizationResource::make($this->organizationService->reject($organization));
     }

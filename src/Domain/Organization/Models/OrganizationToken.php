@@ -1,13 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\Organization\Models;
 
 use App\Models\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class OrganizationToken extends Model
+final class OrganizationToken extends Model
 {
     protected $fillable = [
+        'id',
         'organization_id',
         'email',
         'token',

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\Organization\Events;
 
 use Domain\Organization\Models\Organization;
@@ -9,7 +11,7 @@ final class OrganizationAccepted extends OrganizationEvent
     public function __construct(
         Organization $organization,
         private readonly string $redirect_url,
-        private readonly string $token
+        private readonly string $token,
     ) {
         parent::__construct($organization);
     }

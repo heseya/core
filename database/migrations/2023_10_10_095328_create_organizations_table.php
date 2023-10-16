@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('phone');
             $table->string('email');
             $table->foreignUuid('address_id')->nullable()->references('id')->on('addresses')->onDelete('restrict');
+            $table->foreignUuid('sales_channel_id')->references('id')->on('sales_channels')->onDelete('restrict');
 
             $table->timestamps();
         });

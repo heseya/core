@@ -20,6 +20,8 @@ Organization:
     status:
       type: string
       enum: [ 'Verified', 'Unverified', 'Rejected' ]
+    sales_channel:
+      $ref: './SalesChannel.yml#/SalesChannel'
 
 OrganizationView:
   type: object

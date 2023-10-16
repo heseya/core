@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\Organization\Notifications;
 
 use Domain\Organization\Models\Organization;
@@ -7,7 +9,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Lang;
 
-class OrganizationAccepted extends Notification
+final class OrganizationAccepted extends Notification
 {
     public function __construct(
         private Organization $organization,
@@ -30,13 +32,17 @@ class OrganizationAccepted extends Notification
         /** @var string $subject */
         $subject = Lang::get('mail.subject-organization-accepted', [], $this->locale);
 
+        $params = http_build_query([
+            'organization_token' => $this->token,
+            'email' => $this->organization->email,
+        ]);
+
         return (new MailMessage())
             ->subject($subject)
             ->view('mail.organization-accepted', [
                 'organization' => $this->organization,
-                'token' => $this->token,
-                'email' => $this->organization->email,
                 'url' => $this->redirect_url,
+                'params' => $params,
             ]);
     }
 }

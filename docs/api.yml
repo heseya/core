@@ -330,6 +330,14 @@ paths:
     $ref: ./paths/SalesChannels.yml#/SalesChannels
   /sales-channels/id:{id}:
     $ref: ./paths/SalesChannels.yml#/SalesChannelsId
+  /organizations:
+    $ref: ./paths/Organizations.yml#/Organizations
+  /organizations/id:{organization_id}:
+    $ref: ./paths/Organizations.yml#/OrganizationsParams
+  /organizations/id:{organization_id}/accept:
+    $ref: ./paths/Organizations.yml#/OrganizationsAccept
+  /organizations/id:{organization_id}/reject:
+    $ref: ./paths/Organizations.yml#/OrganizationsReject
 components:
   schemas:
     Error:

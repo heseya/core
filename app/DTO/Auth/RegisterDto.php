@@ -6,10 +6,10 @@ use App\Rules\ConsentsExists;
 use App\Rules\IsRegistrationRole;
 use App\Rules\OrganizationTokenEmail;
 use App\Rules\RequiredConsents;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule as ValidationRule;
 use Illuminate\Validation\Rules\Password;
 use Spatie\LaravelData\Attributes\Validation\BeforeOrEqual;
-use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -28,10 +28,9 @@ class RegisterDto extends Data
         public readonly Optional|string $phone,
         public array|Optional $metadata_personal,
 
+        public readonly Optional|string $organization_token,
         public readonly array $consents = [],
         public readonly array $roles = [],
-        #[Exists('organization_tokens', 'token')]
-        public readonly string|Optional $organization_token,
     ) {
         $this->metadata_personal = Map::toMetadataPersonal($this->metadata_personal);
     }
@@ -50,6 +49,9 @@ class RegisterDto extends Data
             'consents' => ['array', new RequiredConsents()],
             'consents.*' => ['boolean', new ConsentsExists()],
             'roles.*' => [new IsRegistrationRole()],
+            'organization_token' => [
+                ValidationRule::exists('organization_tokens', 'token')->where(fn ($query) => $query->where('expires_at', '>', Carbon::now())),
+            ],
         ];
     }
 }
