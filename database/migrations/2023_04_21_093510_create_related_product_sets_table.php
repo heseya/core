@@ -10,7 +10,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('related_product_sets', function (Blueprint $table) {
+        Schema::create('related_product_sets', function (Blueprint $table): void {
             $table->uuid('product_id')->index();
             $table->uuid('product_set_id')->index();
 

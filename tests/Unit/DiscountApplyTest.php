@@ -293,7 +293,7 @@ class DiscountApplyTest extends TestCase
         $orderProduct = $this->discountService->applyDiscountOnProduct(
             $this->product,
             $this->orderProductDtoWithSchemas,
-            $discount
+            $discount,
         );
 
         $this->assertTrue($orderProduct->price === $result);
@@ -330,7 +330,7 @@ class DiscountApplyTest extends TestCase
         $orderProduct = $this->discountService->applyDiscountOnProduct(
             $this->product,
             $this->orderProductDtoWithSchemas,
-            $discount
+            $discount,
         );
 
         $this->assertTrue($orderProduct->price === $result);
@@ -365,7 +365,7 @@ class DiscountApplyTest extends TestCase
         $orderProduct = $this->discountService->applyDiscountOnProduct(
             $this->product,
             $this->orderProductDtoWithSchemas,
-            $discount
+            $discount,
         );
 
         $this->assertTrue($orderProduct->price === $result);
@@ -403,7 +403,7 @@ class DiscountApplyTest extends TestCase
         $orderProduct = $this->discountService->applyDiscountOnProduct(
             $this->product,
             $this->orderProductDtoWithSchemas,
-            $discount
+            $discount,
         );
 
         $this->assertTrue($orderProduct->price === $result);
@@ -434,7 +434,7 @@ class DiscountApplyTest extends TestCase
         $orderProduct = $this->discountService->applyDiscountOnProduct(
             $this->product,
             $this->orderProductDto,
-            $discount
+            $discount,
         );
 
         $this->assertTrue($orderProduct->price === 120.0);
@@ -467,7 +467,7 @@ class DiscountApplyTest extends TestCase
         $orderProduct = $this->discountService->applyDiscountOnProduct(
             $this->product,
             $this->orderProductDto,
-            $discount
+            $discount,
         );
 
         $this->assertTrue($orderProduct->price === 120.0);
@@ -496,7 +496,7 @@ class DiscountApplyTest extends TestCase
         $orderProduct = $this->discountService->applyDiscountOnProduct(
             $this->product,
             $this->orderProductDto,
-            $discount
+            $discount,
         );
 
         $this->assertTrue($orderProduct->price === 120.0);
@@ -529,7 +529,7 @@ class DiscountApplyTest extends TestCase
         $orderProduct = $this->discountService->applyDiscountOnProduct(
             $this->product,
             $this->orderProductDto,
-            $discount
+            $discount,
         );
 
         $this->assertTrue($orderProduct->price === 120.0);

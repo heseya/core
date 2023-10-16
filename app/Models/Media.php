@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Criteria\MediaSearch;
 use App\Criteria\MediaWhereHasRelations;
 use App\Criteria\WhereInIds;
 use App\Enums\MediaSource;
@@ -16,8 +17,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class Media extends Model
 {
-    use HasFactory;
     use HasCriteria;
+    use HasFactory;
     use HasMetadata;
 
     /**
@@ -46,6 +47,7 @@ class Media extends Model
         'source',
         'has_relationships' => MediaWhereHasRelations::class,
         'ids' => WhereInIds::class,
+        'search' => MediaSearch::class,
     ];
 
     public function products(): BelongsToMany
@@ -56,7 +58,7 @@ class Media extends Model
     public function documents(): BelongsToMany
     {
         return $this
-            ->belongsToMany(Media::class, 'order_document')
+            ->belongsToMany(self::class, 'order_document')
             ->using(OrderDocument::class)
             ->withPivot('id', 'type', 'name');
     }

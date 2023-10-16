@@ -10,7 +10,7 @@ class AuthException extends StoreException
         string $message = '',
         int $code = 0,
         ?Throwable $previous = null,
-        bool $simpleLogs = false
+        bool $simpleLogs = false,
     ) {
         parent::__construct($message, $code, $previous, $simpleLogs);
     }

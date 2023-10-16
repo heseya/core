@@ -20,7 +20,7 @@ class DepositFactory extends Factory
     public function definition(): array
     {
         return [
-            'quantity' => rand(1, 20),
+            'quantity' => mt_rand(1, 20),
         ];
     }
 }

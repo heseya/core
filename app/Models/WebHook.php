@@ -21,12 +21,12 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class WebHook extends Model implements AuditableContract, SortableContract
 {
-    use HasFactory;
-    use SoftDeletes;
-    use HasCriteria;
-    use Sortable;
     use Auditable;
+    use HasCriteria;
+    use HasFactory;
     use Notifiable;
+    use SoftDeletes;
+    use Sortable;
 
     protected $fillable = [
         'name',
@@ -61,9 +61,6 @@ class WebHook extends Model implements AuditableContract, SortableContract
         'created_at',
         'updated_at',
     ];
-
-    protected string $defaultSortBy = 'created_at';
-    protected string $defaultSortDirection = 'desc';
 
     public function logs(): HasMany
     {

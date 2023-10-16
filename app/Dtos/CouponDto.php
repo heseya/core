@@ -15,11 +15,11 @@ final class CouponDto extends SaleDto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    protected string|Missing $code;
+    protected Missing|string $code;
     protected array|Missing $metadata;
 
     public static function instantiateFromRequest(
-        FormRequest|CouponCreateRequest|CouponUpdateRequest|StatusUpdateRequest|SaleCreateRequest $request
+        CouponCreateRequest|CouponUpdateRequest|FormRequest|SaleCreateRequest|StatusUpdateRequest $request,
     ): self {
         return new self(
             code: $request->input('code', new Missing()),

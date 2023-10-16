@@ -17,7 +17,7 @@ class ProductFilterTest extends TestCase
      */
     public function testHasItems($user): void
     {
-        $this->$user->givePermissionTo(['products.show', 'products.show_hidden']);
+        $this->{$user}->givePermissionTo(['products.show', 'products.show_hidden']);
 
         $productWithoutItems = Product::factory()->create();
         $item = Item::factory()->create();
@@ -27,7 +27,7 @@ class ProductFilterTest extends TestCase
         $productWithItems->items()->attach([$item->getKey() => ['required_quantity' => 1]]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['has_items' => true])
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -40,7 +40,7 @@ class ProductFilterTest extends TestCase
      */
     public function testHasSchemas($user): void
     {
-        $this->$user->givePermissionTo(['products.show', 'products.show_hidden']);
+        $this->{$user}->givePermissionTo(['products.show', 'products.show_hidden']);
 
         $productWithoutSchemas = Product::factory()->create();
         $schema = Schema::factory()->create();
@@ -50,7 +50,7 @@ class ProductFilterTest extends TestCase
         $productWithSchemas->schemas()->attach($schema->getKey());
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['has_schemas' => true])
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -63,13 +63,13 @@ class ProductFilterTest extends TestCase
      */
     public function testShippingDigital($user): void
     {
-        $this->$user->givePermissionTo(['products.show', 'products.show_hidden']);
+        $this->{$user}->givePermissionTo(['products.show', 'products.show_hidden']);
 
         $productPhysical = Product::factory()->create(['shipping_digital' => false]);
         $productDigital = Product::factory()->create(['shipping_digital' => true]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/products', ['shipping_digital' => true])
             ->assertOk()
             ->assertJsonCount(1, 'data')

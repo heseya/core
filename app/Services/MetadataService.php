@@ -6,7 +6,6 @@ use App\Dtos\MetadataDto;
 use App\Dtos\MetadataPersonalDto;
 use App\Dtos\MetadataPersonalListDto;
 use App\Models\Model;
-use App\Models\Product;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\MetadataServiceContract;
@@ -30,10 +29,6 @@ class MetadataService implements MetadataServiceContract
     public function updateOrCreate(Model|Role $model, MetadataDto $dto): void
     {
         $this->processMetadata($model, $dto, $dto->isPublic() ? 'metadata' : 'metadataPrivate');
-
-        if ($model instanceof Product) {
-            $model->searchable();
-        }
     }
 
     public function returnModel(array $routeSegments): Model|Role|null
@@ -95,7 +90,7 @@ class MetadataService implements MetadataServiceContract
 
     private function processMetadata(Model|Role $model, MetadataDto|MetadataPersonalDto $dto, string $relation): void
     {
-        $query = $model->$relation();
+        $query = $model->{$relation}();
 
         if ($dto->getValue() === null) {
             $query->where('name', $dto->getName())->delete();

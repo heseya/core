@@ -13,26 +13,25 @@ use Illuminate\Foundation\Http\FormRequest;
 class ProductSetDto extends Dto implements InstantiateFromRequest
 {
     public function __construct(
-        public readonly string|Missing $id,
+        public readonly Missing|string $id,
         public readonly string $name,
-        public readonly string|null|Missing $slug_suffix,
+        public readonly Missing|string|null $slug_suffix,
         public readonly bool $slug_override,
         public readonly bool $public,
-        public readonly string|null|Missing $parent_id,
+        public readonly Missing|string|null $parent_id,
         public readonly array $children_ids,
-        public readonly SeoMetadataDto|Missing $seo,
-        public readonly string|null|Missing $description_html,
-        public readonly string|null|Missing $cover_id,
-        public readonly array|null|Missing $attributes_ids,
+        public readonly Missing|SeoMetadataDto $seo,
+        public readonly Missing|string|null $description_html,
+        public readonly Missing|string|null $cover_id,
+        public readonly array|Missing|null $attributes_ids,
         public readonly array|Missing $metadata,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws DtoException
      */
     public static function instantiateFromRequest(
-        FormRequest|ProductSetStoreRequest|ProductSetUpdateRequest $request
+        FormRequest|ProductSetStoreRequest|ProductSetUpdateRequest $request,
     ): self {
         return new self(
             id: $request->input('id') ?? new Missing(),

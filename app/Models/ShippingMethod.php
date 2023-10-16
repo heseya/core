@@ -23,11 +23,11 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class ShippingMethod extends Model implements AuditableContract
 {
-    use HasFactory;
     use Auditable;
     use HasCriteria;
-    use HasMetadata;
     use HasDiscounts;
+    use HasFactory;
+    use HasMetadata;
 
     /**
      * The attributes that are mass assignable.
@@ -45,7 +45,9 @@ class ShippingMethod extends Model implements AuditableContract
         'integration_key',
         'app_id',
         'shipping_type',
+        'payment_on_delivery',
     ];
+
     /**
      * The attributes that should be cast to native types.
      *
@@ -54,11 +56,10 @@ class ShippingMethod extends Model implements AuditableContract
     protected $casts = [
         'public' => 'boolean',
         'block_list' => 'boolean',
+        'payment_on_delivery' => 'boolean',
     ];
 
-    /**
-     * @var array<string, class-string>
-     */
+    /** @var array<string, class-string> */
     protected array $criteria = [
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,

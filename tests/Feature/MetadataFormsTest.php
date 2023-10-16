@@ -16,10 +16,10 @@ class MetadataFormsTest extends TestCase
      */
     public function testProductCreate($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/products', [
                 'name' => 'Test',
                 'slug' => 'test',
@@ -55,55 +55,55 @@ class MetadataFormsTest extends TestCase
         ]);
     }
 
-//    /**
-//     * @dataProvider authProvider
-//     */
-//    public function testProductUpdate($user): void
-//    {
-//        $this->$user->givePermissionTo('products.edit');
-//
-//        $product = Product::factory()->create();
-//
-//        $this
-//            ->actingAs($this->$user)
-//            ->json('PATCH', '/products/id:' . $product->getKey(), [
-//                'metadata' => [
-//                    'test' => '123',
-//                ],
-//            ])
-//            ->assertUnprocessable();
-//    }
-//
-//    /**
-//     * @dataProvider authProvider
-//     */
-//    public function testProductPrivateUpdate($user): void
-//    {
-//        $this->$user->givePermissionTo('products.edit');
-//
-//        $product = Product::factory()->create();
-//
-//        $this
-//            ->actingAs($this->$user)
-//            ->json('PATCH', '/products/id:' . $product->getKey(), [
-//                'metadata_private' => [
-//                    'test' => '123',
-//                ],
-//            ])
-//            ->assertUnprocessable();
-//    }
+    //    /**
+    //     * @dataProvider authProvider
+    //     */
+    //    public function testProductUpdate($user): void
+    //    {
+    //        $this->$user->givePermissionTo('products.edit');
+    //
+    //        $product = Product::factory()->create();
+    //
+    //        $this
+    //            ->actingAs($this->$user)
+    //            ->json('PATCH', '/products/id:' . $product->getKey(), [
+    //                'metadata' => [
+    //                    'test' => '123',
+    //                ],
+    //            ])
+    //            ->assertUnprocessable();
+    //    }
+    //
+    //    /**
+    //     * @dataProvider authProvider
+    //     */
+    //    public function testProductPrivateUpdate($user): void
+    //    {
+    //        $this->$user->givePermissionTo('products.edit');
+    //
+    //        $product = Product::factory()->create();
+    //
+    //        $this
+    //            ->actingAs($this->$user)
+    //            ->json('PATCH', '/products/id:' . $product->getKey(), [
+    //                'metadata_private' => [
+    //                    'test' => '123',
+    //                ],
+    //            ])
+    //            ->assertUnprocessable();
+    //    }
 
     /**
      * @dataProvider authProvider
      */
     public function testCreateMinimal($user): void
     {
-        $this->$user->givePermissionTo('product_sets.add');
+        $this->{$user}->givePermissionTo('product_sets.add');
 
         Event::fake([ProductSetCreated::class]);
 
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/product-sets', [
                 'name' => 'Test',
                 'slug_suffix' => 'test',

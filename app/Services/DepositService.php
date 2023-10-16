@@ -59,8 +59,8 @@ final class DepositService implements DepositServiceContract
         }
 
         if (
-            $item->unlimited_stock_shipping_date !== null &&
-            !$item->unlimited_stock_shipping_date->isPast()
+            $item->unlimited_stock_shipping_date !== null
+            && !$item->unlimited_stock_shipping_date->isPast()
         ) {
             return ['shipping_time' => null, 'shipping_date' => $item->unlimited_stock_shipping_date];
         }
@@ -192,8 +192,8 @@ final class DepositService implements DepositServiceContract
             );
         }
         if (
-            $item->unlimited_stock_shipping_date !== null &&
-            !$item->unlimited_stock_shipping_date->isPast()
+            $item->unlimited_stock_shipping_date !== null
+            && !$item->unlimited_stock_shipping_date->isPast()
         ) {
             return $this->removeFromWarehouse(
                 $orderProduct,
@@ -264,8 +264,8 @@ final class DepositService implements DepositServiceContract
         if ($quantity > 0) {
             $groupedDepositsByTime = $this->getDepositsGroupByTimeForItem($item, 'DESC');
             foreach ($groupedDepositsByTime as $deposit) {
-                if (($deposit['shipping_time'] <= $shippingTimeAndDate['shipping_time'] ||
-                        $shippingTimeAndDate['shipping_time'] === null) && $quantity > 0) {
+                if (($deposit['shipping_time'] <= $shippingTimeAndDate['shipping_time']
+                        || $shippingTimeAndDate['shipping_time'] === null) && $quantity > 0) {
                     $quantity -= $deposit['quantity'];
                     $this->removeFromWarehouse(
                         $orderProduct,

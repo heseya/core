@@ -15,15 +15,13 @@ use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Tests\Support\ElasticTest;
 use Tests\Traits\JsonQueryCounter;
 
 abstract class TestCase extends BaseTestCase
 {
     use CreatesApplication;
-    use RefreshDatabase;
     use JsonQueryCounter;
-    use ElasticTest;
+    use RefreshDatabase;
 
     public User $user;
     public Application $application;
@@ -34,8 +32,6 @@ abstract class TestCase extends BaseTestCase
     public function setUp(): void
     {
         parent::setUp();
-
-        $this->fakeElastic();
 
         $seeder = new InitSeeder();
         $seeder->run();
@@ -61,10 +57,10 @@ abstract class TestCase extends BaseTestCase
         app()->forgetInstances();
     }
 
-    public function actingAs(Authenticatable $authenticatable, $guard = null): self
+    public function actingAs(Authenticatable $user, $guard = null): self
     {
         $token = $this->tokenService->createToken(
-            $authenticatable,
+            $user,
             new TokenType(TokenType::ACCESS),
             Str::uuid()->toString(),
         );

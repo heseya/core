@@ -32,8 +32,7 @@ class AppService implements AppServiceContract
         protected TokenServiceContract $tokenService,
         protected UrlServiceContract $urlService,
         protected MetadataServiceContract $metadataService,
-    ) {
-    }
+    ) {}
 
     public function install(AppInstallDto $dto): App
     {
@@ -69,7 +68,7 @@ class AppService implements AppServiceContract
         $requiredPermissions = $appConfig['required_permissions'];
 
         $requiredPerm = Collection::make($requiredPermissions);
-        $optionalPerm = key_exists('optional_permissions', $appConfig) ?
+        $optionalPerm = array_key_exists('optional_permissions', $appConfig) ?
             $appConfig['optional_permissions'] : [];
         $advertisedPerm = $requiredPerm->concat($optionalPerm)->unique();
 
@@ -275,7 +274,7 @@ class AppService implements AppServiceContract
     private function makePermissionsPublic(
         App $app,
         Collection $internalPermissions,
-        Collection $publicPermissions
+        Collection $publicPermissions,
     ): void {
         $publicPermissions = $publicPermissions->map(
             fn ($permission) => "app.{$app->slug}.{$permission}",

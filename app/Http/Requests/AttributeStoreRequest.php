@@ -35,7 +35,7 @@ class AttributeStoreRequest extends FormRequest
                 'type' => ['required', new Enum(AttributeType::class)],
                 'global' => ['required', 'boolean'],
                 'sortable' => ['required', 'boolean'],
-            ]
+            ],
         );
     }
 }

@@ -18,9 +18,8 @@ use Illuminate\Support\Facades\Response;
 class ShippingMethodController extends Controller
 {
     public function __construct(
-        private ShippingMethodServiceContract $shippingMethodService,
-    ) {
-    }
+        private readonly ShippingMethodServiceContract $shippingMethodService,
+    ) {}
 
     public function index(ShippingMethodIndexRequest $request): JsonResource
     {

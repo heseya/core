@@ -10,8 +10,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class RoleUpdateDto extends Dto implements InstantiateFromRequest
 {
-    private string|Missing $name;
-    private string|null|Missing $description;
+    private Missing|string $name;
+    private Missing|string|null $description;
     private bool|Missing $is_registration_role;
     private array|Missing $permissions;
 
@@ -40,7 +40,7 @@ class RoleUpdateDto extends Dto implements InstantiateFromRequest
         return $this->is_registration_role;
     }
 
-    public function getPermissions(): Missing|array
+    public function getPermissions(): array|Missing
     {
         return $this->permissions;
     }

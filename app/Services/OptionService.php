@@ -13,8 +13,7 @@ class OptionService implements OptionServiceContract
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
-    ) {
-    }
+    ) {}
 
     public function sync(Schema $schema, array $options = []): void
     {

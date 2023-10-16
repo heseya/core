@@ -15,11 +15,9 @@ use Illuminate\Support\Facades\Response;
 
 class MetadataController extends Controller
 {
-    public function __construct(private MetadataServiceContract $metadataService)
-    {
-    }
+    public function __construct(private MetadataServiceContract $metadataService) {}
 
-    public function updateOrCreate(int|string $modelId, Request $request): JsonResponse|JsonResource
+    public function updateOrCreate(int|string $modelId, Request $request): JsonResource|JsonResponse
     {
         $modelClass = $this->metadataService->returnModel($request->segments());
         if ($modelClass === null) {
@@ -37,7 +35,7 @@ class MetadataController extends Controller
 
             $this->metadataService->updateOrCreate(
                 $model,
-                $dto
+                $dto,
             );
         }
 
@@ -56,8 +54,8 @@ class MetadataController extends Controller
     {
         return MetadataResource::make(
             $this->metadataService->updateOrCreateMyPersonal(
-                MetadataPersonalListDto::instantiateFromRequest($request)
-            )
+                MetadataPersonalListDto::instantiateFromRequest($request),
+            ),
         );
     }
 
@@ -67,7 +65,7 @@ class MetadataController extends Controller
             $this->metadataService->updateOrCreateUserPersonal(
                 MetadataPersonalListDto::instantiateFromRequest($request),
                 $modelId,
-            )
+            ),
         );
     }
 }

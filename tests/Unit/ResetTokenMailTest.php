@@ -12,7 +12,7 @@ class ResetTokenMailTest extends TestCase
         $notification = new ResetPassword('testtoken', 'https://example.com');
         $this->assertTrue(
             $notification->toMail($this->user)
-                ->viewData['url'] === 'https://example.com?token=testtoken&email=' . urlencode($this->user->email)
+                ->viewData['url'] === 'https://example.com?token=testtoken&email=' . urlencode($this->user->email),
         );
     }
 }

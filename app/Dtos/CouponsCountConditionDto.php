@@ -18,12 +18,12 @@ class CouponsCountConditionDto extends ConditionDto
         );
     }
 
-    public function getMinValue(): Missing|int
+    public function getMinValue(): int|Missing
     {
         return $this->min_value;
     }
 
-    public function getMaxValue(): Missing|int
+    public function getMaxValue(): int|Missing
     {
         return $this->max_value;
     }

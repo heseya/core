@@ -48,7 +48,7 @@ class SavedAddressService implements SavedAddressServiceContract
     public function updateAddress(
         SavedAddress $address,
         SavedAddressDto $addressDto,
-        int $type
+        int $type,
     ): SavedAddress {
         if (Auth::id() !== $address->user_id) {
             throw new AuthenticationException();

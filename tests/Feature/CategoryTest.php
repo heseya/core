@@ -29,10 +29,10 @@ class CategoryTest extends TestCase
 4992 - Animals & Pet Supplies > Pet Supplies > Bird Supplies > Bird Toys
 4993 - Animals & Pet Supplies > Pet Supplies > Bird Supplies > Bird Treats
 4 - Animals & Pet Supplies > Pet Supplies > Cat Supplies
-'
+',
             ),
         ]);
-        $this->actingAs($this->$user)->json('get', '/google-categories/en-US')
+        $this->actingAs($this->{$user})->json('get', '/google-categories/en-US')
             ->assertOk()
             ->assertJsonStructure([
                 'data' => [
@@ -50,7 +50,7 @@ class CategoryTest extends TestCase
     public function testGoogleCategoryFailed($user): void
     {
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/google-categories/test-TEST')
             ->assertStatus(422);
     }

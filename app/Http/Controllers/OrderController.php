@@ -50,8 +50,7 @@ class OrderController extends Controller
     public function __construct(
         private readonly OrderServiceContract $orderService,
         private readonly DocumentServiceContract $documentService,
-    ) {
-    }
+    ) {}
 
     public function index(OrderIndexRequest $request): JsonResource
     {
@@ -59,7 +58,7 @@ class OrderController extends Controller
             ? $request->validated() + ['status.hidden' => 0] : $request->validated();
 
         $query = Order::searchByCriteria($search_data)
-            ->sort($request->input('sort'))
+            ->sort($request->input('sort', 'created_at:desc'))
             ->with([
                 'products',
                 'discounts',
@@ -162,7 +161,7 @@ class OrderController extends Controller
         Gate::inspect('indexUserOrder', [Order::class]);
 
         return OrderResource::collection(
-            $this->orderService->indexUserOrder(OrderIndexDto::instantiateFromRequest($request))
+            $this->orderService->indexUserOrder(OrderIndexDto::instantiateFromRequest($request)),
         );
     }
 
@@ -176,7 +175,7 @@ class OrderController extends Controller
     public function shippingLists(Order $order, OrderShippingListRequest $request): JsonResource
     {
         return OrderResource::make(
-            $this->orderService->shippingList($order, $request->package_template_id)
+            $this->orderService->shippingList($order, $request->package_template_id),
         );
     }
 
@@ -237,7 +236,7 @@ class OrderController extends Controller
     public function myOrderProducts(OrderProductSearchRequest $request): JsonResource
     {
         return OrderProductResourcePublic::collection(
-            $this->orderService->indexMyOrderProducts(OrderProductSearchDto::instantiateFromRequest($request))
+            $this->orderService->indexMyOrderProducts(OrderProductSearchDto::instantiateFromRequest($request)),
         );
     }
 

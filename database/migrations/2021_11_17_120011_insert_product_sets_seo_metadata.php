@@ -3,6 +3,7 @@
 use App\Models\ProductSet;
 use App\Models\SeoMetadata;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class InsertProductSetsSeoMetadata extends Migration
@@ -15,7 +16,7 @@ class InsertProductSetsSeoMetadata extends Migration
                     'global' => false,
                     'model_id' => $set->getKey(),
                     'model_type' => ProductSet::class,
-                ])
+                ]),
             ));
         }
     }

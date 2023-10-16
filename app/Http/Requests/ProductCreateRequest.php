@@ -11,10 +11,10 @@ use App\Traits\MetadataRules;
 use App\Traits\SeoRules;
 use Illuminate\Foundation\Http\FormRequest;
 
-class ProductCreateRequest extends FormRequest implements SeoRequestContract, MetadataRequestContract
+class ProductCreateRequest extends FormRequest implements MetadataRequestContract, SeoRequestContract
 {
-    use SeoRules;
     use MetadataRules;
+    use SeoRules;
 
     public function rules(): array
     {
@@ -34,7 +34,6 @@ class ProductCreateRequest extends FormRequest implements SeoRequestContract, Me
                 'description_short' => ['nullable', 'string', 'max:5000'],
 
                 'quantity_step' => ['numeric'],
-                'order' => ['numeric'],
                 'vat_rate' => ['numeric', 'min:0', 'max:100'],
                 'purchase_limit_per_user' => ['nullable', 'numeric', 'min:0'],
 

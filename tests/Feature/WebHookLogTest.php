@@ -26,12 +26,12 @@ class WebHookLogTest extends TestCase
      */
     public function testIndex($user): void
     {
-        $this->$user->givePermissionTo('webhooks.show_details');
+        $this->{$user}->givePermissionTo('webhooks.show_details');
 
         /** @var WebHook $webHook */
         $webHook = WebHook::factory()->create([
-            'creator_id' => $this->$user,
-            'model_type' => $this->$user::class,
+            'creator_id' => $this->{$user},
+            'model_type' => $this->{$user}::class,
         ]);
 
         $logOld = $webHook->logs()->create([
@@ -46,7 +46,7 @@ class WebHookLogTest extends TestCase
         ]);
 
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/webhooks/logs')
             ->assertOk()
             ->assertJsonCount(2, 'data');
@@ -60,12 +60,12 @@ class WebHookLogTest extends TestCase
      */
     public function testIndexFilteredByStatusCode($user): void
     {
-        $this->$user->givePermissionTo('webhooks.show_details');
+        $this->{$user}->givePermissionTo('webhooks.show_details');
 
         $this->prepareData($user);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/webhooks/logs', [
                 'status_code' => 200,
             ])
@@ -79,12 +79,12 @@ class WebHookLogTest extends TestCase
      */
     public function testIndexFilteredByEvent($user): void
     {
-        $this->$user->givePermissionTo('webhooks.show_details');
+        $this->{$user}->givePermissionTo('webhooks.show_details');
 
         $this->prepareData($user);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/webhooks/logs', [
                 'event' => EventType::COUPON_CREATED,
             ])
@@ -98,12 +98,12 @@ class WebHookLogTest extends TestCase
      */
     public function testIndexFilteredByWebHookId($user): void
     {
-        $this->$user->givePermissionTo('webhooks.show_details');
+        $this->{$user}->givePermissionTo('webhooks.show_details');
 
         $this->prepareData($user);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/webhooks/logs', [
                 'web_hook_id' => $this->webHookOne->getKey(),
             ])
@@ -117,12 +117,12 @@ class WebHookLogTest extends TestCase
      */
     public function testIndexFilteredSuccessful($user): void
     {
-        $this->$user->givePermissionTo('webhooks.show_details');
+        $this->{$user}->givePermissionTo('webhooks.show_details');
 
         $this->prepareData($user);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/webhooks/logs', [
                 'successful' => true,
             ])
@@ -136,12 +136,12 @@ class WebHookLogTest extends TestCase
      */
     public function testIndexFilteredNotSuccessful($user): void
     {
-        $this->$user->givePermissionTo('webhooks.show_details');
+        $this->{$user}->givePermissionTo('webhooks.show_details');
 
         $this->prepareData($user);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/webhooks/logs', [
                 'successful' => false,
             ])
@@ -155,14 +155,14 @@ class WebHookLogTest extends TestCase
      */
     public function testIndexPayload($user): void
     {
-        $this->$user->givePermissionTo('webhooks.show_details');
+        $this->{$user}->givePermissionTo('webhooks.show_details');
 
         $this->prepareData($user);
 
         $log = WebHookEventLogEntry::factory()->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/webhooks/logs')
             ->assertOk()
             ->assertJsonFragment(['event' => $log->payload['event']])
@@ -172,14 +172,14 @@ class WebHookLogTest extends TestCase
     private function prepareData($user): void
     {
         $this->webHookOne = WebHook::factory()->create([
-            'creator_id' => $this->$user,
-            'model_type' => $this->$user::class,
+            'creator_id' => $this->{$user},
+            'model_type' => $this->{$user}::class,
             'events' => [EventType::COUPON_CREATED],
         ]);
 
         $this->webHookTwo = WebHook::factory()->create([
-            'creator_id' => $this->$user,
-            'model_type' => $this->$user::class,
+            'creator_id' => $this->{$user},
+            'model_type' => $this->{$user}::class,
             'events' => [EventType::COUPON_DELETED],
         ]);
 

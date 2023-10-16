@@ -9,6 +9,8 @@ use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductPriceUpdated;
 use App\Events\ProductUpdated;
+use App\Models\Attribute;
+use App\Models\AttributeOption;
 use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
@@ -24,7 +26,7 @@ use Heseya\Dto\Missing;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-readonly class ProductService implements ProductServiceContract
+final readonly class ProductService implements ProductServiceContract
 {
     public function __construct(
         private MediaServiceContract $mediaService,
@@ -34,8 +36,7 @@ readonly class ProductService implements ProductServiceContract
         private MetadataServiceContract $metadataService,
         private AttributeServiceContract $attributeService,
         private DiscountServiceContract $discountService,
-    ) {
-    }
+    ) {}
 
     private function setup(Product $product, ProductCreateDto|ProductUpdateDto $dto): Product
     {
@@ -87,9 +88,9 @@ readonly class ProductService implements ProductServiceContract
         $product->available = $availability['available'];
         $product->shipping_time = $availability['shipping_time'];
         $product->shipping_date = $availability['shipping_date'];
-        $this->discountService->applyDiscountsOnProduct($product, false);
+        $this->discountService->applyDiscountsOnProduct($product);
 
-        return $product;
+        return $this->prepareProductSearchValues($product);
     }
 
     public function create(ProductCreateDto $dto): Product
@@ -106,12 +107,10 @@ readonly class ProductService implements ProductServiceContract
             $product->getKey(),
             null,
             null,
-            $product->price_min, // @phpstan-ignore-line
-            $product->price_max, // @phpstan-ignore-line
+            $product->price_min ?? 0,
+            $product->price_max ?? 0,
         );
         ProductCreated::dispatch($product);
-        // @phpstan-ignore-next-line
-        Product::where($product->getKeyName(), $product->getKey())->searchable();
 
         return $product->refresh();
     }
@@ -134,14 +133,12 @@ readonly class ProductService implements ProductServiceContract
                 $product->getKey(),
                 $oldMinPrice,
                 $oldMaxPrice,
-                $product->price_min, // @phpstan-ignore-line
-                $product->price_max, // @phpstan-ignore-line
+                $product->price_min ?? 0,
+                $product->price_max ?? 0,
             );
         }
 
         ProductUpdated::dispatch($product);
-        // @phpstan-ignore-next-line
-        Product::query()->where($product->getKeyName(), $product->getKey())->searchable();
 
         // fix for duplicated items in relation after recalculating availability
         $product->unsetRelation('items');
@@ -157,7 +154,6 @@ readonly class ProductService implements ProductServiceContract
 
         $this->mediaService->sync($product, []);
 
-        $productId = $product->getKey();
         $product->delete();
 
         if ($product->seo !== null) {
@@ -165,8 +161,6 @@ readonly class ProductService implements ProductServiceContract
         }
 
         DB::commit();
-
-        Product::query()->where('id', $productId)->withTrashed()->first()?->unsearchable();
     }
 
     public function getMinMaxPrices(Product $product): array
@@ -190,6 +184,12 @@ readonly class ProductService implements ProductServiceContract
             'price_max_initial' => $productMinMaxPrices[1],
         ]);
         $this->discountService->applyDiscountsOnProduct($product);
+    }
+
+    public function updateProductIndex(Product $product): void
+    {
+        $product = $this->prepareProductSearchValues($product);
+        $product->save();
     }
 
     private function assignItems(Product $product, ?array $items): void
@@ -292,5 +292,28 @@ readonly class ProductService implements ProductServiceContract
                 return max($current[1], $carry);
             }),
         ];
+    }
+
+    private function prepareProductSearchValues(Product $product): Product
+    {
+        $searchValues = [
+            ...$product->tags->pluck('name'),
+            ...$product->sets->pluck('name'),
+        ];
+
+        /** @var Attribute $attribute */
+        foreach ($product->attributes as $attribute) {
+            $searchValues[] = $attribute->name;
+            /** @var AttributeOption $option */
+            foreach ($attribute->pivot->options as $option) {
+                $searchValues[] = $option->name;
+                $searchValues[] = $option->value_number;
+                $searchValues[] = $option->value_date;
+            }
+        }
+
+        $product->search_values = implode(' ', $searchValues);
+
+        return $product;
     }
 }

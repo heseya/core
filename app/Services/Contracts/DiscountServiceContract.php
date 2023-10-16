@@ -27,18 +27,18 @@ interface DiscountServiceContract
 {
     public function calc(float $value, Discount $discount): float;
 
-    public function index(SaleIndexDto|CouponIndexDto $dto): LengthAwarePaginator;
+    public function index(CouponIndexDto|SaleIndexDto $dto): LengthAwarePaginator;
 
-    public function store(SaleDto|CouponDto $dto): Discount;
+    public function store(CouponDto|SaleDto $dto): Discount;
 
-    public function update(Discount $discount, SaleDto|CouponDto $dto): Discount;
+    public function update(Discount $discount, CouponDto|SaleDto $dto): Discount;
 
     public function destroy(Discount $discount): void;
 
     public function checkCondition(
         DiscountCondition $condition,
         ?CartOrderDto $dto = null,
-        float $cartValue = 0
+        float $cartValue = 0,
     ): bool;
 
     public function checkConditionGroup(ConditionGroup $group, CartOrderDto $dto, float $cartValue): bool;
@@ -48,12 +48,12 @@ interface DiscountServiceContract
     public function applyDiscountOnProduct(
         Product $product,
         OrderProductDto $orderProductDto,
-        Discount $discount
+        Discount $discount,
     ): OrderProduct;
 
     public function applyDiscountsOnProducts(Collection $products): void;
 
-    public function applyDiscountsOnProduct(Product $product, bool $reindex = true): void;
+    public function applyDiscountsOnProduct(Product $product): void;
 
     public function applyDiscountOnOrderProduct(OrderProduct $orderProduct, Discount $discount): OrderProduct;
 
@@ -65,7 +65,9 @@ interface DiscountServiceContract
 
     public function calcCartDiscounts(CartDto $cart, Collection $products): CartResource;
 
-    /** @return ProductPriceDto[] */
+    /**
+     * @return ProductPriceDto[]
+     */
     public function calcProductsListDiscounts(Collection $products): array;
 
     public function calcOrderShippingDiscounts(Order $order, OrderDto $orderDto): Order;

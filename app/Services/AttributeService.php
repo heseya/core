@@ -17,8 +17,7 @@ readonly class AttributeService implements AttributeServiceContract
     public function __construct(
         private AttributeOptionServiceContract $attributeOptionService,
         private MetadataServiceContract $metadataService,
-    ) {
-    }
+    ) {}
 
     public function create(AttributeDto $dto): Attribute
     {
@@ -52,7 +51,7 @@ readonly class AttributeService implements AttributeServiceContract
 
         $product->attributes()->sync($attributes);
         $product->attributes()->get()->each(
-            fn (Attribute $attribute) => $attribute->pivot->options()->sync($data[$attribute->getKey()])
+            fn (Attribute $attribute) => $attribute->pivot->options()->sync($data[$attribute->getKey()]),
         );
     }
 

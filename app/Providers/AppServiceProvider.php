@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Models\Product;
 use App\Services\AnalyticsService;
 use App\Services\AppService;
 use App\Services\AttributeOptionService;
@@ -105,8 +104,8 @@ use App\Services\UserLoginAttemptService;
 use App\Services\UserService;
 use App\Services\WebHookService;
 use App\Services\WishlistService;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\ServiceProvider;
-use Laravel\Scout\Builder;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -173,6 +172,11 @@ class AppServiceProvider extends ServiceProvider
             $this->app->bind($abstract, $concrete);
         }
 
+        Factory::guessFactoryNamesUsing(
+            /** @phpstan-ignore-next-line */
+            fn (string $modelName) => 'Database\\Factories\\' . class_basename($modelName) . 'Factory',
+        );
+
         /*
          * Local register of ide helper.
          * Needs to be full path.
@@ -180,19 +184,5 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->isLocal()) {
             $this->app->register('\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider');
         }
-    }
-
-    public function boot(): void
-    {
-        Builder::macro('sort', function (?string $sortString = null) {
-            if ($sortString !== null) {
-                // @phpstan-ignore-next-line
-                return app(SortServiceContract::class)->sort($this, $sortString);
-            }
-
-            return $this;
-        });
-
-        Product::disableSearchSyncing();
     }
 }

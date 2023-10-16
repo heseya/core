@@ -22,8 +22,8 @@ class SchemaFactory extends Factory
         return [
             'name' => $this->faker->word,
             'description' => $this->faker->sentence(10),
-            'price' => rand(0, 2) ? 0 : rand(10, 40),
-            'hidden' => rand(0, 10) === 0,
+            'price' => mt_rand(0, 2) ? 0 : mt_rand(10, 40),
+            'hidden' => mt_rand(0, 10) === 0,
             'required' => $this->faker->boolean,
             'max' => null,
             'min' => null,

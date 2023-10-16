@@ -2,25 +2,16 @@
 
 namespace App\Dtos;
 
-use App\Http\Requests\ProductSetProductReorderRequest;
-use Heseya\Dto\Dto;
-use Heseya\Dto\Missing;
-use Illuminate\Foundation\Http\FormRequest;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\Validation\Size;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\DataCollection;
+use Symfony\Contracts\Service\Attribute\Required;
 
-final class ProductsReorderDto extends Dto
+final class ProductsReorderDto extends Data
 {
-    protected array|Missing $products;
-
-    public static function instantiateFromRequest(
-        FormRequest|ProductSetProductReorderRequest $request
-    ): self {
-        return new self(
-            products: $request->input('products', new Missing()),
-        );
-    }
-
-    public function getProducts(): Missing|array
-    {
-        return $this->products;
-    }
+    public function __construct(
+        #[DataCollectionOf(ProductReorderDto::class), Required, Size(1)]
+        public DataCollection $products,
+    ) {}
 }

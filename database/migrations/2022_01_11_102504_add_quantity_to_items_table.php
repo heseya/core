@@ -16,7 +16,7 @@ class AddQuantityToItemsTable extends Migration
         Item::chunk(100, fn ($item) => $item->each(
             fn (Item $item) => $item->update([
                 'quantity' => $item->deposits->sum('quantity'),
-            ])
+            ]),
         ));
     }
 

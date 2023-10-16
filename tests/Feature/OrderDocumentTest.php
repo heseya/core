@@ -57,9 +57,9 @@ class OrderDocumentTest extends TestCase
     {
         Http::fake(['*' => Http::response([0 => ['path' => 'image.jpeg']])]);
 
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
-        $response = $this->actingAs($this->$user)->postJson('orders/id:' . $this->order->getKey() . '/docs', [
+        $response = $this->actingAs($this->{$user})->postJson('orders/id:' . $this->order->getKey() . '/docs', [
             'file' => $this->file,
             'type' => MediaAttachmentType::OTHER,
             'name' => 'test',
@@ -84,18 +84,18 @@ class OrderDocumentTest extends TestCase
     {
         Http::fake(['*' => Http::response()]);
 
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         $media = Media::factory()->create();
 
         $this->order->documents()->attach($media, ['type' => MediaAttachmentType::OTHER, 'name' => 'test']);
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->deleteJson(
                 'orders/id:'
                 . $this->order->getKey()
                 . '/docs/id:'
-                . $this->order->documents()->latest()->first()->pivot->id
+                . $this->order->documents()->latest()->first()->pivot->id,
             );
 
         $response->assertStatus(204);
@@ -117,7 +117,7 @@ class OrderDocumentTest extends TestCase
         $this->order->documents()->attach($mediaOne, ['type' => MediaAttachmentType::OTHER, 'name' => 'test']);
         $this->order->documents()->attach($mediaTwo, ['type' => MediaAttachmentType::OTHER, 'name' => 'test']);
 
-        $response = $this->actingAs($this->$user)->postJson('orders/id:' . $this->order->getKey() . '/docs/send', [
+        $response = $this->actingAs($this->{$user})->postJson('orders/id:' . $this->order->getKey() . '/docs/send', [
             'uuid' => [
                 $this->order->documents->first()->pivot->id,
                 $this->order->documents->last()->pivot->id,
@@ -146,7 +146,7 @@ class OrderDocumentTest extends TestCase
 
         $wrongDocId = $order->documents->last()->pivot->id;
 
-        $response = $this->actingAs($this->$user)->postJson('orders/id:' . $this->order->getKey() . '/docs/send', [
+        $response = $this->actingAs($this->{$user})->postJson('orders/id:' . $this->order->getKey() . '/docs/send', [
             'uuid' => [
                 $this->order->documents->first()->pivot->id,
                 $wrongDocId,
@@ -167,7 +167,7 @@ class OrderDocumentTest extends TestCase
      */
     public function testDownloadDocument($user): void
     {
-        $this->$user->givePermissionTo('orders.show_details');
+        $this->{$user}->givePermissionTo('orders.show_details');
 
         $file = UploadedFile::fake()->image('test.jpeg');
 
@@ -180,13 +180,13 @@ class OrderDocumentTest extends TestCase
 
         Http::fake(['*' => Http::response($file)]);
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->json(
                 'GET',
                 'orders/id:'
                 . $this->order->getKey() . '/docs/id:'
                 . $this->order->documents->last()->pivot->id
-                . '/download'
+                . '/download',
             );
 
         $response
@@ -199,7 +199,7 @@ class OrderDocumentTest extends TestCase
      */
     public function testDownloadUserDocumentWithoutPermission($user): void
     {
-        $this->order->update(['user_id' => $this->$user->getKey()]);
+        $this->order->update(['user_id' => $this->{$user}->getKey()]);
 
         $file = UploadedFile::fake()->image('test.jpeg');
 
@@ -212,13 +212,13 @@ class OrderDocumentTest extends TestCase
 
         Http::fake(['*' => Http::response($file)]);
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->json(
                 'GET',
                 'orders/id:'
                 . $this->order->getKey() . '/docs/id:'
                 . $this->order->documents->last()->pivot->id
-                . '/download'
+                . '/download',
             );
 
         $response
@@ -244,13 +244,13 @@ class OrderDocumentTest extends TestCase
 
         Http::fake(['*' => Http::response($file)]);
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->json(
                 'GET',
                 'orders/id:'
                 . $this->order->getKey() . '/docs/id:'
                 . $this->order->documents->last()->pivot->id
-                . '/download'
+                . '/download',
             );
 
         $response

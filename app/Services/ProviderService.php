@@ -29,8 +29,7 @@ class ProviderService implements ProviderServiceContract
 {
     public function __construct(
         private AuthServiceContract $authService,
-    ) {
-    }
+    ) {}
 
     public function getProvidersList(bool|null $active): JsonResource
     {
@@ -92,7 +91,7 @@ class ProviderService implements ProviderServiceContract
 
         request()->merge($dto->getParams());
         try {
-            // @phpstan-ignore-next-line
+            /** @phpstan-ignore-next-line */
             $user = Socialite::driver($authProviderKey)->stateless()->user();
         } catch (Throwable) {
             throw new ClientException(Exceptions::CLIENT_INVALID_CREDENTIALS);

@@ -19,12 +19,11 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 
-class ShippingMethodService implements ShippingMethodServiceContract
+readonly class ShippingMethodService implements ShippingMethodServiceContract
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
-    ) {
-    }
+    ) {}
 
     public function index(?array $search, ?string $country, float $cartValue): LengthAwarePaginator
     {
@@ -88,7 +87,7 @@ class ShippingMethodService implements ShippingMethodServiceContract
             $this->syncShippingPoints($shippingMethodDto, $shippingMethod);
         }
 
-        if ($shippingMethodDto->getPaymentMethods() !== null) {
+        if (!$shippingMethod->payment_on_delivery && $shippingMethodDto->getPaymentMethods() !== null) {
             $shippingMethod->paymentMethods()->sync($shippingMethodDto->getPaymentMethods());
         }
 
@@ -123,8 +122,10 @@ class ShippingMethodService implements ShippingMethodServiceContract
             $this->syncShippingPoints($shippingMethodDto, $shippingMethod);
         }
 
-        if ($shippingMethodDto->getPaymentMethods() !== null) {
+        if (!$shippingMethod->payment_on_delivery && $shippingMethodDto->getPaymentMethods() !== null) {
             $shippingMethod->paymentMethods()->sync($shippingMethodDto->getPaymentMethods());
+        } elseif ($shippingMethod->payment_on_delivery) {
+            $shippingMethod->paymentMethods()->sync([]);
         }
 
         if ($shippingMethodDto->getCountries() !== null) {

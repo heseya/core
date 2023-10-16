@@ -76,9 +76,9 @@ class ProductSetShowTest extends TestCase
      */
     public function testShow($user): void
     {
-        $this->$user->givePermissionTo('product_sets.show_details');
+        $this->{$user}->givePermissionTo('product_sets.show_details');
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/product-sets/id:' . $this->set->getKey());
         $response
             ->assertOk()
@@ -109,13 +109,13 @@ class ProductSetShowTest extends TestCase
      */
     public function testShowWrongId($user): void
     {
-        $this->$user->givePermissionTo('product_sets.show_details');
+        $this->{$user}->givePermissionTo('product_sets.show_details');
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->getJson('/product-sets/id:its-not-uuid')
             ->assertNotFound();
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->getJson('/product-sets/id:' . $this->set->getKey() . $this->set->getKey())
             ->assertNotFound();
     }
@@ -125,10 +125,10 @@ class ProductSetShowTest extends TestCase
      */
     public function testShowHiddenUnauthorized($user): void
     {
-        $this->$user->givePermissionTo('product_sets.show_details');
+        $this->{$user}->givePermissionTo('product_sets.show_details');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/product-sets/id:' . $this->privateSet->getKey())
             ->assertNotFound();
     }
@@ -138,9 +138,9 @@ class ProductSetShowTest extends TestCase
      */
     public function testShowHidden($user): void
     {
-        $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
+        $this->{$user}->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/product-sets/id:' . $this->privateSet->getKey());
         $response
             ->assertOk()
@@ -169,9 +169,9 @@ class ProductSetShowTest extends TestCase
      */
     public function testShowTree($user): void
     {
-        $this->$user->givePermissionTo('product_sets.show_details');
+        $this->{$user}->givePermissionTo('product_sets.show_details');
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->json('GET', '/product-sets/id:' . $this->set->getKey(), ['tree' => true]);
         $response
             ->assertOk()
@@ -211,9 +211,9 @@ class ProductSetShowTest extends TestCase
      */
     public function testShowTreeHidden($user): void
     {
-        $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
+        $this->{$user}->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->json('GET', '/product-sets/id:' . $this->set->getKey(), ['tree' => true]);
         $response
             ->assertOk()
@@ -264,7 +264,7 @@ class ProductSetShowTest extends TestCase
      */
     public function testShowSlugUnauthorized($user): void
     {
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/product-sets/' . $this->set->slug);
         $response->assertForbidden();
     }
@@ -274,9 +274,9 @@ class ProductSetShowTest extends TestCase
      */
     public function testShowSlug($user): void
     {
-        $this->$user->givePermissionTo('product_sets.show_details');
+        $this->{$user}->givePermissionTo('product_sets.show_details');
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/product-sets/' . $this->set->slug);
         $response
             ->assertOk()
@@ -307,15 +307,15 @@ class ProductSetShowTest extends TestCase
      */
     public function testShowWrongSlug($user): void
     {
-        $this->$user->givePermissionTo('product_sets.show_details');
+        $this->{$user}->givePermissionTo('product_sets.show_details');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/product-sets/its_wrong_slug')
             ->assertNotFound();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/product-sets/' . $this->set->slug . '_' . $this->set->slug)
             ->assertNotFound();
     }
@@ -325,9 +325,9 @@ class ProductSetShowTest extends TestCase
      */
     public function testShowSlugHiddenUnauthorized($user): void
     {
-        $this->$user->givePermissionTo('product_sets.show_details');
+        $this->{$user}->givePermissionTo('product_sets.show_details');
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/product-sets/' . $this->privateSet->slug);
         $response->assertNotFound();
     }
@@ -337,9 +337,9 @@ class ProductSetShowTest extends TestCase
      */
     public function testShowSlugHidden($user): void
     {
-        $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
+        $this->{$user}->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
 
-        $response = $this->actingAs($this->$user)->getJson('/product-sets/' . $this->privateSet->slug);
+        $response = $this->actingAs($this->{$user})->getJson('/product-sets/' . $this->privateSet->slug);
         $response
             ->assertOk()
             ->assertJson(['data' => [
@@ -367,9 +367,9 @@ class ProductSetShowTest extends TestCase
      */
     public function testShowSlugTree($user): void
     {
-        $this->$user->givePermissionTo('product_sets.show_details');
+        $this->{$user}->givePermissionTo('product_sets.show_details');
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->json('GET', '/product-sets/' . $this->set->slug, ['tree' => true]);
         $response
             ->assertOk()
@@ -409,9 +409,9 @@ class ProductSetShowTest extends TestCase
      */
     public function testShowSlugTreeHidden($user): void
     {
-        $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
+        $this->{$user}->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->json('GET', '/product-sets/' . $this->set->slug, ['tree' => true]);
         $response
             ->assertOk()
@@ -462,7 +462,7 @@ class ProductSetShowTest extends TestCase
      */
     public function testProductSetHasAttributes($user): void
     {
-        $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
+        $this->{$user}->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
 
         $firstAttr = Attribute::factory()->create([
             'name' => 'test',
@@ -482,7 +482,7 @@ class ProductSetShowTest extends TestCase
             $secondAttr->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/product-sets/id:' . $this->set->getKey());
 
         $response
@@ -515,7 +515,7 @@ class ProductSetShowTest extends TestCase
      */
     public function testProductSetHasAttributesWithOptions($user): void
     {
-        $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
+        $this->{$user}->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
 
         $attribute = Attribute::factory()->create([
             'name' => 'test',
@@ -534,7 +534,7 @@ class ProductSetShowTest extends TestCase
             $attribute->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)
+        $response = $this->actingAs($this->{$user})
             ->getJson('/product-sets/id:' . $this->set->getKey());
 
         $response

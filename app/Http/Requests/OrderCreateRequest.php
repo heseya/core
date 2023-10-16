@@ -35,21 +35,17 @@ class OrderCreateRequest extends OrderItemsRequest
                 'coupons.*' => [
                     'string',
                     'max:64',
-                    Rule::exists('discounts', 'code')->where(function ($query) {
-                        return $query->where('active', true);
-                    }),
+                    Rule::exists('discounts', 'code')->where(fn ($query) => $query->where('active', true)),
                 ],
 
                 'sale_ids' => ['nullable'],
                 'sale_ids.*' => [
                     'uuid',
-                    Rule::exists('discounts', 'id')->where(function ($query) {
-                        return $query->where('code', null)->where('active', true);
-                    }),
+                    Rule::exists('discounts', 'id')->where(fn ($query) => $query->where('code', null)->where('active', true)),
                 ],
 
                 'invoice_requested' => ['boolean'],
-            ]
+            ],
         );
     }
 }

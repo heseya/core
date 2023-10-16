@@ -15,9 +15,9 @@ class ProductCreateTest extends TestCase
     {
         $page = Page::factory()->create();
 
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('POST', '/products', [
                 'name' => 'Test',
                 'slug' => 'slug',
@@ -43,9 +43,9 @@ class ProductCreateTest extends TestCase
         $product = Product::factory()->create();
         $page = Page::factory()->create();
 
-        $this->$user->givePermissionTo('products.edit');
+        $this->{$user}->givePermissionTo('products.edit');
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('PATCH', "/products/id:{$product->getKey()}", [
                 'descriptions' => [$page->getKey()],
             ])

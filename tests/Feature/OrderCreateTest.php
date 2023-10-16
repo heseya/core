@@ -24,8 +24,10 @@ use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Role;
 use App\Models\Schema;
+use App\Models\Setting;
 use App\Models\ShippingMethod;
 use App\Models\Status;
+use App\Models\User;
 use App\Models\WebHook;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -33,6 +35,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
@@ -101,7 +104,7 @@ class OrderCreateTest extends TestCase
      */
     public function testCreateSimpleOrder($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         Event::fake([OrderCreated::class]);
 
@@ -112,7 +115,7 @@ class OrderCreateTest extends TestCase
 
         $productQuantity = 20;
 
-        $response = $this->actingAs($this->$user)->postJson('/orders', [
+        $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address->toArray(),
@@ -161,9 +164,52 @@ class OrderCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateOrderMailSend($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.add');
+
+        $this->product->update([
+            'price' => 10,
+            'vat_rate' => 23,
+        ]);
+
+        $admin = User::factory()->create();
+
+        Setting::create([
+            'name' => 'admin_mails',
+            'value' => $admin->email,
+            'public' => false,
+        ]);
+
+        $productQuantity = 20;
+
+        Notification::fake();
+        $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+        ])->assertCreated();
+
+        /** @var Order $order */
+        $order = Order::query()->where('id', '=', $response->getData()->data->id)->first();
+        Notification::assertCount(2);
+        Notification::assertSentTo($order, \App\Notifications\OrderCreated::class);
+        Notification::assertSentTo($admin, \App\Notifications\OrderCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateSimpleOrderWithMetadata($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         Event::fake([OrderCreated::class]);
 
@@ -174,7 +220,7 @@ class OrderCreateTest extends TestCase
         $productQuantity = 20;
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/orders', [
                 'email' => $this->email,
                 'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -203,7 +249,7 @@ class OrderCreateTest extends TestCase
      */
     public function testCreateSimpleOrderWithMetadataPrivate($user): void
     {
-        $this->$user->givePermissionTo(['orders.add', 'orders.show_metadata_private']);
+        $this->{$user}->givePermissionTo(['orders.add', 'orders.show_metadata_private']);
 
         Event::fake([OrderCreated::class]);
 
@@ -214,7 +260,7 @@ class OrderCreateTest extends TestCase
         $productQuantity = 20;
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/orders', [
                 'email' => $this->email,
                 'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -243,7 +289,7 @@ class OrderCreateTest extends TestCase
      */
     public function testCreateSimpleOrderPaid($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         Event::fake([OrderCreated::class]);
 
@@ -262,7 +308,7 @@ class OrderCreateTest extends TestCase
 
         $freeShipping->priceRanges()->save($lowRange);
 
-        $response = $this->actingAs($this->$user)->postJson('/orders', [
+        $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $freeShipping->getKey(),
             'shipping_place' => $this->address->toArray(),
@@ -301,14 +347,14 @@ class OrderCreateTest extends TestCase
      */
     public function testCreateSimpleOrderWithWebHookQueue($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         WebHook::factory()->create([
             'events' => [
                 'OrderCreated',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
@@ -321,7 +367,7 @@ class OrderCreateTest extends TestCase
 
         $productQuantity = 20;
 
-        $response = $this->actingAs($this->$user)->postJson('/orders', [
+        $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -422,7 +468,7 @@ class OrderCreateTest extends TestCase
      */
     public function testCreateOrder($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         Event::fake([OrderCreated::class]);
 
@@ -439,7 +485,7 @@ class OrderCreateTest extends TestCase
 
         $productQuantity = 2;
 
-        $response = $this->actingAs($this->$user)->postJson('/orders', [
+        $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address->toArray(),
@@ -494,14 +540,14 @@ class OrderCreateTest extends TestCase
      */
     public function testCreateOrderWithWebHook($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ItemUpdatedQuantity',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
@@ -540,7 +586,7 @@ class OrderCreateTest extends TestCase
 
         $productQuantity = 2;
 
-        $response = $this->actingAs($this->$user)->postJson('/orders', [
+        $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address->toArray(),
@@ -609,7 +655,7 @@ class OrderCreateTest extends TestCase
      */
     public function testCreateOrderHiddenSchema($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         Event::fake([OrderCreated::class]);
 
@@ -626,7 +672,7 @@ class OrderCreateTest extends TestCase
 
         $productQuantity = 2;
 
-        $response = $this->actingAs($this->$user)->postJson('/orders', [
+        $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address->toArray(),
@@ -676,7 +722,7 @@ class OrderCreateTest extends TestCase
      */
     public function testCreateOrderNonRequiredSchemaEmpty($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         Event::fake([OrderCreated::class]);
 
@@ -693,7 +739,7 @@ class OrderCreateTest extends TestCase
             'price' => $productPrice,
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/orders', [
+        $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address->toArray(),
@@ -726,7 +772,7 @@ class OrderCreateTest extends TestCase
      */
     public function testCreateOrderNoSalesIds($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         Event::fake([OrderCreated::class]);
 
@@ -755,7 +801,7 @@ class OrderCreateTest extends TestCase
 
         $discount->conditionGroups()->attach($conditionGroup);
 
-        $response = $this->actingAs($this->$user)->json('POST', '/orders', [
+        $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -778,7 +824,7 @@ class OrderCreateTest extends TestCase
      */
     public function testCreateOrderWithDiscount($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         Event::fake([OrderCreated::class]);
 
@@ -795,7 +841,7 @@ class OrderCreateTest extends TestCase
         ]);
         $discount->products()->attach($this->product->getKey());
 
-        $response = $this->actingAs($this->$user)->json('POST', '/orders', [
+        $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_place' => $this->address->toArray(),
@@ -830,7 +876,7 @@ class OrderCreateTest extends TestCase
      */
     public function testCreateOrderWithDiscountMinimalPrices($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         Event::fake([OrderCreated::class]);
 
@@ -878,7 +924,7 @@ class OrderCreateTest extends TestCase
 
         $shippingMethod->priceRanges()->saveMany([$lowRange]);
 
-        $response = $this->actingAs($this->$user)->json('POST', '/orders', [
+        $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -937,11 +983,11 @@ class OrderCreateTest extends TestCase
      */
     public function testCantCreateOrderWithoutItems($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         $shippingMethod = ShippingMethod::factory()->create();
 
-        $response = $this->actingAs($this->$user)->json('POST', '/orders', [
+        $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_place' => [
@@ -963,7 +1009,7 @@ class OrderCreateTest extends TestCase
      */
     public function testCantCreateOrderWithoutBillingAddress($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         Event::fake([OrderCreated::class]);
 
@@ -972,7 +1018,7 @@ class OrderCreateTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson(
                 '/orders',
                 [
@@ -985,7 +1031,7 @@ class OrderCreateTest extends TestCase
                             'quantity' => 20,
                         ],
                     ],
-                ]
+                ],
             )
             ->assertUnprocessable();
 
@@ -997,7 +1043,7 @@ class OrderCreateTest extends TestCase
      */
     public function testCantCreateOrderWithExpiredDiscount($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         $discount = Discount::factory()->create([
             'description' => 'Testowy kupon',
@@ -1022,7 +1068,7 @@ class OrderCreateTest extends TestCase
 
         $shippingMethod = ShippingMethod::factory()->create();
 
-        $response = $this->actingAs($this->$user)->json('POST', '/orders', [
+        $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_address' => $this->address->toArray(),
@@ -1046,7 +1092,7 @@ class OrderCreateTest extends TestCase
      */
     public function testCantCreateOrderWithDiscountBeforeStart($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         $discount = Discount::factory()->create([
             'description' => 'Testowy kupon',
@@ -1071,7 +1117,7 @@ class OrderCreateTest extends TestCase
 
         $shippingMethod = ShippingMethod::factory()->create();
 
-        $response = $this->actingAs($this->$user)->json('POST', '/orders', [
+        $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_address' => $this->address->toArray(),
@@ -1095,7 +1141,7 @@ class OrderCreateTest extends TestCase
      */
     public function testCreateOrderWithShippingMethodTypeAddress($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         Event::fake([OrderCreated::class]);
 
@@ -1117,7 +1163,7 @@ class OrderCreateTest extends TestCase
             'shipping_type' => ShippingType::ADDRESS,
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/orders', [
+        $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
@@ -1153,7 +1199,7 @@ class OrderCreateTest extends TestCase
      */
     public function testCreateOrderWithShippingMethodTypePoint($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         Event::fake([OrderCreated::class]);
 
@@ -1179,7 +1225,7 @@ class OrderCreateTest extends TestCase
 
         $shippingMethod->shippingPoints()->attach($pointAddress);
 
-        $response = $this->actingAs($this->$user)->postJson('/orders', [
+        $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
@@ -1215,7 +1261,7 @@ class OrderCreateTest extends TestCase
      */
     public function testCreateOrderWithShippingMethodTypePointExternal($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         Event::fake([OrderCreated::class]);
 
@@ -1237,7 +1283,7 @@ class OrderCreateTest extends TestCase
             'shipping_type' => ShippingType::POINT_EXTERNAL,
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/orders', [
+        $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
@@ -1273,7 +1319,7 @@ class OrderCreateTest extends TestCase
      */
     public function testCreateOrderWithMissingShippingAddress($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         Event::fake([OrderCreated::class]);
 
@@ -1295,7 +1341,7 @@ class OrderCreateTest extends TestCase
             'shipping_type' => ShippingType::POINT,
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/orders', [
+        $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
@@ -1321,7 +1367,7 @@ class OrderCreateTest extends TestCase
      */
     public function testCreateOrderWithMissingShippingPlace($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         Event::fake([OrderCreated::class]);
 
@@ -1343,7 +1389,7 @@ class OrderCreateTest extends TestCase
             'shipping_type' => ShippingType::POINT_EXTERNAL,
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/orders', [
+        $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
@@ -1369,7 +1415,7 @@ class OrderCreateTest extends TestCase
      */
     public function testCantCreateOrderWithInactiveCoupon($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         $discount = Discount::factory()->create([
             'description' => 'Testowy kupon',
@@ -1395,7 +1441,7 @@ class OrderCreateTest extends TestCase
 
         $shippingMethod = ShippingMethod::factory()->create();
 
-        $response = $this->actingAs($this->$user)->json('POST', '/orders', [
+        $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
@@ -1418,7 +1464,7 @@ class OrderCreateTest extends TestCase
      */
     public function testCantCreateOrderWithInactiveSale($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         $discount = Discount::factory()->create([
             'description' => 'Testowy kupon',
@@ -1444,7 +1490,7 @@ class OrderCreateTest extends TestCase
 
         $shippingMethod = ShippingMethod::factory()->create();
 
-        $response = $this->actingAs($this->$user)->json('POST', '/orders', [
+        $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
@@ -1468,13 +1514,13 @@ class OrderCreateTest extends TestCase
     public function testCreateOrderWithEnabledAudit($user): void
     {
         Config::set('audit.console', true);
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         Event::fake([OrderCreated::class]);
 
         $productQuantity = 2;
 
-        $response = $this->actingAs($this->$user)->postJson('/orders', [
+        $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -1572,7 +1618,7 @@ class OrderCreateTest extends TestCase
      */
     public function testCreateOrderPurchaseLimit($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         Event::fake([OrderCreated::class]);
 
@@ -1584,7 +1630,7 @@ class OrderCreateTest extends TestCase
 
         $productQuantity = 20;
 
-        $this->actingAs($this->$user)->postJson('/orders', [
+        $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -1607,7 +1653,7 @@ class OrderCreateTest extends TestCase
      */
     public function testCreateOrderPurchaseLimitAlreadyPurchased($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         Event::fake([OrderCreated::class]);
 
@@ -1620,7 +1666,7 @@ class OrderCreateTest extends TestCase
         $order = Order::factory()->create([
             'paid' => true,
         ]);
-        $this->$user->orders()->save($order);
+        $this->{$user}->orders()->save($order);
         $order->products()->create([
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -1629,7 +1675,7 @@ class OrderCreateTest extends TestCase
             'name' => $this->product->name,
         ]);
 
-        $this->actingAs($this->$user)->postJson('/orders', [
+        $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -1652,14 +1698,14 @@ class OrderCreateTest extends TestCase
      */
     public function testCreateOrderPurchaseLimitSetAfterPurchase($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         Event::fake([OrderCreated::class]);
 
         $order = Order::factory()->create([
             'paid' => true,
         ]);
-        $this->$user->orders()->save($order);
+        $this->{$user}->orders()->save($order);
         $order->products()->create([
             'product_id' => $this->product->getKey(),
             'quantity' => 2,
@@ -1674,7 +1720,7 @@ class OrderCreateTest extends TestCase
             'purchase_limit_per_user' => 1,
         ]);
 
-        $this->actingAs($this->$user)->postJson('/orders', [
+        $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -1697,14 +1743,14 @@ class OrderCreateTest extends TestCase
      */
     public function testCreateOrderPurchaseLimitSetAfterPurchaseNotPaid($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         Event::fake([OrderCreated::class]);
 
         $order = Order::factory()->create([
             'paid' => false,
         ]);
-        $this->$user->orders()->save($order);
+        $this->{$user}->orders()->save($order);
         $order->products()->create([
             'product_id' => $this->product->getKey(),
             'quantity' => 2,
@@ -1719,7 +1765,7 @@ class OrderCreateTest extends TestCase
             'purchase_limit_per_user' => 1,
         ]);
 
-        $this->actingAs($this->$user)->postJson('/orders', [
+        $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -1740,7 +1786,7 @@ class OrderCreateTest extends TestCase
      */
     public function testCreateOrderPurchaseLimitCanceledOrder($user): void
     {
-        $this->$user->givePermissionTo('orders.add');
+        $this->{$user}->givePermissionTo('orders.add');
 
         Event::fake([OrderCreated::class]);
 
@@ -1750,7 +1796,7 @@ class OrderCreateTest extends TestCase
         $order = Order::factory()->create([
             'status_id' => $status->getKey(),
         ]);
-        $this->$user->orders()->save($order);
+        $this->{$user}->orders()->save($order);
         $order->products()->create([
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -1765,7 +1811,7 @@ class OrderCreateTest extends TestCase
             'purchase_limit_per_user' => 1,
         ]);
 
-        $this->actingAs($this->$user)->postJson('/orders', [
+        $this->actingAs($this->{$user})->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),

@@ -18,10 +18,10 @@ class CountryTest extends TestCase
      */
     public function testIndex($user): void
     {
-        $this->$user->givePermissionTo('countries.show');
+        $this->{$user}->givePermissionTo('countries.show');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/countries')
             ->assertOk();
     }

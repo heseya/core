@@ -16,15 +16,14 @@ class FavouriteController extends Controller
 {
     public function __construct(
         private FavouriteServiceContract $favouriteService,
-    ) {
-    }
+    ) {}
 
     public function store(FavouriteProductSetStoreRequest $request): JsonResource
     {
         return FavouriteProductSetResource::make(
             $this->favouriteService->storeFavouriteProductSet(
-                FavouriteProductSetDto::instantiateFromRequest($request)
-            )
+                FavouriteProductSetDto::instantiateFromRequest($request),
+            ),
         );
     }
 

@@ -11,8 +11,8 @@ use Illuminate\Foundation\Http\FormRequest;
 class SeoKeywordsDto extends Dto implements InstantiateFromRequest
 {
     private array $keywords;
-    private string|Missing $excluded_id;
-    private string|Missing $excluded_model;
+    private Missing|string $excluded_id;
+    private Missing|string $excluded_model;
 
     public static function instantiateFromRequest(FormRequest|SeoKeywordsRequest $request): self
     {

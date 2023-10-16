@@ -22,8 +22,8 @@ class Authenticate extends Middleware
     {
         if (!Auth::check()) {
             if (
-                $request->hasHeader('Authorization') &&
-                Str::startsWith($request->header('Authorization'), ['Bearer', 'bearer'])
+                $request->hasHeader('Authorization')
+                && Str::startsWith($request->header('Authorization'), ['Bearer', 'bearer'])
             ) {
                 Config::set('auth.providers.users.model', App::class);
                 Auth::forgetGuards();

@@ -13,8 +13,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class FavouriteProductSet extends Model
 {
-    use HasFactory;
     use HasCriteria;
+    use HasFactory;
     use SoftDeletes;
 
     protected $fillable = [

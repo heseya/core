@@ -16,8 +16,7 @@ class SeoMetadataController extends Controller
 {
     public function __construct(
         private SeoMetadataServiceContract $seoMetadataService,
-    ) {
-    }
+    ) {}
 
     public function show(): JsonResponse
     {

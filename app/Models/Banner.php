@@ -16,8 +16,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Banner extends Model
 {
-    use HasFactory;
     use HasCriteria;
+    use HasFactory;
     use HasMetadata;
 
     protected $fillable = [

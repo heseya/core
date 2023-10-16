@@ -11,9 +11,8 @@ use Heseya\Dto\Missing;
 class PackageTemplateService implements PackageTemplateServiceContract
 {
     public function __construct(
-        private MetadataServiceContract $metadataService
-    ) {
-    }
+        private MetadataServiceContract $metadataService,
+    ) {}
 
     public function store(PackageTemplateDto $dto): PackageTemplate
     {

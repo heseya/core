@@ -11,19 +11,19 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class ProductSetUpdateDto extends Dto implements InstantiateFromRequest
 {
-    private string|Missing $name;
-    private string|null|Missing $slug_suffix;
+    private Missing|string $name;
+    private Missing|string|null $slug_suffix;
     private bool|Missing $slug_override;
     private bool|Missing $public;
-    private string|null|Missing $parent_id;
+    private Missing|string|null $parent_id;
     private array|Missing $children_ids;
-    private SeoMetadataDto|Missing $seo;
-    private string|null|Missing $description_html;
-    private string|null|Missing $cover_id;
-    private array|null|Missing $attributes_ids;
+    private Missing|SeoMetadataDto $seo;
+    private Missing|string|null $description_html;
+    private Missing|string|null $cover_id;
+    private array|Missing|null $attributes_ids;
 
     public static function instantiateFromRequest(
-        FormRequest|ProductSetStoreRequest|ProductSetUpdateRequest $request
+        FormRequest|ProductSetStoreRequest|ProductSetUpdateRequest $request,
     ): self {
         return new self(
             name: $request->input('name', new Missing()),
@@ -49,12 +49,12 @@ class ProductSetUpdateDto extends Dto implements InstantiateFromRequest
         return $this->slug_suffix;
     }
 
-    public function isSlugOverridden(): Missing|bool
+    public function isSlugOverridden(): bool|Missing
     {
         return $this->slug_override;
     }
 
-    public function isPublic(): Missing|bool
+    public function isPublic(): bool|Missing
     {
         return $this->public;
     }
@@ -64,12 +64,12 @@ class ProductSetUpdateDto extends Dto implements InstantiateFromRequest
         return $this->parent_id;
     }
 
-    public function getChildrenIds(): Missing|array
+    public function getChildrenIds(): array|Missing
     {
         return $this->children_ids;
     }
 
-    public function getSeo(): SeoMetadataDto|Missing
+    public function getSeo(): Missing|SeoMetadataDto
     {
         return $this->seo;
     }
@@ -84,7 +84,7 @@ class ProductSetUpdateDto extends Dto implements InstantiateFromRequest
         return $this->cover_id;
     }
 
-    public function getAttributesIds(): Missing|null|array
+    public function getAttributesIds(): array|Missing|null
     {
         return $this->attributes_ids;
     }

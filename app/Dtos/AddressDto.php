@@ -11,13 +11,13 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class AddressDto extends Dto implements InstantiateFromRequest
 {
-    private string|null|Missing $name;
-    private string|null|Missing $address;
-    private string|null|Missing $vat;
-    private string|null|Missing $zip;
-    private string|null|Missing $city;
-    private string|null|Missing $country;
-    private string|null|Missing $phone;
+    private Missing|string|null $name;
+    private Missing|string|null $address;
+    private Missing|string|null $vat;
+    private Missing|string|null $zip;
+    private Missing|string|null $city;
+    private Missing|string|null $country;
+    private Missing|string|null $phone;
 
     public static function instantiateFromRequest(
         FormRequest|OrderCreateRequest|OrderUpdateRequest $request,

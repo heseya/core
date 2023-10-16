@@ -47,8 +47,7 @@ class AuthController extends Controller
         private AuthServiceContract $authService,
         private AppServiceContract $appService,
         private SavedAddressServiceContract $savedAddresService,
-    ) {
-    }
+    ) {}
 
     public function login(LoginRequest $request): JsonResource
     {
@@ -92,7 +91,7 @@ class AuthController extends Controller
     {
         $user = $this->authService->showResetPasswordForm(
             $email,
-            $token
+            $token,
         );
 
         return UserResource::make($user);
@@ -103,7 +102,7 @@ class AuthController extends Controller
         $this->authService->saveResetPassword(
             $request->input('email'),
             $request->input('token'),
-            $request->input('password')
+            $request->input('password'),
         );
 
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
@@ -116,7 +115,7 @@ class AuthController extends Controller
         $this->authService->changePassword(
             $user,
             $request->input('password'),
-            $request->input('password_new')
+            $request->input('password_new'),
         );
 
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
@@ -160,7 +159,7 @@ class AuthController extends Controller
     public function confirmTFA(TFAConfirmRequest $request): JsonResource
     {
         return TFARecoveryCodesResource::make(
-            $this->authService->confirmTFA(TFAConfirmDto::instantiateFromRequest($request))
+            $this->authService->confirmTFA(TFAConfirmDto::instantiateFromRequest($request)),
         );
     }
 
@@ -196,33 +195,33 @@ class AuthController extends Controller
     {
         $this->savedAddresService->storeAddress(
             SavedAddressDto::instantiateFromRequest($request),
-            $type
+            $type,
         );
 
         return SavedAddressResource::collection(
             SavedAddress::where([
                 'user_id' => Auth::id(),
                 'type' => $type,
-            ])->get()
+            ])->get(),
         );
     }
 
     public function updateSavedAddress(
         SavedAddressUpdateRequest $request,
         SavedAddress $address,
-        int $type
+        int $type,
     ): JsonResource {
         $this->savedAddresService->updateAddress(
             $address,
             SavedAddressDto::instantiateFromRequest($request),
-            $type
+            $type,
         );
 
         return SavedAddressResource::collection(
             SavedAddress::where([
                 'user_id' => Auth::id(),
                 'type' => $type,
-            ])->get()
+            ])->get(),
         );
     }
 
@@ -234,7 +233,7 @@ class AuthController extends Controller
             SavedAddress::where([
                 'user_id' => Auth::id(),
                 'type' => $type,
-            ])->get()
+            ])->get(),
         );
     }
 

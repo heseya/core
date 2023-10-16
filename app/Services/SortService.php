@@ -2,32 +2,21 @@
 
 namespace App\Services;
 
-use App\Enums\ExceptionsEnums\Exceptions;
-use App\Exceptions\ClientException;
-use App\Models\Contracts\SortableContract;
+use App\Models\ProductSet;
 use App\Rules\WhereIn;
 use App\Services\Contracts\SortServiceContract;
-use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use Laravel\Scout\Builder as ScoutBuilder;
+use Illuminate\Validation\ValidationException;
 
 class SortService implements SortServiceContract
 {
     /**
-     * @throws Exception
+     * @throws ValidationException
      */
-    public function sortScout(ScoutBuilder $query, ?string $sortString): Builder|ScoutBuilder
-    {
-        if ($query->model instanceof SortableContract && $sortString !== null) {
-            return $this->sort($query, $sortString, $query->model->getSortable());
-        }
-        throw new ClientException(Exceptions::CLIENT_MODEL_NOT_SORTABLE);
-    }
-
-    public function sort(Builder|ScoutBuilder $query, string $sortString, array $sortable): Builder|ScoutBuilder
+    public function sort(Builder $query, string $sortString, array $sortable): Builder
     {
         $sort = explode(',', $sortString);
 
@@ -44,6 +33,9 @@ class SortService implements SortServiceContract
         return $query;
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function validate(array $field, array $sortable): void
     {
         Validator::make(
@@ -59,20 +51,67 @@ class SortService implements SortServiceContract
         )->validate();
     }
 
-    private function addOrder(Builder|ScoutBuilder $query, string $field, string $order): void
+    private function addOrder(Builder $query, string $field, string $order): void
     {
-        if (Str::contains($field, 'set.') && $query instanceof Builder) {
-            $query->leftJoin('product_set_product', function (JoinClause $join) use ($field): void {
-                $join->on('product_set_product.product_id', 'products.id')
-                    ->join('product_sets', function (JoinClause $join) use ($field): void {
-                        $join->on('product_sets.id', 'product_set_product.product_set_id')
-                            ->where('product_sets.slug', Str::after($field, 'set.'));
-                    });
-            })
-                ->select('product_set_product.order AS set_order', 'products.*')
-                ->orderBy('set_order', $order);
-        } else {
-            $query->orderBy($field, $order);
+        if (Str::startsWith($field, 'set.')) {
+            $this->addSetOrder($query, $field, $order);
+
+            return;
+        } elseif (Str::startsWith($field, 'attribute.')) {
+            $this->addAttributeOrder($query, $field, $order);
+
+            return;
         }
+
+        $query->orderBy($field, $order);
+    }
+
+    private function addSetOrder(Builder $query, string $field, string $order): void
+    {
+        /** @var ProductSet $set */
+        $set = ProductSet::query()->where('slug', '=', Str::after($field, 'set.'))->select('id')->first();
+        $searchedProductSetsIds = $set->allChildrenIds('children')->push($set->getKey());
+
+        $query->leftJoin('product_set_product', function (JoinClause $join) use ($searchedProductSetsIds): void {
+            $join->on('product_set_product.product_id', 'products.id')
+                ->whereIn('product_set_product.product_set_id', $searchedProductSetsIds);
+        })
+            ->addSelect('products.*')
+            ->addSelect('product_set_product.order AS set_order')
+            ->selectRaw('(product_set_product.product_set_id = ?) AS is_main_set', [$set->getKey()])
+            ->orderBy('is_main_set', 'desc')
+            ->orderBy('product_set_product.product_set_id', $order)
+            ->orderBy('set_order', $order);
+    }
+
+    private function addAttributeOrder(Builder $query, string $field, string $order): void
+    {
+        $query->leftJoin('product_attribute', function (JoinClause $join) use ($field): void {
+            $value = Str::after($field, 'attribute.');
+            $join
+                ->on('product_attribute.product_id', 'products.id')
+                ->join('attributes', function (JoinClause $join): void {
+                    $join->on('attributes.id', '=', 'product_attribute.attribute_id');
+                })
+                ->where(function (JoinClause $join) use ($value): void {
+                    $join
+                        ->where('attributes.slug', $value)
+                        ->orWhere('product_attribute.attribute_id', $value);
+                })
+                ->join('product_attribute_attribute_option', function (JoinClause $join): void {
+                    $join
+                        ->on('product_attribute_attribute_option.product_attribute_id', 'product_attribute.id')
+                        ->join('attribute_options', function (JoinClause $join): void {
+                            $join->on('product_attribute_attribute_option.attribute_option_id', 'attribute_options.id');
+                        });
+                });
+        })
+            ->addSelect('products.*')
+            ->addSelect('attribute_options.value_number AS attribute_order_number')
+            ->addSelect('attribute_options.value_date AS attribute_order_date')
+            ->addSelect('attribute_options.name AS attribute_order')
+            ->orderBy('attribute_order_number', $order)
+            ->orderBy('attribute_order_date', $order)
+            ->orderBy('attribute_order', $order);
     }
 }

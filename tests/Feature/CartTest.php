@@ -124,9 +124,9 @@ class CartTest extends TestCase
      */
     public function testCartProcessDigitalMethodForPhysicalProduct($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'digital_shipping_method_id' => $this->digitalShippingMethod->getKey(),
             'items' => [
                 [
@@ -146,9 +146,9 @@ class CartTest extends TestCase
      */
     public function testCartProcessPhysicalMethodForDigitalProduct($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -168,9 +168,9 @@ class CartTest extends TestCase
      */
     public function testCartProcessSimple($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -205,13 +205,13 @@ class CartTest extends TestCase
      */
     public function testCartProcessWithMultipleSchemas(string $user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $this->item->deposits()->create([
             'quantity' => 1,
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -271,7 +271,7 @@ class CartTest extends TestCase
      */
     public function testCartProcess($user, $coupon): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $code = $coupon ? [] : ['code' => null];
 
@@ -312,7 +312,7 @@ class CartTest extends TestCase
             ],
         ] : [];
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -359,13 +359,13 @@ class CartTest extends TestCase
      */
     public function testCartProcessProductNotAvailable($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $this->item->deposits()->create([
             'quantity' => 1,
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -412,7 +412,7 @@ class CartTest extends TestCase
      */
     public function testCartProcessProductDoesntExist($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         Discount::factory()->create([
             'target_type' => DiscountTargetType::CHEAPEST_PRODUCT,
@@ -424,7 +424,7 @@ class CartTest extends TestCase
             'quantity' => 1,
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -445,7 +445,7 @@ class CartTest extends TestCase
      */
     public function testCartProcessFull($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $saleApplied = Discount::factory()->create(
             [
@@ -519,7 +519,7 @@ class CartTest extends TestCase
             'quantity' => 1,
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -588,7 +588,7 @@ class CartTest extends TestCase
      */
     public function testCartProcessLessThanMinimal($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $shippingMethod = ShippingMethod::factory()->create([
             'public' => true,
@@ -630,7 +630,7 @@ class CartTest extends TestCase
         $saleApplied->products()->attach($this->product->getKey());
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/cart/process', [
                 'shipping_method_id' => $shippingMethod->getKey(),
                 'items' => [
@@ -683,11 +683,11 @@ class CartTest extends TestCase
      */
     public function testCartProcessWithNotExistingCoupon($user, $coupon): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $data = $this->prepareDataForCouponTest($coupon);
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -734,7 +734,7 @@ class CartTest extends TestCase
      */
     public function testCartProcessCheapestProduct($user, $coupon): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $code = $coupon ? [] : ['code' => null];
 
@@ -766,7 +766,7 @@ class CartTest extends TestCase
         ] : [];
 
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson(
                 '/cart/process',
                 [
@@ -779,7 +779,7 @@ class CartTest extends TestCase
                             'schemas' => [],
                         ],
                     ],
-                ] + $coupons
+                ] + $coupons,
             );
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
@@ -824,7 +824,7 @@ class CartTest extends TestCase
      */
     public function testCartProcessCheapestProductWithSamePrice($user, $coupon): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $code = $coupon ? [] : ['code' => null];
 
@@ -856,7 +856,7 @@ class CartTest extends TestCase
         ] : [];
 
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson(
                 '/cart/process',
                 [
@@ -869,7 +869,7 @@ class CartTest extends TestCase
                             'schemas' => [],
                         ],
                     ],
-                ] + $coupons
+                ] + $coupons,
             );
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
@@ -908,7 +908,7 @@ class CartTest extends TestCase
      */
     public function testCartProcessWithDiscountValueAmountExtendPrice($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $product = Product::factory()->create([
             'public' => true,
@@ -933,7 +933,7 @@ class CartTest extends TestCase
         ]);
         $sale->products()->attach($product->getKey());
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -962,7 +962,7 @@ class CartTest extends TestCase
      */
     public function testCartProcessWithPromotionOnMultiProductWithSchema($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $product = Product::factory()->create([
             'public' => true,
@@ -983,7 +983,7 @@ class CartTest extends TestCase
         ]);
         $sale->products()->attach($product->getKey());
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1007,11 +1007,11 @@ class CartTest extends TestCase
      */
     public function testCartProcessWithCouponCountAndProductNotInSetOnBlockList($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         [$product, $couponWithLimit, $coupon2] = $this->prepareCouponWithProductInSetAndCountConditions(false, false);
 
-        $this->actingAs($this->$user)->postJson('/cart/process', [
+        $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1035,11 +1035,11 @@ class CartTest extends TestCase
      */
     public function testCartProcessWithCouponCountAndProductInSetOnBlockList($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         [$product, $couponWithLimit, $coupon2] = $this->prepareCouponWithProductInSetAndCountConditions(true, false);
 
-        $this->actingAs($this->$user)->postJson('/cart/process', [
+        $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1067,11 +1067,11 @@ class CartTest extends TestCase
      */
     public function testCartProcessWithCouponCountAndProductNotInSetOnAllowList($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         [$product, $couponWithLimit, $coupon2] = $this->prepareCouponWithProductInSetAndCountConditions(false, true);
 
-        $this->actingAs($this->$user)->postJson('/cart/process', [
+        $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1099,11 +1099,11 @@ class CartTest extends TestCase
      */
     public function testCartProcessWithCouponCountAndProductInSetOnAllowList($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         [$product, $couponWithLimit, $coupon2] = $this->prepareCouponWithProductInSetAndCountConditions(true, true);
 
-        $this->actingAs($this->$user)->postJson('/cart/process', [
+        $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1127,7 +1127,7 @@ class CartTest extends TestCase
      */
     public function testCartProcessRoundedValues($user, $coupon): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $code = $coupon ? [] : ['code' => null];
 
@@ -1163,7 +1163,7 @@ class CartTest extends TestCase
             ],
         ] : [];
 
-        $response = $this->actingAs($this->$user)->postJson(
+        $response = $this->actingAs($this->{$user})->postJson(
             '/cart/process',
             [
                 'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -1213,7 +1213,7 @@ class CartTest extends TestCase
      */
     public function testCartProcessRoundedValuesCheapestProduct($user, $coupon): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $code = $coupon ? [] : ['code' => null];
 
@@ -1251,7 +1251,7 @@ class CartTest extends TestCase
             ],
         ] : [];
 
-        $response = $this->actingAs($this->$user)->postJson(
+        $response = $this->actingAs($this->{$user})->postJson(
             '/cart/process',
             [
                 'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -1306,7 +1306,7 @@ class CartTest extends TestCase
      */
     public function testCartProcessShippingTimeAndDateWhitUnlimitedStockShippingDate($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $shipping_date = Carbon::now()->startOfDay()->addDays(10)->toIso8601String();
 
@@ -1320,7 +1320,7 @@ class CartTest extends TestCase
         ]);
         $product->items()->attach($item->getKey(), ['required_quantity' => 100]);
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1345,7 +1345,7 @@ class CartTest extends TestCase
      */
     public function testCartProcessShippingTimeAndDateWhitMultiProductsAndOneItem($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $shippingDate = Carbon::now()->startOfDay()->addDays(10)->toIso8601String();
 
@@ -1365,7 +1365,7 @@ class CartTest extends TestCase
 
         $product->items()->attach($item->getKey(), ['required_quantity' => 100]);
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1384,7 +1384,7 @@ class CartTest extends TestCase
                 'shipping_date' => $shippingDate,
             ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1412,7 +1412,7 @@ class CartTest extends TestCase
             'item_id' => $item->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1443,7 +1443,7 @@ class CartTest extends TestCase
      */
     public function testCartProcessShippingTimeAndDateWhitMultiProductsAndOneNotAvailable($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $shippingDate = Carbon::now()->startOfDay()->addDays(10)->toIso8601String();
 
@@ -1477,7 +1477,7 @@ class CartTest extends TestCase
 
         $product2->items()->attach($item2->getKey(), ['required_quantity' => 1]);
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1510,7 +1510,7 @@ class CartTest extends TestCase
                 'shipping_date' => $shippingDate,
             ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1537,7 +1537,7 @@ class CartTest extends TestCase
                 'shipping_date' => null,
             ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1568,7 +1568,7 @@ class CartTest extends TestCase
      */
     public function testCartProcessProductWithSchemaAndItemNotAvailable($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $this->item->deposits()->create([
             'quantity' => 3,
@@ -1576,7 +1576,7 @@ class CartTest extends TestCase
 
         $this->productWithSchema->items()->attach($this->item->getKey(), ['required_quantity' => 2]);
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1613,7 +1613,7 @@ class CartTest extends TestCase
      */
     public function testCartProcessProductWithItemNotAvailable($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $this->item->deposits()->create([
             'quantity' => 3,
@@ -1621,7 +1621,7 @@ class CartTest extends TestCase
 
         $this->product->items()->attach($this->item->getKey(), ['required_quantity' => 2]);
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1656,7 +1656,7 @@ class CartTest extends TestCase
      */
     public function testCartProcessProductWithSchemaAndItemAvailable($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $this->item->deposits()->create([
             'quantity' => 6,
@@ -1664,7 +1664,7 @@ class CartTest extends TestCase
 
         $this->productWithSchema->items()->attach($this->item->getKey(), ['required_quantity' => 2]);
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1701,7 +1701,7 @@ class CartTest extends TestCase
      */
     public function testCartProcessProductInChildrenSet($user, $coupon): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $code = $coupon ? [] : ['code' => null];
 
@@ -1734,7 +1734,7 @@ class CartTest extends TestCase
                 'type' => DiscountType::PERCENTAGE,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => true,
-            ] + $code
+            ] + $code,
         );
 
         $discountApplied->productSets()->attach($parentSet);
@@ -1747,7 +1747,7 @@ class CartTest extends TestCase
                 'type' => DiscountType::PERCENTAGE,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => false,
-            ] + $code
+            ] + $code,
         );
 
         $discount->productSets()->attach($parentSet);
@@ -1759,7 +1759,7 @@ class CartTest extends TestCase
             ],
         ] : [];
 
-        $response = $this->actingAs($this->$user)->postJson(
+        $response = $this->actingAs($this->{$user})->postJson(
             '/cart/process',
             [
                 'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -1771,7 +1771,7 @@ class CartTest extends TestCase
                         'schemas' => [],
                     ],
                 ],
-            ] + $coupons
+            ] + $coupons,
         );
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
@@ -1787,7 +1787,7 @@ class CartTest extends TestCase
                     'shipping_price_initial' => 0,
                     'shipping_price' => 0,
                     'summary' => 4140,
-                ] + $result
+                ] + $result,
             )
             ->assertJsonFragment([
                 'cartitem_id' => '1',
@@ -1799,14 +1799,14 @@ class CartTest extends TestCase
                     'id' => $discountApplied->getKey(),
                     'name' => $discountApplied->name,
                     'value' => 460,
-                ] + $discountCode1
+                ] + $discountCode1,
             )
             ->assertJsonMissing(
                 [
                     'id' => $discount->getKey(),
                     'name' => $discount->name,
                     'value' => 0,
-                ] + $discountCode2
+                ] + $discountCode2,
             );
     }
 
@@ -1815,7 +1815,7 @@ class CartTest extends TestCase
      */
     public function testCartProcessSaleWithTargetProduct($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $productWithSale = Product::factory()->create([
             'public' => true,
@@ -1845,7 +1845,7 @@ class CartTest extends TestCase
 
         $saleShippingMethod->shippingMethods()->attach($saleShippingMethod->getKey());
 
-        $this->actingAs($this->$user)->postJson('/cart/process', [
+        $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -1877,14 +1877,14 @@ class CartTest extends TestCase
                     'id' => $sale->getKey(),
                     'name' => $sale->name,
                     'value' => 0,
-                ]
+                ],
             )
             ->assertJsonMissing(
                 [
                     'id' => $saleShippingMethod->getKey(),
                     'name' => $saleShippingMethod->name,
                     'value' => 0,
-                ]
+                ],
             );
     }
 
@@ -1893,7 +1893,7 @@ class CartTest extends TestCase
      */
     public function testCartProcessInactive($user, $coupon): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $code = $coupon ? [] : ['code' => null];
 
@@ -1906,7 +1906,7 @@ class CartTest extends TestCase
                 'target_type' => DiscountTargetType::ORDER_VALUE,
                 'target_is_allow_list' => true,
                 'active' => false,
-            ] + $code
+            ] + $code,
         );
 
         $conditionGroup = ConditionGroup::create();
@@ -1926,7 +1926,7 @@ class CartTest extends TestCase
             ],
         ] : [];
 
-        $response = $this->actingAs($this->$user)->postJson(
+        $response = $this->actingAs($this->{$user})->postJson(
             '/cart/process',
             [
                 'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -1938,7 +1938,7 @@ class CartTest extends TestCase
                         'schemas' => [],
                     ],
                 ],
-            ] + $coupons
+            ] + $coupons,
         );
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
@@ -1953,7 +1953,7 @@ class CartTest extends TestCase
                     'shipping_price_initial' => 0,
                     'shipping_price' => 0,
                     'summary' => 9200,
-                ] + $result
+                ] + $result,
             )
             ->assertJsonFragment([
                 'cartitem_id' => '1',
@@ -1965,7 +1965,7 @@ class CartTest extends TestCase
                     'id' => $discount->getKey(),
                     'name' => $discount->name,
                     'value' => 920,
-                ] + $discountCode
+                ] + $discountCode,
             );
     }
 
@@ -1974,13 +1974,13 @@ class CartTest extends TestCase
      */
     public function testCartProcessPurchaseLimitMoreAvailable($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $this->product->update([
             'purchase_limit_per_user' => 5,
         ]);
 
-        $this->actingAs($this->$user)->postJson('/cart/process', [
+        $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2014,13 +2014,13 @@ class CartTest extends TestCase
      */
     public function testCartProcessPurchaseLimitLessAvailable($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $this->product->update([
             'purchase_limit_per_user' => 1,
         ]);
 
-        $this->actingAs($this->$user)->postJson('/cart/process', [
+        $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2053,7 +2053,7 @@ class CartTest extends TestCase
      */
     public function testCartProcessPurchaseLimitWithSale($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $sale = Discount::factory()->create([
             'code' => null,
@@ -2087,7 +2087,7 @@ class CartTest extends TestCase
             'price' => 1000,
         ]);
 
-        $this->actingAs($this->$user)->postJson('/cart/process', [
+        $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2136,7 +2136,7 @@ class CartTest extends TestCase
      */
     public function testCartProcessPurchaseLimitAlreadyPurchased($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $this->product->update([
             'purchase_limit_per_user' => 1,
@@ -2145,7 +2145,7 @@ class CartTest extends TestCase
         $order = Order::factory()->create([
             'paid' => true,
         ]);
-        $this->$user->orders()->save($order);
+        $this->{$user}->orders()->save($order);
         $order->products()->create([
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -2154,7 +2154,7 @@ class CartTest extends TestCase
             'name' => $this->product->name,
         ]);
 
-        $this->actingAs($this->$user)->postJson('/cart/process', [
+        $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2184,7 +2184,7 @@ class CartTest extends TestCase
      */
     public function testCartProcessPurchaseLimitAlreadyPurchasedNotPaid($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $this->product->update([
             'purchase_limit_per_user' => 1,
@@ -2193,7 +2193,7 @@ class CartTest extends TestCase
         $order = Order::factory()->create([
             'paid' => false,
         ]);
-        $this->$user->orders()->save($order);
+        $this->{$user}->orders()->save($order);
         $order->products()->create([
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -2202,7 +2202,7 @@ class CartTest extends TestCase
             'name' => $this->product->name,
         ]);
 
-        $this->actingAs($this->$user)->postJson('/cart/process', [
+        $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2229,12 +2229,12 @@ class CartTest extends TestCase
      */
     public function testCartProcessPurchaseLimitSetAfterPurchase($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $order = Order::factory()->create([
             'paid' => true,
         ]);
-        $this->$user->orders()->save($order);
+        $this->{$user}->orders()->save($order);
         $order->products()->create([
             'product_id' => $this->product->getKey(),
             'quantity' => 2,
@@ -2247,7 +2247,7 @@ class CartTest extends TestCase
             'purchase_limit_per_user' => 1,
         ]);
 
-        $this->actingAs($this->$user)->postJson('/cart/process', [
+        $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2277,7 +2277,7 @@ class CartTest extends TestCase
      */
     public function testCartProcessPurchaseLimitCanceledOrder($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $status = Status::factory()->create([
             'cancel' => true,
@@ -2286,7 +2286,7 @@ class CartTest extends TestCase
         $order = Order::factory()->create([
             'status_id' => $status->getKey(),
         ]);
-        $this->$user->orders()->save($order);
+        $this->{$user}->orders()->save($order);
         $order->products()->create([
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -2299,7 +2299,7 @@ class CartTest extends TestCase
             'purchase_limit_per_user' => 1,
         ]);
 
-        $this->actingAs($this->$user)->postJson('/cart/process', [
+        $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -2332,13 +2332,13 @@ class CartTest extends TestCase
      */
     public function testCartProcessPurchaseLimitProductWithSchema($user): void
     {
-        $this->$user->givePermissionTo('cart.verify');
+        $this->{$user}->givePermissionTo('cart.verify');
 
         $this->productWithSchema->update([
             'purchase_limit_per_user' => 1,
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [

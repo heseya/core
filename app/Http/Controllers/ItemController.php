@@ -16,9 +16,7 @@ use Illuminate\Support\Facades\Response;
 
 class ItemController extends Controller
 {
-    public function __construct(private ItemServiceContract $itemService)
-    {
-    }
+    public function __construct(private ItemServiceContract $itemService) {}
 
     public function index(ItemIndexRequest $request): JsonResource
     {
@@ -46,7 +44,7 @@ class ItemController extends Controller
     public function store(ItemCreateRequest $request): JsonResource
     {
         $item = $this->itemService->store(
-            ItemDto::instantiateFromRequest($request)
+            ItemDto::instantiateFromRequest($request),
         );
 
         return ItemResource::make($item);
@@ -56,7 +54,7 @@ class ItemController extends Controller
     {
         $item = $this->itemService->update(
             $item,
-            ItemDto::instantiateFromRequest($request)
+            ItemDto::instantiateFromRequest($request),
         );
 
         return ItemResource::make($item);

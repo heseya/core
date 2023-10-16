@@ -2,6 +2,4 @@
 
 namespace App\Events;
 
-class CouponDeleted extends CouponEvent
-{
-}
+class CouponDeleted extends CouponEvent {}

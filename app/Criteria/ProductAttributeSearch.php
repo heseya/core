@@ -22,7 +22,7 @@ class ProductAttributeSearch extends Criterion
                         $query
                             ->from('product_attribute_attribute_option')
                             ->whereRaw(
-                                '`product_attribute`.`id` = `product_attribute_attribute_option`.`product_attribute_id`'
+                                '`product_attribute`.`id` = `product_attribute_attribute_option`.`product_attribute_id`',
                             );
 
                         if (is_array($value)) {
@@ -30,7 +30,7 @@ class ProductAttributeSearch extends Criterion
                                 'attribute_options',
                                 'product_attribute_attribute_option.attribute_option_id',
                                 '=',
-                                'attribute_options.id'
+                                'attribute_options.id',
                             );
 
                             $key = is_numeric(Arr::first($value)) ?
@@ -43,7 +43,7 @@ class ProductAttributeSearch extends Criterion
                             } elseif (Arr::has($value, 'max')) {
                                 $query->where($key, '<=', $value['max']);
                             } else {
-                                $query->where(function ($query) use ($value) {
+                                $query->where(function ($query) use ($value): void {
                                     foreach ($value as $option) {
                                         $query->orWhere(
                                             'product_attribute_attribute_option.attribute_option_id',

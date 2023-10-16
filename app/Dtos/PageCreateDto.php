@@ -18,7 +18,7 @@ class PageCreateDto extends Dto implements InstantiateFromRequest
     private string $slug;
     private bool $public;
     private string $content_html;
-    private SeoMetadataDto|Missing $seo;
+    private Missing|SeoMetadataDto $seo;
     private array|Missing $metadata;
 
     public static function instantiateFromRequest(FormRequest|PageStoreRequest|PageUpdateRequest $request): self
@@ -33,7 +33,7 @@ class PageCreateDto extends Dto implements InstantiateFromRequest
         );
     }
 
-    public function getSeo(): SeoMetadataDto|Missing
+    public function getSeo(): Missing|SeoMetadataDto
     {
         return $this->seo;
     }

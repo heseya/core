@@ -9,8 +9,7 @@ final readonly class AttributeOptionObserver
 {
     public function __construct(
         private AttributeServiceContract $attributeService,
-    ) {
-    }
+    ) {}
 
     public function created(AttributeOption $attributeOption): void
     {

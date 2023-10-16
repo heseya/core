@@ -22,8 +22,7 @@ class UserController extends Controller
     public function __construct(
         private UserServiceContract $userService,
         private AuthServiceContract $authService,
-    ) {
-    }
+    ) {}
 
     public function index(UserIndexRequest $request): JsonResource
     {
@@ -56,7 +55,7 @@ class UserController extends Controller
     public function store(UserCreateRequest $request): JsonResource
     {
         $user = $this->userService->create(
-            UserCreateDto::instantiateFromRequest($request)
+            UserCreateDto::instantiateFromRequest($request),
         );
 
         return UserResource::make($user);
@@ -66,7 +65,7 @@ class UserController extends Controller
     {
         $resultUser = $this->userService->update(
             $user,
-            UserDto::instantiateFromRequest($request)
+            UserDto::instantiateFromRequest($request),
         );
 
         return UserResource::make($resultUser);

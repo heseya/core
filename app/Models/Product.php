@@ -19,7 +19,6 @@ use App\Criteria\WhereNotId;
 use App\Criteria\WhereNotSlug;
 use App\Enums\DiscountTargetType;
 use App\Models\Contracts\SortableContract;
-use App\Services\Contracts\ProductSearchServiceContract;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasDiscounts;
 use App\Traits\HasMediaAttachments;
@@ -34,11 +33,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
-use JeroenG\Explorer\Application\Explored;
-use JeroenG\Explorer\Application\SearchableFields;
-use JeroenG\Explorer\Domain\Analysis\Analysis;
-use JeroenG\Explorer\Domain\Analysis\Analyzer\StandardAnalyzer;
-use Laravel\Scout\Searchable;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
@@ -47,19 +41,18 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  *
  * @mixin IdeHelperProduct
  */
-class Product extends Model implements AuditableContract, Explored, SortableContract, SearchableFields
+class Product extends Model implements AuditableContract, SortableContract
 {
-    use HasFactory;
-    use SoftDeletes;
-    use Searchable;
-    use Sortable;
     use Auditable;
-    use HasSeoMetadata;
-    use HasMetadata;
     use HasCriteria;
     use HasDiscountConditions;
     use HasDiscounts;
+    use HasFactory;
     use HasMediaAttachments;
+    use HasMetadata;
+    use HasSeoMetadata;
+    use SoftDeletes;
+    use Sortable;
 
     protected $fillable = [
         'id',
@@ -75,7 +68,6 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'price_min',
         'price_max',
         'available',
-        'order',
         'price_min_initial',
         'price_max_initial',
         'shipping_time',
@@ -84,6 +76,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'quantity',
         'shipping_digital',
         'purchase_limit_per_user',
+        'search_values',
     ];
 
     protected array $auditInclude = [
@@ -96,7 +89,6 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'price_min',
         'price_max',
         'available',
-        'order',
     ];
 
     protected $casts = [
@@ -118,7 +110,6 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'name',
         'created_at',
         'updated_at',
-        'order',
         'public',
         'available',
         'price_min',
@@ -149,40 +140,6 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'has_schemas' => WhereHasSchemas::class,
         'shipping_digital' => Equals::class,
     ];
-
-    protected string $defaultSortBy = 'products.order';
-    protected string $defaultSortDirection = 'desc';
-
-    public function mappableAs(): array
-    {
-        $searchService = app(ProductSearchServiceContract::class);
-
-        return $searchService->mappableAs();
-    }
-
-    public function toSearchableArray(): array
-    {
-        $searchService = app(ProductSearchServiceContract::class);
-
-        return $searchService->mapSearchableArray($this);
-    }
-
-    public function getSearchableFields(): array
-    {
-        $searchService = app(ProductSearchServiceContract::class);
-
-        return $searchService->searchableFields();
-    }
-
-    public function indexSettings(): array
-    {
-        $analyzer = new StandardAnalyzer('morfologik');
-        $analyzer->setFilters(['lowercase', 'morfologik_stem']);
-
-        return (new Analysis())
-            ->addAnalyzer($analyzer)
-            ->build();
-    }
 
     public function sets(): BelongsToMany
     {
@@ -245,6 +202,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
     public function attributes(): BelongsToMany
     {
         return $this->belongsToMany(Attribute::class, 'product_attribute')
+            ->orderBy('order')
             ->withPivot('id')
             ->using(ProductAttribute::class);
     }
@@ -267,38 +225,21 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         );
     }
 
-    public function productSetSales(): Collection
-    {
-        $sales = Collection::make();
-        $sets = $this->sets;
-
-        /** @var ProductSet $set */
-        foreach ($sets as $set) {
-            $sales = $sales->merge($set->allProductsSales());
-        }
-
-        return $sales->unique('id');
-    }
-
     public function allProductSales(Collection $salesWithBlockList): Collection
     {
         $sales = $this->discounts->filter(
             fn (Discount $discount): bool => $discount->code === null
                 && $discount->active
                 && $discount->target_type->is(DiscountTargetType::PRODUCTS)
-                && $discount->target_is_allow_list
+                && $discount->target_is_allow_list,
         );
 
         $salesBlockList = $salesWithBlockList->filter(function ($sale): bool {
-            if ($sale->products->contains(function ($value): bool {
-                return $value->getKey() === $this->getKey();
-            })) {
+            if ($sale->products->contains(fn ($value): bool => $value->getKey() === $this->getKey())) {
                 return false;
             }
             foreach ($sale->productSets as $set) {
-                if ($set->allProductsIds()->contains(function ($value): bool {
-                    return $value === $this->getKey();
-                })) {
+                if ($set->allProductsIds()->contains(fn ($value): bool => $value === $this->getKey())) {
                     return false;
                 }
             }
@@ -312,6 +253,19 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
 
         $sales = $sales->merge($productSetSales->where('target_is_allow_list', true));
         $sales = $sales->diff($productSetSales->where('target_is_allow_list', false));
+
+        return $sales->unique('id');
+    }
+
+    public function productSetSales(): Collection
+    {
+        $sales = Collection::make();
+        $sets = $this->sets;
+
+        /** @var ProductSet $set */
+        foreach ($sets as $set) {
+            $sales = $sales->merge($set->allProductsSales());
+        }
 
         return $sales->unique('id');
     }

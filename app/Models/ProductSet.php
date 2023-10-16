@@ -32,12 +32,12 @@ use Illuminate\Support\Str;
 class ProductSet extends Model
 {
     use HasCriteria;
-    use HasFactory;
-    use SoftDeletes;
-    use HasSeoMetadata;
-    use HasMetadata;
     use HasDiscountConditions;
     use HasDiscounts;
+    use HasFactory;
+    use HasMetadata;
+    use HasSeoMetadata;
+    use SoftDeletes;
 
     protected $fillable = [
         'id',
@@ -146,6 +146,11 @@ class ProductSet extends Model
             ->orderByPivot('order');
     }
 
+    public function relatedProducts(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'related_product_sets');
+    }
+
     public function allProductsIds(): Collection
     {
         $products = $this->products()->pluck('id');
@@ -179,9 +184,9 @@ class ProductSet extends Model
 
     public function allChildrenIds(string $relation): Collection
     {
-        $result = $this->$relation->pluck('id');
+        $result = $this->{$relation}->pluck('id');
 
-        foreach ($this->$relation as $child) {
+        foreach ($this->{$relation} as $child) {
             $result = $result->merge($child->allChildrenIds($relation));
         }
 

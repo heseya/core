@@ -7,7 +7,6 @@ use App\Dtos\ProductSetUpdateDto;
 use App\Dtos\ProductsReorderDto;
 use App\Http\Requests\ProductSetAttachRequest;
 use App\Http\Requests\ProductSetIndexRequest;
-use App\Http\Requests\ProductSetProductReorderRequest;
 use App\Http\Requests\ProductSetReorderRequest;
 use App\Http\Requests\ProductSetShowRequest;
 use App\Http\Requests\ProductSetStoreRequest;
@@ -29,8 +28,7 @@ class ProductSetController extends Controller
 {
     public function __construct(
         private ProductSetServiceContract $productSetService,
-    ) {
-    }
+    ) {}
 
     public function index(ProductSetIndexRequest $request): JsonResource
     {
@@ -121,9 +119,8 @@ class ProductSetController extends Controller
         return ProductResource::collection($products);
     }
 
-    public function reorderProducts(ProductSet $productSet, ProductSetProductReorderRequest $request): JsonResponse
+    public function reorderProducts(ProductSet $productSet, ProductsReorderDto $dto): JsonResponse
     {
-        $dto = ProductsReorderDto::instantiateFromRequest($request);
         $this->productSetService->reorderProducts($productSet, $dto);
 
         return Response::json(null, ResponseAlias::HTTP_NO_CONTENT);

@@ -26,9 +26,9 @@ use Tests\Traits\CreateShippingMethod;
 
 class OrderUpdateTest extends TestCase
 {
+    use CreateShippingMethod;
     use RefreshDatabase;
     use WithFaker;
-    use CreateShippingMethod;
 
     public const EMAIL = 'test@example.com';
     private Order $order;
@@ -83,7 +83,7 @@ class OrderUpdateTest extends TestCase
      */
     public function testFullUpdateOrder($user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         Event::fake([OrderUpdated::class]);
 
@@ -91,7 +91,7 @@ class OrderUpdateTest extends TestCase
         $comment = $this->faker->text(200);
         $address = Address::factory()->create();
 
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/orders/id:' . $this->order->getKey(), [
             'email' => $email,
             'comment' => $comment,
             'shipping_place' => $address->toArray(),
@@ -164,14 +164,14 @@ class OrderUpdateTest extends TestCase
      */
     public function testFullUpdateOrderWithPartialAddresses($user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         Event::fake([OrderUpdated::class]);
 
         $email = $this->faker->email();
         $comment = $this->faker->text(200);
 
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/orders/id:' . $this->order->getKey(), [
             'email' => $email,
             'comment' => $comment,
             'shipping_place' => [
@@ -244,14 +244,14 @@ class OrderUpdateTest extends TestCase
      */
     public function testFullUpdateOrderWithWebHookQueue($user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         WebHook::factory()->create([
             'events' => [
                 'OrderUpdated',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
@@ -262,7 +262,7 @@ class OrderUpdateTest extends TestCase
         $comment = $this->faker->text(200);
         $address = Address::factory()->create();
 
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/orders/id:' . $this->order->getKey(), [
             'email' => $email,
             'comment' => $comment,
             'billing_address' => $address->toArray(),
@@ -334,14 +334,14 @@ class OrderUpdateTest extends TestCase
      */
     public function testFullUpdateOrderWithWebHookDispatched($user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'OrderUpdated',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
@@ -352,7 +352,7 @@ class OrderUpdateTest extends TestCase
         $comment = $this->faker->text(200);
         $address = Address::factory()->create();
 
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/orders/id:' . $this->order->getKey(), [
             'email' => $email,
             'comment' => $comment,
             'shipping_place' => $address->toArray(),
@@ -432,13 +432,13 @@ class OrderUpdateTest extends TestCase
      */
     public function testUpdateOrderByEmail($user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         Event::fake([OrderUpdated::class]);
 
         $email = $this->faker->email();
 
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/orders/id:' . $this->order->getKey(), [
             'email' => $email,
         ]);
 
@@ -478,12 +478,12 @@ class OrderUpdateTest extends TestCase
      */
     public function testUpdateOrderByComment($user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         Event::fake([OrderUpdated::class]);
 
         $comment = $this->faker->text(100);
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/orders/id:' . $this->order->getKey(), [
             'comment' => $comment,
         ]);
 
@@ -523,11 +523,11 @@ class OrderUpdateTest extends TestCase
      */
     public function testUpdateOrderWithEmptyComment($user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         Event::fake([OrderUpdated::class]);
 
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/orders/id:' . $this->order->getKey(), [
             'comment' => '',
         ]);
 
@@ -551,13 +551,13 @@ class OrderUpdateTest extends TestCase
      */
     public function testUpdateOrderWithShippingAddress($user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         Event::fake([OrderUpdated::class]);
 
         $this->addressDelivery = Address::factory()->create();
 
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/orders/id:' . $this->order->getKey(), [
             'shipping_place' => $this->addressDelivery->toArray(),
         ]);
 
@@ -610,11 +610,11 @@ class OrderUpdateTest extends TestCase
      */
     public function testUpdateOrderWithMissingShippingAddress(string $user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         Event::fake([OrderUpdated::class]);
 
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/orders/id:' . $this->order->getKey(), [
             'billing_address' => $this->addressDelivery->toArray(),
         ]);
 
@@ -651,12 +651,12 @@ class OrderUpdateTest extends TestCase
      */
     public function testUpdateOrderByInvoiceAddress(string $user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         Event::fake([OrderUpdated::class]);
 
         $this->addressInvoice = Address::factory()->create();
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/orders/id:' . $this->order->getKey(), [
             'billing_address' => $this->addressInvoice->toArray(),
         ]);
         $responseData = $response->getData()->data;
@@ -708,11 +708,11 @@ class OrderUpdateTest extends TestCase
      */
     public function testUpdateOrderByMissingInvoiceAddress($user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         Event::fake([OrderUpdated::class]);
 
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/orders/id:' . $this->order->getKey(), [
             'shipping_address' => $this->addressInvoice->toArray(),
         ]);
 
@@ -748,11 +748,11 @@ class OrderUpdateTest extends TestCase
      */
     public function testUpdateOrderByEmptyInvoiceAddress($user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         Event::fake([OrderUpdated::class]);
 
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/orders/id:' . $this->order->getKey(), [
             'billing_address' => null,
         ]);
 
@@ -773,7 +773,7 @@ class OrderUpdateTest extends TestCase
      */
     public function testUpdateOrderWithShippingMethodTypeAddress($user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         Event::fake([OrderUpdated::class]);
 
@@ -782,7 +782,7 @@ class OrderUpdateTest extends TestCase
             'shipping_type' => ShippingType::ADDRESS,
         ]);
 
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/orders/id:' . $this->order->getKey(), [
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
             'shipping_place' => $this->address,
@@ -815,7 +815,7 @@ class OrderUpdateTest extends TestCase
      */
     public function testUpdateOrderWithShippingMethodTypePoints($user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         Event::fake([OrderUpdated::class]);
 
@@ -828,7 +828,7 @@ class OrderUpdateTest extends TestCase
 
         $shippingMethod->shippingPoints()->attach($pointAddress);
 
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/orders/id:' . $this->order->getKey(), [
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
             'shipping_place' => $pointAddress->getKey(),
@@ -861,7 +861,7 @@ class OrderUpdateTest extends TestCase
      */
     public function testUpdateOrderWithShippingMethodTypePointExternal($user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         Event::fake([OrderUpdated::class]);
 
@@ -870,7 +870,7 @@ class OrderUpdateTest extends TestCase
             'shipping_type' => ShippingType::POINT_EXTERNAL,
         ]);
 
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/orders/id:' . $this->order->getKey(), [
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
             'shipping_place' => 'Testowy numer domu w testowym mieście',
@@ -896,7 +896,7 @@ class OrderUpdateTest extends TestCase
      */
     public function testUpdateOrderWithMissingShippingAddressForShippingPlace(string $user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         Event::fake([OrderUpdated::class]);
 
@@ -905,7 +905,7 @@ class OrderUpdateTest extends TestCase
             'shipping_type' => ShippingType::POINT,
         ]);
 
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/orders/id:' . $this->order->getKey(), [
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
         ]);
@@ -920,7 +920,7 @@ class OrderUpdateTest extends TestCase
      */
     public function testUpdateOrderWithMissingShippingPlace(string $user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         Event::fake([OrderUpdated::class]);
 
@@ -929,7 +929,7 @@ class OrderUpdateTest extends TestCase
             'shipping_type' => ShippingType::POINT_EXTERNAL,
         ]);
 
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/orders/id:' . $this->order->getKey(), [
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
         ]);
@@ -944,14 +944,14 @@ class OrderUpdateTest extends TestCase
      */
     public function testShippingListDispatched($user): void
     {
-        $this->$user->givePermissionTo(['orders.edit', 'orders.edit.status']);
+        $this->{$user}->givePermissionTo(['orders.edit', 'orders.edit.status']);
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'OrderRequestedShipping',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
@@ -960,12 +960,12 @@ class OrderUpdateTest extends TestCase
 
         Event::fake([OrderRequestedShipping::class]);
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->postJson(
                 '/orders/id:' . $this->order->getKey() . '/shipping-lists',
                 [
                     'package_template_id' => $package->getKey(),
-                ]
+                ],
             )->assertOk()
             ->assertJsonFragment([
                 'id' => $this->order->getKey(),
@@ -997,19 +997,19 @@ class OrderUpdateTest extends TestCase
      */
     public function testShippingListNotExistingPackageTemplate($user): void
     {
-        $this->$user->givePermissionTo(['orders.edit', 'orders.edit.status']);
+        $this->{$user}->givePermissionTo(['orders.edit', 'orders.edit.status']);
 
         Event::fake([OrderRequestedShipping::class]);
 
         $package = PackageTemplate::factory()->create();
         $package->delete();
 
-        $this->actingAs($this->$user)
+        $this->actingAs($this->{$user})
             ->postJson(
                 '/orders/id:' . $this->order->getKey() . '/shipping-lists',
                 [
                     'package_template_id' => $package->getKey(),
-                ]
+                ],
             )->assertUnprocessable();
 
         Event::assertNotDispatched(OrderRequestedShipping::class);
@@ -1020,12 +1020,12 @@ class OrderUpdateTest extends TestCase
      */
     public function testUpdateOrderByShippingNumber($user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         Event::fake([OrderUpdated::class, OrderUpdatedShippingNumber::class]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('PATCH', "/orders/id:{$this->order->getKey()}", [
                 'shipping_number' => '1234567890',
             ])
@@ -1049,7 +1049,7 @@ class OrderUpdateTest extends TestCase
      */
     public function testUpdateOrderByEmptyShippingNumber($user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         Event::fake([OrderUpdated::class, OrderUpdatedShippingNumber::class]);
 
@@ -1058,7 +1058,7 @@ class OrderUpdateTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('PATCH', "/orders/id:{$this->order->getKey()}", [
                 'shipping_number' => null,
                 'comment' => 'test',
@@ -1085,7 +1085,7 @@ class OrderUpdateTest extends TestCase
      */
     public function testUpdateOrderProductUrl($user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         $product = Product::factory()->create(['public' => true]);
         $orderProduct = $this->order->products()->create([
@@ -1097,7 +1097,7 @@ class OrderUpdateTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'PATCH',
                 "/orders/id:{$this->order->getKey()}/products/id:{$orderProduct->getKey()}",
@@ -1107,7 +1107,7 @@ class OrderUpdateTest extends TestCase
                         'first_url' => 'https://example.com',
                         'second_url' => 'https://example2.com',
                     ],
-                ]
+                ],
             )
             ->assertOk();
 
@@ -1133,7 +1133,7 @@ class OrderUpdateTest extends TestCase
      */
     public function testUpdateOneOrderProductUrl($user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         $product = Product::factory()->create(['public' => true]);
         $orderProduct = $this->order->products()->create([
@@ -1155,7 +1155,7 @@ class OrderUpdateTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'PATCH',
                 "/orders/id:{$this->order->getKey()}/products/id:{$orderProduct->getKey()}",
@@ -1163,7 +1163,7 @@ class OrderUpdateTest extends TestCase
                     'urls' => [
                         'updated_url' => 'https://updated.com',
                     ],
-                ]
+                ],
             )
             ->assertOk();
 
@@ -1187,7 +1187,7 @@ class OrderUpdateTest extends TestCase
      */
     public function testUpdateOrderDigitalShippingMethod($user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         $product = Product::factory()->create([
             'public' => true,
@@ -1216,13 +1216,13 @@ class OrderUpdateTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'PATCH',
                 "/orders/id:{$order->getKey()}",
                 [
                     'digital_shipping_method_id' => $digitalShippingMethodNew->getKey(),
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonFragment([
@@ -1237,7 +1237,7 @@ class OrderUpdateTest extends TestCase
      */
     public function testUpdateOrderDigital($user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         $product = Product::factory()->create([
             'public' => true,
@@ -1265,13 +1265,13 @@ class OrderUpdateTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'PATCH',
                 "/orders/id:{$order->getKey()}",
                 [
                     'comment' => 'New comment',
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonFragment([
@@ -1287,7 +1287,7 @@ class OrderUpdateTest extends TestCase
      */
     public function testDeleteOrderProductUrl($user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         $product = Product::factory()->create(['public' => true]);
         $orderProduct = $this->order->products()->create([
@@ -1304,7 +1304,7 @@ class OrderUpdateTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json(
                 'PATCH',
                 "/orders/id:{$this->order->getKey()}/products/id:{$orderProduct->getKey()}",
@@ -1314,7 +1314,7 @@ class OrderUpdateTest extends TestCase
                         'old_url' => null,
                         'second_url' => 'https://example2.com',
                     ],
-                ]
+                ],
             )
             ->assertOk();
 
@@ -1338,7 +1338,7 @@ class OrderUpdateTest extends TestCase
      */
     public function testChangeOrderExternalShippingPointToShippingPoint($user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         $externalPointShipping = ShippingMethod::factory()->create([
             'public' => true,
@@ -1384,7 +1384,7 @@ class OrderUpdateTest extends TestCase
 
         $order->products()->save($orderProduct);
 
-        $this->actingAs($this->$user)->json('PATCH', "/orders/id:{$order->getKey()}", [
+        $this->actingAs($this->{$user})->json('PATCH', "/orders/id:{$order->getKey()}", [
             'shipping_method_id' => $pointShipping->getKey(),
             'shipping_place' => $address->getKey(),
         ])
@@ -1411,7 +1411,7 @@ class OrderUpdateTest extends TestCase
      */
     public function testChangeOrderShippingPointToAddress($user): void
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->{$user}->givePermissionTo('orders.edit');
 
         $pointShipping = ShippingMethod::factory()->create([
             'public' => true,
@@ -1468,7 +1468,7 @@ class OrderUpdateTest extends TestCase
             'zip' => '33-333',
         ];
 
-        $this->actingAs($this->$user)->json('PATCH', "/orders/id:{$order->getKey()}", [
+        $this->actingAs($this->{$user})->json('PATCH', "/orders/id:{$order->getKey()}", [
             'shipping_method_id' => $addressShipping->getKey(),
             'shipping_place' => $newAddress,
         ])

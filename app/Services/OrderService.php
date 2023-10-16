@@ -60,9 +60,8 @@ class OrderService implements OrderServiceContract
         private ItemServiceContract $itemService,
         private NameServiceContract $nameService,
         private MetadataServiceContract $metadataService,
-        private DepositServiceContract $depositService
-    ) {
-    }
+        private DepositServiceContract $depositService,
+    ) {}
 
     public function calcSummary(Order $order): float
     {
@@ -289,7 +288,7 @@ class OrderService implements OrderServiceContract
                     ) : $dto->getShippingPlace();
             } else {
                 if (!($dto->getShippingPlace() instanceof Missing)) {
-                    // @phpstan-ignore-next-line
+                    /** @phpstan-ignore-next-line */
                     $shippingPlace = Address::query()->find($dto->getShippingPlace())->getKey();
                 } else {
                     $shippingPlace = null;
@@ -412,7 +411,7 @@ class OrderService implements OrderServiceContract
     public function indexMyOrderProducts(OrderProductSearchDto $dto): LengthAwarePaginator
     {
         return OrderProduct::searchByCriteria(
-            ['user' => Auth::id(), 'paid' => true] + $dto->toArray()
+            ['user' => Auth::id(), 'paid' => true] + $dto->toArray(),
         )
             ->sort('created_at:desc')
             ->with(['urls', 'product'])
@@ -434,7 +433,7 @@ class OrderService implements OrderServiceContract
     }
 
     private function getDeliveryMethods(
-        OrderDto|CartDto|OrderUpdateDto $dto,
+        CartDto|OrderDto|OrderUpdateDto $dto,
         Collection $products,
         bool $required,
     ): array {
@@ -480,11 +479,7 @@ class OrderService implements OrderServiceContract
             }
         }
 
-        if (!isset($exsistAddress)) {
-            return false;
-        }
-
-        return true;
+        return isset($exsistAddress);
     }
 
     private function modifyAddress(Order $order, string $attribute, AddressDto|Missing $addressDto): ?Address
@@ -493,14 +488,14 @@ class OrderService implements OrderServiceContract
             return null;
         }
 
-        $old = Address::find($order->$attribute);
-        Cache::add('address.' . $order->$attribute, $old ? ((string) $old) : null);
+        $old = Address::find($order->{$attribute});
+        Cache::add('address.' . $order->{$attribute}, $old ? ((string) $old) : null);
         $order->forceAudit($attribute);
         if ($attribute === 'shipping_address_id' && $order->shipping_type === ShippingType::POINT) {
             return Address::create($addressDto->toArray());
         }
 
-        return Address::updateOrCreate(['id' => $order->$attribute], $addressDto->toArray());
+        return Address::updateOrCreate(['id' => $order->{$attribute}], $addressDto->toArray());
     }
 
     private function removeItemsFromWarehouse(OrderProduct $orderProduct, array $tempSchemaOrderProduct): bool
@@ -541,9 +536,9 @@ class OrderService implements OrderServiceContract
     }
 
     private function resolveShippingAddress(
-        Address|string|null|Missing $shippingPlace,
+        Address|Missing|string|null $shippingPlace,
         string $shippingType,
-        Order $order
+        Order $order,
     ): ?string {
         if ($shippingPlace instanceof Missing) {
             return $order->shipping_address_id;
@@ -572,9 +567,9 @@ class OrderService implements OrderServiceContract
     }
 
     private function resolveShippingPlace(
-        Address|string|null|Missing $shippingPlace,
+        Address|Missing|string|null $shippingPlace,
         string $shippingType,
-        Order $order
+        Order $order,
     ): ?string {
         if ($shippingPlace instanceof Missing) {
             return $order->shipping_place;

@@ -6,6 +6,8 @@ use App\Dtos\ProductPriceDto;
 
 interface PriceServiceContract
 {
-    /** @return ProductPriceDto[] */
+    /**
+     * @return ProductPriceDto[]
+     */
     public function calcProductsListDiscounts(array $productIds): array;
 }

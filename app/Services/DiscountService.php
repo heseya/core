@@ -78,10 +78,9 @@ readonly class DiscountService implements DiscountServiceContract
         private SettingsServiceContract $settingsService,
         private SeoMetadataServiceContract $seoMetadataService,
         private ShippingTimeDateServiceContract $shippingTimeDateService,
-    ) {
-    }
+    ) {}
 
-    public function index(SaleIndexDto|CouponIndexDto $dto): LengthAwarePaginator
+    public function index(CouponIndexDto|SaleIndexDto $dto): LengthAwarePaginator
     {
         return Discount::searchByCriteria($dto->toArray())
             ->orderBy('updated_at', 'DESC')
@@ -89,7 +88,7 @@ readonly class DiscountService implements DiscountServiceContract
             ->paginate(Config::get('pagination.per_page'));
     }
 
-    public function store(SaleDto|CouponDto $dto): Discount
+    public function store(CouponDto|SaleDto $dto): Discount
     {
         /** @var Discount $discount */
         $discount = Discount::query()->create($dto->toArray());
@@ -124,7 +123,7 @@ readonly class DiscountService implements DiscountServiceContract
         return $discount;
     }
 
-    public function update(Discount $discount, SaleDto|CouponDto $dto): Discount
+    public function update(Discount $discount, CouponDto|SaleDto $dto): Discount
     {
         $discount->update($dto->toArray());
 
@@ -178,6 +177,9 @@ readonly class DiscountService implements DiscountServiceContract
         }
     }
 
+    /**
+     * @throws ClientException
+     */
     public function calc(float $value, Discount $discount): float
     {
         if (isset($discount->pivot) && $discount->pivot->type !== null) {
@@ -212,7 +214,7 @@ readonly class DiscountService implements DiscountServiceContract
             ConditionType::USER_IN => $this->checkConditionUserIn($condition),
             ConditionType::PRODUCT_IN_SET => $this->checkConditionProductInSet(
                 $condition,
-                $dto?->getProductIds() ?? []
+                $dto?->getProductIds() ?? [],
             ),
             ConditionType::PRODUCT_IN => $this->checkConditionProductIn($condition, $dto?->getProductIds() ?? []),
             ConditionType::DATE_BETWEEN => $this->checkConditionDateBetween($condition),
@@ -359,11 +361,11 @@ readonly class DiscountService implements DiscountServiceContract
 
                 if ($discount->code !== null) {
                     $cartResource->coupons->push(
-                        new CouponShortResource($discount->getKey(), $discount->name, $appliedDiscount, $discount->code)
+                        new CouponShortResource($discount->getKey(), $discount->name, $appliedDiscount, $discount->code),
                     );
                 } else {
                     $cartResource->sales->push(
-                        new SalesShortResource($discount->getKey(), $discount->name, $appliedDiscount)
+                        new SalesShortResource($discount->getKey(), $discount->name, $appliedDiscount),
                     );
                 }
 
@@ -379,7 +381,9 @@ readonly class DiscountService implements DiscountServiceContract
         return $cartResource;
     }
 
-    /** @return ProductPriceDto[] */
+    /**
+     * @return ProductPriceDto[]
+     */
     public function calcProductsListDiscounts(Collection $products): array
     {
         $salesWithBlockList = $this->getSalesWithBlockList();
@@ -402,7 +406,7 @@ readonly class DiscountService implements DiscountServiceContract
     public function applyDiscountOnProduct(
         Product $product,
         OrderProductDto $orderProductDto,
-        Discount $discount
+        Discount $discount,
     ): OrderProduct {
         $price = $product->price;
 
@@ -428,10 +432,10 @@ readonly class DiscountService implements DiscountServiceContract
         }
     }
 
-    public function applyDiscountsOnProduct(Product $product, bool $reindex = true): void
+    public function applyDiscountsOnProduct(Product $product): void
     {
         $salesWithBlockList = $this->getSalesWithBlockList();
-        $this->applyAllDiscountsOnProduct($product, $salesWithBlockList, $reindex);
+        $this->applyAllDiscountsOnProduct($product, $salesWithBlockList);
     }
 
     public function applyDiscountOnOrderProduct(OrderProduct $orderProduct, Discount $discount): OrderProduct
@@ -468,13 +472,17 @@ readonly class DiscountService implements DiscountServiceContract
         return $result;
     }
 
+    /**
+     * @throws StoreException
+     */
     public function applyDiscountOnOrder(Discount $discount, Order $order): Order
     {
         $refreshedOrder = $order->fresh();
         if (
             ($discount->target_type->value === DiscountTargetType::ORDER_VALUE
                 || $discount->target_type->value === DiscountTargetType::SHIPPING_PRICE)
-            && $refreshedOrder?->discounts->count() === 0) {
+            && $refreshedOrder?->discounts->count() === 0
+        ) {
             $order = $this->roundProductPrices($order);
         }
 
@@ -496,9 +504,10 @@ readonly class DiscountService implements DiscountServiceContract
 
     public function activeSales(): Collection
     {
-        $sales = Discount::where('code', null)
-            ->active()
-            ->where('target_type', DiscountTargetType::PRODUCTS)
+        $sales = Discount::query()
+            ->whereNull('code')
+            ->where('active', '=', true)
+            ->where('target_type', '=', DiscountTargetType::PRODUCTS)
             ->where(
                 fn (Builder $query) => $query
                     ->whereHas('conditionGroups', function ($query): void {
@@ -510,7 +519,7 @@ readonly class DiscountService implements DiscountServiceContract
                                     ->orWhere('type', ConditionType::WEEKDAY_IN);
                             });
                     })
-                    ->orWhereDoesntHave('conditionGroups')
+                    ->orWhereDoesntHave('conditionGroups'),
             )
             ->with(['conditionGroups', 'conditionGroups.conditions'])
             ->get();
@@ -544,7 +553,7 @@ readonly class DiscountService implements DiscountServiceContract
                         ConditionType::DATE_BETWEEN,
                         ConditionType::TIME_BETWEEN,
                         ConditionType::WEEKDAY_IN,
-                    ]
+                    ],
                 )) {
                     return true;
                 }
@@ -663,7 +672,6 @@ readonly class DiscountService implements DiscountServiceContract
     public function applyAllDiscountsOnProduct(
         Product $product,
         Collection $salesWithBlockList,
-        bool $reindex = true,
     ): void {
         [
             $minPriceDiscounted,
@@ -679,10 +687,17 @@ readonly class DiscountService implements DiscountServiceContract
         // detach and attach only add 2 queries to database, sync add 1 query for every element in given array,
         $product->sales()->detach();
         $product->sales()->attach($productSales->pluck('id'));
+    }
 
-        if ($reindex) {
-            $product->searchable();
-        }
+    public function getSalesWithBlockList(): Collection
+    {
+        return Discount::query()
+            ->whereNull('code')
+            ->where('active', '=', true)
+            ->where('target_type', '=', DiscountTargetType::PRODUCTS)
+            ->where('target_is_allow_list', '=', false)
+            ->with(['products', 'productSets', 'productSets.products'])
+            ->get();
     }
 
     private function checkDiscountTarget(Discount $discount, CartDto $cart): bool
@@ -691,18 +706,14 @@ readonly class DiscountService implements DiscountServiceContract
             if ($discount->target_is_allow_list) {
                 /** @var CartItemDto $item */
                 foreach ($cart->getItems() as $item) {
-                    if ($discount->allProductsIds()->contains(function ($value) use ($item): bool {
-                        return $value === $item->getProductId();
-                    })) {
+                    if ($discount->allProductsIds()->contains(fn ($value): bool => $value === $item->getProductId())) {
                         return true;
                     }
                 }
             } else {
                 /** @var CartItemDto $item */
                 foreach ($cart->getItems() as $item) {
-                    if ($discount->allProductsIds()->doesntContain(function ($value) use ($item): bool {
-                        return $value === $item->getProductId();
-                    })) {
+                    if ($discount->allProductsIds()->doesntContain(fn ($value): bool => $value === $item->getProductId())) {
                         return true;
                     }
                 }
@@ -711,19 +722,15 @@ readonly class DiscountService implements DiscountServiceContract
 
         if ($discount->target_type->is(DiscountTargetType::SHIPPING_PRICE)) {
             if ($discount->target_is_allow_list) {
-                return $discount->shippingMethods->contains(function ($value) use ($cart): bool {
-                    return $value->getKey() === $cart->getShippingMethodId();
-                });
-            } else {
-                return $discount->shippingMethods->doesntContain(function ($value) use ($cart): bool {
-                    return $value->getKey() === $cart->getShippingMethodId();
-                });
+                return $discount->shippingMethods->contains(fn ($value): bool => $value->getKey() === $cart->getShippingMethodId());
             }
+
+            return $discount->shippingMethods->doesntContain(fn ($value): bool => $value->getKey() === $cart->getShippingMethodId());
         }
 
         return in_array(
             $discount->target_type->value,
-            [DiscountTargetType::ORDER_VALUE, DiscountTargetType::CHEAPEST_PRODUCT]
+            [DiscountTargetType::ORDER_VALUE, DiscountTargetType::CHEAPEST_PRODUCT],
         );
     }
 
@@ -744,8 +751,8 @@ readonly class DiscountService implements DiscountServiceContract
             if ($this->checkConditionGroups($discount, $orderDto, $order->cart_total)) {
                 $order = $this->applyDiscountOnOrder($discount, $order);
             } elseif (
-                ($discount->code === null && in_array($discount->getKey(), $sales)) ||
-                $discount->code !== null
+                ($discount->code === null && in_array($discount->getKey(), $sales))
+                || $discount->code !== null
             ) {
                 [$type, $id] = $discount->code !== null ? ['coupon', $discount->code] : ['sale', $discount->getKey()];
                 throw new ClientException(Exceptions::CLIENT_CANNOT_APPLY_SELECTED_DISCOUNT_TYPE, errorArray: ['type' => $type, 'id' => $id]);
@@ -864,6 +871,8 @@ readonly class DiscountService implements DiscountServiceContract
      * This executes for price cache on products
      *
      * It should ignore current active user and calc general price for everyone
+     *
+     * @throws ServerException
      */
     private function checkConditionForProduct(DiscountCondition $condition, bool $checkForCurrentUser): bool
     {
@@ -924,7 +933,7 @@ readonly class DiscountService implements DiscountServiceContract
         if (
             in_array(
                 $order->shipping_method_id,
-                $discount->shippingMethods->pluck('id')->toArray()
+                $discount->shippingMethods->pluck('id')->toArray(),
             ) === $discount->target_is_allow_list
         ) {
             $appliedDiscount = $this->calcAppliedDiscount(
@@ -1025,6 +1034,9 @@ readonly class DiscountService implements DiscountServiceContract
         return $order;
     }
 
+    /**
+     * @throws StoreException
+     */
     private function applyDiscountOnCart(Discount $discount, CartDto $cartDto, CartResource $cart): CartResource
     {
         return match ($discount->target_type->value) {
@@ -1039,12 +1051,12 @@ readonly class DiscountService implements DiscountServiceContract
     private function applyDiscountOnCartShipping(
         Discount $discount,
         CartDto $cartDto,
-        CartResource $cartResource
+        CartResource $cartResource,
     ): CartResource {
         if (
             in_array(
                 $cartDto->getShippingMethodId(),
-                $discount->shippingMethods->pluck('id')->toArray()
+                $discount->shippingMethods->pluck('id')->toArray(),
             ) === $discount->target_is_allow_list
         ) {
             $cartResource->shipping_price -= $this->calcAppliedDiscount(
@@ -1078,9 +1090,7 @@ readonly class DiscountService implements DiscountServiceContract
 
         /** @var CartItemDto $item */
         foreach ($cartDto->getItems() as $item) {
-            $cartItem = $cart->items->filter(function ($value, $key) use ($item) {
-                return $value->cartitem_id === $item->getCartItemId();
-            })->first();
+            $cartItem = $cart->items->filter(fn ($value, $key) => $value->cartitem_id === $item->getCartItemId())->first();
 
             if ($cartItem === null) {
                 continue;
@@ -1112,9 +1122,7 @@ readonly class DiscountService implements DiscountServiceContract
         $minimalProductPrice = $this->settingsService->getMinimalPrice('minimal_product_price');
 
         if ($cartItem->quantity > 1 && $cartItem->price_discounted !== $minimalProductPrice) {
-            $cart->items->first(function ($value) use ($cartItem): bool {
-                return $value->cartitem_id === $cartItem->cartitem_id && $value->quantity === $cartItem->quantity;
-            })->quantity = $cartItem->quantity - 1;
+            $cart->items->first(fn ($value): bool => $value->cartitem_id === $cartItem->cartitem_id && $value->quantity === $cartItem->quantity)->quantity = $cartItem->quantity - 1;
 
             $cartItem = new CartItemResponse(
                 $cartItem->cartitem_id,
@@ -1144,8 +1152,9 @@ readonly class DiscountService implements DiscountServiceContract
     private function getActiveSalesAndCoupons(array|Missing $couponIds, array $targetTypes = []): Collection
     {
         // Get all active discounts
-        $salesQuery = Discount::active()
-            ->where('code', null)
+        $salesQuery = Discount::query()
+            ->where('active', '=', true)
+            ->whereNull('code')
             ->with([
                 'orders',
                 'products',
@@ -1166,7 +1175,8 @@ readonly class DiscountService implements DiscountServiceContract
         }
 
         // Get all active coupons
-        $couponsQuery = Discount::active()
+        $couponsQuery = Discount::query()
+            ->where('active', '=', true)
             ->whereIn('code', $couponIds)
             ->with([
                 'orders',
@@ -1217,7 +1227,7 @@ readonly class DiscountService implements DiscountServiceContract
             return $this->checkIsProductInDiscountProductSets(
                 $productId,
                 $discount->productSets,
-                $discount->target_is_allow_list
+                $discount->target_is_allow_list,
             );
         }
 
@@ -1232,9 +1242,10 @@ readonly class DiscountService implements DiscountServiceContract
     private function checkIsProductInDiscountProductSets(
         string $productId,
         Collection $discountProductSets,
-        bool $allowList
+        bool $allowList,
     ): bool {
-        $product = Product::where('id', $productId)->firstOrFail();
+        /** @var Product $product */
+        $product = Product::query()->where('id', $productId)->firstOrFail();
 
         $productSets = $product->sets()->with('parent')->get();
         $diffCount = $productSets->pluck('id')->diff($discountProductSets->pluck('id')->all())->count();
@@ -1257,7 +1268,7 @@ readonly class DiscountService implements DiscountServiceContract
     private function checkProductSetParentInDiscount(
         ProductSet $productSet,
         Collection $productSets,
-        bool $allowList
+        bool $allowList,
     ): bool {
         if ($productSet->parent) {
             if ($productSets->contains($productSet->parent->id)) {
@@ -1283,7 +1294,7 @@ readonly class DiscountService implements DiscountServiceContract
     private function createConditionGroup(ConditionGroupDto $dto): ConditionGroup
     {
         /** @var ConditionGroup $conditionGroup */
-        $conditionGroup = ConditionGroup::create();
+        $conditionGroup = ConditionGroup::query()->create();
 
         /** @var ConditionDto $condition */
         foreach ($dto->getConditions() as $condition) {
@@ -1364,13 +1375,13 @@ readonly class DiscountService implements DiscountServiceContract
     private function checkConditionProductInSet(DiscountCondition $condition, array $productIds): bool
     {
         $conditionDto = ProductInSetConditionDto::fromArray($condition->value + ['type' => $condition->type]);
-        $productSets = ProductSet::whereIn('id', $conditionDto->getProductSets())->get();
+        $productSets = ProductSet::query()->whereIn('id', $conditionDto->getProductSets())->get();
 
         foreach ($productIds as $productId) {
             $result = $this->checkIsProductInDiscountProductSets(
                 $productId,
                 $productSets,
-                $conditionDto->isIsAllowList()
+                $conditionDto->isIsAllowList(),
             );
 
             if ($result === $conditionDto->isIsAllowList()) {
@@ -1489,14 +1500,14 @@ readonly class DiscountService implements DiscountServiceContract
         return $conditionDto->getWeekday()[Carbon::now()->dayOfWeek];
     }
 
-    private function checkConditionCartLength(DiscountCondition $condition, int|float $cartLength): bool
+    private function checkConditionCartLength(DiscountCondition $condition, float|int $cartLength): bool
     {
         $conditionDto = CartLengthConditionDto::fromArray($condition->value + ['type' => $condition->type]);
 
         return $this->checkConditionLength($conditionDto, $cartLength);
     }
 
-    private function checkConditionCouponsCount(DiscountCondition $condition, int|float $couponsCount): bool
+    private function checkConditionCouponsCount(DiscountCondition $condition, float|int $couponsCount): bool
     {
         $conditionDto = CouponsCountConditionDto::fromArray($condition->value + ['type' => $condition->type]);
 
@@ -1505,7 +1516,7 @@ readonly class DiscountService implements DiscountServiceContract
 
     private function checkConditionLength(
         CartLengthConditionDto|CouponsCountConditionDto $conditionDto,
-        int|float $count,
+        float|int $count,
     ): bool {
         if (!$conditionDto->getMinValue() instanceof Missing && !$conditionDto->getMaxValue() instanceof Missing) {
             return $count >= $conditionDto->getMinValue() && $count <= $conditionDto->getMaxValue();
@@ -1520,14 +1531,6 @@ readonly class DiscountService implements DiscountServiceContract
         }
 
         return false;
-    }
-
-    private function getSalesWithBlockList(): Collection
-    {
-        return Discount::active()
-            ->where('code', null)
-            ->where('target_type', DiscountTargetType::PRODUCTS)
-            ->where('target_is_allow_list', false)->with(['products', 'productSets', 'productSets.products'])->get();
     }
 
     private function applyDiscountsOnProductsLazy(Collection $productIds, Collection $salesWithBlockList): void
@@ -1545,11 +1548,8 @@ readonly class DiscountService implements DiscountServiceContract
 
         $productQuery->chunk(100, function ($products) use ($salesWithBlockList): void {
             foreach ($products as $product) {
-                $this->applyAllDiscountsOnProduct($product, $salesWithBlockList, false);
+                $this->applyAllDiscountsOnProduct($product, $salesWithBlockList);
             }
-
-            // @phpstan-ignore-next-line
-            Product::query()->whereIn('id', $products->pluck('id'))->searchable();
         });
     }
 }

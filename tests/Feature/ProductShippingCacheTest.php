@@ -14,7 +14,7 @@ class ProductShippingCacheTest extends TestCase
      */
     public function testCreateProductWithUnlimitedShippingTimeItem($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
         $time = 1;
         $item = Item::factory()->create([
@@ -22,7 +22,7 @@ class ProductShippingCacheTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/products', $this->productDataWithItem($item))
             ->assertCreated()
             ->assertJson([
@@ -38,7 +38,7 @@ class ProductShippingCacheTest extends TestCase
      */
     public function testCreateProductWithUnlimitedShippingDateItem($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
         $date = Carbon::now()->startOfDay()->addDays(7)->toIso8601String();
         $item = Item::factory()->create([
@@ -46,7 +46,7 @@ class ProductShippingCacheTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/products', $this->productDataWithItem($item))
             ->assertCreated()
             ->assertJson([
@@ -62,7 +62,7 @@ class ProductShippingCacheTest extends TestCase
      */
     public function testCreateProductShippingTimeItem($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
         $time = 1;
         $item = Item::factory()->create();
@@ -73,7 +73,7 @@ class ProductShippingCacheTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/products', $this->productDataWithItem($item))
             ->assertCreated()
             ->assertJson([
@@ -89,7 +89,7 @@ class ProductShippingCacheTest extends TestCase
      */
     public function testCreateProductShippingDateItem($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
         $date = Carbon::now()->startOfDay()->addDays(7)->toIso8601String();
         $item = Item::factory()->create();
@@ -100,7 +100,7 @@ class ProductShippingCacheTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/products', $this->productDataWithItem($item))
             ->assertCreated()
             ->assertJson([

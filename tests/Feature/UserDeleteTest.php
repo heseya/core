@@ -76,13 +76,13 @@ class UserDeleteTest extends TestCase
      */
     public function testDelete($user): void
     {
-        $this->$user->givePermissionTo('users.remove');
+        $this->{$user}->givePermissionTo('users.remove');
 
         Event::fake([UserDeleted::class]);
 
         $email = $this->user->email;
 
-        $response = $this->actingAs($this->$user)->deleteJson('/users/id:' . $this->user->getKey());
+        $response = $this->actingAs($this->{$user})->deleteJson('/users/id:' . $this->user->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($this->user->refresh());
         $this->assertDatabaseHas('users', [
@@ -109,7 +109,7 @@ class UserDeleteTest extends TestCase
      */
     public function testDeleteWithShippingAddress($user): void
     {
-        $this->$user->givePermissionTo('users.remove');
+        $this->{$user}->givePermissionTo('users.remove');
 
         $address = Address::factory()->create();
         $savedAddress = SavedAddress::factory()->create([
@@ -119,7 +119,7 @@ class UserDeleteTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/users/id:' . $this->user->getKey())
             ->assertNoContent();
 
@@ -136,7 +136,7 @@ class UserDeleteTest extends TestCase
      */
     public function testDeleteWithBillingAddresses($user): void
     {
-        $this->$user->givePermissionTo('users.remove');
+        $this->{$user}->givePermissionTo('users.remove');
 
         $address = Address::factory()->create();
         $savedAddress = SavedAddress::factory()->create([
@@ -146,7 +146,7 @@ class UserDeleteTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/users/id:' . $this->user->getKey())
             ->assertNoContent();
 
@@ -163,7 +163,7 @@ class UserDeleteTest extends TestCase
      */
     public function testDeleteWithShippingOrderAddresses($user): void
     {
-        $this->$user->givePermissionTo('users.remove');
+        $this->{$user}->givePermissionTo('users.remove');
 
         $address = Address::factory()->create();
         $savedAddress = SavedAddress::factory()->create([
@@ -176,7 +176,7 @@ class UserDeleteTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/users/id:' . $this->user->getKey())
             ->assertNoContent();
 
@@ -193,7 +193,7 @@ class UserDeleteTest extends TestCase
      */
     public function testDeleteWithBillingOrderAddresses($user): void
     {
-        $this->$user->givePermissionTo('users.remove');
+        $this->{$user}->givePermissionTo('users.remove');
 
         $address = Address::factory()->create();
         $savedAddress = SavedAddress::factory()->create([
@@ -206,7 +206,7 @@ class UserDeleteTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/users/id:' . $this->user->getKey())
             ->assertNoContent();
 
@@ -223,13 +223,13 @@ class UserDeleteTest extends TestCase
      */
     public function testDeleteWithConsents($user): void
     {
-        $this->$user->givePermissionTo('users.remove');
+        $this->{$user}->givePermissionTo('users.remove');
 
         $consent = Consent::factory()->create();
         $this->user->consents()->save($consent, ['value' => true]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/users/id:' . $this->user->getKey())
             ->assertNoContent();
 
@@ -244,7 +244,7 @@ class UserDeleteTest extends TestCase
      */
     public function testDeleteWithDiscountConditions($user): void
     {
-        $this->$user->givePermissionTo('users.remove');
+        $this->{$user}->givePermissionTo('users.remove');
 
         $discount = Discount::factory()->create();
         $conditionGroup = ConditionGroup::query()->create();
@@ -262,7 +262,7 @@ class UserDeleteTest extends TestCase
         $discount->conditionGroups()->attach($conditionGroup);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/users/id:' . $this->user->getKey())
             ->assertNoContent();
 
@@ -282,7 +282,7 @@ class UserDeleteTest extends TestCase
      */
     public function testDeleteWithFavouriteProductSets($user): void
     {
-        $this->$user->givePermissionTo('users.remove');
+        $this->{$user}->givePermissionTo('users.remove');
 
         $productSet = ProductSet::factory()->create();
         $this->user->favouriteProductSets()->create([
@@ -290,7 +290,7 @@ class UserDeleteTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/users/id:' . $this->user->getKey())
             ->assertNoContent();
 
@@ -305,7 +305,7 @@ class UserDeleteTest extends TestCase
      */
     public function testDeleteWithMetadata($user): void
     {
-        $this->$user->givePermissionTo('users.remove');
+        $this->{$user}->givePermissionTo('users.remove');
 
         $metadata = Metadata::factory()->make([
             'public' => true,
@@ -313,7 +313,7 @@ class UserDeleteTest extends TestCase
         $this->user->metadata()->save($metadata);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/users/id:' . $this->user->getKey())
             ->assertNoContent();
 
@@ -327,7 +327,7 @@ class UserDeleteTest extends TestCase
      */
     public function testDeleteWithMetadataPrivate($user): void
     {
-        $this->$user->givePermissionTo('users.remove');
+        $this->{$user}->givePermissionTo('users.remove');
 
         $metadata = Metadata::factory()->make([
             'public' => false,
@@ -335,7 +335,7 @@ class UserDeleteTest extends TestCase
         $this->user->metadataPrivate()->save($metadata);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/users/id:' . $this->user->getKey())
             ->assertNoContent();
 
@@ -349,13 +349,13 @@ class UserDeleteTest extends TestCase
      */
     public function testDeleteWithMetadataPersonal($user): void
     {
-        $this->$user->givePermissionTo('users.remove');
+        $this->{$user}->givePermissionTo('users.remove');
 
         $metadata = MetadataPersonal::factory()->make();
         $this->user->metadataPersonal()->save($metadata);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/users/id:' . $this->user->getKey())
             ->assertNoContent();
 
@@ -369,14 +369,14 @@ class UserDeleteTest extends TestCase
      */
     public function testDeleteWithSecurityCodes($user): void
     {
-        $this->$user->givePermissionTo('users.remove');
+        $this->{$user}->givePermissionTo('users.remove');
 
         $securityCode = OneTimeSecurityCode::factory()->create([
             'user_id' => $this->user->getKey(),
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/users/id:' . $this->user->getKey())
             ->assertNoContent();
 
@@ -388,7 +388,7 @@ class UserDeleteTest extends TestCase
      */
     public function testDeleteWithOrderAssociation($user): void
     {
-        $this->$user->givePermissionTo('users.remove');
+        $this->{$user}->givePermissionTo('users.remove');
 
         $order = Order::factory()->create([
             'buyer_id' => $this->user->getKey(),
@@ -396,7 +396,7 @@ class UserDeleteTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/users/id:' . $this->user->getKey())
             ->assertNoContent();
 
@@ -409,13 +409,13 @@ class UserDeleteTest extends TestCase
      */
     public function testDeleteWithRoles($user): void
     {
-        $this->$user->givePermissionTo('users.remove');
+        $this->{$user}->givePermissionTo('users.remove');
 
         $role = Role::factory()->create();
         $this->user->assignRole($role);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/users/id:' . $this->user->getKey())
             ->assertNoContent();
 
@@ -428,7 +428,7 @@ class UserDeleteTest extends TestCase
      */
     public function testDeleteWithLoginAttempts($user): void
     {
-        $this->$user->givePermissionTo('users.remove');
+        $this->{$user}->givePermissionTo('users.remove');
 
         $loginAttempt = $this->user->loginAttempts()->create([
             'ip' => 'test',
@@ -438,7 +438,7 @@ class UserDeleteTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/users/id:' . $this->user->getKey())
             ->assertNoContent();
 
@@ -450,7 +450,7 @@ class UserDeleteTest extends TestCase
      */
     public function testDeleteWithProviders($user): void
     {
-        $this->$user->givePermissionTo('users.remove');
+        $this->{$user}->givePermissionTo('users.remove');
 
         $provider = UserProvider::query()->create([
             'user_id' => $this->user->getKey(),
@@ -461,7 +461,7 @@ class UserDeleteTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/users/id:' . $this->user->getKey())
             ->assertNoContent();
 
@@ -473,7 +473,7 @@ class UserDeleteTest extends TestCase
      */
     public function testDeleteWithWishlistProducts($user): void
     {
-        $this->$user->givePermissionTo('users.remove');
+        $this->{$user}->givePermissionTo('users.remove');
 
         $product = Product::factory()->create();
         $wishlistProduct = $this->user->wishlistProducts()->create([
@@ -481,7 +481,7 @@ class UserDeleteTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/users/id:' . $this->user->getKey())
             ->assertNoContent();
 
@@ -493,7 +493,7 @@ class UserDeleteTest extends TestCase
      */
     public function testDeleteWithAudits($user): void
     {
-        $this->$user->givePermissionTo('users.remove');
+        $this->{$user}->givePermissionTo('users.remove');
 
         $audit = $this->user->audits()->create([
             'event' => 'created',
@@ -509,7 +509,7 @@ class UserDeleteTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/users/id:' . $this->user->getKey())
             ->assertNoContent();
 
@@ -521,12 +521,12 @@ class UserDeleteTest extends TestCase
      */
     public function testDeleteWithPreferences($user): void
     {
-        $this->$user->givePermissionTo('users.remove');
+        $this->{$user}->givePermissionTo('users.remove');
 
         $preferences = $this->user->preferences;
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson('/users/id:' . $this->user->getKey())
             ->assertNoContent();
 
@@ -576,21 +576,21 @@ class UserDeleteTest extends TestCase
      */
     public function testDeleteWithWebHook($user): void
     {
-        $this->$user->givePermissionTo('users.remove');
+        $this->{$user}->givePermissionTo('users.remove');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'UserDeleted',
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => true,
             'with_hidden' => false,
         ]);
 
         Bus::fake();
 
-        $response = $this->actingAs($this->$user)->deleteJson('/users/id:' . $this->user->getKey());
+        $response = $this->actingAs($this->{$user})->deleteJson('/users/id:' . $this->user->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($this->user);
 
@@ -621,14 +621,14 @@ class UserDeleteTest extends TestCase
      */
     public function testDeleteOwnerUnauthorized($user): void
     {
-        $this->$user->givePermissionTo('users.remove');
+        $this->{$user}->givePermissionTo('users.remove');
 
         Event::fake([UserDeleted::class]);
 
         $owner = User::factory()->create();
         $owner->assignRole($this->owner);
 
-        $response = $this->actingAs($this->$user)->deleteJson('/users/id:' . $owner->getKey());
+        $response = $this->actingAs($this->{$user})->deleteJson('/users/id:' . $owner->getKey());
         $response->assertStatus(422);
 
         Event::assertNotDispatched(UserDeleted::class);

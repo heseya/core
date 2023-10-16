@@ -2,6 +2,4 @@
 
 namespace App\Events;
 
-class RemoveOrderDocument extends OrderDocumentEvent
-{
-}
+class RemoveOrderDocument extends OrderDocumentEvent {}

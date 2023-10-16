@@ -21,8 +21,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Attribute extends Model
 {
-    use HasFactory;
     use HasCriteria;
+    use HasFactory;
     use HasMetadata;
 
     protected $fillable = [
@@ -37,6 +37,7 @@ class Attribute extends Model
         'type',
         'global',
         'sortable',
+        'order',
     ];
 
     protected $casts = [
@@ -57,12 +58,16 @@ class Attribute extends Model
 
     public function options(): HasMany
     {
-        return $this->hasMany(AttributeOption::class)->with('metadata', 'metadataPrivate');
+        return $this
+            ->hasMany(AttributeOption::class)
+            ->orderBy('order')
+            ->with('metadata', 'metadataPrivate');
     }
 
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class, 'product_attribute')
+        return $this
+            ->belongsToMany(Product::class, 'product_attribute')
             ->withPivot('id')
             ->using(ProductAttribute::class);
     }

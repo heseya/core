@@ -49,13 +49,13 @@ class ProductResource extends Resource
     {
         $sets = Gate::denies('product_sets.show_hidden')
             ? $this->resource->sets->filter(
-                fn (ProductSet $set) => $set->public === true && $set->public_parent === true
+                fn (ProductSet $set) => $set->public === true && $set->public_parent === true,
             )
             : $this->resource->sets;
 
         $relatedSets = Gate::denies('product_sets.show_hidden')
             ? $this->resource->relatedSets->filter(
-                fn (ProductSet $set) => $set->public === true && $set->public_parent === true
+                fn (ProductSet $set) => $set->public === true && $set->public_parent === true,
             )
             : $this->resource->relatedSets;
 
@@ -66,7 +66,6 @@ class ProductResource extends Resource
             : $this->resource->attachments;
 
         return [
-            'order' => $this->resource->order,
             'description_html' => $this->resource->description_html,
             'description_short' => $this->resource->description_short,
             'descriptions' => PageResource::collection($this->resource->pages),

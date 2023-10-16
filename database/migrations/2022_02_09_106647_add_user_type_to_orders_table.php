@@ -19,9 +19,9 @@ class AddUserTypeToOrdersTable extends Migration
     public function down(): void
     {
         Schema::table('orders', function (Blueprint $table): void {
+            $table->dropIndex('orders_user_id_user_type_index');
             $table->dropColumn('user_type');
             $table->dropColumn('user_id');
-            $table->dropIndex('orders_user_id_user_type_index');
         });
     }
 }

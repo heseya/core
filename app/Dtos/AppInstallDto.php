@@ -20,7 +20,7 @@ class AppInstallDto extends Dto implements InstantiateFromRequest
     private array $publicAppPermissions;
     private array|Missing $metadata;
 
-    public static function instantiateFromRequest(FormRequest|AppStoreRequest $request): self
+    public static function instantiateFromRequest(AppStoreRequest|FormRequest $request): self
     {
         return new self(
             url: $request->input('url'),

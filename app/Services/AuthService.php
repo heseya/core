@@ -54,8 +54,7 @@ class AuthService implements AuthServiceContract
         protected UserLoginAttemptServiceContract $userLoginAttemptService,
         protected UserServiceContract $userService,
         protected MetadataServiceContract $metadataService,
-    ) {
-    }
+    ) {}
 
     public function login(string $email, string $password, ?string $ip, ?string $userAgent, ?string $code): array
     {
@@ -92,7 +91,7 @@ class AuthService implements AuthServiceContract
             'jti' => $uuid,
         ]);
         Auth::login($user);
-        // @phpstan-ignore-next-line
+        /** @phpstan-ignore-next-line */
         $token = Auth::fromUser($user);
 
         $this->userLoginAttemptService->store(true);
@@ -109,8 +108,8 @@ class AuthService implements AuthServiceContract
         $payload = $this->tokenService->payload($refreshToken);
 
         if (
-            $payload?->get('typ') !== TokenType::REFRESH ||
-            Token::where('id', $payload->get('jti'))->where('invalidated', true)->exists()
+            $payload?->get('typ') !== TokenType::REFRESH
+            || Token::where('id', $payload->get('jti'))->where('invalidated', true)->exists()
         ) {
             throw new ClientException(Exceptions::CLIENT_INVALID_TOKEN);
         }
@@ -391,7 +390,7 @@ class AuthService implements AuthServiceContract
             Auth::user()->securityCodes()->where('expires_at', '!=', null)->delete();
             $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(
                 Auth::user(),
-                Config::get('tfa.code_expires_time')
+                Config::get('tfa.code_expires_time'),
             );
 
             TfaSecurityCodeEvent::dispatch(Auth::user(), $code);
@@ -522,7 +521,7 @@ class AuthService implements AuthServiceContract
         $qr_code_url = $google_authenticator->getQRCodeGoogleUrl(
             $user->email,
             $secret,
-            Config::get('app.name')
+            Config::get('app.name'),
         );
 
         $user->update([
@@ -544,7 +543,7 @@ class AuthService implements AuthServiceContract
         $user->securityCodes()->delete();
         $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(
             $user,
-            Config::get('tfa.code_expires_time')
+            Config::get('tfa.code_expires_time'),
         );
 
         $user->update([
@@ -577,7 +576,7 @@ class AuthService implements AuthServiceContract
         ]);
     }
 
-    private function createTokens(string|bool $token, string $uuid): array
+    private function createTokens(bool|string $token, string $uuid): array
     {
         /** @var JWTSubject $user */
         $user = Auth::user();

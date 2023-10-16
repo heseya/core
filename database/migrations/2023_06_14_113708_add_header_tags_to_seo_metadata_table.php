@@ -10,7 +10,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('seo_metadata', function (Blueprint $table) {
+        Schema::table('seo_metadata', function (Blueprint $table): void {
             $table->json('header_tags')->nullable();
         });
     }
@@ -20,7 +20,7 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('seo_metadata', function (Blueprint $table) {
+        Schema::table('seo_metadata', function (Blueprint $table): void {
             $table->dropColumn('header_tags');
         });
     }

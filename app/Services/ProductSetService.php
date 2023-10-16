@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Dtos\ProductReorderDto;
 use App\Dtos\ProductSetDto;
 use App\Dtos\ProductSetUpdateDto;
 use App\Dtos\ProductsReorderDto;
@@ -17,26 +18,24 @@ use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class ProductSetService implements ProductSetServiceContract
+final readonly class ProductSetService implements ProductSetServiceContract
 {
     public function __construct(
         private SeoMetadataServiceContract $seoMetadataService,
         private MetadataServiceContract $metadataService,
-    ) {
-    }
+    ) {}
 
     public function authorize(ProductSet $set): void
     {
         if (
-            Gate::denies('product_sets.show_hidden') &&
-            !ProductSet::public()->where('id', $set->getKey())->exists()
+            Gate::denies('product_sets.show_hidden')
+            && !ProductSet::public()->where('id', $set->getKey())->exists()
         ) {
             throw new NotFoundHttpException();
         }
@@ -89,11 +88,13 @@ class ProductSetService implements ProductSetServiceContract
         ])->validate();
 
         /** @var ProductSet $set */
-        $set = ProductSet::query()->create($dto->toArray() + [
-            'order' => $order,
-            'slug' => $slug,
-            'public_parent' => $publicParent,
-        ]);
+        $set = ProductSet::query()->create(
+            $dto->toArray() + [
+                'order' => $order,
+                'slug' => $slug,
+                'public_parent' => $publicParent,
+            ],
+        );
 
         $attributes = null;
         if (!$dto->attributes_ids instanceof Missing) {
@@ -127,7 +128,7 @@ class ProductSetService implements ProductSetServiceContract
         Collection $children,
         string $parentId,
         ?string $parentSlug,
-        bool $publicParent
+        bool $publicParent,
     ): void {
         $children->each(
             function ($child, $order) use ($parentId, $parentSlug, $publicParent): void {
@@ -141,7 +142,7 @@ class ProductSetService implements ProductSetServiceContract
                     $child->children,
                     $child->getKey(),
                     $childSlug,
-                    $publicParent && $child->public
+                    $publicParent && $child->public,
                 );
 
                 $child->update([
@@ -189,6 +190,7 @@ class ProductSetService implements ProductSetServiceContract
 
         $rootOrder = ProductSet::reversed()->first()?->order + 1;
 
+        $productIds = $set->allProductsIds()->merge($set->relatedProducts->pluck('id'));
         $set->children()
             ->whereNotIn('id', $dto->getChildrenIds())
             ->update([
@@ -196,11 +198,13 @@ class ProductSetService implements ProductSetServiceContract
                 'order' => $rootOrder + $order,
             ]);
 
-        $set->update($dto->toArray() + [
-            'order' => $order,
-            'slug' => $slug,
-            'public_parent' => $publicParent,
-        ]);
+        $set->update(
+            $dto->toArray() + [
+                'order' => $order,
+                'slug' => $slug,
+                'public_parent' => $publicParent,
+            ],
+        );
 
         if (!($dto->getAttributesIds() instanceof Missing)) {
             $attributes = Collection::make($dto->getAttributesIds());
@@ -229,16 +233,7 @@ class ProductSetService implements ProductSetServiceContract
 
     public function attach(ProductSet $set, array $productsIds): Collection
     {
-        // old products for reindexing
-        $oldProductsIds = $set->products()->pluck('id');
-
         $set->products()->sync($productsIds);
-
-        // @phpstan-ignore-next-line
-        Product::query()->whereIn(
-            'id',
-            $oldProductsIds->merge($productsIds)->unique(),
-        )->searchable();
 
         return $set->products;
     }
@@ -249,17 +244,12 @@ class ProductSetService implements ProductSetServiceContract
             $set->children->each(fn ($subset) => $this->delete($subset));
         }
 
-        $productsIds = $set->allProductsIds();
-
         if ($set->delete()) {
             ProductSetDeleted::dispatch($set);
             if ($set->seo !== null) {
                 $this->seoMetadataService->delete($set->seo);
             }
         }
-
-        // @phpstan-ignore-next-line
-        Product::query()->whereIn('id', $productsIds)->searchable();
     }
 
     public function products(ProductSet $set): LengthAwarePaginator
@@ -276,7 +266,7 @@ class ProductSetService implements ProductSetServiceContract
     public function flattenSetsTree(Collection $sets, string $relation): Collection
     {
         $subsets = $sets->map(
-            fn ($set) => $this->flattenSetsTree($set->$relation, $relation),
+            fn ($set) => $this->flattenSetsTree($set->{$relation}, $relation),
         );
 
         return $subsets->flatten()->concat($sets->toArray());
@@ -296,86 +286,81 @@ class ProductSetService implements ProductSetServiceContract
         return $sets->merge($this->flattenParentsSetsTree($parents));
     }
 
-    // TODO: fix this
     public function reorderProducts(ProductSet $set, ProductsReorderDto $dto): void
     {
-        if (!$dto->getProducts() instanceof Missing) {
-            $product = $set->products()->where('id', $dto->getProducts()[0]['id'])->firstOrFail();
-            $order = $dto->getProducts()[0]['order'];
-            $orderedProductsAmount = $set->products()
-                ->whereNotNull('product_set_product.order')
-                ->whereNot('product_id', $dto->getProducts()[0]['id'])
-                ->count();
+        $productsWithoutOrder = $set->products->filter(fn (Product $product) => $product->pivot->order === null);
 
-            if ($order > $orderedProductsAmount) {
-                $order = $orderedProductsAmount;
-            }
-
-            if ($product->pivot->order === null) {
-                $this->setOrder($order);
-            } else {
-                if ($order < $product->pivot->order) {
-                    $this->setHigherOrder($product, $order);
-                } else {
-                    $this->setLowerOrder($product, $order);
-                }
-            }
-
-            $product->pivot->order = $order;
-            $product->pivot->save();
-
-            /** @var int $highestOrder */
-            $highestOrder = $set->products->max('pivot.order');
-
-            $this->assignOrderToNulls($highestOrder, $set->products->whereNull('pivot.order'));
+        if ($productsWithoutOrder->isNotEmpty()) {
+            $this->fixNullOrders(
+                $set,
+                $productsWithoutOrder,
+            );
         }
-    }
 
-    public function indexAllProducts(ProductSet $set): void
-    {
-        // @phpstan-ignore-next-line
-        Product::query()->whereIn('id', $set->allProductsIds())->searchable();
-    }
+        if ($this->hasSameOrderProducts($set)) {
+            $this->fixSameOrder($set);
+        }
 
-    private function setHigherOrder(Product $product, int $order): void
-    {
-        DB::table('product_set_product')->where([
-            ['order', '>=', $order],
-            ['order', '<', $product->pivot->order],
-        ])
-            ->increment('order');
-    }
+        $maxOrder = $set->products->count() - 1;
 
-    private function setLowerOrder(Product $product, int $order): void
-    {
-        DB::table('product_set_product')->where([
-            ['order', '<=', $order],
-            ['order', '>', $product->pivot->order],
-        ])
-            ->decrement('order');
-    }
+        $dto->products->each(function (ProductReorderDto $product) use ($set, $maxOrder): void {
+            $oldOrder = array_search($product->id, $set->products->pluck('id', 'pivot.order')->all());
+            $newOrder = min($product->order, $maxOrder);
 
-    private function setOrder(int $order): void
-    {
-        DB::table('product_set_product')->where([
-            ['order', '>=', $order],
-        ])
-            ->increment('order');
-    }
+            $set->products()->updateExistingPivot($product->id, ['order' => $newOrder]);
 
-    private function assignOrderToNulls(int $highestOrder, Collection $products): void
-    {
-        $products->each(function (Product $product) use (&$highestOrder): void {
-            ++$highestOrder;
-            $product->pivot->order = $highestOrder;
-            $product->pivot->save();
+            $query = $set->products()->newPivotStatement()
+                ->where('product_set_id', $set->id)
+                ->where('product_id', '!=', $product->id);
+
+            if ($newOrder > $oldOrder) {
+                $query
+                    ->where('order', '<=', $newOrder)
+                    ->where('order', '>', $oldOrder)
+                    ->decrement('order');
+            }
+
+            if ($newOrder < $oldOrder) {
+                $query
+                    ->where('order', '<=', $oldOrder)
+                    ->where('order', '>=', $newOrder)
+                    ->increment('order');
+            }
         });
+    }
+
+    private function fixNullOrders(ProductSet $set, Collection $productsWithoutOrder): void
+    {
+        $existingOrder = $set->products->pluck('pivot.order')->filter(fn (?int $order) => $order !== null);
+        $missingOrders = array_diff(range(0, $set->products->count() - 1), $existingOrder->toArray());
+
+        $productsWithoutOrder->each(function (Product $product) use (&$missingOrders): void {
+            $product->pivot->update(['order' => array_shift($missingOrders)]);
+        });
+
+        $set->refresh();
+    }
+
+    private function hasSameOrderProducts(ProductSet $set): bool
+    {
+        $groupedProducts = $set->products->groupBy('pivot.order');
+
+        return $groupedProducts->contains(fn (Collection $products): bool => $products->count() > 1);
+    }
+
+    private function fixSameOrder(ProductSet $set): void
+    {
+        $set->products->each(function (Product $product, int $index): void {
+            $product->pivot->update(['order' => $index]);
+        });
+
+        $set->refresh();
     }
 
     private function prepareSlug(
         bool|Missing $isOverridden,
-        string|Missing|null $slugSuffix,
-        string $parentSlug
+        Missing|string|null $slugSuffix,
+        string $parentSlug,
     ): ?string {
         $slug = $slugSuffix instanceof Missing ? null : $slugSuffix;
         if (!$isOverridden instanceof Missing && !$isOverridden) {

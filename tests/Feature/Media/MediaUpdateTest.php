@@ -48,10 +48,10 @@ class MediaUpdateTest extends TestCase
      */
     public function testUpdateAlt($user): void
     {
-        $this->$user->givePermissionTo('media.edit');
+        $this->{$user}->givePermissionTo('media.edit');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('PATCH', "/media/id:{$this->media->getKey()}", [
                 'alt' => 'Test alt description',
             ])
@@ -72,12 +72,12 @@ class MediaUpdateTest extends TestCase
      */
     public function testUpdateSeededMedia($user): void
     {
-        $this->$user->givePermissionTo('media.edit');
+        $this->{$user}->givePermissionTo('media.edit');
 
         $media = Media::factory()->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('PATCH', "/media/id:{$media->getKey()}", [
                 'alt' => 'Test alt description',
                 'slug' => 'Test slug',
@@ -92,10 +92,10 @@ class MediaUpdateTest extends TestCase
      */
     public function testUpdateSlug($user): void
     {
-        $this->$user->givePermissionTo('media.edit');
+        $this->{$user}->givePermissionTo('media.edit');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('PATCH', "/media/id:{$this->media->getKey()}", [
                 'slug' => 'test-slug',
             ])
@@ -111,8 +111,8 @@ class MediaUpdateTest extends TestCase
         ]);
 
         Http::assertSent(function (Request $request) {
-            return $request->url() === 'http://cdn.example.com/dev/photo.jpg' &&
-                $request['slug'] === 'test-slug';
+            return $request->url() === 'http://cdn.example.com/dev/photo.jpg'
+                && $request['slug'] === 'test-slug';
         });
     }
 
@@ -121,10 +121,10 @@ class MediaUpdateTest extends TestCase
      */
     public function testUpdateAltWithNullSlug($user): void
     {
-        $this->$user->givePermissionTo('media.edit');
+        $this->{$user}->givePermissionTo('media.edit');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('PATCH', "/media/id:{$this->media->getKey()}", [
                 'alt' => 'Test alt description',
                 'slug' => null,
@@ -146,11 +146,11 @@ class MediaUpdateTest extends TestCase
      */
     public function testUpdateMediaSlugToNull($user): void
     {
-        $this->$user->givePermissionTo('media.edit');
+        $this->{$user}->givePermissionTo('media.edit');
         $this->media->update(['slug' => 'test']);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('PATCH', "/media/id:{$this->media->getKey()}", [
                 'slug' => null,
             ])
@@ -167,7 +167,7 @@ class MediaUpdateTest extends TestCase
      */
     public function testCantUpdateSlugNotUnique($user): void
     {
-        $this->$user->givePermissionTo('media.edit');
+        $this->{$user}->givePermissionTo('media.edit');
 
         Media::create([
             'type' => MediaType::PHOTO,
@@ -176,7 +176,7 @@ class MediaUpdateTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('PATCH', "/media/id:{$this->media->getKey()}", [
                 'slug' => 'test-slug',
             ])
@@ -192,12 +192,12 @@ class MediaUpdateTest extends TestCase
      */
     public function testUpdateSameSlug($user): void
     {
-        $this->$user->givePermissionTo('media.edit');
+        $this->{$user}->givePermissionTo('media.edit');
 
         $this->media->update(['slug' => 'test-slug']);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('PATCH', "/media/id:{$this->media->getKey()}", [
                 'slug' => 'test-slug',
             ])
@@ -211,10 +211,10 @@ class MediaUpdateTest extends TestCase
      */
     public function testUpdateAltNull($user): void
     {
-        $this->$user->givePermissionTo('media.edit');
+        $this->{$user}->givePermissionTo('media.edit');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('PATCH', "/media/id:{$this->media->getKey()}", [
                 'alt' => null,
             ])

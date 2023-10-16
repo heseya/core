@@ -14,8 +14,7 @@ readonly class PriceService implements PriceServiceContract
 {
     public function __construct(
         private DiscountServiceContract $discountService,
-    ) {
-    }
+    ) {}
 
     /**
      * @return ProductPriceDto[]

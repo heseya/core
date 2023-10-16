@@ -41,7 +41,7 @@ class AppInstallTest extends TestCase
      */
     public function testInstallNotFound($user): void
     {
-        $this->$user->givePermissionTo([
+        $this->{$user}->givePermissionTo([
             'apps.install',
             'products.show',
         ]);
@@ -50,7 +50,7 @@ class AppInstallTest extends TestCase
             $this->url => Http::response([], 404),
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/apps', [
+        $response = $this->actingAs($this->{$user})->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [
                 'products.show',
@@ -67,7 +67,7 @@ class AppInstallTest extends TestCase
      */
     public function testInstallFailed($user): void
     {
-        $this->$user->givePermissionTo([
+        $this->{$user}->givePermissionTo([
             'apps.install',
             'products.show',
         ]);
@@ -94,7 +94,7 @@ class AppInstallTest extends TestCase
             $this->url . '/install' => Http::response([], 404),
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/apps', [
+        $response = $this->actingAs($this->{$user})->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [
                 'products.show',
@@ -125,13 +125,13 @@ class AppInstallTest extends TestCase
      */
     public function testInstallInvalidInfo($user, $invalidResponse): void
     {
-        $this->$user->givePermissionTo('apps.install');
+        $this->{$user}->givePermissionTo('apps.install');
 
         Http::fake([
             $this->url => Http::response($invalidResponse),
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/apps', [
+        $response = $this->actingAs($this->{$user})->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [],
             'public_app_permissions' => [],
@@ -146,7 +146,7 @@ class AppInstallTest extends TestCase
      */
     public function testInstallInvalidInstallationResponse($user, $invalidResponse): void
     {
-        $this->$user->givePermissionTo([
+        $this->{$user}->givePermissionTo([
             'apps.install',
         ]);
 
@@ -162,7 +162,7 @@ class AppInstallTest extends TestCase
             $this->url . '/install' => Http::response($invalidResponse),
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/apps', [
+        $response = $this->actingAs($this->{$user})->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [],
             'public_app_permissions' => [],
@@ -177,7 +177,7 @@ class AppInstallTest extends TestCase
      */
     public function testInstall($user): void
     {
-        $this->$user->givePermissionTo([
+        $this->{$user}->givePermissionTo([
             'apps.install',
             'products.show',
         ]);
@@ -226,7 +226,7 @@ class AppInstallTest extends TestCase
             ]),
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/apps', [
+        $response = $this->actingAs($this->{$user})->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [
                 'products.show',
@@ -297,13 +297,13 @@ class AppInstallTest extends TestCase
             'products.show',
         ]));
 
-        if ($this->$user instanceof User) {
+        if ($this->{$user} instanceof User) {
             $this->assertDatabaseHas('roles', [
                 'id' => $app->role_id,
                 'name' => $name . ' owner',
             ]);
 
-            $this->assertTrue($this->$user->hasRole($app->role));
+            $this->assertTrue($this->{$user}->hasRole($app->role));
             $this->assertTrue($app->role->hasAllPermissions([
                 'app.' . Str::slug($name) . '.with_description',
                 'app.' . Str::slug($name) . '.null_description',
@@ -320,7 +320,7 @@ class AppInstallTest extends TestCase
      */
     public function testInstallWithMetadata($user): void
     {
-        $this->$user->givePermissionTo([
+        $this->{$user}->givePermissionTo([
             'apps.install',
             'products.show',
         ]);
@@ -370,7 +370,7 @@ class AppInstallTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/apps', [
                 'url' => $this->url,
                 'allowed_permissions' => [
@@ -401,7 +401,7 @@ class AppInstallTest extends TestCase
      */
     public function testInstallWithMetadataPrivate($user): void
     {
-        $this->$user->givePermissionTo([
+        $this->{$user}->givePermissionTo([
             'apps.install',
             'apps.show_metadata_private',
             'products.show',
@@ -452,7 +452,7 @@ class AppInstallTest extends TestCase
         ]);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/apps', [
                 'url' => $this->url,
                 'allowed_permissions' => [
@@ -483,7 +483,7 @@ class AppInstallTest extends TestCase
      */
     public function testInstallWithOptionalPermissions($user): void
     {
-        $this->$user->givePermissionTo([
+        $this->{$user}->givePermissionTo([
             'apps.install',
             'products.show',
             'products.add',
@@ -518,7 +518,7 @@ class AppInstallTest extends TestCase
             ]),
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/apps', [
+        $response = $this->actingAs($this->{$user})->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [
                 'products.show',
@@ -565,7 +565,7 @@ class AppInstallTest extends TestCase
      */
     public function testInstallWithPublicPermissions($user): void
     {
-        $this->$user->givePermissionTo('apps.install');
+        $this->{$user}->givePermissionTo('apps.install');
 
         $uninstallToken = Str::random(128);
 
@@ -600,7 +600,7 @@ class AppInstallTest extends TestCase
             ]),
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/apps', [
+        $response = $this->actingAs($this->{$user})->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [],
             'public_app_permissions' => [
@@ -660,7 +660,7 @@ class AppInstallTest extends TestCase
      */
     public function testInstallNoInternalPermissions($user): void
     {
-        $this->$user->givePermissionTo([
+        $this->{$user}->givePermissionTo([
             'apps.install',
             'products.show',
         ]);
@@ -687,7 +687,7 @@ class AppInstallTest extends TestCase
             ]),
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/apps', [
+        $response = $this->actingAs($this->{$user})->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [
                 'products.show',
@@ -711,11 +711,11 @@ class AppInstallTest extends TestCase
      */
     public function testInstallAssignUnownedPermissions($user): void
     {
-        $this->$user->givePermissionTo([
+        $this->{$user}->givePermissionTo([
             'apps.install',
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/apps', [
+        $response = $this->actingAs($this->{$user})->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [
                 'products.show',
@@ -732,11 +732,11 @@ class AppInstallTest extends TestCase
      */
     public function testInstallAssignInvalidPermissions($user): void
     {
-        $this->$user->givePermissionTo([
+        $this->{$user}->givePermissionTo([
             'apps.install',
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/apps', [
+        $response = $this->actingAs($this->{$user})->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [
                 'nonexistent.permission',
@@ -753,7 +753,7 @@ class AppInstallTest extends TestCase
      */
     public function testInstallAppWantsInvalidPermissions($user): void
     {
-        $this->$user->givePermissionTo([
+        $this->{$user}->givePermissionTo([
             'apps.install',
             'products.show',
         ]);
@@ -779,7 +779,7 @@ class AppInstallTest extends TestCase
             ]),
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/apps', [
+        $response = $this->actingAs($this->{$user})->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [
                 'products.show',
@@ -796,7 +796,7 @@ class AppInstallTest extends TestCase
      */
     public function testInstallNotAssigningRequiredPermissions($user): void
     {
-        $this->$user->givePermissionTo([
+        $this->{$user}->givePermissionTo([
             'apps.install',
             'products.show',
         ]);
@@ -822,7 +822,7 @@ class AppInstallTest extends TestCase
             ]),
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/apps', [
+        $response = $this->actingAs($this->{$user})->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [],
             'public_app_permissions' => [],
@@ -837,7 +837,7 @@ class AppInstallTest extends TestCase
      */
     public function testInstallExtraPermissions($user): void
     {
-        $this->$user->givePermissionTo([
+        $this->{$user}->givePermissionTo([
             'apps.install',
             'products.show',
             'products.add',
@@ -868,7 +868,7 @@ class AppInstallTest extends TestCase
             ]),
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/apps', [
+        $response = $this->actingAs($this->{$user})->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [
                 'products.show',
@@ -887,7 +887,7 @@ class AppInstallTest extends TestCase
      */
     public function testInstallConnectionRefusedRoot($user): void
     {
-        $this->$user->givePermissionTo([
+        $this->{$user}->givePermissionTo([
             'apps.install',
             'products.show',
             'products.add',
@@ -898,7 +898,7 @@ class AppInstallTest extends TestCase
             $this->url => new ConnectionException('Test', 7),
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/apps', [
+        $response = $this->actingAs($this->{$user})->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [
                 'products.show',
@@ -917,7 +917,7 @@ class AppInstallTest extends TestCase
      */
     public function testInstallConnectionRefusedInstall($user): void
     {
-        $this->$user->givePermissionTo([
+        $this->{$user}->givePermissionTo([
             'apps.install',
             'products.show',
             'products.add',
@@ -948,7 +948,7 @@ class AppInstallTest extends TestCase
             $this->url . '/install' => new ConnectionException('Test', 7),
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/apps', [
+        $response = $this->actingAs($this->{$user})->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [
                 'products.show',
@@ -967,7 +967,7 @@ class AppInstallTest extends TestCase
      */
     public function testInstallDuplicateApp($user): void
     {
-        $this->$user->givePermissionTo([
+        $this->{$user}->givePermissionTo([
             'apps.install',
             'products.show',
         ]);
@@ -994,7 +994,7 @@ class AppInstallTest extends TestCase
             ]),
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/apps', [
+        $response = $this->actingAs($this->{$user})->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [],
             'public_app_permissions' => [],
@@ -1008,7 +1008,7 @@ class AppInstallTest extends TestCase
      */
     public function testReinstall($user): void
     {
-        $this->$user->givePermissionTo([
+        $this->{$user}->givePermissionTo([
             'apps.install',
             'products.show',
             'apps.remove',
@@ -1031,7 +1031,7 @@ class AppInstallTest extends TestCase
         Http::fake([
             $this->url . '/uninstall' => new ConnectionException('Test', 7),
         ]);
-        $this->actingAs($this->$user)->json('delete', '/apps/id:' . $app->getKey(), ['force' => true]);
+        $this->actingAs($this->{$user})->json('delete', '/apps/id:' . $app->getKey(), ['force' => true]);
 
         Http::fake([
             $this->url => Http::response([
@@ -1059,7 +1059,7 @@ class AppInstallTest extends TestCase
             ]),
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/apps', [
+        $response = $this->actingAs($this->{$user})->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [
                 'products.show',
@@ -1105,13 +1105,13 @@ class AppInstallTest extends TestCase
             'products.show',
         ]));
 
-        if ($this->$user instanceof User) {
+        if ($this->{$user} instanceof User) {
             $this->assertDatabaseHas('roles', [
                 'id' => $app->role_id,
                 'name' => $name . ' owner',
             ]);
 
-            $this->assertTrue($this->$user->hasRole($app->role));
+            $this->assertTrue($this->{$user}->hasRole($app->role));
             $this->assertTrue($app->role->hasAllPermissions([
                 'app.' . Str::slug($name) . '.test',
             ]));
@@ -1126,7 +1126,7 @@ class AppInstallTest extends TestCase
      */
     public function testInstallAppWithExistingUrl($user): void
     {
-        $this->$user->givePermissionTo([
+        $this->{$user}->givePermissionTo([
             'apps.install',
         ]);
 
@@ -1134,7 +1134,7 @@ class AppInstallTest extends TestCase
             'url' => $this->url,
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/apps', [
+        $response = $this->actingAs($this->{$user})->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [
                 'products.show',
@@ -1151,7 +1151,7 @@ class AppInstallTest extends TestCase
      */
     public function testInstallTooLongUninstallToken($user): void
     {
-        $this->$user->givePermissionTo([
+        $this->{$user}->givePermissionTo([
             'apps.install',
             'products.show',
         ]);
@@ -1174,7 +1174,7 @@ class AppInstallTest extends TestCase
             ]),
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/apps', [
+        $response = $this->actingAs($this->{$user})->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [],
             'public_app_permissions' => [],

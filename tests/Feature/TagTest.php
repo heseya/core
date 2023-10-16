@@ -22,7 +22,7 @@ class TagTest extends TestCase
      */
     public function testIndexTagsShow($user): void
     {
-        $this->$user->givePermissionTo('tags.show');
+        $this->{$user}->givePermissionTo('tags.show');
 
         $this->index($user);
     }
@@ -34,7 +34,7 @@ class TagTest extends TestCase
         $product = Product::factory()->create();
         $product->tags()->sync([$tag->getKey()]);
 
-        $response = $this->actingAs($this->$user)->getJson('/tags');
+        $response = $this->actingAs($this->{$user})->getJson('/tags');
 
         $response
             ->assertOk()
@@ -47,13 +47,13 @@ class TagTest extends TestCase
      */
     public function testIndexByIds($user): void
     {
-        $this->$user->givePermissionTo('tags.show');
+        $this->{$user}->givePermissionTo('tags.show');
         $tag = Tag::factory()->count(10)->create()->random();
 
         $product = Product::factory()->create();
         $product->tags()->sync([$tag->getKey()]);
 
-        $response = $this->actingAs($this->$user)->json('GET', '/tags', [
+        $response = $this->actingAs($this->{$user})->json('GET', '/tags', [
             'ids' => [
                 $tag->getKey(),
             ],
@@ -70,7 +70,7 @@ class TagTest extends TestCase
      */
     public function testIndexProductsAdd($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
         $this->index($user);
     }
@@ -80,7 +80,7 @@ class TagTest extends TestCase
      */
     public function testIndexProductsEdit($user): void
     {
-        $this->$user->givePermissionTo('products.edit');
+        $this->{$user}->givePermissionTo('products.edit');
 
         $this->index($user);
     }
@@ -95,14 +95,14 @@ class TagTest extends TestCase
      */
     public function testCreateTagsAdd($user): void
     {
-        $this->$user->givePermissionTo('tags.add');
+        $this->{$user}->givePermissionTo('tags.add');
 
         $this->create($user);
     }
 
     public function create($user): void
     {
-        $response = $this->actingAs($this->$user)->postJson('/tags', [
+        $response = $this->actingAs($this->{$user})->postJson('/tags', [
             'name' => 'test sale',
             'color' => '444444',
         ]);
@@ -120,7 +120,7 @@ class TagTest extends TestCase
      */
     public function testCreateProductsAdd($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
         $this->create($user);
     }
@@ -130,7 +130,7 @@ class TagTest extends TestCase
      */
     public function testCreateProductsEdit($user): void
     {
-        $this->$user->givePermissionTo('products.edit');
+        $this->{$user}->givePermissionTo('products.edit');
 
         $this->create($user);
     }
@@ -140,11 +140,11 @@ class TagTest extends TestCase
      */
     public function testCreateWithId($user): void
     {
-        $this->$user->givePermissionTo('products.add');
+        $this->{$user}->givePermissionTo('products.add');
 
         $id = Uuid::uuid4()->toString();
 
-        $response = $this->actingAs($this->$user)->postJson('/tags', [
+        $response = $this->actingAs($this->{$user})->postJson('/tags', [
             'name' => 'test sale',
             'color' => '444444',
             'id' => $id,
@@ -171,11 +171,11 @@ class TagTest extends TestCase
      */
     public function testUpdate($user): void
     {
-        $this->$user->givePermissionTo('tags.edit');
+        $this->{$user}->givePermissionTo('tags.edit');
 
         $tag = Tag::factory()->create();
 
-        $response = $this->actingAs($this->$user)->patchJson('/tags/id:' . $tag->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/tags/id:' . $tag->getKey(), [
             'name' => 'test tag',
             'color' => 'ababab',
         ]);
@@ -193,11 +193,11 @@ class TagTest extends TestCase
      */
     public function testUpdateWithEmptyData($user): void
     {
-        $this->$user->givePermissionTo('tags.edit');
+        $this->{$user}->givePermissionTo('tags.edit');
 
         $tag = Tag::factory()->create();
 
-        $response = $this->actingAs($this->$user)->patchJson('/tags/id:' . $tag->getKey(), []);
+        $response = $this->actingAs($this->{$user})->patchJson('/tags/id:' . $tag->getKey(), []);
 
         $response->assertOk();
 
@@ -219,11 +219,11 @@ class TagTest extends TestCase
      */
     public function testDelete($user): void
     {
-        $this->$user->givePermissionTo('tags.remove');
+        $this->{$user}->givePermissionTo('tags.remove');
 
         $tag = Tag::factory()->create();
 
-        $response = $this->actingAs($this->$user)->deleteJson('/tags/id:' . $tag->getKey());
+        $response = $this->actingAs($this->{$user})->deleteJson('/tags/id:' . $tag->getKey());
 
         $response->assertNoContent();
 

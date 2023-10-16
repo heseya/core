@@ -17,7 +17,7 @@ use App\Http\Resources\ProductResource;
 use App\Http\Resources\ResourceCollection;
 use App\Models\MediaAttachment;
 use App\Models\Product;
-use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\ProductRepository;
 use App\Services\Contracts\MediaAttachmentServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use Illuminate\Http\JsonResponse;
@@ -29,11 +29,10 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class ProductController extends Controller
 {
     public function __construct(
-        private ProductServiceContract $productService,
-        private ProductRepositoryContract $productRepository,
-        private MediaAttachmentServiceContract $attachmentService,
-    ) {
-    }
+        private readonly ProductRepository $productRepository,
+        private readonly ProductServiceContract $productService,
+        private readonly MediaAttachmentServiceContract $attachmentService,
+    ) {}
 
     public function index(ProductIndexRequest $request): JsonResource
     {

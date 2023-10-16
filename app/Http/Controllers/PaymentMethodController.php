@@ -19,13 +19,12 @@ class PaymentMethodController extends Controller
 {
     public function __construct(
         private PaymentMethodServiceContract $paymentMethodService,
-    ) {
-    }
+    ) {}
 
     public function index(PaymentMethodIndexRequest $request): JsonResource
     {
         return PaymentMethodResource::collection(
-            $this->paymentMethodService->index(PaymentMethodIndexDto::instantiateFromRequest($request))
+            $this->paymentMethodService->index(PaymentMethodIndexDto::instantiateFromRequest($request)),
         );
     }
 

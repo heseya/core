@@ -15,9 +15,7 @@ use Illuminate\Support\Facades\Response;
 
 class PackageTemplateController extends Controller
 {
-    public function __construct(private PackageTemplateServiceContract $packageTemplateService)
-    {
-    }
+    public function __construct(private PackageTemplateServiceContract $packageTemplateService) {}
 
     public function index(PackageTemplateIndexRequest $request): JsonResource
     {
@@ -31,8 +29,8 @@ class PackageTemplateController extends Controller
     {
         return PackageTemplateResource::make(
             $this->packageTemplateService->store(
-                PackageTemplateDto::instantiateFromRequest($request)
-            )
+                PackageTemplateDto::instantiateFromRequest($request),
+            ),
         );
     }
 
@@ -41,8 +39,8 @@ class PackageTemplateController extends Controller
         return PackageTemplateResource::make(
             $this->packageTemplateService->update(
                 $package,
-                PackageTemplateDto::instantiateFromRequest($request)
-            )
+                PackageTemplateDto::instantiateFromRequest($request),
+            ),
         );
     }
 

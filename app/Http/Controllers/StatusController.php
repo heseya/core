@@ -19,9 +19,7 @@ use Illuminate\Support\Facades\Response;
 
 class StatusController extends Controller
 {
-    public function __construct(private StatusServiceContract $statusService)
-    {
-    }
+    public function __construct(private StatusServiceContract $statusService) {}
 
     public function index(StatusIndexRequest $request): JsonResource
     {
@@ -29,14 +27,14 @@ class StatusController extends Controller
             ->with(['metadata']);
 
         return StatusResource::collection(
-            $statuses->orderBy('order')->get()
+            $statuses->orderBy('order')->get(),
         );
     }
 
     public function store(StatusCreateRequest $request): JsonResource
     {
         return StatusResource::make(
-            $this->statusService->store(StatusDto::instantiateFromRequest($request))
+            $this->statusService->store(StatusDto::instantiateFromRequest($request)),
         );
     }
 
@@ -45,8 +43,8 @@ class StatusController extends Controller
         return StatusResource::make(
             $this->statusService->update(
                 $status,
-                StatusDto::instantiateFromRequest($request)
-            )
+                StatusDto::instantiateFromRequest($request),
+            ),
         );
     }
 

@@ -8,11 +8,11 @@ use App\Services\Contracts\AttributeOptionServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use Heseya\Dto\Missing;
 
-class AttributeOptionService implements AttributeOptionServiceContract
+readonly class AttributeOptionService implements AttributeOptionServiceContract
 {
-    public function __construct(private MetadataServiceContract $metadataService)
-    {
-    }
+    public function __construct(
+        private MetadataServiceContract $metadataService,
+    ) {}
 
     public function create(string $attributeId, AttributeOptionDto $dto): AttributeOption
     {
@@ -23,7 +23,9 @@ class AttributeOptionService implements AttributeOptionServiceContract
             ],
             $dto->toArray(),
         );
-        $attributeOption = AttributeOption::create($data);
+
+        /** @var AttributeOption $attributeOption */
+        $attributeOption = AttributeOption::query()->create($data);
 
         if (!($dto->getMetadata() instanceof Missing)) {
             $this->metadataService->sync($attributeOption, $dto->getMetadata());
@@ -35,7 +37,8 @@ class AttributeOptionService implements AttributeOptionServiceContract
     public function updateOrCreate(string $attributeId, AttributeOptionDto $dto): AttributeOption
     {
         if ($dto->id !== null && !$dto->id instanceof Missing) {
-            $attributeOption = AttributeOption::findOrFail($dto->id);
+            /** @var AttributeOption $attributeOption */
+            $attributeOption = AttributeOption::query()->findOrFail($dto->id);
             $attributeOption->update($dto->toArray());
 
             return $attributeOption;

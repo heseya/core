@@ -46,7 +46,7 @@ class DiscountDeleteTest extends TestCase
      */
     public function testDeleteInvalidDiscount(string $user, string $discountKind): void
     {
-        $this->$user->givePermissionTo("{$discountKind}.remove");
+        $this->{$user}->givePermissionTo("{$discountKind}.remove");
 
         $code = $discountKind === 'sales' ? [] : ['code' => null];
         $discount = Discount::factory($code)->create();
@@ -54,7 +54,7 @@ class DiscountDeleteTest extends TestCase
         Event::fake();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson("/{$discountKind}/id:" . $discount->getKey())
             ->assertNotFound();
 
@@ -67,19 +67,17 @@ class DiscountDeleteTest extends TestCase
      */
     public function testDelete(string $user, string $discountKind): void
     {
-        $this->$user->givePermissionTo("{$discountKind}.remove");
+        $this->{$user}->givePermissionTo("{$discountKind}.remove");
         $code = $discountKind === 'coupons' ? [] : ['code' => null];
         $discount = Discount::factory($code)->create();
 
         Queue::fake();
 
-        $response = $this->actingAs($this->$user)->deleteJson("/{$discountKind}/id:" . $discount->getKey());
+        $response = $this->actingAs($this->{$user})->deleteJson("/{$discountKind}/id:" . $discount->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($discount);
 
-        Queue::assertPushed(CallQueuedListener::class, function ($job) {
-            return $job->class === WebHookEventListener::class;
-        });
+        Queue::assertPushed(CallQueuedListener::class, fn ($job) => $job->class === WebHookEventListener::class);
 
         $event = $discountKind === 'coupons' ? new CouponDeleted($discount) : new SaleDeleted($discount);
         $listener = new WebHookEventListener();
@@ -94,7 +92,7 @@ class DiscountDeleteTest extends TestCase
      */
     public function testDeleteWithWebHookQueue(string $user, string $discountKind): void
     {
-        $this->$user->givePermissionTo("{$discountKind}.remove");
+        $this->{$user}->givePermissionTo("{$discountKind}.remove");
 
         if ($discountKind === 'coupons') {
             $webHookEvent = 'CouponDeleted';
@@ -110,19 +108,17 @@ class DiscountDeleteTest extends TestCase
             'events' => [
                 $webHookEvent,
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
 
         Queue::fake();
 
-        $response = $this->actingAs($this->$user)->deleteJson("/{$discountKind}/id:" . $discount->getKey());
+        $response = $this->actingAs($this->{$user})->deleteJson("/{$discountKind}/id:" . $discount->getKey());
 
-        Queue::assertPushed(CallQueuedListener::class, function ($job) {
-            return $job->class === WebHookEventListener::class;
-        });
+        Queue::assertPushed(CallQueuedListener::class, fn ($job) => $job->class === WebHookEventListener::class);
 
         $response->assertNoContent();
         $this->assertSoftDeleted($discount);
@@ -148,7 +144,7 @@ class DiscountDeleteTest extends TestCase
      */
     public function testDeleteWithWebHookDispatched(string $user, string $discountKind): void
     {
-        $this->$user->givePermissionTo("{$discountKind}.remove");
+        $this->{$user}->givePermissionTo("{$discountKind}.remove");
 
         if ($discountKind === 'coupons') {
             $webHookEvent = 'CouponDeleted';
@@ -164,19 +160,17 @@ class DiscountDeleteTest extends TestCase
             'events' => [
                 $webHookEvent,
             ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
 
         Bus::fake();
 
-        $response = $this->actingAs($this->$user)->deleteJson("/{$discountKind}/id:" . $discount->getKey());
+        $response = $this->actingAs($this->{$user})->deleteJson("/{$discountKind}/id:" . $discount->getKey());
 
-        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
-            return $job->class === WebHookEventListener::class;
-        });
+        Bus::assertDispatched(CallQueuedListener::class, fn ($job) => $job->class === WebHookEventListener::class);
 
         $response->assertNoContent();
         $this->assertSoftDeleted($discount);
@@ -202,7 +196,7 @@ class DiscountDeleteTest extends TestCase
      */
     public function testDeleteSaleWithProduct(string $user): void
     {
-        $this->$user->givePermissionTo('sales.remove');
+        $this->{$user}->givePermissionTo('sales.remove');
         $discount = Discount::factory([
             'type' => DiscountType::AMOUNT,
             'value' => 10,
@@ -232,7 +226,7 @@ class DiscountDeleteTest extends TestCase
             'price_max' => 190,
         ]);
 
-        $response = $this->actingAs($this->$user)->deleteJson('/sales/id:' . $discount->getKey());
+        $response = $this->actingAs($this->{$user})->deleteJson('/sales/id:' . $discount->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($discount);
 
@@ -248,7 +242,7 @@ class DiscountDeleteTest extends TestCase
      */
     public function testDeleteSaleWithProductInChildSet(string $user): void
     {
-        $this->$user->givePermissionTo('sales.remove');
+        $this->{$user}->givePermissionTo('sales.remove');
         $discount = Discount::factory([
             'type' => DiscountType::AMOUNT,
             'value' => 10,
@@ -292,7 +286,7 @@ class DiscountDeleteTest extends TestCase
             'price_max' => 190,
         ]);
 
-        $response = $this->actingAs($this->$user)->deleteJson('/sales/id:' . $discount->getKey());
+        $response = $this->actingAs($this->{$user})->deleteJson('/sales/id:' . $discount->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($discount);
 

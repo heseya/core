@@ -28,15 +28,15 @@ use Spatie\Permission\Traits\HasPermissions;
 /**
  * @mixin IdeHelperApp
  */
-class App extends Model implements AuthorizableContract, AuthenticatableContract, JWTSubject
+class App extends Model implements AuthenticatableContract, AuthorizableContract, JWTSubject
 {
-    use HasFactory;
-    use HasCriteria;
-    use Authorizable;
     use Authenticatable;
+    use Authorizable;
+    use HasCriteria;
+    use HasFactory;
+    use HasMetadata;
     use HasPermissions;
     use HasWebHooks;
-    use HasMetadata;
     use HasWishlist;
 
     protected string $guard_name = 'api';
@@ -107,8 +107,8 @@ class App extends Model implements AuthorizableContract, AuthenticatableContract
     }
 
     public function hasRole(
-        string|int|array|\Spatie\Permission\Contracts\Role|Collection $roles,
-        ?string $guard = null
+        array|Collection|int|\Spatie\Permission\Contracts\Role|string $roles,
+        ?string $guard = null,
     ): bool {
         return false;
     }

@@ -24,26 +24,26 @@ class UserPreferencesDto extends Dto implements InstantiateFromRequest
             new_localization_login_alert: $request
                 ->input('preferences.new_localization_login_alert', new Missing()),
             recovery_code_changed_alert: $request
-                ->input('preferences.recovery_code_changed_alert', new Missing())
+                ->input('preferences.recovery_code_changed_alert', new Missing()),
         );
     }
 
-    public function getSuccessfulLoginAttemptAlert(): Missing|bool
+    public function getSuccessfulLoginAttemptAlert(): bool|Missing
     {
         return $this->successful_login_attempt_alert;
     }
 
-    public function getFailedLoginAttemptAlert(): Missing|bool
+    public function getFailedLoginAttemptAlert(): bool|Missing
     {
         return $this->failed_login_attempt_alert;
     }
 
-    public function getNewLocalizationLoginAlert(): Missing|bool
+    public function getNewLocalizationLoginAlert(): bool|Missing
     {
         return $this->new_localization_login_alert;
     }
 
-    public function getRecoveryCodeChangedAlert(): Missing|bool
+    public function getRecoveryCodeChangedAlert(): bool|Missing
     {
         return $this->recovery_code_changed_alert;
     }

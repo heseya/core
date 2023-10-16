@@ -10,7 +10,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('discounts', function (Blueprint $table) {
+        Schema::table('discounts', function (Blueprint $table): void {
             $table->string('slug', 128)->nullable()->unique();
             $table->longText('description_html')->nullable();
         });
@@ -21,7 +21,7 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('discounts', function (Blueprint $table) {
+        Schema::table('discounts', function (Blueprint $table): void {
             $table->dropColumn(['slug', 'description_html']);
         });
     }

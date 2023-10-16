@@ -55,10 +55,18 @@ class SettingsService implements SettingsServiceContract
     {
         $value = Cache::get($name);
         if ($value === null) {
-            $value = floatval($this->getSetting($name)->value);
+            $value = (float) $this->getSetting($name)->value;
             Cache::put($name, $value);
         }
 
         return $value;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getAdminMails(): array
+    {
+        return explode(';', $this->getSetting('admin_mails')->value);
     }
 }

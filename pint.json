@@ -2,6 +2,7 @@
   "preset": "symfony",
   "rules": {
     "not_operator_with_space": false,
+    "nullable_type_declaration_for_default_null_value": false,
     "simplified_null_return": true,
     "assign_null_coalescing_to_coalesce_equal": true,
     "array_push": true,
@@ -21,6 +22,106 @@
     "no_trailing_whitespace_in_comment": true,
     "standardize_not_equals": true,
     "is_null": true,
+    "ordered_traits": true,
+    "explicit_indirect_variable": true,
+    "return_assignment": true,
+    "combine_consecutive_issets": true,
+    "combine_consecutive_unsets": true,
+    "combine_nested_dirname": true,
+    "comment_to_phpdoc": true,
+    "get_class_to_class_keyword": true,
+    "logical_operators": true,
+    "modernize_strpos": true,
+    "mb_str_functions": true,
+    "modernize_types_casting": true,
+    "multiline_comment_opening_closing": true,
+    "no_useless_sprintf": true,
+    "php_unit_construct": true,
+    "self_accessor": true,
+    "set_type_to_cast": true,
+    "void_return": true,
+    "single_line_empty_body": true,
+    "phpdoc_param_order": true,
+    "phpdoc_var_annotation_correct_order": true,
+    "simplified_if_return": true,
+    "use_arrow_functions": true,
+    "normalize_index_brace": true,
+    "no_multiline_whitespace_around_double_arrow": true,
+    "control_structure_braces": true,
+    "statement_indentation": true,
+    "indentation_type": true,
+    "no_whitespace_before_comma_in_array": {
+      "after_heredoc": true
+    },
+    "no_trailing_comma_in_singleline": {
+      "elements": [
+        "arguments",
+        "array",
+        "array_destructuring",
+        "group_import"
+      ]
+    },
+    "trailing_comma_in_multiline": {
+      "after_heredoc": true,
+      "elements": [
+        "arguments",
+        "arrays",
+        "match",
+        "parameters"
+      ]
+    },
+    "phpdoc_line_span": {
+      "const": "single",
+      "method": "multi",
+      "property": "single"
+    },
+    "ordered_types": {
+      "null_adjustment": "always_last",
+      "sort_algorithm": "alpha"
+    },
+    "random_api_migration": {
+      "replacements": {
+        "getrandmax" : "mt_getrandmax",
+        "rand" : "mt_rand",
+        "srand" : "mt_srand"
+      }
+    },
+    "no_alias_functions": {
+      "sets": [
+        "@all",
+        "@exif",
+        "@ftp",
+        "@IMAP",
+        "@internal",
+        "@ldap",
+        "@mbreg",
+        "@mysqli",
+        "@oci",
+        "@odbc",
+        "@openssl",
+        "@pcntl",
+        "@pg",
+        "@posix",
+        "@snmp",
+        "@sodium",
+        "@time"
+      ]
+    },
+    "function_to_constant": {
+      "functions": [
+        "get_called_class",
+        "get_class",
+        "get_class_this",
+        "php_sapi_name",
+        "phpversion",
+        "pi"
+      ]
+    },
+    "self_static_accessor": true,
+    "ordered_interfaces": {
+      "direction": "ascend",
+      "order": "alpha"
+    },
     "phpdoc_align": {
       "align": "left"
     },

@@ -19,10 +19,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class AttributeOption extends Model
 {
-    use HasFactory;
-    use SoftDeletes;
     use HasCriteria;
+    use HasFactory;
     use HasMetadata;
+    use SoftDeletes;
 
     protected $fillable = [
         'id',
@@ -31,6 +31,7 @@ class AttributeOption extends Model
         'value_number',
         'value_date',
         'attribute_id',
+        'order',
     ];
 
     protected $casts = [
@@ -53,6 +54,11 @@ class AttributeOption extends Model
 
     public function productAttributes(): BelongsToMany
     {
-        return $this->belongsToMany(ProductAttribute::class);
+        return $this->belongsToMany(
+            ProductAttribute::class,
+            'product_attribute_attribute_option',
+            'attribute_option_id',
+            'product_attribute_id',
+        );
     }
 }

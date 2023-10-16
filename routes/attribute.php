@@ -10,6 +10,8 @@ Route::prefix('attributes')->group(function (): void {
         ->middleware('can:attributes.show');
     Route::post('/', [AttributeController::class, 'store'])
         ->middleware('can:attributes.add');
+    Route::post('/reorder', [AttributeController::class, 'reorder'])
+        ->middleware('can:attributes.edit');
     Route::get('id:{attribute:id}', [AttributeController::class, 'show'])
         ->middleware('can:attributes.show');
     Route::patch('id:{attribute:id}', [AttributeController::class, 'update'])
@@ -19,6 +21,8 @@ Route::prefix('attributes')->group(function (): void {
     Route::get('id:{attribute:id}/options', [AttributeOptionController::class, 'index'])
         ->middleware('can:attributes.show');
     Route::post('id:{attribute:id}/options', [AttributeOptionController::class, 'store'])
+        ->middleware('can:attributes.edit');
+    Route::post('/id:{attribute:id}/options/reorder', [AttributeOptionController::class, 'reorder'])
         ->middleware('can:attributes.edit');
     Route::patch('id:{attribute:id}/metadata', [MetadataController::class, 'updateOrCreate'])
         ->middleware('can:attributes.edit');
@@ -32,6 +36,6 @@ Route::prefix('attributes')->group(function (): void {
         ->middleware('can:attributes.edit');
     Route::patch(
         'id:{attribute:id}/options/id:{option:id}/metadata-private',
-        [MetadataController::class, 'updateOrCreate']
+        [MetadataController::class, 'updateOrCreate'],
     )->middleware('can:attributes.edit');
 });

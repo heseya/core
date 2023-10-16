@@ -12,7 +12,7 @@ class BannerMediaDto extends Dto
     private ?string $subtitle;
     private Collection $media;
 
-    public static function fromDataArray(array $data): BannerMediaDto
+    public static function fromDataArray(array $data): self
     {
         /** @var Collection<int, mixed> $responsiveMedia */
         $responsiveMedia = $data['media'];
@@ -22,7 +22,7 @@ class BannerMediaDto extends Dto
             title: $data['title'] ?? null,
             subtitle: $data['subtitle'] ?? null,
             media: Collection::make($responsiveMedia)
-                ->map(fn ($media) => ResponsiveMediaDto::fromDataArray($media))
+                ->map(fn ($media) => ResponsiveMediaDto::fromDataArray($media)),
         );
     }
 

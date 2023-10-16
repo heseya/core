@@ -13,12 +13,12 @@ class UserDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    protected string|Missing $name;
-    protected string|Missing $email;
+    protected Missing|string $name;
+    protected Missing|string $email;
     protected array|Missing $roles;
-    protected string|null|Missing $birthday_date;
-    protected string|null|Missing $phone_country;
-    protected string|null|Missing $phone_number;
+    protected Missing|string|null $birthday_date;
+    protected Missing|string|null $phone_country;
+    protected Missing|string|null $phone_number;
 
     protected array|Missing $metadata;
 
@@ -48,7 +48,7 @@ class UserDto extends Dto implements InstantiateFromRequest
         return $this->email;
     }
 
-    public function getRoles(): Missing|array
+    public function getRoles(): array|Missing
     {
         return $this->roles;
     }

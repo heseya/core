@@ -434,7 +434,7 @@ class PerformanceTest extends TestCase
 
         $lowRange = PriceRange::create(['start' => 0]);
         $lowRange->prices()->create([
-            'value' => rand(8, 15) + (rand(0, 99) / 100),
+            'value' => mt_rand(8, 15) + (mt_rand(0, 99) / 100),
         ]);
 
         $highRange = PriceRange::create(['start' => 210]);
@@ -503,7 +503,7 @@ class PerformanceTest extends TestCase
                 'target_type' => $discountOrder->target_type,
                 'applied_discount' => $order->shipping_price_initial,
                 'code' => $discountOrder->code,
-            ]
+            ],
         );
 
         $discountProduct = Discount::factory()->create([

@@ -30,7 +30,7 @@ class AppFactory extends Factory
             'microfrontend_url' => $this->faker->url,
             'name' => $name,
             'slug' => Str::slug($name),
-            'version' => rand(0, 9) . '.' . rand(0, 9) . '.' . rand(0, 9),
+            'version' => mt_rand(0, 9) . '.' . mt_rand(0, 9) . '.' . mt_rand(0, 9),
             'api_version' => '^' . Config::get('api.version'),
         ];
     }

@@ -20,11 +20,11 @@ class OrderProductFactory extends Factory
      */
     public function definition(): array
     {
-        $price = rand(100, 200);
+        $price = mt_rand(100, 200);
 
         return [
             'name' => $this->faker->word,
-            'quantity' => rand(1, 4),
+            'quantity' => mt_rand(1, 4),
             'price' => $price,
             'price_initial' => $price,
             'base_price' => $price,

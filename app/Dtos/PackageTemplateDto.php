@@ -12,7 +12,7 @@ class PackageTemplateDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    private string|Missing $name;
+    private Missing|string $name;
     private float|Missing $weight;
     private int|Missing $width;
     private int|Missing $height;

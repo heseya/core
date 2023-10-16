@@ -57,12 +57,12 @@ class BannerTest extends TestCase
      */
     public function testIndex($user): void
     {
-        $this->$user->givePermissionTo('banners.show');
+        $this->{$user}->givePermissionTo('banners.show');
 
         Banner::factory()->count(4)->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/banners')
             ->assertOk()
             ->assertJsonCount(5, 'data')
@@ -78,12 +78,12 @@ class BannerTest extends TestCase
      */
     public function testIndexByIds($user): void
     {
-        $this->$user->givePermissionTo('banners.show');
+        $this->{$user}->givePermissionTo('banners.show');
 
         Banner::factory()->count(4)->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->json('GET', '/banners', [
                 'ids' => [
                     $this->banner->getKey(),
@@ -99,12 +99,12 @@ class BannerTest extends TestCase
      */
     public function testIndexQuery($user): void
     {
-        $this->$user->givePermissionTo('banners.show');
+        $this->{$user}->givePermissionTo('banners.show');
 
         Banner::factory()->count(4)->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/banners?slug=' . $this->banner->slug)
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -120,7 +120,7 @@ class BannerTest extends TestCase
      */
     public function testIndexUnauthorized($user): void
     {
-        $this->$user->givePermissionTo('banners.show');
+        $this->{$user}->givePermissionTo('banners.show');
 
         $this
             ->getJson('/banners')
@@ -133,7 +133,7 @@ class BannerTest extends TestCase
     public function testIndexWithoutPermissions($user): void
     {
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson('/banners')
             ->assertForbidden();
     }
@@ -143,12 +143,12 @@ class BannerTest extends TestCase
      */
     public function testShow($user): void
     {
-        $this->$user->givePermissionTo('banners.show');
+        $this->{$user}->givePermissionTo('banners.show');
 
         Banner::factory()->count(4)->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson("/banners/id:{$this->banner->getKey()}")
             ->assertOk()
             ->assertJsonFragment($this->banner->only(['slug', 'name', 'active']))
@@ -163,12 +163,12 @@ class BannerTest extends TestCase
      */
     public function testShowNotExistingObject($user): void
     {
-        $this->$user->givePermissionTo('banners.show');
+        $this->{$user}->givePermissionTo('banners.show');
 
         $this->banner->delete();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson("/banners/id:{$this->banner->getKey()}")
             ->assertNotFound();
     }
@@ -178,7 +178,7 @@ class BannerTest extends TestCase
      */
     public function testShowUnauthorized($user): void
     {
-        $this->$user->givePermissionTo('banners.show');
+        $this->{$user}->givePermissionTo('banners.show');
 
         $this
             ->getJson("/banners/id:{$this->banner->getKey()}")
@@ -190,12 +190,12 @@ class BannerTest extends TestCase
      */
     public function testShowBySlug($user): void
     {
-        $this->$user->givePermissionTo('banners.show');
+        $this->{$user}->givePermissionTo('banners.show');
 
         Banner::factory()->count(4)->create();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson("/banners/{$this->banner->slug}")
             ->assertOk()
             ->assertJsonFragment($this->banner->only(['slug', 'name', 'active']))
@@ -210,12 +210,12 @@ class BannerTest extends TestCase
      */
     public function testShowBySlugNotExistingObject($user): void
     {
-        $this->$user->givePermissionTo('banners.show');
+        $this->{$user}->givePermissionTo('banners.show');
 
         $this->banner->delete();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson("/banners/{$this->banner->slug}")
             ->assertNotFound();
     }
@@ -225,7 +225,7 @@ class BannerTest extends TestCase
      */
     public function testShowBySlugUnauthorized($user): void
     {
-        $this->$user->givePermissionTo('banners.show');
+        $this->{$user}->givePermissionTo('banners.show');
 
         $this
             ->getJson("/banners/{$this->banner->slug}")
@@ -238,7 +238,7 @@ class BannerTest extends TestCase
     public function testShowWithoutPermissions($user): void
     {
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->getJson("/banners/id:{$this->banner->getKey()}")
             ->assertForbidden();
     }
@@ -248,10 +248,10 @@ class BannerTest extends TestCase
      */
     public function testCreateBanner($user): void
     {
-        $this->$user->givePermissionTo('banners.add');
+        $this->{$user}->givePermissionTo('banners.add');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/banners', $this->newBanner + ['banner_media' => [$this->newBannerMedia + $this->medias]])
             ->assertCreated()
             ->assertJsonFragment($this->newBanner)
@@ -285,9 +285,9 @@ class BannerTest extends TestCase
      */
     public function testCreateBannerWithEmptyBannerMedia(string $user): void
     {
-        $this->$user->givePermissionTo('banners.add');
+        $this->{$user}->givePermissionTo('banners.add');
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/banners', $this->newBanner + ['banner_media' => [$this->medias]])
             ->assertCreated();
     }
@@ -297,10 +297,10 @@ class BannerTest extends TestCase
      */
     public function testCreateBannerWithMetadata($user): void
     {
-        $this->$user->givePermissionTo('banners.add');
+        $this->{$user}->givePermissionTo('banners.add');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson(
                 '/banners',
                 $this->newBanner +
@@ -309,7 +309,7 @@ class BannerTest extends TestCase
                     'metadata' => [
                         'attributeMeta' => 'attributeValue',
                     ],
-                ]
+                ],
             )
             ->assertCreated()
             ->assertJsonFragment($this->newBanner)
@@ -325,10 +325,10 @@ class BannerTest extends TestCase
      */
     public function testCreateBannerWithMetadataPrivate($user): void
     {
-        $this->$user->givePermissionTo(['banners.add', 'banners.show_metadata_private']);
+        $this->{$user}->givePermissionTo(['banners.add', 'banners.show_metadata_private']);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson(
                 '/banners',
                 $this->newBanner +
@@ -337,7 +337,7 @@ class BannerTest extends TestCase
                     'metadata_private' => [
                         'attributeMetaPriv' => 'attributeValue',
                     ],
-                ]
+                ],
             )
             ->assertCreated()
             ->assertJsonFragment($this->newBanner)
@@ -353,7 +353,7 @@ class BannerTest extends TestCase
      */
     public function testCreateBannerUnauthorized($user): void
     {
-        $this->$user->givePermissionTo('banners.add');
+        $this->{$user}->givePermissionTo('banners.add');
 
         $this
             ->postJson('/banners', $this->newBanner)
@@ -366,7 +366,7 @@ class BannerTest extends TestCase
     public function testCreateBannerWithoutPermissions($user): void
     {
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/banners', $this->newBanner)
             ->assertForbidden();
     }
@@ -376,12 +376,12 @@ class BannerTest extends TestCase
      */
     public function testCreateBannerIncompleteData($user): void
     {
-        $this->$user->givePermissionTo('banners.add');
+        $this->{$user}->givePermissionTo('banners.add');
 
         unset($this->newBanner['url']);
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->postJson('/banners', $this->newBanner)
             ->assertUnprocessable();
     }
@@ -391,7 +391,7 @@ class BannerTest extends TestCase
      */
     public function testUpdateBanner($user): void
     {
-        $this->$user->givePermissionTo('banners.edit');
+        $this->{$user}->givePermissionTo('banners.edit');
 
         $banner = [
             'slug' => 'super-spring-banner',
@@ -413,10 +413,10 @@ class BannerTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->patchJson(
                 "/banners/id:{$this->banner->getKey()}",
-                $banner + ['banner_media' => [$bannerMedia + $medias]]
+                $banner + ['banner_media' => [$bannerMedia + $medias]],
             )
             ->assertOk()
             ->assertJsonFragment($banner);
@@ -427,7 +427,7 @@ class BannerTest extends TestCase
      */
     public function testUpdateBannerUnauthorized($user): void
     {
-        $this->$user->givePermissionTo('banners.edit');
+        $this->{$user}->givePermissionTo('banners.edit');
 
         $banner = [
             'slug' => 'super-spring-banner',
@@ -452,7 +452,7 @@ class BannerTest extends TestCase
         ];
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->patchJson("/banners/id:{$this->banner->getKey()}", $banner + $this->medias)
             ->assertForbidden();
     }
@@ -462,7 +462,7 @@ class BannerTest extends TestCase
      */
     public function testUpdateBannerIncompleteData($user): void
     {
-        $this->$user->givePermissionTo('banners.edit');
+        $this->{$user}->givePermissionTo('banners.edit');
 
         $banner = [
             'name' => 'Super spring banner',
@@ -470,7 +470,7 @@ class BannerTest extends TestCase
         ];
 
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->patchJson("/banners/id:{$this->banner->getKey()}", $banner);
 
         $response
@@ -496,7 +496,7 @@ class BannerTest extends TestCase
      */
     public function testUpdateBannerIncompleteDataWithBannerMedia($user): void
     {
-        $this->$user->givePermissionTo('banners.edit');
+        $this->{$user}->givePermissionTo('banners.edit');
 
         BannerMedia::query()->delete();
 
@@ -508,7 +508,7 @@ class BannerTest extends TestCase
         $media = Media::factory()->create();
 
         $response = $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->patchJson("/banners/id:{$this->banner->getKey()}", [
                 'banner_media' => [
                     [
@@ -568,10 +568,10 @@ class BannerTest extends TestCase
      */
     public function testDeleteBanner($user): void
     {
-        $this->$user->givePermissionTo('banners.remove');
+        $this->{$user}->givePermissionTo('banners.remove');
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson("/banners/id:{$this->banner->getKey()}")
             ->assertNoContent();
 
@@ -585,7 +585,7 @@ class BannerTest extends TestCase
      */
     public function testDeleteBannerUnauthorized($user): void
     {
-        $this->$user->givePermissionTo('banners.remove');
+        $this->{$user}->givePermissionTo('banners.remove');
 
         $this
             ->deleteJson("/banners/id:{$this->banner->getKey()}")
@@ -598,7 +598,7 @@ class BannerTest extends TestCase
     public function testDeleteBannerWithoutPermissions($user): void
     {
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson("/banners/id:{$this->banner->getKey()}")
             ->assertForbidden();
     }
@@ -608,12 +608,12 @@ class BannerTest extends TestCase
      */
     public function testDeleteBannerOnDeletedObject($user): void
     {
-        $this->$user->givePermissionTo('banners.remove');
+        $this->{$user}->givePermissionTo('banners.remove');
 
         $this->banner->delete();
 
         $this
-            ->actingAs($this->$user)
+            ->actingAs($this->{$user})
             ->deleteJson("/banners/id:{$this->banner->getKey()}")
             ->assertNotFound();
     }
