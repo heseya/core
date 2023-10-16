@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\ShippingType;
+use App\Enums\ValidationError;
 use App\Models\Address;
 use App\Models\App;
 use App\Models\Order;
@@ -649,6 +650,40 @@ class ShippingMethodTest extends TestCase
     }
 
     /**
+     * @dataProvider authProvider
+     */
+    public function testCreatePaymentOnDeliveryWithPaymentMethods($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.add');
+
+        ShippingMethod::query()->delete();
+
+        $paymentMethod = PaymentMethod::factory()->create([
+            'public' => true,
+        ]);
+
+        $shipping_method = [
+            'name' => 'Test',
+            'public' => true,
+            'block_list' => false,
+            'shipping_time_min' => 2,
+            'shipping_time_max' => 3,
+            'shipping_type' => ShippingType::ADDRESS,
+            'payment_on_delivery' => true,
+            'payment_methods' => [
+                $paymentMethod->getKey(),
+            ],
+        ];
+
+        $this->actingAs($this->{$user})
+            ->postJson('/shipping-methods', $shipping_method)
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::PROHIBITEDIF,
+            ]);
+    }
+
+    /**
      * Price range testing with no initial 'start' value of zero.
      *
      * @dataProvider authProvider
@@ -881,6 +916,46 @@ class ShippingMethodTest extends TestCase
             'shipping_methods',
             $shipping_method + ['id' => $this->shipping_method->getKey()],
         );
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdatePaymentOnDelivery($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.edit');
+
+        $this->shipping_method->update([
+            'payment_on_delivery' => false,
+        ]);
+
+        $paymentMethod = PaymentMethod::factory()->create([
+            'public' => true,
+        ]);
+
+        $this->shipping_method->paymentMethods()->sync([
+            $paymentMethod->getKey(),
+        ]);
+
+        $shipping_method = [
+            'name' => 'Test 2',
+            'public' => false,
+            'block_list' => false,
+            'payment_on_delivery' => true,
+            'payment_methods' => [],
+        ];
+
+        $this->actingAs($this->{$user})->patchJson(
+            '/shipping-methods/id:' . $this->shipping_method->getKey(),
+            $shipping_method,
+        )
+            ->assertOk()
+            ->assertJson(['data' => $shipping_method]);
+
+        $this->assertDatabaseMissing('shipping_method_payment_method', [
+            'payment_method_id' => $paymentMethod->getKey(),
+            'shipping_method_id' => $this->shipping_method->getKey(),
+        ]);
     }
 
     public function testDeleteUnauthorized(): void
