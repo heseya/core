@@ -63,10 +63,6 @@ final readonly class OrganizationService
     {
         $organization = $this->updateStatus($organization, OrganizationStatus::VERIFIED);
 
-        // TODO send mail with invitation
-        //  jakiś token do maila, albo sam token, żeby można było później od razu zweryfikować
-        //  tu trzeba dodawać link do maila, żeby kierował na właściwą stronę (może niech sie po prostu przekazuje w requeście do akceptacji ??)
-        // OrganizationToken z email z Organization
         $token = Str::random(128);
         $organization->tokens()->save(new OrganizationToken([
             'email' => $organization->email,
