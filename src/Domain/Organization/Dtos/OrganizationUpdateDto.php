@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Organization\Dtos;
 
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\Uuid;
 use Spatie\LaravelData\Data;
@@ -26,7 +28,7 @@ final class OrganizationUpdateDto extends Data
     ) {}
 
     /**
-     * @return array<string, array<int, string>>
+     * @return array<string, array<int, mixed>>
      */
     public static function rules(ValidationContext $context): array
     {
@@ -38,6 +40,7 @@ final class OrganizationUpdateDto extends Data
             'address.city' => ['string', 'max:255'],
             'address.country' => ['string', 'size:2'],
             'address.vat' => ['nullable', 'string', 'max:15'],
+            'sales_channel_id' => [Rule::prohibitedIf(fn () => !Auth::user()?->hasPermissionTo('organizations.verify'))],
         ];
     }
 }
