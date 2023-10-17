@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Organizations;
 
+use App\Enums\ValidationError;
 use App\Models\Address;
 use Domain\Organization\Enums\OrganizationStatus;
 use Domain\Organization\Models\Organization;
@@ -169,6 +170,47 @@ class OrganizationTest extends TestCase
                 'name' => 'New name',
             ])
             ->assertOk();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateSalesChannelNoPermission(string $user): void
+    {
+        $this->{$user}->givePermissionTo('organizations.edit');
+
+        $salesChannel = SalesChannel::factory()->create();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', '/organizations/id:' . $this->organization->getKey(), [
+                'sales_channel_id' => $salesChannel->getKey(),
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::PROHIBITED,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateSalesChannel(string $user): void
+    {
+        $this->{$user}->givePermissionTo(['organizations.edit', 'organizations.verify']);
+
+        $salesChannel = SalesChannel::factory()->create();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', '/organizations/id:' . $this->organization->getKey(), [
+                'sales_channel_id' => $salesChannel->getKey(),
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $salesChannel->getKey(),
+                'name' => $salesChannel->name,
+            ]);
     }
 
     public function testRemoveUnauthorized(): void

@@ -22,9 +22,6 @@ OrganizationCreate:
             type: string
           address:
             $ref: './../schemas/Addresses.yml#/Address'
-          sales_channel_id:
-            type: string
-            format: UUID
 
 OrganizationUpdate:
   content:
@@ -48,3 +45,4 @@ OrganizationUpdate:
           sales_channel_id:
             type: string
             format: UUID
+            description: "Prohibited if user doesn't have the organizations.verify permission"
