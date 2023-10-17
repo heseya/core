@@ -203,7 +203,7 @@ class ProductSearchValuesTest extends TestCase
         ]);
 
         $this->product->attributes()->attach($attribute->getKey());
-        $this->product->attributes->first()->pivot->options()->attach($option->getKey());
+        $this->product->attributes->first()->product_attribute_pivot->options()->attach($option->getKey());
 
         $this->artisan('products:update-index', ['id' => $this->product->getKey()]);
 
@@ -234,7 +234,7 @@ class ProductSearchValuesTest extends TestCase
         ]);
 
         $this->product->attributes()->attach($attribute->getKey());
-        $this->product->attributes->first()->pivot->options()->attach($option->getKey());
+        $this->product->attributes->first()->product_attribute_pivot->options()->attach($option->getKey());
 
         $this->artisan('products:update-index', ['id' => $this->product->getKey()]);
 

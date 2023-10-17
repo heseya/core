@@ -8,8 +8,12 @@ use App\Http\Resources\Resource;
 use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
 use App\Traits\ModifyLangFallback;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Illuminate\Http\Request;
 
+/**
+ * @property AttributeOption $resource
+ */
 final class AttributeOptionResource extends Resource
 {
     use GetAllTranslations;

@@ -152,13 +152,13 @@ class OrderTest extends TestCase
         ];
 
         $this->expected_full_view_structure = $this->expected_full_structure + [
-                'buyer',
-                'products',
-                'payments',
-                'discounts',
-                'billing_address',
-                'shipping_number',
-            ];
+            'buyer',
+            'products',
+            'payments',
+            'discounts',
+            'billing_address',
+            'shipping_number',
+        ];
     }
 
     public function testIndexUnauthorized(): void

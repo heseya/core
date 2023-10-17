@@ -42,6 +42,7 @@ use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
@@ -52,6 +53,7 @@ use Illuminate\Support\Facades\Config;
  * @property string $description_html
  * @property string $description_short
  * @property mixed $pivot
+ * @property ProductAttribute|null $product_attribute_pivot
  * @property Collection<int, Price> $pricesBase
  *
  * @mixin IdeHelperProduct
@@ -213,9 +215,15 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     public function attributes(): BelongsToMany
     {
         return $this->belongsToMany(Attribute::class, 'product_attribute')
-            ->orderBy('order')
-            ->withPivot('id')
-            ->using(ProductAttribute::class);
+            ->withPivot(['pivot_id'])
+            ->using(ProductAttribute::class)
+            ->as('product_attribute_pivot')
+            ->orderBy('order');
+    }
+
+    public function productAttributes(): HasMany
+    {
+        return $this->hasMany(ProductAttribute::class)->with('options', 'attribute');
     }
 
     public function sales(): BelongsToMany

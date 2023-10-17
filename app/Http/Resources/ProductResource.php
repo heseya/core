@@ -87,7 +87,9 @@ class ProductResource extends Resource
             'schemas' => ProductSchemaResource::collection($this->resource->schemas),
             'sets' => ProductSetResource::collection($sets),
             'related_sets' => ProductSetResource::collection($relatedSets),
-            'attributes' => ProductAttributeResource::collection($this->resource->attributes),
+            'attributes' => $request->filled('attribute_slug')
+                ? ProductAttributeResource::collection($this->resource->productAttributes()->slug($request->string('attribute_slug'))->get())
+                : ProductAttributeResource::collection($this->resource->productAttributes),
             'seo' => SeoMetadataResource::make($this->resource->seo),
             'sales' => SaleResource::collection($this->resource->sales),
             'attachments' => MediaAttachmentResource::collection($attachments),
@@ -97,7 +99,9 @@ class ProductResource extends Resource
     public function index(Request $request): array
     {
         return [
-            'attributes' => ProductAttributeShortResource::collection($this->resource->attributes),
+            'attributes' => $request->filled('attribute_slug')
+                ? ProductAttributeShortResource::collection($this->resource->productAttributes()->slug($request->string('attribute_slug'))->get())
+                : ProductAttributeShortResource::collection($this->resource->productAttributes),
         ];
     }
 }

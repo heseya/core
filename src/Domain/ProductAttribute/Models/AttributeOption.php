@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property string $name
+ * @property ProductAttributeOption|null $product_attribute_option_pivot
  *
  * @mixin IdeHelperAttributeOption
  */
@@ -70,7 +71,7 @@ final class AttributeOption extends Model implements SortableContract, Translata
     ];
 
     /**
-     * @return BelongsTo<Attribute, AttributeOption>
+     * @return BelongsTo<Attribute,self>
      */
     public function attribute(): BelongsTo
     {
@@ -87,6 +88,9 @@ final class AttributeOption extends Model implements SortableContract, Translata
             'product_attribute_attribute_option',
             'attribute_option_id',
             'product_attribute_id',
-        );
+            'id',
+            'pivot_id',
+        )->using(ProductAttributeOption::class)
+            ->as('product_attribute_option_pivot');
     }
 }

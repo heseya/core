@@ -173,7 +173,7 @@ class ProductTest extends TestCase
         ]);
 
         $this->product->attributes()->attach($attribute->getKey());
-        $this->product->attributes->first()->pivot->options()->attach($option->getKey());
+        $this->product->attributes->first()->product_attribute_pivot->options()->attach($option->getKey());
 
         $availabilityService->calculateItemAvailability($item);
 
@@ -301,7 +301,7 @@ class ProductTest extends TestCase
 
         $this->assertArrayHasKey('translations', $response->json('data.0'));
         $this->assertIsArray($response->json('data.0.translations'));
-        $this->assertQueryCountLessThan(24);
+        $this->assertQueryCountLessThan(26);
     }
 
     public function testIndexUnauthorized(): void
@@ -753,7 +753,7 @@ class ProductTest extends TestCase
 
         $product->attributes()->attach($attribute->getKey());
 
-        $product->attributes->first()->pivot->options()->attach($option->getKey());
+        $product->attributes->first()->product_attribute_pivot->options()->attach($option->getKey());
 
         $this
             ->actingAs($this->{$user})
