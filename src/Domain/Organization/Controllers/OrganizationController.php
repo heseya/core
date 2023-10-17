@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use Domain\Organization\Dtos\OrganizationAcceptDto;
 use Domain\Organization\Dtos\OrganizationCreateDto;
 use Domain\Organization\Dtos\OrganizationIndexDto;
+use Domain\Organization\Dtos\OrganizationInviteDto;
 use Domain\Organization\Dtos\OrganizationUpdateDto;
 use Domain\Organization\Models\Organization;
 use Domain\Organization\Resources\OrganizationResource;
@@ -65,5 +66,12 @@ final class OrganizationController extends Controller
     public function reject(Organization $organization): JsonResource
     {
         return OrganizationResource::make($this->organizationService->reject($organization));
+    }
+
+    public function invite(Organization $organization, OrganizationInviteDto $dto): HttpResponse
+    {
+        $this->organizationService->invite($organization, $dto);
+
+        return Response::noContent();
     }
 }

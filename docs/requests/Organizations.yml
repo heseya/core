@@ -58,3 +58,13 @@ OrganizationAccept:
           redirect_url:
             type: string
             example: 'http://localhost/organization/verify'
+
+OrganizationInvite:
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          redirect_url:
+            type: string
+            example: 'http://localhost/organization/verify'

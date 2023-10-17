@@ -52,8 +52,10 @@ use Domain\Language\Events\LanguageCreated;
 use Domain\Language\Events\LanguageDeleted;
 use Domain\Language\Events\LanguageUpdated;
 use Domain\Organization\Events\OrganizationAccepted;
+use Domain\Organization\Events\OrganizationInvited;
 use Domain\Organization\Events\OrganizationRejected;
 use Domain\Organization\Listeners\OrganizationAcceptedListener;
+use Domain\Organization\Listeners\OrganizationInviteListener;
 use Domain\Organization\Listeners\OrganizationRejectedListener;
 use Domain\Page\Events\PageCreated;
 use Domain\Page\Events\PageDeleted;
@@ -97,6 +99,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         OrganizationRejected::class => [
             OrganizationRejectedListener::class,
+        ],
+        OrganizationInvited::class => [
+            OrganizationInviteListener::class,
         ],
     ];
 

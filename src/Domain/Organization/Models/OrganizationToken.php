@@ -6,9 +6,12 @@ namespace Domain\Organization\Models;
 
 use App\Models\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Notifications\Notifiable;
 
 final class OrganizationToken extends Model
 {
+    use Notifiable;
+
     protected $fillable = [
         'id',
         'organization_id',

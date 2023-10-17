@@ -13,6 +13,7 @@ use Domain\Organization\Enums\OrganizationStatus;
 use Domain\Organization\Models\Organization;
 use Domain\Organization\Models\OrganizationToken;
 use Domain\Organization\Notifications\OrganizationAccepted;
+use Domain\Organization\Notifications\OrganizationInvited;
 use Domain\Organization\Notifications\OrganizationRejected;
 use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -476,5 +477,40 @@ class OrganizationTest extends TestCase
                 'key' => ValidationError::ORGANIZATIONTOKENEMAIL->value,
                 'message' => Exceptions::CLIENT_ORGANIZATION_TOKEN_EMAIL->value,
             ]);
+    }
+
+    public function testInviteToOrganizationUnauthorized(): void
+    {
+        $this->json('POST', '/organizations/id:' . $this->organization->getKey() . '/invite', [
+            'redirect_url' => 'https://localhost/invite',
+        ])->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testInviteToOrganization(string $user): void
+    {
+        $this->{$user}->givePermissionTo('organizations.invite');
+
+        $emails = [
+            $this->faker->email(),
+            $this->faker->email(),
+        ];
+
+        Notification::fake();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/organizations/id:' . $this->organization->getKey() . '/invite', [
+                'redirect_url' => 'https://localhost/invite',
+                'emails' => $emails,
+            ])
+            ->assertNoContent();
+
+        foreach ($emails as $email) {
+            $token = OrganizationToken::query()->where('email', '=', $email)->first();
+            Notification::assertSentTo([$token], OrganizationInvited::class);
+        }
     }
 }

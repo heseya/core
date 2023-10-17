@@ -18,4 +18,6 @@ Route::prefix('organizations')->group(function (): void {
         ->middleware('can:organizations.verify');
     Route::post('/id:{organization:id}/reject', [OrganizationController::class, 'reject'])
         ->middleware('can:organizations.verify');
+    Route::post('/id:{organization:id}/invite', [OrganizationController::class, 'invite'])
+        ->middleware('can:organizations.invite');
 });

@@ -155,3 +155,22 @@ OrganizationsReject:
                 data:
                   $ref: './../schemas/Organizations.yml#/OrganizationView'
               type: object
+
+OrganizationsInvite:
+  post:
+    tags:
+      - Organizations
+    security:
+      - BearerAuth: [ organizations.edit ]
+    requestBody:
+      $ref: './../requests/Organizations.yml#/OrganizationInvite'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      204:
+        description: Success
