@@ -68,3 +68,5 @@ ShippingMethod:
       $ref: './../schemas/Metadata.yml#/Metadata'
     metadata_private:
       $ref: './../schemas/Metadata.yml#/Metadata'
+    payment_on_delivery:
+      type: boolean

@@ -19,7 +19,7 @@ class WebHookFailedListener implements ShouldQueue
             'triggered_at' => Arr::get($event->meta, 'triggered_at', Carbon::now()),
             'url' => $event->webhookUrl,
             'status_code' => $event->response?->getStatusCode(),
-            'payload' => json_encode($event->payload),
+            'payload' => $event->payload,
             'response' => null, // TODO: $event->response?->getBody() when guzzle fix this
         ]);
     }

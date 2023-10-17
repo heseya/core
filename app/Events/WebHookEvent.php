@@ -69,7 +69,7 @@ abstract class WebHookEvent
 
     public function getEvent(): string
     {
-        return Str::remove('App\\Events\\', $this::class);
+        return Str::remove('App\\Events\\', static::class);
     }
 
     protected function getModelClass(Authenticatable|Model|Pivot $model): string
