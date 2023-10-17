@@ -2,25 +2,25 @@
 
 namespace App\Http\Resources;
 
-use App\Models\ProductAttribute;
 use App\Traits\ModifyLangFallback;
+use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Resources\AttributeOptionResource;
 use Illuminate\Http\Request;
 
 /**
- * @property ProductAttribute $resource
+ * @property Attribute $resource
  */
-class ProductAttributeShortResource extends Resource
+class AttributeShortResource extends Resource
 {
     use ModifyLangFallback;
 
     public function base(Request $request): array
     {
         return [
-            'name' => $this->resource->attribute?->name,
-            'slug' => $this->resource->attribute?->slug,
+            'name' => $this->resource->name,
+            'slug' => $this->resource->slug,
             'selected_options' => AttributeOptionResource::collection(
-                $this->resource->options ?? $this->resource->attribute?->options ?? [],
+                $this->resource->product_attribute_pivot->options ?? $this->resource->options,
             ),
         ];
     }

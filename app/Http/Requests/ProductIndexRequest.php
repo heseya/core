@@ -59,6 +59,9 @@ class ProductIndexRequest extends FormRequest
             'attribute_not' => ['nullable', 'array'],
             'attribute_not.*' => [new AttributeSearch()],
 
+            'with_translations' => ['sometimes', 'boolean'],
+            'attribute_slug' => ['sometimes', 'nullable', 'string'],
+
             'full' => ['boolean'],
         ];
     }

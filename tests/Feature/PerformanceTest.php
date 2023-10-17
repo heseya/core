@@ -16,6 +16,7 @@ use App\Models\OrderProduct;
 use App\Models\Price;
 use App\Models\PriceRange;
 use App\Models\Product;
+use App\Models\ProductAttribute;
 use App\Models\Schema;
 use App\Models\Status;
 use App\Repositories\Contracts\ProductRepositoryContract;
@@ -43,6 +44,7 @@ use Domain\Tag\Models\Tag;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 use Tests\Utils\FakeDto;
 
@@ -93,6 +95,83 @@ class PerformanceTest extends TestCase
             ->assertOk();
 
         $this->assertQueryCountLessThan(64);
+    }
+
+    public function testShowProductWithAttributesPerformance(): void
+    {
+        $this->user->givePermissionTo('products.show');
+        $this->user->givePermissionTo('products.show_details');
+        $this->user->givePermissionTo('attributes.show');
+
+        $this->prepareProducts(1);
+
+        /** @var Product $product */
+        $product = Product::first();
+
+        $attribute1 = Attribute::factory()->create();
+        $productAttribute1 = ProductAttribute::create([
+            'product_id' => $product->getKey(),
+            'attribute_id' => $attribute1->getKey(),
+        ]);
+        $options1 = AttributeOption::factory()->count(500)->create([
+            'index' => 1,
+            'attribute_id' => $attribute1->getKey(),
+        ]);
+        $productAttribute1->options()->attach($options1);
+
+        $attribute2 = Attribute::factory()->create();
+        $productAttribute2 = ProductAttribute::create([
+            'product_id' => $product->getKey(),
+            'attribute_id' => $attribute2->getKey(),
+        ]);
+        $options2 = AttributeOption::factory()->count(500)->create([
+            'index' => 1,
+            'attribute_id' => $attribute2->getKey(),
+        ]);
+        $productAttribute2->options()->attach($options2);
+
+        $attribute3 = Attribute::factory()->create();
+        $productAttribute3 = ProductAttribute::create([
+            'product_id' => $product->getKey(),
+            'attribute_id' => $attribute3->getKey(),
+        ]);
+        $options3 = AttributeOption::factory()->count(500)->create([
+            'index' => 1,
+            'attribute_id' => $attribute3->getKey(),
+        ]);
+        $productAttribute3->options()->attach($options3);
+
+        DB::flushQueryLog();
+
+        $this->actingAs($this->user)
+            ->json('GET', '/products/id:' . $product->getKey())
+            ->assertOk();
+
+        $this->assertQueryCountLessThan(73);
+
+        $this->actingAs($this->user)
+            ->json('GET', '/products/id:' . $product->getKey() . '?' . Arr::query(['attribute_slug' => $attribute1->slug]))
+            ->assertOk();
+
+        $this->assertQueryCountLessThan(67);
+
+        $this->actingAs($this->user)
+            ->json('GET', '/products/?' . Arr::query(['name' => $product->name]))
+            ->assertOk();
+
+        $this->assertQueryCountLessThan(23);
+
+        $this->actingAs($this->user)
+            ->json('GET', '/products/?' . Arr::query(['attribute_slug' => $attribute1->slug]))
+            ->assertOk();
+
+        $this->assertQueryCountLessThan(35);
+
+        $this->actingAs($this->user)
+            ->json('GET', '/products/?' . Arr::query(['name' => $product->name, 'full' => true]))
+            ->assertOk();
+
+        $this->assertQueryCountLessThan(59);
     }
 
     public function testIndexPerformanceSchema500(): void
@@ -329,7 +408,7 @@ class PerformanceTest extends TestCase
 
         // TODO: Fix with discounts refactor
         // It's baffling how slow this is (was 18 before)
-        $this->assertQueryCountLessThan(2550);
+        $this->assertQueryCountLessThan(2522);
     }
 
     public function testCreateSalePerformance1000Products(): void

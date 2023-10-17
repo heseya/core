@@ -801,7 +801,7 @@ class LanguageFallbackTest extends TestCase
         ]);
 
         $product->attributes()->attach($attribute);
-        $product->attributes->first()->pivot->options()->attach($attributeOption->getKey());
+        $product->attributes->first()->product_attribute_pivot->options()->attach($attributeOption->getKey());
 
         $this
             ->actingAs($this->{$user})

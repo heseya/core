@@ -33,9 +33,38 @@ class ProductRepository implements ProductRepositoryContract
 
     public function search(ProductSearchDto $dto): LengthAwarePaginator
     {
-        $additionalRelations = [];
+        $query = Product::searchByCriteria($dto->except('sort')->toArray() + $this->getPublishedLanguageFilter('products'))
+            ->with([
+                'media',
+                'media.metadata',
+                'media.metadataPrivate',
+                'publishedTags',
+                'pricesBase',
+                'pricesMin',
+                'pricesMax',
+                'pricesMinInitial',
+                'pricesMaxInitial',
+                'metadata',
+                'metadataPrivate',
+            ]);
+
+        if (request()->isNotFilled('attribute_slug')) {
+            $query->with(
+                [
+                    'productAttributes',
+                    'productAttributes.options',
+                    'productAttributes.options.metadata',
+                    'productAttributes.options.metadataPrivate',
+                    'productAttributes.attribute',
+                    'productAttributes.attribute.options',
+                    'productAttributes.attribute.options.metadata',
+                    'productAttributes.attribute.options.metadataPrivate',
+                ],
+            );
+        }
+
         if (!$dto->full instanceof Optional && $dto->full) {
-            $additionalRelations = [
+            $query->with([
                 'items',
                 'schemas',
                 'schemas.options',
@@ -80,29 +109,17 @@ class ProductRepository implements ProductRepositoryContract
                 'seo.media',
                 'seo.media.metadata',
                 'seo.media.metadataPrivate',
-                'attributes.metadata',
-                'attributes.metadataPrivate',
-            ];
-        }
+            ]);
 
-        $query = Product::searchByCriteria($dto->except('sort')->toArray() + $this->getPublishedLanguageFilter('products'))
-            ->with(array_merge([
-                'media',
-                'media.metadata',
-                'media.metadataPrivate',
-                'publishedTags',
-                'pricesBase',
-                'pricesMin',
-                'pricesMax',
-                'pricesMinInitial',
-                'pricesMaxInitial',
-                'attributes',
-                'attributes.options',
-                'attributes.options.metadata',
-                'attributes.options.metadataPrivate',
-                'metadata',
-                'metadataPrivate',
-            ], $additionalRelations));
+            if (request()->isNotFilled('attribute_slug')) {
+                $query->with(
+                    [
+                        'productAttributes.attribute.metadata',
+                        'productAttributes.attribute.metadataPrivate',
+                    ],
+                );
+            }
+        }
 
         if (Gate::denies('products.show_hidden')) {
             $query->where('products.public', true);
@@ -126,6 +143,7 @@ class ProductRepository implements ProductRepositoryContract
                 ], 'value');
             }
         }
+
         if (!$dto->sort instanceof Optional) {
             $query->sort($dto->sort);
         }

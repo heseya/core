@@ -65,7 +65,7 @@ final readonly class AttributeService
 
         $product->attributes()->sync($attributes);
         $product->attributes()->get()->each(
-            fn (Attribute $attribute) => $attribute->pivot->options()->sync($data[$attribute->getKey()]),
+            fn (Attribute $attribute) => $attribute->product_attribute_pivot?->options()->sync($data[$attribute->getKey()]),
         );
     }
 }

@@ -8,9 +8,13 @@ use App\Http\Resources\MediaResource;
 use App\Http\Resources\Resource;
 use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
+use Domain\ProductSet\ProductSet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
+/**
+ * @property ProductSet $resource
+ */
 final class ProductSetResource extends Resource
 {
     use GetAllTranslations;

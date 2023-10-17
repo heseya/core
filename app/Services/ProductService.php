@@ -10,6 +10,7 @@ use App\Events\ProductUpdated;
 use App\Exceptions\PublishingException;
 use App\Models\Option;
 use App\Models\Product;
+use App\Models\ProductAttribute;
 use App\Models\Schema;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\AvailabilityServiceContract;
@@ -405,11 +406,13 @@ final readonly class ProductService
         /** @var Attribute $attribute */
         foreach ($product->attributes as $attribute) {
             $searchValues[] = $attribute->name;
-            /** @var AttributeOption $option */
-            foreach ($attribute->pivot->options as $option) {
-                $searchValues[] = $option->name;
-                $searchValues[] = $option->value_number;
-                $searchValues[] = $option->value_date;
+            if ($attribute->product_attribute_pivot instanceof ProductAttribute) {
+                /** @var AttributeOption $option */
+                foreach ($attribute->product_attribute_pivot->options as $option) {
+                    $searchValues[] = $option->name;
+                    $searchValues[] = $option->value_number;
+                    $searchValues[] = $option->value_date;
+                }
             }
         }
 

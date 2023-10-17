@@ -732,10 +732,10 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         $products[0]->attributes()->attach($attribute->getKey());
-        $products[0]->attributes->first()->pivot->options()->attach($options[0]->getKey());
+        $products[0]->attributes->first()->product_attribute_pivot->options()->attach($options[0]->getKey());
 
         $products[1]->attributes()->attach($attribute->getKey());
-        $products[1]->attributes->first()->pivot->options()->attach($options[1]->getKey());
+        $products[1]->attributes->first()->product_attribute_pivot->options()->attach($options[1]->getKey());
 
         $this
             ->actingAs($this->{$user})
@@ -795,10 +795,10 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         $products[0]->attributes()->attach($attribute->getKey());
-        $products[0]->attributes->first()->pivot->options()->attach($option1->getKey());
+        $products[0]->attributes->first()->product_attribute_pivot->options()->attach($option1->getKey());
 
         $products[1]->attributes()->attach($attribute->getKey());
-        $products[1]->attributes->first()->pivot->options()->attach($option2->getKey());
+        $products[1]->attributes->first()->product_attribute_pivot->options()->attach($option2->getKey());
 
         $this
             ->actingAs($this->{$user})
@@ -860,10 +860,10 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         $products[0]->attributes()->attach($attribute->getKey());
-        $products[0]->attributes->first()->pivot->options()->attach($option1->getKey());
+        $products[0]->attributes->first()->product_attribute_pivot->options()->attach($option1->getKey());
 
         $products[1]->attributes()->attach($attribute->getKey());
-        $products[1]->attributes->first()->pivot->options()->attach($option2->getKey());
+        $products[1]->attributes->first()->product_attribute_pivot->options()->attach($option2->getKey());
 
         $this
             ->actingAs($this->{$user})
@@ -984,10 +984,10 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         $products[0]->attributes()->attach($attribute->getKey());
-        $products[0]->attributes->first()->pivot->options()->attach($option1->getKey());
+        $products[0]->attributes->first()->product_attribute_pivot->options()->attach($option1->getKey());
 
         $products[1]->attributes()->attach($attribute->getKey());
-        $products[1]->attributes->first()->pivot->options()->attach($option2->getKey());
+        $products[1]->attributes->first()->product_attribute_pivot->options()->attach($option2->getKey());
 
         $this
             ->actingAs($this->{$user})
@@ -1102,10 +1102,10 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         $products[0]->attributes()->attach($attribute->getKey());
-        $products[0]->attributes->first()->pivot->options()->attach($options[0]->getKey());
+        $products[0]->attributes->first()->product_attribute_pivot->options()->attach($options[0]->getKey());
 
         $products[1]->attributes()->attach($attribute->getKey());
-        $products[1]->attributes->first()->pivot->options()->attach($options[1]->getKey());
+        $products[1]->attributes->first()->product_attribute_pivot->options()->attach($options[1]->getKey());
 
         $this
             ->actingAs($this->{$user})
@@ -1159,10 +1159,10 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         $products[0]->attributes()->attach($attribute->getKey());
-        $products[0]->attributes->first()->pivot->options()->attach($option1->getKey());
+        $products[0]->attributes->first()->product_attribute_pivot->options()->attach($option1->getKey());
 
         $products[1]->attributes()->attach($attribute->getKey());
-        $products[1]->attributes->first()->pivot->options()->attach($option2->getKey());
+        $products[1]->attributes->first()->product_attribute_pivot->options()->attach($option2->getKey());
 
         $this
             ->actingAs($this->{$user})
@@ -1279,10 +1279,10 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         $products[0]->attributes()->attach($attribute->getKey());
-        $products[0]->attributes->first()->pivot->options()->attach($option1->getKey());
+        $products[0]->attributes->first()->product_attribute_pivot->options()->attach($option1->getKey());
 
         $products[1]->attributes()->attach($attribute->getKey());
-        $products[1]->attributes->first()->pivot->options()->attach($option2->getKey());
+        $products[1]->attributes->first()->product_attribute_pivot->options()->attach($option2->getKey());
 
         $this
             ->actingAs($this->{$user})
@@ -1467,13 +1467,13 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         $products[0]->attributes()->attach($attribute->getKey());
-        $products[0]->attributes->first()->pivot->options()->attach($option2->getKey());
+        $products[0]->attributes->first()->product_attribute_pivot->options()->attach($option2->getKey());
 
         $products[1]->attributes()->attach($attribute->getKey());
-        $products[1]->attributes->first()->pivot->options()->attach($option1->getKey());
+        $products[1]->attributes->first()->product_attribute_pivot->options()->attach($option1->getKey());
 
         $products[2]->attributes()->attach($attribute->getKey());
-        $products[2]->attributes->first()->pivot->options()->attach($option3->getKey());
+        $products[2]->attributes->first()->product_attribute_pivot->options()->attach($option3->getKey());
 
         $response = $this
             ->actingAs($this->{$user})

@@ -156,7 +156,7 @@ readonly class SortService implements SortServiceContract
                 ->where('product_attribute.attribute_id', $attribute->getKey())
                 ->join('product_attribute_attribute_option', function (JoinClause $join): void {
                     $join
-                        ->on('product_attribute_attribute_option.product_attribute_id', 'product_attribute.id')
+                        ->on('product_attribute_attribute_option.product_attribute_id', 'product_attribute.pivot_id')
                         ->join('attribute_options', function (JoinClause $join): void {
                             $join->on(
                                 'product_attribute_attribute_option.attribute_option_id',

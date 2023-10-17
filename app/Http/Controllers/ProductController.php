@@ -8,6 +8,7 @@ use App\Http\Requests\MediaAttachmentCreateRequest;
 use App\Http\Requests\MediaAttachmentUpdateRequest;
 use App\Http\Requests\ProductCreateRequest;
 use App\Http\Requests\ProductIndexRequest;
+use App\Http\Requests\ProductShowRequest;
 use App\Http\Requests\ProductUpdateRequest;
 use App\Http\Resources\MediaAttachmentResource;
 use App\Http\Resources\ProductResource;
@@ -56,14 +57,38 @@ final class ProductController extends Controller
         return $products->full($request->boolean('full'));
     }
 
-    public function show(Product $product): JsonResource
+    public function show(ProductShowRequest $request, Product $product): JsonResource
     {
         if (Gate::denies('products.show_hidden') && !$product->public) {
             throw new NotFoundHttpException();
         }
-        $product->load(
-            ['schemas', 'schemas.options', 'schemas.options.schema', 'schemas.prices', 'schemas.options.prices'],
-        );
+
+        $load = [
+            'schemas',
+            'schemas.options',
+            'schemas.options.schema',
+            'schemas.prices',
+            'schemas.options.prices',
+            'sales',
+            'sales.amounts',
+        ];
+
+        if ($request->isNotFilled('attribute_slug')) {
+            $load = array_merge($load, [
+                'productAttributes',
+                'productAttributes.options',
+                'productAttributes.options.metadata',
+                'productAttributes.options.metadataPrivate',
+                'productAttributes.attribute',
+                'productAttributes.attribute.metadata',
+                'productAttributes.attribute.metadataPrivate',
+                'productAttributes.attribute.options',
+                'productAttributes.attribute.options.metadata',
+                'productAttributes.attribute.options.metadataPrivate',
+            ]);
+        }
+
+        $product->load($load);
 
         return ProductResource::make($product);
     }

@@ -279,7 +279,7 @@ class ProductSortTest extends TestCase
         ]);
         $product->attributes()->attach($attribute->getKey());
         $product->attributes()->get()->each(
-            fn (Attribute $attribute) => $attribute->pivot->options()->attach($option->getKey()),
+            fn (Attribute $attribute) => $attribute->product_attribute_pivot->options()->attach($option->getKey()),
         );
 
         return $product;

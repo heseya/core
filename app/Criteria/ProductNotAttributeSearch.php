@@ -22,7 +22,7 @@ class ProductNotAttributeSearch extends Criterion
                         $query
                             ->from('product_attribute_attribute_option')
                             ->whereRaw(
-                                '`product_attribute`.`id` = `product_attribute_attribute_option`.`product_attribute_id`',
+                                '`product_attribute`.`pivot_id` = `product_attribute_attribute_option`.`product_attribute_id`',
                             );
 
                         if (is_array($value)) {
