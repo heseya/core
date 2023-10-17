@@ -56,3 +56,6 @@ OrganizationAccept:
           redirect_url:
             type: string
             example: 'http://localhost/organization/verify'
+          sales_channel_id:
+            type: string
+            format: UUID

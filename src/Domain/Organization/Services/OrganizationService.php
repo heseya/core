@@ -17,10 +17,12 @@ use Domain\Organization\Events\OrganizationRejected;
 use Domain\Organization\Models\Organization;
 use Domain\Organization\Models\OrganizationToken;
 use Domain\Organization\Repositories\OrganizationRepository;
+use Domain\SalesChannel\SalesChannelRepository;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
+use Spatie\LaravelData\Optional;
 
 final readonly class OrganizationService
 {
@@ -61,7 +63,16 @@ final readonly class OrganizationService
      */
     public function accept(Organization $organization, OrganizationAcceptDto $dto): Organization
     {
-        $organization = $this->updateStatus($organization, OrganizationStatus::VERIFIED);
+        $this->validateStatus($organization, OrganizationStatus::VERIFIED);
+
+        $salesChannelId = $dto->sales_channel_id instanceof Optional
+            ? app(SalesChannelRepository::class)->getDefault()->getKey()
+            : $dto->sales_channel_id;
+
+        $organization->update([
+            'status' => OrganizationStatus::VERIFIED,
+            'sales_channel_id' => $salesChannelId,
+        ]);
 
         $token = Str::random(128);
         $organization->tokens()->save(new OrganizationToken([
@@ -80,7 +91,11 @@ final readonly class OrganizationService
      */
     public function reject(Organization $organization): Organization
     {
-        $organization = $this->updateStatus($organization, OrganizationStatus::REJECTED);
+        $this->validateStatus($organization, OrganizationStatus::REJECTED);
+
+        $organization->update([
+            'status' => OrganizationStatus::REJECTED,
+        ]);
 
         OrganizationRejected::dispatch($organization);
 
@@ -100,7 +115,7 @@ final readonly class OrganizationService
     /**
      * @throws ClientException
      */
-    private function updateStatus(Organization $organization, OrganizationStatus $status): Organization
+    private function validateStatus(Organization $organization, OrganizationStatus $status): void
     {
         if ($organization->status === OrganizationStatus::VERIFIED && $organization->status !== $status) {
             throw new ClientException(Exceptions::CLIENT_ORGANIZATION_VERIFIED);
@@ -108,7 +123,5 @@ final readonly class OrganizationService
         if ($organization->status === $status) {
             throw new ClientException(Exceptions::CLIENT_ORGANIZATION_SAME_STATUS);
         }
-
-        return $this->organizationRepository->updateStatus($organization, $status);
     }
 }

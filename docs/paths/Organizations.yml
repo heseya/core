@@ -71,13 +71,6 @@ OrganizationsParams:
       - Organizations
     security:
       - BearerAuth: [ organizations.edit ]
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
     requestBody:
       $ref: './../requests/Organizations.yml#/OrganizationUpdate'
     parameters:

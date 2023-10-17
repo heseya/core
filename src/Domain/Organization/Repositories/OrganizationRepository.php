@@ -51,11 +51,4 @@ final readonly class OrganizationRepository
     {
         Organization::query()->where('id', '=', $id)->delete();
     }
-
-    public function updateStatus(Organization $organization, OrganizationStatus $status): Organization
-    {
-        $organization->update(['status' => $status]);
-
-        return $organization;
-    }
 }
