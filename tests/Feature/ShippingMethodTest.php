@@ -1511,7 +1511,7 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test 2',
             'public' => false,
-            'block_list' => false,
+            'is_block_list_countries' => false,
             'payment_on_delivery' => true,
             'payment_methods' => [],
         ];
