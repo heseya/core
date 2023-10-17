@@ -28,6 +28,7 @@ use Illuminate\Support\Collection;
 
 /**
  * @property mixed $pivot
+ * @property OrderDiscount|null $order_discount
  * @property DiscountType $type
  * @property DiscountTargetType $target_type
  *
@@ -92,7 +93,17 @@ class Discount extends Model implements SeoContract, Translatable
 
     public function orders(): MorphToMany
     {
-        return $this->morphedByMany(Order::class, 'model', 'order_discounts')->withPivot(['currency', 'amount', 'percentage', 'name', 'code', 'target_type', 'applied_discount']);
+        return $this->morphedByMany(Order::class, 'model', 'order_discounts')
+            ->using(OrderDiscount::class)
+            ->as('order_discount')
+            ->withPivot([
+                'name',
+                'amount',
+                'currency',
+                'percentage',
+                'target_type',
+                'applied',
+            ]);
     }
 
     public function products(): MorphToMany

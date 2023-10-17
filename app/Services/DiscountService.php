@@ -250,7 +250,7 @@ readonly class DiscountService implements DiscountServiceContract
             throw new ServerException(Exceptions::SERVER_PRICE_UNKNOWN_CURRENCY);
         }
 
-        $percentage = $discount->pivot->percentage ?? $discount->percentage;
+        $percentage = $discount->order_discount?->percentage ?? $discount->percentage;
 
         if ($percentage !== null) {
             $percentage = BigDecimal::of($percentage)->dividedBy(100, roundingMode: RoundingMode::HALF_DOWN);
@@ -368,8 +368,7 @@ readonly class DiscountService implements DiscountServiceContract
             ], $currency);
 
             /** @var Money $price */
-            $price = $prices->get(ProductPriceType::PRICE_BASE->value)?->firstOrFail(
-            )?->value ?? throw new ItemNotFoundException();
+            $price = $prices->get(ProductPriceType::PRICE_BASE->value)?->firstOrFail()?->value ?? throw new ItemNotFoundException();
 
             foreach ($cartItem->getSchemas() as $schemaId => $value) {
                 /** @var Schema $schema */
@@ -1272,11 +1271,15 @@ readonly class DiscountService implements DiscountServiceContract
                     );
                 }
 
-                $product->discounts->each(fn (Discount $discount) => $this->attachDiscount(
-                    $newProduct,
-                    $discount,
-                    Money::ofMinor($discount->pivot->applied_discount, $discount->pivot->currency),
-                ));
+                $product->discounts
+                    ->where(fn (Discount $discount) => $discount->order_discount?->applied !== null)
+                    ->each(
+                        fn (Discount $discount) => $this->attachDiscount(
+                            $newProduct,
+                            $discount,
+                            $discount->order_discount->applied, // @phpstan-ignore-line
+                        ),
+                    );
 
                 $product = $newProduct;
             }
@@ -1376,7 +1379,8 @@ readonly class DiscountService implements DiscountServiceContract
 
         /** @var CartItemDto $item */
         foreach ($cartDto->getItems() as $item) {
-            $cartItem = $cart->items->filter(fn ($value, $key) => $value->cartitem_id === $item->getCartItemId(),
+            $cartItem = $cart->items->filter(
+                fn ($value, $key) => $value->cartitem_id === $item->getCartItemId(),
             )->first();
 
             if ($cartItem === null) {
@@ -1418,7 +1422,8 @@ readonly class DiscountService implements DiscountServiceContract
 
         if ($cartItem->quantity > 1 && !$cartItem->price_discounted->isEqualTo($minimalProductPrice)) {
             $cart->items->first(
-                fn ($value,
+                fn (
+                    $value,
                 ): bool => $value->cartitem_id === $cartItem->cartitem_id && $value->quantity === $cartItem->quantity,
             )->quantity = $cartItem->quantity - 1;
 
@@ -1520,7 +1525,7 @@ readonly class DiscountService implements DiscountServiceContract
                 'currency' => $object->currency,
                 'percentage' => $discount->percentage,
                 'target_type' => $discount->target_type,
-                'applied_discount' => $appliedDiscount->getMinorAmount(),
+                'applied' => $appliedDiscount->getMinorAmount(),
             ] + $code,
         );
     }

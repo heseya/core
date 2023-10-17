@@ -1111,19 +1111,19 @@ class OrderCreateTest extends TestCase
 
         $this->assertDatabaseHas('order_discounts', [
             'discount_id' => $discount->getKey(),
-            'applied_discount' => '14250', // -95%
+            'applied' => '14250', // -95%
         ]);
 
         $this->assertDatabaseHas('order_discounts', [
             'model_id' => $order->getKey(),
             'discount_id' => $saleOrder->getKey(),
-            'applied_discount' => '749', // discount -50, but price should be 7.49 when discount is applied
+            'applied' => '749', // discount -50, but price should be 7.49 when discount is applied
         ]);
 
         $this->assertDatabaseHas('order_discounts', [
             'model_id' => $order->getKey(),
             'discount_id' => $couponShipping->getKey(),
-            'applied_discount' => '999', // discount -15, but shipping_price_initial is 9.99
+            'applied' => '999', // discount -15, but shipping_price_initial is 9.99
         ]);
 
         Event::assertDispatched(OrderCreated::class);
