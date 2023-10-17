@@ -1179,7 +1179,7 @@ class OrderTest extends TestCase
                 'type' => $discountShipping->type,
                 'value' => $discountShipping->value,
                 'target_type' => $discountShipping->target_type,
-                'applied_discount' => $order->shipping_price_initial,
+                'applied' => $order->shipping_price_initial,
                 'code' => $discountShipping->code,
             ],
         );
@@ -1203,7 +1203,7 @@ class OrderTest extends TestCase
                 'type' => $discountProduct->type,
                 'value' => $discountProduct->value,
                 'target_type' => $discountProduct->target_type,
-                'applied_discount' => $discountProduct->value,
+                'applied' => $discountProduct->value,
                 'code' => $discountProduct->code,
             ],
         );
@@ -1215,7 +1215,7 @@ class OrderTest extends TestCase
                 'type' => $discountProduct->type,
                 'value' => $discountProduct->value,
                 'target_type' => $discountProduct->target_type,
-                'applied_discount' => $discountProduct->value,
+                'applied' => $discountProduct->value,
                 'code' => $discountProduct->code,
             ],
         );

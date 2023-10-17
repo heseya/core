@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Models\Discount;
 use App\Models\Order;
+use App\Models\OrderDiscount;
 use App\Models\OrderProduct;
 use App\Models\User;
 use App\Traits\MetadataResource;
@@ -65,7 +66,14 @@ class OrderResource extends Resource
                 if ($found->isEmpty()) {
                     $carry->push($discount);
                 } else {
-                    $found->first()->pivot->applied_discount += $discount->pivot->applied_discount;
+                    $foundDiscount = $found->first();
+                    assert($foundDiscount instanceof Discount);
+                    assert($foundDiscount->order_discount instanceof OrderDiscount);
+                    $foundDiscount->order_discount->applied = match (true) {
+                        $foundDiscount->order_discount->applied !== null && $discount->order_discount?->applied !== null => $foundDiscount->order_discount->applied->plus($discount->order_discount->applied),
+                        $discount->order_discount?->applied !== null => $discount->order_discount->applied,
+                        default => $foundDiscount->order_discount->applied,
+                    };
                 }
             });
 

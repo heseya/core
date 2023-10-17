@@ -112,6 +112,7 @@ class DiscountOrderTest extends TestCase
         ]);
 
         $response
+            ->assertValid()
             ->assertCreated()
             ->assertJsonFragment(['summary' => '95.00']); // 100 - 100 * 15% + 10 (delivery)
 
@@ -539,21 +540,21 @@ class DiscountOrderTest extends TestCase
             'model_id' => $cheapestProduct->getKey(),
             'model_type' => $modelType,
             'discount_id' => $cheapestDiscount->getKey(),
-            'applied_discount' => '450',
+            'applied' => '450',
         ]);
 
         $this->assertDatabaseHas('order_discounts', [
             'model_id' => $product->getKey(),
             'model_type' => $modelType,
             'discount_id' => $sale->getKey(),
-            'applied_discount' => '1000',
+            'applied' => '1000',
         ]);
 
         $this->assertDatabaseHas('order_discounts', [
             'model_id' => $cheapestProduct->getKey(),
             'model_type' => $modelType,
             'discount_id' => $sale->getKey(),
-            'applied_discount' => '1000',
+            'applied' => '1000',
         ]);
     }
 

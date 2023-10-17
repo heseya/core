@@ -575,7 +575,7 @@ class PerformanceTest extends TestCase
                 'type' => $discountShipping->type,
                 'value' => $discountShipping->value,
                 'target_type' => $discountShipping->target_type,
-                'applied_discount' => $order->shipping_price_initial,
+                'applied' => $order->shipping_price_initial,
                 'code' => $discountShipping->code,
             ],
             $discountOrder->getKey(),
@@ -584,7 +584,7 @@ class PerformanceTest extends TestCase
                 'type' => $discountOrder->type,
                 'value' => $discountOrder->value,
                 'target_type' => $discountOrder->target_type,
-                'applied_discount' => $order->shipping_price_initial,
+                'applied' => $order->shipping_price_initial,
                 'code' => $discountOrder->code,
             ],
         );
@@ -645,7 +645,7 @@ class PerformanceTest extends TestCase
                 'type' => $discountProduct->type,
                 'value' => $discountProduct->value,
                 'target_type' => $discountProduct->target_type,
-                'applied_discount' => $discountProduct->value,
+                'applied' => $discountProduct->value,
                 'code' => $discountProduct->code,
             ],
             $discountProduct2->getKey() => [
@@ -653,7 +653,7 @@ class PerformanceTest extends TestCase
                 'type' => $discountProduct2->type,
                 'value' => $discountProduct2->value,
                 'target_type' => $discountProduct2->target_type,
-                'applied_discount' => $discountProduct2->value,
+                'applied' => $discountProduct2->value,
                 'code' => $discountProduct2->code,
             ],
         ]);
@@ -672,7 +672,7 @@ class PerformanceTest extends TestCase
                 'type' => $discountProduct->type,
                 'value' => $discountProduct->value,
                 'target_type' => $discountProduct->target_type,
-                'applied_discount' => $discountProduct->value,
+                'applied' => $discountProduct->value,
                 'code' => $discountProduct->code,
             ],
             $discountProduct2->getKey() => [
@@ -680,7 +680,7 @@ class PerformanceTest extends TestCase
                 'type' => $discountProduct2->type,
                 'value' => $discountProduct2->value,
                 'target_type' => $discountProduct2->target_type,
-                'applied_discount' => $discountProduct2->value,
+                'applied' => $discountProduct2->value,
                 'code' => $discountProduct2->code,
             ],
         ]);
@@ -699,7 +699,7 @@ class PerformanceTest extends TestCase
                 'type' => $discountProduct->type,
                 'value' => $discountProduct->value,
                 'target_type' => $discountProduct->target_type,
-                'applied_discount' => $discountProduct->value,
+                'applied' => $discountProduct->value,
                 'code' => $discountProduct->code,
             ],
             $discountProduct2->getKey() => [
@@ -707,7 +707,7 @@ class PerformanceTest extends TestCase
                 'type' => $discountProduct2->type,
                 'value' => $discountProduct2->value,
                 'target_type' => $discountProduct2->target_type,
-                'applied_discount' => $discountProduct2->value,
+                'applied' => $discountProduct2->value,
                 'code' => $discountProduct2->code,
             ],
         ]);

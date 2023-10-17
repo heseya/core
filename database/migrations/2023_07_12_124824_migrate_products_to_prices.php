@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         DB::table('products')->lazyById()->each(function (object $product): void {
@@ -23,13 +24,15 @@ return new class extends Migration {
             $this->insertPrice('price_max_initial', $product->price_max_initial, $product->id);
         });
 
-        Schema::table('products', function (Blueprint $table): void {
-            $table->dropColumn('price');
-            $table->dropColumn('price_min');
-            $table->dropColumn('price_max');
-            $table->dropColumn('price_min_initial');
-            $table->dropColumn('price_max_initial');
-        });
+        if (Schema::hasColumn('products', 'price')) {
+            Schema::table('products', function (Blueprint $table): void {
+                $table->dropColumn('price');
+                $table->dropColumn('price_min');
+                $table->dropColumn('price_max');
+                $table->dropColumn('price_min_initial');
+                $table->dropColumn('price_max_initial');
+            });
+        }
     }
 
     public function down(): void
