@@ -28,6 +28,8 @@ class DiscountFactory extends Factory
      */
     protected $model = Discount::class;
 
+    protected bool $withPrice = true;
+
     /**
      * Define the model's default state.
      *
@@ -47,18 +49,31 @@ class DiscountFactory extends Factory
         ];
     }
 
+    public function withPrice(bool $with = true): self
+    {
+        $this->withPrice = $with;
+        return $this;
+    }
+
+    public function withoutPrice(): self
+    {
+        return $this->withPrice(false);
+    }
+
     public function configure(): self
     {
         return $this->afterCreating(function (Discount $discount): void {
-            /** @var DiscountRepository $discountRepository */
-            $discountRepository = App::make(DiscountRepository::class);
+            if ($this->withPrice) {
+                /** @var DiscountRepository $discountRepository */
+                $discountRepository = App::make(DiscountRepository::class);
 
-            if ($discount->percentage === null) {
-                $amounts = array_map(fn (Currency $currency) => PriceDto::fromMoney(
-                    Money::of(mt_rand(500, 2000) / 100.0, $currency->value),
-                ), Currency::cases());
+                if ($discount->percentage === null) {
+                    $amounts = array_map(fn (Currency $currency) => PriceDto::fromMoney(
+                        Money::of(mt_rand(500, 2000) / 100.0, $currency->value),
+                    ), Currency::cases());
 
-                $discountRepository->setDiscountAmounts($discount->getKey(), $amounts);
+                    $discountRepository->setDiscountAmounts($discount->getKey(), $amounts);
+                }
             }
         });
     }
