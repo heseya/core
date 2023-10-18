@@ -97,7 +97,7 @@ class ProductRepository implements ProductRepositoryContract
         Product|string $product,
         array $priceTypes,
         ?Currency $currency = null,
-        ?SalesChannel $salesChannel = null
+        ?SalesChannel $salesChannel = null,
     ): Collection|EloquentCollection {
         $prices = $this->priceRepository->getModelPrices(is_string($product) ? new ModelIdentityDto($product, Product::class) : $product, $priceTypes, $currency, $salesChannel);
 

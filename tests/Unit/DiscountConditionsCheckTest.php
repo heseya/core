@@ -1668,20 +1668,6 @@ class DiscountConditionsCheckTest extends TestCase
             'value' => [
                 'include_taxes' => false,
                 'is_in_range' => true,
-                /*
-                'min_values' => [
-                    [
-                        'value' => "9.99",
-                        'currency' => $this->currency->value,
-                    ]
-                ],
-                'max_values' => [
-                    [
-                        'value' => "99.99",
-                        'currency' => $this->currency->value,
-                    ]
-                ],
-                */
             ],
         ]);
         $condition->pricesMin()->create([

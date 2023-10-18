@@ -45,7 +45,7 @@ final class OrderStatusController extends Controller
     public function store(OrderStatusCreateDto $dto): JsonResource
     {
         return OrderStatusResource::make(
-            $this->statusService->store($dto)
+            $this->statusService->store($dto),
         );
     }
 

@@ -31,7 +31,7 @@ final class CouponDto extends SaleDto implements InstantiateFromRequest
      * @throws DtoException
      */
     public static function instantiateFromRequest(
-        CouponCreateRequest|CouponUpdateRequest|FormRequest|SaleCreateRequest $request
+        CouponCreateRequest|CouponUpdateRequest|FormRequest|SaleCreateRequest $request,
     ): self {
         $amounts = $request->has('amounts') ? array_map(
             fn (array|PriceDto $amount) => $amount instanceof PriceDto ? $amount : PriceDto::from($amount),

@@ -22,7 +22,7 @@ class PriceMinCap extends Criterion
             fn (Builder $query) => $query
                 ->where('value', '>=', $value->getMinorAmount())
                 ->where('currency', $value->getCurrency()->getCurrencyCode())
-                ->where('price_type', ProductPriceType::PRICE_MIN->value)
+                ->where('price_type', ProductPriceType::PRICE_MIN->value),
         );
     }
 }

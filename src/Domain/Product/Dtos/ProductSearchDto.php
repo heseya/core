@@ -103,7 +103,7 @@ final class ProductSearchDto extends Data
         return match (true) {
             $this->price instanceof Optional,
             $this->price->currency instanceof Optional => CurrencyEnum::DEFAULT->toCurrencyInstance(),
-            default => $this->price->currency
+            default => $this->price->currency,
         };
     }
 }

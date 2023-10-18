@@ -25,7 +25,7 @@ class AppStoreRequest extends FormRequest
                 'allowed_permissions.*' => ['string'],
                 'public_app_permissions' => ['present', 'array'],
                 'public_app_permissions.*' => ['string'],
-            ]
+            ],
         );
     }
 }

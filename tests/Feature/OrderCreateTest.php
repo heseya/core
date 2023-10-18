@@ -378,7 +378,11 @@ class OrderCreateTest extends TestCase
 
         $response->assertJsonFragment([
             'id' => $order->id,
-            'summary' => '0.00',
+            'summary' => [
+                'currency' => Currency::DEFAULT->value,
+                'gross' => '0.00',
+                'net' => '0.00',
+            ],
             'paid' => true,
             'payable' => false,
         ]);
@@ -1046,6 +1050,35 @@ class OrderCreateTest extends TestCase
                 $couponShipping->code,
             ],
         ]);
+
+        $response->assertCreated()
+            ->assertJsonFragment([
+                'cart_total_initial' => [
+                    'currency' => Currency::DEFAULT->value,
+                    'gross' => '150.00',
+                    'net' => '150.00',
+                ],
+                'cart_total' => [
+                    'currency' => Currency::DEFAULT->value,
+                    'gross' => '0.01',
+                    'net' => '0.01',
+                ],
+                'shipping_price_initial' => [
+                    'currency' => Currency::DEFAULT->value,
+                    'gross' => '10.00',
+                    'net' => '10.00',
+                ],
+                'shipping_price' => [
+                    'currency' => Currency::DEFAULT->value,
+                    'gross' => '0.01',
+                    'net' => '0.01',
+                ],
+                'summary' => [
+                    'currency' => Currency::DEFAULT->value,
+                    'gross' => '0.02',
+                    'net' => '0.02',
+                ],
+            ]);
 
         $order = Order::find($response->getData()->data->id);
 

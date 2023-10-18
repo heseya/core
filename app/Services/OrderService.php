@@ -164,9 +164,7 @@ final readonly class OrderService implements OrderServiceContract
             $status = Status::query()
                 ->select('id')
                 ->orderBy('order')
-                ->firstOr(
-                    callback: fn () => throw new ServerException(Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED)
-                );
+                ->firstOr(callback: fn () => throw new ServerException(Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED));
 
             /** @var User|App $buyer */
             $buyer = Auth::user();
@@ -406,7 +404,7 @@ final readonly class OrderService implements OrderServiceContract
                     'shipping_address_id' => $this->resolveShippingAddress($shippingPlace, $shippingType, $order),
                     'shipping_place' => $this->resolveShippingPlace($shippingPlace, $shippingType, $order),
                     'shipping_type' => $shippingType,
-                ] + $dto->toArray() + $billingAddressId
+                ] + $dto->toArray() + $billingAddressId,
             );
 
             if ($shippingMethod) {
@@ -506,7 +504,7 @@ final readonly class OrderService implements OrderServiceContract
     public function indexMyOrderProducts(OrderProductSearchDto $dto): LengthAwarePaginator
     {
         return OrderProduct::searchByCriteria(
-            ['user' => Auth::id(), 'paid' => true] + $dto->toArray()
+            ['user' => Auth::id(), 'paid' => true] + $dto->toArray(),
         )
             ->sort('created_at:desc')
             ->with(['urls', 'product'])
@@ -637,7 +635,7 @@ final readonly class OrderService implements OrderServiceContract
     private function resolveShippingAddress(
         Address|Missing|string|null $shippingPlace,
         ShippingType $shippingType,
-        Order $order
+        Order $order,
     ): ?string {
         if ($shippingPlace instanceof Missing) {
             return $order->shipping_address_id;
@@ -668,7 +666,7 @@ final readonly class OrderService implements OrderServiceContract
     private function resolveShippingPlace(
         Address|Missing|string|null $shippingPlace,
         ShippingType $shippingType,
-        Order $order
+        Order $order,
     ): ?string {
         if ($shippingPlace instanceof Missing) {
             return $order->shipping_place;

@@ -17,7 +17,7 @@ class AnalyticsPaymentsResource extends Resource
                 'amount' => $item['amount'],
                 'count' => $item['count'],
                 'currency' => $item['currency'],
-            ])->toArray()
+            ])->toArray(),
         )->toArray();
     }
 }

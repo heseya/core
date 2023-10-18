@@ -300,7 +300,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
             fn (Discount $discount): bool => $discount->code === null
                 && $discount->active
                 && $discount->target_type->is(DiscountTargetType::PRODUCTS)
-                && $discount->target_is_allow_list
+                && $discount->target_is_allow_list,
         );
 
         $salesBlockList = $salesWithBlockList->filter(function ($sale): bool {

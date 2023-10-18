@@ -429,7 +429,7 @@ readonly class DiscountService implements DiscountServiceContract
                             $discount->name,
                             $appliedDiscount,
                             $discount->code,
-                        )
+                        ),
                     );
                 } else {
                     $cartResource->sales->push(
@@ -437,7 +437,7 @@ readonly class DiscountService implements DiscountServiceContract
                             $discount->getKey(),
                             $discount->name,
                             $appliedDiscount,
-                        )
+                        ),
                     );
                 }
 
@@ -452,7 +452,7 @@ readonly class DiscountService implements DiscountServiceContract
 
         $cartResource->cart_total_initial = $this->salesChannelService->addVat(
             $cartResource->cart_total_initial,
-            $vat_rate
+            $vat_rate,
         );
         $cartResource->cart_total = $this->salesChannelService->addVat($cartResource->cart_total, $vat_rate);
         $cartResource->summary = $cartResource->cart_total->plus($cartResource->shipping_price);
@@ -700,11 +700,11 @@ readonly class DiscountService implements DiscountServiceContract
                                         ConditionType::DATE_BETWEEN->value,
                                         ConditionType::TIME_BETWEEN->value,
                                         ConditionType::WEEKDAY_IN->value,
-                                    ]
+                                    ],
                                 );
                             });
                     })
-                    ->orWhereDoesntHave('conditionGroups')
+                    ->orWhereDoesntHave('conditionGroups'),
             )
             ->with(['conditionGroups', 'conditionGroups.conditions'])
             ->get();
@@ -783,7 +783,7 @@ readonly class DiscountService implements DiscountServiceContract
                             ConditionType::DATE_BETWEEN,
                             ConditionType::TIME_BETWEEN,
                             ConditionType::WEEKDAY_IN,
-                        ]
+                        ],
                     )
                 ) {
                     return true;
@@ -829,7 +829,7 @@ readonly class DiscountService implements DiscountServiceContract
             ConditionType::CART_LENGTH => $this->checkConditionCartLength($condition, $dto?->getCartLength() ?? 0),
             ConditionType::COUPONS_COUNT => $this->checkConditionCouponsCount(
                 $condition,
-                is_array($dto?->getCoupons()) ? count($dto->getCoupons()) : 0
+                is_array($dto?->getCoupons()) ? count($dto->getCoupons()) : 0,
             ),
             ConditionType::DATE_BETWEEN => $this->checkConditionDateBetween($condition),
             ConditionType::MAX_USES => $this->checkConditionMaxUses($condition),
@@ -838,7 +838,7 @@ readonly class DiscountService implements DiscountServiceContract
             ConditionType::PRODUCT_IN => $this->checkConditionProductIn($condition, $dto?->getProductIds() ?? []),
             ConditionType::PRODUCT_IN_SET => $this->checkConditionProductInSet(
                 $condition,
-                $dto?->getProductIds() ?? []
+                $dto?->getProductIds() ?? [],
             ),
             ConditionType::TIME_BETWEEN => $this->checkConditionTimeBetween($condition),
             ConditionType::USER_IN => $this->checkConditionUserIn($condition),
@@ -1319,7 +1319,7 @@ readonly class DiscountService implements DiscountServiceContract
     private function applyDiscountOnCartShipping(
         Discount $discount,
         CartDto $cartDto,
-        CartResource $cartResource
+        CartResource $cartResource,
     ): CartResource {
         if (
             in_array(
@@ -1332,7 +1332,7 @@ readonly class DiscountService implements DiscountServiceContract
                     $cartResource->shipping_price,
                     $this->calc($cartResource->shipping_price, $discount),
                     'minimal_shipping_price',
-                )
+                ),
             );
             //            $cartResource->shipping_price = round($cartResource->shipping_price, 2, PHP_ROUND_HALF_UP);
         }
@@ -1355,7 +1355,7 @@ readonly class DiscountService implements DiscountServiceContract
                 $cartResource->cart_total,
                 $this->calc($cartResource->cart_total, $discount),
                 'minimal_order_price',
-            )
+            ),
         );
 
         //        $cartResource->cart_total = round($cartResource->cart_total, 2, PHP_ROUND_HALF_UP);
@@ -1378,9 +1378,7 @@ readonly class DiscountService implements DiscountServiceContract
 
         /** @var CartItemDto $item */
         foreach ($cartDto->getItems() as $item) {
-            $cartItem = $cart->items->filter(
-                fn ($value, $key) => $value->cartitem_id === $item->getCartItemId()
-            )->first();
+            $cartItem = $cart->items->filter(fn ($value, $key) => $value->cartitem_id === $item->getCartItemId())->first();
 
             if ($cartItem === null) {
                 continue;
@@ -1421,9 +1419,7 @@ readonly class DiscountService implements DiscountServiceContract
 
         if ($cartItem->quantity > 1 && !$cartItem->price_discounted->isEqualTo($minimalProductPrice)) {
             $cart->items->first(
-                fn (
-                    $value
-                ): bool => $value->cartitem_id === $cartItem->cartitem_id && $value->quantity === $cartItem->quantity
+                fn ($value): bool => $value->cartitem_id === $cartItem->cartitem_id && $value->quantity === $cartItem->quantity,
             )->quantity = $cartItem->quantity - 1;
 
             $cartItem = new CartItemResponse(
@@ -1445,7 +1441,7 @@ readonly class DiscountService implements DiscountServiceContract
 
             //            $cart->cart_total -= ($price - $cartItem->price_discounted) * $cartItem->quantity;
             $cart->cart_total = $cart->cart_total->minus(
-                $price->minus($cartItem->price_discounted)->multipliedBy($cartItem->quantity)
+                $price->minus($cartItem->price_discounted)->multipliedBy($cartItem->quantity),
             );
         }
 
@@ -1487,7 +1483,7 @@ readonly class DiscountService implements DiscountServiceContract
         if (
             in_array(
                 $order->shipping_method_id,
-                $discount->shippingMethods->pluck('id')->toArray()
+                $discount->shippingMethods->pluck('id')->toArray(),
             ) === $discount->target_is_allow_list
         ) {
             $appliedDiscount = $this->calcAppliedDiscount(
@@ -1619,9 +1615,7 @@ readonly class DiscountService implements DiscountServiceContract
             } else {
                 /** @var CartItemDto $item */
                 foreach ($cart->getItems() as $item) {
-                    if ($discount->allProductsIds()->doesntContain(
-                        fn ($value): bool => $value === $item->getProductId()
-                    )) {
+                    if ($discount->allProductsIds()->doesntContain(fn ($value): bool => $value === $item->getProductId())) {
                         return true;
                     }
                 }
@@ -1631,18 +1625,18 @@ readonly class DiscountService implements DiscountServiceContract
         if ($discount->target_type === DiscountTargetType::SHIPPING_PRICE) {
             if ($discount->target_is_allow_list) {
                 return $discount->shippingMethods->contains(
-                    fn ($value): bool => $value->getKey() === $cart->getShippingMethodId()
+                    fn ($value): bool => $value->getKey() === $cart->getShippingMethodId(),
                 );
             }
 
             return $discount->shippingMethods->doesntContain(
-                fn ($value): bool => $value->getKey() === $cart->getShippingMethodId()
+                fn ($value): bool => $value->getKey() === $cart->getShippingMethodId(),
             );
         }
 
         return in_array(
             $discount->target_type,
-            [DiscountTargetType::ORDER_VALUE, DiscountTargetType::CHEAPEST_PRODUCT]
+            [DiscountTargetType::ORDER_VALUE, DiscountTargetType::CHEAPEST_PRODUCT],
         );
     }
 
@@ -1737,7 +1731,7 @@ readonly class DiscountService implements DiscountServiceContract
     private function checkIsProductInDiscountProductSets(
         string $productId,
         Collection $discountProductSets,
-        bool $allowList
+        bool $allowList,
     ): bool {
         /** @var Product $product */
         $product = Product::query()->where('id', $productId)->firstOrFail();
@@ -1763,7 +1757,7 @@ readonly class DiscountService implements DiscountServiceContract
     private function checkProductSetParentInDiscount(
         ProductSet $productSet,
         Collection $productSets,
-        bool $allowList
+        bool $allowList,
     ): bool {
         if ($productSet->parent) {
             if ($productSets->contains($productSet->parent->id)) {
@@ -1791,7 +1785,7 @@ readonly class DiscountService implements DiscountServiceContract
 
         if ($minValue !== null && $maxValue !== null) {
             return ($cartValue->isGreaterThanOrEqualTo($minValue->value) && $cartValue->isLessThanOrEqualTo(
-                $maxValue->value
+                $maxValue->value,
             )) === $conditionDto->isIsInRange();
         }
 
@@ -1843,7 +1837,7 @@ readonly class DiscountService implements DiscountServiceContract
             $result = $this->checkIsProductInDiscountProductSets(
                 $productId,
                 $productSets,
-                $conditionDto->isIsAllowList()
+                $conditionDto->isIsAllowList(),
             );
 
             if ($result === $conditionDto->isIsAllowList()) {

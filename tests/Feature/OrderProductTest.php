@@ -175,12 +175,20 @@ class OrderProductTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment([
                 'id' => $productPaid->getKey(),
-                'price' => '247.47',
+                'price' => [
+                    'currency' => Currency::DEFAULT->value,
+                    'gross' => '247.47',
+                    'net' => '247.47',
+                ],
                 'currency' => $this->currency,
             ])
             ->assertJsonMissing([
                 'id' => $productNoPaid->getKey(),
-                'price' => '300.00',
+                'price' => [
+                    'currency' => Currency::DEFAULT->value,
+                    'gross' => '300.00',
+                    'net' => '300.00',
+                ],
             ]);
     }
 
