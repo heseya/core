@@ -36,7 +36,6 @@ class OrganizationTest extends TestCase
 
         $this->organization = Organization::factory()->create([
             'address_id' => $this->address->getKey(),
-            'sales_channel_id' => SalesChannel::query()->value('id'),
         ]);
     }
 
@@ -186,6 +185,47 @@ class OrganizationTest extends TestCase
             ->assertOk();
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateSalesChannelNoPermission(string $user): void
+    {
+        $this->{$user}->givePermissionTo('organizations.edit');
+
+        $salesChannel = SalesChannel::factory()->create();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', '/organizations/id:' . $this->organization->getKey(), [
+                'sales_channel_id' => $salesChannel->getKey(),
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::PROHIBITED,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateSalesChannel(string $user): void
+    {
+        $this->{$user}->givePermissionTo(['organizations.edit', 'organizations.verify']);
+
+        $salesChannel = SalesChannel::factory()->create();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', '/organizations/id:' . $this->organization->getKey(), [
+                'sales_channel_id' => $salesChannel->getKey(),
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $salesChannel->getKey(),
+                'name' => $salesChannel->name,
+            ]);
+    }
+
     public function testRemoveUnauthorized(): void
     {
         $this
@@ -308,6 +348,8 @@ class OrganizationTest extends TestCase
     {
         $this->{$user}->givePermissionTo('organizations.verify');
 
+        $salesChannelId = SalesChannel::query()->value('id');
+
         $this->organization->update([
             'status' => OrganizationStatus::UNVERIFIED->value,
         ]);
@@ -323,11 +365,54 @@ class OrganizationTest extends TestCase
             ->assertJsonFragment([
                 'id' => $this->organization->getKey(),
                 'status' => OrganizationStatus::VERIFIED->value,
+            ])->assertJsonFragment([
+                'id' => $salesChannelId,
             ]);
 
         $this->assertDatabaseHas('organizations', [
             'id' => $this->organization->getKey(),
             'status' => OrganizationStatus::VERIFIED->value,
+            'sales_channel_id' => $salesChannelId,
+        ]);
+
+        Notification::assertSentTo([$this->organization], OrganizationAccepted::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testAcceptOrganizationWithSalesChannel(string $user): void
+    {
+        $this->{$user}->givePermissionTo('organizations.verify');
+
+        $salesChannel = SalesChannel::factory()->create();
+
+        $this->organization->update([
+            'status' => OrganizationStatus::UNVERIFIED->value,
+        ]);
+
+        Notification::fake();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/organizations/id:' . $this->organization->getKey() . '/accept', [
+                'redirect_url' => 'http://localhost',
+                'sales_channel_id' => $salesChannel->getKey(),
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $this->organization->getKey(),
+                'status' => OrganizationStatus::VERIFIED->value,
+            ])
+            ->assertJsonFragment([
+                'id' => $salesChannel->getKey(),
+                'name' => $salesChannel->name,
+            ]);
+
+        $this->assertDatabaseHas('organizations', [
+            'id' => $this->organization->getKey(),
+            'status' => OrganizationStatus::VERIFIED->value,
+            'sales_channel_id' => $salesChannel->getKey(),
         ]);
 
         Notification::assertSentTo([$this->organization], OrganizationAccepted::class);

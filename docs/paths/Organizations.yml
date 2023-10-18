@@ -71,6 +71,8 @@ OrganizationsParams:
       - Organizations
     security:
       - BearerAuth: [ organizations.edit ]
+    requestBody:
+      $ref: './../requests/Organizations.yml#/OrganizationUpdate'
     parameters:
       - name: id
         in: path
@@ -78,8 +80,6 @@ OrganizationsParams:
         schema:
           type: string
           format: uuid
-    requestBody:
-      $ref: './../requests/Organizations.yml#/OrganizationUpdate'
     responses:
       201:
         description: Created
