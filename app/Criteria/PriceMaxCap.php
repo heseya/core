@@ -22,7 +22,7 @@ class PriceMaxCap extends Criterion
             fn (Builder $query) => $query
                 ->where('value', '<=', $value->getMinorAmount())
                 ->where('currency', $value->getCurrency()->getCurrencyCode())
-                ->where('price_type', ProductPriceType::PRICE_MAX->value)
+                ->where('price_type', ProductPriceType::PRICE_MAX->value),
         );
     }
 }

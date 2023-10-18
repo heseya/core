@@ -64,13 +64,13 @@ class ProductResource extends Resource
     {
         $sets = Gate::denies('product_sets.show_hidden')
             ? $this->resource->sets->filter(
-                fn (ProductSet $set) => $set->public === true && $set->public_parent === true
+                fn (ProductSet $set) => $set->public === true && $set->public_parent === true,
             )
             : $this->resource->sets;
 
         $relatedSets = Gate::denies('product_sets.show_hidden')
             ? $this->resource->relatedSets->filter(
-                fn (ProductSet $set) => $set->public === true && $set->public_parent === true
+                fn (ProductSet $set) => $set->public === true && $set->public_parent === true,
             )
             : $this->resource->relatedSets;
 

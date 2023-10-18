@@ -114,7 +114,11 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '95.00']); // 100 - 100 * 15% + 10 (delivery)
+            ->assertJsonFragment(['summary' => [
+                'currency' => Currency::DEFAULT->value,
+                'gross' => '95.00',
+                'net' => '95.00',
+            ]]); // 100 - 100 * 15% + 10 (delivery)
 
         $order = Order::query()->find($response->getData()->data->id)->first();
 
@@ -481,7 +485,11 @@ class DiscountOrderTest extends TestCase
         $response
             ->assertValid()
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '185.50']); // 90 (first product) + 85,5 (second product) + 10 (delivery)
+            ->assertJsonFragment(['summary' => [
+                'currency' => Currency::DEFAULT->value,
+                'gross' => '185.50',
+                'net' => '185.50',
+            ],]); // 90 (first product) + 85,5 (second product) + 10 (delivery)
 
         $order = Order::query()->find($response->getData()->data->id);
 
@@ -667,7 +675,11 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '7275.38']);
+            ->assertJsonFragment(['summary' => [
+                'currency' => Currency::DEFAULT->value,
+                'gross' => '7275.38',
+                'net' => '7275.38',
+            ]]);
 
         $orderId = $response->getData()->data->id;
 
@@ -726,7 +738,11 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '34.00']); // 3 * (10 - 2) + 10 (delivery)
+            ->assertJsonFragment(['summary' => [
+                'currency' => Currency::DEFAULT->value,
+                'gross' => '34.00',
+                'net' => '34.00',
+            ]]); // 3 * (10 - 2) + 10 (delivery)
     }
 
     /**
@@ -780,7 +796,11 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '110.00']); // (10 (price) - 20 (discount)) + 100 + 10 (delivery)
+            ->assertJsonFragment(['summary' => [
+                'currency' => Currency::DEFAULT->value,
+                'gross' => '110.00',
+                'net' => '110.00',
+            ],]); // (10 (price) - 20 (discount)) + 100 + 10 (delivery)
     }
 
     /**
@@ -840,7 +860,11 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '20.00']); // (10 + 20 - 20) + 10 (delivery)
+            ->assertJsonFragment(['summary' => [
+                'currency' => Currency::DEFAULT->value,
+                'gross' => '20.00',
+                'net' => '20.00',
+            ],]); // (10 + 20 - 20) + 10 (delivery)
     }
 
     /**
@@ -901,7 +925,11 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '70.00']); // 3 * (30 - 10) + 10 (delivery)
+            ->assertJsonFragment(['summary' => [
+                'currency' => Currency::DEFAULT->value,
+                'gross' => '70.00',
+                'net' => '70.00',
+            ]]); // 3 * (30 - 10) + 10 (delivery)
     }
 
     /**
@@ -966,7 +994,11 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '110.00']); // (20 (schema price) - 30 (discount)) + 100 + 10 (delivery)
+            ->assertJsonFragment(['summary' => [
+                'currency' => Currency::DEFAULT->value,
+                'gross' => '110.00',
+                'net' => '110.00',
+            ]]); // (20 (schema price) - 30 (discount)) + 100 + 10 (delivery)
     }
 
     /**
@@ -1016,7 +1048,11 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '300.00']); // 100 * 2 + (100 - 10%) * 1 + 10 (delivery)
+            ->assertJsonFragment(['summary' => [
+                'currency' => Currency::DEFAULT->value,
+                'gross' => '300.00',
+                'net' => '300.00',
+            ]]); // 100 * 2 + (100 - 10%) * 1 + 10 (delivery)
 
         $order = Order::find($response->getData()->data->id);
 

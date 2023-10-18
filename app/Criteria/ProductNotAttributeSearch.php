@@ -22,7 +22,7 @@ class ProductNotAttributeSearch extends Criterion
                         $query
                             ->from('product_attribute_attribute_option')
                             ->whereRaw(
-                                '`product_attribute`.`id` = `product_attribute_attribute_option`.`product_attribute_id`'
+                                '`product_attribute`.`id` = `product_attribute_attribute_option`.`product_attribute_id`',
                             );
 
                         if (is_array($value)) {
@@ -30,7 +30,7 @@ class ProductNotAttributeSearch extends Criterion
                                 'attribute_options',
                                 'product_attribute_attribute_option.attribute_option_id',
                                 '=',
-                                'attribute_options.id'
+                                'attribute_options.id',
                             );
 
                             $key = is_numeric(Arr::first($value)) ?

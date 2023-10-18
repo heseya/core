@@ -32,11 +32,19 @@ class ConditionResource extends Resource
         }
 
         if (array_key_exists('min_values', $value)) {
-            $value['min_values'] = PriceResource::collection($this->resource->pricesMin);
+            if (empty($value['min_values'])) {
+                $value['min_values'] = null;
+            } else {
+                $value['min_values'] = PriceResource::collection($this->resource->pricesMin);
+            }
         }
 
         if (array_key_exists('max_values', $value)) {
-            $value['max_values'] = PriceResource::collection($this->resource->pricesMax);
+            if (empty($value['max_values'])) {
+                $value['max_values'] = null;
+            } else {
+                $value['max_values'] = PriceResource::collection($this->resource->pricesMax);
+            }
         }
 
         return [

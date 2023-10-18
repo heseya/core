@@ -14,8 +14,8 @@ class OrderProductResource extends Resource
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
             'quantity' => (float) $this->resource->quantity,
-            'price' => $this->resource->price->getAmount(),
-            'price_initial' => $this->resource->price_initial->getAmount(),
+            'price' => PriceResource::make($this->resource->price),
+            'price_initial' => PriceResource::make($this->resource->price_initial),
             'vat_rate' => $this->resource->vat_rate,
             'schemas' => OrderSchemaResource::collection($this->resource->schemas),
             'deposits' => DepositResource::collection($this->resource->deposits),
@@ -27,7 +27,7 @@ class OrderProductResource extends Resource
                 'sets' => ProductSetResource::collection(
                     Gate::denies('product_sets.show_hidden')
                     ? $this->resource->product->sets->where('public', true)
-                    : $this->resource->product->sets
+                    : $this->resource->product->sets,
                 ),
             ],
         ];

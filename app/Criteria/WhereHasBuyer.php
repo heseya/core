@@ -16,13 +16,13 @@ class WhereHasBuyer extends Criterion
             fn (Builder $query) => $query
                 ->whereDoesntHave(
                     'status',
-                    fn (Builder $query) => $query->where('cancel', '!=', false)
+                    fn (Builder $query) => $query->where('cancel', '!=', false),
                 )
                 ->whereHasMorph(
                     'buyer',
                     $this->key === 'user' ? [User::class] : [App::class],
                     fn (Builder $query) => $query->where('id', $this->value),
-                )
+                ),
         );
     }
 }

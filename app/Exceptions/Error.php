@@ -12,7 +12,7 @@ final class Error
         public int $code = 500,
         public string $key = 'INTERNAL_SERVER_ERROR',
         public array $errors = [],
-        public array $stack = []
+        public array $stack = [],
     ) {}
 
     /**

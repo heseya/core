@@ -1006,7 +1006,11 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'paid' => true,
-                'summary_paid' => $summaryPaid->getAmount(),
+                'summary_paid' => [
+                    'currency' => Currency::DEFAULT->value,
+                    'gross' => $summaryPaid->getAmount(),
+                    'net' => $summaryPaid->getAmount(),
+                ],
             ]);
 
         $this->assertQueryCountLessThan(39);
@@ -1526,7 +1530,11 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'paid' => false,
-                'summary_paid' => $summaryPaid->getAmount(),
+                'summary_paid' => [
+                    'currency' => Currency::DEFAULT->value,
+                    'gross' => $summaryPaid->getAmount(),
+                    'net' => $summaryPaid->getAmount(),
+                ],
             ]);
     }
 

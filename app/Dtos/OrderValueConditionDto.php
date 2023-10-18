@@ -22,14 +22,14 @@ class OrderValueConditionDto extends ConditionDto
             !array_key_exists('min_values', $array),
             !is_array($array['min_values']),
             empty($array['min_values']) => new Missing(),
-            default => array_map(fn (array|Price|PriceDto $min) => $min instanceof PriceDto ? $min : PriceDto::from($min), $array['min_values'])
+            default => array_map(fn (array|Price|PriceDto $min) => $min instanceof PriceDto ? $min : PriceDto::from($min), $array['min_values']),
         };
 
         $max_values = match (true) {
             !array_key_exists('max_values', $array),
             !is_array($array['max_values']),
             empty($array['max_values']) => new Missing(),
-            default => array_map(fn (array|Price|PriceDto $max) => $max instanceof PriceDto ? $max : PriceDto::from($max), $array['max_values'])
+            default => array_map(fn (array|Price|PriceDto $max) => $max instanceof PriceDto ? $max : PriceDto::from($max), $array['max_values']),
         };
 
         return new self(

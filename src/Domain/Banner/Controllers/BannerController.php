@@ -26,7 +26,7 @@ final class BannerController extends Controller
             ->with(['bannerMedia', 'bannerMedia.media', 'metadata', 'metadataPrivate']);
 
         return BannerResource::collection(
-            $query->paginate(Config::get('pagination.per_page'))
+            $query->paginate(Config::get('pagination.per_page')),
         );
     }
 

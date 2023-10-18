@@ -130,7 +130,7 @@ final readonly class ProductSetService
         Collection $children,
         string $parentId,
         ?string $parentSlug,
-        bool $publicParent
+        bool $publicParent,
     ): void {
         $children->each(
             function ($child, $order) use ($parentId, $parentSlug, $publicParent): void {
@@ -144,7 +144,7 @@ final readonly class ProductSetService
                     $child->children,
                     $child->getKey(),
                     $childSlug,
-                    $publicParent && $child->public
+                    $publicParent && $child->public,
                 );
 
                 $child->update([
@@ -367,7 +367,7 @@ final readonly class ProductSetService
     private function prepareSlug(
         bool|Optional $isOverridden,
         Optional|string|null $slugSuffix,
-        string $parentSlug
+        string $parentSlug,
     ): ?string {
         $slug = $slugSuffix instanceof Optional ? null : $slugSuffix;
         if (!$isOverridden instanceof Optional && !$isOverridden) {

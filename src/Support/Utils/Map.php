@@ -29,7 +29,7 @@ final readonly class Map
                     $key,
                     $value,
                     true,
-                    MetadataType::matchType($value)
+                    MetadataType::matchType($value),
                 );
             }
         }
@@ -40,7 +40,7 @@ final readonly class Map
                     $key,
                     $value,
                     false,
-                    MetadataType::matchType($value)
+                    MetadataType::matchType($value),
                 );
             }
         }
@@ -63,7 +63,7 @@ final readonly class Map
                 $return[] = new MetadataPersonalDto(
                     $key,
                     $value,
-                    MetadataType::matchType($value)
+                    MetadataType::matchType($value),
                 );
             }
         }
