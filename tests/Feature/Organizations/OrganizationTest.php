@@ -2,15 +2,28 @@
 
 namespace Tests\Feature\Organizations;
 
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\RoleType;
 use App\Enums\ValidationError;
 use App\Models\Address;
+use App\Models\Role;
+use App\Models\User;
+use App\Notifications\UserRegistered;
 use Domain\Organization\Enums\OrganizationStatus;
 use Domain\Organization\Models\Organization;
+use Domain\Organization\Models\OrganizationToken;
+use Domain\Organization\Notifications\OrganizationAccepted;
+use Domain\Organization\Notifications\OrganizationRejected;
 use Domain\SalesChannel\Models\SalesChannel;
+use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class OrganizationTest extends TestCase
 {
+    use WithFaker;
+
     private Organization $organization;
     private Address $address;
 
@@ -22,7 +35,6 @@ class OrganizationTest extends TestCase
 
         $this->organization = Organization::factory()->create([
             'address_id' => $this->address->getKey(),
-            'sales_channel_id' => SalesChannel::query()->value('id'),
         ]);
     }
 
@@ -236,5 +248,318 @@ class OrganizationTest extends TestCase
             'id' => $this->organization->getKey(),
             'name' => $this->organization->name,
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testRejectOrganization(string $user): void
+    {
+        $this->{$user}->givePermissionTo('organizations.verify');
+
+        $this->organization->update([
+            'status' => OrganizationStatus::UNVERIFIED->value,
+        ]);
+
+        Notification::fake();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/organizations/id:' . $this->organization->getKey() . '/reject')
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $this->organization->getKey(),
+                'status' => OrganizationStatus::REJECTED->value,
+            ]);
+
+        $this->assertDatabaseHas('organizations', [
+            'id' => $this->organization->getKey(),
+            'status' => OrganizationStatus::REJECTED->value,
+        ]);
+
+        Notification::assertSentTo([$this->organization], OrganizationRejected::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testRejectOrganizationAlreadyRejected(string $user): void
+    {
+        $this->{$user}->givePermissionTo('organizations.verify');
+
+        $this->organization->update([
+            'status' => OrganizationStatus::REJECTED->value,
+        ]);
+
+        Notification::fake();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/organizations/id:' . $this->organization->getKey() . '/reject')
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => Exceptions::CLIENT_ORGANIZATION_SAME_STATUS->name,
+                'message' => Exceptions::CLIENT_ORGANIZATION_SAME_STATUS->value,
+            ]);
+
+        $this->assertDatabaseHas('organizations', [
+            'id' => $this->organization->getKey(),
+            'status' => OrganizationStatus::REJECTED->value,
+        ]);
+
+        Notification::assertNotSentTo([$this->organization], OrganizationRejected::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testRejectVerifiedOrganization(string $user): void
+    {
+        $this->{$user}->givePermissionTo('organizations.verify');
+
+        $this->organization->update([
+            'status' => OrganizationStatus::VERIFIED->value,
+        ]);
+
+        Notification::fake();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/organizations/id:' . $this->organization->getKey() . '/reject')
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => Exceptions::CLIENT_ORGANIZATION_VERIFIED->name,
+                'message' => Exceptions::CLIENT_ORGANIZATION_VERIFIED->value,
+            ]);
+
+        $this->assertDatabaseHas('organizations', [
+            'id' => $this->organization->getKey(),
+            'status' => OrganizationStatus::VERIFIED->value,
+        ]);
+
+        Notification::assertNotSentTo([$this->organization], OrganizationRejected::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testAcceptOrganization(string $user): void
+    {
+        $this->{$user}->givePermissionTo('organizations.verify');
+
+        $salesChannelId = SalesChannel::query()->value('id');
+
+        $this->organization->update([
+            'status' => OrganizationStatus::UNVERIFIED->value,
+        ]);
+
+        Notification::fake();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/organizations/id:' . $this->organization->getKey() . '/accept', [
+                'redirect_url' => 'http://localhost',
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $this->organization->getKey(),
+                'status' => OrganizationStatus::VERIFIED->value,
+            ])->assertJsonFragment([
+                'id' => $salesChannelId,
+            ]);
+
+        $this->assertDatabaseHas('organizations', [
+            'id' => $this->organization->getKey(),
+            'status' => OrganizationStatus::VERIFIED->value,
+            'sales_channel_id' => $salesChannelId,
+        ]);
+
+        Notification::assertSentTo([$this->organization], OrganizationAccepted::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testAcceptOrganizationWithSalesChannel(string $user): void
+    {
+        $this->{$user}->givePermissionTo('organizations.verify');
+
+        $salesChannel = SalesChannel::factory()->create();
+
+        $this->organization->update([
+            'status' => OrganizationStatus::UNVERIFIED->value,
+        ]);
+
+        Notification::fake();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/organizations/id:' . $this->organization->getKey() . '/accept', [
+                'redirect_url' => 'http://localhost',
+                'sales_channel_id' => $salesChannel->getKey(),
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $this->organization->getKey(),
+                'status' => OrganizationStatus::VERIFIED->value,
+            ])
+            ->assertJsonFragment([
+                'id' => $salesChannel->getKey(),
+                'name' => $salesChannel->name,
+            ]);
+
+        $this->assertDatabaseHas('organizations', [
+            'id' => $this->organization->getKey(),
+            'status' => OrganizationStatus::VERIFIED->value,
+            'sales_channel_id' => $salesChannel->getKey(),
+        ]);
+
+        Notification::assertSentTo([$this->organization], OrganizationAccepted::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testAcceptOrganizationAlreadyAccepted(string $user): void
+    {
+        $this->{$user}->givePermissionTo('organizations.verify');
+
+        $this->organization->update([
+            'status' => OrganizationStatus::VERIFIED->value,
+        ]);
+
+        Notification::fake();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/organizations/id:' . $this->organization->getKey() . '/accept', [
+                'redirect_url' => 'http://localhost',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => Exceptions::CLIENT_ORGANIZATION_SAME_STATUS->name,
+                'message' => Exceptions::CLIENT_ORGANIZATION_SAME_STATUS->value,
+            ]);
+
+        $this->assertDatabaseHas('organizations', [
+            'id' => $this->organization->getKey(),
+            'status' => OrganizationStatus::VERIFIED->value,
+        ]);
+
+        Notification::assertNotSentTo([$this->organization], OrganizationAccepted::class);
+    }
+
+    public function testRegisterInvalidOrganizationToken(): void
+    {
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.register');
+
+        $email = $this->faker->email();
+        $token = Str::random(128);
+
+        $this->organization->tokens()->save(new OrganizationToken([
+            'token' => $token,
+            'email' => $email,
+            'expires_at' => now()->addHour(),
+        ]));
+
+        $this->json('POST', '/register', [
+            'name' => 'Registered user',
+            'email' => $email,
+            'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+            'organization_token' => 'invalid_token',
+        ])->assertNotFound();
+    }
+
+    public function testRegisterExpiredOrganizationToken(): void
+    {
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.register');
+
+        $email = $this->faker->email();
+        $token = Str::random(128);
+
+        $this->organization->tokens()->save(new OrganizationToken([
+            'token' => $token,
+            'email' => $email,
+            'expires_at' => now()->subMinute(),
+        ]));
+
+        $this->json('POST', '/register', [
+            'name' => 'Registered user',
+            'email' => $email,
+            'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+            'organization_token' => $token,
+        ])->assertUnprocessable();
+    }
+
+    public function testRegisterWithOrganizationToken(): void
+    {
+        Notification::fake();
+
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.register');
+
+        $email = $this->faker->email();
+        $token = Str::random(128);
+
+        $this->organization->tokens()->save(new OrganizationToken([
+            'token' => $token,
+            'email' => $email,
+            'expires_at' => now()->addHour(),
+        ]));
+
+        $this->json('POST', '/register', [
+            'name' => 'Registered user',
+            'email' => $email,
+            'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+            'organization_token' => $token,
+        ])->assertCreated();
+
+        /** @var User $user */
+        $user = User::query()->where('email', '=', $email)->first();
+
+        $this->assertDatabaseHas('organization_user', [
+            'organization_id' => $this->organization->getKey(),
+            'user_id' => $user->getKey(),
+        ]);
+
+        $this->assertDatabaseMissing('organization_tokens', [
+            'organization_id' => $this->organization->getKey(),
+            'email' => $email,
+            'token' => $token,
+        ]);
+
+        Notification::assertSentTo(
+            [$user],
+            UserRegistered::class,
+        );
+    }
+
+    public function testRegisterWithOrganizationTokenInvalidEmail(): void
+    {
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.register');
+
+        $email = $this->faker->email();
+        $token = Str::random(128);
+
+        $this->organization->tokens()->save(new OrganizationToken([
+            'token' => $token,
+            'email' => $email,
+            'expires_at' => now()->addHour(),
+        ]));
+
+        $this->json('POST', '/register', [
+            'name' => 'Registered user',
+            'email' => 'invalid_email@test.com',
+            'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+            'organization_token' => $token,
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::ORGANIZATIONTOKENEMAIL->value,
+                'message' => Exceptions::CLIENT_ORGANIZATION_TOKEN_EMAIL->value,
+            ]);
     }
 }

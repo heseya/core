@@ -46,3 +46,16 @@ OrganizationUpdate:
             type: string
             format: UUID
             description: "Prohibited if user doesn't have the organizations.verify permission"
+
+OrganizationAccept:
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          redirect_url:
+            type: string
+            example: 'http://localhost/organization/verify'
+          sales_channel_id:
+            type: string
+            format: UUID

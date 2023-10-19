@@ -105,3 +105,53 @@ OrganizationsParams:
     responses:
       204:
         description: Success
+
+OrganizationsAccept:
+  post:
+    tags:
+      - Organizations
+    security:
+      - BearerAuth: [ organizations.edit ]
+    requestBody:
+      $ref: './../requests/Organizations.yml#/OrganizationAccept'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Organizations.yml#/OrganizationView'
+              type: object
+
+OrganizationsReject:
+  post:
+    tags:
+      - Organizations
+    security:
+      - BearerAuth: [ organizations.edit ]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Organizations.yml#/OrganizationView'
+              type: object

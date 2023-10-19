@@ -134,6 +134,10 @@ enum Exceptions: string
     case CLIENT_PROVIDER_MERGE_TOKEN_MISMATCH = 'Provider merge token is for an account with different email address';
     case PUBLISHING_TRANSLATION_EXCEPTION = "Model doesn't have all required translations to be published";
 
+    case CLIENT_ORGANIZATION_VERIFIED = 'Verified status cannot be revoked';
+    case CLIENT_ORGANIZATION_SAME_STATUS = 'Organization already has given status';
+    case CLIENT_ORGANIZATION_TOKEN_EMAIL = 'The email provided does not match the organization';
+
     // Aliases
     public const CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT = self::CLIENT_NO_ACCESS;
     public const CLIENT_PROVIDER_HAS_NO_CONFIG = self::CLIENT_PROVIDER_IS_NOT_ACTIVE;

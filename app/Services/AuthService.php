@@ -33,6 +33,7 @@ use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UserLoginAttemptServiceContract;
 use App\Services\Contracts\UserServiceContract;
 use Domain\Consent\Services\ConsentService;
+use Domain\Organization\Services\OrganizationService;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -55,6 +56,7 @@ class AuthService implements AuthServiceContract
         protected UserLoginAttemptServiceContract $userLoginAttemptService,
         protected UserServiceContract $userService,
         protected MetadataServiceContract $metadataService,
+        protected OrganizationService $organizationService,
     ) {}
 
     public function login(string $email, string $password, ?string $ip, ?string $userAgent, ?string $code): array
@@ -336,6 +338,10 @@ class AuthService implements AuthServiceContract
 
         if (!($dto->metadata_personal instanceof Optional)) {
             $this->metadataService->sync($user, $dto->metadata_personal);
+        }
+
+        if (!($dto->organization_token instanceof Optional)) {
+            $this->organizationService->attachUser($user, $dto->organization_token);
         }
 
         $user->save();

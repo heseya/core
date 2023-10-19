@@ -13,11 +13,16 @@ use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 
 final class Organization extends Model
 {
     use HasCriteria;
     use HasFactory;
+    use Notifiable;
 
     protected $fillable = [
         'name',
@@ -70,5 +75,26 @@ final class Organization extends Model
     public function salesChannel(): BelongsTo
     {
         return $this->belongsTo(SalesChannel::class);
+    }
+
+    public function preferredLocale(): string
+    {
+        $country = Str::of($this->address?->country ?? '')
+            ->limit(2, '')
+            ->lower()
+            ->toString();
+
+        return match ($country) {
+            'pl', 'en' => $country,
+            default => Config::get('app.locale'),
+        };
+    }
+
+    /**
+     * @return HasMany<OrganizationToken>
+     */
+    public function tokens(): HasMany
+    {
+        return $this->hasMany(OrganizationToken::class);
     }
 }

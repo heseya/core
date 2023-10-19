@@ -4,7 +4,9 @@ namespace App\DTO\Auth;
 
 use App\Rules\ConsentsExists;
 use App\Rules\IsRegistrationRole;
+use App\Rules\OrganizationTokenEmail;
 use App\Rules\RequiredConsents;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule as ValidationRule;
 use Illuminate\Validation\Rules\Password;
 use Spatie\LaravelData\Attributes\Validation\BeforeOrEqual;
@@ -26,6 +28,7 @@ class RegisterDto extends Data
         public readonly Optional|string $phone,
         public array|Optional $metadata_personal,
 
+        public readonly Optional|string $organization_token,
         public readonly array $consents = [],
         public readonly array $roles = [],
     ) {
@@ -40,11 +43,15 @@ class RegisterDto extends Data
                 'email',
                 'max:255',
                 ValidationRule::unique('users')->whereNull('deleted_at'),
+                new OrganizationTokenEmail(),
             ],
             'password' => ['required', 'string', Password::defaults()],
             'consents' => ['array', new RequiredConsents()],
             'consents.*' => ['boolean', new ConsentsExists()],
             'roles.*' => [new IsRegistrationRole()],
+            'organization_token' => [
+                ValidationRule::exists('organization_tokens', 'token')->where(fn ($query) => $query->where('expires_at', '>', Carbon::now())),
+            ],
         ];
     }
 }

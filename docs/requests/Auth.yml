@@ -60,6 +60,8 @@ Register:
               02b97693-857c-4fb9-9999-47400ac5fbef:
                 type: boolean
             type: object
+          organization_token:
+            type: string
 
 UpdateProfile:
   content:
