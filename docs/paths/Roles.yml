@@ -48,6 +48,11 @@ Roles:
           items:
             type: string
             format: uuid
+      - name: is_joinable
+        in: query
+        description: 'Is the user able to self-assign the role'
+        schema:
+          type: boolean
     responses:
       200:
         description: Success

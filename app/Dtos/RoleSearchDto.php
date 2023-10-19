@@ -16,6 +16,7 @@ class RoleSearchDto implements DtoContract, InstantiateFromRequest
         private ?array $metadata,
         private ?array $metadata_private,
         private ?array $ids,
+        private ?bool $is_joinable,
     ) {}
 
     public function toArray(): array
@@ -50,6 +51,10 @@ class RoleSearchDto implements DtoContract, InstantiateFromRequest
             $data['ids'] = $this->getIds();
         }
 
+        if ($this->getIsJoinable() !== null) {
+            $data['is_joinable'] = $this->getIsJoinable();
+        }
+
         return $data;
     }
 
@@ -63,6 +68,7 @@ class RoleSearchDto implements DtoContract, InstantiateFromRequest
             $request->input('metadata', null),
             $request->input('metadata_private', null),
             $request->input('ids', null),
+            $request->input('is_joinable', null),
         );
     }
 
@@ -99,5 +105,10 @@ class RoleSearchDto implements DtoContract, InstantiateFromRequest
     public function getIds(): ?array
     {
         return $this->ids;
+    }
+
+    public function getIsJoinable(): ?bool
+    {
+        return $this->is_joinable;
     }
 }

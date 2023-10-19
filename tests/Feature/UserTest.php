@@ -927,39 +927,39 @@ class UserTest extends TestCase
             ->assertCreated()
             ->assertJsonPath('data.email', $data['email'])
             ->assertJsonPath('data.name', $data['name'])
-            ->assertJsonFragment([
-                [
-                    'id' => $role1->getKey(),
-                    'name' => $role1->name,
-                    'description' => $role1->description,
-                    'is_registration_role' => false,
-                    'assignable' => true,
-                    'deletable' => true,
-                    'users_count' => null,
-                    'metadata' => [],
-                ],
-            ])->assertJsonFragment([
-                [
-                    'id' => $role2->getKey(),
-                    'name' => $role2->name,
-                    'description' => $role2->description,
-                    'is_registration_role' => false,
-                    'assignable' => true,
-                    'deletable' => true,
-                    'users_count' => null,
-                    'metadata' => [],
-                ],
-            ])->assertJsonFragment([
-                [
-                    'id' => $role3->getKey(),
-                    'name' => $role3->name,
-                    'description' => $role3->description,
-                    'is_registration_role' => false,
-                    'assignable' => true,
-                    'deletable' => true,
-                    'users_count' => null,
-                    'metadata' => [],
-                ],
+            ->assertJsonFragment([[
+                'id' => $role1->getKey(),
+                'name' => $role1->name,
+                'description' => $role1->description,
+                'is_registration_role' => false,
+                'assignable' => true,
+                'deletable' => true,
+                'users_count' => null,
+                'metadata' => [],
+                'is_joinable' => false,
+            ],
+            ])->assertJsonFragment([[
+                'id' => $role2->getKey(),
+                'name' => $role2->name,
+                'description' => $role2->description,
+                'is_registration_role' => false,
+                'assignable' => true,
+                'deletable' => true,
+                'users_count' => null,
+                'metadata' => [],
+                'is_joinable' => false,
+            ],
+            ])->assertJsonFragment([[
+                'id' => $role3->getKey(),
+                'name' => $role3->name,
+                'description' => $role3->description,
+                'is_registration_role' => false,
+                'assignable' => true,
+                'deletable' => true,
+                'users_count' => null,
+                'metadata' => [],
+                'is_joinable' => false,
+            ],
             ])->assertJsonPath('data.permissions', $permissions);
 
         /** @var User $user */
@@ -1290,39 +1290,39 @@ class UserTest extends TestCase
         );
         $response
             ->assertOk()
-            ->assertJsonFragment([
-                [
-                    'id' => $role1->getKey(),
-                    'name' => $role1->name,
-                    'description' => $role1->description,
-                    'is_registration_role' => false,
-                    'assignable' => true,
-                    'deletable' => true,
-                    'users_count' => null,
-                    'metadata' => [],
-                ],
-            ])->assertJsonFragment([
-                [
-                    'id' => $role2->getKey(),
-                    'name' => $role2->name,
-                    'description' => $role2->description,
-                    'is_registration_role' => false,
-                    'assignable' => true,
-                    'deletable' => true,
-                    'users_count' => null,
-                    'metadata' => [],
-                ],
-            ])->assertJsonFragment([
-                [
-                    'id' => $role3->getKey(),
-                    'name' => $role3->name,
-                    'description' => $role3->description,
-                    'is_registration_role' => false,
-                    'assignable' => true,
-                    'deletable' => true,
-                    'users_count' => null,
-                    'metadata' => [],
-                ],
+            ->assertJsonFragment([[
+                'id' => $role1->getKey(),
+                'name' => $role1->name,
+                'description' => $role1->description,
+                'is_registration_role' => false,
+                'assignable' => true,
+                'deletable' => true,
+                'users_count' => null,
+                'metadata' => [],
+                'is_joinable' => false,
+            ],
+            ])->assertJsonFragment([[
+                'id' => $role2->getKey(),
+                'name' => $role2->name,
+                'description' => $role2->description,
+                'is_registration_role' => false,
+                'assignable' => true,
+                'deletable' => true,
+                'users_count' => null,
+                'metadata' => [],
+                'is_joinable' => false,
+            ],
+            ])->assertJsonFragment([[
+                'id' => $role3->getKey(),
+                'name' => $role3->name,
+                'description' => $role3->description,
+                'is_registration_role' => false,
+                'assignable' => true,
+                'deletable' => true,
+                'users_count' => null,
+                'metadata' => [],
+                'is_joinable' => false,
+            ],
             ])->assertJsonPath('data.permissions', $permissions);
 
         $otherUser->refresh();

@@ -9,10 +9,9 @@ use App\Events\SuccessfulLoginAttempt;
 use App\Jobs\ProcessFailedLoginAttempts;
 use App\Models\User;
 use App\Models\UserLoginAttempt;
-use Domain\User\Services\Contracts\UserLoginAttemptServiceContract;
 use Illuminate\Support\Facades\Request;
 
-final class UserLoginAttemptService implements UserLoginAttemptServiceContract
+final class UserLoginAttemptService
 {
     public function store(bool $logged = false): void
     {

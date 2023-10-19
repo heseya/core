@@ -586,6 +586,26 @@ BillingAddressesParams:
     security:
       - BearerAuth: [ ]
 
+SelfUpdateRoles:
+  patch:
+    tags:
+      - Auth
+    summary: 'edit your own roles'
+    requestBody:
+      $ref: './../requests/Auth.yml#/SelfUpdateRoles'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Users.yml#/UserView'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
 VerifyEmail:
   put:
     tags:

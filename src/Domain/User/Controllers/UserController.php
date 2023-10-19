@@ -12,8 +12,8 @@ use Domain\User\Dtos\UserCreateDto;
 use Domain\User\Dtos\UserIndexDto;
 use Domain\User\Dtos\UserSoftDeleteDto;
 use Domain\User\Dtos\UserUpdateDto;
-use Domain\User\Services\Contracts\AuthServiceContract;
-use Domain\User\Services\Contracts\UserServiceContract;
+use Domain\User\Services\AuthService;
+use Domain\User\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
@@ -21,8 +21,8 @@ use Illuminate\Support\Facades\Response;
 final class UserController extends Controller
 {
     public function __construct(
-        private readonly UserServiceContract $userService,
-        private readonly AuthServiceContract $authService,
+        private readonly UserService $userService,
+        private readonly AuthService $authService,
     ) {}
 
     public function index(UserIndexDto $dto): JsonResource

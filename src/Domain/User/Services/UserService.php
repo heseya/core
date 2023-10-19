@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\User\Services;
 
+use App\Dtos\SelfUpdateRoles;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
 use App\Events\UserCreated;
@@ -19,7 +20,6 @@ use App\Services\Contracts\MetadataServiceContract;
 use Domain\User\Dtos\UserCreateDto;
 use Domain\User\Dtos\UserIndexDto;
 use Domain\User\Dtos\UserUpdateDto;
-use Domain\User\Services\Contracts\UserServiceContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -30,12 +30,15 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Spatie\LaravelData\Optional;
 
-final readonly class UserService implements UserServiceContract
+final readonly class UserService
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
     ) {}
 
+    /**
+     * @return LengthAwarePaginator<User>
+     */
     public function index(UserIndexDto $dto, ?string $sort): LengthAwarePaginator
     {
         return User::searchByCriteria($dto->toArray())
@@ -274,5 +277,28 @@ final readonly class UserService implements UserServiceContract
                 UserDeleted::dispatch($user);
             }
         });
+    }
+
+    public function selfUpdateRoles(User $user, SelfUpdateRoles $dto): User
+    {
+        $roleModels = collect();
+        if (!($dto->roles instanceof Optional)) {
+            /** @var Collection<int, Role> $roleModels */
+            $roleModels = Role::query()
+                ->whereIn('id', $dto->roles)
+                ->where('is_joinable', '=', true)
+                ->get();
+
+            if ($roleModels->count() < count($dto->roles)) {
+                throw new ClientException(Exceptions::CLIENT_JOINING_NON_JOINABLE_ROLE);
+            }
+        }
+
+        /** @phpstan-ignore-next-line */
+        $roleModels = $roleModels->merge($user->roles->filter(fn (Role $role): bool => !$role->is_joinable));
+
+        $user->syncRoles($roleModels);
+
+        return $user;
     }
 }

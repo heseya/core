@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\User\Services;
 
 use App\DTO\Auth\RegisterDto;
+use App\Dtos\SelfUpdateRoles;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
 use App\Enums\TFAType;
@@ -39,9 +40,6 @@ use Domain\User\Dtos\TFAPasswordDto;
 use Domain\User\Dtos\TFASetupDto;
 use Domain\User\Dtos\TokenRefreshDto;
 use Domain\User\Dtos\VerifyEmailDto;
-use Domain\User\Services\Contracts\AuthServiceContract;
-use Domain\User\Services\Contracts\UserLoginAttemptServiceContract;
-use Domain\User\Services\Contracts\UserServiceContract;
 use Exception;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Carbon;
@@ -56,18 +54,20 @@ use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use Propaganistas\LaravelPhone\PhoneNumber;
 use Spatie\LaravelData\Optional;
 
-final class AuthService implements AuthServiceContract
+final class AuthService
 {
     public function __construct(
         protected TokenServiceContract $tokenService,
         protected OneTimeSecurityCodeContract $oneTimeSecurityCodeService,
         protected ConsentService $consentService,
-        protected UserLoginAttemptServiceContract $userLoginAttemptService,
-        protected UserServiceContract $userService,
+        protected UserLoginAttemptService $userLoginAttemptService,
+        protected UserService $userService,
         protected MetadataServiceContract $metadataService,
     ) {}
 
     /**
+     * @return array<string, bool|string>
+     *
      * @throws ClientException
      */
     public function login(LoginDto $dto): array
@@ -92,6 +92,9 @@ final class AuthService implements AuthServiceContract
         return $this->createTokens($token, $uuid);
     }
 
+    /**
+     * @return array<string, bool|string>
+     */
     public function loginWithUser(Authenticatable $user, ?string $ip, ?string $userAgent): array
     {
         $uuid = Str::uuid()->toString();
@@ -112,6 +115,9 @@ final class AuthService implements AuthServiceContract
         return $this->createTokens($token, $uuid);
     }
 
+    /**
+     * @return array<string, string|null>
+     */
     public function refresh(TokenRefreshDto $dto): array
     {
         if (!$this->tokenService->validate($dto->refresh_token)) {
@@ -256,6 +262,8 @@ final class AuthService implements AuthServiceContract
     }
 
     /**
+     * @return array<string, string|int>
+     *
      * @throws ClientException
      */
     public function setupTFA(TFASetupDto $dto): array
@@ -277,6 +285,8 @@ final class AuthService implements AuthServiceContract
     }
 
     /**
+     * @return array<string>
+     *
      * @throws ClientException
      */
     public function confirmTFA(TFAConfirmDto $dto): array
@@ -300,6 +310,8 @@ final class AuthService implements AuthServiceContract
     }
 
     /**
+     * @return array<string>
+     *
      * @throws ClientException
      */
     public function generateRecoveryCodes(TFAPasswordDto $dto): array
@@ -407,6 +419,18 @@ final class AuthService implements AuthServiceContract
         $this->checkCredentials($user, $password);
 
         $this->userService->destroy($user);
+    }
+
+    public function selfUpdateRoles(SelfUpdateRoles $dto): User
+    {
+        if ($this->isAppAuthenticated()) {
+            throw new ClientException(Exceptions::CLIENT_APPS_NO_ACCESS);
+        }
+
+        /** @var User $user */
+        $user = Auth::user();
+
+        return $this->userService->selfUpdateRoles($user, $dto);
     }
 
     /**
