@@ -8,9 +8,9 @@ use App\Dtos\ProductsReorderDto;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductResource;
 use Domain\ProductSet\Dtos\ProductSetCreateDto;
+use Domain\ProductSet\Dtos\ProductSetIndexDto;
 use Domain\ProductSet\Dtos\ProductSetUpdateDto;
 use Domain\ProductSet\Requests\ProductSetAttachRequest;
-use Domain\ProductSet\Requests\ProductSetIndexRequest;
 use Domain\ProductSet\Requests\ProductSetProductReorderRequest;
 use Domain\ProductSet\Requests\ProductSetReorderRequest;
 use Domain\ProductSet\Resources\ProductSetParentResource;
@@ -26,12 +26,9 @@ final class ProductSetController extends Controller
         private readonly ProductSetService $productSetService,
     ) {}
 
-    public function index(ProductSetIndexRequest $request): JsonResource
+    public function index(ProductSetIndexDto $dto): JsonResource
     {
-        $sets = $this->productSetService->searchAll(
-            $request->validated(),
-            $request->has('root') && $request->boolean('root'),
-        );
+        $sets = $this->productSetService->searchAll($dto);
 
         return ProductSetResource::collection($sets);
     }

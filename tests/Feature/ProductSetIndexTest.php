@@ -348,6 +348,144 @@ class ProductSetIndexTest extends TestCase
             ->assertJsonFragment(['id' => $set->getKey()]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexDepth(string $user): void
+    {
+        $this->{$user}->givePermissionTo('product_sets.show');
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/product-sets', ['root' => true, 'depth' => 1])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(
+                [
+                    'id' => $this->set->getKey(),
+                    'name' => $this->set->name,
+                    'slug' => $this->set->slug,
+                    'slug_suffix' => $this->set->slug_suffix,
+                    'slug_override' => false,
+                    'public' => $this->set->public,
+                    'visible' => $this->set->public && $this->set->public_parent,
+                    'parent_id' => $this->set->parent_id,
+                    'children_ids' => [
+                        $this->childSet->getKey(),
+                    ],
+                ],
+            )
+            ->assertJsonFragment([
+                'id' => $this->childSet->getKey(),
+                'name' => $this->childSet->name,
+                'slug' => $this->childSet->slug,
+                'slug_suffix' => $this->childSet->slug_suffix,
+                'slug_override' => true,
+                'public' => $this->childSet->public,
+                'visible' => $this->childSet->public && $this->childSet->public_parent,
+                'parent_id' => $this->childSet->parent_id,
+                'children_ids' => [],
+            ])->assertJsonMissing([
+                'id' => $this->subChildSet->getKey(),
+                'name' => $this->subChildSet->name,
+                'slug' => $this->subChildSet->slug,
+                'slug_suffix' => $this->subChildSet->slug_suffix,
+                'parent_id' => $this->subChildSet->parent_id,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexDepthPublic(string $user): void
+    {
+        $this->{$user}->givePermissionTo('product_sets.show');
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/product-sets', ['root' => true, 'depth' => 2])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(
+                [
+                    'id' => $this->set->getKey(),
+                    'name' => $this->set->name,
+                    'slug' => $this->set->slug,
+                    'slug_suffix' => $this->set->slug_suffix,
+                    'slug_override' => false,
+                    'public' => $this->set->public,
+                    'visible' => $this->set->public && $this->set->public_parent,
+                    'parent_id' => $this->set->parent_id,
+                    'children_ids' => [
+                        $this->childSet->getKey(),
+                    ],
+                ],
+            )
+            ->assertJsonFragment([
+                'id' => $this->childSet->getKey(),
+                'name' => $this->childSet->name,
+                'slug' => $this->childSet->slug,
+                'slug_suffix' => $this->childSet->slug_suffix,
+                'slug_override' => true,
+                'public' => $this->childSet->public,
+                'visible' => $this->childSet->public && $this->childSet->public_parent,
+                'parent_id' => $this->childSet->parent_id,
+                'children_ids' => [],
+            ])->assertJsonMissing([
+                'id' => $this->subChildSet->getKey(),
+                'name' => $this->subChildSet->name,
+                'slug' => $this->subChildSet->slug,
+                'slug_suffix' => $this->subChildSet->slug_suffix,
+                'parent_id' => $this->subChildSet->parent_id,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexDepthWithHidden(string $user): void
+    {
+        $this->{$user}->givePermissionTo(['product_sets.show', 'product_sets.show_hidden']);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/product-sets', ['root' => true, 'depth' => 2])
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment(
+                [
+                    'id' => $this->set->getKey(),
+                    'name' => $this->set->name,
+                    'slug' => $this->set->slug,
+                    'slug_suffix' => $this->set->slug_suffix,
+                    'slug_override' => false,
+                    'public' => $this->set->public,
+                    'visible' => $this->set->public && $this->set->public_parent,
+                    'parent_id' => $this->set->parent_id,
+                    'children_ids' => [
+                        $this->childSet->getKey(),
+                    ],
+                ],
+            )
+            ->assertJsonFragment([
+                'id' => $this->childSet->getKey(),
+                'name' => $this->childSet->name,
+                'slug' => $this->childSet->slug,
+                'slug_suffix' => $this->childSet->slug_suffix,
+                'slug_override' => true,
+                'public' => $this->childSet->public,
+                'visible' => $this->childSet->public && $this->childSet->public_parent,
+                'parent_id' => $this->childSet->parent_id,
+                'children_ids' => [],
+            ])->assertJsonFragment([
+                'id' => $this->subChildSet->getKey(),
+                'name' => $this->subChildSet->name,
+                'slug' => $this->subChildSet->slug,
+                'slug_suffix' => $this->subChildSet->slug_suffix,
+                'parent_id' => $this->subChildSet->parent_id,
+            ]);
+    }
+
     private function prepareProductSets(): Collection
     {
         ProductSet::query()->delete();

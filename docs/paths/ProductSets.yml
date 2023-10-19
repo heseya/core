@@ -17,6 +17,7 @@ ProductSets:
         required: false
         schema:
           type: boolean
+        deprecated: true
       - name: search
         in: query
         description: 'Full text search'
@@ -83,6 +84,13 @@ ProductSets:
         required: false
         schema:
           type: boolean
+      - name: depth
+        in: query
+        required: false
+        schema:
+          type: int
+          example: 1
+        description: "Indicates how many levels of nested children of the set return"
     responses:
       200:
         description: Success
