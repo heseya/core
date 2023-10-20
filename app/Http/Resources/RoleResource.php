@@ -20,6 +20,7 @@ class RoleResource extends Resource
             'assignable' => $this->resource->isAssignable(),
             'deletable' => $this->resource->type->is(RoleType::REGULAR),
             'users_count' => $this->resource->users_count,
+            'is_joinable' => $this->resource->is_joinable,
         ], $this->metadataResource('roles.show_metadata_private'));
     }
 

@@ -17,6 +17,7 @@ class RoleIndexRequest extends FormRequest
             'metadata_private' => ['nullable', 'array'],
             'ids' => ['array'],
             'ids.*' => ['uuid'],
+            'is_joinable' => ['boolean'],
         ];
     }
 }

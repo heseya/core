@@ -7,6 +7,7 @@ use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\RoleType;
 use App\Enums\ShippingType;
+use App\Enums\ValidationError;
 use App\Models\ConditionGroup;
 use App\Models\Deposit;
 use App\Models\Discount;
@@ -513,6 +514,34 @@ class CartTest extends TestCase
 
         $response
             ->assertUnprocessable();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessProductNotPublic(string $user): void
+    {
+        $this->{$user}->givePermissionTo('cart.verify');
+
+        $product = Product::factory()->create([
+            'public' => false,
+        ]);
+
+        $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::PRODUCTPUBLIC,
+            ]);
     }
 
     /**

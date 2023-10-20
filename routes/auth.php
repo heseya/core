@@ -13,6 +13,8 @@ Route::prefix('auth')->group(function (): void {
     Route::get('profile', [AuthController::class, 'profile']);
     Route::patch('profile', [AuthController::class, 'updateProfile'])
         ->middleware('can:authenticated');
+    Route::patch('profile/roles', [AuthController::class, 'selfUpdateRoles'])
+        ->middleware('can:authenticated');
     Route::patch('profile/metadata-personal', [MetadataController::class, 'updateOrCreateLoggedMyPersonal'])
         ->middleware('can:authenticated');
     Route::prefix('profile')

@@ -11,13 +11,12 @@ use App\Models\Address;
 use App\Models\SavedAddress;
 use Domain\User\Dtos\SavedAddressStoreDto;
 use Domain\User\Dtos\SavedAddressUpdateDto;
-use Domain\User\Services\Contracts\SavedAddressServiceContract;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Spatie\LaravelData\Optional;
 
-final class SavedAddressService implements SavedAddressServiceContract
+final class SavedAddressService
 {
     public function storeAddress(SavedAddressStoreDto $dto, SavedAddressType $type): ?SavedAddress
     {

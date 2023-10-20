@@ -75,21 +75,12 @@ use Domain\Setting\Services\Contracts\SettingsServiceContract;
 use Domain\Setting\Services\SettingsService;
 use Domain\ShippingMethod\Services\Contracts\ShippingMethodServiceContract;
 use Domain\ShippingMethod\Services\ShippingMethodService;
-use Domain\User\Services\AuthService;
-use Domain\User\Services\Contracts\AuthServiceContract;
-use Domain\User\Services\Contracts\SavedAddressServiceContract;
-use Domain\User\Services\Contracts\UserLoginAttemptServiceContract;
-use Domain\User\Services\Contracts\UserServiceContract;
-use Domain\User\Services\SavedAddressService;
-use Domain\User\Services\UserLoginAttemptService;
-use Domain\User\Services\UserService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
     private const CONTRACTS = [
-        AuthServiceContract::class => AuthService::class,
         AnalyticsServiceContract::class => AnalyticsService::class,
         AppServiceContract::class => AppService::class,
         DiscountServiceContract::class => DiscountService::class,
@@ -102,7 +93,6 @@ class AppServiceProvider extends ServiceProvider
         SchemaCrudServiceContract::class => SchemaCrudService::class,
         SettingsServiceContract::class => SettingsService::class,
         ShippingMethodServiceContract::class => ShippingMethodService::class,
-        UserServiceContract::class => UserService::class,
         RoleServiceContract::class => RoleService::class,
         PermissionServiceContract::class => PermissionService::class,
         TokenServiceContract::class => TokenService::class,
@@ -112,12 +102,10 @@ class AppServiceProvider extends ServiceProvider
         ItemServiceContract::class => ItemService::class,
         OneTimeSecurityCodeContract::class => OneTimeSecurityCodeService::class,
         TranslationServiceContract::class => TranslationService::class,
-        SavedAddressServiceContract::class => SavedAddressService::class,
         AvailabilityServiceContract::class => AvailabilityService::class,
         DocumentServiceContract::class => DocumentService::class,
         MetadataServiceContract::class => MetadataService::class,
         SortServiceContract::class => SortService::class,
-        UserLoginAttemptServiceContract::class => UserLoginAttemptService::class,
         StatusServiceContract::class => StatusService::class,
         DepositServiceContract::class => DepositService::class,
         ShippingTimeDateServiceContract::class => ShippingTimeDateService::class,

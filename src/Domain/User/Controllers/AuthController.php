@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\User\Controllers;
 
 use App\DTO\Auth\RegisterDto;
+use App\Dtos\SelfUpdateRoles;
 use App\Enums\SavedAddressType;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AppWithSavedAddressesResource;
@@ -32,8 +33,8 @@ use Domain\User\Dtos\TFAPasswordDto;
 use Domain\User\Dtos\TFASetupDto;
 use Domain\User\Dtos\TokenRefreshDto;
 use Domain\User\Dtos\VerifyEmailDto;
-use Domain\User\Services\Contracts\AuthServiceContract;
-use Domain\User\Services\Contracts\SavedAddressServiceContract;
+use Domain\User\Services\AuthService;
+use Domain\User\Services\SavedAddressService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -45,9 +46,9 @@ use Illuminate\Support\Facades\Response;
 final class AuthController extends Controller
 {
     public function __construct(
-        private readonly AuthServiceContract $authService,
+        private readonly AuthService $authService,
         private readonly AppServiceContract $appService,
-        private readonly SavedAddressServiceContract $savedAddersService,
+        private readonly SavedAddressService $savedAddersService,
     ) {}
 
     public function login(LoginDto $dto): JsonResource
@@ -225,5 +226,10 @@ final class AuthController extends Controller
         $this->authService->verifyEmail(${$dto});
 
         return Response::noContent();
+    }
+
+    public function selfUpdateRoles(SelfUpdateRoles $dto): JsonResource
+    {
+        return UserResource::make($this->authService->selfUpdateRoles($dto));
     }
 }
