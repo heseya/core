@@ -38,7 +38,6 @@ use Domain\Price\PriceRepository;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductSet\ProductSet;
-use Domain\Seo\Models\SeoMetadata;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Domain\Tag\Models\Tag;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -143,35 +142,32 @@ class PerformanceTest extends TestCase
 
         DB::flushQueryLog();
 
-        $this->actingAs($this->user)
-            ->json('GET', '/products/id:' . $product->getKey())
-            ->assertOk();
+        $response = $this->actingAs($this->user)
+            ->json('GET', '/products/id:' . $product->getKey());
+        $response->assertOk();
+        $response->assertJsonCount(0, 'data.attributes');
+        $this->assertQueryCountLessThan(53);
 
-        $this->assertQueryCountLessThan(73);
-
-        $this->actingAs($this->user)
-            ->json('GET', '/products/id:' . $product->getKey() . '?' . Arr::query(['attribute_slug' => $attribute1->slug]))
-            ->assertOk();
-
-        $this->assertQueryCountLessThan(67);
+        $response =  $this->actingAs($this->user)
+            ->json('GET', '/products/id:' . $product->getKey() . '?' . Arr::query(['attribute_slug' => $attribute1->slug]));
+        $response->assertOk();
+        $response->assertJsonCount(1, 'data.attributes');
+        $this->assertQueryCountLessThan(58);
 
         $this->actingAs($this->user)
             ->json('GET', '/products/?' . Arr::query(['name' => $product->name]))
             ->assertOk();
-
-        $this->assertQueryCountLessThan(23);
+        $this->assertQueryCountLessThan(15);
 
         $this->actingAs($this->user)
             ->json('GET', '/products/?' . Arr::query(['attribute_slug' => $attribute1->slug]))
             ->assertOk();
-
-        $this->assertQueryCountLessThan(35);
+        $this->assertQueryCountLessThan(25);
 
         $this->actingAs($this->user)
             ->json('GET', '/products/?' . Arr::query(['name' => $product->name, 'full' => true]))
             ->assertOk();
-
-        $this->assertQueryCountLessThan(59);
+        $this->assertQueryCountLessThan(49);
     }
 
     public function testIndexPerformanceSchema500(): void

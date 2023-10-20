@@ -10,6 +10,7 @@ use Domain\Language\Enums\LangFallbackType;
 use Domain\Language\Language;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
 
@@ -113,7 +114,7 @@ class LanguageFallbackTest extends TestCase
             'name' => 'Nazwa',
             'description_html' => 'HTML opis',
             'description_short' => 'Krótki opis',
-            'public' =>true,
+            'public' => true,
         ]);
 
         $response = $this->actingAs($this->$user)->json('GET', 'products', [
@@ -666,25 +667,25 @@ class LanguageFallbackTest extends TestCase
             App::setLocale($this->language->getKey());
             $published = $default ? [] : ['published' => []];
             $product = Product::factory()->create([
-                    'name' => 'Nazwa',
-                    'description_html' => 'HTML opis',
-                    'description_short' => 'Krótki opis',
-                    'public' => true,
-                ] + $published);
+                'name' => 'Nazwa',
+                'description_html' => 'HTML opis',
+                'description_short' => 'Krótki opis',
+                'public' => true,
+            ] + $published);
         }
 
         if ($another === true || $another === false) {
             $published = $another ? [] : ['published' => []];
             $data = [
-                    'name' => 'Name',
-                    'description_html' => 'HTML Beschreibung',
-                    'description_short' => 'Kurze Beschreibung',
-                    'public' => true,
-                ] + $published;
+                'name' => 'Name',
+                'description_html' => 'HTML Beschreibung',
+                'description_short' => 'Kurze Beschreibung',
+                'public' => true,
+            ] + $published;
             if ($product !== null) {
                 $product->setLocale($de->getKey())->update($data + [
-                        'published' => array_merge($product->published, [$de->getKey()]),
-                    ]);
+                    'published' => array_merge($product->published, [$de->getKey()]),
+                ]);
             } else {
                 App::setLocale($de->getKey());
                 $product = Product::factory()->create($data);
@@ -805,7 +806,7 @@ class LanguageFallbackTest extends TestCase
 
         $this
             ->actingAs($this->{$user})
-            ->json('GET', '/products/id:' . $product->getKey(), headers: ['Accept-Language' => 'es'])
+            ->json('GET', '/products/id:' . $product->getKey(), ['attribute_slug' => $attribute->slug], ['Accept-Language' => 'es'])
             ->assertOk()
             ->assertJsonFragment([
                 'id' => $attributeOption->getKey(),

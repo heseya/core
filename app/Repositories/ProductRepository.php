@@ -19,6 +19,7 @@ use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
@@ -33,6 +34,7 @@ class ProductRepository implements ProductRepositoryContract
 
     public function search(ProductSearchDto $dto): LengthAwarePaginator
     {
+        /** @var Builder<Product> $query */
         $query = Product::searchByCriteria($dto->except('sort')->toArray() + $this->getPublishedLanguageFilter('products'))
             ->with([
                 'media',
@@ -48,22 +50,7 @@ class ProductRepository implements ProductRepositoryContract
                 'metadataPrivate',
             ]);
 
-        if (request()->isNotFilled('attribute_slug')) {
-            $query->with(
-                [
-                    'productAttributes',
-                    'productAttributes.options',
-                    'productAttributes.options.metadata',
-                    'productAttributes.options.metadataPrivate',
-                    'productAttributes.attribute',
-                    'productAttributes.attribute.options',
-                    'productAttributes.attribute.options.metadata',
-                    'productAttributes.attribute.options.metadataPrivate',
-                ],
-            );
-        }
-
-        if (!$dto->full instanceof Optional && $dto->full) {
+        if (is_bool($dto->full) && $dto->full) {
             $query->with([
                 'items',
                 'schemas',
@@ -110,19 +97,21 @@ class ProductRepository implements ProductRepositoryContract
                 'seo.media.metadata',
                 'seo.media.metadataPrivate',
             ]);
-
-            if (request()->isNotFilled('attribute_slug')) {
-                $query->with(
-                    [
-                        'productAttributes.attribute.metadata',
-                        'productAttributes.attribute.metadataPrivate',
-                    ],
-                );
-            }
         }
 
         if (Gate::denies('products.show_hidden')) {
             $query->where('products.public', true);
+        }
+
+        $loadAttributes = collect();
+        if (is_array($dto->attribute)) {
+            $loadAttributes->push(...array_keys($dto->attribute));
+        }
+        if (request()->filled('attribute_slug')) {
+            $loadAttributes->push(request()->string('attribute_slug'));
+        }
+        if ($loadAttributes->isNotEmpty()) {
+            $query->with(['productAttributes' => fn (HasMany $subquery) => $subquery->slug($loadAttributes->toArray())]); // @phpstan-ignore-line
         }
 
         if (is_string($dto->price_sort_direction)) {

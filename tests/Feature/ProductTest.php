@@ -188,37 +188,8 @@ class ProductTest extends TestCase
             'cover' => null,
         ];
 
-        $expected_attribute_short = [
-            'attributes' => [
-                [
-                    'name' => $attribute->name,
-                    'slug' => $attribute->slug,
-                    'selected_options' => [
-                        [
-                            'id' => $option->getKey(),
-                            'name' => $option->name,
-                            'index' => $option->index,
-                            'value_number' => $option->value_number,
-                            'value_date' => $option->value_date,
-                            'attribute_id' => $attribute->getKey(),
-                        ],
-                    ],
-                ],
-            ],
-        ];
-
-        $expected_attribute = $expected_attribute_short;
-        $expected_attribute['attributes'][0] += [
-            'id' => $attribute->getKey(),
-            'slug' => $attribute->slug,
-            'description' => $attribute->description,
-            'type' => $attribute->type->value,
-            'global' => $attribute->global,
-            'sortable' => $attribute->sortable,
-        ];
-
         // Expected full response
-        $this->expected = array_merge($this->expected_short, $expected_attribute, [
+        $this->expected = array_merge($this->expected_short, [
             'description_html' => $this->product->description_html,
             'description_short' => $this->product->description_short,
             'gallery' => [],
@@ -443,7 +414,7 @@ class ProductTest extends TestCase
 
         $this
             ->actingAs($this->{$user})
-            ->getJson('/products/' . $this->product->slug)
+            ->json('GET', '/products/' . $this->product->slug, ['attribute_slug' => $this->product->attributes->first()->slug])
             ->assertOk()
             ->assertJson(['data' => $this->expected])
             ->assertJsonFragment([
@@ -757,7 +728,7 @@ class ProductTest extends TestCase
 
         $this
             ->actingAs($this->{$user})
-            ->getJson('/products/' . $product->slug)
+            ->json('GET', '/products/' . $product->slug, ['attribute_slug' => $attribute->slug])
             ->assertOk()
             ->assertJsonFragment([
                 'id' => $attribute->getKey(),

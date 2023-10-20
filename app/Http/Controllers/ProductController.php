@@ -63,32 +63,63 @@ final class ProductController extends Controller
             throw new NotFoundHttpException();
         }
 
-        $load = [
+        $product->loadMissing([
             'schemas',
+            'schemas.metadata',
+            'schemas.metadataPrivate',
             'schemas.options',
+            'schemas.options.items',
+            'schemas.options.metadata',
+            'schemas.options.metadataPrivate',
+            'schemas.options.prices',
             'schemas.options.schema',
             'schemas.prices',
-            'schemas.options.prices',
+            'schemas.usedSchemas',
             'sales',
             'sales.amounts',
-        ];
-
-        if ($request->isNotFilled('attribute_slug')) {
-            $load = array_merge($load, [
-                'productAttributes',
-                'productAttributes.options',
-                'productAttributes.options.metadata',
-                'productAttributes.options.metadataPrivate',
-                'productAttributes.attribute',
-                'productAttributes.attribute.metadata',
-                'productAttributes.attribute.metadataPrivate',
-                'productAttributes.attribute.options',
-                'productAttributes.attribute.options.metadata',
-                'productAttributes.attribute.options.metadataPrivate',
-            ]);
-        }
-
-        $product->load($load);
+            'sales.metadata',
+            'sales.metadataPrivate',
+            'sales.orders',
+            'attachments',
+            'attachments.media',
+            'attachments.media.metadata',
+            'attachments.media.metadataPrivate',
+            'items',
+            'media',
+            'media.metadata',
+            'media.metadataPrivate',
+            'metadata',
+            'metadataPrivate',
+            'pages',
+            'pages.metadata',
+            'pages.metadataPrivate',
+            'pricesBase',
+            'pricesMax',
+            'pricesMaxInitial',
+            'pricesMin',
+            'pricesMinInitial',
+            'publishedTags',
+            'relatedSets',
+            'relatedSets.childrenPublic',
+            'relatedSets.media',
+            'relatedSets.media.metadata',
+            'relatedSets.media.metadataPrivate',
+            'relatedSets.metadata',
+            'relatedSets.metadataPrivate',
+            'relatedSets.parent',
+            'seo',
+            'seo.media',
+            'seo.media.metadata',
+            'seo.media.metadataPrivate',
+            'sets',
+            'sets.childrenPublic',
+            'sets.media',
+            'sets.media.metadataPrivate',
+            'sets.media.metadata',
+            'sets.metadata',
+            'sets.metadataPrivate',
+            'sets.parent',
+        ]);
 
         return ProductResource::make($product);
     }
