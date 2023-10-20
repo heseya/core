@@ -18,7 +18,6 @@ use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductSet\ProductSet;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -112,20 +111,5 @@ final class Attribute extends Model implements Translatable
     public function productSets(): BelongsToMany
     {
         return $this->belongsToMany(ProductSet::class);
-    }
-
-    /**
-     * @param Builder<Attribute> $query
-     */
-    public function scopeSlug(Builder $query, string $slug): void
-    {
-        $query->where('slug', '=', $slug)
-            ->with([
-                'options',
-                'options.metadata',
-                'options.metadataPrivate',
-                'metadata',
-                'metadataPrivate',
-            ]);
     }
 }

@@ -55,19 +55,8 @@ class ProductAttribute extends Pivot
         return $this->belongsTo(Attribute::class);
     }
 
-    public function scopeSlug(Builder $query, string $slug): void
+    public function scopeSlug(Builder $query, array|string $slug): void
     {
-        $query->whereHas('attribute', fn (Builder $subquery) => $subquery->where('slug', $slug))
-            ->with([
-                'options',
-                'options.metadata',
-                'options.metadataPrivate',
-                'attribute',
-                'attribute.metadata',
-                'attribute.metadataPrivate',
-                'attribute.options',
-                'attribute.options.metadata',
-                'attribute.options.metadataPrivate',
-            ]);
+        $query->whereHas('attribute', fn (Builder $subquery) => $subquery->whereIn('slug', (array) $slug));
     }
 }
