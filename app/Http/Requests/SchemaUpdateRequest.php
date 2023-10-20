@@ -33,7 +33,7 @@ class SchemaUpdateRequest extends FormRequest
             'min' => ['nullable', 'numeric', 'min:-100000', 'max:100000'],
             'max' => ['nullable', 'numeric', 'min:-100000', 'max:100000'],
             'step' => ['nullable', 'numeric', 'min:0', 'max:100000'],
-            'default' => ['nullable'],
+            'default' => ['nullable', "required_if:required,true"],
             'pattern' => ['nullable', 'string', 'max:255'],
             'validation' => ['nullable', 'string', 'max:255'],
 

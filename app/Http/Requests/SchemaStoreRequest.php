@@ -6,6 +6,7 @@ use App\Enums\SchemaType;
 use App\Rules\EnumKey;
 use App\Rules\Price;
 use App\Rules\PricesEveryCurrency;
+use App\Rules\SchemaRequire;
 use App\Rules\Translations;
 use App\Traits\MetadataRules;
 use Brick\Math\BigDecimal;
@@ -36,12 +37,12 @@ final class SchemaStoreRequest extends FormRequest
                 'prices.*' => [new Price(['value'], min: BigDecimal::zero())],
 
                 'hidden' => ['nullable', 'boolean', 'declined_if:required,yes,on,1,true'],
-                'required' => ['nullable', 'boolean'],
+                'required' => ['nullable', 'boolean', new SchemaRequire($this->input('options'))],
 
                 'min' => ['nullable', 'numeric', 'min:-100000', 'max:100000'],
                 'max' => ['nullable', 'numeric', 'min:-100000', 'max:100000'],
                 'step' => ['nullable', 'numeric', 'min:0', 'max:100000'],
-                'default' => ['nullable'],
+                'default' => ['nullable', "required_if:required,true"],
                 'pattern' => ['nullable', 'string', 'max:255'],
                 'validation' => ['nullable', 'string', 'max:255'],
 
