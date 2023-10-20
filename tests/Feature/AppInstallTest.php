@@ -8,6 +8,7 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\UrlServiceContract;
+use Domain\App\Models\AppWidget;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\App as FacadesApp;
@@ -86,10 +87,11 @@ class AppInstallTest extends TestCase
                 'required_permissions' => [
                     'products.show',
                 ],
-                'internal_permissions' => [[
-                    'name' => 'product_layout',
-                    'description' => 'Setup layouts of products page',
-                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'product_layout',
+                        'description' => 'Setup layouts of products page',
+                    ],
                 ],
             ]),
             $this->url . '/install' => Http::response([], 404),
@@ -319,6 +321,64 @@ class AppInstallTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testInstallWithWidgets($user): void
+    {
+        $this->{$user}->givePermissionTo([
+            'apps.install',
+            'products.show',
+            'app_widgets.add',
+        ]);
+
+        $uninstallToken = Str::random(128);
+
+        Http::fake([
+            $this->url => Http::response([
+                'name' => 'App name',
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
+                'description' => 'Cool description',
+                'microfrontend_url' => 'https://front.example.com',
+                'icon' => 'https://picsum.photos/200',
+                'licence_required' => false,
+                'required_permissions' => [
+                    'products.show',
+                    'app_widgets.add',
+                ],
+                'internal_permissions' => [],
+                'widgets' => [
+                    AppWidget::factory()->make()->toArray() + [
+                        'permissions' => [
+                            'products.show',
+                        ]
+                    ],
+                    AppWidget::factory()->make()->toArray() + [
+                        'permissions' => [
+                            'products.show',
+                        ]
+                    ]
+                ],
+            ]),
+            $this->url . '/install' => Http::response([
+                'uninstall_token' => $uninstallToken,
+            ]),
+        ]);
+
+        $response = $this->actingAs($this->{$user})->postJson('/apps', [
+            'url' => $this->url,
+            'allowed_permissions' => [
+                'products.show',
+                'app_widgets.add',
+            ],
+            'public_app_permissions' => [],
+        ]);
+
+        $response->assertCreated();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testInstallWithMetadata($user): void
     {
         $this->{$user}->givePermissionTo([
@@ -508,10 +568,11 @@ class AppInstallTest extends TestCase
                 'optional_permissions' => [
                     'products.add',
                 ],
-                'internal_permissions' => [[
-                    'name' => 'product_layout',
-                    'description' => 'Setup layouts of products page',
-                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'product_layout',
+                        'description' => 'Setup layouts of products page',
+                    ],
                 ],
             ]),
             $this->url . '/install' => Http::response([
@@ -772,10 +833,11 @@ class AppInstallTest extends TestCase
                 'required_permissions' => [
                     'nonexistent.permission',
                 ],
-                'internal_permissions' => [[
-                    'name' => 'product_layout',
-                    'description' => 'Setup layouts of products page',
-                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'product_layout',
+                        'description' => 'Setup layouts of products page',
+                    ],
                 ],
             ]),
         ]);
@@ -815,10 +877,11 @@ class AppInstallTest extends TestCase
                 'required_permissions' => [
                     'products.show',
                 ],
-                'internal_permissions' => [[
-                    'name' => 'product_layout',
-                    'description' => 'Setup layouts of products page',
-                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'product_layout',
+                        'description' => 'Setup layouts of products page',
+                    ],
                 ],
             ]),
         ]);
@@ -861,10 +924,11 @@ class AppInstallTest extends TestCase
                 'optional_permissions' => [
                     'products.add',
                 ],
-                'internal_permissions' => [[
-                    'name' => 'product_layout',
-                    'description' => 'Setup layouts of products page',
-                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'product_layout',
+                        'description' => 'Setup layouts of products page',
+                    ],
                 ],
             ]),
         ]);
@@ -940,10 +1004,11 @@ class AppInstallTest extends TestCase
                 'required_permissions' => [
                     'products.show',
                 ],
-                'internal_permissions' => [[
-                    'name' => 'product_layout',
-                    'description' => 'Setup layouts of products page',
-                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'product_layout',
+                        'description' => 'Setup layouts of products page',
+                    ],
                 ],
             ]),
             $this->url . '/install' => new ConnectionException('Test', 7),

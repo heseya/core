@@ -1,0 +1,53 @@
+AppWidgetCreate:
+  content:
+    application/json:
+      schema:
+        required:
+          - url
+          - name
+          - section
+        type: object
+        properties:
+          url:
+            description: "url of the widget"
+            type: string
+            example: "https://app.heseya.com"
+          name:
+            description: "Name of the widget"
+            type: string
+            example: "Super Widget"
+          section:
+            description: "Section to which Widget belongs"
+            type: string
+            example: "Section"
+          permissions:
+            description: "Permission names"
+            type: array
+            items:
+              type: string
+              example: roles.show_details
+
+AppWidgetUpdate:
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          url:
+            description: "url of the widget"
+            type: string
+            example: "https://app.heseya.com"
+          name:
+            description: "Name of the widget"
+            type: string
+            example: "Super Widget"
+          section:
+            description: "Section to which Widget belongs"
+            type: string
+            example: "Section"
+          permissions:
+            description: "Permission names"
+            type: array
+            items:
+              type: string
+              example: roles.show_details

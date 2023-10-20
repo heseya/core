@@ -10,6 +10,7 @@ use App\Services\Contracts\UrlServiceContract;
 use App\Traits\HasMetadata;
 use App\Traits\HasWebHooks;
 use App\Traits\HasWishlist;
+use Domain\App\Models\AppWidget;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Auth\Authenticatable;
@@ -121,5 +122,10 @@ class App extends Model implements AuthenticatableContract, AuthorizableContract
     protected function hasPermissionViaRole(Permission $permission): bool
     {
         return false;
+    }
+
+    public function widgets(): HasMany
+    {
+        return $this->hasMany(AppWidget::class);
     }
 }

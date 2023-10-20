@@ -18,6 +18,9 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 
+/**
+ * @mixin IdeHelperOrganization
+ */
 final class Organization extends Model
 {
     use HasCriteria;
