@@ -15,6 +15,10 @@ use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UrlServiceContract;
+use Domain\App\Dtos\AppConfigDto;
+use Domain\App\Dtos\AppWidgetCreateDto;
+use Domain\App\Dtos\InternalPermissionDto;
+use Domain\App\Services\AppWidgetService;
 use Heseya\Dto\Missing;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
@@ -24,6 +28,8 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Spatie\LaravelData\DataCollection;
+use Spatie\LaravelData\Optional;
 use Throwable;
 
 class AppService implements AppServiceContract
@@ -32,6 +38,7 @@ class AppService implements AppServiceContract
         protected TokenServiceContract $tokenService,
         protected UrlServiceContract $urlService,
         protected MetadataServiceContract $metadataService,
+        protected AppWidgetService $appWidgetService,
     ) {}
 
     public function install(AppInstallDto $dto): App
@@ -39,12 +46,18 @@ class AppService implements AppServiceContract
         $allPermissions = Permission::all()->map(fn (Permission $perm) => $perm->name);
         $permissions = Collection::make($dto->getAllowedPermissions());
 
-        if ($permissions->diff($allPermissions)->isNotEmpty()) {
-            throw new ClientException(Exceptions::CLIENT_ASSIGN_INVALID_PERMISSIONS);
+        $clientInvalidPermissions = $permissions->diff($allPermissions);
+        if ($clientInvalidPermissions->isNotEmpty()) {
+            throw new ClientException(Exceptions::CLIENT_ASSIGN_INVALID_PERMISSIONS, null, false, ['permissions' => $clientInvalidPermissions->toArray()]);
         }
 
-        if (!Auth::user()?->hasAllPermissions($permissions->toArray())) {
-            throw new ClientException(Exceptions::CLIENT_ADD_APP_WITH_PERMISSIONS_USER_DONT_HAVE);
+        /** @var User|App|null $user */
+        $user = Auth::user();
+
+        if (empty($user) || !$user->hasAllPermissions($permissions->toArray())) {
+            $userPermissions = $user?->getAllPermissions()->pluck('name') ?? [];
+
+            throw new ClientException(Exceptions::CLIENT_ADD_APP_WITH_PERMISSIONS_USER_DONT_HAVE, null, false, ['permissions' => $permissions->diff($userPermissions)]);
         }
 
         try {
@@ -58,33 +71,31 @@ class AppService implements AppServiceContract
             throw new ClientException(Exceptions::CLIENT_APP_INFO_RESPONDED_WITH_INVALID_CODE, null, false, ['code' => $response->status(), 'body' => $response->body()]);
         }
 
-        if (!$this->isAppRootValid($response)) {
-            throw new ClientException(Exceptions::CLIENT_APP_RESPONDED_WITH_INVALID_INFO, null, false, ["Body: {$response->body()}"]);
+        try {
+            $appConfig = AppConfigDto::from($response->json());
+        } catch (Throwable $th) {
+            throw new ClientException(Exceptions::CLIENT_APP_RESPONDED_WITH_INVALID_INFO, $th, false, ["Body: {$response->body()}"]);
         }
 
-        /** @var array $appConfig */
-        $appConfig = $response->json();
-        /** @var Collection<int, mixed> $requiredPermissions */
-        $requiredPermissions = $appConfig['required_permissions'];
+        $requiredPerm = Collection::make($appConfig->required_permissions);
+        $advertisedPerm = $requiredPerm->concat(is_array($appConfig->optional_permissions) ? $appConfig->optional_permissions : [])->unique();
 
-        $requiredPerm = Collection::make($requiredPermissions);
-        $optionalPerm = array_key_exists('optional_permissions', $appConfig) ?
-            $appConfig['optional_permissions'] : [];
-        $advertisedPerm = $requiredPerm->concat($optionalPerm)->unique();
-
-        if ($advertisedPerm->diff($allPermissions)->isNotEmpty()) {
-            throw new ClientException(Exceptions::CLIENT_APP_WANTS_INVALID_PERMISSION);
+        $appInvalidPermissions = $advertisedPerm->diff($allPermissions);
+        if ($appInvalidPermissions->isNotEmpty()) {
+            throw new ClientException(Exceptions::CLIENT_APP_WANTS_INVALID_PERMISSION, null, false, ['permissions' => $appInvalidPermissions->toArray()]);
         }
 
-        if ($permissions->intersect($requiredPerm)->count() < $requiredPerm->count()) {
-            throw new ClientException(Exceptions::CLIENT_ADD_APP_WITHOUT_REQUIRED_PERMISSIONS);
+        $missingPermissions = $requiredPerm->diff($permissions->intersect($requiredPerm));
+        if ($missingPermissions->isNotEmpty()) {
+            throw new ClientException(Exceptions::CLIENT_ADD_APP_WITHOUT_REQUIRED_PERMISSIONS, null, false, ['permissions' => $missingPermissions->toArray()]);
         }
 
-        if ($permissions->intersect($advertisedPerm)->count() < $permissions->count()) {
-            throw new ClientException(Exceptions::CLIENT_ADD_PERMISSION_APP_DOESNT_WANT);
+        $unnecessaryPermissions = $permissions->diff($permissions->intersect($advertisedPerm));
+        if ($unnecessaryPermissions->isNotEmpty()) {
+            throw new ClientException(Exceptions::CLIENT_ADD_PERMISSION_APP_DOESNT_WANT, null, false, ['permissions' => $unnecessaryPermissions->toArray()]);
         }
 
-        $name = $dto->getName() ?? $appConfig['name'];
+        $name = $dto->getName() ?? $appConfig->name;
         $slug = Str::slug($name);
 
         $app = App::query()->create([
@@ -92,14 +103,16 @@ class AppService implements AppServiceContract
             'name' => $name,
             'slug' => $slug,
             'licence_key' => $dto->getLicenceKey(),
-        ] + Collection::make($appConfig)->only([
+        ] + $appConfig->only(
             'microfrontend_url',
             'version',
             'api_version',
             'description',
             'icon',
             'author',
-        ])->toArray());
+        )->toArray());
+
+        assert($app instanceof App);
 
         $app->givePermissionTo(
             $permissions->concat(['auth.check_identity']),
@@ -151,22 +164,19 @@ class AppService implements AppServiceContract
             'uninstall_token' => $response->json('uninstall_token'),
         ]);
 
-        /** @var Collection<int, mixed> $internalPermissions */
-        $internalPermissions = $appConfig['internal_permissions'];
-
-        $internalPermissions = Collection::make($internalPermissions)
-            ->map(fn ($permission) => Permission::create([
-                'name' => "app.{$app->slug}.{$permission['name']}",
-                'display_name' => $permission['display_name'] ?? null,
-                'description' => $permission['description'] ?? null,
-            ]));
+        /** @var Collection<int,Permission> */
+        $internalPermissions = collect($appConfig->internal_permissions->map(fn (InternalPermissionDto $internalPermissionDto) => Permission::create([
+            'name' => "app.{$app->slug}.{$internalPermissionDto->name}",
+            'display_name' => $internalPermissionDto->display_name instanceof Optional ? null : $internalPermissionDto->display_name,
+            'description' => $internalPermissionDto->description instanceof Optional ? null : $internalPermissionDto->description,
+        ]))->items());
 
         $owner = Role::where('type', RoleType::OWNER->value)->firstOrFail();
         $owner->givePermissionTo($internalPermissions);
 
         if ($internalPermissions->isNotEmpty()) {
-            if (Auth::user() instanceof User) {
-                $this->createAppOwnerRole($app, $internalPermissions);
+            if ($user instanceof User) {
+                $this->createAppOwnerRole($user, $app, $internalPermissions);
             }
 
             $this->makePermissionsPublic(
@@ -178,6 +188,10 @@ class AppService implements AppServiceContract
 
         if (!($dto->getMetadata() instanceof Missing)) {
             $this->metadataService->sync($app, $dto->getMetadata());
+        }
+
+        if ($appConfig->widgets instanceof DataCollection && $app->hasPermissionTo('app_widgets.add')) {
+            $appConfig->widgets->each(fn (AppWidgetCreateDto $appWidgetCreateDto) => $this->appWidgetService->create($appWidgetCreateDto, $app));
         }
 
         return $app;
@@ -218,28 +232,6 @@ class AppService implements AppServiceContract
         return 'app.' . $app->slug . '.';
     }
 
-    protected function isAppRootValid(Response $response): bool
-    {
-        return $this->isResponseValid($response, [
-            'name' => ['required', 'string'],
-            'author' => ['required', 'string'],
-            'version' => ['required', 'string'],
-            'api_version' => ['required', 'string'],
-            'description' => ['nullable', 'string'],
-            'microfrontend_url' => ['nullable', 'string'],
-            'icon' => ['nullable', 'string'],
-            'licence_required' => ['nullable', 'boolean'],
-            'required_permissions' => ['array'],
-            'required_permissions.*' => ['string'],
-            'optional_permissions' => ['array'],
-            'optional_permissions.*' => ['string'],
-            'internal_permissions' => ['array'],
-            'internal_permissions.*' => ['array'],
-            'internal_permissions.*.name' => ['required', 'string'],
-            'internal_permissions.*.description' => ['nullable', 'string'],
-        ]);
-    }
-
     protected function isResponseValid(Response $response, array $rules): bool
     {
         if ($response->json() === null) {
@@ -254,7 +246,7 @@ class AppService implements AppServiceContract
     /**
      * Create app owner role and assign it to the current user.
      */
-    private function createAppOwnerRole(App $app, Collection $internalPermissions): void
+    private function createAppOwnerRole(User $user, App $app, Collection $internalPermissions): void
     {
         $role = Role::create([
             'name' => $app->name . ' owner',
@@ -265,7 +257,7 @@ class AppService implements AppServiceContract
             'role_id' => $role->getKey(),
         ]);
 
-        Auth::user()?->assignRole($role);
+        $user->assignRole($role);
     }
 
     /**
@@ -284,7 +276,7 @@ class AppService implements AppServiceContract
         $unauthenticated = Role::where('type', RoleType::UNAUTHENTICATED->value)->firstOrFail();
 
         $internalPermissions->each(
-            fn ($permission) => !$publicPermissions->contains($permission->name)
+            fn (Permission $permission) => !$publicPermissions->contains($permission->name)
                 ?: $unauthenticated->givePermissionTo($permission),
         );
     }

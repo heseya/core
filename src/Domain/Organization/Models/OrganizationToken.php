@@ -7,6 +7,9 @@ namespace Domain\Organization\Models;
 use App\Models\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @mixin IdeHelperOrganizationToken
+ */
 final class OrganizationToken extends Model
 {
     protected $fillable = [

@@ -1,0 +1,85 @@
+AppWidgets:
+  get:
+    tags:
+      - AppWidgets
+    parameters:
+      - name: section
+        in: query
+        description: search by section
+        required: false
+        schema:
+          type: string
+    summary: "All registered app widgets list"
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: "./../schemas/AppWidgets.yml#/AppWidget"
+              type: object
+    security:
+      - BearerAuth: []
+  post:
+    tags:
+      - AppWidgets
+    summary: "install a new app widget"
+    requestBody:
+      $ref: "./../requests/AppWidgets.yml#/AppWidgetCreate"
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: "./../schemas/AppWidgets.yml#/AppWidget"
+              type: object
+    security:
+      - BearerAuth: []
+
+AppWidgetsParams:
+  patch:
+    tags:
+      - AppWidgets
+    summary: "update Widget"
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      $ref: "./../requests/AppWidgets.yml#/AppWidgetUpdate"
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: "./../schemas/AppWidgets.yml#/AppWidget"
+              type: object
+    security:
+      - BearerAuth: []
+  delete:
+    tags:
+      - AppWidgets
+    summary: "delete Widget"
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      204:
+        description: Success
