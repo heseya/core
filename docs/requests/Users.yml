@@ -13,6 +13,7 @@ UserCreate:
           email_verify_url:
             type: string
             example: https://localhost/frontend/verify
+            description: 'Optional field to which the user will be redirected in the confirmation email'
           password:
             type: string
             example: '123@@#abYZ'
@@ -45,7 +46,7 @@ UserUpdate:
             example: 'Marianna Szulc'
           email:
             type: string
-            example: admin@example.com          
+            example: admin@example.com
           email_verify_url:
             type: string
             example: https://localhost/frontend/verify

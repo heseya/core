@@ -58,8 +58,8 @@ final class UserCreateDto extends Data
         public string $name,
         #[Required, StringType, Email, Max(255)]
         public string $email,
-        #[Required, StringType, Url, Max(255)]
-        public string $email_verify_url,
+        #[StringType, Url, Max(255)]
+        public Optional|string|null $email_verify_url,
         #[Required, StringType, Max(255)]
         public string $password,
         #[ArrayType]
@@ -94,10 +94,9 @@ final class UserCreateDto extends Data
                 ValidationRule::unique('users')->whereNull('deleted_at'),
             ],
             'email_verify_url' => [
-                'required',
+                'sometimes',
                 'url',
                 'max:255',
-                'required_with:email',
             ],
             'password' => [Password::defaults()],
             'roles.*' => [

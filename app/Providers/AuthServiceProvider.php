@@ -43,6 +43,9 @@ class AuthServiceProvider extends ServiceProvider
                 ->uncompromised();
         });
 
-        VerifyEmail::createUrlUsing(fn (User $user) => $user->email_verify_url . '?token=' . $user->email_verify_token);
+        VerifyEmail::createUrlUsing(
+            fn (User $user) => $user->email_verify_url ?? Config::get('store_url', '') .
+            '?token=' . $user->email_verify_token,
+        );
     }
 }
