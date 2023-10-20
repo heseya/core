@@ -82,7 +82,6 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'quantity_step',
         'google_product_category',
         'available',
-        'order',
         'price_min_initial',
         'price_max_initial',
         'shipping_time',
