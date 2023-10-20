@@ -511,8 +511,20 @@ class SchemaTest extends TestCase
                 'prices' => [['value' => 120, 'currency' => $this->currency->value]],
                 'hidden' => false,
                 'required' => true,
+                'default' => 'It\'s something',
                 'metadata' => [
                     'attributeMeta' => 'attributeValue',
+                ],
+                'options' => [
+                    [
+                        'prices' => [
+                            ['value' => 0, 'currency' => Currency::DEFAULT->value,]
+                        ],
+                        'disabled' => false,
+                        'translations' => [$this->lang => [
+                            'name' => 'B',
+                        ]],
+                    ],
                 ],
             ]))
             ->assertValid()
@@ -593,6 +605,18 @@ class SchemaTest extends TestCase
             'metadata_private' => [
                 'attributeMetaPriv' => 'attributeValue',
             ],
+            'default' => 'It\'s something',
+            'options' => [
+                [
+                    'prices' => [
+                        ['value' => 0, 'currency' => Currency::DEFAULT->value,]
+                    ],
+                    'disabled' => false,
+                    'translations' => [$this->lang => [
+                        'name' => 'B',
+                    ]],
+                ],
+            ],
         ]));
 
         $response
@@ -629,6 +653,7 @@ class SchemaTest extends TestCase
                 'prices' => [['value' => 120, 'currency' => $this->currency->value]],
                 'hidden' => !$boolean,
                 'required' => $boolean,
+                'default' => 'It\'s something',
                 'options' => [
                     [
                         'translations' => [
@@ -641,6 +666,15 @@ class SchemaTest extends TestCase
                         'metadata_private' => [
                             'attributeMetaPriv' => 'attributeValue',
                         ],
+                    ],
+                    [
+                        'prices' => [
+                            ['value' => 0, 'currency' => Currency::DEFAULT->value,]
+                        ],
+                        'disabled' => false,
+                        'translations' => [$this->lang => [
+                            'name' => 'B',
+                        ]],
                     ],
                 ],
             ]))
