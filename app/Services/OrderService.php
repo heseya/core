@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\DTO\OrderItemDto;
 use App\Dtos\AddressDto;
 use App\Dtos\CartDto;
 use App\Dtos\CartItemDto;
@@ -343,7 +344,7 @@ final readonly class OrderService implements OrderServiceContract
                     $dto->getCoupons(),
                 );
                 [[$shippingPriceDiscounted]] = $this->discountService->discountPricesRaw([[
-                    PriceDto::fromMoney($cartValue),
+                    PriceDto::fromMoney($shippingPrice),
                 ]], $shippingDiscounts);
 
                 // Always gross
@@ -555,22 +556,160 @@ final readonly class OrderService implements OrderServiceContract
     //     * @throws UnknownCurrencyException
     //     * @throws DtoException
     //     */
-    private function calcCartDiscounts(CartDto $cart, Collection $products, BigDecimal $vat_rate): CartResource
+    private function calcCartDiscounts(CartDto $dto): CartResource
     {
-        $discounts = $this->getActiveSalesAndCoupons($cart->getCoupons());
+        $currency = $dto->currency;
+        $vat_rate = $this->salesChannelService->getVatRate($dto->sales_channel_id);
 
-        /** @var ?ShippingMethod $shippingMethod */
-        $shippingMethod = is_string($cart->getShippingMethodId())
-            ? ShippingMethod::query()->findOrFail($cart->getShippingMethodId())
-            : null;
+        // TODO: Order items cannot be missing
 
-        /** @var ?ShippingMethod $shippingMethodDigital */
-        $shippingMethodDigital = is_string($cart->getDigitalShippingMethodId())
-            ? ShippingMethod::query()->findOrFail($cart->getDigitalShippingMethodId())
-            : null;
+        // Schema values and warehouse items validation
+        $products = $this->itemService->checkOrderItems($dto->getItems());
 
-        $currency = $cart->currency;
-        $cartItems = [];
+        [$shippingMethod, $digitalShippingMethod] = $this->getDeliveryMethods($dto, $products, true);
+
+        /** @var User|App $buyer */
+        $buyer = Auth::user();
+
+        // Used to calc products discounts
+        $itemPrices = [];
+        $productIds = [];
+
+        /** @var CartItemDto $item */
+        foreach ($dto->getItems() as $item) {
+            $productId = $item->getProductId();
+            /** @var Product $product */
+            $product = $products->firstWhere('id', $productId);
+            $productIds[] = $productId;
+
+            $schemaProductPrice = Money::zero($currency->value);
+            // Add schemas to products
+            foreach ($item->getSchemas() as $schemaId => $value) {
+                /** @var Schema $schema */
+                $schema = $product->schemas->findOrFail($schemaId);
+                $price = $schema->getPrice($value, $item->getSchemas(), $currency);
+
+                $schemaProductPrice = $schemaProductPrice->plus($price);
+            }
+
+            $itemPrices[$productId][$item->getCartItemId()] = $schemaProductPrice;
+        }
+
+        $productDiscounts = $this->discountService->getAllDiscountsForProducts($productIds, $dto->getCoupons());
+
+        $productPrices = $this->productRepository->getProductsPrices($productIds, [
+            ProductPriceType::PRICE_BASE,
+        ], $currency);
+
+        foreach ($itemPrices as $productId => $itemedPrices) {
+            $productPrice = $productPrices[$productId][ProductPriceType::PRICE_BASE->value][0];
+
+            foreach ($itemedPrices as $itemId => $schemasPrice) {
+                $itemPrices[$productId][$itemId] = [PriceDto::fromMoney($productPrice->value->plus($schemasPrice))];
+            }
+        }
+
+        $itemPrices = $this->discountService->discountProductPrices($itemPrices, $productDiscounts);
+
+        // Discount cheapest product
+        $cheapestProductId = null;
+        $cheapestItemId = null;
+        foreach ($itemPrices as $productId => $itemedPrices) {
+            foreach ($itemedPrices as $itemId => $prices) {
+                $cheapestPrice = $itemPrices[$cheapestProductId][$cheapestItemId][0]?->value;
+                $currentMoney = $prices[0]->value;
+
+                if ($cheapestProductId === null ||
+                    $cheapestItemId === null ||
+                    $currentMoney->isLessThan($cheapestPrice)
+                ) {
+                    $cheapestProductId = $productId;
+                    $cheapestItemId = $itemId;
+                }
+            }
+        }
+
+        $cheapestProductDiscounts = $this->discountService->getAllDiscountsOfType(
+            DiscountTargetType::CHEAPEST_PRODUCT,
+            $dto->getCoupons(),
+        );
+
+        $discountedCheapestProduct = $this->discountService->discountPricesRaw([
+            $cheapestProductId => [
+                $cheapestItemId => $itemPrices[$cheapestProductId][$cheapestItemId],
+            ],
+        ], $cheapestProductDiscounts);
+
+        $itemPrices[$cheapestProductId][$cheapestItemId] = $discountedCheapestProduct[$cheapestProductId][$cheapestItemId];
+
+        $cartValue = Money::zero($currency->value);
+        /** @var CartItemDto $item */
+        foreach ($dto->getItems() as $item) {
+            $itemPrice = $itemPrices[$item->getProductId()][$item->getCartItemId()][0]->value;
+
+            $cartValue = $itemPrice->multipliedBy($item->getQuantity())->plus($cartValue);
+        }
+
+        $orderDiscounts = $this->discountService->getAllDiscountsOfType(
+            DiscountTargetType::ORDER_VALUE,
+            $dto->getCoupons(),
+        );
+
+        /** @var PriceDto $cartValue */
+        [[$cartValue]] = $this->discountService->discountPricesRaw([[
+            PriceDto::fromMoney($cartValue),
+        ]], $orderDiscounts);
+
+        $shippingPrice = $shippingMethod?->getPrice($cartValue->value) ?? Money::zero($currency->value);
+        $shippingPrice = $shippingPrice->plus(
+            $digitalShippingMethod?->getPrice($cartValue->value) ?? Money::zero($currency->value),
+        );
+
+        $shippingDiscounts = $this->discountService->getAllDiscountsOfType(
+            DiscountTargetType::SHIPPING_PRICE,
+            $dto->getCoupons(),
+        );
+        /** @var PriceDto $shippingPrice */
+        [[$shippingPrice]] = $this->discountService->discountPricesRaw([[
+            PriceDto::fromMoney($shippingPrice),
+        ]], $shippingDiscounts);
+
+
+        // Add vat to product prices
+        foreach ($itemPrices as $productId => $itemedPrices) {
+            foreach ($itemedPrices as $itemId => $prices) {
+                $itemPrices[$productId][$itemId][0] = PriceDto::fromMoney(
+                    $this->salesChannelService->addVat($prices[0], $vat_rate),
+                );
+            }
+        }
+
+        $cartValue = PriceDto::fromMoney($this->salesChannelService->addVat($cartValue->value, $vat_rate));
+        $shippingPrice = PriceDto::fromMoney($this->salesChannelService->addVat($shippingPrice->value, $vat_rate));
+
+        $cartItemDto = [];
+        /** @var CartItemDto $item **/
+        foreach ($dto->getItems() as $item) {
+            $cartItemDto[] = new OrderItemDto(
+                $item->getCartItemId(),
+                $item->getProductId(),
+                $products->firstWhere('id', $item->getProductId())->name,
+
+//                $price,
+//                $price_initial,
+//                $price_base,
+//                $price_base_initial,
+//                $quantity,
+//                $schemas,
+//                $discounts,
+            );
+        }
+
+
+
+
+
+
 
         foreach ($cart->getItems() as $cartItem) {
             $product = $products->firstWhere('id', $cartItem->getProductId());
@@ -880,3 +1019,4 @@ final readonly class OrderService implements OrderServiceContract
         };
     }
 }
+
