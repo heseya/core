@@ -47,6 +47,8 @@ class OrderTest extends TestCase
     {
         parent::setUp();
 
+        Carbon::setTestNow(null);
+
         Product::factory()->create();
 
         $this->shippingMethod = ShippingMethod::factory()->create([

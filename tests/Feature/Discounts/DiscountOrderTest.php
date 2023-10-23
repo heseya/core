@@ -43,10 +43,11 @@ class DiscountOrderTest extends TestCase
 
         $this->shippingMethod = $this->createShippingMethod(10, ['shipping_type' => ShippingType::ADDRESS]);
 
-        $this->items = [[
-            'product_id' => $this->product->getKey(),
-            'quantity' => 1,
-        ],
+        $this->items = [
+            [
+                'product_id' => $this->product->getKey(),
+                'quantity' => 1,
+            ],
         ];
 
         $this->address = [
@@ -498,6 +499,9 @@ class DiscountOrderTest extends TestCase
             'discount_id' => $sale->getKey(),
             'applied_discount' => 10,
         ]);
+
+        $this->assertEquals(1, $cheapestDiscount->refresh()->uses);
+        $this->assertEquals(1, $sale->refresh()->uses);
     }
 
     /**
@@ -626,10 +630,11 @@ class DiscountOrderTest extends TestCase
             'price' => 10,
         ]);
 
-        $items = [[
-            'product_id' => $product->getKey(),
-            'quantity' => 3,
-        ],
+        $items = [
+            [
+                'product_id' => $product->getKey(),
+                'quantity' => 3,
+            ],
         ];
 
         $sale = Discount::factory()->create([

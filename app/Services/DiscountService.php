@@ -84,7 +84,7 @@ readonly class DiscountService implements DiscountServiceContract
     {
         return Discount::searchByCriteria($dto->toArray())
             ->orderBy('updated_at', 'DESC')
-            ->with(['orders', 'products', 'productSets', 'conditionGroups', 'shippingMethods', 'metadata'])
+            ->with(['orders', 'orderProducts', 'products', 'productSets', 'conditionGroups', 'shippingMethods', 'metadata'])
             ->paginate(Config::get('pagination.per_page'));
     }
 
@@ -1470,7 +1470,7 @@ readonly class DiscountService implements DiscountServiceContract
     {
         $conditionDto = MaxUsesConditionDto::fromArray($condition->value + ['type' => $condition->type]);
 
-        return $condition->conditionGroup?->discounts()->first()?->orders()->count() < $conditionDto->getMaxUses();
+        return $condition->conditionGroup?->discounts()->first()?->ordersWithUses()->count() < $conditionDto->getMaxUses();
     }
 
     private function checkConditionMaxUsesPerUser(DiscountCondition $condition): bool
@@ -1482,7 +1482,7 @@ readonly class DiscountService implements DiscountServiceContract
                 ->conditionGroup
                 ?->discounts()
                 ->first()
-                ?->orders()
+                ?->ordersWithUses()
                 ->whereHasMorph('buyer', [User::class, App::class], function (Builder $query): void {
                     $query->where('buyer_id', Auth::id());
                 })
