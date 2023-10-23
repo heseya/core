@@ -7,7 +7,6 @@ namespace Domain\ProductSet\Dtos;
 use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;
-use Spatie\LaravelData\Attributes\Validation\Prohibits;
 use Spatie\LaravelData\Attributes\Validation\Sometimes;
 use Spatie\LaravelData\Attributes\Validation\Uuid;
 use Spatie\LaravelData\Data;
@@ -34,19 +33,10 @@ final class ProductSetIndexDto extends Data
         public array|Optional $metadata_private,
         public array|Optional $ids,
 
-        /** @deprecated */
-        #[Prohibits('depth')]
-        public bool|Optional $tree,
-
-        #[Sometimes, Prohibits('tree'), Min(0), Max(500)]
+        #[Sometimes, Min(0), Max(500)]
         public int $depth = 0,
         public bool $root = false,
-    ) {
-        // support for deprecated calls
-        if ($tree === true) {
-            $this->depth = 500;
-        }
-    }
+    ) {}
 
     /**
      * @return array<string, array<int, string>>

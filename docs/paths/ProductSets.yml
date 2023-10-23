@@ -10,14 +10,6 @@ ProductSets:
         required: false
         schema:
           type: boolean
-      - name: tree
-        in: query
-        description: 'Return sets starting from root with recursively nested children instead of id''s'
-        allowEmptyValue: true
-        required: false
-        schema:
-          type: boolean
-        deprecated: true
       - name: search
         in: query
         description: 'Full text search'
@@ -108,13 +100,6 @@ ProductSets:
   post:
     tags:
       - 'Product Sets'
-    parameters:
-      - name: tree
-        in: query
-        description: 'Return set with recursively nested children instead of id''s'
-        allowEmptyValue: true
-        schema:
-          type: boolean
     requestBody:
       $ref: './../requests/ProductSets.yml#/ProductSetStore'
     responses:
@@ -142,12 +127,6 @@ ProductSetsSlug:
         required: true
         schema:
           type: string
-      - name: tree
-        in: query
-        description: 'Return set with recursively nested children instead of id''s'
-        allowEmptyValue: true
-        schema:
-          type: boolean
       - name: lang_fallback
         in: query
         description: "Determines what data will be returned if it does not occur in the selected language. The default option is 'none'. If 'none' then items that do not have the given translation will not be returned. If 'default', missing translations will be replaced in the default API language. 'Any' means that missing translations will be replaced with the first available translation for the item."
@@ -183,12 +162,6 @@ ProductSetsParams:
         required: true
         schema:
           type: string
-      - name: tree
-        in: query
-        description: 'Return set with recursively nested children instead of id''s'
-        allowEmptyValue: true
-        schema:
-          type: boolean
       - name: lang_fallback
         in: query
         description: "Determines what data will be returned if it does not occur in the selected language. The default option is 'none'. If 'none' then items that do not have the given translation will not be returned. If 'default', missing translations will be replaced in the default API language. 'Any' means that missing translations will be replaced with the first available translation for the item."
@@ -240,12 +213,6 @@ ProductSetsParams:
         schema:
           type: string
           format: uuid
-      - name: tree
-        in: query
-        description: 'Return set with recursively nested children instead of id''s'
-        allowEmptyValue: true
-        schema:
-          type: boolean
     requestBody:
       $ref: './../requests/ProductSets.yml#/ProductSetUpdate'
     responses:
