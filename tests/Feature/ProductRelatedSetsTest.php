@@ -71,6 +71,7 @@ class ProductRelatedSetsTest extends TestCase
                     'published' => [
                         $this->lang,
                     ],
+                    'children' => [],
                 ],
                 [
                     'id' => $set2->getKey(),
@@ -87,6 +88,7 @@ class ProductRelatedSetsTest extends TestCase
                     'published' => [
                         $this->lang,
                     ],
+                    'children' => [],
                 ],
             ]]);
     }
@@ -127,6 +129,7 @@ class ProductRelatedSetsTest extends TestCase
                     'published' => [
                         $this->lang,
                     ],
+                    'children' => [],
                 ],
             ]]);
     }
@@ -167,6 +170,7 @@ class ProductRelatedSetsTest extends TestCase
                     'published' => [
                         $this->lang,
                     ],
+                    'children' => [],
                 ],
                 [
                     'id' => $set2->getKey(),
@@ -183,6 +187,7 @@ class ProductRelatedSetsTest extends TestCase
                     'published' => [
                         $this->lang,
                     ],
+                    'children' => [],
                 ],
             ]]);
     }

@@ -27,6 +27,9 @@ final class ProductSetParentResource extends Resource
             ? $this->resource->childrenPublic
             : $this->resource->children;
 
+        $depth = $this->resource->depth ?? (int) $request->get('depth', 0);
+        $nestedChildren = $depth > 0 ? $this->resource->getChildren($depth) : collect([]);
+
         return [
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
@@ -42,6 +45,7 @@ final class ProductSetParentResource extends Resource
             'cover' => MediaResource::make($this->resource->media),
             'attributes' => AttributeResource::collection($this->resource->attributes),
             'published' => $this->resource->published,
+            'children' => $nestedChildren->count() > 0 ? ProductSetResource::collection($nestedChildren) : [],
             ...$this->metadataResource('product_sets.show_metadata_private'),
             ...$request->boolean('with_translations') ?
                 $this->getAllTranslations('product_sets.show_hidden') : [],

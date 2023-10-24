@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Traits\GetPublishedLanguageFilter;
 use Domain\ProductSet\Dtos\ProductSetCreateDto;
+use Domain\ProductSet\Dtos\ProductSetIndexDto;
 use Domain\ProductSet\Dtos\ProductSetUpdateDto;
 use Domain\ProductSet\Events\ProductSetCreated;
 use Domain\ProductSet\Events\ProductSetDeleted;
@@ -45,9 +46,9 @@ final readonly class ProductSetService
         }
     }
 
-    public function searchAll(array $attributes, bool $root): LengthAwarePaginator
+    public function searchAll(ProductSetIndexDto $dto): LengthAwarePaginator
     {
-        $query = ProductSet::searchByCriteria($attributes + $this->getPublishedLanguageFilter('product_sets'))
+        $query = ProductSet::searchByCriteria($dto->toArray() + $this->getPublishedLanguageFilter('product_sets'))
             ->with(['metadata', 'media', 'media.metadata']);
 
         if (Gate::denies('product_sets.show_hidden')) {
@@ -56,7 +57,7 @@ final readonly class ProductSetService
             $query->with(['children', 'metadataPrivate', 'media.metadataPrivate']);
         }
 
-        if ($root) {
+        if ($dto->root) {
             $query->root();
         }
 
