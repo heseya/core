@@ -31,32 +31,13 @@ class SchemaFactory extends Factory
             'max' => null,
             'min' => null,
             'default' => null,
-            'pattern' => null,
-            'validation' => null,
             'published' => [App::getLocale()],
         ];
     }
 
     public function create($attributes = [], ?Model $parent = null)
     {
-        $prices = $attributes['prices'] ?? [];
-        unset($attributes['prices']);
-
         $result = parent::create($attributes, $parent);
-
-        if (!empty($prices)) {
-            if ($result instanceof Model) {
-                $result = collect([$result]);
-            }
-
-            $priceRepository = app(PriceRepository::class);
-
-            $prices = FakeDto::generatePricesInAllCurrencies($prices);
-
-            collect($result)->each(fn (Schema $schema) => $priceRepository->setModelPrices($schema, [
-                ProductPriceType::PRICE_BASE->value => $prices
-            ]));
-        }
 
         return $result->count() > 1 ? $result : $result->first();
     }

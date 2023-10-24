@@ -7,7 +7,6 @@ use App\Criteria\MetadataSearch;
 use App\Criteria\SchemaSearch;
 use App\Criteria\TranslatedLike;
 use App\Criteria\WhereInIds;
-use App\Enums\SchemaType;
 use App\Models\Contracts\SortableContract;
 use App\Models\Interfaces\Translatable;
 use App\Rules\OptionAvailable;
@@ -34,7 +33,6 @@ use Illuminate\Validation\ValidationException;
 /**
  * @property string $name
  * @property string $description
- * @property SchemaType $type
  * @property Collection<int, Price> $prices
  *
  * @mixin IdeHelperSchema
@@ -50,7 +48,6 @@ class Schema extends Model implements SortableContract, Translatable
     public const HIDDEN_PERMISSION = 'schemas.show_hidden';
 
     protected $fillable = [
-        'type',
         'name',
         'description',
         'hidden',
@@ -59,8 +56,6 @@ class Schema extends Model implements SortableContract, Translatable
         'min',
         'step',
         'default',
-        'pattern',
-        'validation',
         'available',
         'shipping_time',
         'shipping_date',
@@ -76,7 +71,6 @@ class Schema extends Model implements SortableContract, Translatable
         'hidden' => 'bool',
         'required' => 'bool',
         'available' => 'bool',
-        'type' => SchemaType::class,
         'published' => 'array',
     ];
 
@@ -122,21 +116,6 @@ class Schema extends Model implements SortableContract, Translatable
             $validation->push('min:' . $this->min);
         }
 
-        if ($this->type->is(SchemaType::SELECT)) {
-            $validation->push('uuid');
-            $validation->push(new OptionAvailable($this));
-        }
-
-        if (
-            in_array($this->type, [
-                SchemaType::NUMERIC,
-                SchemaType::MULTIPLY,
-                SchemaType::MULTIPLY_SCHEMA,
-            ])
-        ) {
-            $validation->push('numeric');
-        }
-
         $validationStrings = [
             'attribute' => $this->name,
             'min' => $this->min,
@@ -164,7 +143,7 @@ class Schema extends Model implements SortableContract, Translatable
     {
         $items = [];
 
-        if ($value === null || $this->type !== SchemaType::SELECT) {
+        if ($value === null) {
             return $items;
         }
 
@@ -186,15 +165,6 @@ class Schema extends Model implements SortableContract, Translatable
             ->orderBy('order')
             ->orderBy('created_at')
             ->orderBy('name', 'DESC');
-    }
-
-    public function setTypeAttribute(mixed $value): void
-    {
-        if (is_string($value)) {
-            $value = SchemaType::fromName($value);
-        }
-
-        $this->setEnumCastableAttribute('type', $value);
     }
 
     public function products(): BelongsToMany
@@ -257,21 +227,8 @@ class Schema extends Model implements SortableContract, Translatable
             return Money::zero($currency->value);
         }
 
-        if (
-            ($this->type->is(SchemaType::STRING) || $this->type->is(SchemaType::NUMERIC))
-            && Str::length(trim($value)) === 0
-        ) {
-            return Money::zero($currency->value);
-        }
-
-        if ($this->type->is(SchemaType::BOOLEAN) && ((bool) $value) === false) {
-            return Money::zero($currency->value);
-        }
-
-        if ($this->type->is(SchemaType::MULTIPLY_SCHEMA)) {
-            /** @var Schema $usedSchema */
-            $usedSchema = $this->usedSchemas()->firstOrFail();
-
+        $usedSchema = $this->usedSchemas()->first();
+        if (!empty($usedSchema)) {
             return $usedSchema->getUsedPrice(
                 $schemas[$usedSchema->getKey()],
                 $schemas,
@@ -281,16 +238,11 @@ class Schema extends Model implements SortableContract, Translatable
 
         $price = $this->getPriceForCurrency($currency);
 
-        if ($this->type->is(SchemaType::SELECT)) {
+        $option = $this->options()->find($value);
+        if ($option?->count() > 0) {
             /** @var Option $option */
-            $option = $this->options()->findOrFail($value);
             $price = $price->plus($option->getPriceForCurrency($currency));
-        }
-
-        if ($this->type->is(SchemaType::MULTIPLY)) {
-            if ($value === null) {
-                return Money::zero($currency->value);
-            }
+        } elseif (!Str::isUuid($value)) {
             $price = $price->multipliedBy($value);
         }
 

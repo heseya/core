@@ -259,21 +259,18 @@ class SchemaTest extends TestCase
         $option1 = Option::factory()->create([
             'name' => 'A',
             'prices' => [['value' => 10, 'currency' => $this->currency->value]],
-            'disabled' => false,
             'order' => 0,
             'schema_id' => $schema->getKey(),
         ]);
         $option2 = Option::factory()->create([
             'name' => 'C',
             'prices' => [['value' => 100, 'currency' => $this->currency->value]],
-            'disabled' => false,
             'order' => 2,
             'schema_id' => $schema->getKey(),
         ]);
         $option3 = Option::factory()->create([
             'name' => 'B',
             'prices' => [['value' => 0, 'currency' => $this->currency->value]],
-            'disabled' => false,
             'order' => 1,
             'schema_id' => $schema->getKey(),
         ]);
@@ -334,7 +331,6 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/schemas', FakeDto::schemaData([
             'name' => 'Test',
-            'type' => SchemaType::SELECT->name,
             'prices' => [['value' => 120, 'currency' => $this->currency->value]],
             'description' => 'test test',
             'hidden' => false,
@@ -344,7 +340,6 @@ class SchemaTest extends TestCase
                 [
                     'name' => 'L',
                     'prices' => [['value' => 0, 'currency' => $this->currency->value]],
-                    'disabled' => false,
                     'items' => [
                         $item->getKey(),
                     ],
@@ -371,7 +366,6 @@ class SchemaTest extends TestCase
 
         $data = FakeDto::schemaData([
             'name' => 'Test',
-            'type' => SchemaType::SELECT->name,
             'prices' => [
                 ['value' => 120, 'currency' => Currency::DEFAULT->value,]
             ],
@@ -382,7 +376,6 @@ class SchemaTest extends TestCase
                     'prices' => [
                         ['value' => 100, 'currency' => Currency::DEFAULT->value,]
                     ],
-                    'disabled' => false,
                     'items' => [
                         $item->getKey(),
                     ],
@@ -394,7 +387,6 @@ class SchemaTest extends TestCase
                     'prices' => [
                         ['value' => 1000, 'currency' => Currency::DEFAULT->value,]
                     ],
-                    'disabled' => false,
                     'translations' => [$this->lang => [
                         'name' => 'A',
                     ]],
@@ -403,7 +395,6 @@ class SchemaTest extends TestCase
                     'prices' => [
                         ['value' => 0, 'currency' => Currency::DEFAULT->value,]
                     ],
-                    'disabled' => false,
                     'translations' => [$this->lang => [
                         'name' => 'B',
                     ]],
@@ -428,7 +419,6 @@ class SchemaTest extends TestCase
 
         $this->assertDatabaseHas('schemas', [
             "name->{$this->lang}" => 'Test',
-            'type' => SchemaType::SELECT,
             "description->{$this->lang}" => 'test test',
             'hidden' => 0,
             'required' => 0,
@@ -445,7 +435,6 @@ class SchemaTest extends TestCase
         $this->assertDatabaseHas('options', [
             'id' => $option->id,
             "name->{$this->lang}" => 'L',
-            'disabled' => 0,
             'schema_id' => $schema->id,
             'order' => 0,
             'available' => false,
@@ -459,7 +448,6 @@ class SchemaTest extends TestCase
 
         $this->assertDatabaseHas('options', [
             "name->{$this->lang}" => 'A',
-            'disabled' => 0,
             'schema_id' => $schema->id,
             'order' => 1,
             'available' => true,
@@ -473,7 +461,6 @@ class SchemaTest extends TestCase
 
         $this->assertDatabaseHas('options', [
             "name->{$this->lang}" => 'B',
-            'disabled' => 0,
             'schema_id' => $schema->id,
             'order' => 2,
             'available' => true,
@@ -507,7 +494,6 @@ class SchemaTest extends TestCase
                     ],
                 ],
                 'published' => [$this->lang],
-                'type' => SchemaType::SELECT->name,
                 'prices' => [['value' => 120, 'currency' => $this->currency->value]],
                 'hidden' => false,
                 'required' => true,
@@ -520,7 +506,6 @@ class SchemaTest extends TestCase
                         'prices' => [
                             ['value' => 0, 'currency' => Currency::DEFAULT->value,]
                         ],
-                        'disabled' => false,
                         'translations' => [$this->lang => [
                             'name' => 'B',
                         ]],
@@ -551,7 +536,6 @@ class SchemaTest extends TestCase
                     ],
                 ],
                 'published' => [$this->lang],
-                'type' => SchemaType::SELECT->name,
                 'prices' => [['value' => 120, 'currency' => $this->currency->value]],
                 'hidden' => false,
                 'required' => false,
@@ -563,7 +547,6 @@ class SchemaTest extends TestCase
                             ],
                         ],
                         'prices' => [['value' => 1000, 'currency' => $this->currency->value]],
-                        'disabled' => false,
                         'metadata' => [
                             'attributeMetaOption' => 'attributeValueOption',
                         ],
@@ -577,7 +560,6 @@ class SchemaTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment([
                 'name' => 'B',
-                'disabled' => false,
                 'metadata' => [
                     'attributeMetaOption' => 'attributeValueOption',
                 ],
@@ -598,7 +580,6 @@ class SchemaTest extends TestCase
                 ],
             ],
             'published' => [$this->lang],
-            'type' => SchemaType::SELECT->name,
             'prices' => [['value' => 120, 'currency' => $this->currency->value]],
             'hidden' => !$boolean,
             'required' => $boolean,
@@ -611,7 +592,6 @@ class SchemaTest extends TestCase
                     'prices' => [
                         ['value' => 0, 'currency' => Currency::DEFAULT->value,]
                     ],
-                    'disabled' => false,
                     'translations' => [$this->lang => [
                         'name' => 'B',
                     ]],
@@ -649,7 +629,6 @@ class SchemaTest extends TestCase
                     ],
                 ],
                 'published' => [$this->lang],
-                'type' => SchemaType::SELECT->name,
                 'prices' => [['value' => 120, 'currency' => $this->currency->value]],
                 'hidden' => !$boolean,
                 'required' => $boolean,
@@ -662,7 +641,6 @@ class SchemaTest extends TestCase
                             ],
                         ],
                         'prices' => [['value' => 1000, 'currency' => $this->currency->value]],
-                        'disabled' => $boolean,
                         'metadata_private' => [
                             'attributeMetaPriv' => 'attributeValue',
                         ],
@@ -671,7 +649,6 @@ class SchemaTest extends TestCase
                         'prices' => [
                             ['value' => 0, 'currency' => Currency::DEFAULT->value,]
                         ],
-                        'disabled' => false,
                         'translations' => [$this->lang => [
                             'name' => 'B',
                         ]],
@@ -687,7 +664,6 @@ class SchemaTest extends TestCase
             ])
             ->assertJsonFragment([
                 'name' => 'A',
-                'disabled' => $booleanValue,
                 'metadata_private' => [
                     'attributeMetaPriv' => 'attributeValue',
                 ],
@@ -708,7 +684,6 @@ class SchemaTest extends TestCase
                 ],
             ],
             'published' => [$this->lang],
-            'type' => SchemaType::STRING->name,
             'prices' => [['value' => 120, 'currency' => $this->currency->value]],
             'required' => false,
         ]));
@@ -733,7 +708,6 @@ class SchemaTest extends TestCase
                 ],
             ],
             'published' => [$this->lang],
-            'type' => SchemaType::SELECT->name,
             'prices' => [['value' => 120, 'currency' => $this->currency->value]],
             'required' => false,
             'options' => [
@@ -744,7 +718,6 @@ class SchemaTest extends TestCase
                         ],
                     ],
                     'prices' => [['value' => 0, 'currency' => $this->currency->value]],
-                    'disabled' => false,
                 ],
             ],
         ]));
@@ -780,7 +753,6 @@ class SchemaTest extends TestCase
                 ],
             ],
             'published' => [$this->lang],
-            'type' => SchemaType::MULTIPLY_SCHEMA->name,
             'min' => 1,
             'max' => 10,
             'step' => 0.1,
@@ -814,7 +786,6 @@ class SchemaTest extends TestCase
                 ],
             ],
             'published' => [$this->lang],
-            'type' => SchemaType::MULTIPLY_SCHEMA->name,
             'min' => 1,
             'max' => 10,
             'step' => 0.1,
@@ -854,7 +825,6 @@ class SchemaTest extends TestCase
 
         $option = Option::factory()->create([
             'name' => 'L',
-            'disabled' => false,
             'schema_id' => $schema->getKey(),
         ]);
         $option->prices()->createMany(Price::factory(['value' => 0])->prepareForCreateMany());
@@ -868,7 +838,6 @@ class SchemaTest extends TestCase
                 ],
                 'published' => [$this->lang],
                 'prices' => [['value' => 200, 'currency' => $this->currency->value]],
-                'type' => SchemaType::SELECT->name,
                 'hidden' => false,
                 'required' => false,
                 'options' => [
@@ -911,12 +880,10 @@ class SchemaTest extends TestCase
                 [
                     'name' => 'L',
                     'prices' => [PriceDto::from(Money::of(0, Currency::DEFAULT->value))],
-                    'disabled' => false,
                 ] + Option::factory()->definition(),
                 [
                     'name' => 'XL',
                     'prices' => [PriceDto::from(Money::of(0, Currency::DEFAULT->value))],
-                    'disabled' => false,
                 ] + Option::factory()->definition(),
             ]
         ]));
@@ -941,7 +908,6 @@ class SchemaTest extends TestCase
             ],
             'published' => [$this->lang],
             'prices' => [PriceDto::from(Money::of(200, Currency::DEFAULT->value))],
-            'type' => SchemaType::SELECT->name,
             'hidden' => false,
             'required' => false,
             'default' => null,
@@ -949,7 +915,6 @@ class SchemaTest extends TestCase
                 [
                     'id' => $option->getKey(),
                     'prices' => [PriceDto::from(Money::of(0, Currency::DEFAULT->value))],
-                    'disabled' => true,
                     'items' => [
                         $item->getKey(),
                     ],
@@ -980,7 +945,6 @@ class SchemaTest extends TestCase
         $this->assertDatabaseHas('options', [
             'id' => $option->getKey(),
             "name->{$this->lang}" => 'L',
-            'disabled' => 1,
             'schema_id' => $schema->getKey(),
         ]);
 
@@ -1029,7 +993,6 @@ class SchemaTest extends TestCase
 
         $option = Option::factory()->create([
             'name' => 'L',
-            'disabled' => false,
             'schema_id' => $schema->getKey(),
         ]);
         $option->prices()->createMany(Price::factory(['value' => 0])->prepareForCreateMany());
@@ -1143,7 +1106,6 @@ class SchemaTest extends TestCase
         /** @var Schema $colors */
         $colors = Schema::create([
             'name' => 'Color',
-            'type' => SchemaType::SELECT,
         ]);
         $colors->prices()->createMany(Price::factory(['value' => 0])->prepareForCreateMany());
 
@@ -1180,7 +1142,6 @@ class SchemaTest extends TestCase
         /** @var Schema $multiplier */
         $multiplier = Schema::create([
             'name' => 'Price Multiplier',
-            'type' => SchemaType::MULTIPLY,
             'min' => 1,
             'max' => 10,
             'step' => 0.1,
@@ -1199,7 +1160,6 @@ class SchemaTest extends TestCase
         /** @var Schema $colors */
         $colors = Schema::create([
             'name' => 'Color',
-            'type' => SchemaType::SELECT,
         ]);
         $colors->prices()->createMany(Price::factory(['value' => 0])->prepareForCreateMany());
 
@@ -1212,7 +1172,6 @@ class SchemaTest extends TestCase
         /** @var Schema $multiplier */
         $multiplier = Schema::create([
             'name' => 'Multiplier',
-            'type' => SchemaType::MULTIPLY_SCHEMA,
             'min' => 1,
             'max' => 10,
             'step' => 0.1,
@@ -1244,7 +1203,6 @@ class SchemaTest extends TestCase
 
         $option = Option::factory()->create([
             'name' => 'L',
-            'disabled' => false,
             'schema_id' => $schema->getKey(),
         ]);
         $option->prices()->createMany(Price::factory(['value' => 0])->prepareForCreateMany());
@@ -1257,7 +1215,6 @@ class SchemaTest extends TestCase
         $data = FakeDto::schemaData([
             'name' => 'Test Updated',
             'prices' => [['value' => 200, 'currency' => $this->currency->value]],
-            'type' => SchemaType::SELECT->name,
             'description' => 'test test',
             'hidden' => false,
             'required' => false,
@@ -1290,7 +1247,6 @@ class SchemaTest extends TestCase
 
         $data = FakeDto::schemaData([
             'name' => 'Test',
-            'type' => SchemaType::SELECT->name,
             'prices' => [['value' => 120, 'currency' => $this->currency->value]],
             'description' => 'test test',
             'hidden' => false,
@@ -1321,7 +1277,6 @@ class SchemaTest extends TestCase
 
         $data = FakeDto::schemaData([
             'name' => 'Test',
-            'type' => SchemaType::SELECT->name,
             'prices' => [['value' => 120, 'currency' => $this->currency->value]],
             'description' => 'test test',
             'hidden' => false,
@@ -1348,7 +1303,6 @@ class SchemaTest extends TestCase
 
         $data = FakeDto::schemaData([
             'name' => 'Test',
-            'type' => SchemaType::SELECT->name,
             'prices' => [['value' => 120, 'currency' => $this->currency->value]],
             'description' => 'test test',
             'hidden' => false,
@@ -1364,7 +1318,6 @@ class SchemaTest extends TestCase
                     'prices' => [
                         ['value' => 0, 'currency' => Currency::DEFAULT->value,]
                     ],
-                    'disabled' => false,
                     'translations' => [$this->lang => [
                         'name' => 'B',
                     ]],

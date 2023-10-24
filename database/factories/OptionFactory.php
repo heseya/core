@@ -24,7 +24,6 @@ class OptionFactory extends Factory
     {
         return [
             'name' => $this->faker->word,
-            'disabled' => mt_rand(0, 10) === 0,
         ];
     }
 
