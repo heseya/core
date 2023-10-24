@@ -5,6 +5,7 @@ namespace App\Http;
 use App\Http\Middleware\AcceptLanguage;
 use App\Http\Middleware\AppAccessRestrict;
 use App\Http\Middleware\Authenticate;
+use App\Http\Middleware\CacheResponse;
 use App\Http\Middleware\ContentLanguage;
 use App\Http\Middleware\LangFallback;
 use App\Http\Middleware\PublishedTranslation;
@@ -44,6 +45,7 @@ class Kernel extends HttpKernel
         ContentLanguage::class,
         UndotParams::class,
         LangFallback::class,
+        CacheResponse::class,
     ];
 
     /**
