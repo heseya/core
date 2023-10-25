@@ -188,10 +188,11 @@ class DiscountTest extends TestCase
     {
         $this->{$user}->givePermissionTo("{$discountKind}.show");
 
-        $this
+        $response = $this
             ->actingAs($this->{$user})
-            ->getJson("/{$discountKind}")
-            ->assertOk()
+            ->getJson("/{$discountKind}");
+
+        $response->assertOk()
             ->assertJsonCount(10, 'data');
 
         $this->assertQueryCountLessThan(15);
@@ -207,10 +208,11 @@ class DiscountTest extends TestCase
         $codes = $discountKind === 'coupons' ? [] : ['code' => null];
         Discount::factory($codes)->count(490)->create();
 
-        $this
+        $response = $this
             ->actingAs($this->{$user})
-            ->getJson("/{$discountKind}?limit=500")
-            ->assertOk()
+            ->getJson("/{$discountKind}?limit=500");
+
+        $response->assertOk()
             ->assertJsonCount(500, 'data');
 
         $this->assertQueryCountLessThan(15);
