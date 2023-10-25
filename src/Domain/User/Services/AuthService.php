@@ -384,8 +384,12 @@ final class AuthService implements AuthServiceContract
 
         $user->save();
 
-        $user->markEmailAsUnverified();
-        $user->sendEmailVerificationNotification();
+        if ($dto->organization_token instanceof Optional) {
+            $user->markEmailAsUnverified();
+            $user->sendEmailVerificationNotification();
+        } else {
+            $user->markEmailAsVerified();
+        }
 
         UserCreated::dispatch($user);
 

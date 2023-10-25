@@ -9,6 +9,7 @@ use App\Models\Address;
 use App\Models\Role;
 use App\Models\User;
 use App\Notifications\UserRegistered;
+use App\Notifications\VerifyEmail;
 use Domain\Organization\Enums\OrganizationStatus;
 use Domain\Organization\Models\Organization;
 use Domain\Organization\Models\OrganizationToken;
@@ -533,6 +534,11 @@ class OrganizationTest extends TestCase
         Notification::assertSentTo(
             [$user],
             UserRegistered::class,
+        );
+
+        Notification::assertNotSentTo(
+            [$user],
+            VerifyEmail::class,
         );
     }
 

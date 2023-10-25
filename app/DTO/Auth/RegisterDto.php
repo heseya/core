@@ -11,7 +11,6 @@ use Illuminate\Validation\Rule as ValidationRule;
 use Illuminate\Validation\Rules\Password;
 use Spatie\LaravelData\Attributes\Validation\BeforeOrEqual;
 use Spatie\LaravelData\Attributes\Validation\Max;
-use Spatie\LaravelData\Attributes\Validation\Required;
 use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Attributes\Validation\StringType;
 use Spatie\LaravelData\Attributes\Validation\Url;
@@ -31,8 +30,8 @@ class RegisterDto extends Data
         #[Rule('phone:AUTO')]
         public readonly Optional|string $phone,
         public array|Optional $metadata_personal,
-        #[Required, StringType, Url, Max(255)]
-        public readonly string $email_verify_url,
+        #[StringType, Url, Max(255)]
+        public readonly Optional|string $email_verify_url,
 
         public readonly Optional|string $organization_token,
         public readonly array $consents = [],
@@ -58,6 +57,7 @@ class RegisterDto extends Data
             'organization_token' => [
                 ValidationRule::exists('organization_tokens', 'token')->where(fn ($query) => $query->where('expires_at', '>', Carbon::now())),
             ],
+            'email_verify_url' => [ValidationRule::requiredIf(fn () => !request()->organization_token)],
         ];
     }
 }

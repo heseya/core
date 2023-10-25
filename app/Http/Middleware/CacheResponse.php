@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Config;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CacheResponse
 {
@@ -14,8 +15,12 @@ class CacheResponse
      */
     public function handle(Request $request, Closure $next): mixed
     {
-        /** @var Response $response */
+        /** @var Response|StreamedResponse $response */
         $response = $next($request);
+
+        if ($response instanceof StreamedResponse) {
+            return $response;
+        }
 
         $key = $request->header('Authorization') ? 'auth' : 'public';
 
