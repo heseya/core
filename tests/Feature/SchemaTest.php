@@ -511,8 +511,20 @@ class SchemaTest extends TestCase
                 'prices' => [['value' => 120, 'currency' => $this->currency->value]],
                 'hidden' => false,
                 'required' => true,
+                'default' => 'It\'s something',
                 'metadata' => [
                     'attributeMeta' => 'attributeValue',
+                ],
+                'options' => [
+                    [
+                        'prices' => [
+                            ['value' => 0, 'currency' => Currency::DEFAULT->value,]
+                        ],
+                        'disabled' => false,
+                        'translations' => [$this->lang => [
+                            'name' => 'B',
+                        ]],
+                    ],
                 ],
             ]))
             ->assertValid()
@@ -593,6 +605,18 @@ class SchemaTest extends TestCase
             'metadata_private' => [
                 'attributeMetaPriv' => 'attributeValue',
             ],
+            'default' => 'It\'s something',
+            'options' => [
+                [
+                    'prices' => [
+                        ['value' => 0, 'currency' => Currency::DEFAULT->value,]
+                    ],
+                    'disabled' => false,
+                    'translations' => [$this->lang => [
+                        'name' => 'B',
+                    ]],
+                ],
+            ],
         ]));
 
         $response
@@ -629,6 +653,7 @@ class SchemaTest extends TestCase
                 'prices' => [['value' => 120, 'currency' => $this->currency->value]],
                 'hidden' => !$boolean,
                 'required' => $boolean,
+                'default' => 'It\'s something',
                 'options' => [
                     [
                         'translations' => [
@@ -641,6 +666,15 @@ class SchemaTest extends TestCase
                         'metadata_private' => [
                             'attributeMetaPriv' => 'attributeValue',
                         ],
+                    ],
+                    [
+                        'prices' => [
+                            ['value' => 0, 'currency' => Currency::DEFAULT->value,]
+                        ],
+                        'disabled' => false,
+                        'translations' => [$this->lang => [
+                            'name' => 'B',
+                        ]],
                     ],
                 ],
             ]))
@@ -1276,5 +1310,127 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/schemas', $data);
         $response->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateSchemaWithRequiredFieldAndEmptyDefaultValue(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.add');
+
+        $data = FakeDto::schemaData([
+            'name' => 'Test',
+            'type' => SchemaType::SELECT->name,
+            'prices' => [['value' => 120, 'currency' => $this->currency->value]],
+            'description' => 'test test',
+            'hidden' => false,
+            'required' => true,
+            'translations' => [$this->lang => [
+                'name' => 'Test',
+                'description' => 'test test',
+            ]],
+            'published' => [$this->lang],
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->postJson('/schemas', $data)
+            ->assertUnprocessable();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateSchemaWithRequiredFieldAndDefaultValue(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.add');
+
+        $data = FakeDto::schemaData([
+            'name' => 'Test',
+            'type' => SchemaType::SELECT->name,
+            'prices' => [['value' => 120, 'currency' => $this->currency->value]],
+            'description' => 'test test',
+            'hidden' => false,
+            'required' => true,
+            'default' => 'It\'s something',
+            'translations' => [$this->lang => [
+                'name' => 'Test',
+                'description' => 'test test',
+            ]],
+            'published' => [$this->lang],
+            'options' => [
+                [
+                    'prices' => [
+                        ['value' => 0, 'currency' => Currency::DEFAULT->value,]
+                    ],
+                    'disabled' => false,
+                    'translations' => [$this->lang => [
+                        'name' => 'B',
+                    ]],
+                ],
+            ],
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->postJson('/schemas', $data)
+            ->assertValid()
+            ->assertCreated();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateSchemaWithRequiredFieldAndEmptyDefaultValue(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.edit');
+
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
+            'name' => 'test',
+            'description' => 'test test',
+            'hidden' => false,
+            'required' => false,
+            'max' => 10,
+            'min' => 1,
+            'prices' => [['value' => 10, 'currency' => $this->currency->value]]
+        ]));
+
+
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson('/schemas/id:' . $schema->getKey(), [
+                'required' => true,
+            ])
+            ->assertUnprocessable();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateSchemaWithRequiredFieldAndDefaultValue(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.edit');
+
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
+            'name' => 'test',
+            'description' => 'test test',
+            'hidden' => false,
+            'required' => false,
+            'max' => 10,
+            'min' => 1,
+            'prices' => [['value' => 10, 'currency' => $this->currency->value]]
+        ]));
+
+
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson('/schemas/id:' . $schema->getKey(), [
+                'hidden' => false,
+                'default' => 'It\'s something',
+                'required' => true,
+            ])
+            ->assertValid()
+            ->assertOk();
     }
 }

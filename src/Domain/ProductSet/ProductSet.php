@@ -51,6 +51,7 @@ final class ProductSet extends Model implements SeoContract, Translatable
     use SoftDeletes;
 
     public const HIDDEN_PERMISSION = 'product_sets.show_hidden';
+    public int|null $depth = null;
 
     protected $fillable = [
         'id',
@@ -141,6 +142,42 @@ final class ProductSet extends Model implements SeoContract, Translatable
             'attributes',
             'parent',
         ]);
+    }
+
+    /**
+     * @return Collection<self>
+     */
+    public function getChildren(int $depth = 0): Collection
+    {
+        $children = collect([]);
+        if ($depth > 0) {
+            --$depth;
+
+            foreach ($this->children as $child) {
+                $child->depth = $depth;
+                $children->push($child);
+            }
+        }
+
+        return $children;
+    }
+
+    /**
+     * @return Collection<self>
+     */
+    public function getPublicChildren(int $depth = 0): Collection
+    {
+        $children = collect([]);
+        if ($depth > 0) {
+            --$depth;
+
+            foreach ($this->childrenPublic as $child) {
+                $child->depth = $depth;
+                $children->push($child);
+            }
+        }
+
+        return $children;
     }
 
     /**

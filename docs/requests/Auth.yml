@@ -40,7 +40,7 @@ Register:
             example: 'Registered user'
           email:
             type: string
-            example: admin@example.com          
+            example: admin@example.com
           email_verify_url:
             type: string
             example: https://localhost/frontend/verify
@@ -67,6 +67,8 @@ Register:
               02b97693-857c-4fb9-9999-47400ac5fbef:
                 type: boolean
             type: object
+          organization_token:
+            type: string
           metadata_personal:
             $ref: './../schemas/Metadata.yml#/Metadata'
 

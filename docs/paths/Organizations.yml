@@ -1,0 +1,157 @@
+Organizations:
+  get:
+    tags:
+      - Organizations
+    summary: 'organizations list'
+    parameters:
+      - name: status
+        in: query
+        description: 'Sorting string.'
+        schema:
+          type: string
+          example: 'Verified'
+    security:
+      - BearerAuth: [ organizations.show ]
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Organizations.yml#/Organization'
+              type: object
+  post:
+    tags:
+      - Organizations
+    security:
+      - BearerAuth: [ organizations.add ]
+    requestBody:
+      $ref: './../requests/Organizations.yml#/OrganizationCreate'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Organizations.yml#/OrganizationView'
+              type: object
+
+OrganizationsParams:
+  get:
+    tags:
+      - Organizations
+    summary: 'organization details'
+    security:
+      - BearerAuth: [ organizations.show_details ]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Organizations.yml#/OrganizationView'
+              type: object
+  patch:
+    tags:
+      - Organizations
+    security:
+      - BearerAuth: [ organizations.edit ]
+    requestBody:
+      $ref: './../requests/Organizations.yml#/OrganizationUpdate'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Organizations.yml#/OrganizationView'
+              type: object
+  delete:
+    tags:
+      - Organizations
+    security:
+      - BearerAuth: [ organizations.remove ]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      204:
+        description: Success
+
+OrganizationsAccept:
+  post:
+    tags:
+      - Organizations
+    security:
+      - BearerAuth: [ organizations.edit ]
+    requestBody:
+      $ref: './../requests/Organizations.yml#/OrganizationAccept'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Organizations.yml#/OrganizationView'
+              type: object
+
+OrganizationsReject:
+  post:
+    tags:
+      - Organizations
+    security:
+      - BearerAuth: [ organizations.edit ]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Organizations.yml#/OrganizationView'
+              type: object

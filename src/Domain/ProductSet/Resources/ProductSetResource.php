@@ -21,9 +21,13 @@ final class ProductSetResource extends Resource
      */
     public function base(Request $request): array
     {
-        $children = Gate::denies('product_sets.show_hidden')
+        $public = Gate::denies('product_sets.show_hidden');
+        $children = $public
             ? $this->resource->childrenPublic
             : $this->resource->children;
+
+        $depth = $this->resource->depth ?? (int) $request->get('depth', 0);
+        $nestedChildren = $depth > 0 ? ($public ? $this->resource->getPublicChildren($depth) : $this->resource->getChildren($depth)) : collect([]);
 
         return [
             'id' => $this->resource->getKey(),
@@ -37,6 +41,7 @@ final class ProductSetResource extends Resource
             'children_ids' => $children->map(fn ($child) => $child->getKey())->toArray(),
             'cover' => MediaResource::make($this->resource->media),
             'published' => $this->resource->published,
+            'children' => $nestedChildren->count() > 0 ? self::collection($nestedChildren) : [],
             ...$this->metadataResource('product_sets.show_metadata_private'),
             ...$request->boolean('with_translations') ?
                 $this->getAllTranslations('product_sets.show_hidden') : [],

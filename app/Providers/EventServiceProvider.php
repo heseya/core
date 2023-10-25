@@ -54,6 +54,10 @@ use App\Observers\SchemaObserver;
 use Domain\Language\Events\LanguageCreated;
 use Domain\Language\Events\LanguageDeleted;
 use Domain\Language\Events\LanguageUpdated;
+use Domain\Organization\Events\OrganizationAccepted;
+use Domain\Organization\Events\OrganizationRejected;
+use Domain\Organization\Listeners\OrganizationAcceptedListener;
+use Domain\Organization\Listeners\OrganizationRejectedListener;
 use Domain\Page\Events\PageCreated;
 use Domain\Page\Events\PageDeleted;
 use Domain\Page\Events\PageUpdated;
@@ -91,6 +95,12 @@ class EventServiceProvider extends ServiceProvider
         UserCreated::class => [
             UserCreatedListener::class,
         ],
+        OrganizationAccepted::class => [
+            OrganizationAcceptedListener::class,
+        ],
+        OrganizationRejected::class => [
+            OrganizationRejectedListener::class,
+        ],
         OrderUpdatedPaid::class => [
             OrderPaidListener::class,
         ],
@@ -98,6 +108,7 @@ class EventServiceProvider extends ServiceProvider
             ProductSearchValueListener::class,
         ],
     ];
+
     /** @var array<class-string> */
     private array $webhookEvents = [
         CouponCreated::class,

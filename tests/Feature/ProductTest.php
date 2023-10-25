@@ -514,6 +514,7 @@ class ProductTest extends TestCase
                         'published' => [
                             $this->lang,
                         ],
+                        'children' => [],
                     ],
                     [
                         'id' => $set2->getKey(),
@@ -530,6 +531,7 @@ class ProductTest extends TestCase
                         'published' => [
                             $this->lang,
                         ],
+                        'children' => [],
                     ],
                 ],
             ]);
@@ -576,6 +578,7 @@ class ProductTest extends TestCase
                         'published' => [
                             $this->lang,
                         ],
+                        'children' => [],
                     ],
                 ],
             ]);
@@ -622,6 +625,7 @@ class ProductTest extends TestCase
                         'published' => [
                             $this->lang,
                         ],
+                        'children' => [],
                     ],
                     [
                         'id' => $set2->getKey(),
@@ -638,6 +642,7 @@ class ProductTest extends TestCase
                         'published' => [
                             $this->lang,
                         ],
+                        'children' => [],
                     ],
                 ],
             ]);
@@ -704,6 +709,7 @@ class ProductTest extends TestCase
                         'published' => [
                             $this->lang,
                         ],
+                        'children' => [],
                     ],
                     [
                         'id' => $set2->getKey(),
@@ -728,6 +734,7 @@ class ProductTest extends TestCase
                         'published' => [
                             $this->lang,
                         ],
+                        'children' => [],
                     ],
                 ],
             ]);

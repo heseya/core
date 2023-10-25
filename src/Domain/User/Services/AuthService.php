@@ -28,6 +28,7 @@ use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\TokenServiceContract;
 use Domain\Consent\Services\ConsentService;
+use Domain\Organization\Services\OrganizationService;
 use Domain\User\Dtos\ChangePasswordDto;
 use Domain\User\Dtos\LoginDto;
 use Domain\User\Dtos\PasswordResetDto;
@@ -66,6 +67,7 @@ final class AuthService implements AuthServiceContract
         protected UserLoginAttemptServiceContract $userLoginAttemptService,
         protected UserServiceContract $userService,
         protected MetadataServiceContract $metadataService,
+        protected OrganizationService $organizationService,
     ) {}
 
     /**
@@ -374,6 +376,10 @@ final class AuthService implements AuthServiceContract
 
         if (!($dto->metadata_personal instanceof Optional)) {
             $this->metadataService->sync($user, $dto->metadata_personal);
+        }
+
+        if (!($dto->organization_token instanceof Optional)) {
+            $this->organizationService->attachUser($user, $dto->organization_token);
         }
 
         $user->save();

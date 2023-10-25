@@ -90,4 +90,15 @@ return [
     'verify-email-message' => 'Please click the button below to verify your email address',
     'verify-email-link' => 'verify email address',
     'verify-email-warning' => 'If you did not create an account, no further action is required.',
+
+    // organization accepted
+    'subject-organization-accepted' => 'Organization accepted',
+    'organization-accepted' => 'The organization :name has been accepted.',
+    'organization-accepted-invitation' => 'Your organization has been accepted. Now you can register account.',
+    'organization-accepted-link' => 'Click thus link to register account',
+    'organization-register' => 'register',
+
+    // organization rejected
+    'subject-organization-rejected' => 'Organization rejected',
+    'organization-rejected' => 'The organization :name has been rejected.',
 ];

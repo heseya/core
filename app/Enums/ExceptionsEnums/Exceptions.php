@@ -136,6 +136,14 @@ enum Exceptions: string
     case PUBLISHING_TRANSLATION_EXCEPTION = "Model doesn't have all required translations to be published";
     case CLIENT_VERIFIED_EMAIL = 'User already verified email';
 
+    case CLIENT_WIDGET_NOT_CREATED_BY_THIS_APP = 'Trying to update or delete Widget not created by curren application';
+    case CLIENT_ADD_WIDGET_WITH_PERMISSIONS_USER_DONT_HAVE = 'Can\'t add an widget with permissions you don\'t have';
+    case CLIENT_APP_INSTALLS_WIDGETS_WITHOUT_REQUIRED_PERMISSION = 'App wants to install widgets without required permission';
+
+    case CLIENT_ORGANIZATION_VERIFIED = 'Verified status cannot be revoked';
+    case CLIENT_ORGANIZATION_SAME_STATUS = 'Organization already has given status';
+    case CLIENT_ORGANIZATION_TOKEN_EMAIL = 'The email provided does not match the organization';
+
     // Aliases
     public const CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT = self::CLIENT_NO_ACCESS;
     public const CLIENT_PROVIDER_HAS_NO_CONFIG = self::CLIENT_PROVIDER_IS_NOT_ACTIVE;
@@ -150,7 +158,8 @@ enum Exceptions: string
             self::CLIENT_USERS_NO_ACCESS => 400,
             self::CLIENT_TFA_REQUIRED,
             self::CLIENT_WEBHOOK_APP_ACTION,
-            self::CLIENT_WEBHOOK_USER_ACTION => 403,
+            self::CLIENT_WEBHOOK_USER_ACTION,
+            self::CLIENT_WIDGET_NOT_CREATED_BY_THIS_APP => 403,
             self::SERVER_CDN_ERROR,
             self::SERVER_ERROR,
             self::SERVER_ORDER_STATUSES_NOT_CONFIGURED,

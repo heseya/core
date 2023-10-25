@@ -61,4 +61,15 @@ return [
     'verify-email-message' => 'Aby zweryfikować adres email kliknij w link',
     'verify-email-link' => 'zweryfikuj adres email',
     'verify-email-warning' => 'Jeśli zgłoszenie nie pochodzi od Ciebie zignoruj tego maila.',
+
+    // organization accepted
+    'subject-organization-accepted' => 'Organizacja zaakceptowana',
+    'organization-accepted' => 'Organizacja :name została zaakceptowana.',
+    'organization-accepted-invitation' => 'Twoja organizacja została pomyślnie zaakceptowana. Teraz możesz zarejestrować konto.',
+    'organization-accepted-link' => 'Aby zarejestrować się kliknij w link',
+    'organization-register' => 'zarejestruj się',
+
+    // organization rejected
+    'subject-organization-rejected' => 'Organizacja odrzucona',
+    'organization-rejected' => 'Organizacja :name została odrzucona.',
 ];
