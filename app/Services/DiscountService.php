@@ -84,7 +84,8 @@ readonly class DiscountService implements DiscountServiceContract
     {
         return Discount::searchByCriteria($dto->toArray())
             ->orderBy('updated_at', 'DESC')
-            ->with(['orders', 'orderProducts', 'products', 'productSets', 'conditionGroups', 'shippingMethods', 'metadata'])
+            ->with(['products', 'productSets', 'conditionGroups', 'shippingMethods', 'metadata'])
+            ->withOrdersCount()
             ->paginate(Config::get('pagination.per_page'));
     }
 
