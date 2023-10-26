@@ -18,6 +18,7 @@ class ProductSearch extends Criterion
                     ->orWhere('description_html', 'LIKE', '%' . $this->value . '%');
             });
         }
+
         return $query->whereFullText([
             'products.name',
             'products.description_html',
