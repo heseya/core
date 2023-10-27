@@ -49,10 +49,9 @@ class PageService implements PageServiceContract
     public function create(PageCreateDto $dto): Page
     {
         $attributes = $dto->toArray();
+
         $pageCurrentOrder = Page::query()->orderByDesc('order')->value('order');
-        if ($pageCurrentOrder !== null) {
-            $attributes = array_merge($attributes, ['order' => $pageCurrentOrder + 1]);
-        }
+        $attributes['order'] = $pageCurrentOrder === null ? 0 : $pageCurrentOrder + 1;
 
         /** @var Page $page */
         $page = Page::query()->create($attributes);
