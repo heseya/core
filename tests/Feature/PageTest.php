@@ -524,7 +524,7 @@ class PageTest extends TestCase
     }
 
     /**
-     * @dataProvider booleanProvider
+     * @dataProvider authWithTwoBooleansProvider
      */
     public function testCreateWithSeo(string $user, bool $boolean, bool $booleanValue): void
     {
@@ -881,7 +881,7 @@ class PageTest extends TestCase
     }
 
     /**
-     * @dataProvider booleanProvider
+     * @dataProvider authWithTwoBooleansProvider
      */
     public function testUpdateWithSeo(string $user, bool $boolean, bool $booleanValue): void
     {
@@ -938,7 +938,7 @@ class PageTest extends TestCase
     }
 
     /**
-     * @dataProvider booleanProvider
+     * @dataProvider authWithTwoBooleansProvider
      */
     public function testUpdateSeo(string $user, bool $boolean, bool $booleanValue): void
     {

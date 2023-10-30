@@ -59,16 +59,6 @@ class CartTest extends TestCase
     private Currency $currency;
     private SchemaCrudService $schemaCrudService;
 
-    public static function couponOrSaleProvider(): array
-    {
-        return [
-            'as user coupon' => ['user', true],
-            'as application coupon' => ['application', true],
-            'as user sale' => ['user', false],
-            'as application sale' => ['application', false],
-        ];
-    }
-
     /**
      * @throws UnknownCurrencyException
      * @throws RoundingNecessaryException
@@ -323,9 +313,9 @@ class CartTest extends TestCase
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      */
-    public function testCartProcess($user, $coupon): void
+    public function testCartProcess(string $user, bool $coupon): void
     {
         $this->markTestSkipped();
 
@@ -790,9 +780,9 @@ class CartTest extends TestCase
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      */
-    public function testCartProcessWithNotExistingCoupon($user, $coupon): void
+    public function testCartProcessWithNotExistingCoupon(string $user, bool $coupon): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
@@ -852,9 +842,9 @@ class CartTest extends TestCase
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      */
-    public function testCartProcessCheapestProduct($user, $coupon): void
+    public function testCartProcessCheapestProduct(string $user, bool $coupon): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
@@ -952,7 +942,7 @@ class CartTest extends TestCase
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      */
     public function testCartProcessCheapestProductWithSamePrice($user, $coupon): void
     {
@@ -1299,11 +1289,11 @@ class CartTest extends TestCase
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      *
      * @throws DtoException
      */
-    public function testCartProcessRoundedValues($user, $coupon): void
+    public function testCartProcessRoundedValues(string $user, bool $coupon): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
@@ -1400,11 +1390,11 @@ class CartTest extends TestCase
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      *
      * @throws DtoException
      */
-    public function testCartProcessRoundedValuesCheapestProduct($user, $coupon): void
+    public function testCartProcessRoundedValuesCheapestProduct(string $user, bool $coupon): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
@@ -1945,9 +1935,9 @@ class CartTest extends TestCase
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      */
-    public function testCartProcessProductInChildrenSet($user, $coupon): void
+    public function testCartProcessProductInChildrenSet(string $user, bool $coupon): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
@@ -2142,9 +2132,9 @@ class CartTest extends TestCase
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      */
-    public function testCartProcessInactive($user, $coupon): void
+    public function testCartProcessInactive(string $user, bool $coupon): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
