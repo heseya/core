@@ -1946,7 +1946,7 @@ class ProductTest extends TestCase
     }
 
     /**
-     * @dataProvider booleanProvider
+     * @dataProvider authWithTwoBooleansProvider
      */
     public function testCreateWithSeo(string $user, $boolean, $booleanValue): void
     {

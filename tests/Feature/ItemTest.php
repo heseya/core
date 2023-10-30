@@ -161,7 +161,7 @@ class ItemTest extends TestCase
     }
 
     /**
-     * @dataProvider booleanProvider
+     * @dataProvider authWithTwoBooleansProvider
      */
     public function testIndexFilterBySoldOut($user, $boolean, $booleanValue): void
     {

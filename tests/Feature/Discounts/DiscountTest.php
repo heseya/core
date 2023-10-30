@@ -58,24 +58,6 @@ class DiscountTest extends TestCase
     private ProductRepositoryContract $productRepository;
     private Currency $currency;
 
-    public static function couponOrSaleProvider(): array
-    {
-        return [
-            'coupons' => ['coupons'],
-            'sales' => ['sales'],
-        ];
-    }
-
-    public static function authWithDiscountProvider(): array
-    {
-        return [
-            'as user coupons' => ['user', 'coupons'],
-            'as user sales' => ['user', 'sales'],
-            'as app coupons' => ['application', 'coupons'],
-            'as app sales' => ['application', 'sales'],
-        ];
-    }
-
     public static function timeConditionProvider(): array
     {
         return [

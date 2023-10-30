@@ -47,6 +47,7 @@
     "nunomaduro/collision": "^7.0",
     "nunomaduro/larastan": "^2.0",
     "phpunit/phpunit": "^10.0",
+    "rawr/phpunit-data-provider": "^3.2",
     "spatie/laravel-ignition": "^2.0"
   },
   "repositories": [
@@ -171,7 +172,7 @@
       "@php artisan test --env=.env"
     ],
     "test-defects": [
-      "./vendor/bin/phpunit --stop-on-error --stop-on-incomplete --stop-on-failure --cache-result --order-by=defects,random"
+      "./vendor/bin/phpunit --stop-on-defect --cache-result --order-by=defects,random"
     ]
   }
 }
