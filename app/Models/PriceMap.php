@@ -2,20 +2,13 @@
 
 namespace App\Models;
 
-use Brick\Money\Money;
-use Database\Factories\PriceFactory;
 use Domain\Currency\Currency;
-use Domain\Price\Dtos\PriceDto;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Spatie\LaravelData\WithData;
 
 /**
-
- *
- * @mixin IdeHelperPrice
+ * @mixin IdeHelperPriceMap
  */
 class PriceMap extends Model
 {

@@ -18,7 +18,7 @@ use Spatie\LaravelData\WithData;
  *
  * @method static PriceFactory factory()
  *
- * @mixin IdeHelperPrice
+ * @mixin IdeHelperPriceMapPrice
  */
 class PriceMapPrice extends Model
 {
