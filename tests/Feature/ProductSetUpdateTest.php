@@ -75,6 +75,28 @@ final class ProductSetUpdateTest extends TestCase
         Event::assertDispatched(ProductSetUpdated::class);
     }
 
+    public function testUpdateParentId(): void
+    {
+        $this->user->givePermissionTo('product_sets.edit');
+
+        /** @var ProductSet $set */
+        $set = ProductSet::factory()->create();
+
+        /** @var ProductSet $parentSet */
+        $parentSet = ProductSet::factory()->create();
+
+        $this
+            ->actingAs($this->user)
+            ->patchJson("/product-sets/id:{$set->getKey()}", [
+                'parent_id' => $parentSet->getKey(),
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('product_sets', [
+            'parent_id' => null,
+        ]);
+    }
+
     /**
      * @dataProvider authProvider
      */

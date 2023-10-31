@@ -195,7 +195,6 @@ final readonly class ProductSetService
 
             $rootOrder = ProductSet::reversed()->first()?->order + 1;
 
-            $productIds = $set->allProductsIds()->merge($set->relatedProducts->pluck('id'));
             $set->children()
                 ->whereNotIn('id', $dto->children_ids)
                 ->update([
@@ -272,29 +271,6 @@ final readonly class ProductSetService
         }
 
         return $query->paginate(Config::get('pagination.per_page'));
-    }
-
-    public function flattenSetsTree(Collection $sets, string $relation): Collection
-    {
-        $subsets = $sets->map(
-            fn ($set) => $this->flattenSetsTree($set->{$relation}, $relation),
-        );
-
-        return $subsets->flatten()->concat($sets->toArray());
-    }
-
-    /**
-     * Recursive get all parents of set collection if parent exists.
-     */
-    public function flattenParentsSetsTree(Collection $sets): Collection
-    {
-        $parents = $sets->map(fn ($set) => $set->parent)->filter(fn ($set) => $set !== null);
-
-        if ($parents->count() === 0) {
-            return $sets;
-        }
-
-        return $sets->merge($this->flattenParentsSetsTree($parents));
     }
 
     public function reorderProducts(ProductSet $set, ProductsReorderDto $dto): void
