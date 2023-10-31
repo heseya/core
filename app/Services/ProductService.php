@@ -23,8 +23,12 @@ use App\Services\Contracts\ProductServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
 use Heseya\Dto\Missing;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use League\Csv\Exception;
+use League\Csv\Reader;
+use Orchestra\Parser\Xml\Facade as XmlParser;
 
 final readonly class ProductService implements ProductServiceContract
 {
@@ -315,5 +319,59 @@ final readonly class ProductService implements ProductServiceContract
         $product->search_values = implode(' ', $searchValues);
 
         return $product;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function updateProductPrices(UploadedFile $file): void
+    {
+        $items = $file->getClientOriginalExtension() === 'csv'
+            ? $this->mapPricesFromCsv($file)
+            : $this->mapPricesFromXml($file);
+
+        foreach ($items as $item) {
+            $search = isset($item['ean'])
+                ? ['ean' => ['name_eq' => $item['ean']]]
+                : ['sku' => ['name_eq' => $item['sku']]];
+
+            /** @var ?Product $product */
+            $product = Product::searchByCriteria(['attribute' => $search])->first();
+
+            if ($product && $item['price']) {
+                $this->update($product, ProductUpdateDto::fromArray(['price' => $item['price']]));
+            }
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function mapPricesFromCsv(UploadedFile $file): array
+    {
+        $priceKey = 'Cena netto za   1 rolkę';
+        $skuKey = 'Indeks';
+        $reader = Reader::createFromPath($file);
+        $reader->setHeaderOffset(1);
+
+        $results = [];
+        foreach ($reader->getRecords() as $offset => $record) {
+            if (isset($record[$skuKey], $record[$priceKey])) {
+                /** @var string $stringPrice */
+                $stringPrice = preg_replace('/[^\d,]/', '', $record[$priceKey]);
+                $results[] = [
+                    'sku' => $record[$skuKey],
+                    'price' => (float) str_replace(',', '.', $stringPrice),
+                ];
+            }
+        }
+
+        return $results;
+    }
+
+    private function mapPricesFromXml(UploadedFile $file): array
+    {
+        return XmlParser::load($file)
+            ->parse(['products' => ['uses' => 'Produkt[EAN>ean,cenabrutto>price]']])['products'];
     }
 }
