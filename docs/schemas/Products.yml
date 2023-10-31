@@ -112,9 +112,6 @@ ProductView:
   allOf:
     - $ref: '#/Product'
     - properties:
-        order:
-          type: integer
-          example: 8
         user_id:
           type: string
           format: uuid

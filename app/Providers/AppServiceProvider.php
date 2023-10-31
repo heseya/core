@@ -7,11 +7,9 @@ use App\Repositories\DiscountRepository;
 use App\Repositories\ProductRepository;
 use App\Services\AnalyticsService;
 use App\Services\AppService;
-use App\Services\AuthService;
 use App\Services\AvailabilityService;
 use App\Services\Contracts\AnalyticsServiceContract;
 use App\Services\Contracts\AppServiceContract;
-use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
@@ -31,7 +29,6 @@ use App\Services\Contracts\PermissionServiceContract;
 use App\Services\Contracts\ProviderServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
 use App\Services\Contracts\RoleServiceContract;
-use App\Services\Contracts\SavedAddressServiceContract;
 use App\Services\Contracts\SchemaCrudServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\ShippingTimeDateServiceContract;
@@ -41,8 +38,6 @@ use App\Services\Contracts\StatusServiceContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
 use App\Services\Contracts\UrlServiceContract;
-use App\Services\Contracts\UserLoginAttemptServiceContract;
-use App\Services\Contracts\UserServiceContract;
 use App\Services\Contracts\WebHookServiceContract;
 use App\Services\Contracts\WishlistServiceContract;
 use App\Services\DepositService;
@@ -63,7 +58,6 @@ use App\Services\PermissionService;
 use App\Services\ProviderService;
 use App\Services\ReorderService;
 use App\Services\RoleService;
-use App\Services\SavedAddressService;
 use App\Services\SchemaCrudService;
 use App\Services\SchemaService;
 use App\Services\ShippingTimeDateService;
@@ -73,8 +67,6 @@ use App\Services\StatusService;
 use App\Services\TokenService;
 use App\Services\TranslationService;
 use App\Services\UrlService;
-use App\Services\UserLoginAttemptService;
-use App\Services\UserService;
 use App\Services\WebHookService;
 use App\Services\WishlistService;
 use Domain\GoogleCategory\Services\Contracts\GoogleCategoryServiceContract;
@@ -84,12 +76,12 @@ use Domain\Setting\Services\SettingsService;
 use Domain\ShippingMethod\Services\Contracts\ShippingMethodServiceContract;
 use Domain\ShippingMethod\Services\ShippingMethodService;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
     private const CONTRACTS = [
-        AuthServiceContract::class => AuthService::class,
         AnalyticsServiceContract::class => AnalyticsService::class,
         AppServiceContract::class => AppService::class,
         DiscountServiceContract::class => DiscountService::class,
@@ -102,7 +94,6 @@ class AppServiceProvider extends ServiceProvider
         SchemaCrudServiceContract::class => SchemaCrudService::class,
         SettingsServiceContract::class => SettingsService::class,
         ShippingMethodServiceContract::class => ShippingMethodService::class,
-        UserServiceContract::class => UserService::class,
         RoleServiceContract::class => RoleService::class,
         PermissionServiceContract::class => PermissionService::class,
         TokenServiceContract::class => TokenService::class,
@@ -112,12 +103,10 @@ class AppServiceProvider extends ServiceProvider
         ItemServiceContract::class => ItemService::class,
         OneTimeSecurityCodeContract::class => OneTimeSecurityCodeService::class,
         TranslationServiceContract::class => TranslationService::class,
-        SavedAddressServiceContract::class => SavedAddressService::class,
         AvailabilityServiceContract::class => AvailabilityService::class,
         DocumentServiceContract::class => DocumentService::class,
         MetadataServiceContract::class => MetadataService::class,
         SortServiceContract::class => SortService::class,
-        UserLoginAttemptServiceContract::class => UserLoginAttemptService::class,
         StatusServiceContract::class => StatusService::class,
         DepositServiceContract::class => DepositService::class,
         ShippingTimeDateServiceContract::class => ShippingTimeDateService::class,
@@ -154,6 +143,17 @@ class AppServiceProvider extends ServiceProvider
          */
         if ($this->app->isLocal()) {
             $this->app->register('Barryvdh\\LaravelIdeHelper\\IdeHelperServiceProvider');
+        }
+
+        if (empty(Config::get('mail.from.address'))) {
+            if (str_contains(Config::get('mail.mailers.smtp.username'), '@')) {
+                Config::set('mail.from.address', Config::get('mail.mailers.smtp.username'));
+            } else {
+                $host = parse_url(Config::get('app.url'), PHP_URL_HOST);
+                if (is_string($host)) {
+                    Config::set('mail.from.address', 'contact@' . str_replace('www.', '', $host));
+                }
+            }
         }
     }
 }

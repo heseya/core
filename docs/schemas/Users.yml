@@ -52,6 +52,8 @@ User:
       $ref: './../schemas/Metadata.yml#/Metadata'
     metadata_private:
       $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_personal:
+      $ref: './../schemas/Metadata.yml#/Metadata'
 
 UserView:
   type: object

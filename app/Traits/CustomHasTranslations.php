@@ -5,6 +5,7 @@ namespace App\Traits;
 use App\Models\Discount;
 use App\Models\Option;
 use Domain\Language\LanguageService;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\Seo\Models\SeoMetadata;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -57,18 +58,17 @@ trait CustomHasTranslations
         if ($this instanceof SeoMetadata && !$this->global && $this->model_type) {
             $permission = Config::get('relation-aliases.' . $this->model_type)::HIDDEN_PERMISSION;
         }
-        if (Auth::user() && Auth::user()->hasPermissionTo($permission)) {
+        if ((Auth::user() && Auth::user()->hasPermissionTo($permission)) || $this instanceof AttributeOption) {
             // published and no published
             /** @var Collection<int, string> $translations */
             $translations = $this->getTranslatedLocales($key);
         } else {
             // only published
+            /** @var array<int, string> $translations */
+            $translations = $this->published ?? [];
             if ($this instanceof Option) {
                 /** @var array<int, string> $translations */
                 $translations = $this->schema->published ?? [];
-            } else {
-                /** @var array<int, string> $translations */
-                $translations = $this->published ?? [];
             }
         }
 

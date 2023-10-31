@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property mixed $pivot
+ * @property ProductAttribute|null $product_attribute_pivot
  * @property string $name
  * @property string $description
  * @property AttributeType $type
@@ -99,8 +100,9 @@ final class Attribute extends Model implements Translatable
     {
         return $this
             ->belongsToMany(Product::class, 'product_attribute')
-            ->withPivot('id')
-            ->using(ProductAttribute::class);
+            ->using(ProductAttribute::class)
+            ->as('product_attribute_pivot')
+            ->withPivot(['pivot_id']);
     }
 
     /**

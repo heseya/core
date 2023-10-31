@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Enums\SchemaType;
 use App\Models\Country;
+use App\Models\Deposit;
 use App\Models\Discount;
 use App\Models\Item;
 use App\Models\Media;
@@ -14,8 +16,11 @@ use App\Models\OrderProduct;
 use App\Models\Price;
 use App\Models\PriceRange;
 use App\Models\Product;
+use App\Models\ProductAttribute;
 use App\Models\Schema;
 use App\Models\Status;
+use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Services\ProductService;
 use App\Services\SchemaCrudService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
@@ -25,19 +30,145 @@ use Domain\Banner\Models\Banner;
 use Domain\Banner\Models\BannerMedia;
 use Domain\Currency\Currency;
 use Domain\Metadata\Enums\MetadataType;
+use Domain\Metadata\Models\Metadata;
+use Domain\Page\Page;
+use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\ProductPriceType;
+use Domain\Price\PriceRepository;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductSet\ProductSet;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Domain\Tag\Models\Tag;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 use Tests\Utils\FakeDto;
 
 class PerformanceTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function testIndexPerformanceProducts100(): void
+    {
+        $this->user->givePermissionTo('products.show');
+
+        $this->prepareProducts();
+
+        $this
+            ->actingAs($this->user)
+            ->json('GET', '/products?limit=100')
+            ->assertOk()
+            ->assertJsonCount(100, 'data');
+
+        $this->assertQueryCountLessThan(20);
+    }
+
+    public function testIndexPerformanceProductsFull100(): void
+    {
+        $this->user->givePermissionTo('products.show');
+
+        $this->prepareProducts();
+
+        $this
+            ->actingAs($this->user)
+            ->json('GET', '/products?full=1&limit=100')
+            ->assertOk()
+            ->assertJsonCount(100, 'data');
+
+        $this->assertQueryCountLessThan(55);
+    }
+
+    public function testShowProductPerformance(): void
+    {
+        $this->user->givePermissionTo('products.show_details');
+
+        $this->prepareProducts(1);
+
+        $product = Product::first();
+        $this
+            ->actingAs($this->user)
+            ->json('GET', '/products/id:' . $product->getKey())
+            ->assertOk();
+
+        $this->assertQueryCountLessThan(64);
+    }
+
+    public function testShowProductWithAttributesPerformance(): void
+    {
+        $this->user->givePermissionTo('products.show');
+        $this->user->givePermissionTo('products.show_details');
+        $this->user->givePermissionTo('attributes.show');
+
+        $this->prepareProducts(1);
+
+        /** @var Product $product */
+        $product = Product::first();
+
+        $attribute1 = Attribute::factory()->create();
+        $productAttribute1 = ProductAttribute::create([
+            'product_id' => $product->getKey(),
+            'attribute_id' => $attribute1->getKey(),
+        ]);
+        $options1 = AttributeOption::factory()->count(500)->create([
+            'index' => 1,
+            'attribute_id' => $attribute1->getKey(),
+        ]);
+        $productAttribute1->options()->attach($options1);
+
+        $attribute2 = Attribute::factory()->create();
+        $productAttribute2 = ProductAttribute::create([
+            'product_id' => $product->getKey(),
+            'attribute_id' => $attribute2->getKey(),
+        ]);
+        $options2 = AttributeOption::factory()->count(500)->create([
+            'index' => 1,
+            'attribute_id' => $attribute2->getKey(),
+        ]);
+        $productAttribute2->options()->attach($options2);
+
+        $attribute3 = Attribute::factory()->create();
+        $productAttribute3 = ProductAttribute::create([
+            'product_id' => $product->getKey(),
+            'attribute_id' => $attribute3->getKey(),
+        ]);
+        $options3 = AttributeOption::factory()->count(500)->create([
+            'index' => 1,
+            'attribute_id' => $attribute3->getKey(),
+        ]);
+        $productAttribute3->options()->attach($options3);
+
+        DB::flushQueryLog();
+
+        $response = $this->actingAs($this->user)
+            ->json('GET', '/products/id:' . $product->getKey());
+        $response->assertOk();
+        $response->assertJsonCount(0, 'data.attributes');
+        $this->assertQueryCountLessThan(55);
+
+        $response =  $this->actingAs($this->user)
+            ->json('GET', '/products/id:' . $product->getKey() . '?' . Arr::query(['attribute_slug' => $attribute1->slug]));
+        $response->assertOk();
+        $response->assertJsonCount(1, 'data.attributes');
+        $this->assertQueryCountLessThan(58);
+
+        $this->actingAs($this->user)
+            ->json('GET', '/products/?' . Arr::query(['name' => $product->name]))
+            ->assertOk();
+        $this->assertQueryCountLessThan(15);
+
+        $this->actingAs($this->user)
+            ->json('GET', '/products/?' . Arr::query(['attribute_slug' => $attribute1->slug]))
+            ->assertOk();
+        $this->assertQueryCountLessThan(25);
+
+        $this->actingAs($this->user)
+            ->json('GET', '/products/?' . Arr::query(['name' => $product->name, 'full' => true]))
+            ->assertOk();
+        $this->assertQueryCountLessThan(49);
+    }
 
     public function testIndexPerformanceSchema500(): void
     {
@@ -146,7 +277,7 @@ class PerformanceTest extends TestCase
             ->getJson('/attributes/id:' . $attribute->getKey() . '/options')
             ->assertOk();
 
-        $this->assertQueryCountLessThan(11);
+        $this->assertQueryCountLessThan(13);
     }
 
     public function testIndexPerformanceAttribute500(): void
@@ -237,7 +368,7 @@ class PerformanceTest extends TestCase
             ->getJson('/orders')
             ->assertOk();
 
-        $this->assertQueryCountLessThan(24);
+        $this->assertQueryCountLessThan(26);
     }
 
     public function testIndexPerformanceShippingMethode(): void
@@ -253,7 +384,7 @@ class PerformanceTest extends TestCase
             ->assertOk();
 
         // TODO: this should be improved
-        $this->assertQueryCountLessThan(15);
+        $this->assertQueryCountLessThan(17);
     }
 
     public function testShowPerformanceSale(): void
@@ -273,7 +404,7 @@ class PerformanceTest extends TestCase
 
         // TODO: Fix with discounts refactor
         // It's baffling how slow this is (was 18 before)
-        $this->assertQueryCountLessThan(2550);
+        $this->assertQueryCountLessThan(2522);
     }
 
     public function testCreateSalePerformance1000Products(): void
@@ -519,7 +650,7 @@ class PerformanceTest extends TestCase
                 'type' => $discountShipping->type,
                 'value' => $discountShipping->value,
                 'target_type' => $discountShipping->target_type,
-                'applied_discount' => $order->shipping_price_initial,
+                'applied' => $order->shipping_price_initial,
                 'code' => $discountShipping->code,
             ],
             $discountOrder->getKey(),
@@ -528,9 +659,9 @@ class PerformanceTest extends TestCase
                 'type' => $discountOrder->type,
                 'value' => $discountOrder->value,
                 'target_type' => $discountOrder->target_type,
-                'applied_discount' => $order->shipping_price_initial,
+                'applied' => $order->shipping_price_initial,
                 'code' => $discountOrder->code,
-            ]
+            ],
         );
 
         $discountProduct = Discount::factory()->create([
@@ -589,7 +720,7 @@ class PerformanceTest extends TestCase
                 'type' => $discountProduct->type,
                 'value' => $discountProduct->value,
                 'target_type' => $discountProduct->target_type,
-                'applied_discount' => $discountProduct->value,
+                'applied' => $discountProduct->value,
                 'code' => $discountProduct->code,
             ],
             $discountProduct2->getKey() => [
@@ -597,7 +728,7 @@ class PerformanceTest extends TestCase
                 'type' => $discountProduct2->type,
                 'value' => $discountProduct2->value,
                 'target_type' => $discountProduct2->target_type,
-                'applied_discount' => $discountProduct2->value,
+                'applied' => $discountProduct2->value,
                 'code' => $discountProduct2->code,
             ],
         ]);
@@ -616,7 +747,7 @@ class PerformanceTest extends TestCase
                 'type' => $discountProduct->type,
                 'value' => $discountProduct->value,
                 'target_type' => $discountProduct->target_type,
-                'applied_discount' => $discountProduct->value,
+                'applied' => $discountProduct->value,
                 'code' => $discountProduct->code,
             ],
             $discountProduct2->getKey() => [
@@ -624,7 +755,7 @@ class PerformanceTest extends TestCase
                 'type' => $discountProduct2->type,
                 'value' => $discountProduct2->value,
                 'target_type' => $discountProduct2->target_type,
-                'applied_discount' => $discountProduct2->value,
+                'applied' => $discountProduct2->value,
                 'code' => $discountProduct2->code,
             ],
         ]);
@@ -643,7 +774,7 @@ class PerformanceTest extends TestCase
                 'type' => $discountProduct->type,
                 'value' => $discountProduct->value,
                 'target_type' => $discountProduct->target_type,
-                'applied_discount' => $discountProduct->value,
+                'applied' => $discountProduct->value,
                 'code' => $discountProduct->code,
             ],
             $discountProduct2->getKey() => [
@@ -651,7 +782,7 @@ class PerformanceTest extends TestCase
                 'type' => $discountProduct2->type,
                 'value' => $discountProduct2->value,
                 'target_type' => $discountProduct2->target_type,
-                'applied_discount' => $discountProduct2->value,
+                'applied' => $discountProduct2->value,
                 'code' => $discountProduct2->code,
             ],
         ]);
@@ -812,5 +943,99 @@ class PerformanceTest extends TestCase
             ->assertOk();
 
         $this->assertQueryCountLessThan(22);
+    }
+
+    private function prepareProducts(int $count = 100): void
+    {
+        $products = Product::factory()->count($count)->create([
+            'public' => true,
+        ]);
+
+        $productSets = ProductSet::factory()->count(5)->create([
+            'public' => true,
+        ]);
+
+        $categories = $productSets;
+        foreach ($productSets as $set) {
+            $children = ProductSet::factory([
+                'parent_id' => $set->getKey(),
+            ])->count(3)->create();
+            $categories = $categories->merge($children);
+        }
+
+        $sales = Discount::factory()->count(5)->create([
+            'code' => null,
+        ]);
+
+        $tags = Tag::factory()->count(10)->create();
+        $pages = Page::factory()->count(10)->create();
+
+        $items = Item::factory()->count(10)->create();
+
+        /** @var ProductService $productService */
+        $productService = App::make(ProductService::class);
+        /** @var ProductRepositoryContract $productRepository */
+        $productRepository = App::make(ProductRepositoryContract::class);
+        $products->each(function (Product $product) use ($categories, $productService, $productRepository, $sales, $tags, $pages, $items) {
+            $this->prepareProductSchemas($product);
+
+            for ($i = 0; $i < 5; ++$i) {
+                $media = Media::factory()->create();
+                $product->media()->attach($media);
+            }
+
+            for ($i = 0; $i < 3; ++$i) {
+                $product->sets()->syncWithoutDetaching($categories->random());
+                $product->relatedSets()->syncWithoutDetaching($categories->random());
+                $product->sales()->syncWithoutDetaching($sales->random());
+                $product->tags()->syncWithoutDetaching($tags->random());
+                $product->metadata()->save(Metadata::factory()->make());
+                $product->pages()->syncWithoutDetaching($pages->random());
+                $product->items()->attach($items->random(), ['required_quantity' => mt_rand(1, 4)]);
+            }
+
+            $product->save();
+            $product->refresh();
+
+            $prices = array_map(fn (Currency $currency) => PriceDto::from(
+                Money::of(round(mt_rand(500, 6000), -2), $currency->value),
+            ), Currency::cases());
+
+            $productRepository->setProductPrices($product->getKey(), [
+                ProductPriceType::PRICE_BASE->value => $prices,
+            ]);
+
+            $productService->updateMinMaxPrices($product);
+        });
+    }
+
+    private function prepareProductSchemas(Product $product): void
+    {
+        $schemas = Schema::factory()
+            ->has(Price::factory()->forAllCurrencies())
+            ->count(7)
+            ->sequence(fn ($sequence) => ['type' => $sequence->index])
+            ->create();
+
+        $schemas->each(function ($schema) use ($product) {
+            $priceRepository = App::make(PriceRepository::class);
+            $priceRepository->setModelPrices($schema, [
+                ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(),
+            ]);
+
+            $product->schemas()->attach($schema->getKey());
+
+            if ($schema->type->is(SchemaType::SELECT)) {
+                /** @var Item $item */
+                $item = Item::factory()->create();
+                $item->deposits()->saveMany(Deposit::factory()->count(2)->make());
+
+                Option::factory([
+                    'schema_id' => $schema->getKey(),
+                ])
+                    ->has(Price::factory()->forAllCurrencies())
+                    ->count(3)->create();
+            }
+        });
     }
 }

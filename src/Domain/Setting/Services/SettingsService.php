@@ -7,6 +7,7 @@ namespace Domain\Setting\Services;
 use Domain\Setting\Models\Setting;
 use Domain\Setting\Services\Contracts\SettingsServiceContract;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 
 final class SettingsService implements SettingsServiceContract
@@ -54,5 +55,24 @@ final class SettingsService implements SettingsServiceContract
         }
 
         return $setting;
+    }
+
+    public function getMinimalPrice(string $name): float
+    {
+        $value = Cache::get($name);
+        if ($value === null) {
+            $value = (float) $this->getSetting($name)->value;
+            Cache::put($name, $value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getAdminMails(): array
+    {
+        return explode(';', $this->getSetting('admin_mails')->value);
     }
 }

@@ -27,8 +27,8 @@ return new class extends Migration {
                         'price' => $product->price + $schemaPrice,
                         'price_initial' => $product->price_initial + $schemaPrice,
                     ]);
-                }
-            )
+                },
+            ),
         );
     }
 
@@ -40,8 +40,8 @@ return new class extends Migration {
                 fn (OrderProduct $product) => $product->update([
                     'price' => $product->base_price,
                     'price_initial' => $product->base_price_initial,
-                ])
-            )
+                ]),
+            ),
         );
 
         Schema::table('order_products', function (Blueprint $table): void {

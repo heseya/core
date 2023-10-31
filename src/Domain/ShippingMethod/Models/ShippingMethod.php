@@ -6,6 +6,7 @@ namespace Domain\ShippingMethod\Models;
 
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\ShippingMethodItems;
 use App\Criteria\ShippingMethodSalesChannel;
 use App\Criteria\WhereInIds;
 use App\Enums\ShippingType;
@@ -17,16 +18,19 @@ use App\Models\Model;
 use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\PriceRange;
+use App\Models\Product;
 use App\Traits\HasDiscounts;
 use App\Traits\HasMetadata;
 use Brick\Math\BigDecimal;
 use Brick\Money\Money;
+use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Models\SalesChannel;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -41,6 +45,7 @@ final class ShippingMethod extends Model
     use HasDiscounts;
     use HasFactory;
     use HasMetadata;
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -51,7 +56,8 @@ final class ShippingMethod extends Model
         'name',
         'public',
         'order',
-        'block_list',
+        'is_block_list_products',
+        'is_block_list_countries',
         'shipping_time_min',
         'shipping_time_max',
         'shipping_type',
@@ -67,7 +73,8 @@ final class ShippingMethod extends Model
      */
     protected $casts = [
         'public' => 'boolean',
-        'block_list' => 'boolean',
+        'is_block_list_products' => 'boolean',
+        'is_block_list_countries' => 'boolean',
         'shipping_type' => ShippingType::class,
         'payment_on_delivery' => 'boolean',
     ];
@@ -77,6 +84,7 @@ final class ShippingMethod extends Model
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,
         'sales_channel_id' => ShippingMethodSalesChannel::class,
+        'items' => ShippingMethodItems::class,
     ];
 
     /**
@@ -120,6 +128,22 @@ final class ShippingMethod extends Model
     }
 
     /**
+     * @return BelongsToMany<Product>
+     */
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'shipping_method_product');
+    }
+
+    /**
+     * @return BelongsToMany<ProductSet>
+     */
+    public function productSets(): BelongsToMany
+    {
+        return $this->belongsToMany(ProductSet::class, 'shipping_method_product_set');
+    }
+
+    /**
      * @return BelongsToMany<Country>
      */
     public function countries(): BelongsToMany
@@ -141,7 +165,7 @@ final class ShippingMethod extends Model
             return false;
         }
 
-        return $this->block_list
+        return $this->is_block_list_countries
             ? $this->countries->contains('code', $country)
             : !$this->countries->contains('code', $country);
     }

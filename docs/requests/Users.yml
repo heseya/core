@@ -10,6 +10,10 @@ UserCreate:
           email:
             type: string
             example: admin@example.com
+          email_verify_url:
+            type: string
+            example: https://localhost/frontend/verify
+            description: 'Optional field to which the user will be redirected in the confirmation email'
           password:
             type: string
             example: '123@@#abYZ'
@@ -43,6 +47,9 @@ UserUpdate:
           email:
             type: string
             example: admin@example.com
+          email_verify_url:
+            type: string
+            example: https://localhost/frontend/verify
           birthday_date:
             type: string
             format: date

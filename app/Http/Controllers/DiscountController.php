@@ -46,6 +46,20 @@ class DiscountController extends Controller
     {
         Gate::inspect('coupon', [$coupon]);
 
+        $coupon->load([
+            'products',
+            'products.publishedTags',
+            'products.metadata',
+            'products.metadataPrivate',
+            'products.productAttributes',
+            'products.productAttributes.options',
+            'products.productAttributes.options.metadata',
+            'products.productAttributes.options.metadataPrivate',
+            'products.productAttributes.attribute',
+            'products.productAttributes.attribute.metadata',
+            'products.productAttributes.attribute.metadataPrivate',
+        ]);
+
         return CouponResource::make($coupon);
     }
 
@@ -54,7 +68,19 @@ class DiscountController extends Controller
         Gate::inspect('coupon', [$coupon]);
 
         if ($coupon->active) {
-            $coupon->load(['products', 'products.publishedTags']);
+            $coupon->load([
+                'products',
+                'products.publishedTags',
+                'products.metadata',
+                'products.metadataPrivate',
+                'products.productAttributes',
+                'products.productAttributes.options',
+                'products.productAttributes.options.metadata',
+                'products.productAttributes.options.metadataPrivate',
+                'products.productAttributes.attribute',
+                'products.productAttributes.attribute.metadata',
+                'products.productAttributes.attribute.metadataPrivate',
+            ]);
 
             return CouponResource::make($coupon);
         }
@@ -65,7 +91,20 @@ class DiscountController extends Controller
     public function showSale(Discount $sale): JsonResource
     {
         Gate::inspect('sale', [$sale]);
-        $sale->load(['products', 'products.publishedTags']);
+
+        $sale->load([
+            'products',
+            'products.publishedTags',
+            'products.metadata',
+            'products.metadataPrivate',
+            'products.productAttributes',
+            'products.productAttributes.options',
+            'products.productAttributes.options.metadata',
+            'products.productAttributes.options.metadataPrivate',
+            'products.productAttributes.attribute',
+            'products.productAttributes.attribute.metadata',
+            'products.productAttributes.attribute.metadataPrivate',
+        ]);
 
         return SaleResource::make($sale);
     }

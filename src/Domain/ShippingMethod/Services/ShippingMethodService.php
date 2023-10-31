@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\ShippingMethod\Services;
 
 use App\Enums\ExceptionsEnums\Exceptions;
-use App\Exceptions\ClientException;
 use App\Exceptions\StoreException;
 use App\Models\Address;
 use App\Models\User;
@@ -13,10 +12,10 @@ use App\Services\Contracts\MetadataServiceContract;
 use Brick\Money\Money;
 use Domain\ShippingMethod\Dtos\PriceRangeDto;
 use Domain\ShippingMethod\Dtos\ShippingMethodCreateDto;
+use Domain\ShippingMethod\Dtos\ShippingMethodIndexDto;
 use Domain\ShippingMethod\Dtos\ShippingMethodUpdateDto;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Domain\ShippingMethod\Services\Contracts\ShippingMethodServiceContract;
-use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -30,10 +29,18 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
         private MetadataServiceContract $metadataService,
     ) {}
 
-    public function index(?array $search, Optional|string $country, ?Money $cartValue): LengthAwarePaginator
+    public function index(ShippingMethodIndexDto $dto, ?Money $cartValue): LengthAwarePaginator
     {
+        $search = $dto->only(
+            'metadata',
+            'metadata_private',
+            'ids',
+            'items',
+            'sales_channel_id',
+        )->toArray();
+
         $query = ShippingMethod::query()
-            ->searchByCriteria($search ?? [])
+            ->searchByCriteria($search)
             ->with('metadata')
             ->orderBy('order');
 
@@ -55,15 +62,17 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
             ]);
         }
 
+        $country = $dto->country;
+
         if (!$country instanceof Optional) {
             $query->where(function (Builder $query) use ($country): void {
                 $query->where(function (Builder $query) use ($country): void {
                     $query
-                        ->where('block_list', false)
+                        ->where('is_block_list_countries', false)
                         ->whereHas('countries', fn ($query) => $query->where('code', $country));
                 })->orWhere(function (Builder $query) use ($country): void {
                     $query
-                        ->where('block_list', true)
+                        ->where('is_block_list_countries', true)
                         ->whereDoesntHave(
                             'countries',
                             fn ($query) => $query->where('code', $country),
@@ -107,8 +116,16 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
             $shippingMethod->salesChannels()->sync($shippingMethodDto->sales_channels);
         }
 
-        if (!($shippingMethodDto->getMetadata() instanceof Missing)) {
-            $this->metadataService->sync($shippingMethod, $shippingMethodDto->getMetadata());
+        if (!($shippingMethodDto->metadata_computed instanceof Optional)) {
+            $this->metadataService->sync($shippingMethod, $shippingMethodDto->metadata_computed);
+        }
+
+        if (!($shippingMethodDto->product_ids instanceof Optional)) {
+            $shippingMethod->products()->sync($shippingMethodDto->product_ids);
+        }
+
+        if (!($shippingMethodDto->product_set_ids instanceof Optional)) {
+            $shippingMethod->productSets()->sync($shippingMethodDto->product_set_ids);
         }
 
         $shippingMethodDto->getPriceRanges()->each(
@@ -154,6 +171,14 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
             }
         }
 
+        if (!($shippingMethodDto->product_ids instanceof Optional)) {
+            $shippingMethod->products()->sync($shippingMethodDto->product_ids);
+        }
+
+        if (!($shippingMethodDto->product_set_ids instanceof Optional)) {
+            $shippingMethod->productSets()->sync($shippingMethodDto->product_set_ids);
+        }
+
         if (!($shippingMethodDto->sales_channels instanceof Optional)) {
             $shippingMethod->salesChannels()->sync($shippingMethodDto->sales_channels);
         }
@@ -170,13 +195,12 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
 
     public function destroy(ShippingMethod $shippingMethod): void
     {
-        if ($shippingMethod->orders()->count() > 0) {
-            throw new ClientException(Exceptions::CLIENT_DELETE_WHEN_RELATION_EXISTS);
-        }
         if (!$shippingMethod->deletable) {
             throw new StoreException(Exceptions::CLIENT_SHIPPING_METHOD_NOT_OWNER);
         }
-
+        if ($shippingMethod->orders()->count() === 0) {
+            $shippingMethod->forceDelete();
+        }
         $shippingMethod->delete();
     }
 

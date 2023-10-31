@@ -27,7 +27,8 @@ class ShippingMethodFactory extends Factory
                 'inpost',
             ]),
             'public' => $this->faker->boolean,
-            'block_list' => $this->faker->boolean,
+            'is_block_list_countries' => $this->faker->boolean,
+            'is_block_list_products' => true,
         ];
     }
 

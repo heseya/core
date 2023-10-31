@@ -7,6 +7,7 @@ use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\RoleType;
 use App\Enums\ShippingType;
+use App\Enums\ValidationError;
 use App\Models\ConditionGroup;
 use App\Models\Deposit;
 use App\Models\Discount;
@@ -57,16 +58,6 @@ class CartTest extends TestCase
     private ProductService $productService;
     private Currency $currency;
     private SchemaCrudService $schemaCrudService;
-
-    public static function couponOrSaleProvider(): array
-    {
-        return [
-            'as user coupon' => ['user', true],
-            'as application coupon' => ['application', true],
-            'as user sale' => ['user', false],
-            'as application sale' => ['application', false],
-        ];
-    }
 
     /**
      * @throws UnknownCurrencyException
@@ -322,9 +313,9 @@ class CartTest extends TestCase
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      */
-    public function testCartProcess($user, $coupon): void
+    public function testCartProcess(string $user, bool $coupon): void
     {
         $this->markTestSkipped();
 
@@ -513,6 +504,34 @@ class CartTest extends TestCase
 
         $response
             ->assertUnprocessable();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessProductNotPublic(string $user): void
+    {
+        $this->{$user}->givePermissionTo('cart.verify');
+
+        $product = Product::factory()->create([
+            'public' => false,
+        ]);
+
+        $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::PRODUCTPUBLIC,
+            ]);
     }
 
     /**
@@ -761,9 +780,9 @@ class CartTest extends TestCase
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      */
-    public function testCartProcessWithNotExistingCoupon($user, $coupon): void
+    public function testCartProcessWithNotExistingCoupon(string $user, bool $coupon): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
@@ -823,9 +842,9 @@ class CartTest extends TestCase
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      */
-    public function testCartProcessCheapestProduct($user, $coupon): void
+    public function testCartProcessCheapestProduct(string $user, bool $coupon): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
@@ -876,7 +895,7 @@ class CartTest extends TestCase
                             'schemas' => [],
                         ],
                     ],
-                ] + $coupons
+                ] + $coupons,
             );
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
@@ -923,12 +942,10 @@ class CartTest extends TestCase
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      */
-    public function testCartProcessCheapestProductWithSamePrice($user, $coupon): void
+    public function testCartProcessCheapestProductWithSamePrice(string $user, bool $coupon): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('cart.verify');
 
         $code = $coupon ? [] : ['code' => null];
@@ -967,6 +984,7 @@ class CartTest extends TestCase
             ->postJson(
                 '/cart/process',
                 [
+                    'currency' => $this->currency,
                     'sales_channel_id' => SalesChannel::query()->value('id'),
                     'shipping_method_id' => $this->shippingMethod->getKey(),
                     'items' => [
@@ -977,7 +995,7 @@ class CartTest extends TestCase
                             'schemas' => [],
                         ],
                     ],
-                ] + $coupons
+                ] + $coupons,
             );
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
@@ -985,34 +1003,35 @@ class CartTest extends TestCase
         $discountCode2 = $coupon ? ['code' => $discount->code] : [];
 
         $response
-            ->assertValid()->assertOk()
+            ->assertValid()
+            ->assertOk()
             ->assertJsonFragment(
                 [
-                    'cart_total_initial' => 9200,
-                    'cart_total' => 0.02,
-                    'shipping_price_initial' => 0,
-                    'shipping_price' => 0,
-                    'summary' => 0.02,
+                    'cart_total_initial' => "9200.00",
+                    'cart_total' => "0.02",
+                    'shipping_price_initial' => "0.00",
+                    'shipping_price' => "0.00",
+                    'summary' => "0.02",
                 ] + $result
             )
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 4600,
-                'price_discounted' => 0.01,
+                'price' => "4600.00",
+                'price_discounted' => "0.01",
                 'quantity' => 2,
             ])
             ->assertJsonFragment(
                 [
                     'id' => $productDiscount->getKey(),
                     'name' => $productDiscount->name,
-                    'value' => 9200,
+                    'value' => "9199.98",
                 ] + $discountCode1
             )
             ->assertJsonFragment(
                 [
                     'id' => $discount->getKey(),
                     'name' => $discount->name,
-                    'value' => 0,
+                    'value' => "0.00",
                 ] + $discountCode2
             );
     }
@@ -1270,11 +1289,11 @@ class CartTest extends TestCase
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      *
      * @throws DtoException
      */
-    public function testCartProcessRoundedValues($user, $coupon): void
+    public function testCartProcessRoundedValues(string $user, bool $coupon): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
@@ -1371,11 +1390,11 @@ class CartTest extends TestCase
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      *
      * @throws DtoException
      */
-    public function testCartProcessRoundedValuesCheapestProduct($user, $coupon): void
+    public function testCartProcessRoundedValuesCheapestProduct(string $user, bool $coupon): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
@@ -1916,9 +1935,9 @@ class CartTest extends TestCase
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      */
-    public function testCartProcessProductInChildrenSet($user, $coupon): void
+    public function testCartProcessProductInChildrenSet(string $user, bool $coupon): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
@@ -1952,7 +1971,7 @@ class CartTest extends TestCase
                 'percentage' => '10',
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => true,
-            ] + $code
+            ] + $code,
         );
 
         $discountApplied->productSets()->attach($parentSet);
@@ -1964,7 +1983,7 @@ class CartTest extends TestCase
                 'percentage' => '5',
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => false,
-            ] + $code
+            ] + $code,
         );
 
         $discount->productSets()->attach($parentSet);
@@ -1990,7 +2009,7 @@ class CartTest extends TestCase
                         'schemas' => [],
                     ],
                 ],
-            ] + $coupons
+            ] + $coupons,
         );
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
@@ -2006,7 +2025,7 @@ class CartTest extends TestCase
                     'shipping_price_initial' => '0.00',
                     'shipping_price' => '0.00',
                     'summary' => '4140.00',
-                ] + $result
+                ] + $result,
             )
             ->assertJsonFragment([
                 'cartitem_id' => '1',
@@ -2018,14 +2037,14 @@ class CartTest extends TestCase
                     'id' => $discountApplied->getKey(),
                     'name' => $discountApplied->name,
                     'value' => '460.00',
-                ] + $discountCode1
+                ] + $discountCode1,
             )
             ->assertJsonMissing(
                 [
                     'id' => $discount->getKey(),
                     'name' => $discount->name,
                     'value' => '0.00',
-                ] + $discountCode2
+                ] + $discountCode2,
             );
     }
 
@@ -2101,21 +2120,21 @@ class CartTest extends TestCase
                     'id' => $sale->getKey(),
                     'name' => $sale->name,
                     'value' => 0,
-                ]
+                ],
             )
             ->assertJsonMissing(
                 [
                     'id' => $saleShippingMethod->getKey(),
                     'name' => $saleShippingMethod->name,
                     'value' => 0,
-                ]
+                ],
             );
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      */
-    public function testCartProcessInactive($user, $coupon): void
+    public function testCartProcessInactive(string $user, bool $coupon): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
@@ -2129,7 +2148,7 @@ class CartTest extends TestCase
                 'target_type' => DiscountTargetType::ORDER_VALUE,
                 'target_is_allow_list' => true,
                 'active' => false,
-            ] + $code
+            ] + $code,
         );
 
         $conditionGroup = ConditionGroup::create();
@@ -2163,7 +2182,7 @@ class CartTest extends TestCase
                         'schemas' => [],
                     ],
                 ],
-            ] + $coupons
+            ] + $coupons,
         );
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
@@ -2178,7 +2197,7 @@ class CartTest extends TestCase
                     'shipping_price_initial' => '0.00',
                     'shipping_price' => '0.00',
                     'summary' => '9200.00',
-                ] + $result
+                ] + $result,
             )
             ->assertJsonFragment([
                 'cartitem_id' => '1',
@@ -2190,7 +2209,7 @@ class CartTest extends TestCase
                     'id' => $discount->getKey(),
                     'name' => $discount->name,
                     'value' => '920.00',
-                ] + $discountCode
+                ] + $discountCode,
             );
     }
 

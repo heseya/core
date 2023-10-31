@@ -57,7 +57,7 @@ class OrderController extends Controller
             ? $request->validated() + ['status.hidden' => 0] : $request->validated();
 
         $query = Order::searchByCriteria($search_data)
-            ->sort($request->input('sort'))
+            ->sort($request->input('sort', 'created_at:desc'))
             ->with([
                 'products',
                 'discounts',

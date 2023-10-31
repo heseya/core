@@ -52,7 +52,6 @@ final class ProductCreateDto extends Data
         public bool $public,
         public bool $shipping_digital,
         public Optional|string $id,
-        public int|Optional $order,
         public float|Optional $quantity_step,
         public int|Optional|null $google_product_category,
         public float|Optional|null $purchase_limit_per_user,

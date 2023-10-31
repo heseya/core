@@ -17,6 +17,7 @@ class AddCoverToProductSetsTable extends Migration
     public function down(): void
     {
         Schema::table('product_sets', function (Blueprint $table): void {
+            $table->dropForeign('product_sets_cover_id_foreign');
             $table->dropColumn('cover_id');
         });
     }

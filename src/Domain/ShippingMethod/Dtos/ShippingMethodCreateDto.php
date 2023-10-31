@@ -9,12 +9,14 @@ use App\Models\App;
 use App\Models\User;
 use App\Rules\Price;
 use App\Rules\ShippingMethodPriceRanges;
-use App\Traits\MapMetadata;
 use App\Traits\MetadataRules;
 use Brick\Math\BigDecimal;
-use Heseya\Dto\Missing;
+use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Illuminate\Support\Facades\Auth;
+use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\MapInputName;
+use Spatie\LaravelData\Attributes\MapOutputName;
 use Spatie\LaravelData\Attributes\Validation\ArrayType;
 use Spatie\LaravelData\Attributes\Validation\BooleanType;
 use Spatie\LaravelData\Attributes\Validation\Enum;
@@ -31,13 +33,19 @@ use Spatie\LaravelData\Data;
 use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
+use Support\Utils\Map;
 
 final class ShippingMethodCreateDto extends Data
 {
-    use MapMetadata;
     use MetadataRules;
 
     public readonly ?string $app_id;
+    /**
+     * @var Optional|MetadataUpdateDto[]
+     */
+    #[Computed]
+    #[MapOutputName('metadata')]
+    public readonly array|Optional $metadata_computed;
 
     /**
      * @param string $name
@@ -46,13 +54,17 @@ final class ShippingMethodCreateDto extends Data
      * @param bool $payment_on_delivery
      * @param int|Optional $shipping_time_min
      * @param int|Optional $shipping_time_max
-     * @param array<string, string>|Missing|Optional $metadata
      * @param array<int>|Optional $payment_methods
      * @param array<string>|Optional $countries
      * @param array<array<string>>|Optional $shipping_points
+     * @param array<string,string>|Optional $metadata_public
+     * @param array<string, string>|Optional $metadata_private
      * @param string[]|Optional $sales_channels
+     * @param array<string>|Optional $product_ids
+     * @param array<string>|Optional $product_set_ids
+     * @param bool $is_block_list_products
      * @param string|null $integration_key
-     * @param bool $block_list
+     * @param bool $is_block_list_countries
      */
     public function __construct(
         #[Required, StringType, Max(255)]
@@ -77,9 +89,6 @@ final class ShippingMethodCreateDto extends Data
         public readonly int|Optional $shipping_time_max,
 
         #[ArrayType]
-        public array|Missing|Optional $metadata,
-
-        #[ArrayType]
         public readonly array|Optional $payment_methods,
 
         #[ArrayType]
@@ -88,20 +97,36 @@ final class ShippingMethodCreateDto extends Data
         #[ArrayType]
         public readonly array|Optional $shipping_points,
 
+        #[MapInputName('metadata')]
+        public readonly array|Optional $metadata_public,
+        public readonly array|Optional $metadata_private,
+
         #[ArrayType]
         public readonly array|Optional $sales_channels,
+
+        #[ArrayType]
+        public readonly array|Optional $product_ids,
+
+        #[ArrayType]
+        public readonly array|Optional $product_set_ids,
+
+        #[BooleanType]
+        public readonly bool $is_block_list_products = true,
 
         #[StringType, Nullable]
         public readonly string|null $integration_key = null,
 
         #[BooleanType]
-        public readonly bool $block_list = false,
+        public readonly bool $is_block_list_countries = false,
     ) {
         /** @var User|App|null $user */
         $user = Auth::user();
         $this->app_id = $user instanceof App ? $user->id : null;
 
-        $this->metadata = self::mapMetadata(request());
+        $this->metadata_computed = Map::toMetadata(
+            $this->metadata_public,
+            $this->metadata_private,
+        );
     }
 
     /**
@@ -118,6 +143,8 @@ final class ShippingMethodCreateDto extends Data
             'payment_methods' => ['array', 'prohibited_if:payment_on_delivery,true'],
             'payment_methods.*' => ['uuid', 'exists:payment_methods,id'],
             'shipping_points.*.id' => ['string', 'exists:addresses,id'],
+            'product_ids.*' => ['uuid', 'exists:products,id'],
+            'product_set_ids.*' => ['uuid', 'exists:product_sets,id'],
             'sales_channels' => ['array'],
             'sales_channels.*' => ['string', 'exists:sales_channels,id'],
         ];

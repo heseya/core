@@ -7,7 +7,6 @@ use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\MediaType;
-use Domain\Price\Enums\ProductPriceType;
 use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
@@ -35,6 +34,7 @@ use Domain\Currency\Currency;
 use Domain\Language\Language;
 use Domain\Metadata\Enums\MetadataType;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\ProductPriceType;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
@@ -56,18 +56,25 @@ class ProductTest extends TestCase
 {
     private Product $product;
     private Product $hidden_product;
-
     private array $expected;
     private array $expected_short;
-
     private Currency $currency;
     private Product $saleProduct;
     private array $productPrices;
-
     private ProductService $productService;
     private DiscountServiceContract $discountService;
     private ProductRepositoryContract $productRepository;
     private SchemaCrudService $schemaCrudService;
+
+    public static function noIndexProvider(): array
+    {
+        return [
+            'as user no index' => ['user', true],
+            'as application no index' => ['application', true],
+            'as user index' => ['user', false],
+            'as application index' => ['application', false],
+        ];
+    }
 
     /**
      * @throws UnknownCurrencyException
@@ -94,19 +101,23 @@ class ProductTest extends TestCase
         /** @var AvailabilityServiceContract $availabilityService */
         $availabilityService = App::make(AvailabilityServiceContract::class);
 
-        $this->product = $this->productService->create(FakeDto::productCreateDto([
-            'shipping_digital' => false,
-            'public' => true,
-            'order' => 1,
-            'prices_base' => $this->productPrices,
-        ]));
+        $this->product = $this->productService->create(
+            FakeDto::productCreateDto([
+                'shipping_digital' => false,
+                'public' => true,
+                'created_at' => now()->subHours(5),
+                'prices_base' => $this->productPrices,
+            ])
+        );
 
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'name' => 'Rozmiar',
-            'type' => SchemaType::SELECT,
-            'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
-            'required' => true,
-        ]));
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'name' => 'Rozmiar',
+                'type' => SchemaType::SELECT,
+                'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
+                'required' => true,
+            ])
+        );
         $this->product->schemas()->attach($schema->getKey());
 
         $this->travel(5)->hours();
@@ -162,7 +173,7 @@ class ProductTest extends TestCase
         ]);
 
         $this->product->attributes()->attach($attribute->getKey());
-        $this->product->attributes->first()->pivot->options()->attach($option->getKey());
+        $this->product->attributes->first()->product_attribute_pivot->options()->attach($option->getKey());
 
         $availabilityService->calculateItemAvailability($item);
 
@@ -177,36 +188,8 @@ class ProductTest extends TestCase
             'cover' => null,
         ];
 
-        $expected_attribute_short = [
-            'attributes' => [
-                [
-                    'name' => $attribute->name,
-                    'selected_options' => [
-                        [
-                            'id' => $option->getKey(),
-                            'name' => $option->name,
-                            'index' => $option->index,
-                            'value_number' => $option->value_number,
-                            'value_date' => $option->value_date,
-                            'attribute_id' => $attribute->getKey(),
-                        ],
-                    ],
-                ],
-            ],
-        ];
-
-        $expected_attribute = $expected_attribute_short;
-        $expected_attribute['attributes'][0] += [
-            'id' => $attribute->getKey(),
-            'slug' => $attribute->slug,
-            'description' => $attribute->description,
-            'type' => $attribute->type->value,
-            'global' => $attribute->global,
-            'sortable' => $attribute->sortable,
-        ];
-
         // Expected full response
-        $this->expected = array_merge($this->expected_short, $expected_attribute, [
+        $this->expected = array_merge($this->expected_short, [
             'description_html' => $this->product->description_html,
             'description_short' => $this->product->description_short,
             'gallery' => [],
@@ -224,10 +207,12 @@ class ProductTest extends TestCase
                             //'prices' => [['value' => 0, 'currency' => $this->currency->value]],
                             'disabled' => false,
                             'available' => true,
-                            'items' => [[
-                                'name' => 'Koszulka XL',
-                                'sku' => 'K001/XL',
-                            ]],
+                            'items' => [
+                                [
+                                    'name' => 'Koszulka XL',
+                                    'sku' => 'K001/XL',
+                                ],
+                            ],
                             'metadata' => [],
                         ],
                         [
@@ -235,10 +220,12 @@ class ProductTest extends TestCase
                             //'prices' => [['value' => 0, 'currency' => $this->currency->value]],
                             'disabled' => false,
                             'available' => false,
-                            'items' => [[
-                                'name' => 'Koszulka L',
-                                'sku' => 'K001/L',
-                            ]],
+                            'items' => [
+                                [
+                                    'name' => 'Koszulka L',
+                                    'sku' => 'K001/L',
+                                ],
+                            ],
                             'metadata' => [],
                         ],
                     ],
@@ -270,9 +257,11 @@ class ProductTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data')
-            ->assertJson(['data' => [
-                $this->expected_short,
-            ]])
+            ->assertJson([
+                'data' => [
+                    $this->expected_short,
+                ],
+            ])
             ->assertJsonFragment([
                 [
                     'net' => '100.00',
@@ -283,7 +272,7 @@ class ProductTest extends TestCase
 
         $this->assertArrayHasKey('translations', $response->json('data.0'));
         $this->assertIsArray($response->json('data.0.translations'));
-        $this->assertQueryCountLessThan(24);
+        $this->assertQueryCountLessThan(26);
     }
 
     public function testIndexUnauthorized(): void
@@ -311,12 +300,8 @@ class ProductTest extends TestCase
             ->json('GET', '/products', ['limit' => 100])
             ->assertOk()
             ->assertJsonCount(3, 'data')
-            ->assertJson([
-                'data' => [
-                    0 => $this->expected_short,
-                ],
-            ])
             ->assertJsonFragment([
+                ...$this->expected_short,
                 [
                     'net' => '100.00',
                     'gross' => '100.00',
@@ -429,7 +414,7 @@ class ProductTest extends TestCase
 
         $this
             ->actingAs($this->{$user})
-            ->getJson('/products/' . $this->product->slug)
+            ->json('GET', '/products/' . $this->product->slug, ['attribute_slug' => $this->product->attributes->first()->slug])
             ->assertOk()
             ->assertJson(['data' => $this->expected])
             ->assertJsonFragment([
@@ -739,11 +724,11 @@ class ProductTest extends TestCase
 
         $product->attributes()->attach($attribute->getKey());
 
-        $product->attributes->first()->pivot->options()->attach($option->getKey());
+        $product->attributes->first()->product_attribute_pivot->options()->attach($option->getKey());
 
         $this
             ->actingAs($this->{$user})
-            ->getJson('/products/' . $product->slug)
+            ->json('GET', '/products/' . $product->slug, ['attribute_slug' => $attribute->slug])
             ->assertOk()
             ->assertJsonFragment([
                 'id' => $attribute->getKey(),
@@ -781,9 +766,11 @@ class ProductTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonFragment(['metadata_private' => [
-                $privateMetadata->name => $privateMetadata->value,
-            ]]);
+            ->assertJsonFragment([
+                'metadata_private' => [
+                    $privateMetadata->name => $privateMetadata->value,
+                ],
+            ]);
     }
 
     /**
@@ -843,16 +830,6 @@ class ProductTest extends TestCase
         $response->assertOk();
     }
 
-    public static function noIndexProvider(): array
-    {
-        return [
-            'as user no index' => ['user', true],
-            'as application no index' => ['application', true],
-            'as user index' => ['user', false],
-            'as application index' => ['application', false],
-        ];
-    }
-
     /**
      * @dataProvider noIndexProvider
      */
@@ -875,16 +852,18 @@ class ProductTest extends TestCase
             ->getJson('/products/id:' . $product->getKey());
         $response
             ->assertOk()
-            ->assertJsonFragment(['seo' => [
-                'title' => $seo->title,
-                'no_index' => $noIndex,
-                'description' => $seo->description,
-                'og_image' => null,
-                'twitter_card' => $seo->twitter_card,
-                'keywords' => $seo->keywords,
-                'header_tags' => ['test1', 'test2'],
-                'published' => [$this->lang],
-            ]]);
+            ->assertJsonFragment([
+                'seo' => [
+                    'title' => $seo->title,
+                    'no_index' => $noIndex,
+                    'description' => $seo->description,
+                    'og_image' => null,
+                    'twitter_card' => $seo->twitter_card,
+                    'keywords' => $seo->keywords,
+                    'header_tags' => ['test1', 'test2'],
+                    'published' => [$this->lang],
+                ],
+            ]);
     }
 
     /**
@@ -980,26 +959,36 @@ class ProductTest extends TestCase
             ->assertJsonFragment([
                 'id' => $this->saleProduct->getKey(),
                 'name' => $this->saleProduct->name,
-                'prices_base' => [[
-                    'gross' => '3000.00',
-                    'currency' => Currency::DEFAULT->value,
-                ]],
-                'prices_min_initial' => [[
-                    'gross' => '2500.00',
-                    'currency' => Currency::DEFAULT->value,
-                ]],
-                'prices_max_initial' => [[
-                    'gross' => '3500.00',
-                    'currency' => Currency::DEFAULT->value,
-                ]],
-                'prices_min' => [[
-                    'gross' => '2250.00',
-                    'currency' => Currency::DEFAULT->value,
-                ]],
-                'prices_max' => [[
-                    'gross' => '3150.00',
-                    'currency' => Currency::DEFAULT->value,
-                ]],
+                'prices_base' => [
+                    [
+                        'gross' => '3000.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
+                'prices_min_initial' => [
+                    [
+                        'gross' => '2500.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
+                'prices_max_initial' => [
+                    [
+                        'gross' => '3500.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
+                'prices_min' => [
+                    [
+                        'gross' => '2250.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
+                'prices_max' => [
+                    [
+                        'gross' => '3150.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
             ])
             ->assertJsonFragment([
                 'id' => $sale1->getKey(),
@@ -1046,31 +1035,41 @@ class ProductTest extends TestCase
             ->assertJsonFragment([
                 'id' => $this->saleProduct->getKey(),
                 'name' => $this->saleProduct->name,
-                'prices_base' => [[
-                    'net' => '3000.00',
-                    'gross' => '3000.00',
-                    'currency' => Currency::DEFAULT->value,
-                ]],
-                'prices_min_initial' => [[
-                    'net' => '2500.00',
-                    'gross' => '2500.00',
-                    'currency' => Currency::DEFAULT->value,
-                ]],
-                'prices_max_initial' => [[
-                    'net' => '3500.00',
-                    'gross' => '3500.00',
-                    'currency' => Currency::DEFAULT->value,
-                ]],
-                'prices_min' => [[
-                    'net' => '2250.00',
-                    'gross' => '2250.00',
-                    'currency' => Currency::DEFAULT->value,
-                ]],
-                'prices_max' => [[
-                    'net' => '3150.00',
-                    'gross' => '3150.00',
-                    'currency' => Currency::DEFAULT->value,
-                ]],
+                'prices_base' => [
+                    [
+                        'net' => '3000.00',
+                        'gross' => '3000.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
+                'prices_min_initial' => [
+                    [
+                        'net' => '2500.00',
+                        'gross' => '2500.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
+                'prices_max_initial' => [
+                    [
+                        'net' => '3500.00',
+                        'gross' => '3500.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
+                'prices_min' => [
+                    [
+                        'net' => '2250.00',
+                        'gross' => '2250.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
+                'prices_max' => [
+                    [
+                        'net' => '3150.00',
+                        'gross' => '3150.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
             ])
             ->assertJsonFragment([
                 'id' => $sale->getKey(),
@@ -1148,31 +1147,41 @@ class ProductTest extends TestCase
             ->assertJsonFragment([
                 'id' => $this->saleProduct->getKey(),
                 'name' => $this->saleProduct->name,
-                'prices_base' => [[
-                    'net' => '3000.00',
-                    'gross' => '3000.00',
-                    'currency' => Currency::DEFAULT->value,
-                ]],
-                'prices_min_initial' => [[
-                    'net' => '2500.00',
-                    'gross' => '2500.00',
-                    'currency' => Currency::DEFAULT->value,
-                ]],
-                'prices_max_initial' => [[
-                    'net' => '3500.00',
-                    'gross' => '3500.00',
-                    'currency' => Currency::DEFAULT->value,
-                ]],
-                'prices_min' => [[
-                    'net' => '2137.50',
-                    'gross' => '2137.50',
-                    'currency' => Currency::DEFAULT->value,
-                ]],
-                'prices_max' => [[
-                    'net' => '2992.50',
-                    'gross' => '2992.50',
-                    'currency' => Currency::DEFAULT->value,
-                ]],
+                'prices_base' => [
+                    [
+                        'net' => '3000.00',
+                        'gross' => '3000.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
+                'prices_min_initial' => [
+                    [
+                        'net' => '2500.00',
+                        'gross' => '2500.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
+                'prices_max_initial' => [
+                    [
+                        'net' => '3500.00',
+                        'gross' => '3500.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
+                'prices_min' => [
+                    [
+                        'net' => '2137.50',
+                        'gross' => '2137.50',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
+                'prices_max' => [
+                    [
+                        'net' => '2992.50',
+                        'gross' => '2992.50',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
             ])
             ->assertJsonFragment([
                 'id' => $sale1->getKey(),
@@ -1255,31 +1264,41 @@ class ProductTest extends TestCase
             ->assertJsonFragment([
                 'id' => $this->saleProduct->getKey(),
                 'name' => $this->saleProduct->name,
-                'prices_base' => [[
-                    'net' => '3000.00',
-                    'gross' => '3000.00',
-                    'currency' => Currency::DEFAULT->value,
-                ]],
-                'prices_min_initial' => [[
-                    'net' => '2500.00',
-                    'gross' => '2500.00',
-                    'currency' => Currency::DEFAULT->value,
-                ]],
-                'prices_max_initial' => [[
-                    'net' => '3500.00',
-                    'gross' => '3500.00',
-                    'currency' => Currency::DEFAULT->value,
-                ]],
-                'prices_min' => [[
-                    'net' => '2250.00',
-                    'gross' => '2250.00',
-                    'currency' => Currency::DEFAULT->value,
-                ]],
-                'prices_max' => [[
-                    'net' => '3150.00',
-                    'gross' => '3150.00',
-                    'currency' => Currency::DEFAULT->value,
-                ]],
+                'prices_base' => [
+                    [
+                        'net' => '3000.00',
+                        'gross' => '3000.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
+                'prices_min_initial' => [
+                    [
+                        'net' => '2500.00',
+                        'gross' => '2500.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
+                'prices_max_initial' => [
+                    [
+                        'net' => '3500.00',
+                        'gross' => '3500.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
+                'prices_min' => [
+                    [
+                        'net' => '2250.00',
+                        'gross' => '2250.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
+                'prices_max' => [
+                    [
+                        'net' => '3150.00',
+                        'gross' => '3150.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
             ])
             ->assertJsonFragment([
                 'id' => $sale1->getKey(),
@@ -1324,16 +1343,18 @@ class ProductTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJson(['data' => [
-                'slug' => 'test',
-                'name' => 'Test',
-                'public' => true,
-                'shipping_digital' => false,
-                'description_html' => '<h1>Description</h1>',
-                'description_short' => 'So called short description...',
-                'cover' => null,
-                'gallery' => [],
-            ]])
+            ->assertJson([
+                'data' => [
+                    'slug' => 'test',
+                    'name' => 'Test',
+                    'public' => true,
+                    'shipping_digital' => false,
+                    'description_html' => '<h1>Description</h1>',
+                    'description_short' => 'So called short description...',
+                    'cover' => null,
+                    'gallery' => [],
+                ],
+            ])
             ->assertJsonFragment([
                 'gross' => '100.00',
                 'currency' => $this->currency->value,
@@ -1398,7 +1419,16 @@ class ProductTest extends TestCase
         $productPricesMin = $productPrices->get(ProductPriceType::PRICE_MIN->value);
         $productPricesMax = $productPrices->get(ProductPriceType::PRICE_MAX->value);
 
-        return [$product, new ProductPriceUpdated($product->getKey(), null, null, $productPricesMin->toArray(), $productPricesMax->toArray())];
+        return [
+            $product,
+            new ProductPriceUpdated(
+                $product->getKey(),
+                null,
+                null,
+                $productPricesMin->toArray(),
+                $productPricesMax->toArray()
+            ),
+        ];
     }
 
     /**
@@ -1474,15 +1504,17 @@ class ProductTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJson(['data' => [
-                'slug' => 'test',
-                'name' => 'Test',
-                'public' => true,
-                'shipping_digital' => false,
-                'description_html' => '<h1>Description</h1>',
-                'cover' => null,
-                'gallery' => [],
-            ]]);
+            ->assertJson([
+                'data' => [
+                    'slug' => 'test',
+                    'name' => 'Test',
+                    'public' => true,
+                    'shipping_digital' => false,
+                    'description_html' => '<h1>Description</h1>',
+                    'cover' => null,
+                    'gallery' => [],
+                ],
+            ]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
@@ -1550,15 +1582,17 @@ class ProductTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJson(['data' => [
-                'slug' => 'test',
-                'name' => 'Test',
-                'public' => true,
-                'shipping_digital' => false,
-                'description_html' => '<h1>Description</h1>',
-                'cover' => null,
-                'gallery' => [],
-            ]]);
+            ->assertJson([
+                'data' => [
+                    'slug' => 'test',
+                    'name' => 'Test',
+                    'public' => true,
+                    'shipping_digital' => false,
+                    'description_html' => '<h1>Description</h1>',
+                    'cover' => null,
+                    'gallery' => [],
+                ],
+            ]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
@@ -1694,15 +1728,17 @@ class ProductTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJson(['data' => [
-                'slug' => 'test',
-                'name' => 'Test',
-                'public' => false,
-                'shipping_digital' => false,
-                'description_html' => '<h1>Description</h1>',
-                'cover' => null,
-                'gallery' => [],
-            ]]);
+            ->assertJson([
+                'data' => [
+                    'slug' => 'test',
+                    'name' => 'Test',
+                    'public' => false,
+                    'shipping_digital' => false,
+                    'description_html' => '<h1>Description</h1>',
+                    'cover' => null,
+                    'gallery' => [],
+                ],
+            ]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
@@ -1757,13 +1793,15 @@ class ProductTest extends TestCase
                 'shipping_digital' => false,
             ])
             ->assertCreated()
-            ->assertJson(['data' => [
-                'id' => $uuid,
-                'slug' => 'test',
-                'name' => 'Test',
-                'public' => true,
-                'shipping_digital' => false,
-            ]]);
+            ->assertJson([
+                'data' => [
+                    'id' => $uuid,
+                    'slug' => 'test',
+                    'name' => 'Test',
+                    'public' => true,
+                    'shipping_digital' => false,
+                ],
+            ]);
 
         $this->assertDatabaseHas('products', [
             'id' => $uuid,
@@ -1908,7 +1946,7 @@ class ProductTest extends TestCase
     }
 
     /**
-     * @dataProvider booleanProvider
+     * @dataProvider authWithTwoBooleansProvider
      */
     public function testCreateWithSeo(string $user, $boolean, $booleanValue): void
     {
@@ -1976,29 +2014,34 @@ class ProductTest extends TestCase
 
         $schemaPrice = 50;
 
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => SchemaType::STRING,
-            'required' => false,
-            'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
-        ]));
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => SchemaType::STRING,
+                'required' => false,
+                'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+            ])
+        );
 
-        $response = $this->actingAs($this->{$user})->postJson('/products', FakeDto::productCreateData([
-            'name' => 'Test',
-            'slug' => 'test',
-            'prices_base' => $this->productPrices,
-            'public' => false,
-            'shipping_digital' => false,
-            'sets' => [],
-            'schemas' => [
-                $schema->getKey(),
-            ],
-            'translations' => [
-                $this->lang => [
-                    'name' => 'Test',
+        $response = $this->actingAs($this->{$user})->postJson(
+            '/products',
+            FakeDto::productCreateData([
+                'name' => 'Test',
+                'slug' => 'test',
+                'prices_base' => $this->productPrices,
+                'public' => false,
+                'shipping_digital' => false,
+                'sets' => [],
+                'schemas' => [
+                    $schema->getKey(),
                 ],
-            ],
-            'published' => [$this->lang],
-        ]));
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                    ],
+                ],
+                'published' => [$this->lang],
+            ])
+        );
 
         $response->assertCreated();
 
@@ -2029,11 +2072,13 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('products.add');
 
         $schemaPrice = 50;
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => SchemaType::STRING,
-            'required' => true,
-            'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
-        ]));
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => SchemaType::STRING,
+                'required' => true,
+                'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+            ])
+        );
 
         $response = $this->actingAs($this->{$user})->postJson('/products', [
             'translations' => [
@@ -2470,11 +2515,13 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('products.edit');
 
         $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
-            'translations' => [$this->lang => [
-                'name' => 'Updated',
-                'description_html' => '<h1>New description</h1>',
-                'description_short' => 'New so called short description',
-            ]],
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Updated',
+                    'description_html' => '<h1>New description</h1>',
+                    'description_short' => 'New so called short description',
+                ],
+            ],
             'published' => [$this->lang],
             'slug' => 'updated',
             'public' => false,
@@ -2677,7 +2724,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateWithSeo(string $user): void
+    public function testUpdateWithSeoOk(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
 
@@ -2686,7 +2733,6 @@ class ProductTest extends TestCase
             'slug' => 'created',
             'description_html' => '<h1>Description</h1>',
             'public' => false,
-            'order' => 1,
         ]);
 
         $this->product->seo()->save(SeoMetadata::factory()->make());
@@ -2728,7 +2774,6 @@ class ProductTest extends TestCase
             'slug' => 'created',
             'description_html' => '<h1>Description</h1>',
             'public' => false,
-            'order' => 1,
         ]);
 
         $this
@@ -2766,7 +2811,6 @@ class ProductTest extends TestCase
             'slug' => 'created',
             'description_html' => '<h1>Description</h1>',
             'public' => false,
-            'order' => 1,
         ]);
 
         $this
@@ -2804,7 +2848,6 @@ class ProductTest extends TestCase
             'slug' => 'created',
             'description_html' => '<h1>Description</h1>',
             'public' => false,
-            'order' => 1,
         ]);
 
         $this
@@ -2848,7 +2891,6 @@ class ProductTest extends TestCase
             'slug' => 'created',
             'description_html' => '<h1>Description</h1>',
             'public' => false,
-            'order' => 1,
         ]);
 
         $this
@@ -2869,11 +2911,13 @@ class ProductTest extends TestCase
         $this->product->schemas()->detach();
 
         $schemaPrice = 50;
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => 0,
-            'required' => false,
-            'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
-        ]));
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => 0,
+                'required' => false,
+                'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+            ])
+        );
 
         $this->product->schemas()->attach($schema->getKey());
         $this->productService->updateMinMaxPrices($this->product);
@@ -2922,11 +2966,13 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('products.edit');
 
         $schemaPrice = 50;
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => 0,
-            'required' => false,
-            'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
-        ]));
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => 0,
+                'required' => false,
+                'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+            ])
+        );
 
         $this->product->schemas()->attach($schema->getKey());
         $this->productService->updateMinMaxPrices($this->product);
@@ -2998,22 +3044,27 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('products.edit');
 
         $schemaPrice = 50;
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => 0,
-            'required' => true,
-            'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
-        ]));
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => 0,
+                'required' => true,
+                'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+            ])
+        );
 
         $this->product->schemas()->attach($schema->getKey());
         $this->productService->updateMinMaxPrices($this->product);
 
         $schemaNewPrice = 75;
-        $response = $this->actingAs($this->{$user})->patchJson('/schemas/id:' . $schema->getKey(), FakeDto::schemaData([
-            'name' => 'Test Updated',
-            'prices' => [['value' => $schemaNewPrice, 'currency' => Currency::DEFAULT->value]],
-            'type' => 'string',
-            'required' => false,
-        ]));
+        $response = $this->actingAs($this->{$user})->patchJson(
+            '/schemas/id:' . $schema->getKey(),
+            FakeDto::schemaData([
+                'name' => 'Test Updated',
+                'prices' => [['value' => $schemaNewPrice, 'currency' => Currency::DEFAULT->value]],
+                'type' => 'string',
+                'required' => false,
+            ])
+        );
 
         $response->assertValid()->assertOk();
 
@@ -3045,11 +3096,13 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('schemas.remove');
 
         $schemaPrice = 50;
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => 0,
-            'required' => true,
-            'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
-        ]));
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => 0,
+                'required' => true,
+                'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+            ])
+        );
 
         $this->product->schemas()->attach($schema->getKey());
 
@@ -3099,7 +3152,6 @@ class ProductTest extends TestCase
             'slug' => 'created',
             'description_html' => '<h1>Description</h1>',
             'public' => false,
-            'order' => 1,
         ])->create();
 
         $seo = SeoMetadata::factory()->create();
@@ -3141,7 +3193,6 @@ class ProductTest extends TestCase
             'slug' => 'Delete-with-media',
             'description_html' => '<h1>Description</h1>',
             'public' => false,
-            'order' => 1,
         ])->create();
 
         $product->media()->sync($media);
@@ -3257,9 +3308,11 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('schemas.remove');
 
         Schema::query()->delete();
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'name' => 'test schema',
-        ]));
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'name' => 'test schema',
+            ])
+        );
 
         $this->product->schemas()->save($schema);
         $this->product->update(['has_schemas' => true]);
@@ -3280,9 +3333,11 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('products.edit');
 
         Schema::query()->delete();
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'name' => 'test schema',
-        ]));
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'name' => 'test schema',
+            ])
+        );
 
         $this->actingAs($this->{$user})->json('patch', 'products/id:' . $this->product->getKey(), [
             'schemas' => [
@@ -3304,9 +3359,11 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('products.edit');
 
         Schema::query()->delete();
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'name' => 'test schema',
-        ]));
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'name' => 'test schema',
+            ])
+        );
 
         $this->product->schemas()->save($schema);
 

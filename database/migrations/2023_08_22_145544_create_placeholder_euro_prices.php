@@ -12,7 +12,7 @@ return new class extends Migration {
             'shipping_method_id' => $priceRange->shipping_method_id,
             'start' => $priceRange->start,
             'value' => '0',
-            'currency' => 'EUR',
+            'currency' => 'GBP',
         ])->toArray();
 
         DB::table('price_ranges')->insert($newPriceRanges);
@@ -24,7 +24,7 @@ return new class extends Migration {
             'model_type' => $price->model_type,
             'price_type' => $price->price_type,
             'value' => '0',
-            'currency' => 'EUR',
+            'currency' => 'GBP',
             'is_net' => $price->is_net,
         ])->toArray();
 
@@ -33,7 +33,7 @@ return new class extends Migration {
 
     public function down(): void
     {
-        DB::table('price_ranges')->where('currency', 'EUR')->delete();
-        DB::table('prices')->where('currency', 'EUR')->delete();
+        DB::table('price_ranges')->where('currency', 'GBP')->delete();
+        DB::table('prices')->where('currency', 'GBP')->delete();
     }
 };

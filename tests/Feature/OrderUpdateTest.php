@@ -1034,7 +1034,7 @@ class OrderUpdateTest extends TestCase
                         'first_url' => 'https://example.com',
                         'second_url' => 'https://example2.com',
                     ],
-                ]
+                ],
             )
             ->assertOk();
 
@@ -1090,7 +1090,7 @@ class OrderUpdateTest extends TestCase
                     'urls' => [
                         'updated_url' => 'https://updated.com',
                     ],
-                ]
+                ],
             )
             ->assertOk();
 
@@ -1149,7 +1149,7 @@ class OrderUpdateTest extends TestCase
                 "/orders/id:{$order->getKey()}",
                 [
                     'digital_shipping_method_id' => $digitalShippingMethodNew->getKey(),
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonFragment([
@@ -1198,7 +1198,7 @@ class OrderUpdateTest extends TestCase
                 "/orders/id:{$order->getKey()}",
                 [
                     'comment' => 'New comment',
-                ]
+                ],
             )
             ->assertOk()
             ->assertJsonFragment([
@@ -1241,7 +1241,7 @@ class OrderUpdateTest extends TestCase
                         'old_url' => null,
                         'second_url' => 'https://example2.com',
                     ],
-                ]
+                ],
             )
             ->assertOk();
 

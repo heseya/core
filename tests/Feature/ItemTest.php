@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\ErrorCode;
+use App\Enums\ValidationError;
 use App\Events\ItemCreated;
 use App\Events\ItemDeleted;
 use App\Events\ItemUpdated;
@@ -35,6 +36,8 @@ class ItemTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
+
+        Carbon::setTestNow(null);
 
         $this->item = Item::factory()->create();
 
@@ -160,7 +163,7 @@ class ItemTest extends TestCase
     }
 
     /**
-     * @dataProvider booleanProvider
+     * @dataProvider authWithTwoBooleansProvider
      */
     public function testIndexFilterBySoldOut($user, $boolean, $booleanValue): void
     {
@@ -731,6 +734,70 @@ class ItemTest extends TestCase
         ]);
 
         Event::assertDispatched(ItemUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithInvalidUnlimitedDate($user): void
+    {
+        $this->{$user}->givePermissionTo('items.edit');
+
+        $this->item->update([
+            'shipping_date' => now(),
+        ]);
+
+        Deposit::factory()->create([
+            'quantity' => 20,
+            'from_unlimited' => false,
+            'shipping_date' => now(),
+            'item_id' => $this->item->getKey(),
+        ]);
+
+        $item = [
+            'unlimited_stock_shipping_date' => now()->subDay(),
+        ];
+
+        $this->actingAs($this->{$user})->patchJson(
+            '/items/id:' . $this->item->getKey(),
+            $item,
+        )
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::UNLIMITEDSHIPPINGDATE,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithInvalidUnlimitedTime($user): void
+    {
+        $this->{$user}->givePermissionTo('items.edit');
+
+        $this->item->update([
+            'shipping_time' => 4,
+        ]);
+
+        Deposit::factory()->create([
+            'quantity' => 20,
+            'from_unlimited' => false,
+            'shipping_time' => 4,
+            'item_id' => $this->item->getKey(),
+        ]);
+
+        $item = [
+            'unlimited_stock_shipping_time' => 2,
+        ];
+
+        $this->actingAs($this->{$user})->patchJson(
+            '/items/id:' . $this->item->getKey(),
+            $item,
+        )
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::UNLIMITEDSHIPPINGTIME,
+            ]);
     }
 
     /**

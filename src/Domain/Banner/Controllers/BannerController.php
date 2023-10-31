@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Banner\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\BannerIndexRequest;
 use Domain\Banner\Dtos\BannerCreateDto;
+use Domain\Banner\Dtos\BannerIndexDto;
 use Domain\Banner\Dtos\BannerUpdateDto;
 use Domain\Banner\Models\Banner;
 use Domain\Banner\Resources\BannerResource;
@@ -20,9 +20,9 @@ final class BannerController extends Controller
 {
     public function __construct(private readonly BannerService $bannerService) {}
 
-    public function index(BannerIndexRequest $request): JsonResource
+    public function index(BannerIndexDto $dto): JsonResource
     {
-        $query = Banner::searchByCriteria($request->validated())
+        $query = Banner::searchByCriteria($dto->toArray())
             ->with(['bannerMedia', 'bannerMedia.media', 'metadata', 'metadataPrivate']);
 
         return BannerResource::collection(

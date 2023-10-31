@@ -59,9 +59,6 @@ class WebHook extends Model implements SortableContract
         'updated_at',
     ];
 
-    protected string $defaultSortBy = 'created_at';
-    protected string $defaultSortDirection = 'desc';
-
     public function logs(): HasMany
     {
         return $this->hasMany(WebHookEventLogEntry::class);

@@ -33,7 +33,7 @@ class SaleCreateRequest extends FormRequest
 
             'slug' => ['nullable', 'string', 'max:128', 'alpha_dash'],
 
-            'percentage' => ['nullable', 'required_without:amounts', 'prohibits:amounts', 'numeric', 'string', 'gte:0'],
+            'percentage' => ['nullable', 'required_without:amounts', 'prohibits:amounts', 'numeric', 'string', 'gte:0', 'lte:100'],
             'amounts' => ['nullable', 'required_without:percentage', 'prohibits:percentage', new PricesEveryCurrency()],
             'amounts.*' => [new Price(['value'], min: BigDecimal::zero())],
 

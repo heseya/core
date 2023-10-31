@@ -21,7 +21,7 @@ trait CreateShippingMethod
      */
     public function createShippingMethod(
         float $price = 0,
-        array $payload = ['shipping_type' => ShippingType::ADDRESS]
+        array $payload = ['shipping_type' => ShippingType::ADDRESS],
     ): ShippingMethod {
         $this->shippingMethod = ShippingMethod::factory()->create($payload);
         $this->shippingMethod->priceRanges()->create([

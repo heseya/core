@@ -188,6 +188,11 @@ final class ProductSet extends Model implements SeoContract, Translatable
             ->orderByPivot('order');
     }
 
+    public function relatedProducts(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'related_product_sets');
+    }
+
     public function allProductsIds(): Collection
     {
         $products = $this->products()->pluck('id');
@@ -237,7 +242,10 @@ final class ProductSet extends Model implements SeoContract, Translatable
     {
         self::addGlobalScope(
             'ordered',
-            fn (Builder $builder) => $builder->orderBy('product_sets.order'),
+            fn (Builder $builder) => $builder
+                ->orderBy('product_sets.order')
+                ->orderBy('product_sets.created_at')
+                ->orderBy('product_sets.updated_at'),
         );
     }
 }

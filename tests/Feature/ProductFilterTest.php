@@ -259,11 +259,12 @@ class ProductFilterTest extends TestCase
             'currency' => $currency->value,
         ], Currency::cases());
 
-        return app(ProductService::class)->create(FakeDto::productCreateDto([
-            'shipping_digital' => false,
-            'public' => true,
-            'order' => 1,
-            'prices_base' => $productPrices,
-        ]));
+        return app(ProductService::class)->create(
+            FakeDto::productCreateDto([
+                'shipping_digital' => false,
+                'public' => true,
+                'prices_base' => $productPrices,
+            ])
+        );
     }
 }

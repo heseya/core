@@ -109,7 +109,8 @@ readonly class DiscountService implements DiscountServiceContract
     {
         return Discount::searchByCriteria($dto->toArray() + $this->getPublishedLanguageFilter('discounts'))
             ->orderBy('updated_at', 'DESC')
-            ->with(['orders', 'products', 'productSets', 'conditionGroups', 'shippingMethods', 'metadata'])
+            ->with(['metadata', 'metadataPrivate', 'amounts'])
+            ->withOrdersCount()
             ->paginate(Config::get('pagination.per_page'));
     }
 
@@ -503,7 +504,7 @@ readonly class DiscountService implements DiscountServiceContract
             throw new ServerException(Exceptions::SERVER_PRICE_UNKNOWN_CURRENCY);
         }
 
-        $percentage = $discount->pivot->percentage ?? $discount->percentage;
+        $percentage = $discount->order_discount?->percentage ?? $discount->percentage;
 
         if ($percentage !== null) {
             $percentage = BigDecimal::of($percentage)->dividedBy(100, roundingMode: RoundingMode::HALF_DOWN);
@@ -621,8 +622,7 @@ readonly class DiscountService implements DiscountServiceContract
 //            ], $currency);
 //
 //            /** @var Money $price */
-//            $price = $prices->get(ProductPriceType::PRICE_BASE->value)?->firstOrFail(
-//            )?->value ?? throw new ItemNotFoundException();
+//            $price = $prices->get(ProductPriceType::PRICE_BASE->value)?->firstOrFail()?->value ?? throw new ItemNotFoundException();
 //
 //            foreach ($cartItem->getSchemas() as $schemaId => $value) {
 //                /** @var Schema $schema */
@@ -1202,7 +1202,7 @@ readonly class DiscountService implements DiscountServiceContract
         return $conditionGroup;
     }
 
-    private function getSalesWithBlockList(): Collection
+    public function getSalesWithBlockList(): Collection
     {
         return Discount::query()
             ->whereNull('code')
@@ -1510,11 +1510,15 @@ readonly class DiscountService implements DiscountServiceContract
                     );
                 }
 
-                $product->discounts->each(fn (Discount $discount) => $this->attachDiscount(
-                    $newProduct,
-                    $discount,
-                    Money::ofMinor($discount->pivot->applied_discount, $discount->pivot->currency),
-                ));
+                $product->discounts
+                    ->where(fn (Discount $discount) => $discount->order_discount?->applied !== null)
+                    ->each(
+                        fn (Discount $discount) => $this->attachDiscount(
+                            $newProduct,
+                            $discount,
+                            $discount->order_discount->applied, // @phpstan-ignore-line
+                        ),
+                    );
 
                 $product = $newProduct;
             }
@@ -1614,7 +1618,8 @@ readonly class DiscountService implements DiscountServiceContract
 
         /** @var CartItemDto $item */
         foreach ($cartDto->getItems() as $item) {
-            $cartItem = $cart->items->filter(fn ($value, $key) => $value->cartitem_id === $item->getCartItemId(),
+            $cartItem = $cart->items->filter(
+                fn ($value, $key) => $value->cartitem_id === $item->getCartItemId(),
             )->first();
 
             if ($cartItem === null) {
@@ -1656,7 +1661,8 @@ readonly class DiscountService implements DiscountServiceContract
 
         if ($cartItem->quantity > 1 && !$cartItem->price_discounted->isEqualTo($minimalProductPrice)) {
             $cart->items->first(
-                fn ($value,
+                fn (
+                    $value,
                 ): bool => $value->cartitem_id === $cartItem->cartitem_id && $value->quantity === $cartItem->quantity,
             )->quantity = $cartItem->quantity - 1;
 
@@ -1758,7 +1764,7 @@ readonly class DiscountService implements DiscountServiceContract
                 'currency' => $object->currency,
                 'percentage' => $discount->percentage,
                 'target_type' => $discount->target_type,
-                'applied_discount' => $appliedDiscount->getMinorAmount(),
+                'applied' => $appliedDiscount->getMinorAmount(),
             ] + $code,
         );
     }
@@ -1853,7 +1859,8 @@ readonly class DiscountService implements DiscountServiceContract
             } else {
                 /** @var CartItemDto $item */
                 foreach ($cart->getItems() as $item) {
-                    if ($discount->allProductsIds()->doesntContain(fn ($value): bool => $value === $item->getProductId(),
+                    if ($discount->allProductsIds()->doesntContain(
+                        fn ($value): bool => $value === $item->getProductId(),
                     )) {
                         return true;
                     }
@@ -2165,7 +2172,7 @@ readonly class DiscountService implements DiscountServiceContract
     {
         $conditionDto = MaxUsesConditionDto::fromArray($condition->value + ['type' => $condition->type]);
 
-        return $condition->conditionGroup?->discounts()->first()?->orders()->count() < $conditionDto->getMaxUses();
+        return $condition->conditionGroup?->discounts()->first()?->ordersWithUses()->count() < $conditionDto->getMaxUses();
     }
 
     private function checkConditionMaxUsesPerUser(DiscountCondition $condition): bool
@@ -2177,7 +2184,7 @@ readonly class DiscountService implements DiscountServiceContract
                 ->conditionGroup
                 ?->discounts()
                 ->first()
-                ?->orders()
+                ?->ordersWithUses()
                 ->whereHasMorph('buyer', [User::class, App::class], function (Builder $query): void {
                     $query->where('buyer_id', Auth::id());
                 })

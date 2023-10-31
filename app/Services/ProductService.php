@@ -10,6 +10,7 @@ use App\Events\ProductUpdated;
 use App\Exceptions\PublishingException;
 use App\Models\Option;
 use App\Models\Product;
+use App\Models\ProductAttribute;
 use App\Models\Schema;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\AvailabilityServiceContract;
@@ -27,15 +28,19 @@ use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\Product\Dtos\ProductCreateDto;
 use Domain\Product\Dtos\ProductUpdateDto;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductAttribute\Services\AttributeService;
 use Domain\Seo\SeoMetadataService;
 use Heseya\Dto\DtoException;
+use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\Optional;
 
-final class ProductService
+final readonly class ProductService
 {
     public function __construct(
         private MediaServiceContract $mediaService,
@@ -62,7 +67,6 @@ final class ProductService
         foreach ($dto->translations as $lang => $translations) {
             $product->setLocale($lang)->fill($translations);
         }
-
         $this->translationService->checkPublished($product, ['name']);
 
         $product->save();
@@ -237,6 +241,12 @@ final class ProductService
         $this->updateProductsDiscountedPrices([$product->getKey()]);
     }
 
+    public function updateProductIndex(Product $product): void
+    {
+        $product = $this->prepareProductSearchValues($product);
+        $product->save();
+    }
+
     /**
      * @throws MathException
      * @throws UnknownCurrencyException
@@ -270,6 +280,7 @@ final class ProductService
 
         if (!($dto->attributes instanceof Optional)) {
             $this->attributeService->sync($product, $dto->attributes);
+            $product->loadMissing(['productAttributes' => fn (Builder|HasMany $query) => $query->whereIn('attribute_id', array_keys($dto->attributes))]);
         }
 
         if (!($dto->descriptions instanceof Optional)) {
@@ -357,11 +368,13 @@ final class ProductService
             };
         } else {
             $price = $allSchemas->reduce(
-                fn (Money $carry, Schema $current) => $carry->plus($current->getPrice(
-                    $values[$current->getKey()],
-                    $values,
-                    $currency,
-                )),
+                fn (Money $carry, Schema $current) => $carry->plus(
+                    $current->getPrice(
+                        $values[$current->getKey()],
+                        $values,
+                        $currency,
+                    ),
+                ),
                 Money::zero($currency->value),
             );
 
@@ -387,16 +400,19 @@ final class ProductService
         array $values,
         Currency $currency,
     ): array {
-        return $this->bestMinMax(Collection::make($values)->map(
-            fn ($value) => $this->getSchemasPrices(
-                $allSchemas,
-                clone $remainingSchemas,
-                $currency,
-                $currentValues + [
-                    $schema->getKey() => $value,
-                ],
+        return $this->bestMinMax(
+            Collection::make($values)->map(
+                fn ($value) => $this->getSchemasPrices(
+                    $allSchemas,
+                    clone $remainingSchemas,
+                    $currency,
+                    $currentValues + [
+                        $schema->getKey() => $value,
+                    ],
+                ),
             ),
-        ), $currency);
+            $currency,
+        );
     }
 
     /**
@@ -423,5 +439,30 @@ final class ProductService
         }) ?? $bestMin;
 
         return [$bestMin, $bestMax];
+    }
+
+    private function prepareProductSearchValues(Product $product): Product
+    {
+        $searchValues = [
+            ...$product->tags->pluck('name'),
+            ...$product->sets->pluck('name'),
+        ];
+
+        /** @var Attribute $attribute */
+        foreach ($product->attributes as $attribute) {
+            $searchValues[] = $attribute->name;
+            if ($attribute->product_attribute_pivot instanceof ProductAttribute) {
+                /** @var AttributeOption $option */
+                foreach ($attribute->product_attribute_pivot->options as $option) {
+                    $searchValues[] = $option->name;
+                    $searchValues[] = $option->value_number;
+                    $searchValues[] = $option->value_date;
+                }
+            }
+        }
+
+        $product->search_values = implode(' ', $searchValues);
+
+        return $product;
     }
 }

@@ -30,6 +30,7 @@ use App\Notifications\TFASecurityCode;
 use App\Notifications\UserRegistered;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -55,14 +56,24 @@ class AuthTest extends TestCase
     private string $cipher;
     private string $webhookKey;
 
+    public static function tfaMethodProvider(): array
+    {
+        return [
+            'as app 2fa' => [TFAType::APP, 'secret'],
+            'as email 2fa' => [TFAType::EMAIL, null],
+        ];
+    }
+
     public function setUp(): void
     {
         parent::setUp();
-        $this->user->preferences()->associate(UserPreference::create([
-            'failed_login_attempt_alert' => false,
-            'new_localization_login_alert' => false,
-            'recovery_code_changed_alert' => false,
-        ]));
+        $this->user->preferences()->associate(
+            UserPreference::create([
+                'failed_login_attempt_alert' => false,
+                'new_localization_login_alert' => false,
+                'recovery_code_changed_alert' => false,
+            ]),
+        );
         $this->user->save();
 
         $this->expectedLog = 'ClientException(code: 422): Invalid credentials at';
@@ -96,6 +107,7 @@ class AuthTest extends TestCase
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => Hash::make('password'),
+            'email_verified_at' => Carbon::now(),
         ]);
 
         $this
@@ -104,6 +116,7 @@ class AuthTest extends TestCase
                 'email' => 'test@example.com',
                 'password' => 'password',
             ])
+            ->assertValid()
             ->assertOk();
     }
 
@@ -168,7 +181,7 @@ class AuthTest extends TestCase
         $this
             ->actingAs($this->user)
             ->withHeaders([
-                'User-Agent' => null
+                'User-Agent' => null,
             ])
             ->postJson('/login', [
                 'email' => $this->user->email,
@@ -344,7 +357,7 @@ class AuthTest extends TestCase
                     && $payload['data_type'] === 'LocalizedLoginAttempt'
                     && $payload['event'] === 'NewLocalizationLoginAttempt'
                     && IssuerType::USER->is($payload['issuer_type']);
-            }
+            },
         );
     }
 
@@ -840,6 +853,8 @@ class AuthTest extends TestCase
             'password' => $this->password,
         ]);
 
+        $response->assertValid()->assertOk();
+
         $token = $response->getData()->data->token;
         $refreshToken = $response->getData()->data->refresh_token;
 
@@ -850,7 +865,7 @@ class AuthTest extends TestCase
                 [
                     'refresh_token' => $refreshToken,
                 ],
-                $this->defaultHeaders + ['Authorization' => 'Bearer ' . $token]
+                $this->defaultHeaders + ['Authorization' => 'Bearer ' . $token],
             );
 
         $this
@@ -858,7 +873,7 @@ class AuthTest extends TestCase
                 'POST',
                 '/auth/logout',
                 [],
-                $this->defaultHeaders + ['Authorization' => 'Bearer ' . $token]
+                $this->defaultHeaders + ['Authorization' => 'Bearer ' . $token],
             )
             ->assertStatus(422);
     }
@@ -1129,6 +1144,14 @@ class AuthTest extends TestCase
         $response->assertForbidden();
     }
 
+    public function testChangePasswordNoUser(): void
+    {
+        $this->putJson('/users/password', [
+            'password' => 'test',
+            'password_new' => 'Test1@3456',
+        ])->assertForbidden();
+    }
+
     public function testChangePassword(): void
     {
         $user = User::factory()->create([
@@ -1158,7 +1181,12 @@ class AuthTest extends TestCase
 
         Log::shouldReceive('error')
             ->once()
-            ->withArgs(fn ($message) => str_contains($message, 'App\Exceptions\ClientException(code: 422): Invalid password at'));
+            ->withArgs(
+                fn ($message) => str_contains(
+                    $message,
+                    'App\Exceptions\ClientException(code: 422): Invalid password at',
+                ),
+            );
 
         $response = $this->actingAs($user)->json('PUT', '/users/password', [
             'password' => 'tests',
@@ -1295,6 +1323,107 @@ class AuthTest extends TestCase
             'new_localization_login_alert' => false,
             'recovery_code_changed_alert' => false,
         ]);
+    }
+
+    public function testSelfUpdateRolesUnauthorized(): void
+    {
+        $role = Role::factory()->create([
+            'is_joinable' => true,
+        ]);
+
+        $this->json('PATCH', '/auth/profile/roles', [
+            'roles' => [
+                $role->getKey(),
+            ],
+        ])
+            ->assertForbidden();
+    }
+
+    public function testSelfUpdateRoles(): void
+    {
+        $role = Role::factory()->create([
+            'name' => 'New joinable role',
+            'type' => RoleType::REGULAR,
+            'is_joinable' => true,
+        ]);
+
+        $noJoinable = Role::factory()->create([
+            'name' => 'No joinable role',
+            'type' => RoleType::REGULAR,
+            'is_joinable' => false,
+        ]);
+
+        $this->user->roles()->attach($noJoinable->getKey());
+
+        $this->actingAs($this->user)->json('PATCH', '/auth/profile/roles', [
+            'roles' => [
+                $role->getKey(),
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $noJoinable->getKey(),
+                'name' => 'No joinable role',
+                'is_joinable' => false,
+            ])
+            ->assertJsonFragment([
+                'id' => $role->getKey(),
+                'name' => 'New joinable role',
+                'is_joinable' => true,
+            ]);
+    }
+
+    public function testSelfUpdateRolesNoJoinable(): void
+    {
+        $role = Role::factory()->create([
+            'name' => 'New joinable role',
+            'type' => RoleType::REGULAR,
+            'is_joinable' => false,
+        ]);
+
+        $this->actingAs($this->user)->json('PATCH', '/auth/profile/roles', [
+            'roles' => [
+                $role->getKey(),
+            ],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => Exceptions::CLIENT_JOINING_NON_JOINABLE_ROLE->name,
+            ])->assertJsonFragment([
+                'message' => Exceptions::CLIENT_JOINING_NON_JOINABLE_ROLE,
+            ]);
+    }
+
+    public function testSelfUpdateRolesRemove(): void
+    {
+        $role = Role::factory()->create([
+            'name' => 'New joinable role',
+            'type' => RoleType::REGULAR,
+            'is_joinable' => true,
+        ]);
+
+        $noJoinable = Role::factory()->create([
+            'name' => 'No joinable role',
+            'type' => RoleType::REGULAR,
+            'is_joinable' => false,
+        ]);
+
+        $this->user->roles()->saveMany([$role, $noJoinable]);
+
+        $this->actingAs($this->user)->json('PATCH', '/auth/profile/roles', [
+            'roles' => [],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $noJoinable->getKey(),
+                'name' => 'No joinable role',
+                'is_joinable' => false,
+            ])
+            ->assertJsonMissing([
+                'id' => $role->getKey(),
+                'name' => 'New joinable role',
+                'is_joinable' => true,
+            ]);
     }
 
     public function testCheckIdentityUnauthorized(): void
@@ -1478,14 +1607,6 @@ class AuthTest extends TestCase
         ])->assertForbidden();
     }
 
-    public static function tfaMethodProvider(): array
-    {
-        return [
-            'as app 2fa' => [TFAType::APP, 'secret'],
-            'as email 2fa' => [TFAType::EMAIL, null],
-        ];
-    }
-
     /**
      * @dataProvider tfaMethodProvider
      */
@@ -1622,7 +1743,7 @@ class AuthTest extends TestCase
 
         Notification::assertSentTo(
             [$this->user],
-            TFARecoveryCodes::class
+            TFARecoveryCodes::class,
         );
 
         $this->assertDatabaseHas('users', [
@@ -1685,7 +1806,7 @@ class AuthTest extends TestCase
 
         Notification::assertNotSentTo(
             [$this->user],
-            TFARecoveryCodes::class
+            TFARecoveryCodes::class,
         );
         Event::assertNotDispatched(TfaRecoveryCodesChanged::class);
 
@@ -1707,7 +1828,7 @@ class AuthTest extends TestCase
 
         Notification::assertSentTo(
             [$this->user],
-            TFAInitialization::class
+            TFAInitialization::class,
         );
 
         $this->assertDatabaseHas('users', [
@@ -1810,7 +1931,7 @@ class AuthTest extends TestCase
 
         Notification::assertSentTo(
             [$this->user],
-            TFARecoveryCodes::class
+            TFARecoveryCodes::class,
         );
 
         $this->assertDatabaseHas('users', [
@@ -1869,7 +1990,7 @@ class AuthTest extends TestCase
 
         Notification::assertNotSentTo(
             [$this->user],
-            TFARecoveryCodes::class
+            TFARecoveryCodes::class,
         );
         Event::assertNotDispatched(TfaRecoveryCodesChanged::class);
 
@@ -1932,7 +2053,7 @@ class AuthTest extends TestCase
 
         Notification::assertSentTo(
             [$this->user],
-            TFARecoveryCodes::class
+            TFARecoveryCodes::class,
         );
 
         $recovery_codes = OneTimeSecurityCode::where('user_id', '=', $this->user->getKey())
@@ -1968,7 +2089,7 @@ class AuthTest extends TestCase
 
         Notification::assertNotSentTo(
             [$this->user],
-            TFARecoveryCodes::class
+            TFARecoveryCodes::class,
         );
         Event::assertNotDispatched(TfaRecoveryCodesChanged::class);
 

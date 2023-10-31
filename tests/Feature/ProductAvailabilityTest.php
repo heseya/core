@@ -146,7 +146,7 @@ class ProductAvailabilityTest extends TestCase
                 $item3->getKey() => [
                     'required_quantity' => 1, // 4
                 ],
-            ]
+            ],
         );
 
         $this
@@ -226,7 +226,7 @@ class ProductAvailabilityTest extends TestCase
                 $item4->getKey() => [
                     'required_quantity' => 1,
                 ],
-            ]
+            ],
         );
 
         // After adding this deposit should be:

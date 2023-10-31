@@ -53,6 +53,7 @@ enum Exceptions: string
     case CLIENT_ORDER_EDIT_ERROR = 'Error in order update transaction. Check order and addresses data';
     case CLIENT_CHANGE_CANCELED_ORDER_STATUS = 'Cannot change the status of a cancelled order';
     case CLIENT_UNKNOWN_STATUS = 'Unknown order status';
+    case CLIENT_MODEL_NOT_SORTABLE = 'Model is not sortable';
     case CLIENT_ORDER_PAID = 'Order is already paid';
     case CLIENT_UNKNOWN_PAYMENT_METHOD = 'Unknown payment method';
     case CLIENT_INVALID_PAYMENT = 'Payment signature hash isn\'t correct hash';
@@ -133,6 +134,8 @@ enum Exceptions: string
     case CLIENT_PROVIDER_MERGE_TOKEN_INVALID = 'Provider merge token is invalid';
     case CLIENT_PROVIDER_MERGE_TOKEN_MISMATCH = 'Provider merge token is for an account with different email address';
     case PUBLISHING_TRANSLATION_EXCEPTION = "Model doesn't have all required translations to be published";
+    case CLIENT_JOINING_NON_JOINABLE_ROLE = 'Can\'t join to a non joinable role';
+    case CLIENT_UPDATE_NOT_REGULAR_JOINABLE = 'Can\'t update is_joinable field in role types other than regular';
 
     // Aliases
     public const CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT = self::CLIENT_NO_ACCESS;

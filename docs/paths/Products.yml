@@ -170,6 +170,12 @@ Products:
         required: false
         schema:
           type: boolean
+      - name: attribute_slug
+        in: query
+        required: false
+        schema:
+          type: string
+        description: "Returns only attribute and attribute options with given slug; if empty, all product attributes will be returned"
     responses:
       200:
         description: Success
@@ -227,6 +233,12 @@ ProductsSlug:
         required: false
         schema:
           type: boolean
+      - name: attribute_slug
+        in: query
+        required: false
+        schema:
+          type: string
+        description: "Returns only attribute and attribute options with given slug; if empty, all product attributes will be returned"
     responses:
       200:
         description: Success

@@ -34,7 +34,11 @@ interface ProductRepositoryContract
      *
      * @throws DtoException
      */
-    public function getProductPrices(string $productId, array $priceTypes, ?Currency $currency = null): Collection|EloquentCollection;
+    public function getProductPrices(
+        string $productId,
+        array $priceTypes,
+        ?Currency $currency = null,
+    ): Collection|EloquentCollection;
 
     /**
      * @param string[] $productIds

@@ -21,6 +21,7 @@ use App\Events\PasswordReset;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductPriceUpdated;
+use App\Events\ProductSearchValueEvent;
 use App\Events\ProductUpdated;
 use App\Events\SaleCreated;
 use App\Events\SaleDeleted;
@@ -38,6 +39,7 @@ use App\Listeners\ItemUpdatedQuantityListener;
 use App\Listeners\OrderCreatedListener;
 use App\Listeners\OrderPaidListener;
 use App\Listeners\OrderUpdatedStatusListener;
+use App\Listeners\ProductSearchValueListener;
 use App\Listeners\UserCreatedListener;
 use App\Listeners\WebHookEventListener;
 use App\Listeners\WebHookFailedListener;
@@ -92,8 +94,10 @@ class EventServiceProvider extends ServiceProvider
         OrderUpdatedPaid::class => [
             OrderPaidListener::class,
         ],
+        ProductSearchValueEvent::class => [
+            ProductSearchValueListener::class,
+        ],
     ];
-
     /** @var array<class-string> */
     private array $webhookEvents = [
         CouponCreated::class,

@@ -19,7 +19,7 @@ class SalesChannelSeeder extends Seeder
             'slug' => 'another',
             'status' => Status::ACTIVE->value,
             'countries_block_list' => false,
-            'default_currency' => Currency::EUR,
+            'default_currency' => Currency::GBP,
             'default_language_id' => Language::default()?->getKey(),
             'vat_rate' => '0',
         ]);

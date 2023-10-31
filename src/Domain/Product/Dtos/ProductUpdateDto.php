@@ -45,7 +45,6 @@ final class ProductUpdateDto extends Data
         public DataCollection|Optional $prices_base,
         public bool|Optional $public,
         public bool|Optional $shipping_digital,
-        public int|Optional $order,
         public float|Optional $quantity_step,
         public int|Optional|null $google_product_category,
         public float|Optional|null $purchase_limit_per_user,

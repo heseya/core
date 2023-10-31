@@ -6,10 +6,11 @@ ShippingMethod:
       example: dpd
     public:
       type: boolean
-    block_list:
+    is_block_list_countries:
       type: boolean
     payment_methods:
       type: array
+      description: 'Prohibited if payment_on_delivery is true'
       items:
         type: string
         format: uuid
@@ -54,6 +55,8 @@ ShippingMethod:
     integration_key:
       type: string
       format: uuid
+    payment_on_delivery:
+      type: boolean
 
 
 ShippingMethodReorder:
@@ -92,6 +95,18 @@ ShippingMethodStore:
                 $ref: './../schemas/Metadata.yml#/Metadata'
               metadata_private:
                 $ref: './../schemas/Metadata.yml#/Metadata'
+              is_blocklist:
+                type: boolean
+              product_ids:
+                type: array
+                items:
+                  type: string
+                  format: uuid
+              product_set_ids:
+                type: array
+                items:
+                  type: string
+                  format: uuid
 
 ShippingMethodUpdate:
   content:
@@ -100,3 +115,27 @@ ShippingMethodUpdate:
         allOf:
           - $ref: '#/ShippingMethod'
         type: object
+        properties:
+          shipping_type:
+            type: string
+            enum:
+              - digital
+              - address
+              - point
+              - point-external
+          metadata:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+          metadata_private:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+          is_blocklist:
+            type: boolean
+          product_ids:
+            type: array
+            items:
+              type: string
+              format: uuid
+          product_set_ids:
+            type: array
+            items:
+              type: string
+              format: uuid

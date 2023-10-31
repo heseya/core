@@ -30,6 +30,7 @@ use App\Models\App;
 use App\Models\CartItemResponse;
 use App\Models\CartResource;
 use App\Models\CouponShortResource;
+use App\Models\Discount;
 use App\Models\Option;
 use App\Models\Order;
 use App\Models\OrderProduct;
@@ -170,7 +171,8 @@ final readonly class OrderService implements OrderServiceContract
             $status = Status::query()
                 ->select('id')
                 ->orderBy('order')
-                ->firstOr(callback: fn () => throw new ServerException(Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED),
+                ->firstOr(
+                    callback: fn () => throw new ServerException(Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED),
                 );
 
             /** @var User|App $buyer */
@@ -354,6 +356,7 @@ final readonly class OrderService implements OrderServiceContract
 //                // Apply discounts to order
 //                $order = $this->discountService->calcOrderShippingDiscounts($order, $dto);
 
+                /** @var OrderProduct $orderProduct */
                 foreach ($order->products as $orderProduct) {
                     // Remove items from warehouse
                     if (!$this->removeItemsFromWarehouse($orderProduct, $tempSchemaOrderProduct)) {
@@ -377,21 +380,27 @@ final readonly class OrderService implements OrderServiceContract
                         $vat_rate,
                     );
 
+                    /** @var Discount $discount */
                     foreach ($orderProduct->discounts as $discount) {
-                        $discount->pivot->applied_discount = $this->salesChannelService->addVatString(
-                            $discount->pivot->applied_discount,
-                            $vat_rate,
-                        );
-                        $discount->pivot->save();
+                        if ($discount->order_discount?->applied !== null) {
+                            $discount->order_discount->applied = $this->salesChannelService->addVat(
+                                $discount->order_discount->applied,
+                                $vat_rate,
+                            );
+                            $discount->order_discount->save();
+                        }
                     }
                 }
 
+                /** @var Discount $discount */
                 foreach ($order->discounts as $discount) {
-                    $discount->pivot->applied_discount = $this->salesChannelService->addVatString(
-                        $discount->pivot->applied_discount,
-                        $vat_rate,
-                    );
-                    $discount->pivot->save();
+                    if ($discount->order_discount?->applied !== null) {
+                        $discount->order_discount->applied = $this->salesChannelService->addVat(
+                            $discount->order_discount->applied,
+                            $vat_rate,
+                        );
+                        $discount->order_discount->save();
+                    }
                 }
 
                 $order->cart_total_initial = $this->salesChannelService->addVat(

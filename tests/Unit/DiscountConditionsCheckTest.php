@@ -373,7 +373,7 @@ class DiscountConditionsCheckTest extends TestCase
                 $this->conditionGroup,
                 $cart,
                 Money::of(40.0, $this->currency->value),
-            )
+            ),
         );
     }
 
@@ -404,7 +404,7 @@ class DiscountConditionsCheckTest extends TestCase
                 $this->conditionGroup,
                 $cart,
                 Money::of(40.0, $this->currency->value),
-            )
+            ),
         );
     }
 
@@ -448,7 +448,7 @@ class DiscountConditionsCheckTest extends TestCase
                 $this->discount,
                 $cart,
                 Money::of(120.0, $this->currency->value),
-            )
+            ),
         );
     }
 
@@ -490,7 +490,7 @@ class DiscountConditionsCheckTest extends TestCase
                 $this->discount,
                 $cart,
                 Money::of(120.0, $this->currency->value),
-            )
+            ),
         );
     }
 

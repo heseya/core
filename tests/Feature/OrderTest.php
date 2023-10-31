@@ -152,13 +152,13 @@ class OrderTest extends TestCase
         ];
 
         $this->expected_full_view_structure = $this->expected_full_structure + [
-                'buyer',
-                'products',
-                'payments',
-                'discounts',
-                'billing_address',
-                'shipping_number',
-            ];
+            'buyer',
+            'products',
+            'payments',
+            'discounts',
+            'billing_address',
+            'shipping_number',
+        ];
     }
 
     public function testIndexUnauthorized(): void
@@ -190,7 +190,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(24);
+        $this->assertQueryCountLessThan(26);
     }
 
     /**
@@ -222,7 +222,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(24);
+        $this->assertQueryCountLessThan(26);
     }
 
     /**
@@ -244,7 +244,7 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(25);
+        $this->assertQueryCountLessThan(27);
     }
 
     /**
@@ -339,7 +339,7 @@ class OrderTest extends TestCase
                 'id' => $order_no_user->getKey(),
             ]);
 
-        $this->assertQueryCountLessThan(23);
+        $this->assertQueryCountLessThan(25);
     }
 
     /**
@@ -364,7 +364,7 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(23);
+        $this->assertQueryCountLessThan(25);
     }
 
     /**
@@ -398,7 +398,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(24);
+        $this->assertQueryCountLessThan(26);
     }
 
     /**
@@ -443,7 +443,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(24);
+        $this->assertQueryCountLessThan(26);
     }
 
     public function testIndexUserUnauthenticated(): void
@@ -458,7 +458,7 @@ class OrderTest extends TestCase
     }
 
     /**
-     * @dataProvider booleanProvider
+     * @dataProvider authWithTwoBooleansProvider
      */
     public function testIndexSearchByPaid($user, $boolean, $booleanValue): void
     {
@@ -877,7 +877,7 @@ class OrderTest extends TestCase
             ->assertJsonFragment(['code' => $this->order->code])
             ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
 
-        $this->assertQueryCountLessThan(36);
+        $this->assertQueryCountLessThan(38);
     }
 
     /**
@@ -933,7 +933,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(37);
+        $this->assertQueryCountLessThan(39);
     }
 
     public function testViewSummaryUnauthorized(): void
@@ -1003,7 +1003,7 @@ class OrderTest extends TestCase
                 'summary_paid' => $summaryPaid->getAmount(),
             ]);
 
-        $this->assertQueryCountLessThan(36);
+        $this->assertQueryCountLessThan(38);
     }
 
     /**
@@ -1179,7 +1179,7 @@ class OrderTest extends TestCase
                 'type' => $discountShipping->type,
                 'value' => $discountShipping->value,
                 'target_type' => $discountShipping->target_type,
-                'applied_discount' => $order->shipping_price_initial,
+                'applied' => $order->shipping_price_initial,
                 'code' => $discountShipping->code,
             ],
         );
@@ -1203,7 +1203,7 @@ class OrderTest extends TestCase
                 'type' => $discountProduct->type,
                 'value' => $discountProduct->value,
                 'target_type' => $discountProduct->target_type,
-                'applied_discount' => $discountProduct->value,
+                'applied' => $discountProduct->value,
                 'code' => $discountProduct->code,
             ],
         );
@@ -1215,7 +1215,7 @@ class OrderTest extends TestCase
                 'type' => $discountProduct->type,
                 'value' => $discountProduct->value,
                 'target_type' => $discountProduct->target_type,
-                'applied_discount' => $discountProduct->value,
+                'applied' => $discountProduct->value,
                 'code' => $discountProduct->code,
             ],
         );

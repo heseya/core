@@ -11,7 +11,6 @@ use Domain\ProductSet\Dtos\ProductSetCreateDto;
 use Domain\ProductSet\Dtos\ProductSetUpdateDto;
 use Domain\ProductSet\Requests\ProductSetAttachRequest;
 use Domain\ProductSet\Requests\ProductSetIndexRequest;
-use Domain\ProductSet\Requests\ProductSetProductReorderRequest;
 use Domain\ProductSet\Requests\ProductSetReorderRequest;
 use Domain\ProductSet\Resources\ProductSetParentResource;
 use Domain\ProductSet\Resources\ProductSetResource;
@@ -88,9 +87,8 @@ final class ProductSetController extends Controller
         return ProductResource::collection($products);
     }
 
-    public function reorderProducts(ProductSet $productSet, ProductSetProductReorderRequest $request): JsonResponse
+    public function reorderProducts(ProductSet $productSet, ProductsReorderDto $dto): JsonResponse
     {
-        $dto = ProductsReorderDto::instantiateFromRequest($request);
         $this->productSetService->reorderProducts($productSet, $dto);
 
         return Response::json(null, ResponseAlias::HTTP_NO_CONTENT);

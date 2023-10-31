@@ -8,6 +8,7 @@ use App\Http\Requests\MediaAttachmentCreateRequest;
 use App\Http\Requests\MediaAttachmentUpdateRequest;
 use App\Http\Requests\ProductCreateRequest;
 use App\Http\Requests\ProductIndexRequest;
+use App\Http\Requests\ProductShowRequest;
 use App\Http\Requests\ProductUpdateRequest;
 use App\Http\Resources\MediaAttachmentResource;
 use App\Http\Resources\ProductResource;
@@ -24,6 +25,8 @@ use Domain\Product\Dtos\ProductCreateDto;
 use Domain\Product\Dtos\ProductSearchDto;
 use Domain\Product\Dtos\ProductUpdateDto;
 use Heseya\Dto\DtoException;
+use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Gate;
@@ -56,12 +59,68 @@ final class ProductController extends Controller
         return $products->full($request->boolean('full'));
     }
 
-    public function show(Product $product): JsonResource
+    public function show(ProductShowRequest $request, Product $product): JsonResource
     {
         if (Gate::denies('products.show_hidden') && !$product->public) {
             throw new NotFoundHttpException();
         }
-        $product->load(['schemas', 'schemas.options', 'schemas.options.schema', 'schemas.prices', 'schemas.options.prices']);
+
+        $product->loadMissing([
+            'schemas',
+            'schemas.metadata',
+            'schemas.metadataPrivate',
+            'schemas.options',
+            'schemas.options.items',
+            'schemas.options.metadata',
+            'schemas.options.metadataPrivate',
+            'schemas.options.prices',
+            'schemas.options.schema',
+            'schemas.prices',
+            'schemas.usedSchemas',
+            'sales.amounts',
+            'sales.metadata',
+            'sales.metadataPrivate',
+            'attachments',
+            'attachments.media',
+            'attachments.media.metadata',
+            'attachments.media.metadataPrivate',
+            'items',
+            'media',
+            'media.metadata',
+            'media.metadataPrivate',
+            'metadata',
+            'metadataPrivate',
+            'pages',
+            'pages.metadata',
+            'pages.metadataPrivate',
+            'pricesBase',
+            'pricesMax',
+            'pricesMaxInitial',
+            'pricesMin',
+            'pricesMinInitial',
+            'publishedTags',
+            'relatedSets',
+            'relatedSets.childrenPublic',
+            'relatedSets.media',
+            'relatedSets.media.metadata',
+            'relatedSets.media.metadataPrivate',
+            'relatedSets.metadata',
+            'relatedSets.metadataPrivate',
+            'relatedSets.parent',
+            'seo',
+            'seo.media',
+            'seo.media.metadata',
+            'seo.media.metadataPrivate',
+            'sets',
+            'sets.childrenPublic',
+            'sets.media',
+            'sets.media.metadataPrivate',
+            'sets.media.metadata',
+            'sets.metadata',
+            'sets.metadataPrivate',
+            'sets.parent',
+        ]);
+        $product->load(['sales' => fn (BelongsToMany|Builder $hasMany) => $hasMany->withOrdersCount()]); // @phpstan-ignore-line
 
         return ProductResource::make($product);
     }
@@ -103,8 +162,11 @@ final class ProductController extends Controller
     }
 
     // TODO: add auth check
-    public function editAttachment(MediaAttachmentUpdateRequest $request, Product $product, MediaAttachment $attachment): JsonResource
-    {
+    public function editAttachment(
+        MediaAttachmentUpdateRequest $request,
+        Product $product,
+        MediaAttachment $attachment,
+    ): JsonResource {
         $attachment = $this->attachmentService->editAttachment(
             $attachment,
             MediaAttachmentUpdateDto::instantiateFromRequest($request),

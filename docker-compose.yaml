@@ -8,20 +8,20 @@ services:
       - ${DOCKER_PORT:-80}:80
     restart: unless-stopped
     volumes:
-    - .:/usr/src/app
+      - .:/usr/src/app
     command:
-    - bash
-    - -c
-    - |
-      if [ ! -f "/usr/src/init" ]; then
-        composer install
-        php artisan key:generate
-        sleep 15
-        php artisan migrate --seed
-        php artisan jwt:secret --always-no
-        touch /usr/src/init
-      fi
-      exec apache2-foreground
+      - bash
+      - -c
+      - |
+        if [ ! -f "/usr/src/init" ]; then
+          composer install
+          php artisan key:generate
+          sleep 15
+          php artisan migrate --seed
+          php artisan jwt:secret --always-no
+          touch /usr/src/init
+        fi
+        exec apache2-foreground
     depends_on:
       - mysql_service
   queue:
@@ -69,17 +69,9 @@ services:
     ports:
       - ${REDIS_PORT:-6379}:6379
   silverbox:
-    image: heseya/silverbox:1.2.0
+    image: escolasoft/silverbox:latest
     restart: unless-stopped
     ports:
       - ${DOCKER_SILVERBOX_PORT:-8888}:80
-    command:
-      - bash
-      - -c
-      - |
-        if [ ! -f "/usr/src/init" ]; then
-          php silverbox client:add ${SILVERBOX_CLIENT} ${SILVERBOX_KEY}
-          chown -R www-data:www-data storage
-          touch /usr/src/init
-        fi
-        exec apache2-foreground
+    volumes:
+      - ./silverbox:/var/www/html/storage/app

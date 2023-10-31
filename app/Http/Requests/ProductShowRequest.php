@@ -8,6 +8,9 @@ class ProductShowRequest extends FormRequest
 {
     public function rules(): array
     {
-        return [];
+        return [
+            'with_translations' => ['sometimes', 'boolean'],
+            'attribute_slug' => ['sometimes', 'nullable', 'string'],
+        ];
     }
 }

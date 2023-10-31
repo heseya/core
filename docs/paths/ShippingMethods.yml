@@ -54,6 +54,14 @@ ShippingMethods:
           items:
             type: string
             format: uuid
+      - name: 'items[]'
+        in: query
+        description: 'product ids to check if shipping method is blocked for them'
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
     responses:
       200:
         description: Success

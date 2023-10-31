@@ -2,12 +2,16 @@
 
 namespace App\Notifications;
 
+use App\Traits\GetLocale;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Lang;
 
 class ResetPassword extends Notification
 {
+    use GetLocale;
+
     /** The password reset url. */
     public string $token;
     public string $redirect_url;
@@ -19,6 +23,7 @@ class ResetPassword extends Notification
     {
         $this->token = $token;
         $this->redirect_url = $redirect_url;
+        $this->locale = $this->getLocaleFromRequest();
     }
 
     /**
@@ -40,11 +45,18 @@ class ResetPassword extends Notification
         ]);
 
         /** @var string $subject */
-        $subject = Lang::get('mail.subject-password-reset');
+        $subject = Lang::get('mail.subject-password-reset', [], $this->locale);
+
+        if (Config::get('client.mails')) {
+            $view = 'mail.client.password-reset';
+        } else {
+            $view = 'mail.user-password-reset';
+        }
 
         return (new MailMessage())
             ->subject($subject)
-            ->view('mail.user-password-reset', [
+            ->view($view, [
+                'name' => $notifiable?->name,
                 'url' => "{$this->redirect_url}?{$param}",
             ]);
     }

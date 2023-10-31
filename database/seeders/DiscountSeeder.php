@@ -62,7 +62,7 @@ class DiscountSeeder extends Seeder
                     [
                         DiscountTargetType::ORDER_VALUE,
                         DiscountTargetType::SHIPPING_PRICE,
-                    ]
+                    ],
                 )
                 ->random();
 
@@ -100,7 +100,7 @@ class DiscountSeeder extends Seeder
                 'currency' => $discountAmount?->value->getCurrency()->getCurrencyCode(),
                 'percentage' => $discount->percentage,
                 'target_type' => $discount->target_type,
-                'applied_discount' => $appliedDiscount->getMinorAmount(),
+                'applied' => $appliedDiscount->getMinorAmount(),
             ]);
 
             $order->update($update + [

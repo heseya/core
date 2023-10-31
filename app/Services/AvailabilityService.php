@@ -190,6 +190,9 @@ class AvailabilityService implements AvailabilityServiceContract
         ];
     }
 
+    /**
+     * @throws ServerException
+     */
     public function getCalculateProductAvailability(Product $product): array
     {
         $quantityStep = $product->quantity_step ?? 1;
@@ -429,8 +432,8 @@ class AvailabilityService implements AvailabilityServiceContract
         }
 
         if ($shippingDate1 === null || ($shippingDate1 instanceof Carbon
-            && ((!$isAfter && $shippingDate1->isBefore($shippingDate2))
-                || ($isAfter && $shippingDate1->isAfter($shippingDate2))))) {
+                && ((!$isAfter && $shippingDate1->isBefore($shippingDate2))
+                    || ($isAfter && $shippingDate1->isAfter($shippingDate2))))) {
             return $shippingDate2;
         }
 

@@ -14,7 +14,9 @@ ShippingMethod:
         $ref: './../schemas/Prices.yml#/PriceResource'
     public:
       type: boolean
-    block_list:
+    is_block_list_countries:
+      type: boolean
+    is_block_list_products:
       type: boolean
     payment_methods:
       type: array
@@ -48,6 +50,16 @@ ShippingMethod:
         - address
         - point
         - point-external
+    product_ids:
+      type: array
+      items:
+        type: string
+        format: uuid
+    product_set_ids:
+      type: array
+      items:
+        type: string
+        format: uuid
     sales_channels:
       type: array
       items:
@@ -56,3 +68,5 @@ ShippingMethod:
       $ref: './../schemas/Metadata.yml#/Metadata'
     metadata_private:
       $ref: './../schemas/Metadata.yml#/Metadata'
+    payment_on_delivery:
+      type: boolean

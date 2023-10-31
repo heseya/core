@@ -2,13 +2,21 @@
 
 namespace App\Notifications;
 
+use App\Traits\GetLocale;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Lang;
 
 class TFARecoveryCodes extends Notification
 {
+    use GetLocale;
     use Queueable;
+
+    public function __construct()
+    {
+        $this->locale = $this->getLocaleFromRequest();
+    }
 
     public function via(mixed $notifiable): array
     {
@@ -17,8 +25,11 @@ class TFARecoveryCodes extends Notification
 
     public function toMail(mixed $notifiable): MailMessage
     {
+        /** @var string $subject */
+        $subject = Lang::get('mail.subject-recovery-codes', [], $this->locale);
+
         return (new MailMessage())
-            ->subject('2FA recovery codes')
+            ->subject($subject)
             ->view('mail.tfa-recovery-codes');
     }
 }

@@ -28,11 +28,9 @@ final class Banner extends Model
         'name',
         'active',
     ];
-
     protected $casts = [
         'active' => 'boolean',
     ];
-
     /** @var string[] */
     protected array $criteria = [
         'slug' => Like::class,

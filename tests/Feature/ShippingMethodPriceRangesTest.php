@@ -26,7 +26,7 @@ class ShippingMethodPriceRangesTest extends TestCase
 
         $shippingMethod = ShippingMethod::factory()->create([
             'public' => true,
-            'block_list' => false,
+            'is_block_list_countries' => false,
         ]);
 
         $currency = Currency::DEFAULT->value;

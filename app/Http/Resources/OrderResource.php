@@ -2,6 +2,10 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Discount;
+use App\Models\Order;
+use App\Models\OrderDiscount;
+use App\Models\OrderProduct;
 use App\Models\User;
 use App\Traits\MetadataResource;
 use Domain\Order\Resources\OrderStatusResource;
@@ -9,6 +13,9 @@ use Domain\SalesChannel\Resources\SalesChannelResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
+/**
+ * @property Order $resource
+ */
 class OrderResource extends Resource
 {
     use MetadataResource;
@@ -48,34 +55,40 @@ class OrderResource extends Resource
 
     public function view(Request $request): array
     {
-        $orderDiscounts = OrderDiscountResource::collection($this->resource->discounts);
-        $productsDiscounts = $this->resource->products->map(fn ($product) => OrderDiscountResource::collection($product->discounts));
-        $productsDiscountMerged = new Collection();
+        $discounts = $this->resource->discounts;
 
-        $productsDiscounts->each(function ($productDiscounts) use ($productsDiscountMerged): void {
-            $productDiscounts->each(function ($discount) use ($productsDiscountMerged): void {
-                $found = $productsDiscountMerged
+        $productsDiscounts = $this->resource->products->reduce(function (Collection $carry, OrderProduct $product): Collection {
+            $product->discounts->each(function (Discount $discount) use (&$carry): void {
+                $found = $carry
                     ->where('code', '=', $discount->code)
                     ->where('name', '=', $discount->name);
 
                 if ($found->isEmpty()) {
-                    $productsDiscountMerged->push($discount);
+                    $carry->push($discount);
                 } else {
-                    // @phpstan-ignore-next-line
-                    $found->first()->pivot->applied_discount += $discount->pivot->applied_discount;
+                    $foundDiscount = $found->first();
+                    assert($foundDiscount instanceof Discount);
+                    assert($foundDiscount->order_discount instanceof OrderDiscount);
+                    $foundDiscount->order_discount->applied = match (true) {
+                        $foundDiscount->order_discount->applied !== null && $discount->order_discount?->applied !== null => $foundDiscount->order_discount->applied->plus($discount->order_discount->applied),
+                        $discount->order_discount?->applied !== null => $discount->order_discount->applied,
+                        default => $foundDiscount->order_discount->applied,
+                    };
                 }
             });
-        });
 
-        $productsDiscountMerged->map(function ($discount) use (&$orderDiscounts) {
-            return $orderDiscounts = $orderDiscounts->push($discount);
+            return $carry;
+        }, new Collection());
+
+        $productsDiscounts->each(function ($discount) use (&$discounts): void {
+            $discounts->push($discount);
         });
 
         return [
             'products' => OrderProductResource::collection($this->resource->products),
             'payments' => PaymentResource::collection($this->resource->payments),
             'shipping_number' => $this->resource->shipping_number,
-            'discounts' => $orderDiscounts,
+            'discounts' => OrderDiscountResource::collection($discounts),
             'buyer' => $this->resource->buyer instanceof User
                 ? UserResource::make($this->resource->buyer)->baseOnly()
                 : AppResource::make($this->resource->buyer),

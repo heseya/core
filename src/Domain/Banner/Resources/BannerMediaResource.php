@@ -24,7 +24,7 @@ final class BannerMediaResource extends Resource
             'subtitle' => $this->resource->subtitle,
             'media' => ResponsiveMediaResource::collection($this->resource->media),
             'published' => $this->resource->published,
-            ...$request->boolean('with_translations') ? $this->getAllTranslations() : [],
+            ...$request->boolean('with_translations') ? $this->getAllTranslations('banners.show_hidden') : [],
         ];
     }
 }

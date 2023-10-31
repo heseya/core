@@ -23,7 +23,7 @@ class ProductIndexRequest extends FormRequest
         }
 
         return [
-            'search' => ['nullable', 'string', 'max:255'],
+            'search' => ['sometimes', 'string', 'max:255'],
 
             'ids' => ['array'],
             'ids.*' => ['uuid'],
@@ -58,6 +58,9 @@ class ProductIndexRequest extends FormRequest
             'attribute.*' => [new AttributeSearch()],
             'attribute_not' => ['nullable', 'array'],
             'attribute_not.*' => [new AttributeSearch()],
+
+            'with_translations' => ['sometimes', 'boolean'],
+            'attribute_slug' => ['sometimes', 'nullable', 'string'],
 
             'full' => ['boolean'],
         ];

@@ -8,6 +8,9 @@ use App\Models\Product;
 use App\Models\Schema;
 use Domain\Language\Enums\LangFallbackType;
 use Domain\Language\Language;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
 
@@ -111,7 +114,7 @@ class LanguageFallbackTest extends TestCase
             'name' => 'Nazwa',
             'description_html' => 'HTML opis',
             'description_short' => 'Krótki opis',
-            'public' =>true,
+            'public' => true,
         ]);
 
         $response = $this->actingAs($this->$user)->json('GET', 'products', [
@@ -664,25 +667,25 @@ class LanguageFallbackTest extends TestCase
             App::setLocale($this->language->getKey());
             $published = $default ? [] : ['published' => []];
             $product = Product::factory()->create([
-                    'name' => 'Nazwa',
-                    'description_html' => 'HTML opis',
-                    'description_short' => 'Krótki opis',
-                    'public' => true,
-                ] + $published);
+                'name' => 'Nazwa',
+                'description_html' => 'HTML opis',
+                'description_short' => 'Krótki opis',
+                'public' => true,
+            ] + $published);
         }
 
         if ($another === true || $another === false) {
             $published = $another ? [] : ['published' => []];
             $data = [
-                    'name' => 'Name',
-                    'description_html' => 'HTML Beschreibung',
-                    'description_short' => 'Kurze Beschreibung',
-                    'public' => true,
-                ] + $published;
+                'name' => 'Name',
+                'description_html' => 'HTML Beschreibung',
+                'description_short' => 'Kurze Beschreibung',
+                'public' => true,
+            ] + $published;
             if ($product !== null) {
                 $product->setLocale($de->getKey())->update($data + [
-                        'published' => array_merge($product->published, [$de->getKey()]),
-                    ]);
+                    'published' => array_merge($product->published, [$de->getKey()]),
+                ]);
             } else {
                 App::setLocale($de->getKey());
                 $product = Product::factory()->create($data);
@@ -740,8 +743,6 @@ class LanguageFallbackTest extends TestCase
 
         $product->schemas()->save($schema);
 
-        // For some reasons in test Config::set not working properly
-        App::setFallbackLocale($this->language->getKey());
         $this
             ->actingAs($this->{$user})
             ->json('GET', '/products/id:' . $product->getKey(), headers: ['Accept-Language' => 'es'])
@@ -753,6 +754,67 @@ class LanguageFallbackTest extends TestCase
             ->assertJsonFragment([
                 'id' => $schema->getKey(),
                 'name' => 'Schemat',
+            ])
+            ->assertJsonFragment([
+                'id' => $product->getKey(),
+                'name' => 'Test ES',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductWithAttributeOptionFallback(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.show_details');
+
+        /** @var Language $en */
+        $en = Language::create([
+            'iso' => 'es',
+            'name' => 'English',
+            'default' => false,
+            'hidden' => false,
+        ]);
+
+        /** @var Product $product */
+        $product = Product::factory()->create([
+            'public' => true,
+            'name' => 'Test PL',
+            'published' => json_encode([$this->language->getKey(), $en->getKey()]),
+        ]);
+        $product->setLocale($en->getKey())->fill([
+            'name' => 'Test ES',
+        ]);
+        $product->save();
+
+        $attribute = Attribute::factory()->create([
+            'name' => 'Atrybut 1',
+            'published' => [$this->lang, $en->getKey()],
+        ]);
+        $attribute->setLocale($en->getKey())->fill([
+            'name' => 'Attribute 1',
+        ]);
+        $attribute->save();
+        $attributeOption = AttributeOption::factory()->create([
+            'index' => 1,
+            'name' => 'Opcja 1',
+            'attribute_id' => $attribute->getKey(),
+        ]);
+
+        $product->attributes()->attach($attribute);
+        $product->attributes->first()->product_attribute_pivot->options()->attach($attributeOption->getKey());
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products/id:' . $product->getKey(), ['attribute_slug' => $attribute->slug], ['Accept-Language' => 'es'])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $attributeOption->getKey(),
+                'name' => 'Opcja 1',
+            ])
+            ->assertJsonFragment([
+                'id' => $attribute->getKey(),
+                'name' => 'Attribute 1',
             ])
             ->assertJsonFragment([
                 'id' => $product->getKey(),

@@ -95,7 +95,7 @@ class OrderDocumentTest extends TestCase
                 'orders/id:'
                 . $this->order->getKey()
                 . '/docs/id:'
-                . $this->order->documents()->latest()->first()->pivot->id
+                . $this->order->documents()->latest()->first()->pivot->id,
             );
 
         $response->assertStatus(204);
@@ -178,6 +178,7 @@ class OrderDocumentTest extends TestCase
 
         Http::fake(['*' => Http::response($file)]);
 
+        $this->order->update(['buyer_id' => $this->{$user}->id]);
         $this->order->documents()->attach($media, ['type' => MediaAttachmentType::INVOICE, 'name' => 'test']);
         $this
             ->actingAs($this->{$user})
@@ -186,13 +187,10 @@ class OrderDocumentTest extends TestCase
                 'orders/id:'
                 . $this->order->getKey() . '/docs/id:'
                 . $this->order->documents->last()->pivot->id
-                . '/download'
-            );
-
-        // TODO: don't work i don't now why
-
-        //            ->assertStatus(200)
-        //            ->assertHeader('content-disposition', 'attachment; filename=test.jpeg');
+                . '/download',
+            )
+            ->assertStatus(200)
+            ->assertHeader('content-disposition', 'attachment; filename=test.jpeg');
     }
 
     /**
@@ -219,7 +217,7 @@ class OrderDocumentTest extends TestCase
                 'orders/id:'
                 . $this->order->getKey() . '/docs/id:'
                 . $this->order->documents->last()->pivot->id
-                . '/download'
+                . '/download',
             );
 
         $response
@@ -251,7 +249,7 @@ class OrderDocumentTest extends TestCase
                 'orders/id:'
                 . $this->order->getKey() . '/docs/id:'
                 . $this->order->documents->last()->pivot->id
-                . '/download'
+                . '/download',
             );
 
         $response

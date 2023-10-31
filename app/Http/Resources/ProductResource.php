@@ -7,7 +7,6 @@ use App\Models\MediaAttachment;
 use App\Models\Product;
 use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
-use App\Traits\ModifyLangFallback;
 use Domain\Page\PageResource;
 use Domain\ProductSet\ProductSet;
 use Domain\ProductSet\Resources\ProductSetResource;
@@ -24,7 +23,6 @@ class ProductResource extends Resource
     use GetAllTranslations;
 
     use MetadataResource;
-    use ModifyLangFallback;
 
     public function base(Request $request): array
     {
@@ -80,22 +78,22 @@ class ProductResource extends Resource
             )
             : $this->resource->attachments;
 
-        $previousSettings = $this->getCurrentLangFallbackSettings();
-        $this->setAnyLangFallback();
-        $schemas = SchemaResource::collection($this->resource->schemas);
-        $this->setLangFallbackSettings(...$previousSettings);
-
         return [
-            'order' => $this->resource->order,
             'description_html' => $this->resource->description_html,
             'description_short' => $this->resource->description_short,
             'descriptions' => PageResource::collection($this->resource->pages),
             'items' => ProductItemResource::collection($this->resource->items),
             'gallery' => MediaResource::collection($this->resource->media),
-            'schemas' => $schemas,
+            'schemas' => ProductSchemaResource::collection($this->resource->schemas),
             'sets' => ProductSetResource::collection($sets),
             'related_sets' => ProductSetResource::collection($relatedSets),
-            'attributes' => ProductAttributeResource::collection($this->resource->attributes),
+            'attributes' => ($request->filled('attribute_slug') || $this->resource->relationLoaded('productAttributes'))
+                ? ProductAttributeResource::collection(
+                    $this->resource->relationLoaded('productAttributes')
+                        ? $this->resource->productAttributes
+                        : $this->resource->productAttributes()->slug($request->string('attribute_slug'))->get(),
+                )
+                : [],
             'seo' => SeoMetadataResource::make($this->resource->seo),
             'sales' => SaleResource::collection($this->resource->sales),
             'attachments' => MediaAttachmentResource::collection($attachments),
@@ -105,7 +103,13 @@ class ProductResource extends Resource
     public function index(Request $request): array
     {
         return [
-            'attributes' => ProductAttributeShortResource::collection($this->resource->attributes),
+            'attributes' => ($request->filled('attribute_slug') || $this->resource->relationLoaded('productAttributes'))
+                ? ProductAttributeShortResource::collection(
+                    $this->resource->relationLoaded('productAttributes')
+                        ? $this->resource->productAttributes
+                        : $this->resource->productAttributes()->slug($request->string('attribute_slug'))->get(),
+                )
+                : [],
         ];
     }
 }
