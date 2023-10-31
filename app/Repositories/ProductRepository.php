@@ -19,6 +19,7 @@ use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
@@ -80,11 +81,9 @@ class ProductRepository implements ProductRepositoryContract
                 'relatedSets.metadataPrivate',
                 'relatedSets.childrenPublic',
                 'relatedSets.parent',
-                'sales',
                 'sales.metadata',
                 'sales.metadataPrivate',
                 'sales.amounts',
-                'sales.orders',
                 'pages',
                 'pages.metadata',
                 'pages.metadataPrivate',
@@ -97,6 +96,7 @@ class ProductRepository implements ProductRepositoryContract
                 'seo.media.metadata',
                 'seo.media.metadataPrivate',
             ]);
+            $query->with(['sales' => fn (BelongsToMany|Builder $hasMany) => $hasMany->withOrdersCount()]); // @phpstan-ignore-line
         }
 
         if (Gate::denies('products.show_hidden')) {
@@ -111,7 +111,7 @@ class ProductRepository implements ProductRepositoryContract
             $loadAttributes->push(request()->string('attribute_slug'));
         }
         if ($loadAttributes->isNotEmpty()) {
-            $query->with(['productAttributes' => fn (HasMany $subquery) => $subquery->slug($loadAttributes->toArray())]); // @phpstan-ignore-line
+            $query->with(['productAttributes' => fn (Builder|HasMany $subquery) => $subquery->slug($loadAttributes->toArray())]); // @phpstan-ignore-line
         }
 
         if (is_string($dto->price_sort_direction)) {
