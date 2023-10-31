@@ -261,10 +261,11 @@ class DiscountTest extends TestCase
     {
         $this->{$user}->givePermissionTo("{$discountKind}.show");
 
-        $this
+        $response = $this
             ->actingAs($this->{$user})
-            ->getJson("/{$discountKind}")
-            ->assertOk()
+            ->getJson("/{$discountKind}");
+
+        $response->assertOk()
             ->assertJsonCount(10, 'data');
 
         $this->assertQueryCountLessThan(24);
@@ -275,17 +276,16 @@ class DiscountTest extends TestCase
      */
     public function testIndexPerformance($user, $discountKind): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo("{$discountKind}.show");
 
         $codes = $discountKind === 'coupons' ? [] : ['code' => null];
         Discount::factory($codes)->count(490)->create();
 
-        $this
+        $response = $this
             ->actingAs($this->{$user})
-            ->getJson("/{$discountKind}?limit=500")
-            ->assertOk()
+            ->getJson("/{$discountKind}?limit=500");
+
+        $response->assertOk()
             ->assertJsonCount(500, 'data');
 
         // It's now 512 ugh
@@ -339,8 +339,6 @@ class DiscountTest extends TestCase
      */
     public function testShowWithConditions(string $user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('coupons.show_details');
         $discount = Discount::factory()->create();
 
@@ -403,7 +401,7 @@ class DiscountTest extends TestCase
                 'id' => $discount->getKey(),
                 'name' => $discount->name,
                 'description' => $discount->description,
-                'percentage' => $discount->percentage,
+                'percentage' => $discount->percentage !== null ? number_format($discount->percentage, 4) : null,
                 'priority' => $discount->priority,
                 'uses' => $discount->uses,
             ])
@@ -1256,8 +1254,6 @@ class DiscountTest extends TestCase
      */
     public function testCreateMaxValuePercentage($user, $discountKind): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo("{$discountKind}.add");
 
         Queue::fake();

@@ -19,18 +19,23 @@ use Domain\ProductSet\ProductSet;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @property mixed $pivot
  * @property OrderDiscount|null $order_discount
  * @property DiscountType $type
  * @property DiscountTargetType $target_type
+ * @property int $uses
+ * @property ?int $orders_through_products_count
  *
  * @mixin IdeHelperDiscount
  */
@@ -86,9 +91,31 @@ class Discount extends Model implements SeoContract, Translatable
         'discounts.published' => Like::class,
     ];
 
-    public function getUsesAttribute(): int
+    public function scopeWithOrdersCount(Builder $query): Builder
     {
-        return $this->orders->count();
+        return $query->withCount([
+            'orders',
+            'orderProducts as orders_through_products_count' => fn (Builder $subquery) => $subquery->select(DB::raw('count(distinct(order_id))')),
+        ]);
+    }
+
+    /**
+     * Counts unique Orders in which this Coupon was used.
+     */
+    protected function uses(): Attribute
+    {
+        return Attribute::get(fn (mixed $value, array $attributes = []) => match ($this->target_type) {
+            DiscountTargetType::PRODUCTS, DiscountTargetType::CHEAPEST_PRODUCT => match (true) {
+                $this->orders_through_products_count !== null => $this->orders_through_products_count,
+                $this->relationLoaded('orderProducts') => $this->orderProducts->unique('order_id')->count(),
+                default => $this->orderProducts()->distinct('order_id')->count('order_id'),
+            },
+            default => match (true) {
+                $this->orders_count !== null => $this->orders_count,
+                $this->relationLoaded('orders') => $this->orders->unique('id')->count(),
+                default => $this->orders()->distinct('id')->count('id'),
+            },
+        });
     }
 
     public function orders(): MorphToMany
@@ -104,6 +131,27 @@ class Discount extends Model implements SeoContract, Translatable
                 'target_type',
                 'applied',
             ]);
+    }
+
+    public function orderProducts(): MorphToMany
+    {
+        return $this->morphedByMany(OrderProduct::class, 'model', 'order_discounts');
+    }
+
+    public function ordersThroughProducts(): Builder
+    {
+        return match (true) {
+            $this->relationLoaded('orderProducts') => Order::query()->whereIn('id', $this->orderProducts->unique('order_id')->toArray()),
+            default => Order::query()->whereHas('products', fn (Builder $subquery) => $subquery->whereHas('discounts', fn (Builder $subsubquery) => $subsubquery->where('id', $this->id))),
+        };
+    }
+
+    public function ordersWithUses(): Builder
+    {
+        return match ($this->target_type) {
+            DiscountTargetType::PRODUCTS, DiscountTargetType::CHEAPEST_PRODUCT => $this->ordersThroughProducts(),
+            default => $this->orders()->getQuery(),
+        };
     }
 
     public function products(): MorphToMany

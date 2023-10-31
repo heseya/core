@@ -944,10 +944,8 @@ class CartTest extends TestCase
     /**
      * @dataProvider authWithBooleanProvider
      */
-    public function testCartProcessCheapestProductWithSamePrice($user, $coupon): void
+    public function testCartProcessCheapestProductWithSamePrice(string $user, bool $coupon): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('cart.verify');
 
         $code = $coupon ? [] : ['code' => null];
@@ -986,6 +984,7 @@ class CartTest extends TestCase
             ->postJson(
                 '/cart/process',
                 [
+                    'currency' => $this->currency,
                     'sales_channel_id' => SalesChannel::query()->value('id'),
                     'shipping_method_id' => $this->shippingMethod->getKey(),
                     'items' => [
@@ -1004,34 +1003,35 @@ class CartTest extends TestCase
         $discountCode2 = $coupon ? ['code' => $discount->code] : [];
 
         $response
-            ->assertValid()->assertOk()
+            ->assertValid()
+            ->assertOk()
             ->assertJsonFragment(
                 [
-                    'cart_total_initial' => 9200,
-                    'cart_total' => 0.02,
-                    'shipping_price_initial' => 0,
-                    'shipping_price' => 0,
-                    'summary' => 0.02,
+                    'cart_total_initial' => "9200.00",
+                    'cart_total' => "0.02",
+                    'shipping_price_initial' => "0.00",
+                    'shipping_price' => "0.00",
+                    'summary' => "0.02",
                 ] + $result
             )
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 4600,
-                'price_discounted' => 0.01,
+                'price' => "4600.00",
+                'price_discounted' => "0.01",
                 'quantity' => 2,
             ])
             ->assertJsonFragment(
                 [
                     'id' => $productDiscount->getKey(),
                     'name' => $productDiscount->name,
-                    'value' => 9200,
+                    'value' => "9199.98",
                 ] + $discountCode1
             )
             ->assertJsonFragment(
                 [
                     'id' => $discount->getKey(),
                     'name' => $discount->name,
-                    'value' => 0,
+                    'value' => "0.00",
                 ] + $discountCode2
             );
     }

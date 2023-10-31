@@ -37,6 +37,8 @@ class ItemTest extends TestCase
     {
         parent::setUp();
 
+        Carbon::setTestNow(null);
+
         $this->item = Item::factory()->create();
 
         Deposit::factory()->create([

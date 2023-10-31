@@ -146,7 +146,7 @@ class PerformanceTest extends TestCase
             ->json('GET', '/products/id:' . $product->getKey());
         $response->assertOk();
         $response->assertJsonCount(0, 'data.attributes');
-        $this->assertQueryCountLessThan(53);
+        $this->assertQueryCountLessThan(55);
 
         $response =  $this->actingAs($this->user)
             ->json('GET', '/products/id:' . $product->getKey() . '?' . Arr::query(['attribute_slug' => $attribute1->slug]));

@@ -556,6 +556,9 @@ class DiscountOrderTest extends TestCase
             'discount_id' => $sale->getKey(),
             'applied' => '1000',
         ]);
+
+        $this->assertEquals(1, $cheapestDiscount->refresh()->uses);
+        $this->assertEquals(1, $sale->refresh()->uses);
     }
 
     /**
