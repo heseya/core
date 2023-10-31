@@ -334,3 +334,24 @@ ProductsAttachmentsParams:
               type: object
     security:
       - BearerAuth: [ ]
+
+ProductImportPrices:
+  post:
+    tags:
+      - Products
+    summary: 'import prices from csv or xml file'
+    requestBody:
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              file:
+                description: 'File. Accepted extensions: csv, xml'
+                type: string
+                format: binary
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]

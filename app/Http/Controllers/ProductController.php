@@ -10,6 +10,7 @@ use App\Dtos\ProductUpdateDto;
 use App\Http\Requests\MediaAttachmentCreateRequest;
 use App\Http\Requests\MediaAttachmentUpdateRequest;
 use App\Http\Requests\ProductCreateRequest;
+use App\Http\Requests\ProductImportPricesRequest;
 use App\Http\Requests\ProductIndexRequest;
 use App\Http\Requests\ProductUpdateRequest;
 use App\Http\Resources\MediaAttachmentResource;
@@ -22,6 +23,7 @@ use App\Services\Contracts\MediaAttachmentServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -104,6 +106,15 @@ class ProductController extends Controller
     public function deleteAttachment(Product $product, MediaAttachment $attachment): JsonResponse
     {
         $this->attachmentService->removeAttachment($attachment);
+
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    public function importPrices(ProductImportPricesRequest $request): JsonResponse
+    {
+        /** @var UploadedFile $file */
+        $file = $request->file('file');
+        $this->productService->updateProductPrices($file);
 
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }

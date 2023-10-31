@@ -160,6 +160,8 @@ paths:
     $ref: './paths/Products.yml#/ProductsAttachments'
   '/products/id:{id}/attachments/id:{attachment_id}':
     $ref: './paths/Products.yml#/ProductsAttachmentsParams'
+  '/products/import-prices':
+    $ref: './paths/Products.yml#/ProductImportPrices'
   /product-sets:
     $ref: './paths/ProductSets.yml#/ProductSets'
   '/product-sets/{slug}':

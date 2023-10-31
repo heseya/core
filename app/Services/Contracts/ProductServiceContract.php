@@ -5,6 +5,7 @@ namespace App\Services\Contracts;
 use App\Dtos\ProductCreateDto;
 use App\Dtos\ProductUpdateDto;
 use App\Models\Product;
+use Illuminate\Http\UploadedFile;
 
 interface ProductServiceContract
 {
@@ -26,4 +27,6 @@ interface ProductServiceContract
     public function updateMinMaxPrices(Product $product): void;
 
     public function updateProductIndex(Product $product): void;
+
+    public function updateProductPrices(UploadedFile $file): void;
 }

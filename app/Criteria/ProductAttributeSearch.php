@@ -42,6 +42,8 @@ class ProductAttributeSearch extends Criterion
                                 $query->where($key, '>=', $value['min']);
                             } elseif (Arr::has($value, 'max')) {
                                 $query->where($key, '<=', $value['max']);
+                            } elseif (Arr::has($value, 'name_eq')) {
+                                $query->where('name', $value['name_eq']);
                             } else {
                                 $query->where(function ($query) use ($value): void {
                                     foreach ($value as $option) {

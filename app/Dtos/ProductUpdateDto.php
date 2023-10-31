@@ -62,6 +62,32 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
         );
     }
 
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            name: array_key_exists('name', $data) ? $data['name'] : new Missing(),
+            slug: array_key_exists('slug', $data) ? $data['slug'] : new Missing(),
+            price: array_key_exists('price', $data) ? $data['price'] : new Missing(),
+            public: array_key_exists('public', $data) ? $data['public'] : new Missing(),
+            shipping_digital: array_key_exists('shipping_digital', $data) ? $data['shipping_digital'] : new Missing(),
+            quantity_step: array_key_exists('quantity_step', $data) ? $data['quantity_step'] : new Missing(),
+            google_product_category: array_key_exists('google_product_category', $data) ? $data['google_product_category'] : new Missing(),
+            vat_rate: array_key_exists('vat_rate', $data) ? $data['vat_rate'] : new Missing(),
+            description_html: array_key_exists('description_html', $data) ? $data['description_html'] : new Missing(),
+            description_short: array_key_exists('description_short', $data) ? $data['description_short'] : new Missing(),
+            purchase_limit_per_user: array_key_exists('purchase_limit_per_user', $data) ? $data['purchase_limit_per_user'] : new Missing(),
+            media: array_key_exists('media', $data) ? $data['media'] : new Missing(),
+            tags: array_key_exists('tags', $data) ? $data['tags'] : new Missing(),
+            schemas: array_key_exists('schemas', $data) ? $data['schemas'] : new Missing(),
+            sets: array_key_exists('sets', $data) ? $data['sets'] : new Missing(),
+            items: array_key_exists('items', $data) ? $data['items'] : new Missing(),
+            seo: array_key_exists('seo', $data) ? $data['seo'] : new Missing(),
+            attributes: array_key_exists('attributes', $data) ? $data['attributes'] : new Missing(),
+            descriptions: array_key_exists('descriptions', $data) ? $data['descriptions'] : new Missing(),
+            relatedSets: array_key_exists('relatedSets', $data) ? $data['relatedSets'] : new Missing(),
+        );
+    }
+
     public function getMetadata(): Missing
     {
         return new Missing();
