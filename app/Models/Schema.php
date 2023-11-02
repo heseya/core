@@ -9,7 +9,6 @@ use App\Criteria\TranslatedLike;
 use App\Criteria\WhereInIds;
 use App\Models\Contracts\SortableContract;
 use App\Models\Interfaces\Translatable;
-use App\Rules\OptionAvailable;
 use App\SortColumnTypes\TranslatedColumn;
 use App\Traits\CustomHasTranslations;
 use App\Traits\HasMetadata;
@@ -23,7 +22,6 @@ use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Validator;
@@ -33,7 +31,6 @@ use Illuminate\Validation\ValidationException;
 /**
  * @property string $name
  * @property string $description
- * @property Collection<int, Price> $prices
  *
  * @mixin IdeHelperSchema
  */
@@ -172,16 +169,6 @@ class Schema extends Model implements SortableContract, Translatable
         return $this->belongsToMany(Product::class, 'product_schemas');
     }
 
-    public function prices(): MorphMany
-    {
-        return $this->morphMany(Price::class, 'model');
-    }
-
-    public function getPriceForCurrency(Currency $currency): Money
-    {
-        return $this->prices->where('currency', $currency->value)->firstOrFail()->value;
-    }
-
     /**
      * @throws MathException
      * @throws MoneyMismatchException
@@ -236,13 +223,13 @@ class Schema extends Model implements SortableContract, Translatable
             )->multipliedBy($value);
         }
 
-        $price = $this->getPriceForCurrency($currency);
+        $price = Money::zero($currency->value);
 
         $option = $this->options()->find($value);
         if ($option?->count() > 0) {
             /** @var Option $option */
             $price = $price->plus($option->getPriceForCurrency($currency));
-        } elseif (!Str::isUuid($value)) {
+        } elseif (!Str::isUuid($value) && is_numeric($value)) {
             $price = $price->multipliedBy($value);
         }
 

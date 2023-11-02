@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Dtos\CartDto;
 use App\Dtos\CartItemDto;
-use App\Enums\SchemaType;
 use App\Models\Item;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DepositServiceContract;
@@ -55,7 +54,7 @@ class ShippingTimeDateService implements ShippingTimeDateServiceContract
             foreach ($cartItem->getSchemas() as $schemaId => $value) {
                 $schema = $product->schemas()->findOrFail($schemaId);
                 $optionValue = $schemas[$schema->getKey()] ?? null;
-                if ($optionValue === null || $schema->type !== SchemaType::SELECT) {
+                if ($optionValue === null /* || $schema->type !== SchemaType::SELECT */) {
                     continue;
                 }
                 $option = $schema->options()->find($optionValue);

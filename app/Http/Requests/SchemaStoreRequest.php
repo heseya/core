@@ -37,7 +37,7 @@ final class SchemaStoreRequest extends FormRequest
                 'step' => ['nullable', 'numeric', 'min:0', 'max:100000'],
                 'default' => ['nullable', 'required_if:required,true'],
 
-                'options' => ['nullable', 'array'],
+                'options' => ['required', 'array'],
                 'options.*.translations' => [
                     'required',
                     new Translations(['name']),

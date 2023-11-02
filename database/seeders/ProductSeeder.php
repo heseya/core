@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use Domain\Price\Enums\ProductPriceType;
-use App\Enums\SchemaType;
 use App\Models\Deposit;
 use App\Models\Item;
 use App\Models\Media;
@@ -148,21 +147,19 @@ class ProductSeeder extends Seeder
 
         $product->schemas()->attach($schema->getKey());
 
-        if ($schema->type->is(SchemaType::SELECT)) {
-            /** @var Item $item */
-            $item = Item::factory()->create();
-            $item->deposits()->saveMany(Deposit::factory()->count(mt_rand(0, 2))->make());
+        /** @var Item $item */
+        $item = Item::factory()->create();
+        $item->deposits()->saveMany(Deposit::factory()->count(mt_rand(0, 2))->make());
 
 
-            Option::factory([
-                'schema_id' => $schema->getKey(),
-            ])->has(Price::factory()->forAllCurrencies())
-                ->count(mt_rand(0, 4))->create()?->each(function (Option $option) use ($language): void {
-                    $optionTranslation = Option::factory()->definition();
-                    $option->setLocale($language)->fill(Arr::only($optionTranslation, ['name']));
-                    $option->save();
-                });
-        }
+        Option::factory([
+            'schema_id' => $schema->getKey(),
+        ])->has(Price::factory()->forAllCurrencies())
+            ->count(mt_rand(0, 4))->create()?->each(function (Option $option) use ($language): void {
+                $optionTranslation = Option::factory()->definition();
+                $option->setLocale($language)->fill(Arr::only($optionTranslation, ['name']));
+                $option->save();
+            });
     }
 
     private function media(Product $product): void
