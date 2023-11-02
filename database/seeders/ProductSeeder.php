@@ -131,10 +131,7 @@ class ProductSeeder extends Seeder
     {
         /** @var Schema $schema */
         $schema = Schema::factory()
-            ->has(Price::factory()->forAllCurrencies())
-            ->create([
-                'type' => mt_rand(0, 6), // all types except multiply_schemas
-            ]);
+            ->create();
         $schemaTranslation = Schema::factory()->definition();
         $schema->setLocale($language)->fill(Arr::only($schemaTranslation, ['name', 'description']));
         $schema->fill(['published' => array_merge($schema->published ?? [], [$language])]);
