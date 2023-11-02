@@ -7,7 +7,7 @@ use Heseya\Data\Contracts\CoerceableEnum;
 
 /**
  * @deprecated
-*/
+ */
 enum SchemaType: int implements CoerceableEnum
 {
     use EnumTrait;
