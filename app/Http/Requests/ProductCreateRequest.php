@@ -66,7 +66,7 @@ class ProductCreateRequest extends FormRequest implements MetadataRequestContrac
                 'items.*.required_quantity' => ['numeric', 'gte:0.0001'],
 
                 'schemas' => ['array'],
-                'schemas.*' => ['uuid', 'exists:schemas,id', new SchemaAvailable($this->route()?->parameter('product'))], //@phpstan-ignore-line
+                'schemas.*' => ['uuid', 'exists:schemas,id', new SchemaAvailable($this->route()?->parameter('product'))], // @phpstan-ignore-line
 
                 'sets' => ['array'],
                 'sets.*' => ['uuid', 'exists:product_sets,id'],

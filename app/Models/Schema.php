@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\SchemaHasProduct;
 use App\Criteria\SchemaSearch;
 use App\Criteria\TranslatedLike;
 use App\Criteria\WhereInIds;
@@ -78,6 +79,7 @@ class Schema extends Model implements SortableContract, Translatable
         'name' => TranslatedLike::class,
         'hidden',
         'required',
+        'has_product' => SchemaHasProduct::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,

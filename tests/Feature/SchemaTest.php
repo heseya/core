@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Price;
+use App\Models\Product;
 use App\Models\Schema;
 use App\Services\SchemaCrudService;
 use Brick\Money\Money;
@@ -232,6 +233,40 @@ class SchemaTest extends TestCase
             ->assertJsonFragment([
                 'id' => $schemaId,
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchByHasProduct(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.add');
+
+        $schema1 = $this->schemaCrudService->store(FakeDto::schemaDto([
+            'hidden' => false,
+        ]));
+
+        $this->schemaCrudService->store(FakeDto::schemaDto([
+            'hidden' => false,
+        ]));
+
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/schemas', ['has_product' => false])
+            ->assertOk()
+            ->assertJsonCount(2, 'data');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+        $schema1->product()->associate($product)->save();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/schemas', ['has_product' => true])
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
     }
 
     /**
