@@ -20,6 +20,7 @@ use Domain\Currency\Currency;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
@@ -57,6 +58,7 @@ class Schema extends Model implements SortableContract, Translatable
         'shipping_time',
         'shipping_date',
         'published',
+        'product_id',
     ];
 
     protected array $translatable = [
@@ -167,6 +169,11 @@ class Schema extends Model implements SortableContract, Translatable
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'product_schemas');
+    }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
     }
 
     /**
