@@ -2897,6 +2897,7 @@ class ProductTest extends TestCase
         ]));
 
         $this->product->schemas()->attach($schema->getKey());
+        $schema->product()->associate($this->product)->save();
         $this->productService->updateMinMaxPrices($this->product);
 
         $productNewPrice = 250;
@@ -2905,16 +2906,20 @@ class ProductTest extends TestCase
             'currency' => $currency->value,
         ], Currency::cases());
 
-        $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
-            'name' => $this->product->name,
-            'slug' => $this->product->slug,
-            'public' => $this->product->public,
-            'prices_base' => $prices,
-            'sets' => [],
-            'schemas' => [
-                $schema->getKey(),
-            ],
-        ]);
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson('/products/id:' . $this->product->getKey(), [
+                'name' => $this->product->name,
+                'slug' => $this->product->slug,
+                'public' => $this->product->public,
+                'prices_base' => $prices,
+                'sets' => [],
+                'schemas' => [
+                    $schema->getKey(),
+                ],
+            ])
+            ->assertValid()
+            ->assertOk();
 
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),
@@ -3358,5 +3363,56 @@ class ProductTest extends TestCase
             'id' => $this->product->getKey(),
             'has_schemas' => false,
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testAssociateSchemaToTwoProducts(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.edit');
+
+        Schema::query()->delete();
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
+            'name' => 'test schema',
+        ]));
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $schema->product()->associate($product)->save();
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson('products/id:' . $this->product->getKey(), [
+                'schemas' => [
+                    $schema->getKey(),
+                ],
+            ])->assertUnprocessable();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSchemaProductIdFieldAfterAssociate(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.edit');
+
+        Schema::query()->delete();
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
+            'name' => 'test schema',
+        ]));
+
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson('products/id:' . $this->product->getKey(), [
+                'schemas' => [
+                    $schema->getKey(),
+                ],
+            ])
+            ->assertValid()
+            ->assertOk();
+
+        $schema->refresh();
+        $this->assertEquals($this->product->getKey(), $schema->product_id);
     }
 }
