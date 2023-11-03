@@ -36,7 +36,7 @@ class ProductImportPricesTest extends TestCase
             ]);
 
         /** @var Product $product */
-        $product = Product::factory()->create();
+        $product = Product::factory()->create(['vat_rate' => 23]);
         $product->attributes()->attach($attribute->getKey());
         $product->attributes()->get()->each(
             fn (Attribute $attribute) => $attribute->pivot->options()->attach($option->getKey()),
@@ -57,7 +57,7 @@ class ProductImportPricesTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $product->getKey(),
-            'price' => 98.10,
+            'price' => 120.66,
         ]);
     }
 
@@ -83,7 +83,7 @@ class ProductImportPricesTest extends TestCase
             ]);
 
         /** @var Product $product */
-        $product = Product::factory()->create();
+        $product = Product::factory()->create(['vat_rate' => 23]);
         $product->attributes()->attach($attribute->getKey());
         $product->attributes()->get()->each(
             fn (Attribute $attribute) => $attribute->pivot->options()->attach($option->getKey()),
@@ -95,7 +95,10 @@ class ProductImportPricesTest extends TestCase
                             <data>18.09.2023 13:43:18</data>
                         </naglowek>
                         <Produkt>
-                            <cenabrutto>6.15</cenabrutto>
+                            <cenanetto>4.99</cenanetto>
+                            <cenabrutto>6.14</cenabrutto>
+                            <cena_sugerowana_netto>10.03</cena_sugerowana_netto>
+                            <cena_sugerowana_brutto>12.34</cena_sugerowana_brutto>
                             <EAN>5901741418343</EAN>
                         </Produkt>
                     </oferta>';
@@ -109,7 +112,7 @@ class ProductImportPricesTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $product->getKey(),
-            'price' => 6.15,
+            'price' => 12.34,
         ]);
     }
 
@@ -135,7 +138,7 @@ class ProductImportPricesTest extends TestCase
             ]);
 
         /** @var Product $product */
-        $product = Product::factory()->create();
+        $product = Product::factory()->create(['vat_rate' => 23]);
         $product->attributes()->attach($attribute->getKey());
         $product->attributes()->get()->each(
             fn (Attribute $attribute) => $attribute->pivot->options()->attach($option->getKey()),
@@ -144,7 +147,10 @@ class ProductImportPricesTest extends TestCase
         $content = '<?xml version="1.0" encoding="utf-8"?>
                     <oferta>
                         <Produkt>
+                            <cenanetto>4.99</cenanetto>
                             <cenabrutto>6.15</cenabrutto>
+                            <cena_sugerowana_netto>10.03</cena_sugerowana_netto>
+                            <cena_sugerowana_brutto>12.34</cena_sugerowana_brutto>
                             <EAN>5901741418343</EAN>
                         </Produkt>
                     </oferta>';

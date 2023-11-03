@@ -326,7 +326,7 @@ final readonly class ProductService implements ProductServiceContract
      */
     public function updateProductPrices(UploadedFile $file): void
     {
-        $items = $file->getClientOriginalExtension() === 'csv'
+        $items = $file->extension() === 'csv'
             ? $this->mapPricesFromCsv($file)
             : $this->mapPricesFromXml($file);
 
@@ -338,8 +338,13 @@ final readonly class ProductService implements ProductServiceContract
             /** @var ?Product $product */
             $product = Product::searchByCriteria(['attribute' => $search])->first();
 
-            if ($product && $item['price']) {
-                $this->update($product, ProductUpdateDto::fromArray(['price' => $item['price']]));
+            if ($product && $product->vat_rate && $item['price']) {
+                $this->update(
+                    $product,
+                    ProductUpdateDto::fromArray([
+                        'price' => round($item['price'] + ($item['price'] * $product->vat_rate / 100), 2),
+                    ]),
+                );
             }
         }
     }
@@ -372,6 +377,6 @@ final readonly class ProductService implements ProductServiceContract
     private function mapPricesFromXml(UploadedFile $file): array
     {
         return XmlParser::load($file)
-            ->parse(['products' => ['uses' => 'Produkt[EAN>ean,cenabrutto>price]']])['products'];
+            ->parse(['products' => ['uses' => 'Produkt[EAN>ean,cena_sugerowana_netto>price]']])['products'];
     }
 }
