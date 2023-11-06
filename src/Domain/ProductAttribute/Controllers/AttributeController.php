@@ -38,6 +38,7 @@ final class AttributeController extends Controller
             Attribute::searchByCriteria($dto->toArray() + $this->getPublishedLanguageFilter('attributes'))
                 ->with(['metadata', 'metadataPrivate'])
                 ->orderBy('order')
+                ->orderBy('id')
                 ->paginate(Config::get('pagination.per_page')),
         );
     }
@@ -53,6 +54,7 @@ final class AttributeController extends Controller
                 ->orWhere('global', '=', true)
                 ->with(['metadata', 'metadataPrivate'])
                 ->orderBy('order')
+                ->orderBy('id')
                 ->get(),
         );
     }
