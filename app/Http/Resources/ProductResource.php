@@ -87,13 +87,7 @@ class ProductResource extends Resource
             'schemas' => ProductSchemaResource::collection($this->resource->schemas),
             'sets' => ProductSetResource::collection($sets),
             'related_sets' => ProductSetResource::collection($relatedSets),
-            'attributes' => ($request->filled('attribute_slug') || $this->resource->relationLoaded('productAttributes'))
-                ? ProductAttributeResource::collection(
-                    $this->resource->relationLoaded('productAttributes')
-                        ? $this->resource->productAttributes
-                        : $this->resource->productAttributes()->slug($request->string('attribute_slug'))->get(),
-                )
-                : [],
+            'attributes' => ProductAttributeResource::collection($this->resource->productAttributes),
             'seo' => SeoMetadataResource::make($this->resource->seo),
             'sales' => SaleResource::collection($this->resource->sales),
             'attachments' => MediaAttachmentResource::collection($attachments),
