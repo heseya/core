@@ -98,6 +98,7 @@ final class ProductController extends Controller
             'pricesMaxInitial',
             'pricesMin',
             'pricesMinInitial',
+            'productAttributes',
             'publishedTags',
             'relatedSets',
             'relatedSets.childrenPublic',
