@@ -59,4 +59,9 @@ return [
     // organization rejected
     'subject-organization-rejected' => 'Organizacja odrzucona',
     'organization-rejected' => 'Organizacja :name została odrzucona.',
+
+    // organization invited
+    'subject-organization-invited' => 'Zaproszenie do organizacji',
+    'organization-invited-text' => 'Zostałeś zaproszony od dołączenia do organizacji :name',
+    'organization-invited-link' => 'Aby zarejestrować się kliknij w link',
 ];
