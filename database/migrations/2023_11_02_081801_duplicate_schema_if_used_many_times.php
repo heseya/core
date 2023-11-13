@@ -28,6 +28,14 @@ return new class extends Migration
                     $duplicate->updated_at = $now;
                     $duplicate->save();
 
+                    if ($schema->options->count() > 1) {
+                        foreach ($schema->options as $option) {
+                            $optionDuplicate = $option->replicate();
+                            $optionDuplicate->schema_id = $duplicate->getKey();
+                            $optionDuplicate->save();
+                        }
+                    }
+
                     $schema->products()->detach($product->getKey());
                 }
             } elseif ($schema->products->count() === 1) {
