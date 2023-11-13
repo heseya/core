@@ -31,7 +31,9 @@ return new class extends Migration
                     if ($schema->options->count() > 1) {
                         foreach ($schema->options as $option) {
                             $optionDuplicate = $option->replicate();
-                            $optionDuplicate->schema_id = $duplicate->getKey();
+                            $optionDuplicate->schema()->associate($duplicate);
+                            $optionDuplicate->created_at = $now;
+                            $optionDuplicate->updated_at = $now;
                             $optionDuplicate->save();
                         }
                     }
