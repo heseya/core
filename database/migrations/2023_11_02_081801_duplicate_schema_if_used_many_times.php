@@ -28,7 +28,7 @@ return new class extends Migration
                     $duplicate->updated_at = $now;
                     $duplicate->save();
 
-                    if ($schema->options->count() > 1) {
+                    if ($schema->options->count() > 0) {
                         foreach ($schema->options as $option) {
                             $optionDuplicate = $option->replicate();
                             $optionDuplicate->schema()->associate($duplicate);
