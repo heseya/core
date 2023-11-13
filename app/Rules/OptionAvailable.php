@@ -20,11 +20,7 @@ readonly class OptionAvailable implements Rule
     {
         $option = $this->schema->options->find($value)?->first();
 
-        if ($option === null) {
-            return false;
-        }
-
-        return !$option->disabled;
+        return !($option === null);
     }
 
     /**

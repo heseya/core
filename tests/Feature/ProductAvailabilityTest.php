@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\SchemaType;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Product;
@@ -310,7 +309,6 @@ class ProductAvailabilityTest extends TestCase
 
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'required' => true,
-            'type' => SchemaType::SELECT,
         ]));
         $option = Option::factory()->create([
             'schema_id' => $schema->getKey(),
@@ -346,7 +344,6 @@ class ProductAvailabilityTest extends TestCase
 
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'required' => true,
-            'type' => SchemaType::SELECT,
             'available' => false,
         ]));
 

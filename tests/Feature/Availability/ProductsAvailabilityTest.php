@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Availability;
 
-use App\Enums\SchemaType;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Product;
@@ -53,7 +52,6 @@ class ProductsAvailabilityTest extends TestCase
 
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'required' => false,
-            'type' => SchemaType::SELECT,
         ]));
 
         /** @var Option $option */
@@ -77,7 +75,6 @@ class ProductsAvailabilityTest extends TestCase
         /** @var Schema $schema */
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'required' => true,
-            'type' => SchemaType::SELECT,
         ]));
         Option::factory()->create([
             'schema_id' => $schema->getKey(),
@@ -111,7 +108,6 @@ class ProductsAvailabilityTest extends TestCase
 
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'required' => true,
-            'type' => SchemaType::SELECT,
         ]));
         $option1 = Option::factory()->create(['schema_id' => $schema->getKey()]);
         $option2 = Option::factory()->create(['schema_id' => $schema->getKey()]);
@@ -138,14 +134,12 @@ class ProductsAvailabilityTest extends TestCase
 
         $schema1 = $this->schemaCrudService->store(FakeDto::schemaDto([
             'required' => true,
-            'type' => SchemaType::SELECT,
         ]));
         $option = Option::factory()->create(['schema_id' => $schema1->getKey()]);
         $option->items()->attach($item1->getKey());
 
         $schema2 = $this->schemaCrudService->store(FakeDto::schemaDto([
             'required' => true,
-            'type' => SchemaType::SELECT,
         ]));
         $option = Option::factory()->create(['schema_id' => $schema2->getKey()]);
         $option->items()->attach($item2->getKey());
@@ -234,7 +228,6 @@ class ProductsAvailabilityTest extends TestCase
 
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'required' => true,
-            'type' => SchemaType::SELECT,
         ]));
         $option = Option::factory()->create(['schema_id' => $schema->getKey()]);
         $option->items()->sync([$item1->getKey() => ['required_quantity' => 1]]);
@@ -261,7 +254,6 @@ class ProductsAvailabilityTest extends TestCase
 
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'required' => true,
-            'type' => SchemaType::SELECT,
         ]));
         $option = Option::factory()->create(['schema_id' => $schema->getKey()]);
         $option->items()->sync([$item1->getKey() => ['required_quantity' => 1]]);

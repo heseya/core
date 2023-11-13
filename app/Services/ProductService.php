@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductPriceUpdated;
@@ -301,18 +300,9 @@ final class ProductService
             )->toArray();
             $valueMinMax = [$schema->min, $schema->max];
 
-            $minmax = match ($schema->type) {
-                default => $getBestSchemasPrices(
-                    $required ? ['filled'] : [null, 'filled'],
-                ),
-                SchemaType::BOOLEAN => $getBestSchemasPrices([true, false]),
-                SchemaType::SELECT => $getBestSchemasPrices(
-                    $required ? $options : array_merge($options, [null]),
-                ),
-                SchemaType::MULTIPLY, SchemaType::MULTIPLY_SCHEMA => $getBestSchemasPrices(
-                    $required ? $valueMinMax : array_merge($valueMinMax, [null]),
-                ),
-            };
+            $minmax = $getBestSchemasPrices(
+                $required ? $options : array_merge($options, [null]),
+            );
         } else {
             $price = $allSchemas->reduce(
                 fn (Money $carry, Schema $current) => $carry->plus($current->getPrice(

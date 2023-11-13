@@ -6,7 +6,6 @@ use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
-use App\Enums\SchemaType;
 use App\Enums\ShippingType;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
@@ -531,10 +530,18 @@ class OrderCreateTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'string',
-                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
                 'hidden' => false,
             ])
+        );
+
+        $option = Option::factory()->create([
+            'name' => 'A',
+            'order' => 0,
+            'schema_id' => $schema->getKey(),
+        ]);
+
+        $option->prices()->createMany(
+            Price::factory(['value' => 1000])->prepareForCreateMany()
         );
 
         $this->product->schemas()->sync([$schema->getKey()]);
@@ -553,7 +560,7 @@ class OrderCreateTest extends TestCase
                     'product_id' => $this->product->getKey(),
                     'quantity' => $productQuantity,
                     'schemas' => [
-                        $schema->getKey() => 'Test',
+                        $schema->getKey() => $option->getKey(),
                     ],
                 ],
             ],
@@ -562,8 +569,8 @@ class OrderCreateTest extends TestCase
         $response->assertCreated();
         $order = Order::find($response->getData()->data->id);
 
-        $schemaPrice = $schema->getPrice('Test', [
-            $schema->getKey() => 'Test',
+        $schemaPrice = $schema->getPrice($option->getKey(), [
+            $schema->getKey() => $option->getKey(),
         ], $this->currency);
 
         $orderTotal = $this->productPrice
@@ -587,7 +594,7 @@ class OrderCreateTest extends TestCase
         $this->assertDatabaseHas('order_schemas', [
             'order_product_id' => $order->products[0]->getKey(),
             'name' => $schema->name,
-            'value' => 'Test',
+            'value' => $option->name,
         ]);
 
         Event::assertDispatched(OrderCreated::class);
@@ -625,15 +632,12 @@ class OrderCreateTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'select',
-                'prices_base' => [['value' => 10, 'currency' => Currency::DEFAULT->value]],
                 'hidden' => false,
             ])
         );
 
         $option = Option::factory()->create([
             'name' => 'A',
-            'disabled' => false,
             'order' => 0,
             'schema_id' => $schema->getKey(),
         ]);
@@ -729,10 +733,18 @@ class OrderCreateTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'string',
-                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
                 'hidden' => true,
             ])
+        );
+
+        $option = Option::factory()->create([
+            'name' => 'A',
+            'order' => 0,
+            'schema_id' => $schema->getKey(),
+        ]);
+
+        $option->prices()->createMany(
+            Price::factory(['value' => 1000])->prepareForCreateMany()
         );
 
         $this->product->schemas()->sync([$schema->getKey()]);
@@ -751,7 +763,7 @@ class OrderCreateTest extends TestCase
                     'product_id' => $this->product->getKey(),
                     'quantity' => $productQuantity,
                     'schemas' => [
-                        $schema->getKey() => 'Test',
+                        $schema->getKey() => $option->getKey(),
                     ],
                 ],
             ],
@@ -761,7 +773,7 @@ class OrderCreateTest extends TestCase
         $order = Order::find($response->getData()->data->id);
 
         $schemaPrice = $schema->getPrice('Test', [
-            $schema->getKey() => 'Test',
+            $schema->getKey() => $option->getKey(),
         ], $this->currency);
 
         $orderTotal = $this->productPrice
@@ -782,66 +794,10 @@ class OrderCreateTest extends TestCase
         $this->assertDatabaseHas('order_schemas', [
             'order_product_id' => $order->products[0]->getKey(),
             'name' => $schema->name,
-            'value' => 'Test',
+            'value' => $option->name,
         ]);
 
         Event::assertDispatched(OrderCreated::class);
-    }
-
-    /**
-     * @dataProvider authProvider
-     *
-     * @throws MathException
-     * @throws MoneyMismatchException
-     * @throws PublishingException
-     */
-    public function testCreateOrderNonRequiredSchemaEmpty($user): void
-    {
-        $this->{$user}->givePermissionTo('orders.add');
-
-        Event::fake([OrderCreated::class]);
-
-        $schemaPrice = 10;
-        $schema = $this->schemaCrudService->store(
-            FakeDto::schemaDto([
-                'type' => SchemaType::STRING->name,
-                'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
-                'required' => false, // Important!
-            ])
-        );
-
-        $this->product->schemas()->sync([$schema->getKey()]);
-
-        $response = $this->actingAs($this->{$user})->postJson('/orders', [
-            'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
-            'email' => 'test@example.com',
-            'shipping_method_id' => $this->shippingMethod->getKey(),
-            'shipping_place' => $this->address->toArray(),
-            'billing_address' => $this->address->toArray(),
-            'items' => [
-                [
-                    'product_id' => $this->product->getKey(),
-                    'quantity' => 1,
-                    'schemas' => [
-                        $schema->getKey() => '',
-                    ],
-                ],
-            ],
-        ]);
-
-        $response->assertCreated();
-
-        /** @var Order $order */
-        $order = Order::findOrFail(
-            $response->json('data.id'),
-        );
-
-        // Expected price doesn't include empty schema
-        $expectedOrderPrice = $this->productPrice->plus(
-            $this->shippingMethod->getPrice($this->productPrice),
-        );
-        $this->assertEquals($expectedOrderPrice, $order->summary);
     }
 
     /**
@@ -1299,10 +1255,18 @@ class OrderCreateTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'string',
-                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
                 'hidden' => false,
             ])
+        );
+
+        $option = Option::factory()->create([
+            'name' => 'A',
+            'order' => 0,
+            'schema_id' => $schema->getKey(),
+        ]);
+
+        $option->prices()->createMany(
+            Price::factory(['value' => 1000])->prepareForCreateMany()
         );
 
         $this->product->schemas()->sync([$schema->getKey()]);
@@ -1336,7 +1300,7 @@ class OrderCreateTest extends TestCase
                     'product_id' => $this->product->getKey(),
                     'quantity' => $productQuantity,
                     'schemas' => [
-                        $schema->getKey() => 'Test',
+                        $schema->getKey() => $option->getKey(),
                     ],
                 ],
             ],
@@ -1367,10 +1331,17 @@ class OrderCreateTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'string',
-                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
                 'hidden' => false,
             ])
+        );
+        $option = Option::factory()->create([
+            'name' => 'A',
+            'order' => 0,
+            'schema_id' => $schema->getKey(),
+        ]);
+
+        $option->prices()->createMany(
+            Price::factory(['value' => 1000])->prepareForCreateMany()
         );
 
         $this->product->schemas()->sync([$schema->getKey()]);
@@ -1407,7 +1378,7 @@ class OrderCreateTest extends TestCase
                     'product_id' => $this->product->getKey(),
                     'quantity' => $productQuantity,
                     'schemas' => [
-                        $schema->getKey() => 'Test',
+                        $schema->getKey() => $option->getKey(),
                     ],
                 ],
             ],
@@ -1438,10 +1409,18 @@ class OrderCreateTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'string',
-                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
                 'hidden' => false,
             ])
+        );
+
+        $option = Option::factory()->create([
+            'name' => 'A',
+            'order' => 0,
+            'schema_id' => $schema->getKey(),
+        ]);
+
+        $option->prices()->createMany(
+            Price::factory(['value' => 1000])->prepareForCreateMany()
         );
 
         $this->product->schemas()->sync([$schema->getKey()]);
@@ -1474,7 +1453,7 @@ class OrderCreateTest extends TestCase
                     'product_id' => $this->product->getKey(),
                     'quantity' => $productQuantity,
                     'schemas' => [
-                        $schema->getKey() => 'Test',
+                        $schema->getKey() => $option->getKey(),
                     ],
                 ],
             ],
@@ -1505,10 +1484,18 @@ class OrderCreateTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'string',
-                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
                 'hidden' => false,
             ])
+        );
+
+        $option = Option::factory()->create([
+            'name' => 'A',
+            'order' => 0,
+            'schema_id' => $schema->getKey(),
+        ]);
+
+        $option->prices()->createMany(
+            Price::factory(['value' => 1000])->prepareForCreateMany()
         );
 
         $this->product->schemas()->sync([$schema->getKey()]);
@@ -1540,7 +1527,7 @@ class OrderCreateTest extends TestCase
                     'product_id' => $this->product->getKey(),
                     'quantity' => $productQuantity,
                     'schemas' => [
-                        $schema->getKey() => 'Test',
+                        $schema->getKey() => $option->getKey(),
                     ],
                 ],
             ],
@@ -1562,10 +1549,18 @@ class OrderCreateTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'string',
-                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
                 'hidden' => false,
             ])
+        );
+
+        $option = Option::factory()->create([
+            'name' => 'A',
+            'order' => 0,
+            'schema_id' => $schema->getKey(),
+        ]);
+
+        $option->prices()->createMany(
+            Price::factory(['value' => 1000])->prepareForCreateMany()
         );
 
         $this->product->schemas()->sync([$schema->getKey()]);
@@ -1597,7 +1592,7 @@ class OrderCreateTest extends TestCase
                     'product_id' => $this->product->getKey(),
                     'quantity' => $productQuantity,
                     'schemas' => [
-                        $schema->getKey() => 'Test',
+                        $schema->getKey() => $option->getKey(),
                     ],
                 ],
             ],

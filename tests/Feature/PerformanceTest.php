@@ -48,15 +48,12 @@ class PerformanceTest extends TestCase
         ]);
 
         $schema1 = Schema::factory()->create([
-            'type' => 'select',
             'hidden' => false,
         ]);
         $schema2 = Schema::factory()->create([
-            'type' => 'select',
             'hidden' => false,
         ]);
         $schema3 = Schema::factory()->create([
-            'type' => 'select',
             'hidden' => false,
         ]);
 
