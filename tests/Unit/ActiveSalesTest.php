@@ -4,7 +4,7 @@ namespace Unit;
 
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
-use App\Enums\DiscountType;
+use App\Repositories\DiscountRepository;
 use Domain\Price\Enums\ProductPriceType;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
@@ -195,11 +195,11 @@ class ActiveSalesTest extends TestCase
      */
     public function testCheckActiveSalesJob(): void
     {
-        $this->markTestSkipped();
-
         Carbon::setTestNow('2022-04-21T10:00:00');
 
         $currency = Currency::DEFAULT->value;
+
+        $discountRepository = App::make(DiscountRepository::class);
 
         /** @var ProductRepositoryContract $productRepository */
         $productRepository = App::make(ProductRepositoryContract::class);
@@ -238,9 +238,14 @@ class ActiveSalesTest extends TestCase
             'code' => null,
             'target_type' => DiscountTargetType::PRODUCTS,
             'name' => 'Old active sale',
-            'type' => DiscountType::AMOUNT,
-            'value' => 200,
             'target_is_allow_list' => true,
+            'percentage' => null,
+        ]);
+        $discountRepository->setDiscountAmounts($sale1->getKey(), [
+            PriceDto::from([
+                'value' => '200.00',
+                'currency' => Currency::DEFAULT,
+            ])
         ]);
 
         $sale1->products()->sync($product1->getKey());
@@ -263,9 +268,15 @@ class ActiveSalesTest extends TestCase
             'code' => null,
             'target_type' => DiscountTargetType::PRODUCTS,
             'name' => 'New active sale',
-            'type' => DiscountType::AMOUNT,
-            'value' => 300,
             'target_is_allow_list' => true,
+            'percentage' => null,
+        ]);
+
+        $discountRepository->setDiscountAmounts($sale2->getKey(), [
+            PriceDto::from([
+                'value' => '300.00',
+                'currency' => Currency::DEFAULT,
+            ])
         ]);
 
         $sale2->products()->sync($product2->getKey());
