@@ -29,6 +29,7 @@ class SchemaResource extends Resource
             'default' => $this->resource->default,
             'shipping_time' => $this->resource->shipping_time,
             'shipping_date' => $this->resource->shipping_date,
+            'product_id' => $this->resource->product_id,
             'options' => OptionResource::collection($this->resource->options),
             'used_schemas' => $this->resource->usedSchemas->map(fn ($schema) => $schema->getKey()),
             ...$this->metadataResource('schemas.show_metadata_private'),

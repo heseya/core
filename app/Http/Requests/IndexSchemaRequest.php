@@ -12,6 +12,7 @@ class IndexSchemaRequest extends FormRequest
             'name' => ['nullable', 'string', 'max:255'],
             'hidden' => ['boolean'],
             'required' => ['boolean'],
+            'has_product' => ['boolean'],
 
             'search' => ['nullable', 'string', 'max:255'],
             'sort' => ['nullable', 'string', 'max:255'],

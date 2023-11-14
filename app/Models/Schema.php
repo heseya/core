@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\SchemaHasProduct;
 use App\Criteria\SchemaSearch;
 use App\Criteria\TranslatedLike;
 use App\Criteria\WhereInIds;
@@ -20,6 +21,7 @@ use Domain\Currency\Currency;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
@@ -57,6 +59,7 @@ class Schema extends Model implements SortableContract, Translatable
         'shipping_time',
         'shipping_date',
         'published',
+        'product_id',
     ];
 
     protected array $translatable = [
@@ -76,6 +79,7 @@ class Schema extends Model implements SortableContract, Translatable
         'name' => TranslatedLike::class,
         'hidden',
         'required',
+        'has_product' => SchemaHasProduct::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,
@@ -167,6 +171,11 @@ class Schema extends Model implements SortableContract, Translatable
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'product_schemas');
+    }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
     }
 
     /**
