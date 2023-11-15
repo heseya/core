@@ -207,6 +207,31 @@ class ConsentTest extends TestCase
         $this->assertDatabaseMissing('consents', $this->consent->toArray());
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteHasUsers(string $user): void
+    {
+        $this->{$user}->givePermissionTo('consents.remove');
+
+        $this->consent->users()->save($this->user, ['value' => true]);
+
+        $response = $this->actingAs($this->{$user})
+            ->json('delete', '/consents/id:' . $this->consent->getKey());
+
+        $response->assertStatus(204);
+
+        $this->assertDatabaseMissing('consents', $this->consent->toArray());
+        $this->assertDatabaseMissing('consent_user', [
+            'consent_id' => $this->consent->getKey(),
+            'user_id' => $this->user->getKey(),
+        ]);
+
+        $this->assertNotSoftDeleted('users', [
+            'id' => $this->user->getKey(),
+        ]);
+    }
+
     public function testRegisterWithoutConsentWhenExists(): void
     {
         /** @var Role $role */
