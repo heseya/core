@@ -8,7 +8,6 @@ use App\Traits\ModifyLangFallback;
 use Domain\Language\LanguageService;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Lang;
 
 class OrderStatusUpdated extends Notification
@@ -39,7 +38,7 @@ class OrderStatusUpdated extends Notification
         /** @var string $subject */
         $subject = Lang::get('mail.subject-status-changed', ['number' => $this->order->code], $this->locale);
 
-        $language = app(LanguageService::class)->firstByIsoOrDefault($this->locale ?? Config::get('app.locale'));
+        $language = app(LanguageService::class)->firstByIsoOrDefault($this->order->locale());
 
         $previousSettings = $this->getCurrentLangFallbackSettings();
         $this->setAnyLangFallback();
