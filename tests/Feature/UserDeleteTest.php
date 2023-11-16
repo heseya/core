@@ -233,9 +233,17 @@ class UserDeleteTest extends TestCase
             ->deleteJson('/users/id:' . $this->user->getKey())
             ->assertNoContent();
 
+        $this->assertSoftDeleted('users', [
+            'id' => $this->user->getKey(),
+        ]);
+
         $this->assertDatabaseMissing('consent_user', [
             'user_id' => $this->user->getKey(),
             'consent_id' => $consent->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('consents', [
+            'id' => $consent->getKey(),
         ]);
     }
 
@@ -541,6 +549,33 @@ class UserDeleteTest extends TestCase
             ->assertNoContent();
 
         $this->assertSoftDeleted($this->user->refresh());
+    }
+
+    public function testSelfDeleteWithConsents(): void
+    {
+        $this->user->givePermissionTo('users.self_remove');
+
+        $consent = Consent::factory()->create([
+            'required' => false,
+        ]);
+
+        $this->user->consents()->save($consent, ['value' => true]);
+
+        $this
+            ->actingAs($this->user)
+            ->postJson('/users/self-remove', [
+                'password' => $this->password,
+            ])
+            ->assertNoContent();
+
+        $this->assertSoftDeleted($this->user->refresh());
+        $this->assertDatabaseMissing('consent_user', [
+            'user_id' => $this->user->getKey(),
+            'consent_id' => $consent->getKey(),
+        ]);
+        $this->assertDatabaseHas('consents', [
+            'id' => $consent->getKey(),
+        ]);
     }
 
     /**
