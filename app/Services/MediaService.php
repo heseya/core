@@ -36,7 +36,7 @@ final readonly class MediaService implements MediaServiceContract
 
     public function destroy(Media $media): void
     {
-        $this->silverboxService->delete($media);
+        $this->silverboxService->delete($media->url);
         $media->forceDelete();
     }
 
