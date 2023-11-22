@@ -24,6 +24,7 @@ class UserWithSavedAddressesResource extends UserResource
                 ->map(fn ($perm) => $perm->name)
                 ->sort()
                 ->values(),
+            'preferences' => UserPreferencesResource::make($this->resource->preferences),
         ];
     }
 }
