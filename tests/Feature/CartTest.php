@@ -474,6 +474,57 @@ class CartTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCartProcessSameProductNotAvailableWithSchema($user): void
+    {
+        $this->{$user}->givePermissionTo('cart.verify');
+
+        $this->product->schemas()->sync([$this->schema->getKey()]);
+
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [],
+                ],
+                [
+                    'cartitem_id' => '2',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [
+                        $this->schema->getKey() => $this->option->getKey(),
+                    ],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertValid()->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => '9200.00',
+                'cart_total' => '9200.00',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '9200.00',
+                'coupons' => [],
+                'sales' => [],
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => '4600.00',
+                'price_discounted' => '4600.00',
+            ])->assertJsonMissing([
+                'cartitem_id' => '2',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCartProcessProductDoesntExist($user): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
