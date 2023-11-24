@@ -70,7 +70,7 @@ class DiscountApplyTest extends TestCase
             'as percentage coupon' => [
                 'percentage',
                 '20.0',
-                104.0,
+                96.0, // 12 000 - 20% = 9600
                 'coupon',
             ],
 //            'as amount sale' => [
@@ -82,7 +82,7 @@ class DiscountApplyTest extends TestCase
             'as percentage sale' => [
                 'percentage',
                 '20.0',
-                104.0,
+                96.0,
                 'sale',
             ],
         ];

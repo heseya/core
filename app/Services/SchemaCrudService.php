@@ -13,7 +13,6 @@ use App\Services\Contracts\SchemaCrudServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
 use Domain\ProductSchema\Dtos\SchemaCreateDto;
 use Domain\ProductSchema\Dtos\SchemaDto;
-use Domain\ProductSchema\SchemaRepository;
 use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\Optional;
 
@@ -25,7 +24,6 @@ final readonly class SchemaCrudService implements SchemaCrudServiceContract
         private OptionServiceContract $optionService,
         private ProductService $productService,
         private TranslationServiceContract $translationService,
-        private SchemaRepository $schemaRepository,
     ) {}
 
     /**
@@ -81,10 +79,6 @@ final readonly class SchemaCrudService implements SchemaCrudServiceContract
 
         if ($dto instanceof SchemaCreateDto && !($dto->metadata_computed instanceof Optional)) {
             $this->metadataService->sync($schema, $dto->metadata_computed);
-        }
-
-        if ($dto->prices instanceof DataCollection) {
-            $this->schemaRepository->setSchemaPrices($schema->getKey(), $dto->prices->items());
         }
 
         if (!$schema->wasRecentlyCreated) {

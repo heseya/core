@@ -8,6 +8,7 @@ use App\Rules\AttributeOptionExist;
 use App\Rules\Price;
 use App\Rules\PricesEveryCurrency;
 use App\Rules\ProductAttributeOptions;
+use App\Rules\SchemaAvailable;
 use App\Rules\Translations;
 use App\Rules\UniqueIdInRequest;
 use App\Traits\MetadataRules;
@@ -65,7 +66,7 @@ class ProductCreateRequest extends FormRequest implements MetadataRequestContrac
                 'items.*.required_quantity' => ['numeric', 'gte:0.0001'],
 
                 'schemas' => ['array'],
-                'schemas.*' => ['uuid', 'exists:schemas,id'],
+                'schemas.*' => ['uuid', 'exists:schemas,id', new SchemaAvailable($this->route()?->parameter('product'))], // @phpstan-ignore-line
 
                 'sets' => ['array'],
                 'sets.*' => ['uuid', 'exists:product_sets,id'],

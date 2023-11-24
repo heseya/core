@@ -344,6 +344,8 @@ paths:
     $ref: ./paths/Organizations.yml#/OrganizationsAccept
   /organizations/id:{organization_id}/reject:
     $ref: ./paths/Organizations.yml#/OrganizationsReject
+  /organizations/id:{organization_id}/invite:
+    $ref: ./paths/Organizations.yml#/OrganizationsInvite
 components:
   schemas:
     Error:

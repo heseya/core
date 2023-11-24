@@ -31,7 +31,6 @@ class Option extends Model implements Translatable
 
     protected $fillable = [
         'name',
-        'disabled',
         'schema_id',
         'order',
         'available',
@@ -44,7 +43,6 @@ class Option extends Model implements Translatable
     ];
 
     protected $casts = [
-        'disabled' => 'bool',
         'available' => 'bool',
     ];
 

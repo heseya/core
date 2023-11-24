@@ -280,6 +280,10 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
 
         return $sales->unique('id');
     }
+    public function mapPrices(): MorphMany
+    {
+        return $this->morphMany(PriceMapPrice::class, 'model');
+    }
 
     public function pricesBase(): MorphMany
     {

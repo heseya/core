@@ -44,7 +44,7 @@ class ProductRepository implements ProductRepositoryContract
                 'schemas.options.metadata',
                 'schemas.options.metadataPrivate',
                 'schemas.options.prices',
-                'schemas.prices',
+                'schemas',
                 'schemas.metadata',
                 'schemas.metadataPrivate',
                 'schemas.usedSchemas',

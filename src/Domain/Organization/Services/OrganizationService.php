@@ -10,9 +10,11 @@ use App\Models\User;
 use Domain\Organization\Dtos\OrganizationAcceptDto;
 use Domain\Organization\Dtos\OrganizationCreateDto;
 use Domain\Organization\Dtos\OrganizationIndexDto;
+use Domain\Organization\Dtos\OrganizationInviteDto;
 use Domain\Organization\Dtos\OrganizationUpdateDto;
 use Domain\Organization\Enums\OrganizationStatus;
 use Domain\Organization\Events\OrganizationAccepted;
+use Domain\Organization\Events\OrganizationInvited;
 use Domain\Organization\Events\OrganizationRejected;
 use Domain\Organization\Models\Organization;
 use Domain\Organization\Models\OrganizationToken;
@@ -110,6 +112,21 @@ final readonly class OrganizationService
         $organizationToken->organization?->users()->attach($user);
 
         $organizationToken->delete();
+    }
+
+    public function invite(Organization $organization, OrganizationInviteDto $dto): void
+    {
+        $preferredLocale = $organization->preferredLocale();
+        foreach ($dto->emails as $email) {
+            /** @var OrganizationToken $token */
+            $token = $organization->tokens()->save(new OrganizationToken([
+                'email' => $email,
+                'token' => Str::random(128),
+                'expires_at' => Carbon::now()->addSeconds(Config::get('organization.token_expires_time')),
+            ]));
+
+            OrganizationInvited::dispatch($token, $dto->redirect_url, $preferredLocale);
+        }
     }
 
     /**

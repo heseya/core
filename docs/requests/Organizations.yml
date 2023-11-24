@@ -59,3 +59,13 @@ OrganizationAccept:
           sales_channel_id:
             type: string
             format: UUID
+
+OrganizationInvite:
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          redirect_url:
+            type: string
+            example: 'http://localhost/organization/verify'

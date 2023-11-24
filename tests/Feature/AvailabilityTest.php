@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\SchemaType;
 use App\Enums\ShippingType;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
@@ -99,7 +98,6 @@ class AvailabilityTest extends TestCase
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'required' => true,
-                'type' => SchemaType::SELECT,
                 'available' => false,
             ])
         );
@@ -166,7 +164,6 @@ class AvailabilityTest extends TestCase
         $schemaOne = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'name' => 'schemaOne',
-                'type' => SchemaType::SELECT,
                 'required' => true,
                 'available' => false,
             ])
@@ -174,7 +171,6 @@ class AvailabilityTest extends TestCase
         $schemaTwo = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'name' => 'schemaTwo',
-                'type' => SchemaType::SELECT,
                 'required' => true,
                 'available' => false,
             ])
@@ -733,27 +729,23 @@ class AvailabilityTest extends TestCase
     {
         $schemaOne = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => SchemaType::SELECT,
                 'required' => true,
             ])
         );
 
         $schemaTwo = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => SchemaType::SELECT,
                 'required' => true,
             ])
         );
 
         $optionOne = Option::factory()->create([
             'schema_id' => $schemaOne->getKey(),
-            'disabled' => false,
         ]);
         $optionOne->prices()->createMany(Price::factory(['value' => 0])->prepareForCreateMany());
 
         $optionTwo = Option::factory()->create([
             'schema_id' => $schemaTwo->getKey(),
-            'disabled' => false,
         ]);
         $optionTwo->prices()->createMany(Price::factory(['value' => 0])->prepareForCreateMany());
 
@@ -782,7 +774,6 @@ class AvailabilityTest extends TestCase
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'name' => 'schemaOne',
-                'type' => SchemaType::SELECT,
                 'required' => true,
                 'available' => false,
             ])
@@ -812,7 +803,6 @@ class AvailabilityTest extends TestCase
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'name' => 'schemaOne',
-                'type' => SchemaType::SELECT,
                 'required' => true,
                 'available' => false,
             ])
@@ -842,7 +832,6 @@ class AvailabilityTest extends TestCase
             $schema1 = $this->schemaCrudService->store(
                 FakeDto::schemaDto([
                     'required' => true,
-                    'type' => SchemaType::SELECT,
                     'prices' => [['value' => 10, 'currency' => Currency::DEFAULT->value]],
                     'hidden' => false,
                     'available' => true,
@@ -850,14 +839,12 @@ class AvailabilityTest extends TestCase
                         [
                             'name' => 'A',
                             'prices' => [['value' => 10, 'currency' => Currency::DEFAULT->value]],
-                            'disabled' => false,
                             'available' => true,
                             'order' => 0,
                         ] + Option::factory()->definition(),
                         [
                             'name' => 'B',
                             'prices' => [['value' => 10, 'currency' => Currency::DEFAULT->value]],
-                            'disabled' => false,
                             'available' => true,
                             'order' => 2,
                         ] + Option::factory()->definition(),

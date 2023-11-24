@@ -62,7 +62,7 @@ final class ProductController extends Controller
             throw new NotFoundHttpException();
         }
         $product->load(
-            ['schemas', 'schemas.options', 'schemas.options.schema', 'schemas.prices', 'schemas.options.prices'],
+            ['schemas', 'schemas.options', 'schemas.options.schema', 'schemas', 'schemas.options.prices'],
         );
 
         return ProductResource::make($product);

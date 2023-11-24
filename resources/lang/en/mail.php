@@ -95,10 +95,15 @@ return [
     'subject-organization-accepted' => 'Organization accepted',
     'organization-accepted' => 'The organization :name has been accepted.',
     'organization-accepted-invitation' => 'Your organization has been accepted. Now you can register account.',
-    'organization-accepted-link' => 'Click thus link to register account',
+    'organization-accepted-link' => 'Click this link to register account',
     'organization-register' => 'register',
 
     // organization rejected
     'subject-organization-rejected' => 'Organization rejected',
     'organization-rejected' => 'The organization :name has been rejected.',
+
+    // organization invited
+    'subject-organization-invited' => 'Invitation to organization',
+    'organization-invited-text' => 'You have been invited to join the organisation :name',
+    'organization-invited-link' => 'Click this link to register account',
 ];

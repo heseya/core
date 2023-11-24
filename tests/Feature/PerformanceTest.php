@@ -104,15 +104,12 @@ class PerformanceTest extends TestCase
         ]);
 
         $schema1 = Schema::factory()->create([
-            'type' => 'select',
             'hidden' => false,
         ]);
         $schema2 = Schema::factory()->create([
-            'type' => 'select',
             'hidden' => false,
         ]);
         $schema3 = Schema::factory()->create([
-            'type' => 'select',
             'hidden' => false,
         ]);
 
@@ -937,30 +934,21 @@ class PerformanceTest extends TestCase
     private function prepareProductSchemas(Product $product): void
     {
         $schemas = Schema::factory()
-            ->has(Price::factory()->forAllCurrencies())
             ->count(7)
-            ->sequence(fn ($sequence) => ['type' => $sequence->index])
             ->create();
 
         $schemas->each(function ($schema) use ($product) {
-            $priceRepository = App::make(PriceRepository::class);
-            $priceRepository->setModelPrices($schema, [
-                ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(),
-            ]);
-
             $product->schemas()->attach($schema->getKey());
 
-            if ($schema->type->is(SchemaType::SELECT)) {
-                /** @var Item $item */
-                $item = Item::factory()->create();
-                $item->deposits()->saveMany(Deposit::factory()->count(2)->make());
+            /** @var Item $item */
+            $item = Item::factory()->create();
+            $item->deposits()->saveMany(Deposit::factory()->count(2)->make());
 
-                Option::factory([
-                    'schema_id' => $schema->getKey(),
-                ])
-                    ->has(Price::factory()->forAllCurrencies())
-                    ->count(3)->create();
-            }
+            Option::factory([
+                'schema_id' => $schema->getKey(),
+            ])
+                ->has(Price::factory()->forAllCurrencies())
+                ->count(3)->create();
         });
     }
 }

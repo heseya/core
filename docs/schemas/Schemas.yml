@@ -5,36 +5,12 @@ Schema:
     id:
       type: string
       format: uuid
-    type:
-      description: "multiply_schema(min, max, step) type uses one schema and multiplies it's price by own numeric value"
-      type: string
-      enum:
-        - string
-        - numeric
-        - boolean
-        - date
-        - select
-        - file
-        - multiply
-        - multiply_schema
     name:
       type: string
       example: Size
     description:
       description: "Short description, no html or md allowed"
       type: string
-    prices:
-      description: "Additional price the customer will have to pay after selecting the option (can be negative)"
-      type: array
-      items:
-        type: object
-        properties:
-          gross:
-            type: string
-            example: "9.99"
-          currency:
-            type: string
-            example: "PLN"
     hidden:
       type: boolean
     required:
@@ -47,10 +23,6 @@ Schema:
       type: string
     default:
       type: string
-    pattern:
-      type: string
-    validation:
-      type: string
     shipping_time:
       type: integer
       example: 5
@@ -58,6 +30,9 @@ Schema:
       type: string
       format: date-time
       example: "2021-09-13T11:11"
+    product_id:
+      type: string
+      format: uuid
     options:
       type: array
       items:
@@ -106,9 +81,6 @@ Option:
           currency:
             type: string
             example: "PLN"
-    disabled:
-      description: "Shows if the option has been disabled manually"
-      type: boolean
     available:
       description: "Shows whether the option is available for purchase (in stock and not disabled)"
       type: boolean
@@ -163,29 +135,6 @@ OptionMetadata:
 SchemaRequest:
   type: object
   properties:
-    type:
-      type: string
-      enum:
-        - string
-        - numeric
-        - boolean
-        - date
-        - select
-        - file
-        - multiply
-        - multiply_schema
-    prices:
-      description: "Additional price the customer will have to pay after selecting the option (can be negative)"
-      type: array
-      items:
-        type: object
-        properties:
-          gross:
-            type: string
-            example: "9.99"
-          currency:
-            type: string
-            example: "PLN"
     hidden:
       type: boolean
     required:
@@ -197,10 +146,6 @@ SchemaRequest:
     step:
       type: string
     default:
-      type: string
-    pattern:
-      type: string
-    validation:
       type: string
     shipping_time:
       type: integer
@@ -225,9 +170,6 @@ SchemaRequest:
                 currency:
                   type: string
                   example: "PLN"
-          disabled:
-            description: "Shows if the option has been disabled manually"
-            type: boolean
           items:
             type: array
             items:
@@ -277,33 +219,9 @@ SchemaShort:
     id:
       type: string
       format: uuid
-    type:
-      description: "multiply_schema(min, max, step) type uses one schema and multiplies it's price by own numeric value"
-      type: string
-      enum:
-        - string
-        - numeric
-        - boolean
-        - date
-        - select
-        - file
-        - multiply
-        - multiply_schema
     name:
       type: string
       example: Size
-    prices:
-      description: "Additional price the customer will have to pay after selecting the option (can be negative)"
-      type: array
-      items:
-        type: object
-        properties:
-          gross:
-            type: string
-            example: "9.99"
-          currency:
-            type: string
-            example: "PLN"
     hidden:
       type: boolean
     required:

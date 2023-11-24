@@ -11,7 +11,6 @@ use App\Dtos\OrderProductUpdateDto;
 use App\Dtos\OrderProductUrlDto;
 use App\Dtos\OrderUpdateDto;
 use App\Enums\ExceptionsEnums\Exceptions;
-use App\Enums\SchemaType;
 use App\Enums\ShippingType;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdated;
@@ -228,12 +227,10 @@ final readonly class OrderService implements OrderServiceContract
                         $schema = $product->schemas()->findOrFail($schemaId);
                         $price = $schema->getPrice($value, $item->getSchemas(), $currency);
 
-                        if ($schema->type === SchemaType::SELECT) {
-                            /** @var Option $option */
-                            $option = $schema->options()->findOrFail($value);
-                            $tempSchemaOrderProduct[$schema->name . '_' . $item->getProductId()] = [$schemaId, $value];
-                            $value = $option->name;
-                        }
+                        /** @var Option $option */
+                        $option = $schema->options()->findOrFail($value);
+                        $tempSchemaOrderProduct[$schema->name . '_' . $item->getProductId()] = [$schemaId, $value];
+                        $value = $option->name;
 
                         $orderProduct->schemas()->create([
                             'name' => $schema->name,

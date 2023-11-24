@@ -730,7 +730,6 @@ class LanguageFallbackTest extends TestCase
 
         $schema = Schema::factory()->create([
             'name' => 'Schemat',
-            'type' => SchemaType::SELECT,
             'required' => false,
             'hidden' => false,
         ]);
