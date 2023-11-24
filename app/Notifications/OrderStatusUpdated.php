@@ -19,7 +19,7 @@ class OrderStatusUpdated extends Notification
     public function __construct(Order $order)
     {
         $this->order = $order;
-        $this->locale = $order->preferredLocale();
+        $this->locale = $order->language;
     }
 
     /**
@@ -38,7 +38,7 @@ class OrderStatusUpdated extends Notification
         /** @var string $subject */
         $subject = Lang::get('mail.subject-status-changed', ['number' => $this->order->code], $this->locale);
 
-        $language = app(LanguageService::class)->firstByIsoOrDefault($this->order->locale());
+        $language = app(LanguageService::class)->firstByIsoOrDefault($this->order->language);
 
         $previousSettings = $this->getCurrentLangFallbackSettings();
         $this->setAnyLangFallback();

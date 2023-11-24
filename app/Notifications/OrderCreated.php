@@ -15,7 +15,7 @@ class OrderCreated extends Notification
     public function __construct(Order $order)
     {
         $this->order = $order;
-        $this->locale = $order->preferredLocale();
+        $this->locale = $order->language;
     }
 
     /**
