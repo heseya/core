@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use App\Models\Discount;
 use App\Models\Option;
+use Domain\Language\Language;
 use Domain\Language\LanguageService;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\Seo\Models\SeoMetadata;
@@ -82,5 +83,20 @@ trait CustomHasTranslations
         }
 
         return $translations instanceof Collection ? $translations->toArray() : $translations;
+    }
+
+    public function forgetAllTranslationsForNonexistingLanguages(): self
+    {
+        $languages = Language::all();
+
+        foreach ($this->getTranslations() as $key => $translations) {
+            foreach ($translations as $locale => $translation) {
+                if (!$languages->contains('id', '=', $locale)) {
+                    $this->forgetTranslation($key, $locale);
+                }
+            }
+        }
+
+        return $this;
     }
 }

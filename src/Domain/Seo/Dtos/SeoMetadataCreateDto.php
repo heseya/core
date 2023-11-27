@@ -10,9 +10,12 @@ use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
+use Support\Dtos\Traits\FilterTranslationsOnlyExistingLanguages;
 
 final class SeoMetadataCreateDto extends Data
 {
+    use FilterTranslationsOnlyExistingLanguages;
+
     /**
      * @param array<string, array<string, string>> $translations
      * @param string[]|Optional|null $header_tags
