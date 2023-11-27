@@ -9,8 +9,10 @@ use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Traits\MapMetadata;
 use Domain\Currency\Currency;
+use Domain\Language\LanguageService;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\App;
 
 class OrderDto extends CartOrderDto implements InstantiateFromRequest
 {
@@ -69,7 +71,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
             invoice_requested: $request->input('invoice_requested', new Missing()),
             metadata: self::mapMetadata($request),
             sales_channel_id: $request->input('sales_channel_id'),
-            language: $request->header('Accept-Language') ?? 'pl',
+            language: app(LanguageService::class)->firstByIdOrDefault(App::getLocale())->iso,
         );
     }
 
