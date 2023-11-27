@@ -2370,8 +2370,8 @@ class AuthTest extends TestCase
 
         $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
         $role->givePermissionTo('auth.register');
-
         $email = $this->faker->email();
+        $longText = $this->faker->text(1000);
         $this->json('POST', '/register', [
             'name' => 'Registered user',
             'email' => $email,
@@ -2384,12 +2384,14 @@ class AuthTest extends TestCase
             ],
             'metadata_personal' => [
                 'meta_personal' => 'test2',
+                'long_meta_personal' => $longText,
             ],
         ])
             ->assertCreated()
             ->assertJsonFragment([
                 'metadata_personal' => [
                     'meta_personal' => 'test2',
+                    'long_meta_personal' => $longText,
                 ],
             ])
             ->assertJsonMissing([
