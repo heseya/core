@@ -35,7 +35,12 @@ final class SeoMetadataResource extends Resource
 
     private function translationPermission(): string
     {
-        return $this->resource->global
-            ? 'seo.edit' : Config::get('relation-aliases.' . $this->resource->model_type)::HIDDEN_PERMISSION;
+        $class = Config::get("relation-aliases.{$this->resource->model_type}");
+
+        if ($this->resource->global || $class === null) {
+            return 'seo.edit';
+        }
+
+        return $class::HIDDEN_PERMISSION;
     }
 }
