@@ -28,7 +28,8 @@ final class SeoMetadataResource extends Resource
             'no_index' => $this->resource->no_index,
             'header_tags' => $this->resource->header_tags,
             'published' => $this->resource->published,
-            ...$request->boolean('with_translations') ? $this->getAllTranslations($this->translationPermission()) : [],
+            ...$request->boolean('with_translations') ?
+                $this->getAllTranslations($this->translationPermission()) : [],
         ];
     }
 
