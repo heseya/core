@@ -956,6 +956,71 @@ class ProductSearchDatabaseTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testSearchByAttributeNumberUsingOptionId($user): void
+    {
+        $this->{$user}->givePermissionTo('products.show');
+
+        $products = Product::factory()->count(2)->create([
+            'public' => true,
+        ]);
+
+        $attribute = Attribute::factory()->create([
+            'name' => 'Ilość stron',
+            'slug' => 'ilosc-stron',
+            'sortable' => 1,
+            'type' => 'number',
+        ]);
+
+        $option1 = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+            'value_number' => 1437,
+        ]);
+
+        $option2 = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+            'value_number' => 2237,
+        ]);
+
+        $products[0]->attributes()->attach($attribute->getKey());
+        $products[0]->attributes->first()->product_attribute_pivot->options()->attach($option1->getKey());
+
+        $products[1]->attributes()->attach($attribute->getKey());
+        $products[1]->attributes->first()->product_attribute_pivot->options()->attach($option2->getKey());
+
+        $response = $this->actingAs($this->{$user})
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute' => [
+                        $attribute->slug => [
+                            $option1->getKey(),
+                            $option2->getKey(),
+                        ],
+                    ],
+                ],
+            );
+
+        $response->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'name' => $attribute->name,
+            ])
+            ->assertJsonFragment([
+                'id' => $option1->getKey(),
+                'name' => $option1->name,
+            ])
+            ->assertJsonFragment([
+                'id' => $option2->getKey(),
+                'name' => $option2->name,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testSearchByAttributeDate($user): void
     {
         $this->{$user}->givePermissionTo('products.show');
