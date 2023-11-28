@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\ProductAttribute\Services;
 
+use App\Models\Item;
+use App\Models\Product;
 use App\Services\Contracts\MetadataServiceContract;
 use Domain\ProductAttribute\Dtos\AttributeOptionDto;
+use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductAttribute\Repositories\AttributeOptionRepository;
 use Spatie\LaravelData\Optional;
@@ -49,5 +52,28 @@ final readonly class AttributeOptionService
         AttributeOption::query()
             ->where('attribute_id', '=', $attributeId)
             ->delete();
+    }
+
+    public function importSku(Attribute $attribute, Product $product, string $locale): void
+    {
+        $item = $product->items->first(fn (Item $item) => $item->sku !== null);
+        if ($item) {
+            $sku = $item->sku;
+            $option = $attribute->options->first(fn (AttributeOption $option) => in_array($sku, $option->getTranslations('name'), true));
+            if (!$option) {
+                $option = $this->create(AttributeOptionDto::from([
+                    'attribute_id' => $attribute->getKey(),
+                    'translations' => [
+                        $locale => [
+                            'name' => $sku,
+                        ],
+                    ],
+                ]));
+            }
+            $product->attributes()->attach($attribute);
+            $product->attributes
+                ->first(fn (Attribute $productAttribute) => $productAttribute->getKey() === $attribute->getKey())
+                ?->product_attribute_pivot?->options()->sync([$option->getKey()]);
+        }
     }
 }
