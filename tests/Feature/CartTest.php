@@ -62,16 +62,6 @@ class CartTest extends TestCase
 
     private DiscountRepository $discountRepository;
 
-    public static function couponOrSaleProvider(): array
-    {
-        return [
-            'as user coupon' => ['user', true],
-            'as application coupon' => ['application', true],
-            'as user sale' => ['user', false],
-            'as application sale' => ['application', false],
-        ];
-    }
-
     /**
      * @throws UnknownCurrencyException
      * @throws RoundingNecessaryException

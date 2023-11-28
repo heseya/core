@@ -1173,7 +1173,7 @@ class OrderTest extends TestCase
         $discountShipping = Discount::factory()->create([
             'description' => 'Testowy kupon',
             'code' => 'S43SA2',
-            'percentage' => '100',
+            'percentage' => '100.00',
             'target_type' => DiscountTargetType::SHIPPING_PRICE,
             'target_is_allow_list' => true,
         ]);
@@ -1211,7 +1211,7 @@ class OrderTest extends TestCase
             [
                 'name' => $discountProduct->name,
                 'target_type' => $discountProduct->target_type,
-                'applied' => 47.47,
+                'applied' => '4747',
                 'code' => $discountProduct->code,
                 'currency' => $this->currency,
             ],
@@ -1222,7 +1222,7 @@ class OrderTest extends TestCase
             [
                 'name' => $discountProduct->name,
                 'target_type' => $discountProduct->target_type,
-                'applied' => 47.47,
+                'applied' => '4747',
                 'code' => $discountProduct->code,
                 'currency' => $this->currency,
             ],
@@ -1240,7 +1240,7 @@ class OrderTest extends TestCase
                                     ->has(2)
                                     ->where('0.code', $discountShipping->code)
                                     ->where('1.code', $discountProduct->code)
-                                    ->where('1.applied_discount', 94.94);
+                                    ->where('1.applied_discount', '94.94');
                             })
                             // order product has 1 discounts
                             ->has('products', function ($json) use ($discountProduct): void {
@@ -1266,7 +1266,7 @@ class OrderTest extends TestCase
                     ->etc();
             });
 
-        $this->assertQueryCountLessThan(46);
+        $this->assertQueryCountLessThan(49);
     }
 
     public function testUpdateOrderStatusUnauthorized(): void

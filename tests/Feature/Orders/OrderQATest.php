@@ -10,6 +10,7 @@ use App\Models\Discount;
 use App\Models\Order;
 use App\Models\PriceRange;
 use App\Models\Product;
+use App\Repositories\DiscountRepository;
 use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
@@ -17,6 +18,7 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\DiscountConditionPriceType;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Dto\DtoException;
@@ -72,9 +74,9 @@ class OrderQATest extends TestCase
 
     public function testSalesAndCode(): void
     {
-        $this->markTestSkipped();
-
         $this->user->givePermissionTo('orders.add');
+
+        $currency = Currency::DEFAULT;
 
         $coupon = Discount::factory()->create([
             'active' => true,
@@ -90,24 +92,54 @@ class OrderQATest extends TestCase
             'target_type' => DiscountTargetType::ORDER_VALUE,
         ]);
 
+        /** @var DiscountRepository $discountRepository */
+        $discountRepository = App::make(DiscountRepository::class);
+
         /** @var Discount $saleTotalValueWithCondition */
         $saleTotalValueWithCondition = Discount::factory()->create([
             'active' => true,
             'code' => null,
-            'value' => 5,
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::ORDER_VALUE,
+            'percentage' => null,
         ]);
+        $discountRepository->setDiscountAmounts($saleTotalValueWithCondition->getKey(), [
+            PriceDto::from([
+                'value' => '5.00',
+                'currency' => $currency,
+            ])
+        ]);
+
         /** @var ConditionGroup $conditionGroup */
         $conditionGroup = $saleTotalValueWithCondition->conditionGroups()->create();
         $conditionGroup->conditions()->create([
             'type' => ConditionType::ORDER_VALUE,
             'value' => [
-                'min_value' => 0,
-                'max_value' => 2222,
+                'min_values' => [
+                    [
+                        'currency' => $currency->value,
+                        'value' => '0.00',
+                    ],
+                ],
+                'max_values' => [
+                    [
+                        'currency' => $currency->value,
+                        'value' => '2222.00',
+                    ],
+                ],
                 'is_in_range' => true,
                 'include_taxes' => true,
             ],
+        ]);
+        $conditionGroup->conditions->first()->pricesMin()->create([
+            'value' => '0',
+            'currency' => $currency->value,
+            'price_type' => DiscountConditionPriceType::PRICE_MIN,
+        ]);
+
+        $conditionGroup->conditions->first()->pricesMin()->create([
+            'value' => '222200',
+            'currency' => $currency->value,
+            'price_type' => DiscountConditionPriceType::PRICE_MAX,
         ]);
 
         /** @var Discount $saleTargetProduct */
@@ -116,21 +148,46 @@ class OrderQATest extends TestCase
             'priority' => 0,
             'active' => true,
             'code' => null,
-            'value' => 5,
-            'type' => DiscountType::AMOUNT,
+            'percentage' => null,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
+        ]);
+        $discountRepository->setDiscountAmounts($saleTargetProduct->getKey(), [
+            PriceDto::from([
+                'value' => '5.00',
+                'currency' => $currency,
+            ])
         ]);
         /** @var ConditionGroup $conditionGroup */
         $conditionGroup = $saleTargetProduct->conditionGroups()->create();
         $conditionGroup->conditions()->create([
             'type' => ConditionType::ORDER_VALUE,
             'value' => [
-                'min_value' => 1,
-                'max_value' => 555,
+                'min_values' => [
+                    [
+                        'currency' => Currency::PLN->value,
+                        'value' => '1.00',
+                    ],
+                ],
+                'max_values' => [
+                    [
+                        'currency' => Currency::PLN->value,
+                        'value' => '555.00',
+                    ],
+                ],
                 'is_in_range' => true,
                 'include_taxes' => true,
             ],
+        ]);
+        $conditionGroup->conditions->first()->pricesMin()->create([
+            'value' => '100',
+            'currency' => $currency->value,
+            'price_type' => DiscountConditionPriceType::PRICE_MIN,
+        ]);
+        $conditionGroup->conditions->first()->pricesMin()->create([
+            'value' => '55500',
+            'currency' => $currency->value,
+            'price_type' => DiscountConditionPriceType::PRICE_MAX,
         ]);
 
         $this
@@ -150,25 +207,24 @@ class OrderQATest extends TestCase
                 ],
                 'shipping_place' => self::ADDRESS,
                 'billing_address' => self::ADDRESS,
+                'currency' => Currency::DEFAULT,
             ])
             ->assertCreated();
 
         /** @var Order $order */
         $order = Order::query()->first();
 
-        $this->assertEquals(100, $order->products[0]->price_initial);
-        $this->assertEquals(95, $order->products[0]->price);
+        $this->assertEquals('100.00', $order->products[0]->price_initial->getAmount());
+        $this->assertEquals('95.00', $order->products[0]->price->getAmount());
         $this->assertCount(1, $order->products);
         $this->assertCount(1, $order->products[0]->discounts); // 1 discount on product
         $this->assertCount(3, $order->discounts); // 3 discounts on order
-        $this->assertEquals(100, $order->cart_total_initial);
-        $this->assertEquals(72.9, $order->summary);
+        $this->assertEquals('100.00', $order->cart_total_initial->getAmount());
+        $this->assertEquals('72.90', $order->summary->getAmount());
     }
 
     public function testTargetProductSale(): void
     {
-        $this->markTestSkipped();
-
         $this->user->givePermissionTo('orders.add');
 
         /** @var Discount $saleTargetProduct */
