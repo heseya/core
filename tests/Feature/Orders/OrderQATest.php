@@ -4,7 +4,6 @@ namespace Tests\Feature\Orders;
 
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
-use App\Enums\DiscountType;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
 use App\Models\Order;
@@ -42,6 +41,7 @@ class OrderQATest extends TestCase
     ];
     private Product $product;
     private ShippingMethod $shippingMethod;
+    private DiscountRepository $discountRepository;
 
     /**
      * @throws RoundingNecessaryException
@@ -70,6 +70,7 @@ class OrderQATest extends TestCase
             'value' => Money::zero($currency),
         ]);
         $this->shippingMethod->priceRanges()->save($freeRange);
+        $this->discountRepository = App::make(DiscountRepository::class);
     }
 
     public function testSalesAndCode(): void
@@ -92,9 +93,6 @@ class OrderQATest extends TestCase
             'target_type' => DiscountTargetType::ORDER_VALUE,
         ]);
 
-        /** @var DiscountRepository $discountRepository */
-        $discountRepository = App::make(DiscountRepository::class);
-
         /** @var Discount $saleTotalValueWithCondition */
         $saleTotalValueWithCondition = Discount::factory()->create([
             'active' => true,
@@ -102,7 +100,7 @@ class OrderQATest extends TestCase
             'target_type' => DiscountTargetType::ORDER_VALUE,
             'percentage' => null,
         ]);
-        $discountRepository->setDiscountAmounts($saleTotalValueWithCondition->getKey(), [
+        $this->discountRepository->setDiscountAmounts($saleTotalValueWithCondition->getKey(), [
             PriceDto::from([
                 'value' => '5.00',
                 'currency' => $currency,
@@ -152,7 +150,7 @@ class OrderQATest extends TestCase
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
         ]);
-        $discountRepository->setDiscountAmounts($saleTargetProduct->getKey(), [
+        $this->discountRepository->setDiscountAmounts($saleTargetProduct->getKey(), [
             PriceDto::from([
                 'value' => '5.00',
                 'currency' => $currency,
@@ -207,7 +205,7 @@ class OrderQATest extends TestCase
                 ],
                 'shipping_place' => self::ADDRESS,
                 'billing_address' => self::ADDRESS,
-                'currency' => Currency::DEFAULT,
+                'currency' => $currency,
             ])
             ->assertCreated();
 
@@ -227,16 +225,23 @@ class OrderQATest extends TestCase
     {
         $this->user->givePermissionTo('orders.add');
 
+        $currency = Currency::DEFAULT;
+
         /** @var Discount $saleTargetProduct */
         $saleTargetProduct = $this->product->discounts()->create([
             'name' => 'Sale Target Product',
             'priority' => 0,
             'active' => true,
             'code' => null,
-            'value' => 5,
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
+            'percentage' => null,
+        ]);
+        $this->discountRepository->setDiscountAmounts($saleTargetProduct->getKey(), [
+            PriceDto::from([
+                'value' => '5.00',
+                'currency' => $currency,
+            ])
         ]);
 
         $this
@@ -253,17 +258,18 @@ class OrderQATest extends TestCase
                 ],
                 'shipping_place' => self::ADDRESS,
                 'billing_address' => self::ADDRESS,
+                'currency' => $currency,
             ])
             ->assertCreated();
 
         /** @var Order $order */
         $order = Order::query()->first();
 
-        $this->assertEquals(100, $order->cart_total_initial);
-        $this->assertEquals(95, $order->summary);
+        $this->assertEquals('100.00', $order->cart_total_initial->getAmount());
+        $this->assertEquals('95.00', $order->summary->getAmount());
         $this->assertCount(1, $order->products);
-        $this->assertEquals(100, $order->products[0]->price_initial);
-        $this->assertEquals(95, $order->products[0]->price);
+        $this->assertEquals('100.00', $order->products[0]->price_initial->getAmount());
+        $this->assertEquals('95.00', $order->products[0]->price->getAmount());
         $this->assertCount(1, $order->products[0]->discounts);
         $this->assertEquals($saleTargetProduct->getKey(), $order->products[0]->discounts[0]->getKey());
     }
