@@ -1005,6 +1005,100 @@ class OrderCreateTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     */
+    public function testCreateOrderWithDiscountOrder($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $discount = Discount::factory()->create([
+            'description' => 'Testowy kupon',
+            'code' => 'S43SA2',
+            'percentage' => '10',
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => true,
+        ]);
+        $shippingMethod = ShippingMethod::factory()->create([
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero(Currency::DEFAULT->value),
+            'value' => Money::zero(Currency::DEFAULT->value),
+        ]);
+        $shippingMethod->priceRanges()->save($lowRange);
+        $discount->products()->attach($this->product->getKey());
+
+        $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'email' => $this->email,
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                ],
+            ],
+            'coupons' => [
+                $discount->code,
+            ],
+        ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'discounts' => [
+                    [
+                        'discount' => [
+                            'id' => $discount->getKey(),
+                            'name' => $discount->name,
+                            'slug' => $discount->slug,
+                            'description' => $discount->description,
+                            'amounts' => null,
+                            'target_type' => DiscountTargetType::ORDER_VALUE,
+                            'percentage' => '10.0000',
+                            'priority' => $discount->priority,
+                            'uses' => 1,
+                            'target_is_allow_list' => true,
+                            'active' => true,
+                            'description_html' => '',
+                            'published' => [
+                                $this->lang,
+                            ],
+                            'metadata' => [],
+                            'code' => $discount->code,
+                        ],
+                        'code' => $discount->code,
+                        'name' => $discount->name,
+                        'amount' => null,
+                        'target_type' => DiscountTargetType::ORDER_VALUE,
+                        'percentage' => '10.0000',
+                        'applied_discount' => '1.00',
+                    ],
+                ],
+            ]);
+        $order = Order::find($response->getData()->data->id);
+
+        $orderTotal = $this->productPrice;
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->getKey(),
+            'email' => $this->email,
+            'shipping_price' => $shippingMethod->getPrice($orderTotal)->getMinorAmount(),
+        ]);
+
+        $this->assertDatabaseHas('order_discounts', [
+            'model_type' => $order->getMorphClass(),
+            'model_id' => $order->getKey(),
+            'discount_id' => $discount->getKey(),
+            'code' => $discount->code,
+        ]);
+
+        Event::assertDispatched(OrderCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
      *
      * @throws DtoException
      * @throws NumberFormatException

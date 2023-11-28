@@ -26,8 +26,8 @@ Attribute:
       example: '27'
     type:
       description: 'Type of attribute'
-      type: integer
-      example: 1
+      type: string
+      enum: [ 'single-option', 'multi-choice-option', 'number', 'date' ]
     global:
       description: 'Possibility to use attribute in search'
       type: boolean

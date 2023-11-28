@@ -1,4 +1,59 @@
-Attribute:
+AttributeCreate:
+  content:
+    application/json:
+      schema:
+        type: object
+        required:
+          - translations
+          - slug
+          - type
+          - global
+          - sortable
+          - published
+        properties:
+          id:
+            type: string
+            format: uuid
+          translations:
+            type: array
+            description: 'Translation table for languages. Array key is language UUID'
+            items:
+              type: object
+              properties:
+                name:
+                  description: 'Name of attribute'
+                  type: string
+                  example: 'Screen size'
+                description:
+                  description: 'Description of attribute'
+                  type: string
+                  example: 'Presented number is size of screen monitor'
+          slug:
+            description: 'Slug of name attribute'
+            type: string
+            example: 'screen-size'
+          type:
+            description: 'Type of attribute'
+            type: string
+            enum: [ 'single-option', 'multi-choice-option', 'number', 'date' ]
+          global:
+            description: 'Possibility to use attribute in search'
+            type: boolean
+          sortable:
+            description: 'Parameter for storefront'
+            type: boolean
+          metadata:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+          metadata_private:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+          published:
+            type: array
+            items:
+              type: string
+              format: uuid
+              example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b'
+
+AttributeUpdate:
   content:
     application/json:
       schema:
@@ -25,28 +80,12 @@ Attribute:
             description: 'Slug of name attribute'
             type: string
             example: 'screen-size'
-          min:
-            description: 'Lowest value from options'
-            type: integer
-            example: '22'
-          max:
-            description: 'Highest value from options'
-            type: integer
-            example: '27'
-          type:
-            description: 'Type of attribute'
-            type: integer
-            example: 1
           global:
             description: 'Possibility to use attribute in search'
             type: boolean
           sortable:
             description: 'Parameter for storefront'
             type: boolean
-          metadata:
-            $ref: './../schemas/Metadata.yml#/Metadata'
-          metadata_private:
-            $ref: './../schemas/Metadata.yml#/Metadata'
           published:
             type: array
             items:
@@ -73,10 +112,6 @@ AttributeOption:
                   description: 'Name of attribute option'
                   type: string
                   example: 'Screen size'
-          index:
-            description: 'Index of attribute option'
-            type: integer
-            example: 1
           value_number:
             description: 'Number value attribute option'
             type: number
@@ -86,9 +121,6 @@ AttributeOption:
             type: string
             format: date
             example: '2022-02-22'
-          attribute_id:
-            type: string
-            format: uuid
           metadata:
             $ref: './../schemas/Metadata.yml#/Metadata'
           metadata_private:
