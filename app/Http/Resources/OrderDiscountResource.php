@@ -32,7 +32,7 @@ class OrderDiscountResource extends Resource
                 ? CouponResource::make($this)->baseOnly()
                 : SaleResource::make($this)->baseOnly(),
             'name' => $pivot->name,
-            'code' => $pivot->code,
+            'code' => $this->resource->code,
             'percentage' => $pivot->percentage,
             'amount' => $amount?->getAmount(),
             'target_type' => $pivot->target_type,

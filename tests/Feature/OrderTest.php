@@ -56,6 +56,8 @@ class OrderTest extends TestCase
     {
         parent::setUp();
 
+        Carbon::setTestNow(null);
+
         Product::factory()->create();
 
         $this->currency = Currency::DEFAULT;
@@ -460,7 +462,7 @@ class OrderTest extends TestCase
     }
 
     /**
-     * @dataProvider booleanProvider
+     * @dataProvider authWithTwoBooleansProvider
      */
     public function testIndexSearchByPaid($user, $boolean, $booleanValue): void
     {

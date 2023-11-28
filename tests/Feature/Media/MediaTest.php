@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\Product;
 use Domain\Banner\Models\Banner;
 use Domain\Banner\Models\BannerMedia;
+use Domain\Page\Page;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
@@ -694,36 +695,38 @@ class MediaTest extends TestCase
             ->assertStatus(500);
     }
 
-    //    // Uncomment when Pages and media will be related
-    //
-    //    public function testDeleteFromPagUnauthorizede(): void
-    //    {
-    //        $this->user->givePermissionTo('pages.add');
-    //
-    //        $page = Page::factory()->create();
-    //        $media = Media::factory()->create([
-    //            'type' => Media::PHOTO,
-    //            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
-    //        ]);
-    //        $page->media()->sync($media);
-    //
-    //        $this->actingAs($this->user)->deleteJson('/media/id:' . $media->getKey())
-    //            ->assertForbidden();
-    //    }
-    //
-    //    public function testDeleteFromPage(): void
-    //    {
-    //        $this->user->givePermissionTo('pages.edit');
-    //
-    //        $page = Page::factory()->create();
-    //        $media = Media::factory()->create([
-    //            'type' => Media::PHOTO,
-    //            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
-    //        ]);
-    //        $page->media()->sync($media);
-    //
-    //        $this->actingAs($this->user)->deleteJson('/media/id:' . $media->getKey())
-    //            ->assertNoContent();
-    //        $this->assertDatabaseMissing('media', ['id' => $media->getKey()]);
-    //    }
+    public function testDeleteFromPageUnauthorizede(): void
+    {
+        $this->markTestSkipped('Pages are currently unrelated to Media');
+
+        $this->user->givePermissionTo('pages.add');
+
+        $page = Page::factory()->create();
+        $media = Media::factory()->create([
+            'type' => MediaType::PHOTO,
+            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+        ]);
+        $page->media()->sync($media);
+
+        $this->actingAs($this->user)->deleteJson('/media/id:' . $media->getKey())
+            ->assertForbidden();
+    }
+
+    public function testDeleteFromPage(): void
+    {
+        $this->markTestSkipped('Pages are currently unrelated to Media');
+
+        $this->user->givePermissionTo('pages.edit');
+
+        $page = Page::factory()->create();
+        $media = Media::factory()->create([
+            'type' => MediaType::PHOTO,
+            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+        ]);
+        $page->media()->sync($media);
+
+        $this->actingAs($this->user)->deleteJson('/media/id:' . $media->getKey())
+            ->assertNoContent();
+        $this->assertDatabaseMissing('media', ['id' => $media->getKey()]);
+    }
 }

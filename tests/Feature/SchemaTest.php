@@ -162,7 +162,7 @@ class SchemaTest extends TestCase
     }
 
     /**
-     * @dataProvider booleanProvider
+     * @dataProvider authWithTwoBooleansProvider
      */
     public function testIndexSearchByHidden(string $user, bool $boolean, bool $booleanValue): void
     {
@@ -209,7 +209,7 @@ class SchemaTest extends TestCase
     }
 
     /**
-     * @dataProvider booleanProvider
+     * @dataProvider authWithTwoBooleansProvider
      */
     public function testIndexSearchByRequired(string $user, bool $boolean, bool $booleanValue): void
     {
@@ -573,7 +573,7 @@ class SchemaTest extends TestCase
     }
 
     /**
-     * @dataProvider booleanProvider
+     * @dataProvider authWithTwoBooleansProvider
      */
     public function testCreateWithMetadataPrivate(string $user, bool $boolean, bool $booleanValue): void
     {
@@ -611,7 +611,7 @@ class SchemaTest extends TestCase
     }
 
     /**
-     * @dataProvider booleanProvider
+     * @dataProvider authWithTwoBooleansProvider
      */
     public function testCreateWithOptionMetadataPrivate(string $user, bool $boolean, bool $booleanValue): void
     {

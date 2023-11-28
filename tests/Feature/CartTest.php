@@ -328,9 +328,9 @@ class CartTest extends TestCase
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      */
-    public function testCartProcess($user, $coupon): void
+    public function testCartProcess(string $user, bool $coupon): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
@@ -487,6 +487,57 @@ class CartTest extends TestCase
                 'cartitem_id' => '2',
                 'price' => '100.00',
                 'price_discounted' => '100.00',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessSameProductNotAvailableWithSchema($user): void
+    {
+        $this->{$user}->givePermissionTo('cart.verify');
+
+        $this->product->schemas()->sync([$this->schema->getKey()]);
+
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [],
+                ],
+                [
+                    'cartitem_id' => '2',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [
+                        $this->schema->getKey() => $this->option->getKey(),
+                    ],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertValid()->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => '9200.00',
+                'cart_total' => '9200.00',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '9200.00',
+                'coupons' => [],
+                'sales' => [],
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => '4600.00',
+                'price_discounted' => '4600.00',
+            ])->assertJsonMissing([
+                'cartitem_id' => '2',
             ]);
     }
 
@@ -819,9 +870,9 @@ class CartTest extends TestCase
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      */
-    public function testCartProcessWithNotExistingCoupon($user, $coupon): void
+    public function testCartProcessWithNotExistingCoupon(string $user, bool $coupon): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
@@ -881,9 +932,9 @@ class CartTest extends TestCase
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      */
-    public function testCartProcessCheapestProduct($user, $coupon): void
+    public function testCartProcessCheapestProduct(string $user, bool $coupon): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
@@ -981,9 +1032,9 @@ class CartTest extends TestCase
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      */
-    public function testCartProcessCheapestProductWithSamePrice($user, $coupon): void
+    public function testCartProcessCheapestProductWithSamePrice(string $user, bool $coupon): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
@@ -1042,7 +1093,8 @@ class CartTest extends TestCase
         $discountCode2 = $coupon ? ['code' => $discount->code] : [];
 
         $response
-            ->assertValid()->assertOk()
+            ->assertValid()
+            ->assertOk()
             ->assertJsonFragment(
                 [
                     'cart_total_initial' => '9200.00',
@@ -1339,11 +1391,11 @@ class CartTest extends TestCase
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      *
      * @throws DtoException
      */
-    public function testCartProcessRoundedValues($user, $coupon): void
+    public function testCartProcessRoundedValues(string $user, bool $coupon): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
@@ -1440,11 +1492,11 @@ class CartTest extends TestCase
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      *
      * @throws DtoException
      */
-    public function testCartProcessRoundedValuesCheapestProduct($user, $coupon): void
+    public function testCartProcessRoundedValuesCheapestProduct(string $user, bool $coupon): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
@@ -1985,9 +2037,9 @@ class CartTest extends TestCase
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      */
-    public function testCartProcessProductInChildrenSet($user, $coupon): void
+    public function testCartProcessProductInChildrenSet(string $user, bool $coupon): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
 
@@ -2193,9 +2245,9 @@ class CartTest extends TestCase
     }
 
     /**
-     * @dataProvider couponOrSaleProvider
+     * @dataProvider authWithBooleanProvider
      */
-    public function testCartProcessInactive($user, $coupon): void
+    public function testCartProcessInactive(string $user, bool $coupon): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
 

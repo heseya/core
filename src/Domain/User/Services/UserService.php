@@ -211,7 +211,7 @@ final readonly class UserService
             $user->billingAddresses()->delete();
 
             // Delete user consents
-            $user->consents()->delete();
+            $user->consents()->detach();
 
             // Delete user from discount conditions
             // Potentially need to delete user from value json field

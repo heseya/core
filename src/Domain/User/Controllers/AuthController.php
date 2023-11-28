@@ -216,7 +216,7 @@ final class AuthController extends Controller
 
     public function updateProfile(ProfileUpdateDto $dto): JsonResource
     {
-        return UserResource::make(
+        return UserWithSavedAddressesResource::make(
             $this->authService->updateProfile($dto),
         );
     }

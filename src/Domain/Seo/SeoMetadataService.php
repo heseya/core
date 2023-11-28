@@ -59,6 +59,8 @@ final class SeoMetadataService
                 }
             }
 
+            $seo->forgetAllTranslationsForNonexistingLanguages();
+
             $seo->save();
         }
 

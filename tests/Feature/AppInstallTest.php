@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\App as FacadesApp;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Tests\TestCase;
+use TRegx\PhpUnit\DataProviders\DataProvider;
 
 class AppInstallTest extends TestCase
 {
@@ -86,10 +87,11 @@ class AppInstallTest extends TestCase
                 'required_permissions' => [
                     'products.show',
                 ],
-                'internal_permissions' => [[
-                    'name' => 'product_layout',
-                    'description' => 'Setup layouts of products page',
-                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'product_layout',
+                        'description' => 'Setup layouts of products page',
+                    ],
                 ],
             ]),
             $this->url . '/install' => Http::response([], 404),
@@ -107,18 +109,14 @@ class AppInstallTest extends TestCase
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
-    public static function invalidResponseProvider(): array
+    public static function invalidResponsesBaseProvider(): iterable
     {
-        return [
-            'null as user' => ['user', null],
-            'not an array as user' => ['user', 'not an array'],
-            'empty array as user' => ['user', []],
-            'flat array as user' => ['user', ['flat array']],
-            'null as app' => ['application', null],
-            'not an array as app' => ['application', 'not an array'],
-            'empty array as app' => ['application', []],
-            'flat array as app' => ['application', ['flat array']],
-        ];
+        return DataProvider::list(null, 'not an array', [], ['flat array']);
+    }
+
+    public static function invalidResponseProvider(): DataProvider
+    {
+        return DataProvider::cross(DataProvider::of(self::authProvider()), self::invalidResponsesBaseProvider());
     }
 
     /**
@@ -508,10 +506,11 @@ class AppInstallTest extends TestCase
                 'optional_permissions' => [
                     'products.add',
                 ],
-                'internal_permissions' => [[
-                    'name' => 'product_layout',
-                    'description' => 'Setup layouts of products page',
-                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'product_layout',
+                        'description' => 'Setup layouts of products page',
+                    ],
                 ],
             ]),
             $this->url . '/install' => Http::response([
@@ -772,10 +771,11 @@ class AppInstallTest extends TestCase
                 'required_permissions' => [
                     'nonexistent.permission',
                 ],
-                'internal_permissions' => [[
-                    'name' => 'product_layout',
-                    'description' => 'Setup layouts of products page',
-                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'product_layout',
+                        'description' => 'Setup layouts of products page',
+                    ],
                 ],
             ]),
         ]);
@@ -815,10 +815,11 @@ class AppInstallTest extends TestCase
                 'required_permissions' => [
                     'products.show',
                 ],
-                'internal_permissions' => [[
-                    'name' => 'product_layout',
-                    'description' => 'Setup layouts of products page',
-                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'product_layout',
+                        'description' => 'Setup layouts of products page',
+                    ],
                 ],
             ]),
         ]);
@@ -861,10 +862,11 @@ class AppInstallTest extends TestCase
                 'optional_permissions' => [
                     'products.add',
                 ],
-                'internal_permissions' => [[
-                    'name' => 'product_layout',
-                    'description' => 'Setup layouts of products page',
-                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'product_layout',
+                        'description' => 'Setup layouts of products page',
+                    ],
                 ],
             ]),
         ]);
@@ -940,10 +942,11 @@ class AppInstallTest extends TestCase
                 'required_permissions' => [
                     'products.show',
                 ],
-                'internal_permissions' => [[
-                    'name' => 'product_layout',
-                    'description' => 'Setup layouts of products page',
-                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'product_layout',
+                        'description' => 'Setup layouts of products page',
+                    ],
                 ],
             ]),
             $this->url . '/install' => new ConnectionException('Test', 7),

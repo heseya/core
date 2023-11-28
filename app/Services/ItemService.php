@@ -156,6 +156,8 @@ class ItemService implements ItemServiceContract
 
             if ($this->validateCartItems($selectedItems)) {
                 $products->push($product);
+            } else {
+                $cartItemToRemove[] = $item->getCartItemId();
             }
         }
 

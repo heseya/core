@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Tests\Traits\JsonQueryCounter;
+use TRegx\PhpUnit\DataProviders\DataProvider;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -90,14 +91,9 @@ abstract class TestCase extends BaseTestCase
         ];
     }
 
-    public static function booleanProvider(): array
+    public static function booleanProvider(): iterable
     {
-        return [
-            'as user true' => ['user', true, true],
-            'as application true' => ['application', true, true],
-            'as user false' => ['user', false, false],
-            'as application false' => ['application', false, false],
-        ];
+        return DataProvider::list(true, false);
     }
 
     public static function couponOrSaleProvider(): array
@@ -108,13 +104,18 @@ abstract class TestCase extends BaseTestCase
         ];
     }
 
-    public static function authWithDiscountProvider(): array
+    public static function authWithDiscountProvider(): DataProvider
     {
-        return [
-            'as user coupons' => ['user', 'coupons'],
-            'as user sales' => ['user', 'sales'],
-            'as app coupons' => ['application', 'coupons'],
-            'as app sales' => ['application', 'sales'],
-        ];
+        return DataProvider::cross(DataProvider::of(self::authProvider()), DataProvider::of(self::couponOrSaleProvider()));
+    }
+
+    public static function authWithBooleanProvider(): DataProvider
+    {
+        return DataProvider::cross(DataProvider::of(self::authProvider()), self::booleanProvider());
+    }
+
+    public static function authWithTwoBooleansProvider(): DataProvider
+    {
+        return DataProvider::cross(DataProvider::of(self::authProvider()), DataProvider::zip(self::booleanProvider(), self::booleanProvider()));
     }
 }

@@ -28,13 +28,19 @@ final class SeoMetadataResource extends Resource
             'no_index' => $this->resource->no_index,
             'header_tags' => $this->resource->header_tags,
             'published' => $this->resource->published,
-            ...$request->boolean('with_translations') ? $this->getAllTranslations($this->translationPermission()) : [],
+            ...$request->boolean('with_translations') ?
+                $this->getAllTranslations($this->translationPermission()) : [],
         ];
     }
 
     private function translationPermission(): string
     {
-        return $this->resource->global
-            ? 'seo.edit' : Config::get('relation-aliases.' . $this->resource->model_type)::HIDDEN_PERMISSION;
+        $class = Config::get("relation-aliases.{$this->resource->model_type}");
+
+        if ($this->resource->global || $class === null) {
+            return 'seo.edit';
+        }
+
+        return $class::HIDDEN_PERMISSION;
     }
 }

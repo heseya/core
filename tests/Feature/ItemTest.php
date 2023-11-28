@@ -37,6 +37,8 @@ class ItemTest extends TestCase
     {
         parent::setUp();
 
+        Carbon::setTestNow(null);
+
         $this->item = Item::factory()->create();
 
         Deposit::factory()->create([
@@ -161,7 +163,7 @@ class ItemTest extends TestCase
     }
 
     /**
-     * @dataProvider booleanProvider
+     * @dataProvider authWithTwoBooleansProvider
      */
     public function testIndexFilterBySoldOut($user, $boolean, $booleanValue): void
     {

@@ -175,6 +175,54 @@ class ProductSortTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
+     */
+    public function testIndexSortPriceRoundingCheck(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.show');
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $this->productRepository->setProductPrices($product1->getKey(), [
+            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(13, $this->currency->value))],
+            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(13, $this->currency->value))],
+        ]);
+        $product2 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $this->productRepository->setProductPrices($product2->getKey(), [
+            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of('7.09', $this->currency->value))],
+            ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of('7.09', $this->currency->value))],
+            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of('7.09', $this->currency->value))],
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products', ['sort' => 'price:asc', 'price' => ['currency' => $this->currency->value, 'max' => '13']])
+            ->assertOk()
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'id' => $product2->id,
+                        'name' => $product2->name,
+                    ],
+                    1 => [
+                        'id' => $product1->id,
+                        'name' => $product1->name,
+                    ],
+                ],
+            ]);
+
+        $this->assertQueryCountLessThan(20);
+    }
+
+    /**
+     * @dataProvider authProvider
      */
     public function testIndexSortByName(string $user): void
     {

@@ -11,9 +11,12 @@ use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
+use Support\Dtos\Traits\FilterTranslationsOnlyExistingLanguages;
 
 final class SeoMetadataUpdateDto extends Data
 {
+    use FilterTranslationsOnlyExistingLanguages;
+
     /**
      * @param array<string, array<string, string>> $translations
      * @param string[]|Optional|null $header_tags

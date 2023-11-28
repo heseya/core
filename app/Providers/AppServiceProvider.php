@@ -76,6 +76,7 @@ use Domain\Setting\Services\SettingsService;
 use Domain\ShippingMethod\Services\Contracts\ShippingMethodServiceContract;
 use Domain\ShippingMethod\Services\ShippingMethodService;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -142,6 +143,17 @@ class AppServiceProvider extends ServiceProvider
          */
         if ($this->app->isLocal()) {
             $this->app->register('Barryvdh\\LaravelIdeHelper\\IdeHelperServiceProvider');
+        }
+
+        if (empty(Config::get('mail.from.address'))) {
+            if (str_contains(Config::get('mail.mailers.smtp.username'), '@')) {
+                Config::set('mail.from.address', Config::get('mail.mailers.smtp.username'));
+            } else {
+                $host = parse_url(Config::get('app.url'), PHP_URL_HOST);
+                if (is_string($host)) {
+                    Config::set('mail.from.address', 'contact@' . str_replace('www.', '', $host));
+                }
+            }
         }
     }
 }

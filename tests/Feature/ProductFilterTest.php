@@ -175,6 +175,54 @@ class ProductFilterTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testProductMaxPriceWithVatRoundingCheck(string $user): void
+    {
+        $this->{$user}->givePermissionTo(['products.show']);
+
+        $saleChannel = SalesChannel::factory()->create([
+            'vat_rate' => '12',
+            'status' => Status::ACTIVE->value,
+        ]);
+
+        $product1 = $this->prepareProduct('10.00');
+        $product2 = $this->prepareProduct('8.00');
+        $product3 = $this->prepareProduct('7.09');
+
+        $this
+            ->actingAs($this->{$user})
+            ->json(
+                'GET',
+                '/products?price.currency=' . Currency::DEFAULT->value . '&price.max=10',
+                headers: ['X-Sales-Channel' => $saleChannel->getKey()],
+            )
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'id' => $product2->getKey(),
+            ])
+            ->assertJsonFragment([
+                'net' => '8.00',
+                'gross' => '8.00',
+            ])
+            ->assertJsonFragment([
+                'id' => $product3->getKey(),
+            ])
+            ->assertJsonFragment([
+                'net' => '7.09',
+                'gross' => '7.09',
+            ])
+            ->assertJsonMissing([
+                'id' => $product1->getKey(),
+            ])
+            ->assertJsonMissing([
+                'net' => '10.00',
+                'gross' => '10.00',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testProductMinPrice(string $user): void
     {
         $this->{$user}->givePermissionTo(['products.show']);
@@ -249,6 +297,54 @@ class ProductFilterTest extends TestCase
             ->assertJsonFragment([
                 'net' => '10.00',
                 'gross' => '10.00',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductMinPriceWithVatRoundingCheck(string $user): void
+    {
+        $this->{$user}->givePermissionTo(['products.show']);
+
+        $saleChannel = SalesChannel::factory()->create([
+            'vat_rate' => '12',
+            'status' => Status::ACTIVE->value,
+        ]);
+
+        $product1 = $this->prepareProduct('10.00');
+        $product2 = $this->prepareProduct('8.00');
+        $product3 = $this->prepareProduct('7.09');
+
+        $this
+            ->actingAs($this->{$user})
+            ->json(
+                'GET',
+                '/products?price.currency=' . Currency::DEFAULT->value . '&price.min=10',
+                headers: ['X-Sales-Channel' => $saleChannel->getKey()],
+            )
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonMissing([
+                'id' => $product2->getKey(),
+            ])
+            ->assertJsonMissing([
+                'net' => '8.00',
+                'gross' => '8.00',
+            ])
+            ->assertJsonFragment([
+                'id' => $product1->getKey(),
+            ])
+            ->assertJsonFragment([
+                'net' => '10.00',
+                'gross' => '10.00',
+            ])
+            ->assertJsonMissing([
+                'id' => $product3->getKey(),
+            ])
+            ->assertJsonMissing([
+                'net' => '7.09',
+                'gross' => '7.09',
             ]);
     }
 

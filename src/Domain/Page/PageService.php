@@ -60,9 +60,7 @@ final readonly class PageService
     {
         $attributes = $dto->toArray();
         $pageCurrentOrder = Page::query()->orderByDesc('order')->value('order');
-        if ($pageCurrentOrder !== null) {
-            $attributes = array_merge($attributes, ['order' => $pageCurrentOrder + 1]);
-        }
+        $attributes['order'] = $pageCurrentOrder === null ? 0 : $pageCurrentOrder + 1;
 
         $page = new Page($attributes);
 

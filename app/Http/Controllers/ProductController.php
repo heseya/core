@@ -25,6 +25,8 @@ use Domain\Product\Dtos\ProductCreateDto;
 use Domain\Product\Dtos\ProductSearchDto;
 use Domain\Product\Dtos\ProductUpdateDto;
 use Heseya\Dto\DtoException;
+use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Gate;
@@ -75,11 +77,9 @@ final class ProductController extends Controller
             'schemas.options.schema',
             'schemas.prices',
             'schemas.usedSchemas',
-            'sales',
             'sales.amounts',
             'sales.metadata',
             'sales.metadataPrivate',
-            'sales.orders',
             'attachments',
             'attachments.media',
             'attachments.media.metadata',
@@ -98,6 +98,7 @@ final class ProductController extends Controller
             'pricesMaxInitial',
             'pricesMin',
             'pricesMinInitial',
+            'productAttributes',
             'publishedTags',
             'relatedSets',
             'relatedSets.childrenPublic',
@@ -120,6 +121,7 @@ final class ProductController extends Controller
             'sets.metadataPrivate',
             'sets.parent',
         ]);
+        $product->load(['sales' => fn (BelongsToMany|Builder $hasMany) => $hasMany->withOrdersCount()]); // @phpstan-ignore-line
 
         return ProductResource::make($product);
     }

@@ -215,15 +215,20 @@ class Order extends Model implements SortableContract
 
     public function preferredLocale(): string
     {
-        $country = Str::of($this->shippingAddress?->country ?? '')
-            ->limit(2, '')
-            ->lower()
-            ->toString();
+        $country = $this->locale();
 
         return match ($country) {
             'pl', 'en' => $country,
             default => Config::get('app.locale'),
         };
+    }
+
+    public function locale(): string
+    {
+        return Str::of($this->shippingAddress?->country ?? '')
+            ->limit(2, '')
+            ->lower()
+            ->toString();
     }
 
     public function salesChannel(): HasOne

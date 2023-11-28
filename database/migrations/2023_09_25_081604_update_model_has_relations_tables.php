@@ -104,6 +104,16 @@ return new class extends Migration {
                     ],
                 ],
             ],
+            'orders' => [
+                'model_type' => [
+                    'id_column' => 'buyer_type',
+                    'id_second_column' => 'buyer_id',
+                    'relations' => [
+                        'App\Models\User' => 'User',
+                        'App\Models\App' => 'App',
+                    ],
+                ],
+            ],
         ];
     }
 
