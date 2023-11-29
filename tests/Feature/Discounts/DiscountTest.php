@@ -1372,7 +1372,6 @@ class DiscountTest extends TestCase
      */
     public function testCreateMinValueAmount($user, $discountKind): void
     {
-
         $this->{$user}->givePermissionTo("{$discountKind}.add");
 
         Queue::fake();
