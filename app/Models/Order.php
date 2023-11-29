@@ -33,8 +33,6 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Str;
 
 /**
  * @property Money $summary
@@ -76,6 +74,7 @@ class Order extends Model implements SortableContract
         'shipping_price_initial',
         'shipping_price',
         'summary',
+        'language',
     ];
     protected array $criteria = [
         'search' => OrderSearch::class,
@@ -211,24 +210,6 @@ class Order extends Model implements SortableContract
     public function buyer(): MorphTo
     {
         return $this->morphTo('order', 'buyer_type', 'buyer_id', 'id');
-    }
-
-    public function preferredLocale(): string
-    {
-        $country = $this->locale();
-
-        return match ($country) {
-            'pl', 'en' => $country,
-            default => Config::get('app.locale'),
-        };
-    }
-
-    public function locale(): string
-    {
-        return Str::of($this->shippingAddress?->country ?? '')
-            ->limit(2, '')
-            ->lower()
-            ->toString();
     }
 
     public function salesChannel(): HasOne

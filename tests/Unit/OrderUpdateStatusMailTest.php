@@ -47,6 +47,7 @@ class OrderUpdateStatusMailTest extends TestCase
             'status_id' => $this->status->getKey(),
             'currency' => 'PLN',
             'shipping_address_id' => $address->getKey(),
+            'language' => 'en',
         ]);
     }
 

@@ -153,6 +153,17 @@ final class LanguageService
         return $this->defaultLanguage();
     }
 
+    public function firstByIdOrDefault(string $id): Language
+    {
+        /** @var Language|null $language */
+        $language = Language::query()->where('id', '=', $id)->first();
+        if ($language) {
+            return $language;
+        }
+
+        return $this->defaultLanguage();
+    }
+
     private function updateHiddenLanguagesCache(string $uuid): void
     {
         $hiddenLanguages = Cache::get('languages.hidden');
