@@ -166,6 +166,17 @@ ProductView:
           items:
             $ref: './MediaAttachments.yml#/MediaAttachment'
 
+ProductWithAttributes:
+  type: object
+  allOf:
+    - $ref: '#/Product'
+    - properties:
+        attributes:
+          description: 'Array of assigned attributes'
+          type: array
+          items:
+            $ref: './Attributes.yml#/AttributeProductList'
+
 ProductIndex:
   type: object
   allOf:

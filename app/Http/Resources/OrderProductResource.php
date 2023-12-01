@@ -28,7 +28,7 @@ class OrderProductResource extends Resource
             'is_delivered' => $this->resource->is_delivered,
             'urls' => OrderProductUrlResource::collection($this->resource->urls),
             'product' => $this->resource->product
-                ? (ProductResource::make($this->resource->product)->baseOnly()->toArray($request) + [
+                ? (ProductWithAttributesResource::make($this->resource->product)->baseOnly()->toArray($request) + [
                     'sets' => ProductSetResource::collection(
                         Gate::denies('product_sets.show_hidden')
                             ? $this->resource->product->sets->where('public', true)
