@@ -33,7 +33,9 @@ use App\Traits\HasSeoMetadata;
 use App\Traits\Sortable;
 use Domain\Page\Page;
 use Domain\Price\Enums\ProductPriceType;
+use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductSet\ProductSet;
 use Domain\Tag\Models\Tag;
 use Heseya\Searchable\Criteria\Equals;
@@ -47,6 +49,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
+use Laravel\Scout\Searchable;
 
 /**
  * @property string $name
@@ -68,6 +71,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     use HasMediaAttachments;
     use HasMetadata;
     use HasSeoMetadata;
+    use Searchable;
     use SoftDeletes;
     use Sortable;
 
@@ -327,5 +331,44 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     private function prices(): MorphMany
     {
         return $this->morphMany(Price::class, 'model');
+    }
+
+    protected function makeAllSearchableUsing(Builder $query): Builder
+    {
+        return $query->with('productAttributes');
+    }
+
+    public function toSearchableArray(): array
+    {
+        $attributes = [];
+        /** @var ProductAttribute $productAttribute */
+        foreach ($this->productAttributes as $productAttribute) {
+            /** @var Attribute|null $attribute */
+            $attribute = $productAttribute->attribute;
+            if (!$attribute || !$attribute->include_in_text_search) {
+                continue;
+            }
+
+            $values = [];
+            /** @var AttributeOption $option */
+            foreach ($productAttribute->options as $option) {
+                $values[] = match ($attribute->type) {
+                    // AttributeType::NUMBER => $option->value_number,
+                    AttributeType::DATE => $option->value_date,
+                    default => $option->name,
+                };
+            }
+
+            $attributes['attribute_' . $attribute->slug] = implode(', ', $values);
+        }
+
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'slug' => $this->slug,
+            'description_html' => $this->description_html,
+            'description_short' => $this->description_short,
+            'search_values' => $this->search_values,
+        ] + $attributes;
     }
 }

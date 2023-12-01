@@ -118,13 +118,14 @@ class ProductSearchDatabaseTest extends TestCase
         $product2->attributes()->attach($attribute->getKey());
 
         // This test check if there is no SQL error that 'name' is ambiguous
-        $this
+        $response = $this
             ->actingAs($this->{$user})
             ->json('GET', '/products', [
                 'search' => 'First',
                 'sort' => 'attribute.data-wydania:desc',
-            ])
-            ->assertOk();
+            ]);
+
+        $response->assertOk();
     }
 
     /**

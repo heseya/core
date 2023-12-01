@@ -492,9 +492,7 @@ class AttributeTest extends TestCase
 
         $uuid = Uuid::uuid4()->toString();
 
-        $this
-            ->actingAs($this->{$user})
-            ->postJson('/attributes', $this->newAttribute + ['id' => $uuid])
+        $this->actingAs($this->{$user})->postJson('/attributes', $this->newAttribute + ['id' => $uuid])
             ->assertCreated()
             ->assertJsonStructure($this->expectedStructure)
             ->assertJsonFragment([
@@ -825,10 +823,10 @@ class AttributeTest extends TestCase
 
         $option = AttributeOption::create(
             $this->optionData +
-            [
-                'index' => 1,
-                'attribute_id' => $this->attribute->getKey(),
-            ],
+                [
+                    'index' => 1,
+                    'attribute_id' => $this->attribute->getKey(),
+                ],
         );
         $option->metadata()->create([
             'name' => 'Dystrybucja',
@@ -856,10 +854,10 @@ class AttributeTest extends TestCase
 
         $option = AttributeOption::create(
             $this->newOption +
-            [
-                'index' => 1,
-                'attribute_id' => $this->attribute->getKey(),
-            ],
+                [
+                    'index' => 1,
+                    'attribute_id' => $this->attribute->getKey(),
+                ],
         );
         $option->metadata()->create([
             'name' => 'Dystrybucja',
@@ -884,10 +882,10 @@ class AttributeTest extends TestCase
 
         $option = AttributeOption::create(
             $this->optionData +
-            [
-                'index' => 1,
-                'attribute_id' => $this->attribute->getKey(),
-            ],
+                [
+                    'index' => 1,
+                    'attribute_id' => $this->attribute->getKey(),
+                ],
         );
         $option->metadata()->create([
             'name' => 'Dystrybucja',
@@ -915,10 +913,10 @@ class AttributeTest extends TestCase
 
         $option = AttributeOption::create(
             $this->optionData +
-            [
-                'index' => 1,
-                'attribute_id' => $this->attribute->getKey(),
-            ],
+                [
+                    'index' => 1,
+                    'attribute_id' => $this->attribute->getKey(),
+                ],
         );
         $option->metadata()->create([
             'name' => 'Dystrybucja',
