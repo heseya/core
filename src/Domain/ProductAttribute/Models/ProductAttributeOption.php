@@ -15,6 +15,8 @@ final class ProductAttributeOption extends Pivot
 {
     protected $table = 'product_attribute_attribute_option';
 
+    public $timestamps = false;
+
     /**
      * @return BelongsTo<AttributeOption,self>
      */

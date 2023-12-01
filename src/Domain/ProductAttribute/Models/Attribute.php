@@ -18,6 +18,7 @@ use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductSet\ProductSet;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -54,6 +55,7 @@ final class Attribute extends Model implements Translatable
         'sortable',
         'order',
         'published',
+        'include_in_text_search',
     ];
 
     /** @var string[] */
@@ -69,6 +71,7 @@ final class Attribute extends Model implements Translatable
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'published' => 'array',
+        'include_in_text_search' => 'boolean',
     ];
 
     /** @var string[] */
@@ -111,5 +114,13 @@ final class Attribute extends Model implements Translatable
     public function productSets(): BelongsToMany
     {
         return $this->belongsToMany(ProductSet::class);
+    }
+
+    /**
+     * @param Builder<self> $query
+     */
+    public function scopeTextSearchable(Builder $query): void
+    {
+        $query->where('include_in_text_search', '=', true);
     }
 }

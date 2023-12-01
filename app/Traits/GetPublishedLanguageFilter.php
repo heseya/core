@@ -9,7 +9,7 @@ trait GetPublishedLanguageFilter
     public function getPublishedLanguageFilter(?string $table = null): array
     {
         if (!Config::get('translatable.fallback_locale')) {
-            return [$table ? $table . '.published' : 'published' => Config::get('language.id')];
+            return [($table ? $table . '.published' : 'published') => Config::get('language.id')];
         }
 
         return [];
