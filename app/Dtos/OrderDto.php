@@ -31,6 +31,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
         public readonly bool|Missing $invoice_requested,
         public readonly array|Missing $metadata,
         public readonly string $sales_channel_id,
+        public readonly Missing|string $organization_id,
     ) {}
 
     public static function instantiateFromRequest(FormRequest|OrderCreateRequest|OrderUpdateRequest $request): self
@@ -68,6 +69,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
             invoice_requested: $request->input('invoice_requested', new Missing()),
             metadata: self::mapMetadata($request),
             sales_channel_id: $request->input('sales_channel_id'),
+            organization_id: $request->input('organization_id', new Missing()),
         );
     }
 
@@ -139,5 +141,10 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
         }
 
         return $length;
+    }
+
+    public function getOrganizationId(): Missing|string
+    {
+        return $this->organization_id;
     }
 }

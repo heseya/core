@@ -142,6 +142,10 @@ enum Exceptions: string
     case CLIENT_ORGANIZATION_SAME_STATUS = 'Organization already has given status';
     case CLIENT_ORGANIZATION_TOKEN_EMAIL = 'The email provided does not match the organization';
 
+    case CLIENT_ORGANIZATION_NOT_PART_OF = 'User does not belong to specified organization.';
+    case CLIENT_ORGANIZATION_DOES_NOT_EXIST = 'Organization does not exist.';
+    case CLIENT_ORGANIZATION_SALES_CHANNEL_MISSMATCH = 'Organization does not have access to requested sales channel.';
+
     // Aliases
     public const CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT = self::CLIENT_NO_ACCESS;
     public const CLIENT_PROVIDER_HAS_NO_CONFIG = self::CLIENT_PROVIDER_IS_NOT_ACTIVE;

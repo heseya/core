@@ -42,6 +42,7 @@ use App\Services\Contracts\OrderServiceContract;
 use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
+use Domain\Organization\Models\Organization;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\SalesChannel\SalesChannelService;
 use Domain\ShippingMethod\Models\ShippingMethod;
@@ -162,11 +163,26 @@ final readonly class OrderService implements OrderServiceContract
             $status = Status::query()
                 ->select('id')
                 ->orderBy('order')
-                ->firstOr(callback: fn () => throw new ServerException(Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED),
+                ->firstOr(
+                    callback: fn () => throw new ServerException(Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED),
                 );
 
             /** @var User|App $buyer */
             $buyer = Auth::user();
+
+            if (!($dto->getOrganizationId() instanceof Missing)) {
+                /** @var Organization $organization */
+                $organization = Organization::query()->findOr(
+                    id: $dto->getOrganizationId(),
+                    callback: fn () => throw new OrderException(Exceptions::CLIENT_ORGANIZATION_DOES_NOT_EXIST),
+                );
+                if ($organization->sales_channel_id !== $dto->sales_channel_id) {
+                    throw new OrderException(Exceptions::CLIENT_ORGANIZATION_SALES_CHANNEL_MISSMATCH);
+                }
+                if ($buyer instanceof User && !$buyer->organizations->contains($organization)) {
+                    throw new OrderException(Exceptions::CLIENT_ORGANIZATION_NOT_PART_OF);
+                }
+            }
 
             /** @var Order $order */
             $order = Order::query()->create(
@@ -186,6 +202,7 @@ final readonly class OrderService implements OrderServiceContract
                     'invoice_requested' => $getInvoiceRequested,
                     'shipping_place' => $shippingPlace,
                     'shipping_type' => $shippingMethod->shipping_type ?? $digitalShippingMethod->shipping_type ?? null,
+                    'organization_id' => isset($organization) ? $organization->getKey() : null,
                 ] + $dto->toArray(),
             );
 
@@ -433,6 +450,33 @@ final readonly class OrderService implements OrderServiceContract
     public function indexUserOrder(OrderIndexDto $dto): LengthAwarePaginator
     {
         return Order::searchByCriteria(['buyer_id' => Auth::id()] + $dto->getSearchCriteria())
+            ->sort($dto->getSort())
+            ->with([
+                'products',
+                'discounts',
+                'payments',
+                'status',
+                'shippingMethod',
+                'shippingMethod.paymentMethods',
+                'digitalShippingMethod',
+                'digitalShippingMethod.paymentMethods',
+                'shippingAddress',
+                'metadata',
+                'documents',
+            ])
+            ->paginate(Config::get('pagination.per_page'));
+    }
+
+    public function indexUserOrganizationOrder(OrderIndexDto $dto): LengthAwarePaginator
+    {
+        /** @var User|App $user */
+        $user = Auth::user();
+
+        if ($user instanceof App) {
+            return $this->indexUserOrder($dto);
+        }
+
+        return Order::searchByCriteria(['organization_id' => $user->organizations->pluck('id')] + $dto->getSearchCriteria())
             ->sort($dto->getSort())
             ->with([
                 'products',

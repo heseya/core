@@ -23,7 +23,10 @@ class OrderPolicy
 
     public function showUserOrder(App|User $user, Order $order): Response
     {
-        if ($order->buyer && $user->getAuthIdentifier() === $order->buyer->getKey()) {
+        if (
+            ($order->buyer && $user->getAuthIdentifier() === $order->buyer->getKey())
+            || ($user instanceof User && $order->organization && $user->organizations->contains($order->organization))
+        ) {
             return Response::allow();
         }
         throw new NotFoundHttpException();

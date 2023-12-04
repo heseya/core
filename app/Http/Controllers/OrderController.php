@@ -165,6 +165,15 @@ class OrderController extends Controller
         );
     }
 
+    public function indexUserOrganizationOrder(OrderIndexRequest $request): JsonResource
+    {
+        Gate::inspect('indexUserOrder', [Order::class]);
+
+        return OrderResource::collection(
+            $this->orderService->indexUserOrganizationOrder(OrderIndexDto::instantiateFromRequest($request)),
+        );
+    }
+
     public function showUserOrder(Order $order): JsonResource
     {
         Gate::inspect('showUserOrder', [Order::class, $order]);
