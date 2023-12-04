@@ -4,6 +4,7 @@ namespace Tests\Feature\Discounts;
 
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Repositories\DiscountRepository;
 use Domain\Price\Enums\ProductPriceType;
 use App\Events\CouponDeleted;
 use App\Events\SaleDeleted;
@@ -31,12 +32,14 @@ class DiscountDeleteTest extends TestCase
 {
     private ProductRepositoryContract $productRepository;
     private Currency $currency;
+    private DiscountRepository $discountRepository;
 
     public function setUp(): void
     {
         parent::setUp();
 
         $this->productRepository = App::make(ProductRepositoryContract::class);
+        $this->discountRepository = App::make(DiscountRepository::class);
         $this->currency = Currency::DEFAULT;
     }
 
@@ -215,16 +218,20 @@ class DiscountDeleteTest extends TestCase
      */
     public function testDeleteSaleWithProduct(string $user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('sales.remove');
         $discount = Discount::factory([
-            'type' => DiscountType::AMOUNT,
-            'value' => 10,
             'code' => null,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
+            'percentage' => null,
         ])->create();
+
+        $this->discountRepository->setDiscountAmounts($discount->getKey(), [
+            PriceDto::from([
+                'value' => '10.00',
+                'currency' => $this->currency,
+            ])
+        ]);
 
         $product = Product::factory()->create([
             'public' => true,
@@ -275,16 +282,20 @@ class DiscountDeleteTest extends TestCase
      */
     public function testDeleteSaleWithProductInChildSet(string $user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('sales.remove');
         $discount = Discount::factory([
-            'type' => DiscountType::AMOUNT,
-            'value' => 10,
             'code' => null,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
+            'percentage' => null,
         ])->create();
+
+        $this->discountRepository->setDiscountAmounts($discount->getKey(), [
+            PriceDto::from([
+                'value' => '10.00',
+                'currency' => $this->currency,
+            ])
+        ]);
 
         $product = Product::factory()->create([
             'public' => true,

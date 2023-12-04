@@ -1372,8 +1372,6 @@ class DiscountTest extends TestCase
      */
     public function testCreateMinValueAmount($user, $discountKind): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo("{$discountKind}.add");
 
         Queue::fake();
@@ -1384,8 +1382,10 @@ class DiscountTest extends TestCase
                     'name' => 'Kupon',
                 ],
             ],
-            'value' => -10,
-            'type' => DiscountType::AMOUNT,
+            'amounts' => Arr::map(Currency::values(), fn (string $currency) => [
+                'value' => '-10.00',
+                'currency' => $currency,
+            ]),
             'priority' => 1,
             'target_type' => DiscountTargetType::ORDER_VALUE,
             'target_is_allow_list' => true,
@@ -1395,10 +1395,12 @@ class DiscountTest extends TestCase
             $discount['code'] = 'S43SA2';
         }
 
-        $response = $this->actingAs($this->{$user})->json('POST', "/{$discountKind}", $discount);
-
-        $response
-            ->assertStatus(422);
+        $this
+            ->actingAs($this->{$user})->json('POST', "/{$discountKind}", $discount)
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'message' => 'The amounts.0 value is less than defined minimum: 0',
+            ]);
     }
 
     /**
@@ -2284,8 +2286,6 @@ class DiscountTest extends TestCase
      */
     public function testUpdateWithPartialData($user, $discountKind): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo("{$discountKind}.edit");
         $code = $discountKind === 'coupons' ? [] : ['code' => null];
 
@@ -2295,7 +2295,10 @@ class DiscountTest extends TestCase
 
         $response = $this->actingAs($this->{$user})
             ->json('PATCH', "/{$discountKind}/id:" . $discount->getKey(), [
-                'value' => 50,
+                'amounts' => Arr::map(Currency::values(), fn (string $currency) => [
+                    'value' => '50.00',
+                    'currency' => $currency,
+                ]),
             ]);
 
         $code = $discountKind === 'coupons' ? ['code' => $discount->code] : [];
@@ -2305,19 +2308,31 @@ class DiscountTest extends TestCase
             ->assertJsonFragment(
                 [
                     'id' => $discount->getKey(),
-                    'value' => 50,
-                    'type' => $discount->type,
+                    'amounts' => [
+                        [
+                            'currency' => Currency::GBP->value,
+                            'net' => '50.00',
+                            'gross' => '50.00',
+                        ],
+                        [
+                            'currency' => $this->currency->value,
+                            'net' => '50.00',
+                            'gross' => '50.00',
+                        ]
+                    ],
                     'metadata' => [],
                 ] + $code
             );
 
         $this->assertDatabaseHas(
-            'discounts',
+            'prices',
             [
-                'id' => $discount->getKey(),
-                'value' => 50,
-                'type' => $discount->type,
-            ] + $code
+                'model_id' => $discount->getKey(),
+                'model_type' => $discount->getMorphClass(),
+                'value' => 5000,
+                'price_type' => 'amount',
+                'currency' => $this->currency->value,
+            ]
         );
 
         Queue::assertNotPushed(CallWebhookJob::class);
@@ -2443,10 +2458,8 @@ class DiscountTest extends TestCase
      */
     public function testUpdateSaleWithProduct($user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('sales.edit');
-        $discount = Discount::factory(['target_type' => DiscountTargetType::PRODUCTS, 'code' => null])->create();
+        $discount = Discount::factory(['target_type' => DiscountTargetType::PRODUCTS, 'code' => null, 'percentage' => null])->create();
 
         $product1 = Product::factory()->create([
             'public' => true,
@@ -2496,8 +2509,16 @@ class DiscountTest extends TestCase
                     'description' => 'Testowy kupon',
                 ],
             ],
-            'value' => 10,
-            'type' => DiscountType::AMOUNT,
+            'amounts' => [
+                [
+                    'currency' => Currency::GBP->value,
+                    'value' => '10.00',
+                ],
+                [
+                    'currency' => $this->currency->value,
+                    'value' => '10.00',
+                ],
+            ],
             'priority' => 1,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
@@ -2515,39 +2536,58 @@ class DiscountTest extends TestCase
             ->json('PATCH', '/sales/id:' . $discount->getKey(), $discountNew + $data)
             ->assertOk();
 
-        unset($discountNew['translations']);
+        unset($discountNew['translations'], $discountNew['amounts']);
         $response
-            ->assertJsonFragment($discountNew + ['id' => $discount->getKey()])
+            ->assertJsonFragment($discountNew + [
+                'id' => $discount->getKey(),
+                'amounts' => [
+                    [
+                        'currency' => Currency::GBP->value,
+                        'gross' => '10.00',
+                        'net' => '10.00',
+                    ],
+                    [
+                        'currency' => $this->currency->value,
+                        'gross' => '10.00',
+                        'net' => '10.00',
+                    ],
+                ],
+            ])
             ->assertJsonFragment([
                 'id' => $product2->getKey(),
                 'prices_base' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '200.00',
+                        'net' => '200.00',
                     ],
                 ],
                 'prices_min_initial' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '150.00',
+                        'net' => '150.00',
                     ],
                 ],
                 'prices_max_initial' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '190.00',
+                        'net' => '190.00',
                     ],
                 ],
                 'prices_min' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '140.00',
+                        'net' => '140.00',
                     ],
                 ],
                 'prices_max' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '180.00',
+                        'net' => '180.00',
                     ],
                 ],
             ])
@@ -2557,30 +2597,35 @@ class DiscountTest extends TestCase
                     [
                         'currency' => $this->currency->value,
                         'gross' => '300.00',
+                        'net' => '300.00',
                     ],
                 ],
                 'prices_min_initial' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '290.00',
+                        'net' => '290.00',
                     ],
                 ],
                 'prices_max_initial' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '350.00',
+                        'net' => '350.00',
                     ],
                 ],
                 'prices_min' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '280.00',
+                        'net' => '280.00',
                     ],
                 ],
                 'prices_max' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '340.00',
+                        'net' => '340.00',
                     ],
                 ],
             ]);
@@ -2627,15 +2672,11 @@ class DiscountTest extends TestCase
      */
     public function testUpdateInactiveSaleWithProduct($user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('sales.edit');
 
         $discountData = [
             'name' => 'Kupon',
             'description' => 'Testowy kupon',
-            'value' => 10,
-            'type' => DiscountType::AMOUNT,
             'priority' => 1,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
@@ -2645,6 +2686,7 @@ class DiscountTest extends TestCase
             $discountData + [
                 'code' => null,
                 'active' => true,
+                'percentage' => null,
             ]
         )->create();
 
@@ -2697,7 +2739,7 @@ class DiscountTest extends TestCase
             ],
         ];
 
-        unset($discountData['name'], $discountData['description']);
+        unset($discountData['name'], $discountData['description'], $discountData['amounts']);
         $response = $this->actingAs($this->{$user})
             ->json('PATCH', '/sales/id:' . $discount->getKey(), $discountData + $data)
             ->assertOk();
@@ -2710,30 +2752,35 @@ class DiscountTest extends TestCase
                     [
                         'currency' => $this->currency->value,
                         'gross' => '200.00',
+                        'net' => '200.00',
                     ],
                 ],
                 'prices_min_initial' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '190.00',
+                        'net' => '190.00',
                     ],
                 ],
                 'prices_max_initial' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '250.00',
+                        'net' => '250.00',
                     ],
                 ],
                 'prices_min' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '190.00',
+                        'net' => '190.00',
                     ],
                 ],
                 'prices_max' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '250.00',
+                        'net' => '250.00',
                     ],
                 ],
             ])
@@ -2743,30 +2790,35 @@ class DiscountTest extends TestCase
                     [
                         'currency' => $this->currency->value,
                         'gross' => '300.00',
+                        'net' => '300.00',
                     ],
                 ],
                 'prices_min_initial' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '290.00',
+                        'net' => '290.00',
                     ],
                 ],
                 'prices_max_initial' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '350.00',
+                        'net' => '350.00',
                     ],
                 ],
                 'prices_min' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '290.00',
+                        'net' => '290.00',
                     ],
                 ],
                 'prices_max' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '350.00',
+                        'net' => '350.00',
                     ],
                 ],
             ]);

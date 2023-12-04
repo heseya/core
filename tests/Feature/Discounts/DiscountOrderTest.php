@@ -14,6 +14,7 @@ use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\PriceRange;
 use App\Models\Product;
+use App\Repositories\DiscountRepository;
 use App\Services\ProductService;
 use App\Services\SchemaCrudService;
 use Brick\Math\Exception\NumberFormatException;
@@ -22,6 +23,7 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\DiscountConditionPriceType;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Dto\DtoException;
@@ -42,6 +44,7 @@ class DiscountOrderTest extends TestCase
     private ProductService $productService;
     private Currency $currency;
     private SchemaCrudService $schemaCrudService;
+    private DiscountRepository $discountRepository;
 
     /**
      * @throws UnknownCurrencyException
@@ -84,6 +87,7 @@ class DiscountOrderTest extends TestCase
         ];
 
         $this->schemaCrudService = App::make(SchemaCrudService::class);
+        $this->discountRepository = App::make(DiscountRepository::class);
     }
 
     /**
@@ -130,14 +134,18 @@ class DiscountOrderTest extends TestCase
      */
     public function testOrderCreateOrderValueAmount($user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('orders.add');
 
         $discount = Discount::factory()->create([
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::ORDER_VALUE,
-            'value' => 50,
+            'percentage' => null,
+        ]);
+
+        $this->discountRepository->setDiscountAmounts($discount->getKey(), [
+            PriceDto::from([
+                'value' => '50.00',
+                'currency' => $this->currency,
+            ])
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
@@ -163,8 +171,6 @@ class DiscountOrderTest extends TestCase
      */
     public function testOrderCreateChangeDiscountOrderValue($user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('orders.add');
 
         $discount = Discount::factory()->create([
@@ -191,13 +197,19 @@ class DiscountOrderTest extends TestCase
 
         $orderId = $response->getData()->data->id;
 
+        $this->discountRepository->setDiscountAmounts($discount->getKey(), [
+            PriceDto::from([
+                'value' => '100.00',
+                'currency' => $this->currency,
+            ])
+        ]);
+
         $discount->update([
-            'type' => DiscountType::AMOUNT,
-            'discount' => 100,
+            'percentage' => null,
         ]);
 
         $order = Order::find($orderId);
-        $this->assertEquals(100, $order->summary);
+        $this->assertEquals(100, $order->summary->getAmount()->toInt());
     }
 
     /**
@@ -283,8 +295,6 @@ class DiscountOrderTest extends TestCase
      */
     public function testCreateOrderMultipleDiscounts($user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('orders.add');
 
         $shippingMethod = $this->createShippingMethod(20, ['shipping_type' => ShippingType::ADDRESS]);
@@ -334,30 +344,53 @@ class DiscountOrderTest extends TestCase
             [
                 'type' => ConditionType::ORDER_VALUE,
                 'value' => [
-                    'min_value' => 200,
+                    'min_values' => [
+                        [
+                            'currency' => $this->currency->value,
+                            'value' => "200.00",
+                        ],
+                    ],
                     'is_in_range' => true,
                     'include_taxes' => true,
                 ],
             ],
         );
 
+        $conditionGroup1->conditions->first()->pricesMin()->create([
+            'value' => '200.00',
+            'currency' => $this->currency->value,
+            'price_type' => DiscountConditionPriceType::PRICE_MIN,
+        ]);
+
         $sale2->conditionGroups()->attach($conditionGroup1);
 
         $sale3 = Discount::factory()->create([
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::PRODUCTS,
-            'value' => 10,
             'target_is_allow_list' => true,
             'code' => null,
+            'percentage' => null,
+        ]);
+
+        $this->discountRepository->setDiscountAmounts($sale3->getKey(), [
+            PriceDto::from([
+                'value' => '10.00',
+                'currency' => $this->currency,
+            ])
         ]);
 
         $sale3->products()->sync([$product1->getKey()]);
 
         $coupon = Discount::factory()->create([
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::ORDER_VALUE,
             'target_is_allow_list' => true,
-            'value' => 50,
+            'percentage' => null,
+        ]);
+
+        $this->discountRepository->setDiscountAmounts($coupon->getKey(), [
+            PriceDto::from([
+                'value' => '50.00',
+                'currency' => $this->currency,
+            ])
         ]);
 
         $conditionGroup2 = ConditionGroup::create();
@@ -400,38 +433,37 @@ class DiscountOrderTest extends TestCase
                 $sale2->getKey(),
                 $sale3->getKey(),
             ],
-        ]);
-
-        $response
+        ])
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '542.00']);
+            ->assertJsonFragment(['summary' => '542.01']);
 
         $orderId = $response->getData()->data->id;
 
         $this->assertDatabaseCount('order_discounts', 5);
+        $modelType = (new Order())->getMorphClass();
 
         $this->assertDatabaseHas('order_discounts', [
             'model_id' => $orderId,
-            'model_type' => Order::class,
+            'model_type' => $modelType,
             'discount_id' => $sale2->getKey(),
         ]);
 
         $this->assertDatabaseHas('order_products', [
             'order_id' => $orderId,
             'product_id' => $product1->getKey(),
-            'price' => 81.0,
+            'price' => '8100',
         ]);
 
         $this->assertDatabaseHas('order_discounts', [
             'model_id' => $orderId,
-            'model_type' => Order::class,
+            'model_type' => $modelType,
             'discount_id' => $coupon->getKey(),
         ]);
 
         $this->assertDatabaseHas('order_products', [
             'order_id' => $orderId,
             'product_id' => $product2->getKey(),
-            'price' => 180.0,
+            'price' => '18000',
         ]);
     }
 
@@ -571,8 +603,6 @@ class DiscountOrderTest extends TestCase
      */
     public function testCreateOrderPriceRoundWithOrderValueDiscount($user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('orders.add');
         $product1 = $this->productService->create(
             FakeDto::productCreateDto([
@@ -582,27 +612,31 @@ class DiscountOrderTest extends TestCase
         );
 
         $sale1 = Discount::factory()->create([
-            'type' => DiscountType::PERCENTAGE,
             'target_type' => DiscountTargetType::PRODUCTS,
-            'value' => 35,
+            'percentage' => '35.0',
             'target_is_allow_list' => false,
             'code' => null,
         ]);
 
         $sale2 = Discount::factory()->create([
-            'type' => DiscountType::PERCENTAGE,
             'target_type' => DiscountTargetType::ORDER_VALUE,
-            'value' => 75,
+            'percentage' => '75.0',
             'target_is_allow_list' => true,
             'code' => null,
         ]);
 
         $sale3 = Discount::factory()->create([
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::CHEAPEST_PRODUCT,
-            'value' => 35,
             'target_is_allow_list' => false,
             'code' => null,
+            'percentage' => null,
+        ]);
+
+        $this->discountRepository->setDiscountAmounts($sale3->getKey(), [
+            PriceDto::from([
+                'value' => '35.00',
+                'currency' => $this->currency,
+            ])
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
@@ -704,8 +738,6 @@ class DiscountOrderTest extends TestCase
      */
     public function testOrderCreateMultiItemWithDiscountValueAmount($user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('orders.add');
 
         $product = $this->productService->create(
@@ -723,16 +755,22 @@ class DiscountOrderTest extends TestCase
         ];
 
         $sale = Discount::factory()->create([
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::PRODUCTS,
-            'value' => 2,
             'target_is_allow_list' => true,
             'code' => null,
+            'percentage' => null,
+        ]);
+
+        $this->discountRepository->setDiscountAmounts($sale->getKey(), [
+            PriceDto::from([
+                'value' => '2.00',
+                'currency' => $this->currency,
+            ])
         ]);
 
         $sale->products()->attach($product);
 
-        $response = $this->actingAs($this->{$user})->postJson('/orders', [
+        $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'info@example.com',
@@ -740,9 +778,7 @@ class DiscountOrderTest extends TestCase
             'shipping_place' => $this->address,
             'billing_address' => $this->address,
             'items' => $items,
-        ]);
-
-        $response
+        ])
             ->assertCreated()
             ->assertJsonFragment(['summary' => '34.00']); // 3 * (10 - 2) + 10 (delivery)
     }
@@ -757,8 +793,6 @@ class DiscountOrderTest extends TestCase
      */
     public function testOrderCreateItemWithDiscountValueAmountExtendPrice($user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('orders.add');
 
         $product = $this->productService->create(
@@ -780,16 +814,22 @@ class DiscountOrderTest extends TestCase
         ];
 
         $sale = Discount::factory()->create([
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::PRODUCTS,
-            'value' => 20,
             'target_is_allow_list' => true,
             'code' => null,
+            'percentage' => null,
+        ]);
+
+        $this->discountRepository->setDiscountAmounts($sale->getKey(), [
+            PriceDto::from([
+                'value' => '20.00',
+                'currency' => $this->currency,
+            ])
         ]);
 
         $sale->products()->attach($product);
 
-        $response = $this->actingAs($this->{$user})->postJson('/orders', [
+        $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'info@example.com',
@@ -797,11 +837,9 @@ class DiscountOrderTest extends TestCase
             'shipping_place' => $this->address,
             'billing_address' => $this->address,
             'items' => $items,
-        ]);
-
-        $response
+        ])
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '110.00']); // (10 (price) - 20 (discount)) + 100 + 10 (delivery)
+            ->assertJsonFragment(['summary' => '110.01']); // (10 (price) - 20 (discount)) + 100 + 10 (delivery)
     }
 
     /**
@@ -814,8 +852,6 @@ class DiscountOrderTest extends TestCase
      */
     public function testOrderCreateSchemaProductWithDiscountValueAmount($user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('orders.add');
 
         $product = $this->productService->create(
@@ -836,16 +872,22 @@ class DiscountOrderTest extends TestCase
         $product->schemas()->save($schema);
 
         $sale = Discount::factory()->create([
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::PRODUCTS,
-            'value' => 20,
             'target_is_allow_list' => true,
             'code' => null,
+            'percentage' => null,
+        ]);
+
+        $this->discountRepository->setDiscountAmounts($sale->getKey(), [
+            PriceDto::from([
+                'value' => '20.00',
+                'currency' => $this->currency,
+            ])
         ]);
 
         $sale->products()->attach($product);
 
-        $response = $this->actingAs($this->{$user})->postJson('/orders', [
+        $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -860,9 +902,8 @@ class DiscountOrderTest extends TestCase
                     ],
                 ],
             ],
-        ]);
-
-        $response
+            'email' => 'info@example.com',
+        ])
             ->assertCreated()
             ->assertJsonFragment(['summary' => '20.00']); // (10 + 20 - 20) + 10 (delivery)
     }
@@ -877,8 +918,6 @@ class DiscountOrderTest extends TestCase
      */
     public function testOrderCreateMultiSchemaProductWithDiscountValueAmount($user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('orders.add');
 
         $product = $this->productService->create(
@@ -899,16 +938,22 @@ class DiscountOrderTest extends TestCase
         $product->schemas()->sync([$schema->getKey()]);
 
         $sale = Discount::factory()->create([
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::PRODUCTS,
-            'value' => 10,
             'target_is_allow_list' => true,
             'code' => null,
+            'percentage' => null,
+        ]);
+
+        $this->discountRepository->setDiscountAmounts($sale->getKey(), [
+            PriceDto::from([
+                'value' => '10.00',
+                'currency' => $this->currency,
+            ])
         ]);
 
         $sale->products()->attach($product);
 
-        $response = $this->actingAs($this->{$user})->postJson('/orders', [
+        $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'info@example.com',
@@ -924,9 +969,7 @@ class DiscountOrderTest extends TestCase
                     ],
                 ],
             ],
-        ]);
-
-        $response
+        ])
             ->assertCreated()
             ->assertJsonFragment(['summary' => '70.00']); // 3 * (30 - 10) + 10 (delivery)
     }
@@ -941,8 +984,6 @@ class DiscountOrderTest extends TestCase
      */
     public function testOrderCreateSchemaProductWithDiscountValueAmountExtendPrice($user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('orders.add');
 
         $product = $this->productService->create(
@@ -963,16 +1004,22 @@ class DiscountOrderTest extends TestCase
         $product->schemas()->sync([$schema->getKey()]);
 
         $sale = Discount::factory()->create([
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::PRODUCTS,
-            'value' => 30,
             'target_is_allow_list' => true,
             'code' => null,
+            'percentage' => null,
+        ]);
+
+        $this->discountRepository->setDiscountAmounts($sale->getKey(), [
+            PriceDto::from([
+                'value' => '30.00',
+                'currency' => $this->currency,
+            ])
         ]);
 
         $sale->products()->attach($product);
 
-        $response = $this->actingAs($this->{$user})->postJson('/orders', [
+        $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'info@example.com',
@@ -992,11 +1039,9 @@ class DiscountOrderTest extends TestCase
                     'quantity' => 1,
                 ],
             ],
-        ]);
-
-        $response
+        ])
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '110.00']); // (20 (schema price) - 30 (discount)) + 100 + 10 (delivery)
+            ->assertJsonFragment(['summary' => '110.01']); // (20 (schema price) - 30 (discount)) + 100 + 10 (delivery)
     }
 
     /**
@@ -1088,8 +1133,6 @@ class DiscountOrderTest extends TestCase
      */
     public function testCreateOrderCorrectShippingPriceAfterDiscount($user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('orders.add');
 
         $productPrice = 50;
@@ -1116,12 +1159,19 @@ class DiscountOrderTest extends TestCase
 
         $discount = Discount::factory()->create([
             'description' => 'Testowy kupon',
-            'value' => 10,
             'code' => 'S43SA2',
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
+            'percentage' => null,
         ]);
+
+        $this->discountRepository->setDiscountAmounts($discount->getKey(), [
+            PriceDto::from([
+                'value' => '10.00',
+                'currency' => $this->currency,
+            ])
+        ]);
+
         $discount->products()->attach($product->getKey());
 
         $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
