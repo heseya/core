@@ -9,7 +9,6 @@ use App\Enums\RoleType;
 use App\Enums\ShippingType;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
-use App\Exceptions\PublishingException;
 use App\Listeners\WebHookEventListener;
 use App\Models\Address;
 use App\Models\ConditionGroup;
@@ -28,10 +27,8 @@ use App\Models\WebHook;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Repositories\DiscountRepository;
 use App\Repositories\ProductRepository;
-use App\Services\Contracts\ProductServiceContract;
 use App\Services\ProductService;
 use App\Services\SchemaCrudService;
-use BenSampo\Enum\Exceptions\InvalidEnumMemberException;
 use Brick\Math\Exception\MathException;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
@@ -39,6 +36,7 @@ use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Organization\Models\Organization;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\ProductSet\ProductSet;
@@ -73,6 +71,7 @@ class OrderCreateTest extends TestCase
     private DiscountRepository $discountRepository;
     private SchemaCrudService $schemaCrudService;
     private ProductRepository $productRepository;
+    private Organization $organization;
 
     /**
      * @throws UnknownCurrencyException
@@ -130,6 +129,12 @@ class OrderCreateTest extends TestCase
 
         $this->productService = App::make(ProductService::class);
         $this->schemaCrudService = App::make(SchemaCrudService::class);
+
+        $this->organization = Organization::factory()->create([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+        ]);
+
+        $this->user->organizations()->attach($this->organization);
     }
 
     public function testCreateOrderUnauthorized(): void
@@ -598,6 +603,131 @@ class OrderCreateTest extends TestCase
         ]);
 
         Event::assertDispatched(OrderCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderWithOrganization($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'hidden' => false,
+            ])
+        );
+
+        $option = Option::factory()->create([
+            'name' => 'A',
+            'order' => 0,
+            'schema_id' => $schema->getKey(),
+        ]);
+
+        $option->prices()->createMany(
+            Price::factory(['value' => 1000])->prepareForCreateMany()
+        );
+
+        $this->product->schemas()->sync([$schema->getKey()]);
+
+        $productQuantity = 2;
+
+        $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                    'schemas' => [
+                        $schema->getKey() => $option->getKey(),
+                    ],
+                ],
+            ],
+            'organization_id' => $this->organization->getKey(),
+        ]);
+        
+        $response->assertCreated();
+
+        $order = Order::find($response->getData()->data->id);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->getKey(),
+            'email' => $this->email,
+            'organization_id' => $this->organization->getKey(),
+        ]);
+
+        Event::assertDispatched(OrderCreated::class);
+    }
+
+    public function testCreateOrderWithWrongOrganization(): void
+    {
+        $this->user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'hidden' => false,
+            ])
+        );
+
+        $option = Option::factory()->create([
+            'name' => 'A',
+            'order' => 0,
+            'schema_id' => $schema->getKey(),
+        ]);
+
+        $option->prices()->createMany(
+            Price::factory(['value' => 1000])->prepareForCreateMany()
+        );
+
+        $this->product->schemas()->sync([$schema->getKey()]);
+
+        $productQuantity = 2;
+
+        $orderData = [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                    'schemas' => [
+                        $schema->getKey() => $option->getKey(),
+                    ],
+                ],
+            ],
+        ];
+
+        $orderData['organization_id'] = '1337-1337-1337-1337';
+        $response = $this->actingAs($this->user)->postJson('/orders', $orderData);
+        $response->assertUnprocessable();
+
+        $organization_user_not_part_of = Organization::factory()->create([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+        ]);
+        $orderData['organization_id'] = $organization_user_not_part_of->getKey();
+        $response = $this->actingAs($this->user)->postJson('/orders', $orderData);
+        $response->assertUnprocessable();
+
+        $organization_wrong_shipping_method = Organization::factory()->create();
+        $this->user->organizations()->attach($organization_wrong_shipping_method);
+        $orderData['organization_id'] = $organization_wrong_shipping_method->getKey();
+        $response = $this->actingAs($this->user)->postJson('/orders', $orderData);
+        $response->assertUnprocessable();
+
+        Event::assertNotDispatched(OrderCreated::class);
     }
 
     /**
@@ -1770,11 +1900,11 @@ class OrderCreateTest extends TestCase
                 'email' => $this->email,
                 'shipping_method_id' => $this->shippingMethod->getKey(),
                 'billing_address' => $address + [
-                        'vat' => null,
-                    ],
+                    'vat' => null,
+                ],
                 'shipping_place' => $address + [
-                        'vat' => null,
-                    ],
+                    'vat' => null,
+                ],
                 'items' => [
                     [
                         'product_id' => $this->product->getKey(),

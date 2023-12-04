@@ -25,6 +25,8 @@ class OrderCreateRequest extends OrderItemsRequest
 
                 'sales_channel_id' => ['required', 'uuid'],
 
+                'organization_id' => ['nullable', 'uuid'],
+
                 'digital_shipping_method_id' => ['nullable', 'uuid'],
                 'shipping_method_id' => ['nullable', 'uuid'],
                 'shipping_place' => ['nullable', 'required_with:shipping_method_id', new ShippingPlaceValidation()],

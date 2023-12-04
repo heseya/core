@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Casts\MoneyCast;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\OrderOrganization;
 use App\Criteria\OrderPayments;
 use App\Criteria\OrderSearch;
 use App\Criteria\WhereCreatedAfter;
@@ -21,6 +22,7 @@ use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Organization\Models\Organization;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Searchable\Criteria\Like;
@@ -52,64 +54,69 @@ class Order extends Model implements SortableContract
     use Sortable;
 
     protected $fillable = [
-        'code',
-        'email',
-        'comment',
-        'status_id',
-        'shipping_method_id',
-        'digital_shipping_method_id',
-        'shipping_number',
         'billing_address_id',
-        'shipping_address_id',
-        'created_at',
         'buyer_id',
         'buyer_type',
-        'paid',
-        'shipping_place',
-        'invoice_requested',
-        'shipping_type',
-        'sales_channel_id',
-
-        'currency',
         'cart_total_initial',
         'cart_total',
+        'code',
+        'comment',
+        'created_at',
+        'currency',
+        'digital_shipping_method_id',
+        'email',
+        'invoice_requested',
+        'organization_id',
+        'paid',
+        'sales_channel_id',
+        'shipping_address_id',
+        'shipping_method_id',
+        'shipping_number',
+        'shipping_place',
         'shipping_price_initial',
         'shipping_price',
+        'shipping_type',
+        'status_id',
         'summary',
     ];
+
     protected array $criteria = [
-        'search' => OrderSearch::class,
-        'status_id',
-        'shipping_method_id',
-        'digital_shipping_method_id',
-        'sales_channel_id',
-        'code' => Like::class,
-        'email' => Like::class,
         'buyer_id',
-        'status.hidden' => WhereHasStatusHidden::class,
-        'paid',
+        'code' => Like::class,
+        'digital_shipping_method_id',
+        'email' => Like::class,
         'from' => WhereCreatedAfter::class,
-        'to' => WhereCreatedBefore::class,
-        'metadata' => MetadataSearch::class,
-        'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,
+        'metadata_private' => MetadataPrivateSearch::class,
+        'metadata' => MetadataSearch::class,
+        'organization_id' => OrderOrganization::class,
+        'paid',
         'payment_method_id' => OrderPayments::class,
+        'sales_channel_id',
+        'search' => OrderSearch::class,
+        'shipping_method_id',
+        'status_id',
+        'status.hidden' => WhereHasStatusHidden::class,
+        'to' => WhereCreatedBefore::class,
     ];
+
     protected array $sortable = [
-        'id',
         'code',
         'created_at',
         'email',
+        'id',
         'summary',
     ];
+
     protected string $defaultSortBy = 'created_at';
     protected string $defaultSortDirection = 'desc';
+
     protected $casts = [
-        'paid' => 'boolean',
-        'invoice_requested' => 'boolean',
-        'currency' => Currency::class,
         'cart_total_initial' => MoneyCast::class,
         'cart_total' => MoneyCast::class,
+        'currency' => Currency::class,
+        'invoice_requested' => 'boolean',
+        'paid' => 'boolean',
         'shipping_price_initial' => MoneyCast::class,
         'shipping_price' => MoneyCast::class,
         'summary' => MoneyCast::class,
@@ -230,5 +237,10 @@ class Order extends Model implements SortableContract
     public function salesChannel(): HasOne
     {
         return $this->hasOne(SalesChannel::class, 'id', 'sales_channel_id');
+    }
+
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class, 'organization_id');
     }
 }

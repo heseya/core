@@ -9,6 +9,7 @@ use App\Models\Option;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Permission;
+use App\Models\PriceMap;
 use App\Models\Product;
 use App\Models\Role;
 use App\Models\Schema;
@@ -38,6 +39,7 @@ return [
     'Order' => Order::class,
     'OrderProduct' => OrderProduct::class,
     'Organization' => Organization::class,
+    'PriceMap' => PriceMap::class,
     'Page' => Page::class,
     'Permission' => Permission::class,
     'Product' => Product::class,

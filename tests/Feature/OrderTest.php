@@ -27,6 +27,7 @@ use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Metadata\Enums\MetadataType;
+use Domain\Organization\Models\Organization;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Support\Carbon;
@@ -152,13 +153,13 @@ class OrderTest extends TestCase
         ];
 
         $this->expected_full_view_structure = $this->expected_full_structure + [
-                'buyer',
-                'products',
-                'payments',
-                'discounts',
-                'billing_address',
-                'shipping_number',
-            ];
+            'buyer',
+            'products',
+            'payments',
+            'discounts',
+            'billing_address',
+            'shipping_number',
+        ];
     }
 
     public function testIndexUnauthorized(): void
@@ -365,6 +366,61 @@ class OrderTest extends TestCase
             ->assertJsonCount(500, 'data');
 
         $this->assertQueryCountLessThan(22);
+    }
+
+    public function testIndexOrganization(): void
+    {
+        $this->user->givePermissionTo('orders.show_own');
+
+        $status = Status::factory()->create();
+
+        /** @var User $another_user */
+        $another_user = User::factory()->create();
+
+        $organization = Organization::factory()->create();
+        $this->user->organizations()->attach($organization);
+        $another_user->organizations()->attach($organization);
+
+        $order = Order::factory()->create([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+            'organization_id' => $organization->getKey(),
+        ]);
+        $this->user->orders()->save($order);
+
+        $order_another_user = Order::factory()->create([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+            'organization_id' => $organization->getKey(),
+        ]);
+        $another_user->orders()->save($order_another_user);
+
+        $order_no_organization = Order::factory()->create([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+
+        $this
+            ->actingAs($this->user)
+            ->json('GET', '/orders/my-organization')
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonStructure([
+                'data' => [
+                    0 => $this->expected_full_structure,
+                ],
+            ])
+            ->assertJsonFragment([
+                'id' => $order->getKey(),
+            ])
+            ->assertJsonFragment([
+                'id' => $order_another_user->getKey(),
+            ])
+            ->assertJsonMissing([
+                'id' => $order_no_organization->getKey(),
+            ]);
+
+        $this->assertQueryCountLessThan(23);
     }
 
     /**

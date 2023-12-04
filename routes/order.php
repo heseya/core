@@ -13,7 +13,11 @@ Route::prefix('orders')->group(function (): void {
         ->middleware('can:orders.add');
     Route::get('my', [OrderController::class, 'indexUserOrder'])
         ->middleware('can:orders.show_own');
+    Route::get('my-organization', [OrderController::class, 'indexUserOrganizationOrder'])
+        ->middleware('can:orders.show_own');
     Route::get('my/{order:code}', [OrderController::class, 'showUserOrder'])
+        ->middleware('can:orders.show_own');
+    Route::get('my-organization/{order:code}', [OrderController::class, 'showUserOrder'])
         ->middleware('can:orders.show_own');
     Route::get('my-products', [OrderController::class, 'myOrderProducts'])
         ->middleware('can:authenticated');
