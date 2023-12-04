@@ -91,7 +91,7 @@ class ProductResource extends Resource
                 ? ProductAttributeResource::collection(
                     $this->resource->relationLoaded('productAttributes')
                         ? $this->resource->productAttributes
-                        : $this->resource->productAttributes()->slug($request->string('attribute_slug'))->get(),
+                        : $this->resource->productAttributes()->slug(explode(';', $request->input('attribute_slug')))->get(),
                 )
                 : [],
             'seo' => SeoMetadataResource::make($this->resource->seo),
@@ -107,7 +107,7 @@ class ProductResource extends Resource
                 ? ProductAttributeShortResource::collection(
                     $this->resource->relationLoaded('productAttributes')
                         ? $this->resource->productAttributes
-                        : $this->resource->productAttributes()->slug($request->string('attribute_slug'))->get(),
+                        : $this->resource->productAttributes()->slug(explode(';', $request->input('attribute_slug')))->get(),
                 )
                 : [],
         ];

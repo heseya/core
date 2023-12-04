@@ -711,7 +711,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowAttributes(string $user): void
+    public function testShowAttribute(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show_details');
 
@@ -748,6 +748,73 @@ class ProductTest extends TestCase
                 'value_number' => $option->value_number,
                 'value_date' => $option->value_date,
                 'attribute_id' => $attribute->getKey(),
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowAttributes(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.show_details');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $attribute1 = Attribute::factory()->create();
+
+        $option1 = AttributeOption::factory()->create([
+            'index' => 1,
+            'attribute_id' => $attribute1->getKey(),
+        ]);
+
+        $attribute2 = Attribute::factory()->create();
+
+        $option2 = AttributeOption::factory()->create([
+            'index' => 1,
+            'attribute_id' => $attribute2->getKey(),
+        ]);
+
+        $product->attributes()->attach($attribute1->getKey());
+        $product->attributes()->attach($attribute2->getKey());
+
+        $product->attributes->first(fn (Attribute $productAttribute) => $productAttribute->getKey() === $attribute1->getKey())->product_attribute_pivot->options()->attach($option1->getKey());
+        $product->attributes->first(fn (Attribute $productAttribute) => $productAttribute->getKey() === $attribute2->getKey())->product_attribute_pivot->options()->attach($option2->getKey());
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products/' . $product->slug, ['attribute_slug' => "{$attribute1->slug};{$attribute2->slug}"])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $attribute1->getKey(),
+                'name' => $attribute1->name,
+                'description' => $attribute1->description,
+                'type' => $attribute1->type,
+                'global' => $attribute1->global,
+            ])
+            ->assertJsonFragment([
+                'id' => $option1->getKey(),
+                'name' => $option1->name,
+                'index' => $option1->index,
+                'value_number' => $option1->value_number,
+                'value_date' => $option1->value_date,
+                'attribute_id' => $attribute1->getKey(),
+            ])
+            ->assertJsonFragment([
+                'id' => $attribute2->getKey(),
+                'name' => $attribute2->name,
+                'description' => $attribute2->description,
+                'type' => $attribute2->type,
+                'global' => $attribute2->global,
+            ])
+            ->assertJsonFragment([
+                'id' => $option2->getKey(),
+                'name' => $option2->name,
+                'index' => $option2->index,
+                'value_number' => $option2->value_number,
+                'value_date' => $option2->value_date,
+                'attribute_id' => $attribute2->getKey(),
             ]);
     }
 
