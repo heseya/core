@@ -22,6 +22,7 @@ use App\Models\ProductAttribute;
 use App\Models\Schema;
 use App\Models\WebHook;
 use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\DiscountRepository;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\ProductService;
@@ -34,6 +35,7 @@ use Domain\Currency\Currency;
 use Domain\Language\Language;
 use Domain\Metadata\Enums\MetadataType;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\DiscountConditionPriceType;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
@@ -65,6 +67,7 @@ class ProductTest extends TestCase
     private DiscountServiceContract $discountService;
     private ProductRepositoryContract $productRepository;
     private SchemaCrudService $schemaCrudService;
+    private DiscountRepository $discountRepository;
 
     public static function noIndexProvider(): array
     {
@@ -92,6 +95,7 @@ class ProductTest extends TestCase
         $this->discountService = App::make(DiscountServiceContract::class);
         $this->productRepository = App::make(ProductRepositoryContract::class);
         $this->schemaCrudService = App::make(SchemaCrudService::class);
+        $this->discountRepository = App::make(DiscountRepository::class);
 
         $this->productPrices = array_map(fn (Currency $currency) => [
             'value' => '100.00',
@@ -707,7 +711,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowAttributes(string $user): void
+    public function testShowAttribute(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show_details');
 
@@ -744,6 +748,73 @@ class ProductTest extends TestCase
                 'value_number' => $option->value_number,
                 'value_date' => $option->value_date,
                 'attribute_id' => $attribute->getKey(),
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowAttributes(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.show_details');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $attribute1 = Attribute::factory()->create();
+
+        $option1 = AttributeOption::factory()->create([
+            'index' => 1,
+            'attribute_id' => $attribute1->getKey(),
+        ]);
+
+        $attribute2 = Attribute::factory()->create();
+
+        $option2 = AttributeOption::factory()->create([
+            'index' => 1,
+            'attribute_id' => $attribute2->getKey(),
+        ]);
+
+        $product->attributes()->attach($attribute1->getKey());
+        $product->attributes()->attach($attribute2->getKey());
+
+        $product->attributes->first(fn (Attribute $productAttribute) => $productAttribute->getKey() === $attribute1->getKey())->product_attribute_pivot->options()->attach($option1->getKey());
+        $product->attributes->first(fn (Attribute $productAttribute) => $productAttribute->getKey() === $attribute2->getKey())->product_attribute_pivot->options()->attach($option2->getKey());
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products/' . $product->slug, ['attribute_slug' => "{$attribute1->slug};{$attribute2->slug}"])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $attribute1->getKey(),
+                'name' => $attribute1->name,
+                'description' => $attribute1->description,
+                'type' => $attribute1->type,
+                'global' => $attribute1->global,
+            ])
+            ->assertJsonFragment([
+                'id' => $option1->getKey(),
+                'name' => $option1->name,
+                'index' => $option1->index,
+                'value_number' => $option1->value_number,
+                'value_date' => $option1->value_date,
+                'attribute_id' => $attribute1->getKey(),
+            ])
+            ->assertJsonFragment([
+                'id' => $attribute2->getKey(),
+                'name' => $attribute2->name,
+                'description' => $attribute2->description,
+                'type' => $attribute2->type,
+                'global' => $attribute2->global,
+            ])
+            ->assertJsonFragment([
+                'id' => $option2->getKey(),
+                'name' => $option2->name,
+                'index' => $option2->index,
+                'value_number' => $option2->value_number,
+                'value_date' => $option2->value_date,
+                'attribute_id' => $attribute2->getKey(),
             ]);
     }
 
@@ -871,8 +942,6 @@ class ProductTest extends TestCase
      */
     public function testShowWithSales(string $user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('products.show_details');
 
         // Applied - product is on list
@@ -891,12 +960,18 @@ class ProductTest extends TestCase
         $sale2 = Discount::factory()->create([
             'description' => 'Testowa promocja',
             'name' => 'Testowa promocja',
-            'value' => 10,
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
             'code' => null,
+            'percentage' => null,
         ]);
+        $this->discountRepository->setDiscountAmounts($sale2->getKey(), [
+            PriceDto::from([
+                'value' => '10.00',
+                'currency' => $this->currency,
+            ])
+        ]);
+
 
         // Not applied - invalid target type
         $sale3 = Discount::factory()->create([
@@ -938,11 +1013,32 @@ class ProductTest extends TestCase
             'condition_group_id' => $conditionGroup->getKey(),
             'type' => ConditionType::ORDER_VALUE,
             'value' => [
-                'min_value' => 20,
-                'max_value' => 10000,
+                'min_values' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'value' => '20.00',
+                    ],
+                ],
+                'max_values' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'value' => '10000.00',
+                    ],
+                ],
                 'include_taxes' => false,
                 'is_in_range' => true,
             ],
+        ]);
+        $conditionGroup->conditions->first()->pricesMin()->create([
+            'value' => '2000',
+            'currency' => $this->currency->value,
+            'price_type' => DiscountConditionPriceType::PRICE_MIN,
+        ]);
+
+        $conditionGroup->conditions->first()->pricesMin()->create([
+            'value' => '1000000',
+            'currency' => $this->currency->value,
+            'price_type' => DiscountConditionPriceType::PRICE_MAX,
         ]);
 
         $sale5->conditionGroups()->attach($conditionGroup);
@@ -962,30 +1058,35 @@ class ProductTest extends TestCase
                 'prices_base' => [
                     [
                         'gross' => '3000.00',
+                        'net' => '3000.00',
                         'currency' => Currency::DEFAULT->value,
                     ],
                 ],
                 'prices_min_initial' => [
                     [
                         'gross' => '2500.00',
+                        'net' => '2500.00',
                         'currency' => Currency::DEFAULT->value,
                     ],
                 ],
                 'prices_max_initial' => [
                     [
                         'gross' => '3500.00',
+                        'net' => '3500.00',
                         'currency' => Currency::DEFAULT->value,
                     ],
                 ],
                 'prices_min' => [
                     [
                         'gross' => '2250.00',
+                        'net' => '2250.00',
                         'currency' => Currency::DEFAULT->value,
                     ],
                 ],
                 'prices_max' => [
                     [
                         'gross' => '3150.00',
+                        'net' => '3150.00',
                         'currency' => Currency::DEFAULT->value,
                     ],
                 ],
@@ -2413,24 +2514,34 @@ class ProductTest extends TestCase
      */
     public function testCreateWithExistingSale(string $user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('products.add');
 
         $saleNotApplied = Discount::factory()->create([
-            'type' => DiscountType::AMOUNT,
-            'value' => 10,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
             'code' => null,
+            'percentage' => null,
+        ]);
+
+        $this->discountRepository->setDiscountAmounts($saleNotApplied->getKey(), [
+            PriceDto::from([
+                'value' => '10.00',
+                'currency' => $this->currency,
+            ])
         ]);
 
         $saleApplied = Discount::factory()->create([
-            'type' => DiscountType::AMOUNT,
-            'value' => 20,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => false,
             'code' => null,
+            'percentage' => null,
+        ]);
+
+        $this->discountRepository->setDiscountAmounts($saleApplied->getKey(), [
+            PriceDto::from([
+                'value' => '20.00',
+                'currency' => $this->currency,
+            ])
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/products', [
@@ -2961,8 +3072,6 @@ class ProductTest extends TestCase
      */
     public function testUpdateMinMaxPriceWithSale(string $user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('products.edit');
 
         $schemaPrice = 50;
@@ -2980,10 +3089,16 @@ class ProductTest extends TestCase
         $saleValue = 25;
         $sale = Discount::factory()->create([
             'code' => null,
-            'type' => DiscountType::AMOUNT,
-            'value' => $saleValue,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
+            'percentage' => null,
+        ]);
+
+        $this->discountRepository->setDiscountAmounts($sale->getKey(), [
+            PriceDto::from([
+                'value' => "{$saleValue}.00",
+                'currency' => $this->currency,
+            ])
         ]);
 
         $sale->products()->attach($this->product->getKey());

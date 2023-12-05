@@ -22,12 +22,14 @@ use App\Models\ProductAttribute;
 use App\Models\Status;
 use App\Models\User;
 use App\Models\WebHook;
+use App\Repositories\DiscountRepository;
 use App\Services\Contracts\OrderServiceContract;
 use App\Services\OrderService;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Metadata\Enums\MetadataType;
+use Domain\Price\Dtos\PriceDto;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\SalesChannel\Models\SalesChannel;
@@ -1194,9 +1196,9 @@ class OrderTest extends TestCase
      */
     public function testViewOrderDiscounts($user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('orders.show_details');
+        /** @var DiscountRepository $discountRepository */
+        $discountRepository = App::make(DiscountRepository::class);
 
         $status = Status::factory()->create();
         $product = Product::factory()->create();
@@ -1217,6 +1219,7 @@ class OrderTest extends TestCase
             'price' => 200.00,
             'price_initial' => 247.47,
             'name' => $product->name,
+            'currency' => $this->currency->value,
         ]);
 
         $item_product2 = $order->products()->create([
@@ -1225,12 +1228,13 @@ class OrderTest extends TestCase
             'price' => 100.00,
             'price_initial' => 147.47,
             'name' => $product2->name,
+            'currency' => $this->currency->value,
         ]);
 
         $discountShipping = Discount::factory()->create([
             'description' => 'Testowy kupon',
             'code' => 'S43SA2',
-            'percentage' => '100',
+            'percentage' => '100.00',
             'target_type' => DiscountTargetType::SHIPPING_PRICE,
             'target_is_allow_list' => true,
         ]);
@@ -1239,21 +1243,25 @@ class OrderTest extends TestCase
             $discountShipping->getKey(),
             [
                 'name' => $discountShipping->name,
-                'type' => $discountShipping->type,
-                'value' => $discountShipping->value,
                 'target_type' => $discountShipping->target_type,
                 'applied' => $order->shipping_price_initial,
                 'code' => $discountShipping->code,
+                'currency' => $this->currency,
             ],
         );
 
         $discountProduct = Discount::factory()->create([
             'description' => 'Testowy kupon',
             'code' => '2AS34S',
-            'value' => 47.47,
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
+            'percentage' => null,
+        ]);
+        $discountRepository->setDiscountAmounts($discountProduct->getKey(), [
+            PriceDto::from([
+                'value' => '47.47',
+                'currency' => $this->currency,
+            ])
         ]);
 
         $discountProduct->products()->attach($product);
@@ -1263,11 +1271,10 @@ class OrderTest extends TestCase
             $discountProduct->getKey(),
             [
                 'name' => $discountProduct->name,
-                'type' => $discountProduct->type,
-                'value' => $discountProduct->value,
                 'target_type' => $discountProduct->target_type,
-                'applied' => $discountProduct->value,
+                'applied' => '4747',
                 'code' => $discountProduct->code,
+                'currency' => $this->currency,
             ],
         );
 
@@ -1275,11 +1282,10 @@ class OrderTest extends TestCase
             $discountProduct->getKey(),
             [
                 'name' => $discountProduct->name,
-                'type' => $discountProduct->type,
-                'value' => $discountProduct->value,
                 'target_type' => $discountProduct->target_type,
-                'applied' => $discountProduct->value,
+                'applied' => '4747',
                 'code' => $discountProduct->code,
+                'currency' => $this->currency,
             ],
         );
 
@@ -1295,7 +1301,7 @@ class OrderTest extends TestCase
                                     ->has(2)
                                     ->where('0.code', $discountShipping->code)
                                     ->where('1.code', $discountProduct->code)
-                                    ->where('1.applied_discount', 94.94);
+                                    ->where('1.applied_discount', '94.94');
                             })
                             // order product has 1 discounts
                             ->has('products', function ($json) use ($discountProduct): void {
@@ -1321,7 +1327,7 @@ class OrderTest extends TestCase
                     ->etc();
             });
 
-        $this->assertQueryCountLessThan(46);
+        $this->assertQueryCountLessThan(50);
     }
 
     public function testUpdateOrderStatusUnauthorized(): void
