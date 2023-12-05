@@ -70,4 +70,4 @@ Route::post('login', [AuthController::class, 'login'])
 Route::post('register', [AuthController::class, 'register'])
     ->middleware(['app.restrict', 'can:auth.register']);
 Route::put('users/password', [AuthController::class, 'changePassword'])
-    ->middleware(['app.restrict', 'can:auth.password_change']);
+    ->middleware(['can:authenticated', 'app.restrict', 'can:auth.password_change']);

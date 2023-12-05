@@ -1146,6 +1146,9 @@ class AuthTest extends TestCase
 
     public function testChangePasswordNoUser(): void
     {
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.password_change');
+
         $this->putJson('/users/password', [
             'password' => 'test',
             'password_new' => 'Test1@3456',
