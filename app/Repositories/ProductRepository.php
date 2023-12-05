@@ -116,7 +116,7 @@ class ProductRepository implements ProductRepositoryContract
             $loadAttributes->push(...array_keys($dto->attribute));
         }
         if (request()->filled('attribute_slug')) {
-            $loadAttributes->push(explode(';', request()->input('attribute_slug')));
+            $loadAttributes->push(...explode(';', request()->input('attribute_slug')));
         }
         if ($loadAttributes->isNotEmpty()) {
             $query->with(['productAttributes' => fn (Builder|HasMany $subquery) => $subquery->slug($loadAttributes->toArray())]); // @phpstan-ignore-line

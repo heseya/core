@@ -713,7 +713,7 @@ class ProductTest extends TestCase
      */
     public function testShowAttribute(string $user): void
     {
-        $this->{$user}->givePermissionTo('products.show_details');
+        $this->{$user}->givePermissionTo('products.show');
 
         $product = Product::factory()->create([
             'public' => true,
@@ -732,14 +732,11 @@ class ProductTest extends TestCase
 
         $this
             ->actingAs($this->{$user})
-            ->json('GET', '/products/' . $product->slug, ['attribute_slug' => $attribute->slug])
+            ->json('GET', '/products', ['attribute_slug' => $attribute->slug])
             ->assertOk()
             ->assertJsonFragment([
-                'id' => $attribute->getKey(),
                 'name' => $attribute->name,
-                'description' => $attribute->description,
-                'type' => $attribute->type,
-                'global' => $attribute->global,
+                'slug' => $attribute->slug,
             ])
             ->assertJsonFragment([
                 'id' => $option->getKey(),
@@ -756,7 +753,7 @@ class ProductTest extends TestCase
      */
     public function testShowAttributes(string $user): void
     {
-        $this->{$user}->givePermissionTo('products.show_details');
+        $this->{$user}->givePermissionTo('products.show');
 
         $product = Product::factory()->create([
             'public' => true,
@@ -784,14 +781,11 @@ class ProductTest extends TestCase
 
         $this
             ->actingAs($this->{$user})
-            ->json('GET', '/products/' . $product->slug, ['attribute_slug' => "{$attribute1->slug};{$attribute2->slug}"])
+            ->json('GET', '/products', ['attribute_slug' => "{$attribute1->slug};{$attribute2->slug}"])
             ->assertOk()
             ->assertJsonFragment([
-                'id' => $attribute1->getKey(),
                 'name' => $attribute1->name,
-                'description' => $attribute1->description,
-                'type' => $attribute1->type,
-                'global' => $attribute1->global,
+                'slug' => $attribute1->slug,
             ])
             ->assertJsonFragment([
                 'id' => $option1->getKey(),
@@ -802,11 +796,8 @@ class ProductTest extends TestCase
                 'attribute_id' => $attribute1->getKey(),
             ])
             ->assertJsonFragment([
-                'id' => $attribute2->getKey(),
                 'name' => $attribute2->name,
-                'description' => $attribute2->description,
-                'type' => $attribute2->type,
-                'global' => $attribute2->global,
+                'slug' => $attribute2->slug,
             ])
             ->assertJsonFragment([
                 'id' => $option2->getKey(),
