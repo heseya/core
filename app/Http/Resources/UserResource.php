@@ -23,6 +23,7 @@ class UserResource extends Resource
         return array_merge([
             'id' => $this->resource->getKey(),
             'email' => $this->resource->email,
+            'email_verified_at' => $this->resource->email_verified_at,
             'name' => $this->resource->name,
             'avatar' => $this->resource->avatar,
             'roles' => RoleResource::collection($filtered),
