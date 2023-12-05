@@ -24,6 +24,7 @@ class AttributeResource extends AttributeShortResource
                 'type' => $this->resource->type->value,
                 'global' => $this->resource->global,
                 'sortable' => $this->resource->sortable,
+                'include_in_text_search' => $this->resource->include_in_text_search,
             ],
             $this->metadataResource('products.show_metadata_private'),
         );

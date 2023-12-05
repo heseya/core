@@ -34,6 +34,9 @@ Attribute:
     sortable:
       description: 'Parameter for storefront'
       type: boolean
+    include_in_text_search:
+      description: 'Include attribute values in text search, works only for single/multiselect attribute types'
+      type: boolean
     translations:
       type: array
       description: 'Translation table for languages. Array key is language UUID'

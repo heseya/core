@@ -42,6 +42,9 @@ AttributeCreate:
           sortable:
             description: 'Parameter for storefront'
             type: boolean
+          include_in_text_search:
+            description: 'Include attribute values in text search, works only for single/multiselect attribute types'
+            type: boolean
           metadata:
             $ref: './../schemas/Metadata.yml#/Metadata'
           metadata_private:
@@ -85,6 +88,9 @@ AttributeUpdate:
             type: boolean
           sortable:
             description: 'Parameter for storefront'
+            type: boolean
+          include_in_text_search:
+            description: 'Include attribute values in text search, works only for single/multiselect attribute types'
             type: boolean
           published:
             type: array
