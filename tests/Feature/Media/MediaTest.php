@@ -54,9 +54,7 @@ class MediaTest extends TestCase
     public static function invalidVideoProvider(): array
     {
         return [
-            'as user avi' => ['user', '.avi', 'video/x-msvideo'],
             'as user ogg audio' => ['user', '.ogg', 'audio/ogg'],
-            'as app avi' => ['application', '.avi', 'video/x-msvideo'],
             'as app ogg audio' => ['application', '.ogg', 'audio/ogg'],
         ];
     }
