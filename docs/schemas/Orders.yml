@@ -71,6 +71,9 @@ Order:
 OrderProduct:
   type: object
   properties:
+    id:
+      type: string
+      format: uuid
     quantity:
       type: number
       example: '12.4'
@@ -80,6 +83,9 @@ OrderProduct:
     price_initial:
       type: string
       example: '299.99'
+    vat_rate:
+      type: number
+      example: '0.23'
     schemas:
       type: array
       items:
@@ -100,6 +106,8 @@ OrderProduct:
       type: array
       items:
         $ref: '#/OrderProductUrl'
+    product:
+      $ref: './Products.yml#/ProductWithAttributes'
 
 OrderDiscount:
   type: object

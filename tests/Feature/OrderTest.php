@@ -18,6 +18,7 @@ use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\PriceRange;
 use App\Models\Product;
+use App\Models\ProductAttribute;
 use App\Models\Status;
 use App\Models\User;
 use App\Models\WebHook;
@@ -29,6 +30,8 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Metadata\Enums\MetadataType;
 use Domain\Price\Dtos\PriceDto;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Support\Carbon;
@@ -881,7 +884,65 @@ class OrderTest extends TestCase
             ->assertJsonFragment(['code' => $this->order->code])
             ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
 
-        $this->assertQueryCountLessThan(38);
+        $this->assertQueryCountLessThan(40);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewAttribute($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.show_details');
+
+        $status = Status::factory()->create();
+
+        $order = Order::factory()->create([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+            'invoice_requested' => false,
+        ]);
+
+        $product = Product::factory()->create();
+
+        $attribute = Attribute::factory()->create();
+
+        $productAttribute = ProductAttribute::create([
+            'product_id' => $product->getKey(),
+            'attribute_id' => $attribute->getKey(),
+        ]);
+
+        $option = AttributeOption::factory()->create([
+            'index' => 1,
+            'attribute_id' => $attribute->getKey(),
+        ]);
+
+        $productAttribute->options()->attach($option);
+
+        $order->products()->create([
+            'product_id' => $product->getKey(),
+            'quantity' => 10,
+            'price' => Money::of(247.47, $this->currency->value),
+            'price_initial' => Money::of(247.47, $this->currency->value),
+            'name' => $product->name,
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->getJson('/orders/id:' . $order->getKey())
+            ->assertOk()
+            ->assertJsonFragment([
+                'name' => $attribute->name,
+                'slug' => $attribute->slug,
+            ])
+            ->assertJsonFragment([
+                'id' => $option->getKey(),
+                'name' => $option->name,
+                'value_number' => $option->value_number,
+                'value_date' => $option->value_date,
+                'attribute_id' => $attribute->getKey(),
+            ]);
+
+        $this->assertQueryCountLessThan(49);
     }
 
     /**
@@ -937,7 +998,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(39);
+        $this->assertQueryCountLessThan(41);
     }
 
     public function testViewSummaryUnauthorized(): void
@@ -1007,7 +1068,7 @@ class OrderTest extends TestCase
                 'summary_paid' => $summaryPaid->getAmount(),
             ]);
 
-        $this->assertQueryCountLessThan(38);
+        $this->assertQueryCountLessThan(40);
     }
 
     /**
@@ -1266,7 +1327,7 @@ class OrderTest extends TestCase
                     ->etc();
             });
 
-        $this->assertQueryCountLessThan(49);
+        $this->assertQueryCountLessThan(50);
     }
 
     public function testUpdateOrderStatusUnauthorized(): void

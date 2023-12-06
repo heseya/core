@@ -92,14 +92,17 @@ class OrderController extends Controller
             'products.schemas',
             'products.deposits',
             'products.product',
-            'products.product.pricesBase',
-            'products.product.pricesMax',
-            'products.product.pricesMaxInitial',
-            'products.product.pricesMin',
-            'products.product.pricesMinInitial',
             'products.product.media',
             'products.product.tags',
             'products.product.metadata',
+            'products.product.productAttributes',
+            'products.product.productAttributes.options',
+            'products.product.sets',
+            'products.product.pricesBase',
+            'products.product.pricesMin',
+            'products.product.pricesMax',
+            'products.product.pricesMinInitial',
+            'products.product.pricesMaxInitial',
         ]);
 
         return OrderResource::make($order);
