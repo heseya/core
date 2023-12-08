@@ -18,6 +18,7 @@ use App\Models\Schema;
 use App\Models\User;
 use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
+use Domain\Metadata\Models\Metadata;
 use Heseya\Dto\Missing;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -222,6 +223,19 @@ class ItemService implements ItemServiceContract
     {
         if ($item->delete()) {
             ItemDeleted::dispatch($item);
+        }
+    }
+
+    public function syncProductItems(Product $product, string $metadata): void
+    {
+        /** @var Metadata $externalId */
+        $externalId = $product->metadata()->where('name', '=', $metadata)->first();
+
+        $item = Item::query()->firstOrCreate(['sku' => $externalId->value], ['name' => $product->name]);
+        $productItem = $product->items()->where('id', '=', $item->getKey())->first();
+
+        if (!$productItem) {
+            $product->items()->attach($item->getKey(), ['required_quantity' => 1]);
         }
     }
 

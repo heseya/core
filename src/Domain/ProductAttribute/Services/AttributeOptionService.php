@@ -71,6 +71,7 @@ final readonly class AttributeOptionService
                 ]));
             }
             $product->attributes()->attach($attribute);
+            $product->refresh();
             $product->attributes
                 ->first(fn (Attribute $productAttribute) => $productAttribute->getKey() === $attribute->getKey())
                 ?->product_attribute_pivot?->options()->sync([$option->getKey()]);
