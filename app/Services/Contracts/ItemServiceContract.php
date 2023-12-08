@@ -4,6 +4,7 @@ namespace App\Services\Contracts;
 
 use App\Dtos\ItemDto;
 use App\Models\Item;
+use App\Models\Product;
 use Illuminate\Support\Collection;
 
 interface ItemServiceContract
@@ -23,4 +24,6 @@ interface ItemServiceContract
     public function update(Item $item, ItemDto $dto): Item;
 
     public function destroy(Item $item): void;
+
+    public function syncProductItems(Product $product, string $metadata): void;
 }
