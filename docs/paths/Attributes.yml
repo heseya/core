@@ -210,6 +210,12 @@ AttributeOption:
         required: false
         schema:
           type: boolean
+      - name: product_set_slug
+        in: query
+        required: false
+        schema:
+          type: string
+          example: 'parent-set'
     responses:
       200:
         description: Success

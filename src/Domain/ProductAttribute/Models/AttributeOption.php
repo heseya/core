@@ -7,6 +7,7 @@ namespace Domain\ProductAttribute\Models;
 use App\Criteria\AttributeOptionSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\ProductSetAttributeOptionSearch;
 use App\Criteria\WhereInIds;
 use App\Models\Contracts\SortableContract;
 use App\Models\Interfaces\Translatable;
@@ -64,6 +65,7 @@ final class AttributeOption extends Model implements SortableContract, Translata
         'metadata_private' => MetadataPrivateSearch::class,
         'name' => Like::class,
         'ids' => WhereInIds::class,
+        'product_set_slug' => ProductSetAttributeOptionSearch::class,
     ];
     /** @var string[] */
     protected array $sortable = [

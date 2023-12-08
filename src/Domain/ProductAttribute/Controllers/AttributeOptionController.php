@@ -8,9 +8,9 @@ use App\DTO\ReorderDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\AttributeOptionIndexRequest;
 use App\Services\Contracts\ReorderServiceContract;
 use Domain\ProductAttribute\Dtos\AttributeOptionDto;
+use Domain\ProductAttribute\Dtos\AttributeOptionIndexDto;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductAttribute\Resources\AttributeOptionResource;
@@ -27,11 +27,11 @@ final class AttributeOptionController extends Controller
         private readonly ReorderServiceContract $reorderService,
     ) {}
 
-    public function index(AttributeOptionIndexRequest $request, Attribute $attribute): JsonResource
+    public function index(AttributeOptionIndexDto $dto, Attribute $attribute): JsonResource
     {
         $query = $attribute
             ->options()
-            ->searchByCriteria($request->validated())
+            ->searchByCriteria($dto->toArray())
             ->orderBy('order')
             ->with(['metadata', 'metadataPrivate', 'attribute']);
 
