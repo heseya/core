@@ -12,6 +12,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Models\UserPreference;
 use App\Models\WebHook;
+use App\Notifications\VerifyEmail;
 use Domain\Consent\Models\Consent;
 use Domain\Metadata\Enums\MetadataType;
 use Domain\Metadata\Models\Metadata;
@@ -22,6 +23,7 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
@@ -569,9 +571,11 @@ class UserTest extends TestCase
         $this->{$user}->givePermissionTo('users.add');
 
         Event::fake([UserCreated::class]);
+        Notification::fake();
 
         $data = User::factory()->raw() + [
             'password' => $this->validPassword,
+            'email_verify_url' => 'http://localhost/frontend/verify',
         ];
 
         $response = $this
@@ -621,12 +625,14 @@ class UserTest extends TestCase
         $this->{$user}->givePermissionTo('users.add');
 
         Event::fake([UserCreated::class]);
+        Notification::fake();
 
         $data = User::factory()->raw() + [
             'password' => $this->validPassword,
             'metadata' => [
                 'attributeMeta' => 'attributeValue',
             ],
+            'email_verify_url' => 'http://localhost/frontend/verify',
         ];
 
         $this
@@ -648,12 +654,14 @@ class UserTest extends TestCase
         $this->{$user}->givePermissionTo(['users.add', 'users.show_metadata_private']);
 
         Event::fake([UserCreated::class]);
+        Notification::fake();
 
         $data = User::factory()->raw() + [
             'password' => $this->validPassword,
             'metadata_private' => [
                 'attributeMetaPriv' => 'attributeValue',
             ],
+            'email_verify_url' => 'http://localhost/frontend/verify',
         ];
 
         $this
@@ -675,12 +683,14 @@ class UserTest extends TestCase
         $this->{$user}->givePermissionTo('users.add');
 
         Event::fake([UserCreated::class]);
+        Notification::fake();
 
         $data = User::factory()->raw() + [
             'password' => $this->validPassword,
             'metadata_personal' => [
                 'attributeMeta' => 'attributeValue',
             ],
+            'email_verify_url' => 'http://localhost/frontend/verify',
         ];
 
         $this
@@ -715,6 +725,7 @@ class UserTest extends TestCase
 
         $data = User::factory()->raw() + [
             'password' => $this->validPassword,
+            'email_verify_url' => 'http://localhost/frontend/verify',
         ];
 
         $response = $this->actingAs($this->{$user})->postJson('/users', $data);
@@ -783,6 +794,7 @@ class UserTest extends TestCase
         $this->{$user}->givePermissionTo('users.add');
 
         Event::fake([UserCreated::class]);
+        Notification::fake();
 
         $otherUser = User::factory()->create();
         $otherUser->delete();
@@ -792,6 +804,7 @@ class UserTest extends TestCase
             'name' => $name,
             'email' => $otherUser->email,
             'password' => $this->validPassword,
+            'email_verify_url' => 'http://localhost/frontend/verify',
         ];
 
         $response = $this->actingAs($this->{$user})->postJson('/users', $data);
@@ -832,6 +845,7 @@ class UserTest extends TestCase
                 $role2->getKey(),
                 $role3->getKey(),
             ],
+            'email_verify_url' => 'http://localhost/frontend/verify',
         ];
 
         Log::shouldReceive('error')
@@ -862,6 +876,7 @@ class UserTest extends TestCase
         $this->{$user}->givePermissionTo('users.add');
 
         Event::fake([UserCreated::class]);
+        Notification::fake();
 
         /** @var Role $role1 */
         $role1 = Role::create(['name' => 'Role 1']);
@@ -884,6 +899,7 @@ class UserTest extends TestCase
                 $role2->getKey(),
                 $role3->getKey(),
             ],
+            'email_verify_url' => 'http://localhost/frontend/verify',
         ];
 
         $permissions = $this->authenticatedPermissions
@@ -986,12 +1002,14 @@ class UserTest extends TestCase
         $this->{$user}->givePermissionTo('users.add');
 
         Event::fake([UserCreated::class]);
+        Notification::fake();
 
         $data = User::factory()->raw()
             + [
                 'password' => $this->validPassword,
                 'birthday_date' => '1990-01-01',
                 'phone' => '+48123456789',
+                'email_verify_url' => 'http://localhost/frontend/verify',
             ];
 
         $this
@@ -1040,6 +1058,7 @@ class UserTest extends TestCase
             $data + [
                 'birthday_date' => '1990-01-01',
                 'phone' => '+48123456789',
+                'email_verify_url' => 'http://localhost/frontend/verify',
             ],
         );
 
@@ -1112,7 +1131,9 @@ class UserTest extends TestCase
         Bus::fake();
 
         $otherUser = User::factory()->create();
-        $data = User::factory()->raw();
+        $data = User::factory()->raw() + [
+            'email_verify_url' => 'http://localhost/frontend/verify',
+        ];
 
         $response = $this->actingAs($this->{$user})->patchJson(
             '/users/id:' . $otherUser->getKey(),
@@ -1413,6 +1434,7 @@ class UserTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->patchJson('/users/id:' . $this->user->getKey(), [
             'email' => $this->user->email,
+            'email_verify_url' => 'http://localhost/frontend/verify',
         ]);
         $response
             ->assertOk()
@@ -1494,6 +1516,7 @@ class UserTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->patchJson('/users/id:' . $this->user->getKey(), [
             'email' => $other->email,
+            'email_verify_url' => 'http://localhost/frontend/verify',
         ]);
         $response->assertOk();
 

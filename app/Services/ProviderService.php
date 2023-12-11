@@ -13,8 +13,8 @@ use App\Models\AuthProvider;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\UserProvider;
-use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\ProviderServiceContract;
+use Domain\User\Services\AuthService;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -28,7 +28,7 @@ use Throwable;
 class ProviderService implements ProviderServiceContract
 {
     public function __construct(
-        private AuthServiceContract $authService,
+        private AuthService $authService,
     ) {}
 
     public function getProvidersList(bool|null $active): JsonResource

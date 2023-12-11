@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Services;
+declare(strict_types=1);
+
+namespace Domain\User\Services;
 
 use App\DTO\Auth\RegisterDto;
 use App\Dtos\TFAConfirmDto;
@@ -26,7 +28,6 @@ use App\Models\UserPreference;
 use App\Notifications\ResetPassword;
 use App\Notifications\TFAInitialization;
 use App\Notifications\TFASecurityCode;
-use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\TokenServiceContract;
@@ -34,6 +35,9 @@ use App\Services\Contracts\UserLoginAttemptServiceContract;
 use App\Services\Contracts\UserServiceContract;
 use Domain\Consent\Services\ConsentService;
 use Domain\Organization\Services\OrganizationService;
+use Domain\User\Dtos\ResentEmailVerify;
+use Domain\User\Dtos\VerifyEmailDto;
+use Exception;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -47,7 +51,7 @@ use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use Propaganistas\LaravelPhone\PhoneNumber;
 use Spatie\LaravelData\Optional;
 
-class AuthService implements AuthServiceContract
+final class AuthService
 {
     public function __construct(
         protected TokenServiceContract $tokenService,
@@ -59,6 +63,11 @@ class AuthService implements AuthServiceContract
         protected OrganizationService $organizationService,
     ) {}
 
+    /**
+     * @return array<string, bool|string>
+     *
+     * @throws ClientException
+     */
     public function login(string $email, string $password, ?string $ip, ?string $userAgent, ?string $code): array
     {
         $uuid = Str::uuid()->toString();
@@ -79,11 +88,19 @@ class AuthService implements AuthServiceContract
 
         $this->verifyTFA($code);
 
+        if (!Auth::user()?->hasVerifiedEmail()) {
+            $this->userLoginAttemptService->store();
+            throw new ClientException(Exceptions::CLIENT_UNVERIFIED_EMAIL, simpleLogs: true);
+        }
+
         $this->userLoginAttemptService->store(true);
 
         return $this->createTokens($token, $uuid);
     }
 
+    /**
+     * @return array<string, bool|string>
+     */
     public function loginWithUser(Authenticatable $user, ?string $ip, ?string $userAgent): array
     {
         $uuid = Str::uuid()->toString();
@@ -102,6 +119,9 @@ class AuthService implements AuthServiceContract
         return $this->createTokens($token, $uuid);
     }
 
+    /**
+     * @return array<string, string|null>
+     */
     public function refresh(string $refreshToken, ?string $ip, ?string $userAgent): array
     {
         if (!$this->tokenService->validate($refreshToken)) {
@@ -152,7 +172,7 @@ class AuthService implements AuthServiceContract
     public function logout(): void
     {
         // @phpstan-ignore-next-line
-        $this->tokenService->invalidateToken(Auth::getToken());
+        $this->tokenService->invalidateToken(Auth::getToken()->get());
     }
 
     public function resetPassword(string $email, string $redirect_url): void
@@ -236,6 +256,11 @@ class AuthService implements AuthServiceContract
         return Auth::user() instanceof App;
     }
 
+    /**
+     * @return array<string, string|int>
+     *
+     * @throws ClientException
+     */
     public function setupTFA(TFASetupDto $dto): array
     {
         $this->checkIsUserTFA();
@@ -255,6 +280,11 @@ class AuthService implements AuthServiceContract
         return Auth::user() instanceof User;
     }
 
+    /**
+     * @return array<string>
+     *
+     * @throws ClientException
+     */
     public function confirmTFA(TFAConfirmDto $dto): array
     {
         $this->checkIsUserTFA();
@@ -275,6 +305,11 @@ class AuthService implements AuthServiceContract
         return $this->oneTimeSecurityCodeService->generateRecoveryCodes();
     }
 
+    /**
+     * @return array<string>
+     *
+     * @throws ClientException
+     */
     public function generateRecoveryCodes(TFAPasswordDto $dto): array
     {
         $user = $dto->getUser();
@@ -285,6 +320,9 @@ class AuthService implements AuthServiceContract
         return $this->oneTimeSecurityCodeService->generateRecoveryCodes();
     }
 
+    /**
+     * @throws ClientException
+     */
     public function removeTFA(TFAPasswordDto $dto): void
     {
         $user = $dto->getUser();
@@ -345,6 +383,9 @@ class AuthService implements AuthServiceContract
         }
 
         $user->save();
+
+        $user->markEmailAsUnverified();
+        $user->sendEmailVerificationNotification();
 
         UserCreated::dispatch($user);
 
@@ -522,6 +563,11 @@ class AuthService implements AuthServiceContract
         }
     }
 
+    /**
+     * @return array<string, string>
+     *
+     * @throws Exception
+     */
     private function googleTFA(): array
     {
         /** @var User $user */
@@ -547,6 +593,9 @@ class AuthService implements AuthServiceContract
         ];
     }
 
+    /**
+     * @return array<string, int|string>
+     */
     private function emailTFA(): array
     {
         /** @var User $user */
@@ -587,6 +636,9 @@ class AuthService implements AuthServiceContract
         ]);
     }
 
+    /**
+     * @return array<string, bool|string>
+     */
     private function createTokens(bool|string $token, string $uuid): array
     {
         /** @var JWTSubject $user */
@@ -607,5 +659,30 @@ class AuthService implements AuthServiceContract
             'identity_token' => $identityToken,
             'refresh_token' => $refreshToken,
         ];
+    }
+
+    public function verifyEmail(VerifyEmailDto $dto): void
+    {
+        /** @var ?User $user */
+        $user = User::where('email_verify_token', $dto->token)->first();
+        if ($user) {
+            $user->markEmailAsVerified();
+        }
+    }
+
+    /**
+     * @throws ClientException
+     */
+    public function resentVerifyEmail(ResentEmailVerify $dto): void
+    {
+        $user = $this->getUserByEmail($dto->email);
+        if (!$user->email_verified_at) {
+            $user->update($dto->toArray());
+
+            $user->markEmailAsUnverified();
+            $user->sendEmailVerificationNotification();
+        } else {
+            throw new ClientException(Exceptions::CLIENT_VERIFIED_EMAIL);
+        }
     }
 }

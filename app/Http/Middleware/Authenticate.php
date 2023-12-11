@@ -4,8 +4,8 @@ namespace App\Http\Middleware;
 
 use App\Enums\TokenType;
 use App\Models\App;
-use App\Services\Contracts\AuthServiceContract;
 use Closure;
+use Domain\User\Services\AuthService;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\Authenticate as Middleware;
 use Illuminate\Support\Facades\App as AppFacade;
@@ -32,8 +32,8 @@ class Authenticate extends Middleware
                     throw new AuthenticationException();
                 }
             } else {
-                /** @var AuthServiceContract $authService */
-                $authService = AppFacade::make(AuthServiceContract::class);
+                /** @var AuthService $authService */
+                $authService = AppFacade::make(AuthService::class);
 
                 Auth::claims(['typ' => TokenType::ACCESS->value])
                     ->login($authService->unauthenticatedUser());

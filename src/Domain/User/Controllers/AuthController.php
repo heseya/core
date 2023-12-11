@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+declare(strict_types=1);
+
+namespace Domain\User\Controllers;
 
 use App\DTO\Auth\RegisterDto;
 use App\Dtos\SavedAddressDto;
@@ -9,6 +11,7 @@ use App\Dtos\TFAPasswordDto;
 use App\Dtos\TFASetupDto;
 use App\Dtos\UpdateProfileDto;
 use App\Enums\SavedAddressType;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordChangeRequest;
 use App\Http\Requests\PasswordResetRequest;
@@ -32,8 +35,10 @@ use App\Models\App;
 use App\Models\SavedAddress;
 use App\Models\User;
 use App\Services\Contracts\AppServiceContract;
-use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\SavedAddressServiceContract;
+use Domain\User\Dtos\ResentEmailVerify;
+use Domain\User\Dtos\VerifyEmailDto;
+use Domain\User\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -42,10 +47,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
 
-class AuthController extends Controller
+final class AuthController extends Controller
 {
     public function __construct(
-        private readonly AuthServiceContract $authService,
+        private readonly AuthService $authService,
         private readonly AppServiceContract $appService,
         private readonly SavedAddressServiceContract $savedAddersService,
     ) {}
@@ -243,5 +248,19 @@ class AuthController extends Controller
         return UserResource::make(
             $this->authService->updateProfile(UpdateProfileDto::instantiateFromRequest($request)),
         );
+    }
+
+    public function verifyEmail(VerifyEmailDto $dto): HttpResponse
+    {
+        $this->authService->verifyEmail(${$dto});
+
+        return Response::noContent();
+    }
+
+    public function resentEmailVerify(ResentEmailVerify $dto): HttpResponse
+    {
+        $this->authService->resentVerifyEmail($dto);
+
+        return Response::noContent();
     }
 }

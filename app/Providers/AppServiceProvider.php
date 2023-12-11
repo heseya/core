@@ -7,11 +7,9 @@ use App\Repositories\DiscountRepository;
 use App\Repositories\ProductRepository;
 use App\Services\AnalyticsService;
 use App\Services\AppService;
-use App\Services\AuthService;
 use App\Services\AvailabilityService;
 use App\Services\Contracts\AnalyticsServiceContract;
 use App\Services\Contracts\AppServiceContract;
-use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
@@ -89,7 +87,6 @@ use Illuminate\Support\ServiceProvider;
 class AppServiceProvider extends ServiceProvider
 {
     private const CONTRACTS = [
-        AuthServiceContract::class => AuthService::class,
         AnalyticsServiceContract::class => AnalyticsService::class,
         AppServiceContract::class => AppService::class,
         DiscountServiceContract::class => DiscountService::class,

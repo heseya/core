@@ -24,6 +24,8 @@ paths:
     $ref: ./paths/Auth.yml#/SaveResetPassword
   /users/password:
     $ref: ./paths/Auth.yml#/Password
+  /users/resent-verify-email:
+    $ref: ./paths/Auth.yml#/ResentVerifyEmail
   /auth/refresh:
     $ref: ./paths/Auth.yml#/Refresh
   /auth/profile:

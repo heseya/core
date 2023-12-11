@@ -515,6 +515,7 @@ class OrganizationTest extends TestCase
             'email' => $email,
             'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
             'organization_token' => $token,
+            'email_verify_url' => 'http://localhost/email/verify',
         ])->assertCreated();
 
         /** @var User $user */

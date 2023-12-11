@@ -24,6 +24,7 @@ enum Exceptions: string
     case CLIENT_INVALID_PASSWORD = 'Invalid password';
     case CLIENT_INVALID_TOKEN = 'Invalid token';
     case CLIENT_INVALID_IDENTITY_TOKEN = 'Invalid identity token';
+    case CLIENT_UNVERIFIED_EMAIL = 'User email is not verified';
     case CLIENT_USER_DOESNT_EXIST = 'User doesn\'t exist';
     case CLIENT_TOKEN_INVALID_OR_INACTIVE = 'The token is invalid or inactive. Try to reset your password again';
 
@@ -133,6 +134,7 @@ enum Exceptions: string
     case CLIENT_PROVIDER_MERGE_TOKEN_INVALID = 'Provider merge token is invalid';
     case CLIENT_PROVIDER_MERGE_TOKEN_MISMATCH = 'Provider merge token is for an account with different email address';
     case PUBLISHING_TRANSLATION_EXCEPTION = "Model doesn't have all required translations to be published";
+    case CLIENT_VERIFIED_EMAIL = 'User already verified email';
 
     case CLIENT_WIDGET_NOT_CREATED_BY_THIS_APP = 'Trying to update or delete Widget not created by curren application';
     case CLIENT_ADD_WIDGET_WITH_PERMISSIONS_USER_DONT_HAVE = 'Can\'t add an widget with permissions you don\'t have';
