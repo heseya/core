@@ -185,7 +185,7 @@ final readonly class OrderService implements OrderServiceContract
                     'shipping_address_id' => $shippingAddressId,
                     'billing_address_id' => isset($billingAddress) ? $billingAddress->getKey() : null,
                     'buyer_id' => $buyer->getKey(),
-                    'buyer_type' => $buyer::class,
+                    'buyer_type' => $buyer->getMorphClass(),
                     'invoice_requested' => $getInvoiceRequested,
                     'shipping_place' => $shippingPlace,
                     'shipping_type' => $shippingMethod->shipping_type ?? $digitalShippingMethod->shipping_type ?? null,
