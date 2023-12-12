@@ -2,9 +2,9 @@
 
 namespace App\Services\Contracts;
 
-use App\Dtos\UserCreateDto;
-use App\Dtos\UserDto;
 use App\Models\User;
+use Domain\User\Dtos\UserCreateDto;
+use Domain\User\Dtos\UserUpdateDto;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 interface UserServiceContract
@@ -13,7 +13,7 @@ interface UserServiceContract
 
     public function create(UserCreateDto $dto): User;
 
-    public function update(User $user, UserDto $dto): User;
+    public function update(User $user, UserUpdateDto $dto): User;
 
     public function destroy(User $user): void;
 }

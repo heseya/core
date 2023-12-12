@@ -585,3 +585,43 @@ BillingAddressesParams:
               type: object
     security:
       - BearerAuth: [ ]
+
+VerifyEmail:
+  put:
+    tags:
+      - Auth
+    summary: 'Verify Email'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]
+
+ResentVerifyEmail:
+  post:
+    tags:
+      - Auth
+    summary: 'Resent Verify Email'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              email_verify_url:
+                type: string
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]

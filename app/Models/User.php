@@ -21,10 +21,10 @@ use Domain\Consent\Models\Consent;
 use Domain\Consent\Models\ConsentUser;
 use Domain\Metadata\Models\MetadataPersonal;
 use Domain\Organization\Models\Organization;
+use Domain\User\Traits\MustVerifyEmail;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Auth\Authenticatable;
-use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
@@ -77,6 +77,8 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'birthday_date',
         'phone_country',
         'phone_number',
+        'email_verified_at',
+        'email_verify_url',
     ];
 
     protected $hidden = [

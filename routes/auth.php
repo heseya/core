@@ -1,9 +1,9 @@
 <?php
 
 use App\Enums\SavedAddressType;
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MetadataController;
 use App\Http\Controllers\ProviderController;
+use Domain\User\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function (): void {
@@ -33,6 +33,7 @@ Route::prefix('auth')->group(function (): void {
         });
 
     Route::post('refresh', [AuthController::class, 'refresh']);
+    Route::post('verify', [AuthController::class, 'verifyEmail']);
     Route::get('check', [AuthController::class, 'checkIdentity'])
         ->middleware('can:auth.check_identity');
     Route::get('check/{identity_token}', [AuthController::class, 'checkIdentity'])
@@ -67,3 +68,4 @@ Route::post('register', [AuthController::class, 'register'])
     ->middleware(['app.restrict', 'can:auth.register']);
 Route::put('users/password', [AuthController::class, 'changePassword'])
     ->middleware(['app.restrict', 'can:auth.password_change']);
+Route::post('users/resent-verify-email', [AuthController::class, 'resentEmailVerify']);

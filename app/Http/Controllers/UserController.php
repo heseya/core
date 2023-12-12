@@ -2,17 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Dtos\UserCreateDto;
-use App\Dtos\UserDto;
 use App\Http\Requests\SelfDeleteRequest;
-use App\Http\Requests\UserCreateRequest;
 use App\Http\Requests\UserIndexRequest;
-use App\Http\Requests\UserUpdateRequest;
 use App\Http\Resources\ResourceCollection;
 use App\Http\Resources\UserResource;
 use App\Models\User;
-use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\UserServiceContract;
+use Domain\User\Dtos\UserCreateDto;
+use Domain\User\Dtos\UserUpdateDto;
+use Domain\User\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
@@ -21,7 +19,7 @@ class UserController extends Controller
 {
     public function __construct(
         private UserServiceContract $userService,
-        private AuthServiceContract $authService,
+        private AuthService $authService,
     ) {}
 
     public function index(UserIndexRequest $request): JsonResource
@@ -52,20 +50,18 @@ class UserController extends Controller
         return UserResource::make($user);
     }
 
-    public function store(UserCreateRequest $request): JsonResource
+    public function store(UserCreateDto $dto): JsonResource
     {
-        $user = $this->userService->create(
-            UserCreateDto::instantiateFromRequest($request),
-        );
+        $user = $this->userService->create($dto);
 
         return UserResource::make($user);
     }
 
-    public function update(User $user, UserUpdateRequest $request): JsonResource
+    public function update(UserUpdateDto $dto, User $user): JsonResource
     {
         $resultUser = $this->userService->update(
             $user,
-            UserDto::instantiateFromRequest($request),
+            $dto,
         );
 
         return UserResource::make($resultUser);

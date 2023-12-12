@@ -10,6 +10,7 @@ return [
     'delivery' => 'Dostawa',
     'products' => 'Zamówione produkty',
     'name' => 'Nazwa',
+    'product_name' => 'Nazwa',
     'quantity' => 'Ilość',
     'price' => 'Cena',
     'summary-products' => 'Wartość produktów',
@@ -22,6 +23,7 @@ return [
     'address' => 'Adres',
     'zip' => 'Kod pocztowy',
     'city' => 'Miejscowość',
+    'country' => 'Kraj',
     'phone' => 'Telefon kontaktowy',
     'regards' => 'Pozdrawiamy',
     'team' => 'zespół :team',
@@ -64,4 +66,14 @@ return [
     'subject-organization-invited' => 'Zaproszenie do organizacji',
     'organization-invited-text' => 'Zostałeś zaproszony od dołączenia do organizacji :name',
     'organization-invited-link' => 'Aby zarejestrować się kliknij w link',
+    // order paid
+    'subject-order-paid' => 'Zamówienia :number zostało opłacone',
+    'order-paid' => 'Twoje zamówienie zostało opłacone.',
+
+    // verify email
+    'subject-verify-email' => 'Zweryfikuj adres email',
+    'verify-email-hello' => 'Witaj',
+    'verify-email-message' => 'Aby zweryfikować adres email kliknij w link',
+    'verify-email-link' => 'zweryfikuj adres email',
+    'verify-email-warning' => 'Jeśli zgłoszenie nie pochodzi od Ciebie zignoruj tego maila.',
 ];
