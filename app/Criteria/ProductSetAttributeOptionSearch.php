@@ -21,6 +21,9 @@ class ProductSetAttributeOptionSearch extends Criterion
 
         return $query->whereHas('productAttributes', function (Builder $query) use ($setsIds): void {
             $query->whereHas('product', function (Builder $query) use ($setsIds): void {
+                if (Gate::denies('products.show_hidden')) {
+                    $query->where('public', '=', true);
+                }
                 $query->whereHas('sets', function (Builder $query) use ($setsIds): void {
                     $query
                         ->whereIn('id', $setsIds)
