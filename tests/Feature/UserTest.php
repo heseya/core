@@ -722,6 +722,8 @@ class UserTest extends TestCase
         ]);
 
         Bus::fake();
+        $originalNotification = Notification::getFacadeRoot();
+        Notification::fake();
 
         $data = User::factory()->raw() + [
             'password' => $this->validPassword,
@@ -749,6 +751,8 @@ class UserTest extends TestCase
             return $job->class === WebHookEventListener::class
                 && $job->data[0] instanceof UserCreated;
         });
+
+        Notification::swap($originalNotification);
 
         $event = new UserCreated($foundUser);
         $listener = new WebHookEventListener();
@@ -1049,6 +1053,7 @@ class UserTest extends TestCase
         $this->{$user}->givePermissionTo('users.edit');
 
         Event::fake([UserUpdated::class]);
+        Notification::fake();
 
         $otherUser = User::factory()->create();
         $data = User::factory()->raw();
@@ -1129,6 +1134,8 @@ class UserTest extends TestCase
         ]);
 
         Bus::fake();
+        $originalNotification = Notification::getFacadeRoot();
+        Notification::fake();
 
         $otherUser = User::factory()->create();
         $data = User::factory()->raw() + [
@@ -1158,6 +1165,8 @@ class UserTest extends TestCase
         });
 
         $foundUser = User::find($otherUser->getKey());
+
+        Notification::swap($originalNotification);
 
         $event = new UserUpdated($foundUser);
         $listener = new WebHookEventListener();
@@ -1510,6 +1519,7 @@ class UserTest extends TestCase
         $this->{$user}->givePermissionTo('users.edit');
 
         Event::fake([UserUpdated::class]);
+        Notification::fake();
 
         $other = User::factory()->create();
         $other->delete();
