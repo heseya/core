@@ -219,6 +219,7 @@ class OrderCreateTest extends TestCase
             'shipping_price' => $shippingPrice->getMinorAmount(),
             'summary' => $summary->getMinorAmount(),
             'sales_channel_id' => $salesChannelId,
+            'buyer_type' => $this->{$user}->getMorphClass(),
         ]);
         $this->assertDatabaseHas('addresses', $this->address->toArray());
         $this->assertDatabaseHas('order_products', [
