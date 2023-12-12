@@ -393,7 +393,13 @@ final class AuthService
     {
         /** @var User $user */
         $user = Auth::user();
-        $user->update($dto->toArray());
+        $data = $dto->toArray();
+        // set as null because in DTO phone country and number are empty string if phone is null
+        if (!$dto->phone) {
+            $data['phone_country'] = null;
+            $data['phone_number'] = null;
+        }
+        $user->update($data);
 
         $user->preferences()->update($dto->preferences instanceof Optional ? [] : $dto->preferences->toArray());
 

@@ -1328,6 +1328,36 @@ class AuthTest extends TestCase
         ]);
     }
 
+    public function testUpdateProfileRemovePhone(): void
+    {
+        $user = User::factory()->create([
+            'phone_country' => 'PL',
+            'phone_number' => '12 345 67 89',
+        ]);
+        $user->preferences()->associate(UserPreference::create());
+        $user->save();
+
+        $this->actingAs($user)->json('PATCH', '/auth/profile', [
+            'phone' => null,
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $user->getKey(),
+                'email' => $user->email,
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+                'phone' => null,
+                'phone_country' => null,
+                'phone_number' => null,
+            ]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->getKey(),
+            'phone_number' => null,
+            'phone_country' => null,
+        ]);
+    }
+
     public function testSelfUpdateRolesUnauthorized(): void
     {
         $role = Role::factory()->create([
