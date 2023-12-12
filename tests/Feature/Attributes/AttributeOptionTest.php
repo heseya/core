@@ -110,6 +110,11 @@ class AttributeOptionTest extends TestCase
             'parent_id' => $child->getKey(),
             'slug' => 'subChild',
         ]);
+        $hiddenChild = ProductSet::factory()->create([
+            'public' => false,
+            'parent_id' => $parent->getKey(),
+            'slug' => 'hidden-child',
+        ]);
 
         $set = ProductSet::factory()->create([
             'public' => true,
@@ -117,11 +122,6 @@ class AttributeOptionTest extends TestCase
         ]);
 
         $attribute = Attribute::factory()->create();
-        $target = AttributeOption::factory()->create([
-            'name' => 'searchtarget',
-            'attribute_id' => $attribute->getKey(),
-            'index' => 0,
-        ]);
 
         /** @var AttributeOption $optionParent */
         $optionParent = AttributeOption::factory()->create([
@@ -146,6 +146,18 @@ class AttributeOptionTest extends TestCase
             'name' => 'Set',
             'attribute_id' => $attribute->getKey(),
             'index' => 3,
+        ]);
+        /** @var AttributeOption $optionHidden */
+        $optionHidden = AttributeOption::factory()->create([
+            'name' => 'Hidden',
+            'attribute_id' => $attribute->getKey(),
+            'index' => 4,
+        ]);
+        /** @var AttributeOption $optionHiddenChild */
+        $optionHiddenChild = AttributeOption::factory()->create([
+            'name' => 'Hidden Child',
+            'attribute_id' => $attribute->getKey(),
+            'index' => 4,
         ]);
 
         $productParent = Product::factory()->create([
@@ -176,6 +188,20 @@ class AttributeOptionTest extends TestCase
         $product->attributes()->attach($attribute->getKey());
         $product->attributes->first()->product_attribute_pivot->options()->attach($optionSet->getKey());
 
+        $productHidden = Product::factory()->create([
+            'public' => false,
+        ]);
+        $productHidden->sets()->sync([$parent->getKey()]);
+        $productHidden->attributes()->attach($attribute->getKey());
+        $productHidden->attributes->first()->product_attribute_pivot->options()->attach($optionHidden->getKey());
+
+        $productHiddenChild = Product::factory()->create([
+            'public' => true,
+        ]);
+        $productHiddenChild->sets()->sync([$hiddenChild->getKey()]);
+        $productHiddenChild->attributes()->attach($attribute->getKey());
+        $productHiddenChild->attributes->first()->product_attribute_pivot->options()->attach($optionHiddenChild->getKey());
+
         $this
             ->actingAs($this->{$user})
             ->json('GET', "/attributes/id:{$attribute->getKey()}/options", [
@@ -186,7 +212,9 @@ class AttributeOptionTest extends TestCase
             ->assertJsonFragment(['name' => $optionParent->name])
             ->assertJsonFragment(['name' => $optionChild->name])
             ->assertJsonFragment(['name' => $optionSubChild->name])
-            ->assertJsonMissing(['name' => $optionSet->name]);
+            ->assertJsonMissing(['name' => $optionSet->name])
+            ->assertJsonMissing(['name' => $optionHidden->name])
+            ->assertJsonMissing(['name' => $optionHiddenChild->name]);
 
         $this
             ->actingAs($this->{$user})
@@ -198,6 +226,8 @@ class AttributeOptionTest extends TestCase
             ->assertJsonFragment(['name' => $optionChild->name])
             ->assertJsonFragment(['name' => $optionSubChild->name])
             ->assertJsonMissing(['name' => $optionParent->name])
-            ->assertJsonMissing(['name' => $optionSet->name]);
+            ->assertJsonMissing(['name' => $optionSet->name])
+            ->assertJsonMissing(['name' => $optionHidden->name])
+            ->assertJsonMissing(['name' => $optionHiddenChild->name]);
     }
 }
