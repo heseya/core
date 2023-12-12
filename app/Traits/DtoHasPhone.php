@@ -9,6 +9,13 @@ trait DtoHasPhone
 {
     private function initializePhone(): void
     {
+        if (!$this->phone) {
+            // Setting here as null not working
+            $this->phone_country = $this->phone_number = '';
+
+            return;
+        }
+
         if (!($this->phone instanceof Optional)) {
             $phone = new PhoneNumber($this->phone);
             $this->phone_country = $phone->getCountry();
