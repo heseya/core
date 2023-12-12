@@ -67,6 +67,9 @@ Order:
       $ref: './../schemas/Metadata.yml#/Metadata'
     sales_channel:
       $ref: './SalesChannel.yml#/SalesChannel'
+    language:
+      type: string
+      example: pl
 
 OrderProduct:
   type: object
@@ -222,6 +225,9 @@ OrderSummary:
       $ref: './../schemas/Metadata.yml#/Metadata'
     sales_channel:
       $ref: './SalesChannel.yml#/SalesChannel'
+    language:
+      type: string
+      example: pl
   type: object
 
 OrderProductUrl:

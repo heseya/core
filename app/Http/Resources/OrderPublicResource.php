@@ -33,6 +33,7 @@ class OrderPublicResource extends Resource
             'digital_shipping_method' => ShippingMethodResource::make($this->resource->digitalShippingMethod),
             'created_at' => $this->resource->created_at,
             'sales_channel' => SalesChannelResource::make($this->resource->salesChannel),
+            'language' => $this->resource->language,
         ], $this->metadataResource('orders.show_metadata_private'));
     }
 }

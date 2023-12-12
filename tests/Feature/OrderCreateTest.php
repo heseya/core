@@ -2251,6 +2251,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => $productQuantity,
                 ],
             ],
+            'language' => 'en',
         ], [
             'Accept-Language' => 'en, pl, es',
         ])->assertCreated();
@@ -2287,6 +2288,8 @@ class OrderCreateTest extends TestCase
         $productQuantity = 20;
         $salesChannelId = SalesChannel::query()->value('id');
 
+        $language = Language::query()->where('default', true)->firstOrFail()->iso;
+
         $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'sales_channel_id' => $salesChannelId,
             'currency' => $this->currency,
@@ -2300,6 +2303,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => $productQuantity,
                 ],
             ],
+            'language' => $language,
         ])->assertCreated();
 
         $order = $response->getData()->data;
@@ -2308,7 +2312,7 @@ class OrderCreateTest extends TestCase
             'id' => $order->id,
             'email' => $this->email,
             'sales_channel_id' => $salesChannelId,
-            'language' => Language::query()->where('default', true)->firstOrFail()->iso,
+            'language' => $language,
         ]);
     }
 }

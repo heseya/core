@@ -50,6 +50,7 @@ class OrderResource extends Resource
             'cart_total_initial' => $this->resource->cart_total_initial->getAmount(),
             'created_at' => $this->resource->created_at,
             'sales_channel' => SalesChannelResource::make($this->resource->salesChannel),
+            'language' => $this->resource->language,
         ], $this->metadataResource('orders.show_metadata_private'));
     }
 
