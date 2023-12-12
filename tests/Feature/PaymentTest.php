@@ -120,7 +120,8 @@ class PaymentTest extends TestCase
         $response
             ->assertCreated()
             ->assertJsonFragment([
-                'method' => 'payu',
+                'method' => 'Payu',
+                'method_id' => $this->paymentMethod->getKey(),
                 'status' => PaymentStatus::PENDING->value,
                 'amount' => (string) $this->order->summary->getAmount(),
                 'date' => $payment->created_at,
@@ -218,7 +219,8 @@ class PaymentTest extends TestCase
             ])
             ->assertCreated()
             ->assertJsonFragment([
-                'method' => 'payu',
+                'method' => 'Payu',
+                'method_id' => $paymentMethod->getKey(),
                 'amount' => (string) $this->order->summary->getAmount(),
                 'redirect_url' => 'payment_url',
                 'continue_url' => 'continue_url',
