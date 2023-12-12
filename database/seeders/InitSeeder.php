@@ -115,8 +115,9 @@ class InitSeeder extends Seeder
 
     private function createLanguage(): Language
     {
-        return Language::query()->create([
+        return Language::query()->firstOrCreate([
             'iso' => 'en',
+        ], [
             'name' => 'English',
             'hidden' => false,
             'default' => false,

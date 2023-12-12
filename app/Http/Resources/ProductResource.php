@@ -110,6 +110,12 @@ class ProductResource extends Resource
                         : $this->resource->productAttributes()->slug(explode(';', $request->input('attribute_slug')))->get(),
                 )
                 : [],
+            'relevancy' => [
+                'title_relevancy' => $this->resource->title_relevancy, // @phpstan-ignore-line
+                'natural_title_relevancy' => $this->resource->natural_title_relevancy, // @phpstan-ignore-line
+                'natural_content_relevancy' => $this->resource->natural_content_relevancy, // @phpstan-ignore-line
+                'content_relevancy' => $this->resource->content_relevancy, // @phpstan-ignore-line
+            ],
         ];
     }
 }

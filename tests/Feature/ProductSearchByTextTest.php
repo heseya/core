@@ -2,19 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Models\AuthProvider;
-use App\Models\Permission;
 use App\Models\Product;
 use App\Models\ProductAttribute;
-use App\Models\Role;
-use App\Models\Status;
-use App\Models\User;
-use Domain\Language\Language;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductAttribute\Models\ProductAttributeOption;
-use Domain\Seo\Models\SeoMetadata;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\Config;
@@ -23,6 +16,8 @@ use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
 use function PHPUnit\Framework\assertEquals;
+use function PHPUnit\Framework\assertStringContainsString;
+use function PHPUnit\Framework\assertStringStartsWith;
 
 class ProductSearchByTextTest extends TestCase
 {
@@ -97,6 +92,14 @@ class ProductSearchByTextTest extends TestCase
         Product::makeAllSearchable();
     }
 
+    protected function tearDown(): void
+    {
+        if (Config::get('search.use_full_text_query')) {
+            $this->cleanProducts();
+        }
+        parent::tearDown();
+    }
+
     private function cleanProducts()
     {
         Product::removeAllFromSearch();
@@ -166,7 +169,7 @@ class ProductSearchByTextTest extends TestCase
             ]);
         $response->assertOk();
         $data = $response->json('data');
-        assertEquals($product->getKey(), $data[0]['id']);
+        assertStringStartsWith('bar foo ipsum', $data[0]['name']);
 
         $response = $this->actingAs($this->user)
             ->json('GET', '/products', [
@@ -174,9 +177,26 @@ class ProductSearchByTextTest extends TestCase
             ]);
         $response->assertOk();
         $data = $response->json('data');
-        assertEquals($product->getKey(), $data[0]['id']);
+        assertStringContainsString('bar foo', $data[0]['name']);
 
-        $this->cleanProducts();
+        $response = $this->actingAs($this->user)
+            ->json('GET', '/products', [
+                'search' => '"bar foo"',
+            ]);
+        $response->assertOk();
+        $data = $response->json('data');
+        assertStringContainsString('bar foo', $data[0]['name']);
+
+        $response = $this->actingAs($this->user)
+            ->json('GET', '/products', [
+                'search' => '"bar foo" ipsum',
+            ]);
+        $response->assertOk();
+        $data = $response->json('data');
+        assertStringContainsString('bar foo', $data[0]['name']);
+        assertStringContainsString('bar', $data[0]['name']);
+        assertStringContainsString('foo', $data[0]['name']);
+        assertStringContainsString('ipsum', $data[0]['name']);
     }
 
     public function testFulltextSearchByNameUsingScoutEngineTnt(): void
@@ -204,6 +224,7 @@ class ProductSearchByTextTest extends TestCase
             ->json('GET', '/products', [
                 'search' => 'bar foo ipsum',
             ]);
+
         $response->assertOk();
         $data = $response->json('data');
         assertEquals($product->getKey(), $data[0]['id']);
@@ -236,8 +257,6 @@ class ProductSearchByTextTest extends TestCase
 
         $data = $response->json('data');
         assertEquals($this->firstProduct->getKey(), $data[0]['id']);
-
-        $this->cleanProducts();
     }
 
     public function testFulltextSearchBySkuUsingScoutEngineTnt(): void

@@ -144,6 +144,7 @@ class ProductRepository implements ProductRepositoryContract
         if (Config::get('search.use_scout') && !empty($scoutResults)) {
             $query->orderByRaw('FIELD(products.id,"' . implode('","', $scoutResults) . '")');
         }
+
         if (!$dto->sort instanceof Optional) {
             $query->sort($dto->sort);
         }
