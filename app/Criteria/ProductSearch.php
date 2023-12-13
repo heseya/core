@@ -14,6 +14,11 @@ class ProductSearch extends Criterion
 {
     public const BOOLEAN_SEARCH_OPERATORS = ['-', '~', '@', '<', '>', '(', ')', '"'];
 
+    public function __construct(string $key, ?string $value = null)
+    {
+        parent::__construct($key, trim($value ?? ''));
+    }
+
     public function query(Builder $query): Builder
     {
         return match (true) {
