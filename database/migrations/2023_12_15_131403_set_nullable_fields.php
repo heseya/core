@@ -34,7 +34,6 @@ return new class extends Migration
         });
 
         Schema::table('discounts', function (Blueprint $table) {
-            $table->text('name')->change();
             $table->text('description')->change();
         });
     }
