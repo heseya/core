@@ -24,6 +24,7 @@ class ProductSearchByTextTest extends TestCase
     protected Attribute $attribute;
     protected Collection $products;
     protected Product $firstProduct;
+    protected Product $problematicProduct;
 
     private function prepareProducts(bool $commit = false)
     {
@@ -84,6 +85,29 @@ class ProductSearchByTextTest extends TestCase
 
             $i++;
         }
+
+        $this->problematicProduct = Product::factory()->create([
+            'public' => true,
+            'name' => 'Laptop techbite Arc 11.6 128 GB HD',
+            'description_html' => '',
+            'description_short' => '',
+            'search_values' => '',
+        ]);
+        $option = AttributeOption::factory()->create([
+            'attribute_id' => $this->attribute->getKey(),
+            'name' => ((string) ($i + 1000)) . 'SKU',
+            'index' => $i,
+        ]);
+        $productAttribute = ProductAttribute::create([
+            'product_id' => $this->problematicProduct->getKey(),
+            'attribute_id' => $this->attribute->getKey()
+        ]);
+        ProductAttributeOption::create([
+            'attribute_option_id' => $option->getKey(),
+            'product_attribute_id' => $productAttribute->getKey(),
+        ]);
+
+        $this->products->push($this->problematicProduct);
 
         if ($commit) {
             DB::commit();
@@ -194,9 +218,23 @@ class ProductSearchByTextTest extends TestCase
         $response->assertOk();
         $data = $response->json('data');
         assertStringContainsString('bar foo', $data[0]['name']);
-        assertStringContainsString('bar', $data[0]['name']);
-        assertStringContainsString('foo', $data[0]['name']);
         assertStringContainsString('ipsum', $data[0]['name']);
+
+        $response = $this->actingAs($this->user)
+            ->json('GET', '/products', [
+                'search' => 'Laptop techbite Arc 11.6 128 GB HD',
+            ]);
+        $response->assertOk();
+        $data = $response->json('data');
+        assertEquals($this->problematicProduct->getKey(), $data[0]['id']);
+
+        $response = $this->actingAs($this->user)
+            ->json('GET', '/products', [
+                'search' => 'Laptop techbite Arc 11.6 128 HD',
+            ]);
+        $response->assertOk();
+        $data = $response->json('data');
+        assertEquals($this->problematicProduct->getKey(), $data[0]['id']);
     }
 
     public function testFulltextSearchByNameUsingScoutEngineTnt(): void
@@ -236,6 +274,22 @@ class ProductSearchByTextTest extends TestCase
         $response->assertOk();
         $data = $response->json('data');
         assertEquals($product->getKey(), $data[0]['id']);
+
+        $response = $this->actingAs($this->user)
+            ->json('GET', '/products', [
+                'search' => 'Laptop techbite Arc 11.6 128 GB HD',
+            ]);
+        $response->assertOk();
+        $data = $response->json('data');
+        assertEquals($this->problematicProduct->getKey(), $data[0]['id']);
+
+        $response = $this->actingAs($this->user)
+            ->json('GET', '/products', [
+                'search' => 'Laptop techbite Arc 11.6 128 HD',
+            ]);
+        $response->assertOk();
+        $data = $response->json('data');
+        assertEquals($this->problematicProduct->getKey(), $data[0]['id']);
     }
 
     public function testFulltextSearchBySkuUsingLaravelFulltextSearch(): void
