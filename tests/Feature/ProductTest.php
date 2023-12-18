@@ -2801,6 +2801,53 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateSetsCheckOrder(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.edit');
+
+        Event::fake([ProductUpdated::class]);
+
+        $set1 = ProductSet::factory()->create();
+        $set2 = ProductSet::factory()->create();
+        $set3 = ProductSet::factory()->create();
+
+        $this->product->sets()->attach($set1->getKey(), ['order' => 2]);
+        $this->product->sets()->attach($set2->getKey(), ['order' => 3]);
+
+        $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
+            'name' => $this->product->name,
+            'slug' => $this->product->slug,
+            'public' => $this->product->public,
+            'sets' => [
+                $set2->getKey(),
+                $set3->getKey(),
+            ],
+        ]);
+
+        $this->assertDatabaseHas('product_set_product', [
+            'product_id' => $this->product->getKey(),
+            'product_set_id' => $set2->getKey(),
+            'order' => 3,
+        ]);
+
+        $this->assertDatabaseHas('product_set_product', [
+            'product_id' => $this->product->getKey(),
+            'product_set_id' => $set3->getKey(),
+            'order' => null,
+        ]);
+
+        $this->assertDatabaseMissing('product_set_product', [
+            'product_id' => $this->product->getKey(),
+            'product_set_id' => $set1->getKey(),
+            'order' => 2,
+        ]);
+
+        Event::assertDispatched(ProductUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateDeleteSets(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
