@@ -12,7 +12,7 @@ use Illuminate\Support\Stringable;
 
 class ProductSearch extends Criterion
 {
-    public const BOOLEAN_SEARCH_OPERATORS = ['-', '~', '@', '<', '>', '(', ')', '"'];
+    public const BOOLEAN_SEARCH_OPERATORS = ['+', '-', '~', '@', '<', '>', '(', ')', '"'];
 
     public function __construct(string $key, ?string $value = null)
     {
@@ -80,8 +80,12 @@ class ProductSearch extends Criterion
         $words = $searchString->remove(self::BOOLEAN_SEARCH_OPERATORS)->replace('  ', ' ')->explode(' ');
 
         $naturalSearch = $quotes->isNotEmpty() ? str_replace('"', '', (string) $quotes->first()) : $words->implode(' ');
-        $contentSearch = '+' . $words->implode('* +') . '*';
         $titleSearch = '"' . $naturalSearch . '"';
+        $contentSearch = $words->map(fn (string $word) => match (mb_strlen($word)) {
+            0, 1 => null,
+            2 => $word,
+            default => '+' . $word . '*',
+        })->filter()->implode(' ');
 
         $matchingOptions = $this->findAttributeOptionsFulltext();
 
@@ -106,8 +110,13 @@ class ProductSearch extends Criterion
                         'products.description_html',
                         'products.description_short',
                         'products.search_values',
-                    ], $contentSearch, ['mode' => 'boolean']),
-                )->orWhere('products.id', 'LIKE', '%' . $this->value . '%')
+                    ], $contentSearch, ['mode' => 'boolean'])
+                        ->orWhereFullText([
+                            'products.name',
+                        ], $naturalSearch),
+                )
+                    ->orWhere('products.name', 'LIKE', $this->value . '%')
+                    ->orWhere('products.id', 'LIKE', '%' . $this->value . '%')
                     ->orWhere('products.slug', 'LIKE', '%' . $this->value . '%')
                     ->orWhereHas('productAttributes', fn (Builder $productAttributesQuery) => $productAttributesQuery->whereHas('options', fn (Builder $optionsQuery) => $optionsQuery->whereIn('attribute_option_id', $matchingOptions->pluck('id')))),
             )
@@ -130,7 +139,9 @@ class ProductSearch extends Criterion
                         'products.description_short',
                         'products.search_values',
                     ], $this->value),
-                )->orWhere('products.id', 'LIKE', '%' . $this->value . '%')
+                )
+                    ->orWhere('products.name', 'LIKE', $this->value . '%')
+                    ->orWhere('products.id', 'LIKE', '%' . $this->value . '%')
                     ->orWhere('products.slug', 'LIKE', '%' . $this->value . '%')
                     ->orWhereHas('productAttributes', fn (Builder $productAttributesQuery) => $productAttributesQuery->whereHas('options', fn (Builder $optionsQuery) => $optionsQuery->whereIn('attribute_option_id', $matchingOptions->pluck('id')))),
             );
