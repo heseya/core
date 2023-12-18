@@ -201,6 +201,7 @@ class ProductSortTest extends TestCase
             'id' => 'bbbbbbbb-56d6-4174-9840-39231e0c3f2f',
             'public' => true,
             'slug' => 'set-1',
+            'order' => 1,
         ]);
 
         $product1ForSet1 = Product::factory()->create(['name' => 'Product 1 For Set 1 Order 2', 'public' => true]);
@@ -215,6 +216,7 @@ class ProductSortTest extends TestCase
             'id' => 'aaaaaaaa-56d6-4174-9840-39231e0c3f2f',
             'public' => true,
             'slug' => 'set-2',
+            'order' => 3,
         ]);
 
         $product1ForSet2 = Product::factory()->create(['name' => 'Product 1 For Set 2 Order 1', 'public' => true]);
@@ -229,6 +231,7 @@ class ProductSortTest extends TestCase
             'id' => 'cccccccc-56d6-4174-9840-39231e0c3f2f',
             'public' => true,
             'slug' => 'set-3',
+            'order' => 2,
         ]);
 
         $product1ForSet3 = Product::factory()->create(['name' => 'Product 1 For Set 3 Order 1', 'public' => true]);
@@ -253,12 +256,12 @@ class ProductSortTest extends TestCase
             ->assertJsonPath('data.0.id', $product3ForSet1->getKey())
             ->assertJsonPath('data.1.id', $product2ForSet1->getKey())
             ->assertJsonPath('data.2.id', $product1ForSet1->getKey())
-            ->assertJsonPath('data.3.id', $product3ForSet2->getKey())
-            ->assertJsonPath('data.4.id', $product1ForSet2->getKey())
-            ->assertJsonPath('data.5.id', $product2ForSet2->getKey())
-            ->assertJsonPath('data.6.id', $product2ForSet3->getKey())
-            ->assertJsonPath('data.7.id', $product1ForSet3->getKey())
-            ->assertJsonPath('data.8.id', $product3ForSet3->getKey());
+            ->assertJsonPath('data.3.id', $product2ForSet3->getKey())
+            ->assertJsonPath('data.4.id', $product1ForSet3->getKey())
+            ->assertJsonPath('data.5.id', $product3ForSet3->getKey())
+            ->assertJsonPath('data.6.id', $product3ForSet2->getKey())
+            ->assertJsonPath('data.7.id', $product1ForSet2->getKey())
+            ->assertJsonPath('data.8.id', $product2ForSet2->getKey());
     }
 
 
