@@ -262,6 +262,24 @@ class ProductSortTest extends TestCase
             ->assertJsonPath('data.6.id', $product3ForSet2->getKey())
             ->assertJsonPath('data.7.id', $product1ForSet2->getKey())
             ->assertJsonPath('data.8.id', $product2ForSet2->getKey());
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products', [
+                'sets' => [
+                    'set-1',
+                ],
+                'sort' => 'set.set-1:desc',
+            ])
+            ->assertJsonPath('data.0.id', $product1ForSet1->getKey())
+            ->assertJsonPath('data.1.id', $product2ForSet1->getKey())
+            ->assertJsonPath('data.2.id', $product3ForSet1->getKey())
+            ->assertJsonPath('data.3.id', $product2ForSet2->getKey())
+            ->assertJsonPath('data.4.id', $product1ForSet2->getKey())
+            ->assertJsonPath('data.5.id', $product3ForSet2->getKey())
+            ->assertJsonPath('data.6.id', $product3ForSet3->getKey())
+            ->assertJsonPath('data.7.id', $product1ForSet3->getKey())
+            ->assertJsonPath('data.8.id', $product2ForSet3->getKey());
     }
 
 
