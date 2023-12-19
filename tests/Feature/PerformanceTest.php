@@ -428,6 +428,21 @@ class PerformanceTest extends TestCase
                 'public' => true,
             ]);
 
+        /** @var ProductRepositoryContract $productRepository */
+        $productRepository = App::make(ProductRepositoryContract::class);
+
+        $products->each(function (Product $product) use ($productRepository) {
+            $prices = array_map(fn (Currency $currency) => PriceDto::from(
+                Money::of(round(mt_rand(500, 6000), -2), $currency->value),
+            ), Currency::cases());
+
+            $productRepository->setProductPrices($product->getKey(), [
+                ProductPriceType::PRICE_BASE->value => $prices,
+                ProductPriceType::PRICE_MIN->value => $prices,
+                ProductPriceType::PRICE_MAX->value => $prices,
+            ]);
+        });
+
         $set->products()->sync($products);
 
         $sale = Discount::factory()->create([
@@ -464,7 +479,8 @@ class PerformanceTest extends TestCase
         // Every product with discount +3 query to database (update, detach(sales), attach(sales))
         // 1000 products = +- 3137 queries, for 10000 +- 31130
         // This is even worse now since prices live in a separate table, now there is a +1 query for every product
-        $this->assertQueryCountLessThan(6131);
+        // To dispatch ProductPriceUpdated +3 for each product, but it require prices so another +2 (old + new) for each product
+        $this->assertQueryCountLessThan(11131);
     }
 
     /**
@@ -1024,6 +1040,8 @@ class PerformanceTest extends TestCase
 
             $productRepository->setProductPrices($product->getKey(), [
                 ProductPriceType::PRICE_BASE->value => $prices,
+                ProductPriceType::PRICE_MIN->value => $prices,
+                ProductPriceType::PRICE_MAX->value => $prices,
             ]);
 
             $productService->updateMinMaxPrices($product);
