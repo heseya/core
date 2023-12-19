@@ -27,6 +27,6 @@ final class AddressStoreDto extends Data
         #[Required, StringType, Max(2)]
         public string $country,
         #[Nullable, StringType, Max(15)]
-        public Optional|string $vat,
+        public Optional|string|null $vat,
     ) {}
 }
