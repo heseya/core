@@ -78,6 +78,48 @@ class SavedAddressTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateNonLatinDefaultWithEmptyVat(string $user): void
+    {
+        $this->{$user}->givePermissionTo('profile.addresses_manage');
+
+
+        $response = $this->actingAs($this->{$user})->postJson('/auth/profile/shipping-addresses', [
+            'name' => 'default',
+            'default' => true,
+            'address' => [
+                'name' => 'Коваленко Коваленко',
+                'phone' => '123123123',
+                'address' => 'Коваленко 22',
+                'zip' => '22-333',
+                'city' => 'Коваленко',
+                'country' => 'PL',
+                'country_name' => 'Polska',
+                'vat' => '',
+            ],
+        ]);
+        $response->assertOk();
+
+        $savedAddress = SavedAddress::where('name', 'default')->with('address')->first();
+        $this->assertDatabaseHas('saved_addresses', [
+            'name' => 'default',
+            'default' => 1,
+            'type' => SavedAddressType::SHIPPING,
+            'address_id' => $savedAddress->address->getKey(),
+        ])
+            ->assertDatabaseHas('addresses', [
+                'name' => 'Коваленко Коваленко',
+                'phone' => '123123123',
+                'address' => 'Коваленко 22',
+                'zip' => '22-333',
+                'city' => 'Коваленко',
+                'country' => 'PL',
+                'vat' => null,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testNewDefault(string $user): void
     {
         $this->{$user}->givePermissionTo('profile.addresses_manage');
