@@ -135,8 +135,11 @@ readonly class SortService implements SortServiceContract
             ->selectRaw('MIN(product_set_product.order) AS product_order')
             ->selectRaw('MAX(product_set_product.product_set_id = ?) AS is_main_set', [$set->getKey()])
             ->selectRaw('MIN(product_sets.order) as set_order')
+            ->selectRaw('MIN(IF(product_set_product.product_set_id = ?, product_set_product.`order`, NULL)) AS main_set_order', [$set->getKey()])
             ->groupBy('products.id')
             ->orderBy('is_main_set', 'desc')
+            ->orderByRaw('main_set_order IS NULL ' . $order)
+            ->orderBy('main_set_order', $order)
             ->orderBy('set_order', $order)
             ->orderBy('product_order', $order);
     }
