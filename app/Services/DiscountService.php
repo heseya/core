@@ -32,6 +32,7 @@ use App\Enums\ExceptionsEnums\Exceptions;
 use App\Events\CouponCreated;
 use App\Events\CouponDeleted;
 use App\Events\CouponUpdated;
+use App\Events\ProductPriceUpdated;
 use App\Events\SaleCreated;
 use App\Events\SaleDeleted;
 use App\Events\SaleUpdated;
@@ -665,6 +666,19 @@ readonly class DiscountService implements DiscountServiceContract
         Product $product,
         Collection $salesWithBlockList,
     ): void {
+        try {
+            $oldPrices = $this->productRepository->getProductPrices($product->getKey(), [
+                ProductPriceType::PRICE_MIN,
+                ProductPriceType::PRICE_MAX,
+            ]);
+
+            $oldPricesMin = $oldPrices->get(ProductPriceType::PRICE_MIN->value);
+            $oldPricesMax = $oldPrices->get(ProductPriceType::PRICE_MAX->value);
+        } catch (ServerException $exception) {
+            $oldPricesMin = null;
+            $oldPricesMax = null;
+        }
+
         [
             // @var PriceDto[] $minPricesDiscounted
             $minPricesDiscounted,
@@ -678,9 +692,24 @@ readonly class DiscountService implements DiscountServiceContract
             ProductPriceType::PRICE_MAX->value => $maxPricesDiscounted,
         ]);
 
+        $newPrices = $this->productRepository->getProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_MIN,
+            ProductPriceType::PRICE_MAX,
+        ]);
+        $newPricesMin = $newPrices->get(ProductPriceType::PRICE_MIN->value);
+        $newPricesMax = $newPrices->get(ProductPriceType::PRICE_MAX->value);
+
         // detach and attach only add 2 queries to database, sync add 1 query for every element in given array,
         $product->sales()->detach();
         $product->sales()->attach($productSales->pluck('id'));
+
+        ProductPriceUpdated::dispatch(
+            $product->getKey(),
+            $oldPricesMin ? $oldPricesMin->toArray() : null,
+            $oldPricesMax ? $oldPricesMax->toArray() : null,
+            $newPricesMin->toArray(),
+            $newPricesMax->toArray(),
+        );
     }
 
     public function activeSales(): Collection

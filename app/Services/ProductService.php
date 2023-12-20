@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
-use App\Events\ProductPriceUpdated;
 use App\Events\ProductUpdated;
 use App\Exceptions\PublishingException;
 use App\Models\Option;
@@ -74,22 +73,6 @@ final readonly class ProductService
 
         DB::commit();
 
-        $productPrices = $this->productRepository->getProductPrices($product->getKey(), [
-            ProductPriceType::PRICE_MIN,
-            ProductPriceType::PRICE_MAX,
-        ]);
-
-        $productPricesMin = $productPrices->get(ProductPriceType::PRICE_MIN->value);
-        $productPricesMax = $productPrices->get(ProductPriceType::PRICE_MAX->value);
-
-        ProductPriceUpdated::dispatch(
-            $product->getKey(),
-            null,
-            null,
-            $productPricesMin->toArray(),
-            $productPricesMax->toArray(),
-        );
-
         ProductCreated::dispatch($product);
 
         return $product->refresh();
@@ -103,13 +86,6 @@ final readonly class ProductService
      */
     public function update(Product $product, ProductUpdateDto $dto): Product
     {
-        $oldPrices = $this->productRepository->getProductPrices($product->getKey(), [
-            ProductPriceType::PRICE_MIN,
-            ProductPriceType::PRICE_MAX,
-        ]);
-        $oldPricesMin = $oldPrices->get(ProductPriceType::PRICE_MIN->value);
-        $oldPricesMax = $oldPrices->get(ProductPriceType::PRICE_MAX->value);
-
         DB::beginTransaction();
 
         $product->fill($dto->toArray());
@@ -126,21 +102,6 @@ final readonly class ProductService
         $product->refresh();
 
         DB::commit();
-
-        $newPrices = $this->productRepository->getProductPrices($product->getKey(), [
-            ProductPriceType::PRICE_MIN,
-            ProductPriceType::PRICE_MAX,
-        ]);
-        $newPricesMin = $newPrices->get(ProductPriceType::PRICE_MIN->value);
-        $newPricesMax = $newPrices->get(ProductPriceType::PRICE_MAX->value);
-
-        ProductPriceUpdated::dispatch(
-            $product->getKey(),
-            $oldPricesMin->toArray(),
-            $oldPricesMax->toArray(),
-            $newPricesMin->toArray(),
-            $newPricesMax->toArray(),
-        );
 
         ProductUpdated::dispatch($product);
 

@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Contracts;
 
+use App\Exceptions\ServerException;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
@@ -27,6 +28,7 @@ interface ProductRepositoryContract
      * @return Collection|EloquentCollection<string,Collection<int,PriceDto>|EloquentCollection<int,PriceDto>>
      *
      * @throws DtoException
+     * @throws ServerException
      */
     public function getProductPrices(
         string $productId,

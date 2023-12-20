@@ -8,6 +8,7 @@ use App\Enums\DiscountType;
 use App\Enums\ValidationError;
 use App\Events\CouponCreated;
 use App\Events\CouponUpdated;
+use App\Events\ProductPriceUpdated;
 use App\Events\SaleCreated;
 use App\Events\SaleUpdated;
 use App\Listeners\WebHookEventListener;
@@ -634,6 +635,49 @@ class DiscountTest extends TestCase
         $listener->handle($event);
 
         Queue::assertNotPushed(CallWebhookJob::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateSalePriceUpdated(string $user): void
+    {
+        $this->{$user}->givePermissionTo("sales.add");
+
+        Event::fake([SaleCreated::class, ProductPriceUpdated::class]);
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $discount = [
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Coupon',
+                    'description' => 'Test coupon',
+                    'description_html' => 'html',
+                ],
+            ],
+            'slug' => 'slug',
+            'percentage' => '10.0000',
+            'priority' => 1,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+            'published' => [
+                $this->lang,
+            ],
+            'target_products' => [
+                $product->getKey(),
+            ],
+        ];
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/sales', $discount)
+            ->assertCreated();
+
+        Event::assertDispatched(SaleCreated::class);
+        Event::assertDispatched(ProductPriceUpdated::class);
     }
 
     /**
@@ -2143,6 +2187,47 @@ class DiscountTest extends TestCase
         $listener->handle($event);
 
         Queue::assertNotPushed(CallWebhookJob::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateSalePriceUpdated($user): void
+    {
+        $this->{$user}->givePermissionTo('sales.edit');
+        $discount = Discount::factory(['target_type' => DiscountTargetType::PRODUCTS, 'code' => null])->create();
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        Event::fake([SaleUpdated::class, ProductPriceUpdated::class]);
+
+        $discountNew = [
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Kupon',
+                    'description' => 'Testowy kupon',
+                    'description_html' => 'html',
+                ],
+            ],
+            'slug' => 'slug',
+            'percentage' => '10.0000',
+            'priority' => 1,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+            'target_products' => [
+                $product->getKey(),
+            ],
+        ];
+
+        $this->actingAs($this->{$user})
+            ->json('PATCH', '/sales/id:' . $discount->getKey(), $discountNew)
+            ->assertValid()
+            ->assertOk();
+
+        Event::assertDispatched(SaleUpdated::class);
+        Event::assertDispatched(ProductPriceUpdated::class);
     }
 
     /**

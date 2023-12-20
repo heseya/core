@@ -211,7 +211,9 @@ class ActiveSalesTest extends TestCase
         $productRepository->setProductPrices($product1->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(1000, $currency))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(1000, $currency))],
+            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(1000, $currency))],
             ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(3500, $currency))],
+            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(3500, $currency))],
         ]);
 
         $product2 = Product::factory()->create([
@@ -221,7 +223,9 @@ class ActiveSalesTest extends TestCase
         $productRepository->setProductPrices($product2->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(2500, $currency))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(2000, $currency))],
+            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(2000, $currency))],
             ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(4000, $currency))],
+            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(4000, $currency))],
         ]);
 
         $product3 = Product::factory()->create([
@@ -231,7 +235,9 @@ class ActiveSalesTest extends TestCase
         $productRepository->setProductPrices($product3->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(1500, $currency))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(1200, $currency))],
+            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(1200, $currency))],
             ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(2000, $currency))],
+            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(2000, $currency))],
         ]);
 
         $sale1 = Discount::factory()->create([
