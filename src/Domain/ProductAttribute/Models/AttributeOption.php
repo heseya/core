@@ -40,6 +40,7 @@ final class AttributeOption extends Model implements SortableContract, Translata
     use Sortable;
 
     public const HIDDEN_PERMISSION = 'attributes.show_hidden';
+
     protected $fillable = [
         'id',
         'name',
@@ -49,15 +50,18 @@ final class AttributeOption extends Model implements SortableContract, Translata
         'attribute_id',
         'order',
     ];
+
     /** @var string[] */
     protected array $translatable = [
         'name',
     ];
+
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'value_number' => 'float',
     ];
+
     /** @var string[] */
     protected array $criteria = [
         'search' => AttributeOptionSearch::class,
@@ -67,6 +71,7 @@ final class AttributeOption extends Model implements SortableContract, Translata
         'ids' => WhereInIds::class,
         'product_set_slug' => ProductSetAttributeOptionSearch::class,
     ];
+
     /** @var string[] */
     protected array $sortable = [
         'name' => TranslatedColumn::class,
