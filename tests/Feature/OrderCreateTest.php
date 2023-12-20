@@ -2238,6 +2238,23 @@ class OrderCreateTest extends TestCase
         $productQuantity = 20;
         $salesChannelId = SalesChannel::query()->value('id');
 
+        /** @var Language $en */
+        $en = Language::firstOrCreate([
+            'iso' => 'en',
+        ], [
+            'name' => 'English',
+            'default' => false,
+        ]);
+
+        $plName = $this->product->name;
+        $this->product->setLocale($en->getKey())->fill([
+            'name' => 'English name',
+        ]);
+        $this->product->update([
+            'published' => [$this->lang, $en->getKey()],
+        ]);
+        $this->product->save();
+
         $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
             'sales_channel_id' => $salesChannelId,
             'currency' => $this->currency,
@@ -2254,7 +2271,15 @@ class OrderCreateTest extends TestCase
             'language' => 'en',
         ], [
             'Accept-Language' => 'en, pl, es',
-        ])->assertCreated();
+        ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'name' => 'English name',
+                'quantity' => $productQuantity,
+            ])
+            ->assertJsonMissing([
+                'name' => $plName,
+            ]);
 
         $order = $response->getData()->data;
 
@@ -2304,7 +2329,11 @@ class OrderCreateTest extends TestCase
                 ],
             ],
             'language' => $language,
-        ])->assertCreated();
+        ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'name' => $this->product->name,
+            ]);
 
         $order = $response->getData()->data;
 

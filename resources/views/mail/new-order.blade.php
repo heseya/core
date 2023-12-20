@@ -282,7 +282,7 @@
                                             <th style="text-align: center; padding: 0 0 0 15px; width: 25%;">@lang('mail.price')</th>
                                         </tr> @foreach ($order->products as $item)
                                             <tr style='border-bottom: 2px #244d8b solid; line-height: 38px;'>
-                                                <td style="padding: 0 15px 0 0;">{{ $item->product->name }}</td>
+                                                <td style="padding: 0 15px 0 0;">{{ $item->name }}</td>
                                                 <td style="text-align: center; padding: 0 15px; width: 30px;">{{ $item->quantity }}</td>
                                                 <td style="text-align: center; padding: 0 0 0 15px; width: 25%;">{{ $item->price->getAmount() }} {{ $order->currency }}</td>
                                             </tr>
