@@ -49,10 +49,13 @@ class ProductSearch extends Criterion
      */
     protected function findAttributeOptionsFulltext(): Collection
     {
-        $searchString = new Stringable($this->value);
-        $words = $searchString->remove(self::BOOLEAN_SEARCH_OPERATORS)->replace('  ', ' ')->explode(' ');
+        $words = (new Stringable($this->value))->remove(self::BOOLEAN_SEARCH_OPERATORS)->trim()->replaceMatches('/\s+/', ' ')->explode(' ');
 
-        $contentSearch = '+' . $words->implode('* +') . '*';
+        $contentSearch = $words->map(fn (string $word) => match (mb_strlen($word)) {
+            0 => null,
+            1, 2 => $word,
+            default => '+' . $word . '*',
+        })->filter()->implode(' ');
 
         return AttributeOption::query()
             ->whereHas('attribute', fn (Builder $attributeQuery): Builder => $attributeQuery->textSearchable()) // @phpstan-ignore-line
@@ -77,13 +80,15 @@ class ProductSearch extends Criterion
             ? $searchString->matchAll('|\".*?\"|')
             : collect();
 
-        $words = $searchString->remove(self::BOOLEAN_SEARCH_OPERATORS)->replace('  ', ' ')->explode(' ');
+        $words = $searchString->remove(self::BOOLEAN_SEARCH_OPERATORS)->trim()->replaceMatches('/\s+/', ' ')->explode(' ');
 
-        $naturalSearch = $quotes->isNotEmpty() ? str_replace('"', '', (string) $quotes->first()) : $words->implode(' ');
+        $naturalSearch = $quotes->isNotEmpty()
+            ? (new Stringable((string) $quotes->first()))->remove('"')->trim()->replaceMatches('/\s+/', ' ')
+            : $words->implode(' ');
         $titleSearch = '"' . $naturalSearch . '"';
         $contentSearch = $words->map(fn (string $word) => match (mb_strlen($word)) {
-            0, 1 => null,
-            2 => $word,
+            0 => null,
+            1, 2 => $word,
             default => '+' . $word . '*',
         })->filter()->implode(' ');
 

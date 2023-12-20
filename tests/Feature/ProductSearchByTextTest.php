@@ -235,6 +235,14 @@ class ProductSearchByTextTest extends TestCase
         $response->assertOk();
         $data = $response->json('data');
         assertEquals($this->problematicProduct->getKey(), $data[0]['id']);
+
+        $response = $this->actingAs($this->user)
+            ->json('GET', '/products', [
+                'search' => 'Laptop   techbite Arc + 11.6 128 HD +',
+            ]);
+        $response->assertOk();
+        $data = $response->json('data');
+        assertEquals($this->problematicProduct->getKey(), $data[0]['id']);
     }
 
     public function testFulltextSearchByNameUsingScoutEngineTnt(): void
