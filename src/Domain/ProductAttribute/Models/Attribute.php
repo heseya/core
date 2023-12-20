@@ -14,6 +14,7 @@ use App\Models\Product;
 use App\Models\ProductAttribute;
 use App\Traits\CustomHasTranslations;
 use App\Traits\HasMetadata;
+use App\Traits\IsReorderable;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductSet\ProductSet;
 use Heseya\Searchable\Criteria\Like;
@@ -38,6 +39,7 @@ final class Attribute extends Model implements Translatable
     use HasCriteria;
     use HasFactory;
     use HasMetadata;
+    use IsReorderable;
 
     public const HIDDEN_PERMISSION = 'attributes.show_hidden';
 
@@ -92,7 +94,7 @@ final class Attribute extends Model implements Translatable
     {
         return $this
             ->hasMany(AttributeOption::class)
-            ->orderBy('order')
+            ->orderBy('order', 'asc')
             ->with('metadata', 'metadataPrivate');
     }
 

@@ -221,7 +221,8 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
             ->withPivot(['pivot_id'])
             ->using(ProductAttribute::class)
             ->as('product_attribute_pivot')
-            ->orderBy('order');
+            ->orderBy('order', 'asc')
+            ->orderBy('id', 'asc');
     }
 
     public function productAttributes(): HasMany
@@ -231,13 +232,15 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
                 'options',
                 'options.metadata',
                 'options.metadataPrivate',
-                'attribute',
+                'attribute' => fn ($query) => $query->orderBy('attributes.order', 'asc'),
                 'attribute.metadata',
                 'attribute.metadataPrivate',
                 'attribute.options',
                 'attribute.options.metadata',
                 'attribute.options.metadataPrivate',
-            ]);
+            ])
+            ->leftJoin('attributes', 'attribute_id', '=', 'attributes.id')
+            ->orderBy('attributes.order', 'asc');
     }
 
     public function sales(): BelongsToMany
