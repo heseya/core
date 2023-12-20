@@ -361,4 +361,51 @@ final class ProductSetUpdateTest extends TestCase
 
         Event::assertDispatched(ProductSetUpdated::class);
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateChangeParent(string $user): void
+    {
+        $this->{$user}->givePermissionTo('product_sets.edit');
+
+        Event::fake([ProductSetUpdated::class]);
+
+        $parent = ProductSet::factory()->create([
+            'slug' => 'parent',
+            'public' => true,
+            'public_parent' => false,
+        ]);
+
+        $set = ProductSet::factory()->create([
+            'parent_id' => $parent->getKey(),
+            'slug' => 'child',
+            'public' => true,
+            'public_parent' => false,
+        ]);
+
+        $newParent = ProductSet::factory()->create([
+            'slug' => 'new-parent',
+            'public' => true,
+            'public_parent' => false,
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson('/product-sets/id:' . $set->getKey(), [
+                'parent_id' => $newParent->getKey(),
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $set->getKey(),
+                'slug' => 'child',
+            ]);
+
+        $this->assertDatabaseHas('product_sets', [
+            'id' => $set->getKey(),
+            'slug' => 'child',
+        ]);
+
+        Event::assertDispatched(ProductSetUpdated::class);
+    }
 }

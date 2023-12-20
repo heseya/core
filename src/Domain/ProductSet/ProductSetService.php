@@ -172,7 +172,9 @@ final readonly class ProductSetService
             }
 
             $publicParent = $parent->public && $parent->public_parent;
-            $slug = $this->prepareSlug($dto->slug_override, $dto->slug_suffix, $parent->slug);
+            $override = $dto->slug_override instanceof Optional ? $set->slug_override : $dto->slug_override;
+            $suffix = $dto->slug_suffix instanceof Optional ? $set->slug_suffix : $dto->slug_suffix;
+            $slug = $this->prepareSlug($override, $suffix, $parent->slug);
         } else {
             if ($set->parent_id !== null) {
                 $last = ProductSet::reversed()->first();
