@@ -695,4 +695,30 @@ class ProductSetCreateTest extends TestCase
 
         Event::assertDispatched(ProductSetCreated::class);
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateNullSlugSuffix(string $user): void
+    {
+        $this->{$user}->givePermissionTo('product_sets.add');
+        $this
+            ->actingAs($this->{$user})
+            ->postJson('/product-sets', [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                        'description_html' => null,
+                    ],
+                ],
+                'published' => [$this->lang],
+                'public' => true,
+                'slug_suffix' => null,
+                'slug_override' => false,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'message' => 'The slug suffix field is required.',
+            ]);
+    }
 }
