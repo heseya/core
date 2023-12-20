@@ -41,6 +41,7 @@ use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
+use App\Traits\ModifyLangFallback;
 use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
@@ -52,6 +53,7 @@ use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App as AppSupport;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
@@ -60,6 +62,8 @@ use Throwable;
 
 final readonly class OrderService implements OrderServiceContract
 {
+    use ModifyLangFallback;
+
     public function __construct(
         private DiscountServiceContract $discountService,
         private ItemServiceContract $itemService,
@@ -196,6 +200,9 @@ final readonly class OrderService implements OrderServiceContract
             $cartValueInitial = Money::zero($currency->value);
             $tempSchemaOrderProduct = [];
             try {
+                $previousSettings = $this->getCurrentLangFallbackSettings();
+                $this->setAnyLangFallback();
+                $language = AppSupport::getLocale();
                 foreach ($items as $item) {
                     /** @var Product $product */
                     $product = $products->firstWhere('id', $item->getProductId());
@@ -215,7 +222,7 @@ final readonly class OrderService implements OrderServiceContract
                         'price' => $price,
                         'base_price_initial' => $price,
                         'base_price' => $price,
-                        'name' => $product->name,
+                        'name' => $product->getTranslation('name', $language),
                         'vat_rate' => $vat_rate->multipliedBy(100)->toFloat(),
                         'shipping_digital' => $product->shipping_digital,
                     ]);
@@ -238,7 +245,7 @@ final readonly class OrderService implements OrderServiceContract
                         }
 
                         $orderProduct->schemas()->create([
-                            'name' => $schema->name,
+                            'name' => $schema->getTranslation('name', $language),
                             'value' => $value,
                             'price_initial' => $price,
                             'price' => $price,
@@ -254,6 +261,7 @@ final readonly class OrderService implements OrderServiceContract
                         $orderProduct->save();
                     }
                 }
+                $this->setLangFallbackSettings(...$previousSettings);
 
                 if (!($dto->getMetadata() instanceof Missing)) {
                     $this->metadataService->sync($order, $dto->getMetadata());
