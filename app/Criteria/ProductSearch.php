@@ -94,62 +94,69 @@ class ProductSearch extends Criterion
 
         $matchingOptions = $this->findAttributeOptionsFulltext();
 
-        return $query
-            ->selectRaw(
+        return $query->when(
+            Config::get('search.search_in_descriptions'),
+            fn (Builder $subquery) => $subquery->selectRaw(
                 '`products`.*,
                 MATCH(`products`.`name`) AGAINST (? IN BOOLEAN MODE) as title_relevancy,
-                MATCH(`products`.`name`) AGAINST (?) AS natural_title_relevancy,
-                MATCH(`products`.`name`, `products`.`name`, `products`.`description_html`, `products`.`description_short`, `products`.`search_values`) AGAINST (? IN BOOLEAN MODE) as content_relevancy,
-                MATCH(`products`.`name`, `products`.`name`, `products`.`description_html`, `products`.`description_short`, `products`.`search_values`) AGAINST (?) AS natural_content_relevancy',
+                MATCH(`products`.`name`) AGAINST (?) AS title_natural_relevancy,
+                MATCH(`products`.`name`) AGAINST (? IN BOOLEAN MODE) as title_words_relevancy,
+                MATCH(`products`.`name`, `products`.`name`, `products`.`description_html`, `products`.`description_short`, `products`.`search_values`) AGAINST (?) AS content_natural_relevancy,
+                MATCH(`products`.`name`, `products`.`name`, `products`.`description_html`, `products`.`description_short`, `products`.`search_values`) AGAINST (? IN BOOLEAN MODE) as content_relevancy',
                 [
                     $titleSearch,
                     $naturalSearch,
                     $contentSearch,
                     $naturalSearch,
+                    $contentSearch,
                 ],
-            )
-            ->where(
-                fn (Builder $subquery) => $subquery->where(
-                    fn (Builder $subsubquery) => $subsubquery->whereFullText([
-                        'products.name',
-                        'products.description_html',
-                        'products.description_short',
-                        'products.search_values',
-                    ], $contentSearch, ['mode' => 'boolean'])
-                        ->orWhereFullText([
-                            'products.name',
-                        ], $naturalSearch),
-                )
-                    ->orWhere('products.name', 'LIKE', $this->value . '%')
-                    ->orWhere('products.id', 'LIKE', '%' . $this->value . '%')
-                    ->orWhere('products.slug', 'LIKE', '%' . $this->value . '%')
-                    ->orWhereHas('productAttributes', fn (Builder $productAttributesQuery) => $productAttributesQuery->whereHas('options', fn (Builder $optionsQuery) => $optionsQuery->whereIn('attribute_option_id', $matchingOptions->pluck('id')))),
-            )
-            ->orderBy('title_relevancy', 'desc')
-            ->orderBy('natural_title_relevancy', 'desc')
-            ->orderBy('natural_content_relevancy', 'desc')
-            ->orderBy('content_relevancy', 'desc');
+            ),
+            fn (Builder $subquery) => $subquery->selectRaw(
+                '`products`.*,
+                    MATCH(`products`.`name`) AGAINST (? IN BOOLEAN MODE) as title_relevancy,
+                    MATCH(`products`.`name`) AGAINST (?) AS title_natural_relevancy,
+                    MATCH(`products`.`name`) AGAINST (? IN BOOLEAN MODE) as title_words_relevancy',
+                [
+                    $titleSearch,
+                    $naturalSearch,
+                    $contentSearch,
+                ],
+            ),
+        )->where(
+            fn (Builder $subquery) => $subquery->when(
+                Config::get('search.search_in_descriptions'),
+                fn (Builder $subsubquery) => $subsubquery->whereFullText(['products.name', 'products.description_html', 'products.description_short', 'products.search_values'], $contentSearch, ['mode' => 'boolean']),
+                fn (Builder $subsubquery) => $subsubquery->whereFullText(['products.name'], $contentSearch, ['mode' => 'boolean']),
+            )->orWhereFullText(['products.name'], $naturalSearch)
+                ->orWhere('products.name', 'LIKE', $this->value . '%')
+                ->orWhere('products.id', 'LIKE', '%' . $this->value . '%')
+                ->orWhere('products.slug', 'LIKE', '%' . $this->value . '%')
+                ->orWhereHas('productAttributes', fn (Builder $productAttributesQuery) => $productAttributesQuery->whereHas('options', fn (Builder $optionsQuery) => $optionsQuery->whereIn('attribute_option_id', $matchingOptions->pluck('id')))),
+        )->orderBy('title_relevancy', 'desc')
+            ->orderBy('title_natural_relevancy', 'desc')
+            ->orderBy('title_words_relevancy', 'desc')
+            ->when(
+                Config::get('search.search_in_descriptions'),
+                fn (Builder $subquery) => $subquery->orderBy('content_natural_relevancy', 'desc')
+                    ->orderBy('content_relevancy', 'desc'),
+            );
     }
 
     protected function useNaturalSearch(Builder $query): Builder
     {
         $matchingOptions = $this->findAttributeOptionsFulltext();
 
-        return $query
-            ->where(
-                fn (Builder $subquery) => $subquery->where(
-                    fn (Builder $subsubquery) => $subsubquery->whereFullText([
-                        'products.name',
-                        'products.description_html',
-                        'products.description_short',
-                        'products.search_values',
-                    ], $this->value),
-                )
-                    ->orWhere('products.name', 'LIKE', $this->value . '%')
-                    ->orWhere('products.id', 'LIKE', '%' . $this->value . '%')
-                    ->orWhere('products.slug', 'LIKE', '%' . $this->value . '%')
-                    ->orWhereHas('productAttributes', fn (Builder $productAttributesQuery) => $productAttributesQuery->whereHas('options', fn (Builder $optionsQuery) => $optionsQuery->whereIn('attribute_option_id', $matchingOptions->pluck('id')))),
-            );
+        return $query->where(
+            fn (Builder $subquery) => $subquery->when(
+                Config::get('search.search_in_descriptions'),
+                fn (Builder $subsubquery) => $subsubquery->whereFullText(['products.name', 'products.description_html', 'products.description_short', 'products.search_values'], $this->value),
+                fn (Builder $subsubquery) => $subsubquery->whereFullText(['products.name'], $this->value),
+            )
+                ->orWhere('products.name', 'LIKE', $this->value . '%')
+                ->orWhere('products.id', 'LIKE', '%' . $this->value . '%')
+                ->orWhere('products.slug', 'LIKE', '%' . $this->value . '%')
+                ->orWhereHas('productAttributes', fn (Builder $productAttributesQuery) => $productAttributesQuery->whereHas('options', fn (Builder $optionsQuery) => $optionsQuery->whereIn('attribute_option_id', $matchingOptions->pluck('id')))),
+        );
     }
 
     protected function useDatabaseQuery(Builder $query): Builder
@@ -160,9 +167,12 @@ class ProductSearch extends Criterion
             fn (Builder $subquery) => $subquery->where('products.id', 'LIKE', '%' . $this->value . '%')
                 ->orWhere('products.slug', 'LIKE', '%' . $this->value . '%')
                 ->orWhere('products.name', 'LIKE', '%' . $this->value . '%')
-                ->orWhere('products.description_html', 'LIKE', '%' . $this->value . '%')
-                ->orWhere('products.description_short', 'LIKE', '%' . $this->value . '%')
-                ->orWhere('products.search_values', 'LIKE', '%' . $this->value . '%')
+                ->when(
+                    Config::get('search.search_in_descriptions'),
+                    fn (Builder $subsubquery) => $subsubquery->orWhere('products.description_html', 'LIKE', '%' . $this->value . '%')
+                        ->orWhere('products.description_short', 'LIKE', '%' . $this->value . '%')
+                        ->orWhere('products.search_values', 'LIKE', '%' . $this->value . '%'),
+                )
                 ->orWhereHas('productAttributes', fn (Builder $productAttributesQuery) => $productAttributesQuery->whereHas('options', fn (Builder $optionsQuery) => $optionsQuery->whereIn('attribute_option_id', $matchingOptions->pluck('id')))),
         );
     }
