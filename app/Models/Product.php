@@ -365,13 +365,20 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
             $attributes['attribute_' . $attribute->slug] = implode(', ', $values);
         }
 
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'slug' => $this->slug,
-            'description_html' => $this->description_html,
-            'description_short' => $this->description_short,
-            'search_values' => $this->search_values,
-        ] + $attributes;
+        return array_merge(
+            [
+                'id' => $this->id,
+                'name' => $this->name,
+                'slug' => $this->slug,
+            ],
+            Config::get('search.search_in_descriptions')
+                ? [
+                    'description_html' => $this->description_html,
+                    'description_short' => $this->description_short,
+                    'search_values' => $this->search_values,
+                ]
+                : [],
+            $attributes,
+        );
     }
 }

@@ -151,7 +151,7 @@ return [
 
     'tntsearch' => [
         'storage'  => storage_path(), //place where the index files will be stored
-        'fuzziness' => env('TNTSEARCH_FUZZINESS', false),
+        'fuzziness' => env('TNTSEARCH_FUZZINESS', true),
         'fuzzy' => [
             'prefix_length' => 2,
             'max_expansions' => 50,
@@ -161,6 +161,6 @@ return [
         'asYouType' => true,
         'searchBoolean' => env('TNTSEARCH_BOOLEAN', false),
         'maxDocs' => env('TNTSEARCH_MAX_DOCS', 500),
-        'stemmer' => \Support\Stemmer\Polish::class
+        'stemmer' => \TeamTNT\TNTSearch\Stemmer\PorterStemmer::class,
     ],
 ];

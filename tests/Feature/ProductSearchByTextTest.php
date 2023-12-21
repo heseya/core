@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
+use function PHPUnit\Framework\assertEmpty;
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertStringContainsString;
 use function PHPUnit\Framework\assertStringStartsWith;
@@ -51,6 +52,14 @@ class ProductSearchByTextTest extends TestCase
         foreach ($permutatedNameParts as $permutation) {
             $productNames[] = implode(' ', $permutation);
         }
+        $productNames[] = 'Hammer 3';
+        $productNames[] = 'Hammer 4';
+        $productNames[] = 'Hammer Blade 3';
+        $productNames[] = 'Hammer Blade 4';
+        $productNames[] = 'Hammer Blade 5G';
+        $productNames[] = 'Hammer Iron 3 LTE';
+        $productNames[] = 'Hammer Iron 4 Silver';
+        $productNames[] = 'Hammer Iron 4 Orange';
 
         $this->products = new Collection();
         $i = 1;
@@ -243,6 +252,22 @@ class ProductSearchByTextTest extends TestCase
         $response->assertOk();
         $data = $response->json('data');
         assertEquals($this->problematicProduct->getKey(), $data[0]['id']);
+
+        $response = $this->actingAs($this->user)
+            ->json('GET', '/products', [
+                'search' => 'Hammer 4',
+            ]);
+        $response->assertOk();
+        $data = $response->json('data');
+        assertEquals('Hammer 4', $data[0]['name']);
+
+        $response = $this->actingAs($this->user)
+            ->json('GET', '/products', [
+                'search' => 'Gammer 4',
+            ]);
+        $response->assertOk();
+        $data = $response->json('data');
+        assertEmpty($data); // no fuzzy search :(
     }
 
     public function testFulltextSearchByNameUsingScoutEngineTnt(): void
@@ -298,6 +323,22 @@ class ProductSearchByTextTest extends TestCase
         $response->assertOk();
         $data = $response->json('data');
         assertEquals($this->problematicProduct->getKey(), $data[0]['id']);
+
+        $response = $this->actingAs($this->user)
+            ->json('GET', '/products', [
+                'search' => 'Hammer 4',
+            ]);
+        $response->assertOk();
+        $data = $response->json('data');
+        assertEquals('Hammer 4', $data[0]['name']);
+
+        $response = $this->actingAs($this->user)
+            ->json('GET', '/products', [
+                'search' => 'Gammer 4',
+            ]);
+        $response->assertOk();
+        $data = $response->json('data');
+        assertEquals('Hammer 4', $data[0]['name']); // fuzzy search :)
     }
 
     public function testFulltextSearchBySkuUsingLaravelFulltextSearch(): void
