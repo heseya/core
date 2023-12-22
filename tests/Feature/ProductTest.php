@@ -1996,6 +1996,11 @@ class ProductTest extends TestCase
         $set1 = ProductSet::factory()->create();
         $set2 = ProductSet::factory()->create();
 
+        $product = Product::factory()->create();
+        $set2->products()->attach([
+            $product->getKey() => ['order' => 0],
+        ]);
+
         $response = $this->actingAs($this->{$user})->postJson('/products', [
             'translations' => [
                 $this->lang => [
@@ -2027,11 +2032,13 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('product_set_product', [
             'product_id' => $productId,
             'product_set_id' => $set1->getKey(),
+            'order' => 0,
         ]);
 
         $this->assertDatabaseHas('product_set_product', [
             'product_id' => $productId,
             'product_set_id' => $set2->getKey(),
+            'order' => 1,
         ]);
 
         Event::assertDispatched(ProductCreated::class);
@@ -2811,8 +2818,15 @@ class ProductTest extends TestCase
         $set2 = ProductSet::factory()->create();
         $set3 = ProductSet::factory()->create();
 
-        $this->product->sets()->attach($set1->getKey(), ['order' => 2]);
-        $this->product->sets()->attach($set2->getKey(), ['order' => 3]);
+        $product1 = Product::factory()->create();
+        $product2 = Product::factory()->create();
+        $set3->products()->attach([
+            $product1->getKey() => ['order' => 0],
+            $product2->getKey() => ['order' => 1],
+        ]);
+
+        $this->product->sets()->attach($set1->getKey(), ['order' => 0]);
+        $this->product->sets()->attach($set2->getKey(), ['order' => 0]);
 
         $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => $this->product->name,
@@ -2827,19 +2841,19 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('product_set_product', [
             'product_id' => $this->product->getKey(),
             'product_set_id' => $set2->getKey(),
-            'order' => 3,
+            'order' => 0,
         ]);
 
         $this->assertDatabaseHas('product_set_product', [
             'product_id' => $this->product->getKey(),
             'product_set_id' => $set3->getKey(),
-            'order' => null,
+            'order' => 2,
         ]);
 
         $this->assertDatabaseMissing('product_set_product', [
             'product_id' => $this->product->getKey(),
             'product_set_id' => $set1->getKey(),
-            'order' => 2,
+            'order' => 0,
         ]);
 
         Event::assertDispatched(ProductUpdated::class);
