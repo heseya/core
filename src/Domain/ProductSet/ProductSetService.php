@@ -246,7 +246,31 @@ final readonly class ProductSetService
 
     public function attach(ProductSet $set, array $productsIds): Collection
     {
-        $set->products()->sync($productsIds);
+        $currentIds = $set->products->pluck('id')->toArray();
+        $toDetach = array_diff($currentIds, $productsIds);
+        $toAttach = array_diff($productsIds, $currentIds);
+
+        $set->products()->detach($toDetach);
+
+        /**
+         * @var int $index
+         * @var Product $product
+         */
+        foreach ($set->products()->cursor() as $index => $product) {
+            $product->pivot->update(['order' => $index]);
+        }
+
+        $set->products()->attach($toAttach);
+        $set->refresh();
+
+        $productsWithoutOrder = $set->products->filter(fn (Product $product) => $product->pivot->order === null);
+
+        if ($productsWithoutOrder->isNotEmpty()) {
+            $this->fixNullOrders(
+                $set,
+                $productsWithoutOrder,
+            );
+        }
 
         return $set->products;
     }
@@ -340,6 +364,14 @@ final readonly class ProductSetService
                     ->increment('order');
             }
         });
+    }
+
+    public function fixOrderForSets(array $setIds, Product $product): void
+    {
+        $sets = ProductSet::query()->whereIn('id', $setIds)->with('products');
+        foreach ($sets->cursor() as $set) {
+            $set->products()->updateExistingPivot($product->getKey(), ['order' => $set->products->count() - 1]);
+        }
     }
 
     private function fixNullOrders(ProductSet $set, Collection $productsWithoutOrder): void

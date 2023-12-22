@@ -29,6 +29,7 @@ use Domain\Product\Dtos\ProductUpdateDto;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductAttribute\Services\AttributeService;
+use Domain\ProductSet\ProductSetService;
 use Domain\Seo\SeoMetadataService;
 use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Database\Eloquent\Builder;
@@ -50,6 +51,7 @@ final readonly class ProductService
         private DiscountServiceContract $discountService,
         private ProductRepositoryContract $productRepository,
         private TranslationServiceContract $translationService,
+        private ProductSetService $productSetService,
     ) {}
 
     /**
@@ -178,7 +180,9 @@ final readonly class ProductService
         }
 
         if (!($dto->sets instanceof Optional)) {
+            $new = array_diff($dto->sets, $product->sets->pluck('id')->toArray());
             $product->sets()->sync($dto->sets);
+            $this->productSetService->fixOrderForSets($new, $product);
         }
 
         if (!($dto->items instanceof Optional)) {

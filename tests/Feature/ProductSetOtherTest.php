@@ -289,16 +289,19 @@ class ProductSetOtherTest extends TestCase
         $this->assertDatabaseHas('product_set_product', [
             'product_id' => $product1->getKey(),
             'product_set_id' => $set->getKey(),
+            'order' => 0,
         ]);
 
         $this->assertDatabaseHas('product_set_product', [
             'product_id' => $product2->getKey(),
             'product_set_id' => $set->getKey(),
+            'order' => 1,
         ]);
 
         $this->assertDatabaseHas('product_set_product', [
             'product_id' => $product3->getKey(),
             'product_set_id' => $set->getKey(),
+            'order' => 2,
         ]);
     }
 
@@ -345,6 +348,85 @@ class ProductSetOtherTest extends TestCase
         $this->assertDatabaseMissing('product_set_product', [
             'product_id' => $product3->getKey(),
             'product_set_id' => $set->getKey(),
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testAttachProductsReorder(string $user): void
+    {
+        $this->{$user}->givePermissionTo('product_sets.edit');
+
+        /** @var ProductSet $set */
+        $set = ProductSet::factory()->create();
+
+        $product1 = Product::factory()->create();
+        $product2 = Product::factory()->create();
+        $product3 = Product::factory()->create();
+        $product4 = Product::factory()->create();
+        $product5 = Product::factory()->create();
+
+        $set->products()->attach([
+            $product1->getKey() => ['order' => 0],
+            $product2->getKey() => ['order' => 1],
+            $product3->getKey() => ['order' => 2],
+            $product4->getKey() => ['order' => 3],
+            $product5->getKey() => ['order' => 4],
+        ]);
+
+        $newProduct = Product::factory()->create();
+
+        $response = $this->actingAs($this->{$user})->postJson(
+            '/product-sets/id:' . $set->getKey() . '/products',
+            [
+                'products' => [
+                    $product1->getKey(),
+                    $product3->getKey(),
+                    $product5->getKey(),
+                    $newProduct->getKey(),
+                ],
+            ],
+        );
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(4, 'data');
+
+        $this->assertDatabaseHas('product_set_product', [
+            'product_id' => $product1->getKey(),
+            'product_set_id' => $set->getKey(),
+            'order' => 0,
+        ]);
+
+        $this->assertDatabaseHas('product_set_product', [
+            'product_id' => $product3->getKey(),
+            'product_set_id' => $set->getKey(),
+            'order' => 1,
+        ]);
+
+        $this->assertDatabaseHas('product_set_product', [
+            'product_id' => $product5->getKey(),
+            'product_set_id' => $set->getKey(),
+            'order' => 2,
+        ]);
+
+        $this->assertDatabaseHas('product_set_product', [
+            'product_id' => $newProduct->getKey(),
+            'product_set_id' => $set->getKey(),
+            'order' => 3,
+        ]);
+
+        $this->assertDatabaseMissing('product_set_product', [
+            'product_id' => $product2->getKey(),
+            'product_set_id' => $set->getKey(),
+            'order' => 1,
+        ]);
+
+        $this->assertDatabaseMissing('product_set_product', [
+            'product_id' => $product4->getKey(),
+            'product_set_id' => $set->getKey(),
+            'order' => 3,
         ]);
     }
 
