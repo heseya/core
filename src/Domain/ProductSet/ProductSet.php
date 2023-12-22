@@ -156,7 +156,9 @@ final class ProductSet extends Model implements SeoContract, Translatable
      */
     public function attributes(): BelongsToMany
     {
-        return $this->belongsToMany(Attribute::class);
+        return $this->belongsToMany(Attribute::class)
+            ->orderBy('order', 'asc')
+            ->orderBy('id', 'asc');
     }
 
     public function allChildrenPublic(): HasMany
