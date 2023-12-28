@@ -104,6 +104,7 @@ final readonly class ProductSetService
 
         $set->save();
         $set->attributes()->sync($dto->attributes);
+        $this->reorderAttributes($set, $dto->attributes);
 
         $children = Collection::make($dto->children_ids);
         if ($children->isNotEmpty()) {
@@ -222,6 +223,7 @@ final readonly class ProductSetService
 
         if (!($dto->attributes instanceof Optional)) {
             $set->attributes()->sync($dto->attributes);
+            $this->reorderAttributes($set, $dto->attributes);
         }
 
         if (!($dto->seo instanceof Optional)) {
@@ -413,5 +415,12 @@ final readonly class ProductSetService
         }
 
         return $slug;
+    }
+
+    private function reorderAttributes(ProductSet $set, array $attributesIds): void
+    {
+        foreach ($attributesIds as $index => $attributeID) {
+            $set->attributes()->updateExistingPivot($attributeID, ['order' => $index]);
+        }
     }
 }

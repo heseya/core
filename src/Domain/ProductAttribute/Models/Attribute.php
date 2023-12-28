@@ -115,7 +115,7 @@ final class Attribute extends Model implements Translatable
      */
     public function productSets(): BelongsToMany
     {
-        return $this->belongsToMany(ProductSet::class);
+        return $this->belongsToMany(ProductSet::class)->withPivot('order');
     }
 
     /**

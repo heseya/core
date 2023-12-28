@@ -17,6 +17,7 @@ use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Resources\AttributeResource;
 use Domain\ProductAttribute\Services\AttributeService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response as HttpResponse;
@@ -52,9 +53,17 @@ final class AttributeController extends Controller
                     fn ($query) => $query->whereIn('product_set_id', $dto->sets),
                 )
                 ->orWhere('global', '=', true)
+                ->leftJoin('attribute_product_set', function (JoinClause $join) use ($dto): void {
+                    $join
+                        ->on('attribute_product_set.attribute_id', 'attributes.id')
+                        ->whereIn('attribute_product_set.product_set_id', $dto->sets);
+                })
                 ->with(['metadata', 'metadataPrivate'])
-                ->orderBy('order', 'asc')
-                ->orderBy('id', 'asc')
+                ->addSelect('attributes.*')
+                ->selectRaw('MIN(attribute_product_set.order) as attribute_order')
+                ->groupBy('attributes.id')
+                ->orderBy('attribute_order', 'asc')
+                ->orderBy('attributes.id', 'asc')
                 ->get(),
         );
     }

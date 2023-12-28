@@ -661,8 +661,8 @@ class ProductSetCreateTest extends TestCase
             'slug_suffix' => 'test',
             'slug_override' => false,
             'attributes' => [
-                $attrOne->getKey(),
                 $attrTwo->getKey(),
+                $attrOne->getKey(),
             ],
         ]);
 
@@ -684,10 +684,12 @@ class ProductSetCreateTest extends TestCase
             ->assertDatabaseHas('attribute_product_set', [
                 'attribute_id' => $attrOne->getKey(),
                 'product_set_id' => $productSet->getKey(),
+                'order' => 1,
             ])
             ->assertDatabaseHas('attribute_product_set', [
                 'attribute_id' => $attrTwo->getKey(),
                 'product_set_id' => $productSet->getKey(),
+                'order' => 0,
             ]);
 
         $this->assertTrue($productSet->attributes->contains($attrOne));
