@@ -330,6 +330,18 @@ final class ProductSetUpdateTest extends TestCase
         $this->assertTrue($set->attributes->contains($attrTwo));
         $this->assertTrue($set->attributes->contains($attrThree));
 
+        $this->assertDatabaseHas('attribute_product_set', [
+            'attribute_id' => $attrTwo->getKey(),
+            'product_set_id' => $set->getKey(),
+            'order' => 0,
+        ]);
+
+        $this->assertDatabaseHas('attribute_product_set', [
+            'attribute_id' => $attrThree->getKey(),
+            'product_set_id' => $set->getKey(),
+            'order' => 1,
+        ]);
+
         Event::assertDispatched(ProductSetUpdated::class);
     }
 

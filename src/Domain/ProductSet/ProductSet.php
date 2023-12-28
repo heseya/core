@@ -157,7 +157,8 @@ final class ProductSet extends Model implements SeoContract, Translatable
     public function attributes(): BelongsToMany
     {
         return $this->belongsToMany(Attribute::class)
-            ->orderBy('order', 'asc')
+            ->withPivot('order')
+            ->orderByPivot('order')
             ->orderBy('id', 'asc');
     }
 
