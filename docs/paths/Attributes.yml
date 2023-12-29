@@ -216,6 +216,12 @@ AttributeOption:
         schema:
           type: string
           example: 'parent-set'
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [ 'asc', 'desc' ]
     responses:
       200:
         description: Success
