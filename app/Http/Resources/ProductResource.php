@@ -111,9 +111,12 @@ class ProductResource extends Resource
                 )
                 : [],
             'relevancy' => [
+                'title_word_equal_count' => $this->resource->title_word_equal_count, // @phpstan-ignore-line
+                'title_length' => $this->resource->title_length, // @phpstan-ignore-line
                 'title_relevancy' => $this->resource->title_relevancy, // @phpstan-ignore-line
-                'natural_title_relevancy' => $this->resource->natural_title_relevancy, // @phpstan-ignore-line
-                'natural_content_relevancy' => $this->resource->natural_content_relevancy, // @phpstan-ignore-line
+                'title_natural_relevancy' => $this->resource->title_natural_relevancy, // @phpstan-ignore-line
+                'title_words_relevancy' => $this->resource->title_words_relevancy, // @phpstan-ignore-line
+                'content_natural_relevancy' => $this->resource->content_natural_relevancy, // @phpstan-ignore-line
                 'content_relevancy' => $this->resource->content_relevancy, // @phpstan-ignore-line
             ],
         ];

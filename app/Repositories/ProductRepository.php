@@ -35,7 +35,7 @@ class ProductRepository implements ProductRepositoryContract
 
     public function search(ProductSearchDto $dto): LengthAwarePaginator
     {
-        if (Config::get('search.use_scout') && is_string($dto->search)) {
+        if (Config::get('search.use_scout') && is_string($dto->search) && !empty($dto->search)) {
             $scoutResults = Product::search($dto->search)->keys()->toArray();
             $dto->search = new Optional();
             $dto->ids = is_array($dto->ids) && !empty($dto->ids)

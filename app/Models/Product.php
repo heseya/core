@@ -369,7 +369,6 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
             [
                 'id' => $this->id,
                 'name' => $this->name,
-                'slug' => $this->slug,
             ],
             Config::get('search.search_in_descriptions')
                 ? [
