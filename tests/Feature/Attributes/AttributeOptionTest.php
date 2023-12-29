@@ -263,7 +263,7 @@ class AttributeOptionTest extends TestCase
             'value_date' => '2023-12-29',
         ]);
 
-        $option2 = AttributeOption::factory()->count(10)->create([
+        $option2 = AttributeOption::factory()->create([
             'name' => 'Aname',
             'attribute_id' => $attribute->getKey(),
             'index' => 0,
@@ -298,7 +298,7 @@ class AttributeOptionTest extends TestCase
             'order' => 1,
         ]);
 
-        $option2 = AttributeOption::factory()->count(10)->create([
+        $option2 = AttributeOption::factory()->create([
             'name' => 'Aname',
             'attribute_id' => $attribute->getKey(),
             'index' => 0,
