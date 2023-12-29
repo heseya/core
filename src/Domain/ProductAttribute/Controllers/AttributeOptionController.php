@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use App\Services\Contracts\ReorderServiceContract;
 use Domain\ProductAttribute\Dtos\AttributeOptionDto;
 use Domain\ProductAttribute\Dtos\AttributeOptionIndexDto;
+use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductAttribute\Resources\AttributeOptionResource;
@@ -19,6 +20,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
+use Spatie\LaravelData\Optional;
 
 final class AttributeOptionController extends Controller
 {
@@ -29,10 +31,20 @@ final class AttributeOptionController extends Controller
 
     public function index(AttributeOptionIndexDto $dto, Attribute $attribute): JsonResource
     {
+        $sort = 'order';
+        $order = 'asc';
+        if (!($dto->sort instanceof Optional)) {
+            $sort = match ($attribute->type) {
+                AttributeType::DATE => 'value_date',
+                AttributeType::NUMBER => 'value_number',
+                default => 'name',
+            };
+            $order = $dto->sort;
+        }
         $query = $attribute
             ->options()
             ->searchByCriteria($dto->toArray())
-            ->orderBy('order')
+            ->orderBy($sort, $order)
             ->with(['metadata', 'metadataPrivate', 'attribute']);
 
         return AttributeOptionResource::collection(
