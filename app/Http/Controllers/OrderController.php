@@ -81,7 +81,7 @@ class OrderController extends Controller
 
     public function show(Order $order): JsonResource
     {
-        $order->loadMissing([
+        $order->load([
             'discounts',
             'discounts.metadata',
             'discounts.amounts',
@@ -89,15 +89,22 @@ class OrderController extends Controller
             'products.discounts',
             'products.discounts.amounts',
             'products.discounts.metadata',
+            'products.urls',
             'products.schemas',
             'products.deposits',
+            'products.deposits.item',
             'products.product',
             'products.product.media',
+            'products.product.media.metadata',
             'products.product.tags',
             'products.product.metadata',
             'products.product.productAttributes',
             'products.product.productAttributes.options',
+            'products.product.productAttributes.options.metadata',
             'products.product.sets',
+            'products.product.sets.metadata',
+            'products.product.sets.media',
+            'products.product.sets.media.metadata',
             'products.product.pricesBase',
             'products.product.pricesMin',
             'products.product.pricesMax',
