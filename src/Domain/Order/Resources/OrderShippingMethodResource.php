@@ -1,20 +1,25 @@
 <?php
 
-namespace App\Http\Resources;
+declare(strict_types=1);
 
+namespace Domain\Order\Resources;
+
+use App\Http\Resources\Resource;
 use App\Traits\MetadataResource;
 use Brick\Money\Money;
-use Domain\SalesChannel\Resources\SalesChannelResource;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Http\Request;
 
 /**
  * @property ShippingMethod $resource
  */
-class ShippingMethodResource extends Resource
+final class OrderShippingMethodResource extends Resource
 {
     use MetadataResource;
 
+    /**
+     * @return array<string, mixed>
+     */
     public function base(Request $request): array
     {
         return array_merge([
@@ -32,19 +37,19 @@ class ShippingMethodResource extends Resource
             'is_block_list_countries' => $this->resource->is_block_list_countries,
             'is_block_list_products' => $this->resource->is_block_list_products,
             'payment_on_delivery' => $this->resource->payment_on_delivery,
-            'payment_methods' => PaymentMethodResource::collection($this->resource->paymentMethods),
-            'countries' => CountryResource::collection($this->resource->countries),
-            'price_ranges' => PriceRangeResource::collection($this->resource->priceRanges->sortBy('start')),
+            'payment_methods' => [],
+            'countries' => [],
+            'price_ranges' => [],
             'shipping_time_min' => $this->resource->shipping_time_min,
             'shipping_time_max' => $this->resource->shipping_time_max,
             'shipping_type' => $this->resource->shipping_type,
             'integration_key' => $this->resource->integration_key,
             'deletable' => $this->resource->deletable,
             'deleted_at' => $this->resource->deleted_at,
-            'shipping_points' => AddressResource::collection($this->resource->shippingPoints),
-            'product_ids' => $this->resource->products->pluck('id'),
-            'product_set_ids' => $this->resource->productSets->pluck('id'),
-            'sales_channels' => SalesChannelResource::collection($this->resource->salesChannels),
+            'shipping_points' => [],
+            'product_ids' => [],
+            'product_set_ids' => [],
+            'sales_channels' => [],
         ], $this->metadataResource('shipping_methods.show_metadata_private'));
     }
 }

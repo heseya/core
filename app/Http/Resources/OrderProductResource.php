@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\OrderProduct;
+use Domain\Order\Resources\OrderDepositResource;
 use Domain\ProductSet\Resources\ProductSetResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -22,7 +23,7 @@ class OrderProductResource extends Resource
             'price_initial' => $this->resource->price_initial->getAmount(),
             'vat_rate' => $this->resource->vat_rate,
             'schemas' => OrderSchemaResource::collection($this->resource->schemas),
-            'deposits' => DepositResource::collection($this->resource->deposits),
+            'deposits' => OrderDepositResource::collection($this->resource->deposits),
             'discounts' => OrderDiscountResource::collection($this->resource->discounts),
             'shipping_digital' => $this->resource->shipping_digital,
             'is_delivered' => $this->resource->is_delivered,

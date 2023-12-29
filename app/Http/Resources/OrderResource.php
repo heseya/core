@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Resources;
 
 use App\Models\Discount;
@@ -8,15 +10,16 @@ use App\Models\OrderDiscount;
 use App\Models\OrderProduct;
 use App\Models\User;
 use App\Traits\MetadataResource;
+use Domain\Order\Resources\OrderSalesChannelResource;
+use Domain\Order\Resources\OrderShippingMethodResource;
 use Domain\Order\Resources\OrderStatusResource;
-use Domain\SalesChannel\Resources\SalesChannelResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
 /**
  * @property Order $resource
  */
-class OrderResource extends Resource
+final class OrderResource extends Resource
 {
     use MetadataResource;
 
@@ -35,9 +38,9 @@ class OrderResource extends Resource
             'comment' => $this->resource->comment,
             'status' => $this->resource->status ? OrderStatusResource::make($this->resource->status) : null,
             'shipping_method' => $this->resource->shippingMethod ?
-                ShippingMethodResource::make($this->resource->shippingMethod) : null,
+                OrderShippingMethodResource::make($this->resource->shippingMethod) : null,
             'digital_shipping_method' => $this->resource->digitalShippingMethod ?
-                ShippingMethodResource::make($this->resource->digitalShippingMethod) : null,
+                OrderShippingMethodResource::make($this->resource->digitalShippingMethod) : null,
             'shipping_type' => $this->resource->shippingType,
             'invoice_requested' => $this->resource->invoice_requested,
             'billing_address' => AddressResource::make($this->resource->invoiceAddress),
@@ -49,7 +52,7 @@ class OrderResource extends Resource
             'cart_total' => $this->resource->cart_total->getAmount(),
             'cart_total_initial' => $this->resource->cart_total_initial->getAmount(),
             'created_at' => $this->resource->created_at,
-            'sales_channel' => SalesChannelResource::make($this->resource->salesChannel),
+            'sales_channel' => OrderSalesChannelResource::make($this->resource->salesChannel),
             'language' => $this->resource->language,
         ], $this->metadataResource('orders.show_metadata_private'));
     }
