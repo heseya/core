@@ -296,6 +296,8 @@ class AttributeOptionTest extends TestCase
             'attribute_id' => $attribute->getKey(),
             'index' => 0,
             'order' => 1,
+            'value_number' => 12,
+            'value_date' => '2023-12-29',
         ]);
 
         $option2 = AttributeOption::factory()->create([
@@ -303,6 +305,8 @@ class AttributeOptionTest extends TestCase
             'attribute_id' => $attribute->getKey(),
             'index' => 0,
             'order' => 0,
+            'value_number' => 10,
+            'value_date' => '2023-12-28',
         ]);
 
         $this
