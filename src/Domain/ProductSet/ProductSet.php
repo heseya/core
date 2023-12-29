@@ -191,6 +191,14 @@ final class ProductSet extends Model implements SeoContract, Translatable
             ->orderByPivot('order');
     }
 
+    public function descendantProducts(): BelongsToMany
+    {
+        return $this
+            ->belongsToMany(Product::class, 'product_set_product_descendant')
+            ->withPivot('order')
+            ->orderByPivot('order');
+    }
+
     public function relatedProducts(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'related_product_sets');
@@ -198,13 +206,7 @@ final class ProductSet extends Model implements SeoContract, Translatable
 
     public function allProductsIds(): Collection
     {
-        $products = $this->products()->pluck('id');
-
-        foreach ($this->children as $child) {
-            $products = $products->merge($child->allProductsIds());
-        }
-
-        return $products->unique();
+        return $this->descendantProducts()->pluck('id');
     }
 
     /**

@@ -124,18 +124,18 @@ readonly class SortService implements SortServiceContract
         $set = ProductSet::query()->where('slug', '=', Str::after($field, 'set.'))->select('id')->first();
         $searchedProductSetsIds = $set->allChildrenIds('children')->push($set->getKey());
 
-        $query->leftJoin('product_set_product', function (JoinClause $join) use ($searchedProductSetsIds): void {
-            $join->on('product_set_product.product_id', 'products.id')
-                ->whereIn('product_set_product.product_set_id', $searchedProductSetsIds)
+        $query->leftJoin('product_set_product_descendant', function (JoinClause $join) use ($searchedProductSetsIds): void {
+            $join->on('product_set_product_descendant.product_id', 'products.id')
+                ->whereIn('product_set_product_descendant.product_set_id', $searchedProductSetsIds)
                 ->leftJoin('product_sets', function (JoinClause $join): void {
-                    $join->on('product_set_product.product_set_id', '=', 'product_sets.id');
+                    $join->on('product_set_product_descendant.product_set_id', '=', 'product_sets.id');
                 });
         })
             ->addSelect('products.*')
-            ->selectRaw('MIN(product_set_product.order) AS product_order')
-            ->selectRaw('MAX(product_set_product.product_set_id = ?) AS is_main_set', [$set->getKey()])
+            ->selectRaw('MIN(product_set_product_descendant.order) AS product_order')
+            ->selectRaw('MAX(product_set_product_descendant.product_set_id = ?) AS is_main_set', [$set->getKey()])
             ->selectRaw('MIN(product_sets.order) as set_order')
-            ->selectRaw('MIN(IF(product_set_product.product_set_id = ?, product_set_product.`order`, NULL)) AS main_set_order', [$set->getKey()])
+            ->selectRaw('MIN(IF(product_set_product_descendant.product_set_id = ?, product_set_product_descendant.`order`, NULL)) AS main_set_order', [$set->getKey()])
             ->groupBy('products.id')
             ->orderBy('is_main_set', 'desc')
             ->orderByRaw('main_set_order IS NULL ' . $order)
