@@ -44,7 +44,14 @@ final readonly class AttributeOptionService
 
     public function delete(AttributeOption $attributeOption): void
     {
+        $order = $attributeOption->order;
         $attributeOption->delete();
+
+        if ($attributeOption->attribute) {
+            foreach ($attributeOption->attribute->options()->where('order', '>', $order)->orderBy('order')->cursor() as $option) {
+                $option->update(['order' => $order++]);
+            }
+        }
     }
 
     public function deleteAll(string $attributeId): void

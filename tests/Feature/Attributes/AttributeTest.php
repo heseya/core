@@ -950,6 +950,7 @@ class AttributeTest extends TestCase
             "name->{$this->lang}" => $this->optionData['name'],
             'value_number' => $this->optionData['value_number'],
             'value_date' => $this->optionData['value_date'],
+            'order' => 1,
         ]);
     }
 
@@ -1262,6 +1263,45 @@ class AttributeTest extends TestCase
             ->assertNoContent();
 
         $this->assertSoftDeleted($this->option);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteOptionReorder(string $user): void
+    {
+        $this->{$user}->givePermissionTo('attributes.edit');
+
+        $option1 = AttributeOption::factory()->create([
+            'index' => 2,
+            'attribute_id' => $this->attribute->getKey(),
+            'order' => 1,
+        ]);
+
+        $option2 = AttributeOption::factory()->create([
+            'index' => 3,
+            'attribute_id' => $this->attribute->getKey(),
+            'order' => 2,
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->deleteJson('/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey())
+            ->assertNoContent();
+
+        $this->assertSoftDeleted($this->option);
+
+        $this->assertDatabaseHas('attribute_options', [
+            'id' => $option1->getKey(),
+            'index' => 2,
+            'order' => 0,
+        ]);
+
+        $this->assertDatabaseHas('attribute_options', [
+            'id' => $option2->getKey(),
+            'index' => 3,
+            'order' => 1,
+        ]);
     }
 
     /**
