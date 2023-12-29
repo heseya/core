@@ -44,7 +44,7 @@ final class AttributeOptionController extends Controller
         $query = $attribute
             ->options()
             ->searchByCriteria($dto->toArray())
-            ->orderBy($sort, $order)
+            ->reorder($sort, $order)
             ->with(['metadata', 'metadataPrivate', 'attribute']);
 
         return AttributeOptionResource::collection(
