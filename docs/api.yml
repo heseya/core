@@ -170,6 +170,8 @@ paths:
     $ref: ./paths/ProductSets.yml#/ProductSetsReorderParams
   /product-sets/id:{id}/products:
     $ref: ./paths/ProductSets.yml#/ProductSetsProducts
+  /product-sets/id:{id}/products-all:
+    $ref: ./paths/ProductSets.yml#/ProductSetsProductsAll
   /product-sets/id:{id}/products/reorder:
     $ref: ./paths/ProductSets.yml#/ProductSetsProductsReorder
   /product-sets/favourites:

@@ -87,6 +87,13 @@ final class ProductSetController extends Controller
         return ProductResource::collection($products);
     }
 
+    public function descendantProducts(ProductSet $productSet): JsonResource
+    {
+        $products = $this->productSetService->descendantProducts($productSet);
+
+        return ProductResource::collection($products);
+    }
+
     public function reorderProducts(ProductSet $productSet, ProductsReorderDto $dto): JsonResponse
     {
         $this->productSetService->reorderProducts($productSet, $dto);

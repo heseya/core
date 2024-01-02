@@ -274,7 +274,55 @@ final readonly class ProductSetService
             );
         }
 
+        $this->syncDescendantProducts($set, $toAttach, $toDetach);
+
         return $set->products;
+    }
+
+    private function syncDescendantProducts(ProductSet $set, array $toAttach, array $toDetach): void
+    {
+        $directIds = $set->products->pluck('id')->toArray();
+        $descendantIds = $set->descendantProducts->pluck('id')->toArray();
+
+        $allChildIds = [];
+
+        foreach ($set->children as $child) {
+            $childIds = $child->descendantProducts->pluck('id')->toArray();
+
+            $allChildIds = array_merge($allChildIds, $childIds);
+        }
+
+        $allChildIds = array_unique($allChildIds);
+
+        $toAttach = array_diff($toAttach, $descendantIds);
+        $toDetach = array_diff($toDetach, $directIds, $allChildIds);
+
+        $set->descendantProducts()->detach($toDetach);
+
+        $last = 0;
+
+        /**
+         * @var int $index
+         * @var Product $product
+         */
+        foreach ($set->descendantProducts()->cursor() as $index => $product) {
+            $product->pivot->update(['order' => $index]);
+            $last = $index;
+        }
+
+        $set->descendantProducts()->attach($toAttach);
+
+        /**
+         * @var int $index
+         * @var Product $product
+         */
+        foreach ($set->descendantProducts()->wherePivotNull('order')->cursor() as $index => $product) {
+            $product->pivot->update(['order' => $index + $last + 1]);
+        }
+
+        if ($set->parent) {
+            $this->syncDescendantProducts($set->parent, $toAttach, $toDetach);
+        }
     }
 
     public function delete(ProductSet $set): void
@@ -294,6 +342,17 @@ final readonly class ProductSetService
     public function products(ProductSet $set): LengthAwarePaginator
     {
         $query = $set->products();
+
+        if (Gate::denies('product_sets.show_hidden')) {
+            $query->public();
+        }
+
+        return $query->paginate(Config::get('pagination.per_page'));
+    }
+
+    public function descendantProducts(ProductSet $set): LengthAwarePaginator
+    {
+        $query = $set->descendantProducts();
 
         if (Gate::denies('product_sets.show_hidden')) {
             $query->public();
@@ -378,29 +437,24 @@ final readonly class ProductSetService
 
     public function attachAllProductsToAncestorSets(): void
     {
-        Product::query()->whereHas('sets')->with('sets')->eachById(function (Product $product) {
+        Product::query()->whereHas('sets')->with('sets')->eachById(function (Product $product): void {
             $sets = $product->sets->flatMap(
                 fn ($set) => $this->getAllSetAncestors($set),
             )->unique();
-
-//            error_log(print_r([$sets->count(), $product->sets->count()], true));
 
             $product->ancestorSets()->sync($sets);
         });
     }
 
-    private function getAllSetAncestors(?ProductSet $set): array {
-        if ($set === null) {
-            return [];
-        }
+    private function getAllSetAncestors(ProductSet $set): array
+    {
+        $ancestors = $set->parent !== null
+            ? $this->getAllSetAncestors($set->parent)
+            : [];
 
-//        if ($set->parent()->exists()) {
-//            error_log("HAS");
-//
-//            return [$set->getKey(), $set->parent->getKey()];
-//        }
+        $ancestors[] = $set->getKey();
 
-        return array_merge([$set->getKey()], $this->getAllSetAncestors($set->parent));
+        return $ancestors;
     }
 
     private function fixNullOrders(ProductSet $set, Collection $productsWithoutOrder): void
