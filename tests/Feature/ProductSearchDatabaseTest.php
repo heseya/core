@@ -23,6 +23,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
+use function Symfony\Component\String\s;
 
 class ProductSearchDatabaseTest extends TestCase
 {
@@ -1455,7 +1456,7 @@ class ProductSearchDatabaseTest extends TestCase
             'slug' => 'test',
             'public' => true,
         ]);
-        $set->products()->sync([
+        $set->descendantProducts()->sync([
             $product1->getKey() => ['order' => 1],
             $product2->getKey() => ['order' => 2],
             $product3->getKey() => ['order' => 3],

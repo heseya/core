@@ -182,6 +182,7 @@ final readonly class ProductService
         if (!($dto->sets instanceof Optional)) {
             $new = array_diff($dto->sets, $product->sets->pluck('id')->toArray());
             $product->sets()->sync($dto->sets);
+            $product->ancestorSets()->sync($dto->sets);
             $this->productSetService->fixOrderForSets($new, $product);
         }
 
