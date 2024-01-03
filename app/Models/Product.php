@@ -158,6 +158,13 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
             ->withPivot('order');
     }
 
+    public function ancestorSets(): BelongsToMany
+    {
+        return $this
+            ->belongsToMany(ProductSet::class, 'product_set_product_descendant')
+            ->withPivot('order');
+    }
+
     public function relatedSets(): BelongsToMany
     {
         return $this

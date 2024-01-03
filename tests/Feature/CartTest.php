@@ -2055,6 +2055,11 @@ class CartTest extends TestCase
         ]);
 
         $this->product->sets()->sync([$subChildrenSet->getKey()]);
+        $this->product->ancestorSets()->sync([
+            $parentSet->getKey(),
+            $childrenSet->getKey(),
+            $subChildrenSet->getKey(),
+        ]);
 
         $discountApplied = Discount::factory()->create(
             [

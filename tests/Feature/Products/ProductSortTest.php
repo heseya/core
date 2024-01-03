@@ -208,9 +208,16 @@ class ProductSortTest extends TestCase
         $product2ForSet1 = Product::factory()->create(['name' => 'Product 2 For Set 1 Order 1', 'public' => true]);
         $product3ForSet1 = Product::factory()->create(['name' => 'Product 3 For Set 1 Order 0', 'public' => true]);
 
-        $set1->products()->attach($product1ForSet1->getKey(), ['order' => 2]);
-        $set1->products()->attach($product2ForSet1->getKey(), ['order' => 1]);
-        $set1->products()->attach($product3ForSet1->getKey(), ['order' => 0]);
+        $set1->products()->attach([
+            $product1ForSet1->getKey(),
+            $product2ForSet1->getKey(),
+            $product3ForSet1->getKey(),
+        ]);
+        $set1->descendantProducts()->attach([
+            $product1ForSet1->getKey() => ['order' => 2],
+            $product2ForSet1->getKey() => ['order' => 1],
+            $product3ForSet1->getKey() => ['order' => 0],
+        ]);
 
         $set2 = ProductSet::factory()->create([
             'id' => 'aaaaaaaa-56d6-4174-9840-39231e0c3f2f',
@@ -223,9 +230,16 @@ class ProductSortTest extends TestCase
         $product2ForSet2 = Product::factory()->create(['name' => 'Product 2 For Set 2 Order 2', 'public' => true]);
         $product3ForSet2 = Product::factory()->create(['name' => 'Product 3 For Set 2 Order 0', 'public' => true]);
 
-        $set2->products()->attach($product1ForSet2->getKey(), ['order' => 1]);
-        $set2->products()->attach($product2ForSet2->getKey(), ['order' => 2]);
-        $set2->products()->attach($product3ForSet2->getKey(), ['order' => 0]);
+        $set2->products()->attach([
+            $product1ForSet2->getKey(),
+            $product2ForSet2->getKey(),
+            $product3ForSet2->getKey(),
+        ]);
+        $set2->descendantProducts()->attach([
+            $product1ForSet2->getKey() => ['order' => 1],
+            $product2ForSet2->getKey() => ['order' => 2],
+            $product3ForSet2->getKey() => ['order' => 0],
+        ]);
 
         $set3 = ProductSet::factory()->create([
             'id' => 'cccccccc-56d6-4174-9840-39231e0c3f2f',
@@ -238,9 +252,16 @@ class ProductSortTest extends TestCase
         $product2ForSet3 = Product::factory()->create(['name' => 'Product 2 For Set 3 Order 0', 'public' => true]);
         $product3ForSet3 = Product::factory()->create(['name' => 'Product 3 For Set 3 Order 2', 'public' => true]);
 
-        $set3->products()->attach($product1ForSet3->getKey(), ['order' => 1]);
-        $set3->products()->attach($product2ForSet3->getKey(), ['order' => 0]);
-        $set3->products()->attach($product3ForSet3->getKey(), ['order' => 2]);
+        $set3->products()->attach([
+            $product1ForSet3->getKey(),
+            $product2ForSet3->getKey(),
+            $product3ForSet3->getKey(),
+        ]);
+        $set3->descendantProducts()->attach([
+            $product1ForSet3->getKey() => ['order' => 1],
+            $product2ForSet3->getKey() => ['order' => 0],
+            $product3ForSet3->getKey() => ['order' => 2],
+        ]);
 
         $set1->children()->save($set2);
         $set2->children()->save($set3);

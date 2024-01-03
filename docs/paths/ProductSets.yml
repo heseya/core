@@ -341,6 +341,36 @@ ProductSetsProducts:
               type: object
     security:
       - BearerAuth: [ ]
+ProductSetsProductsAll:
+  get:
+    tags:
+      - 'Product Sets'
+    parameters:
+      - name: limit
+        in: query
+        description: 'Pagination limit'
+        schema:
+          type: number
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Products.yml#/Product'
+              type: object
+    security:
+      - BearerAuth: [ ]
 ProductSetsProductsReorder:
   post:
     tags:

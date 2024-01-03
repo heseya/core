@@ -39,6 +39,8 @@ Route::prefix('product-sets')->group(function (): void {
 
     Route::get('id:{product_set:id}/products', [ProductSetController::class, 'products'])
         ->middleware('can:product_sets.show_details');
+    Route::get('id:{product_set:id}/products-all', [ProductSetController::class, 'descendantProducts'])
+        ->middleware('can:product_sets.show_details');
     Route::post('id:{product_set:id}/products', [ProductSetController::class, 'attach'])
         ->middleware('can:product_sets.edit');
     Route::post('id:{product_set:id}/products/reorder', [ProductSetController::class, 'reorderProducts'])

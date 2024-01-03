@@ -274,7 +274,55 @@ final readonly class ProductSetService
             );
         }
 
+        $this->syncDescendantProducts($set, $toAttach, $toDetach);
+
         return $set->products;
+    }
+
+    private function syncDescendantProducts(ProductSet $set, array $toAttach, array $toDetach): void
+    {
+        $directIds = $set->products->pluck('id')->toArray();
+        $descendantIds = $set->descendantProducts->pluck('id')->toArray();
+
+        $allChildIds = [];
+
+        foreach ($set->children as $child) {
+            $childIds = $child->descendantProducts->pluck('id')->toArray();
+
+            $allChildIds = array_merge($allChildIds, $childIds);
+        }
+
+        $allChildIds = array_unique($allChildIds);
+
+        $toAttach = array_diff($toAttach, $descendantIds);
+        $toDetach = array_diff($toDetach, $directIds, $allChildIds);
+
+        $set->descendantProducts()->detach($toDetach);
+
+        $last = 0;
+
+        /**
+         * @var int $index
+         * @var Product $product
+         */
+        foreach ($set->descendantProducts()->cursor() as $index => $product) {
+            $product->pivot->update(['order' => $index]);
+            $last = $index;
+        }
+
+        $set->descendantProducts()->attach($toAttach);
+
+        /**
+         * @var int $index
+         * @var Product $product
+         */
+        foreach ($set->descendantProducts()->wherePivotNull('order')->cursor() as $index => $product) {
+            $product->pivot->update(['order' => $index + $last + 1]);
+        }
+
+        if ($set->parent) {
+            $this->syncDescendantProducts($set->parent, $toAttach, $toDetach);
+        }
     }
 
     public function delete(ProductSet $set): void
@@ -294,6 +342,17 @@ final readonly class ProductSetService
     public function products(ProductSet $set): LengthAwarePaginator
     {
         $query = $set->products();
+
+        if (Gate::denies('product_sets.show_hidden')) {
+            $query->public();
+        }
+
+        return $query->paginate(Config::get('pagination.per_page'));
+    }
+
+    public function descendantProducts(ProductSet $set): LengthAwarePaginator
+    {
+        $query = $set->descendantProducts();
 
         if (Gate::denies('product_sets.show_hidden')) {
             $query->public();
@@ -327,7 +386,7 @@ final readonly class ProductSetService
 
     public function reorderProducts(ProductSet $set, ProductsReorderDto $dto): void
     {
-        $productsWithoutOrder = $set->products->filter(fn (Product $product) => $product->pivot->order === null);
+        $productsWithoutOrder = $set->descendantProducts->filter(fn (Product $product) => $product->pivot->order === null);
 
         if ($productsWithoutOrder->isNotEmpty()) {
             $this->fixNullOrders(
@@ -340,15 +399,15 @@ final readonly class ProductSetService
             $this->fixSameOrder($set);
         }
 
-        $maxOrder = $set->products->count() - 1;
+        $maxOrder = $set->descendantProducts->count() - 1;
 
         $dto->products->each(function (ProductReorderDto $product) use ($set, $maxOrder): void {
-            $oldOrder = array_search($product->id, $set->products->pluck('id', 'pivot.order')->all(), true);
+            $oldOrder = array_search($product->id, $set->descendantProducts->pluck('id', 'pivot.order')->all(), true);
             $newOrder = min($product->order, $maxOrder);
 
-            $set->products()->updateExistingPivot($product->id, ['order' => $newOrder]);
+            $set->descendantProducts()->updateExistingPivot($product->id, ['order' => $newOrder]);
 
-            $query = $set->products()->newPivotStatement()
+            $query = $set->descendantProducts()->newPivotStatement()
                 ->where('product_set_id', $set->id)
                 ->where('product_id', '!=', $product->id);
 
@@ -370,16 +429,38 @@ final readonly class ProductSetService
 
     public function fixOrderForSets(array $setIds, Product $product): void
     {
-        $sets = ProductSet::query()->whereIn('id', $setIds)->with('products');
+        $sets = ProductSet::query()->whereIn('id', $setIds)->with('descendantProducts');
         foreach ($sets->cursor() as $set) {
-            $set->products()->updateExistingPivot($product->getKey(), ['order' => $set->products->count() - 1]);
+            $set->descendantProducts()->updateExistingPivot($product->getKey(), ['order' => $set->products->count() - 1]);
         }
+    }
+
+    public function attachAllProductsToAncestorSets(): void
+    {
+        Product::query()->whereHas('sets')->with('sets')->eachById(function (Product $product): void {
+            $sets = $product->sets->flatMap(
+                fn ($set) => $this->getAllSetAncestors($set),
+            )->unique();
+
+            $product->ancestorSets()->sync($sets);
+        });
+    }
+
+    private function getAllSetAncestors(ProductSet $set): array
+    {
+        $ancestors = $set->parent !== null
+            ? $this->getAllSetAncestors($set->parent)
+            : [];
+
+        $ancestors[] = $set->getKey();
+
+        return $ancestors;
     }
 
     private function fixNullOrders(ProductSet $set, Collection $productsWithoutOrder): void
     {
-        $existingOrder = $set->products->pluck('pivot.order')->filter(fn (?int $order) => $order !== null);
-        $missingOrders = array_diff(range(0, $set->products->count() - 1), $existingOrder->toArray());
+        $existingOrder = $set->descendantProducts->pluck('pivot.order')->filter(fn (?int $order) => $order !== null);
+        $missingOrders = array_diff(range(0, $set->descendantProducts->count() - 1), $existingOrder->toArray());
 
         $productsWithoutOrder->each(function (Product $product) use (&$missingOrders): void {
             $product->pivot->update(['order' => array_shift($missingOrders)]);
@@ -390,14 +471,14 @@ final readonly class ProductSetService
 
     private function hasSameOrderProducts(ProductSet $set): bool
     {
-        $groupedProducts = $set->products->groupBy('pivot.order');
+        $groupedProducts = $set->descendantProducts->groupBy('pivot.order');
 
         return $groupedProducts->contains(fn (Collection $products): bool => $products->count() > 1);
     }
 
     private function fixSameOrder(ProductSet $set): void
     {
-        $set->products->each(function (Product $product, int $index): void {
+        $set->descendantProducts->each(function (Product $product, int $index): void {
             $product->pivot->update(['order' => $index]);
         });
 

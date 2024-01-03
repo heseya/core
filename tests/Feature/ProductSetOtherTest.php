@@ -289,19 +289,34 @@ class ProductSetOtherTest extends TestCase
         $this->assertDatabaseHas('product_set_product', [
             'product_id' => $product1->getKey(),
             'product_set_id' => $set->getKey(),
-            'order' => 0,
         ]);
 
-        $this->assertDatabaseHas('product_set_product', [
-            'product_id' => $product2->getKey(),
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_id' => $product1->getKey(),
             'product_set_id' => $set->getKey(),
             'order' => 1,
         ]);
 
         $this->assertDatabaseHas('product_set_product', [
-            'product_id' => $product3->getKey(),
+            'product_id' => $product2->getKey(),
+            'product_set_id' => $set->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_id' => $product2->getKey(),
             'product_set_id' => $set->getKey(),
             'order' => 2,
+        ]);
+
+        $this->assertDatabaseHas('product_set_product', [
+            'product_id' => $product3->getKey(),
+            'product_set_id' => $set->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_id' => $product3->getKey(),
+            'product_set_id' => $set->getKey(),
+            'order' => 3,
         ]);
     }
 
@@ -368,6 +383,14 @@ class ProductSetOtherTest extends TestCase
         $product5 = Product::factory()->create();
 
         $set->products()->attach([
+            $product1->getKey(),
+            $product2->getKey(),
+            $product3->getKey(),
+            $product4->getKey(),
+            $product5->getKey(),
+        ]);
+
+        $set->descendantProducts()->attach([
             $product1->getKey() => ['order' => 0],
             $product2->getKey() => ['order' => 1],
             $product3->getKey() => ['order' => 2],
@@ -393,37 +416,37 @@ class ProductSetOtherTest extends TestCase
             ->assertOk()
             ->assertJsonCount(4, 'data');
 
-        $this->assertDatabaseHas('product_set_product', [
+        $this->assertDatabaseHas('product_set_product_descendant', [
             'product_id' => $product1->getKey(),
             'product_set_id' => $set->getKey(),
             'order' => 0,
         ]);
 
-        $this->assertDatabaseHas('product_set_product', [
+        $this->assertDatabaseHas('product_set_product_descendant', [
             'product_id' => $product3->getKey(),
             'product_set_id' => $set->getKey(),
             'order' => 1,
         ]);
 
-        $this->assertDatabaseHas('product_set_product', [
+        $this->assertDatabaseHas('product_set_product_descendant', [
             'product_id' => $product5->getKey(),
             'product_set_id' => $set->getKey(),
             'order' => 2,
         ]);
 
-        $this->assertDatabaseHas('product_set_product', [
+        $this->assertDatabaseHas('product_set_product_descendant', [
             'product_id' => $newProduct->getKey(),
             'product_set_id' => $set->getKey(),
             'order' => 3,
         ]);
 
-        $this->assertDatabaseMissing('product_set_product', [
+        $this->assertDatabaseMissing('product_set_product_descendant', [
             'product_id' => $product2->getKey(),
             'product_set_id' => $set->getKey(),
             'order' => 1,
         ]);
 
-        $this->assertDatabaseMissing('product_set_product', [
+        $this->assertDatabaseMissing('product_set_product_descendant', [
             'product_id' => $product4->getKey(),
             'product_set_id' => $set->getKey(),
             'order' => 3,
@@ -592,23 +615,23 @@ class ProductSetOtherTest extends TestCase
         );
 
         $this
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $product->getKey(),
                 'order' => 3,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'one')->getKey(),
                 'order' => 0,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'two')->getKey(),
                 'order' => 1,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'four')->getKey(),
                 'order' => 2,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'five')->getKey(),
                 'order' => 4,
             ]);
@@ -640,23 +663,23 @@ class ProductSetOtherTest extends TestCase
         );
 
         $this
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $product->getKey(),
                 'order' => 1,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'one')->getKey(),
                 'order' => 0,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'two')->getKey(),
                 'order' => 2,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'four')->getKey(),
                 'order' => 3,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'five')->getKey(),
                 'order' => 4,
             ]);
@@ -688,23 +711,23 @@ class ProductSetOtherTest extends TestCase
         );
 
         $this
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $product->getKey(),
                 'order' => 4,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'two')->getKey(),
                 'order' => 0,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'three')->getKey(),
                 'order' => 1,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'four')->getKey(),
                 'order' => 2,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'five')->getKey(),
                 'order' => 3,
             ]);
@@ -736,23 +759,23 @@ class ProductSetOtherTest extends TestCase
         );
 
         $this
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $product->getKey(),
                 'order' => 0,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'one')->getKey(),
                 'order' => 1,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'two')->getKey(),
                 'order' => 2,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'three')->getKey(),
                 'order' => 3,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'four')->getKey(),
                 'order' => 4,
             ]);
@@ -784,20 +807,20 @@ class ProductSetOtherTest extends TestCase
         );
 
         $this
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $product->getKey(),
                 'order' => 2,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 0,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 1,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 3,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 4,
             ]);
     }
@@ -828,20 +851,20 @@ class ProductSetOtherTest extends TestCase
         );
 
         $this
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $product->getKey(),
                 'order' => 4,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 0,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 1,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 2,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 3,
             ]);
     }
@@ -866,8 +889,12 @@ class ProductSetOtherTest extends TestCase
             'name' => 'two',
         ]);
 
-        $set->products()->attach($product1->getKey(), ['order' => null]);
-        $set->products()->attach($product2->getKey(), ['order' => null]);
+        $set->products()->attach([$product1->getKey(), $product2->getKey()]);
+        $set->descendantProducts()->attach([
+            $product1->getKey() => ['order' => null],
+            $product2->getKey() => ['order' => null],
+        ]);
+
         $this->actingAs($this->{$user})->json(
             'POST',
             '/product-sets/id:' . $set->getKey() . '/products/reorder',
@@ -882,7 +909,7 @@ class ProductSetOtherTest extends TestCase
         );
 
         $this
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $product1->getKey(),
                 'order' => 0,
             ]);
@@ -916,10 +943,13 @@ class ProductSetOtherTest extends TestCase
             'name' => 'four',
         ]);
 
-        $set->products()->attach($product1->getKey(), ['order' => null]);
-        $set->products()->attach($product2->getKey(), ['order' => 0]);
-        $set->products()->attach($product3->getKey(), ['order' => null]);
-        $set->products()->attach($product4->getKey(), ['order' => null]);
+        $set->products()->attach([$product1->getKey(), $product2->getKey(), $product3->getKey(), $product4->getKey()]);
+        $set->descendantProducts()->attach([
+            $product1->getKey() => ['order' => null],
+            $product2->getKey() => ['order' => 0],
+            $product3->getKey() => ['order' => null],
+            $product4->getKey() => ['order' => null],
+        ]);
 
         $this->actingAs($this->{$user})->json(
             'POST',
@@ -935,17 +965,17 @@ class ProductSetOtherTest extends TestCase
         );
 
         $this
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $product1->getKey(),
                 'order' => 0,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 1,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 2,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 3,
             ]);
     }
@@ -978,10 +1008,13 @@ class ProductSetOtherTest extends TestCase
             'name' => 'four',
         ]);
 
-        $set->products()->attach($product1->getKey(), ['order' => 1]);
-        $set->products()->attach($product2->getKey(), ['order' => 1]);
-        $set->products()->attach($product3->getKey(), ['order' => 1]);
-        $set->products()->attach($product4->getKey(), ['order' => 1]);
+        $set->products()->attach([$product1->getKey(), $product2->getKey(), $product3->getKey(), $product4->getKey()]);
+        $set->descendantProducts()->attach([
+            $product1->getKey() => ['order' => 1],
+            $product2->getKey() => ['order' => 1],
+            $product3->getKey() => ['order' => 1],
+            $product4->getKey() => ['order' => 1],
+        ]);
 
         $res = $this->actingAs($this->{$user})->json(
             'POST',
@@ -997,17 +1030,17 @@ class ProductSetOtherTest extends TestCase
         );
 
         $this
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $product3->getKey(),
                 'order' => 0,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 1,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 2,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 3,
             ]);
     }
@@ -1039,11 +1072,21 @@ class ProductSetOtherTest extends TestCase
             'name' => 'five',
         ]);
 
-        $set->products()->attach($product1->getKey(), ['order' => 0]);
-        $set->products()->attach($product2->getKey(), ['order' => 1]);
-        $set->products()->attach($product3->getKey(), ['order' => 2]);
-        $set->products()->attach($product4->getKey(), ['order' => 3]);
-        $set->products()->attach($product5->getKey(), ['order' => 4]);
+        $set->products()->attach([
+            $product1->getKey(),
+            $product2->getKey(),
+            $product3->getKey(),
+            $product4->getKey(),
+            $product5->getKey(),
+        ]);
+
+        $set->descendantProducts()->attach([
+            $product1->getKey() => ['order' => 0],
+            $product2->getKey() => ['order' => 1],
+            $product3->getKey() => ['order' => 2],
+            $product4->getKey() => ['order' => 3],
+            $product5->getKey() => ['order' => 4],
+        ]);
 
         return $set;
     }
