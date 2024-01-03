@@ -440,7 +440,7 @@ final readonly class ProductSetService
         Product::query()->whereHas('sets')->with('sets')->eachById(function (Product $product): void {
             $sets = $product->sets->flatMap(
                 fn ($set) => $this->getAllSetAncestors($set),
-            )->unique();
+            );
 
             $product->ancestorSets()->sync($sets);
         });
@@ -452,7 +452,7 @@ final readonly class ProductSetService
             ? $this->getAllSetAncestors($set->parent)
             : [];
 
-        $ancestors[] = $set->getKey();
+        $ancestors[$set->getKey()] = ['order' => $set->pivot?->order];
 
         return $ancestors;
     }
