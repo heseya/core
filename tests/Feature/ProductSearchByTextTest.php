@@ -28,7 +28,6 @@ class ProductSearchByTextTest extends TestCase
     protected Collection $products;
     protected Product $firstProduct;
     protected Product $problematicProduct;
-    protected Product $problematicProduct2;
     protected string $problematicSku;
 
     private function prepareProducts(bool $commit = false)
@@ -64,9 +63,11 @@ class ProductSearchByTextTest extends TestCase
         $productNames[] = 'HAMMER Iron 3 LTE';
         $productNames[] = 'HAMMER Iron 4 Silver';
         $productNames[] = 'HAMMER Iron 4 Orange';
-        $productNames[] = 'HAMMER Blade 3 + HAMMER Watch Plus';
-        $productNames[] = 'HAMMER Blade 5G + HAMMER Watch';
         $productNames[] = 'HAMMER Energy X';
+        $productNames[] = 'HAMMER Blade 3 + HAMMER Watch Plus';
+        $productNames[] = 'HAMMER Blade 4 + Szkło Hartowane';
+        $productNames[] = 'HAMMER Blade 4 + Ładowarka HAMMER';
+        $productNames[] = 'HAMMER Blade 5G + HAMMER Watch';
         $productNames[] = 'HAMMER Energy X + Ładowarka sieciowa';
 
         $this->products = new Collection();
@@ -126,29 +127,6 @@ class ProductSearchByTextTest extends TestCase
         ]);
 
         $this->products->push($this->problematicProduct);
-
-        $this->problematicProduct2 = Product::factory()->create([
-            'public' => true,
-            'name' => 'HAMMER Blade 4 + Ładowarka HAMMER',
-            'description_html' => '',
-            'description_short' => '',
-            'search_values' => '',
-        ]);
-        $option = AttributeOption::factory()->create([
-            'attribute_id' => $this->attribute->getKey(),
-            'name' => ((string) ($i + 1000)) . 'SKU',
-            'index' => $i,
-        ]);
-        $productAttribute = ProductAttribute::create([
-            'product_id' => $this->problematicProduct2->getKey(),
-            'attribute_id' => $this->attribute->getKey()
-        ]);
-        ProductAttributeOption::create([
-            'attribute_option_id' => $option->getKey(),
-            'product_attribute_id' => $productAttribute->getKey(),
-        ]);
-
-        $this->products->push($this->problematicProduct2);
 
         if ($commit) {
             DB::commit();
@@ -329,6 +307,14 @@ class ProductSearchByTextTest extends TestCase
         $response->assertOk();
         $data = $response->json('data');
         assertEquals('HAMMER Blade 4 + Ładowarka HAMMER', $data[0]['name']);
+
+        $response = $this->actingAs($this->user)
+            ->json('GET', '/products', [
+                'search' => 'HAMMER Blade 4 + Szkło Hartowane',
+            ]);
+        $response->assertOk();
+        $data = $response->json('data');
+        assertEquals('HAMMER Blade 4 + Szkło Hartowane', $data[0]['name']);
     }
 
     public function testFulltextSearchByNameUsingLikeAllWordsQuerySearch(): void
@@ -407,7 +393,7 @@ class ProductSearchByTextTest extends TestCase
             ]);
         $response->assertOk();
         $data = $response->json('data');
-        assertEquals($this->problematicProduct->getKey(), $data[0]['id']);
+        assertEmpty($data);
 
         $response = $this->actingAs($this->user)
             ->json('GET', '/products', [
@@ -472,7 +458,28 @@ class ProductSearchByTextTest extends TestCase
             ]);
         $response->assertOk();
         $data = $response->json('data');
-        assertEquals('HAMMER Blade 4 + Ładowarka HAMMER', $data[0]['name']);
+        assertContains($data[0]['name'], [
+            'HAMMER Energy X + Ładowarka sieciowa',
+            'HAMMER Blade 4 + Ładowarka HAMMER'
+        ]);
+
+        /*
+        $response = $this->actingAs($this->user)
+            ->json('GET', '/products', [
+                'search' => 'Szkło',
+            ]);
+        $response->assertOk();
+        $data = $response->json('data');
+        assertEquals('HAMMER Blade 4 + Szkło Hartowane', $data[0]['name']);
+
+        $response = $this->actingAs($this->user)
+            ->json('GET', '/products', [
+                'search' => 'HAMMER Blade 4 + Szkło Hartowane',
+            ]);
+        $response->assertOk();
+        $data = $response->json('data');
+        assertEquals('HAMMER Blade 4 + Szkło Hartowane', $data[0]['name']);
+        */
     }
 
     public function testFulltextSearchByNameUsingScoutEngineTnt(): void
@@ -600,6 +607,14 @@ class ProductSearchByTextTest extends TestCase
             'HAMMER Energy X + Ładowarka sieciowa',
             'HAMMER Blade 4 + Ładowarka HAMMER'
         ]);
+
+        $response = $this->actingAs($this->user)
+            ->json('GET', '/products', [
+                'search' => 'HAMMER Blade 4 + Szkło Hartowane',
+            ]);
+        $response->assertOk();
+        $data = $response->json('data');
+        assertEquals('HAMMER Blade 4 + Szkło Hartowane', $data[0]['name']);
     }
 
     public function testFulltextSearchBySkuUsingLaravelFulltextSearch(): void

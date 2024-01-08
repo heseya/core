@@ -5,6 +5,7 @@ namespace Database\Factories;
 use Domain\Currency\Currency;
 use Domain\Language\Language;
 use Domain\SalesChannel\Models\SalesChannel;
+use Illuminate\Support\Str;
 use Support\Enum\Status;
 
 /**
@@ -23,7 +24,7 @@ class SalesChannelFactory extends Factory
     {
         return [
             'name' => $this->faker->word,
-            'slug' => $this->faker->unique()->slug(2),
+            'slug' => Str::limit($this->faker->unique()->slug(2), 31),
             'status' => $this->faker->randomElement(Status::cases())->value,
             'countries_block_list' => false,
             'default_currency' => Currency::DEFAULT,

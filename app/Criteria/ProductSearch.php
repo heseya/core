@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 use Illuminate\Support\Stringable;
 
 class ProductSearch extends Criterion
@@ -16,14 +17,20 @@ class ProductSearch extends Criterion
     public const BOOLEAN_SEARCH_OPERATORS = ['+', '-', '~', '@', '<', '>', '(', ')', '"'];
 
     protected Stringable $searchString;
+
     /** @var SupportCollection<array-key,string> */
     protected SupportCollection $quotes;
     /** @var SupportCollection<array-key,string> */
     protected SupportCollection $words;
     /** @var SupportCollection<array-key,string> */
+    protected SupportCollection $wordsBoolean;
+    /** @var SupportCollection<array-key,string> */
     protected SupportCollection $wordsJson;
+    /** @var SupportCollection<array-key,string> */
+    protected SupportCollection $wordsBooleanJson;
 
     protected string $naturalSearch;
+    protected string $naturalSearchJson;
 
     public function __construct(string $key, ?string $value = null)
     {
@@ -35,12 +42,18 @@ class ProductSearch extends Criterion
             ? $this->searchString->matchAll('|\".*?\"|')
             : collect();
 
-        $this->words = $this->searchString->remove(self::BOOLEAN_SEARCH_OPERATORS)->trim()->replaceMatches('/\s+/', ' ')->explode(' ');
-        $this->wordsJson = $this->words->map(fn (string $word) => trim(json_encode($word) ?: '', '"'));
+        $this->words = $this->searchString->remove('"')->trim()->replace('%', '\%')->replaceMatches('/\s+/', ' ')->explode(' ');
+        $this->wordsJson = $this->words->map(fn (string $word) => $this->wordToJson($word));
+
+        $this->wordsBoolean = $this->searchString->remove(self::BOOLEAN_SEARCH_OPERATORS)->trim()->replaceMatches('/\s+/', ' ')->explode(' ');
+        $this->wordsBooleanJson = $this->wordsBoolean->map(fn (string $word) => $this->wordToJson($word));
 
         $this->naturalSearch = $this->quotes->isNotEmpty()
             ? (new Stringable((string) $this->quotes->first()))->remove('"')->trim()->replaceMatches('/\s+/', ' ')
-            : $this->wordsJson->implode(' ');
+            : $this->wordsBoolean->implode(' ');
+        $this->naturalSearchJson = $this->quotes->isNotEmpty()
+            ? $this->wordToJson($this->naturalSearch)
+            : $this->wordsBooleanJson->implode(' ');
     }
 
     public function query(Builder $query): Builder
@@ -74,7 +87,7 @@ class ProductSearch extends Criterion
      */
     protected function findAttributeOptionsFulltext(): Collection
     {
-        $contentSearch = $this->words->map(fn (string $word) => match (mb_strlen($word)) {
+        $contentSearch = $this->wordsBooleanJson->map(fn (string $word) => match (mb_strlen($word)) {
             0 => null,
             1, 2 => $word,
             default => '+' . $word . '*',
@@ -97,8 +110,10 @@ class ProductSearch extends Criterion
     protected function useBooleanSearch(Builder $query): Builder
     {
         $naturalSearch = $this->naturalSearch;
+        $naturalSearchJson = $this->naturalSearchJson;
+
         $titleSearch = '"' . $naturalSearch . '"';
-        $contentSearch = $this->wordsJson->map(fn (string $word) => match (mb_strlen($word)) {
+        $contentSearch = $this->wordsBooleanJson->map(fn (string $word) => match (mb_strlen($word)) {
             0 => null,
             1, 2 => $word,
             default => '+' . $word . '*',
@@ -114,6 +129,7 @@ class ProductSearch extends Criterion
                 (LENGTH(`products`.`name`)) AS title_length,
                 MATCH(`products`.`name`) AGAINST (? IN BOOLEAN MODE) as title_relevancy,
                 MATCH(`products`.`name`) AGAINST (?) AS title_natural_relevancy,
+                MATCH(`products`.`name`) AGAINST (?) as title_natural_relevancy_json,
                 MATCH(`products`.`name`) AGAINST (? IN BOOLEAN MODE) as title_words_relevancy,
                 MATCH(`products`.`name`, `products`.`name`, `products`.`description_html`, `products`.`description_short`, `products`.`search_values`) AGAINST (?) AS content_natural_relevancy,
                 MATCH(`products`.`name`, `products`.`name`, `products`.`description_html`, `products`.`description_short`, `products`.`search_values`) AGAINST (? IN BOOLEAN MODE) as content_relevancy',
@@ -122,6 +138,7 @@ class ProductSearch extends Criterion
                     $this->words->count(),
                     $titleSearch,
                     $naturalSearch,
+                    $naturalSearchJson,
                     $contentSearch,
                     $naturalSearch,
                     $contentSearch,
@@ -133,11 +150,13 @@ class ProductSearch extends Criterion
                 (LENGTH(`products`.`name`)) AS title_length,
                 MATCH(`products`.`name`) AGAINST (? IN BOOLEAN MODE) as title_relevancy,
                 MATCH(`products`.`name`) AGAINST (?) AS title_natural_relevancy,
+                MATCH(`products`.`name`) AGAINST (?) as title_natural_relevancy_json,
                 MATCH(`products`.`name`) AGAINST (? IN BOOLEAN MODE) as title_words_relevancy',
                 [
                     $this->words->count(),
                     $titleSearch,
                     $naturalSearch,
+                    $naturalSearchJson,
                     $contentSearch,
                 ],
             ),
@@ -147,6 +166,7 @@ class ProductSearch extends Criterion
                 fn (Builder $subsubquery) => $subsubquery->whereFullText(['products.name', 'products.description_html', 'products.description_short', 'products.search_values'], $contentSearch, ['mode' => 'boolean']),
                 fn (Builder $subsubquery) => $subsubquery->whereFullText(['products.name'], $contentSearch, ['mode' => 'boolean']),
             )->orWhereFullText(['products.name'], $naturalSearch)
+                ->orWhereFullText(['products.name'], $naturalSearchJson)
                 ->orWhere('products.name', 'LIKE', $this->value . '%')
                 ->orWhere('products.id', 'LIKE', '%' . $this->value . '%')
                 ->orWhere('products.slug', 'LIKE', '%' . $this->value . '%')
@@ -154,6 +174,7 @@ class ProductSearch extends Criterion
         )->orderBy('title_word_equal_count', 'desc')
             ->orderBy('title_relevancy', 'desc')
             ->orderBy('title_natural_relevancy', 'desc')
+            ->orderBy('title_natural_relevancy_json', 'desc')
             ->orderBy('title_words_relevancy', 'desc')
             ->when(
                 Config::get('search.search_in_descriptions'),
@@ -187,7 +208,7 @@ class ProductSearch extends Criterion
         return $query->where(
             fn (Builder $subquery) => $subquery->where('products.id', 'LIKE', $this->naturalSearch . '%')
                 ->orWhere('products.slug', 'LIKE', $this->naturalSearch . '%')
-                ->orWhere($this->likeAllWords('products.name'))
+                ->orWhere($this->likeAllWordsJson('products.name'))
                 ->when(
                     Config::get('search.search_in_descriptions'),
                     fn (Builder $subsubquery) => $subsubquery->orWhere($this->likeAllWords('products.description_html'))
@@ -203,8 +224,9 @@ class ProductSearch extends Criterion
         $matchingOptions = $this->findAttributeOptions();
 
         $naturalSearch = $this->naturalSearch;
+        $naturalSearchJson = $this->naturalSearchJson;
         $titleSearch = '"' . $naturalSearch . '"';
-        $contentSearch = $this->words->map(fn (string $word) => match (mb_strlen($word)) {
+        $contentSearch = $this->wordsBooleanJson->map(fn (string $word) => match (mb_strlen($word)) {
             0 => null,
             1, 2 => $word,
             default => '+' . $word . '*',
@@ -218,6 +240,7 @@ class ProductSearch extends Criterion
                 (LENGTH(`products`.`name`)) AS title_length,
                 MATCH(`products`.`name`) AGAINST (? IN BOOLEAN MODE) as title_relevancy,
                 MATCH(`products`.`name`) AGAINST (?) AS title_natural_relevancy,
+                MATCH(`products`.`name`) AGAINST (?) as title_natural_relevancy_json,
                 MATCH(`products`.`name`) AGAINST (? IN BOOLEAN MODE) as title_words_relevancy,
                 MATCH(`products`.`name`, `products`.`name`, `products`.`description_html`, `products`.`description_short`, `products`.`search_values`) AGAINST (?) AS content_natural_relevancy,
                 MATCH(`products`.`name`, `products`.`name`, `products`.`description_html`, `products`.`description_short`, `products`.`search_values`) AGAINST (? IN BOOLEAN MODE) as content_relevancy',
@@ -225,6 +248,7 @@ class ProductSearch extends Criterion
                     $this->words->count(),
                     $titleSearch,
                     $naturalSearch,
+                    $naturalSearchJson,
                     $contentSearch,
                     $naturalSearch,
                     $contentSearch,
@@ -236,17 +260,19 @@ class ProductSearch extends Criterion
                 (LENGTH(`products`.`name`)) AS title_length,
                 MATCH(`products`.`name`) AGAINST (? IN BOOLEAN MODE) as title_relevancy,
                 MATCH(`products`.`name`) AGAINST (?) AS title_natural_relevancy,
+                MATCH(`products`.`name`) AGAINST (?) as title_natural_relevancy_json,
                 MATCH(`products`.`name`) AGAINST (? IN BOOLEAN MODE) as title_words_relevancy',
                 [
                     $this->words->count(),
                     $titleSearch,
                     $naturalSearch,
+                    $naturalSearchJson,
                     $contentSearch,
                 ],
             ),
         )->where(
-            fn (Builder $subquery) => $subquery->where('products.id', 'LIKE', $naturalSearch . '%')
-                ->orWhere('products.slug', 'LIKE', $naturalSearch . '%')
+            fn (Builder $subquery) => $subquery->where('products.id', 'LIKE', $this->value . '%')
+                ->orWhere('products.slug', 'LIKE', Str::slug($this->value) . '%')
                 ->orWhere($this->likeAllWordsJson('products.name'))
                 ->when(
                     Config::get('search.search_in_descriptions'),
@@ -258,6 +284,7 @@ class ProductSearch extends Criterion
         )->orderBy('title_word_equal_count', 'desc')
             ->orderBy('title_relevancy', 'desc')
             ->orderBy('title_natural_relevancy', 'desc')
+            ->orderBy('title_natural_relevancy_json', 'desc')
             ->orderBy('title_words_relevancy', 'desc')
             ->when(
                 Config::get('search.search_in_descriptions'),
@@ -267,11 +294,20 @@ class ProductSearch extends Criterion
             ->orderBy('title_length', 'asc');
     }
 
+    private function wordToJson(string $word): string
+    {
+        return trim(json_encode($word) ?: '', '"');
+    }
+
     private function likeAllWords(string $column): Closure
     {
         return function (Builder $subquery) use ($column): Builder {
             foreach ($this->words as $word) {
-                $subquery = $subquery->where($column, 'LIKE', '%' . $word . '%');
+                if (is_numeric($word)) {
+                    $subquery = $subquery->where($column, 'LIKE', '% ' . $word . '%');
+                } else {
+                    $subquery = $subquery->where($column, 'LIKE', '%' . $word . '%');
+                }
             }
 
             return $subquery;
@@ -281,8 +317,13 @@ class ProductSearch extends Criterion
     private function likeAllWordsJson(string $column): Closure
     {
         return function (Builder $subquery) use ($column): Builder {
-            foreach ($this->wordsJson as $word) {
-                $subquery = $subquery->where($column, 'LIKE', '%' . $word . '%');
+            foreach ($this->words as $word) {
+                $wordJson = $this->wordToJson($word);
+                $subquery = match (true) {
+                    is_numeric($word) => $subquery->where($column, 'LIKE', '% ' . $word . '%'),
+                    $wordJson !== $word => $subquery->where(fn (Builder $subsubquery) => $subsubquery->where($column, 'LIKE', '%' . $word . '%')->orWhere($column, 'LIKE', '%' . $wordJson . '%')),
+                    default => $subquery->where($column, 'LIKE', '%' . $word . '%'),
+                };
             }
 
             return $subquery;
