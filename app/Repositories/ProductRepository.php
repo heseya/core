@@ -145,7 +145,8 @@ class ProductRepository implements ProductRepositoryContract
             $query->orderByRaw('FIELD(products.id,"' . implode('","', $scoutResults) . '")');
         }
 
-        if (!$dto->sort instanceof Optional) {
+        if (is_string($dto->sort)) {
+            $query->reorder();
             $query->sort($dto->sort);
         }
 
