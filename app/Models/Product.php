@@ -79,6 +79,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     protected $fillable = [
         'id',
         'name',
+        'searchable_name',
         'slug',
         'description_html',
         'description_short',
@@ -375,7 +376,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         return array_merge(
             [
                 'id' => $this->id,
-                'name' => $this->name,
+                'name' => $this->searchable_name,
             ],
             Config::get('search.search_in_descriptions')
                 ? [
@@ -386,5 +387,12 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
                 : [],
             $attributes,
         );
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (Product $product): void {
+            $product->searchable_name = collect($product->getTranslations('name'))->values()->map(fn (string $translation) => trim($translation))->unique()->implode(' ');
+        });
     }
 }

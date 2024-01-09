@@ -44,6 +44,7 @@ final class AttributeOption extends Model implements SortableContract, Translata
     protected $fillable = [
         'id',
         'name',
+        'searchable_name',
         'index',
         'value_number',
         'value_date',
@@ -99,5 +100,12 @@ final class AttributeOption extends Model implements SortableContract, Translata
             'pivot_id',
         )->using(ProductAttributeOption::class)
             ->as('product_attribute_option_pivot');
+    }
+
+    protected static function booted(): void
+    {
+        self::saving(function (AttributeOption $option): void {
+            $option->searchable_name = collect($option->getTranslations('name'))->values()->map(fn (string $translation) => trim($translation))->unique()->implode(' ');
+        });
     }
 }
