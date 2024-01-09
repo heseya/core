@@ -2,6 +2,7 @@
 
 use App\Models\Product;
 use Domain\ProductAttribute\Models\AttributeOption;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -16,13 +17,17 @@ return new class extends Migration
         Schema::table('attribute_options', function (Blueprint $table) {
             $table->string('searchable_name', 2048)->nullable();
         });
-        Product::query()->chunkById(100, function (Product $product) {
-            $product->touch();
-            $product->save();
+        Product::query()->chunk(100, function (Collection $products) {
+            $products->each(function (Product $product) {
+                $product->touch();
+                $product->save();
+            });
         });
-        AttributeOption::query()->chunkById(100, function (AttributeOption $option) {
-            $option->touch();
-            $option->save();
+        AttributeOption::query()->chunk(100, function (Collection $options) {
+            $options->each(function (AttributeOption $option) {
+                $option->touch();
+                $option->save();
+            });
         });
     }
 
