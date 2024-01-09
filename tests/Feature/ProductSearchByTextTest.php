@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
@@ -76,6 +77,7 @@ class ProductSearchByTextTest extends TestCase
             $product = Product::factory()->create([
                 'public' => true,
                 'name' => $name,
+                'slug' => Str::slug($name),
                 'description_html' => '',
                 'description_short' => '',
                 'search_values' => '',
@@ -107,6 +109,7 @@ class ProductSearchByTextTest extends TestCase
         $this->problematicProduct = Product::factory()->create([
             'public' => true,
             'name' => 'Laptop techbite Arc 11.6 128 GB HD',
+            'slug' => Str::slug('Laptop techbite Arc 11.6 128 GB HD'),
             'description_html' => '',
             'description_short' => '',
             'search_values' => '',
@@ -463,7 +466,6 @@ class ProductSearchByTextTest extends TestCase
             'HAMMER Blade 4 + Ładowarka HAMMER'
         ]);
 
-        /*
         $response = $this->actingAs($this->user)
             ->json('GET', '/products', [
                 'search' => 'Szkło',
@@ -479,7 +481,6 @@ class ProductSearchByTextTest extends TestCase
         $response->assertOk();
         $data = $response->json('data');
         assertEquals('HAMMER Blade 4 + Szkło Hartowane', $data[0]['name']);
-        */
     }
 
     public function testFulltextSearchByNameUsingScoutEngineTnt(): void
