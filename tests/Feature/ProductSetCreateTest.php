@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\MediaType;
+use App\Enums\ValidationError;
 use App\Listeners\WebHookEventListener;
 use App\Models\Media;
 use App\Models\WebHook;
@@ -564,14 +565,61 @@ class ProductSetCreateTest extends TestCase
             'slug' => 'test-duplicate',
         ]);
 
-        $response = $this->actingAs($this->{$user})->postJson('/product-sets', [
+        $this->actingAs($this->{$user})->postJson('/product-sets', [
             'name' => 'New set',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'New set',
+                ],
+            ],
             'slug_suffix' => 'test-duplicate',
             'slug_override' => false,
-        ]);
-        $response->assertStatus(422);
+            'published' => [
+                $this->lang,
+            ],
+            'public' => true,
+        ])
+            ->assertStatus(422)
+            ->assertJsonFragment([
+                'key' => ValidationError::UNIQUE,
+                'message' => 'The slug has already been taken.',
+            ]);
 
         Event::assertNotDispatched(ProductSetCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateDuplicateSlugDeleted(string $user): void
+    {
+        $this->{$user}->givePermissionTo('product_sets.add');
+
+        Event::fake([ProductSetCreated::class]);
+
+        $deleted = ProductSet::factory()->create([
+            'name' => 'Test duplicate',
+            'slug' => 'test-duplicate',
+        ]);
+
+        $deleted->delete();
+
+        $this->actingAs($this->{$user})->postJson('/product-sets', [
+            'name' => 'New set',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'New set',
+                ],
+            ],
+            'slug_suffix' => 'test-duplicate',
+            'slug_override' => false,
+            'published' => [
+                $this->lang,
+            ],
+            'public' => true,
+        ])->assertCreated();
+
+        Event::assertDispatched(ProductSetCreated::class);
     }
 
     /**

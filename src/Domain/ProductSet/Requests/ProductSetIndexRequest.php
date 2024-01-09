@@ -17,6 +17,7 @@ final class ProductSetIndexRequest extends FormRequest
             'search' => ['nullable', 'string', 'max:255'],
             'name' => ['nullable', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255'],
+            'slug_suffix' => ['nullable', 'string', 'max:255'],
             'parent_id' => ['nullable', 'uuid', 'exists:product_sets,id'],
             'public' => ['boolean'],
             'root' => ['boolean'],

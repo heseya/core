@@ -87,7 +87,7 @@ final readonly class ProductSetService
         }
 
         Validator::make(['slug' => $slug], [
-            'slug' => 'unique:product_sets,slug',
+            'slug' => Rule::unique('product_sets', 'slug')->whereNull('deleted_at'),
         ])->validate();
 
         $set = new ProductSet(
@@ -189,7 +189,7 @@ final readonly class ProductSetService
         }
 
         Validator::make(['slug' => $slug], [
-            'slug' => Rule::unique('product_sets', 'slug')->ignoreModel($set),
+            'slug' => Rule::unique('product_sets', 'slug')->whereNull('deleted_at')->ignoreModel($set),
         ])->validate();
 
         if (!($dto->children_ids instanceof Optional)) {
