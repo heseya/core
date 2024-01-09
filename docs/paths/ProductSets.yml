@@ -34,6 +34,11 @@ ProductSets:
         description: 'Slug search'
         schema:
           type: string
+      - name: slug_suffix
+        in: query
+        description: 'Slug suffix search'
+        schema:
+          type: string
       - name: public
         in: query
         description: 'Is public search'

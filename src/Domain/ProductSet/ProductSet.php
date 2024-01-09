@@ -9,6 +9,7 @@ use App\Criteria\MetadataSearch;
 use App\Criteria\ParentIdSearch;
 use App\Criteria\ProductSetSearch;
 use App\Criteria\WhereInIds;
+use App\Criteria\WhereSlugSuffix;
 use App\Enums\DiscountTargetType;
 use App\Models\Contracts\SeoContract;
 use App\Models\Discount;
@@ -81,6 +82,7 @@ final class ProductSet extends Model implements SeoContract, Translatable
     protected array $criteria = [
         'name' => Like::class,
         'slug' => Like::class,
+        'slug_suffix' => WhereSlugSuffix::class,
         'search' => ProductSetSearch::class,
         'public',
         'metadata' => MetadataSearch::class,
