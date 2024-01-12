@@ -4,13 +4,13 @@ namespace App\SortColumnTypes;
 
 use Illuminate\Support\Facades\App;
 
-final class TranslatedColumn implements SortableColumn
+final class TranslatedRawColumn implements SortableColumn
 {
     public static function getColumnName(string $fieldName): string
     {
         $localization = App::getLocale();
 
-        return "{$fieldName}->{$localization}";
+        return "(JSON_UNQUOTE(JSON_EXTRACT({$fieldName}, '$.\"{$localization}\"')) COLLATE utf8mb4_0900_ai_ci)";
     }
 
     public static function getValidationRules(string $fieldName): array
@@ -20,6 +20,6 @@ final class TranslatedColumn implements SortableColumn
 
     public static function useRawOrderBy(): bool
     {
-        return false;
+        return true;
     }
 }
