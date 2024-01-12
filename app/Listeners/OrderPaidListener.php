@@ -23,7 +23,7 @@ final class OrderPaidListener
                     ->send(new OrderPaid($order));
             }
         } catch (Throwable) {
-            Log::error("Couldn't send order paid notification to the address: {$order->email}");
+            Log::error("Couldn't send order {$order->code}  paid notification to the address: {$order->email}");
         }
     }
 }
