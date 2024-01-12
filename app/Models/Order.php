@@ -32,7 +32,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Notifications\Notifiable;
 
 /**
  * @property Money $summary
@@ -46,7 +45,6 @@ final class Order extends Model implements SortableContract
     use HasFactory;
     use HasMetadata;
     use HasOrderDiscount;
-    use Notifiable;
     use Sortable;
 
     protected $fillable = [

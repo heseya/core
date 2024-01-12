@@ -22,6 +22,7 @@ use App\Exceptions\OrderException;
 use App\Exceptions\ServerException;
 use App\Exceptions\StoreException;
 use App\Http\Resources\OrderResource;
+use App\Mail\OrderUrls;
 use App\Models\Address;
 use App\Models\App;
 use App\Models\CartResource;
@@ -33,7 +34,6 @@ use App\Models\Product;
 use App\Models\Schema;
 use App\Models\Status;
 use App\Models\User;
-use App\Notifications\SendUrls;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
@@ -58,6 +58,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Throwable;
 
 final readonly class OrderService implements OrderServiceContract
@@ -527,7 +528,9 @@ final readonly class OrderService implements OrderServiceContract
     {
         $products = $order->products()->has('urls')->get();
         if (!$products->isEmpty()) {
-            $order->notify(new SendUrls($order, $products));
+            Mail::to($order->email)
+                ->locale($order->language)
+                ->send(new OrderUrls($order, $products));
 
             $products->toQuery()->update([
                 'is_delivered' => true,
