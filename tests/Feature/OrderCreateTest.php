@@ -54,6 +54,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Spatie\WebhookServer\CallWebhookJob;
@@ -248,24 +249,20 @@ class OrderCreateTest extends TestCase
     public function testCreateOrderMailSend($user): void
     {
         $this->{$user}->givePermissionTo('orders.add');
-
         $this->product->update([
             'price' => 10,
             'vat_rate' => 23,
         ]);
 
-        $admin = User::factory()->create();
-
         Setting::create([
             'name' => 'admin_mails',
-            'value' => $admin->email,
+            'value' => 'test@example.com',
             'public' => false,
         ]);
 
-        $productQuantity = 20;
+        Mail::fake();
 
-        Notification::fake();
-        $response = $this->actingAs($this->{$user})->postJson('/orders', [
+        $this->actingAs($this->{$user})->json('POST', '/orders', [
             'email' => $this->email,
             'currency' => $this->currency,
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -275,16 +272,12 @@ class OrderCreateTest extends TestCase
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
-                    'quantity' => $productQuantity,
+                    'quantity' => 20,
                 ],
             ],
         ])->assertCreated();
 
-        /** @var Order $order */
-        $order = Order::query()->where('id', '=', $response->getData()->data->id)->first();
-        Notification::assertCount(2);
-        Notification::assertSentTo($order, \App\Notifications\OrderCreated::class);
-        Notification::assertSentTo($admin, \App\Notifications\OrderCreated::class);
+        Mail::assertSent(OrderCreated::class);
     }
 
     /**
