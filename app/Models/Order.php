@@ -40,7 +40,7 @@ use Illuminate\Notifications\Notifiable;
  *
  * @mixin IdeHelperOrder
  */
-class Order extends Model implements SortableContract
+final class Order extends Model implements SortableContract
 {
     use HasCriteria;
     use HasFactory;
@@ -67,7 +67,6 @@ class Order extends Model implements SortableContract
         'invoice_requested',
         'shipping_type',
         'sales_channel_id',
-
         'currency',
         'cart_total_initial',
         'cart_total',
@@ -76,6 +75,7 @@ class Order extends Model implements SortableContract
         'summary',
         'language',
     ];
+
     protected array $criteria = [
         'search' => OrderSearch::class,
         'status_id',
@@ -94,6 +94,7 @@ class Order extends Model implements SortableContract
         'ids' => WhereInIds::class,
         'payment_method_id' => OrderPayments::class,
     ];
+
     protected array $sortable = [
         'id',
         'code',
@@ -115,9 +116,6 @@ class Order extends Model implements SortableContract
 
     /**
      * Summary amount of paid.
-     *
-     * @throws MathException
-     * @throws MoneyMismatchException
      */
     public function getPaidAmountAttribute(): Money
     {
@@ -159,6 +157,10 @@ class Order extends Model implements SortableContract
             : ($this->digitalShippingMethod ? $this->digitalShippingMethod->shipping_type : null);
     }
 
+    /**
+     * @throws MathException
+     * @throws MoneyMismatchException
+     */
     public function isPaid(): bool
     {
         return $this->paid_amount->isGreaterThanOrEqualTo($this->summary);

@@ -68,20 +68,17 @@ final class NewOrderMailTest extends TestCase
     {
         $mailable = new OrderCreated($this->order);
 
-        $orderCode = $this->order->code;
-        $date = $this->order->created_at->format('d-m-Y');
         $productPrice = $this->orderProduct->price->getAmount(); // 250.20
         $orderSummary = $this->order->summary->getAmount(); // 1261.90
         $shippingPrice = $this->order->shipping_price->getAmount(); // 10.90
         $cartTotal = $this->order->cart_total->getAmount(); // 1251.00
-        $productName = $this->product->name;
 
-        $mailable->assertSeeInHtml($orderCode);
-        $mailable->assertSeeInHtml($date);
+        $mailable->assertSeeInHtml($this->order->code);
+        $mailable->assertSeeInHtml($this->order->created_at->format('d-m-Y'));
         $mailable->assertSeeInHtml("{$productPrice} {$this->order->currency->value}");
         $mailable->assertSeeInHtml("{$shippingPrice} {$this->order->currency->value}");
         $mailable->assertSeeInHtml("{$cartTotal} {$this->order->currency->value}");
         $mailable->assertSeeInHtml("{$orderSummary} {$this->order->currency->value}");
-        $mailable->assertSeeInHtml("{$productName}");
+        $mailable->assertSeeInHtml($this->product->name);
     }
 }

@@ -1,13 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Listeners;
 
 use App\Events\OrderUpdatedPaid;
-use App\Notifications\OrderPaid;
+use App\Mail\OrderPaid;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Throwable;
 
-class OrderPaidListener
+final class OrderPaidListener
 {
     public function handle(OrderUpdatedPaid $event): void
     {
@@ -15,10 +18,12 @@ class OrderPaidListener
 
         try {
             if ($order->paid) {
-                $order->notify(new OrderPaid($order));
+                Mail::to($order->email)
+                    ->locale($order->language)
+                    ->send(new OrderPaid($order));
             }
         } catch (Throwable) {
-            Log::error("Couldn't send order paid to the address: {$order->email}");
+            Log::error("Couldn't send order paid notification to the address: {$order->email}");
         }
     }
 }
