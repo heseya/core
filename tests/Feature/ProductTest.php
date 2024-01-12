@@ -2660,6 +2660,42 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateNoPublished(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.edit');
+
+        $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Updated',
+                    'description_html' => '<h1>New description</h1>',
+                    'description_short' => 'New so called short description',
+                ],
+            ],
+            'slug' => 'updated',
+            'public' => false,
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'published' => [
+                    $this->lang,
+                ],
+            ]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $this->product->getKey(),
+            "name->{$this->lang}" => 'Updated',
+            'slug' => 'updated',
+            "description_html->{$this->lang}" => '<h1>New description</h1>',
+            "description_short->{$this->lang}" => 'New so called short description',
+            'public' => false,
+            'published' => json_encode([$this->lang]),
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateDigital(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');

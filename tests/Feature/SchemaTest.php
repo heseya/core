@@ -1078,6 +1078,45 @@ class SchemaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateNoPublished(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.edit');
+
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto());
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', '/schemas/id:' . $schema->getKey(), [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'new name',
+                    ],
+                ],
+            ])
+            ->assertValid()
+            ->assertOk()
+            ->assertJsonFragment([
+                'name' => 'new name',
+                'published' => [
+                    $this->lang,
+                ],
+            ])
+            ->assertJsonMissing([
+                'first' => 'new value',
+            ])
+            ->assertJsonMissing([
+                'second' => 'new metadata',
+            ]);
+
+        $this->assertDatabaseHas('schemas', [
+            'id' => $schema->getKey(),
+            'published' => json_encode([$this->lang]),
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testRemoveUnauthorized(string $user): void
     {
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto());

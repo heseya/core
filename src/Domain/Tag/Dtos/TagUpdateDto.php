@@ -13,7 +13,7 @@ final class TagUpdateDto extends Data
 {
     /**
      * @param array<string, array<string, string>> $translations
-     * @param string[] $published
+     * @param string[]|Optional $published
      */
     public function __construct(
         #[Uuid]
@@ -21,6 +21,6 @@ final class TagUpdateDto extends Data
         #[Max(6)]
         public readonly Optional|string|null $color,
         public readonly array|Optional $translations,
-        public readonly array|Optional $published = [],
+        public readonly array|Optional $published,
     ) {}
 }
