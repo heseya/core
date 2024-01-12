@@ -16,4 +16,9 @@ final class PriceColumn implements SortableColumn
     {
         return ['nullable', new Enum(Currency::class)];
     }
+
+    public static function useRawOrderBy(): bool
+    {
+        return false;
+    }
 }

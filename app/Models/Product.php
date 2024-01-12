@@ -23,7 +23,7 @@ use App\Models\Contracts\SeoContract;
 use App\Models\Contracts\SortableContract;
 use App\Models\Interfaces\Translatable;
 use App\SortColumnTypes\PriceColumn;
-use App\SortColumnTypes\TranslatedColumn;
+use App\SortColumnTypes\TranslatedRawColumn;
 use App\Traits\CustomHasTranslations;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasDiscounts;
@@ -116,7 +116,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     ];
     protected array $sortable = [
         'id',
-        'name' => TranslatedColumn::class,
+        'name' => TranslatedRawColumn::class,
         'created_at',
         'updated_at',
         'public',
