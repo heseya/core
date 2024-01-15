@@ -170,6 +170,7 @@ class TagTest extends TestCase
             ],
             'color' => '444444',
             'id' => $id,
+            'published' => [$this->lang],
         ]);
 
         $response->assertCreated();
@@ -249,6 +250,40 @@ class TagTest extends TestCase
         $this->assertDatabaseHas('tags', [
             "name->{$this->lang}" => 'test tag',
             'color' => 'ababab',
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateNoPublished($user): void
+    {
+        $this->{$user}->givePermissionTo('tags.edit');
+
+        $tag = Tag::factory()->create();
+
+        $this->actingAs($this->{$user})->patchJson('/tags/id:' . $tag->getKey() . '?with_translations=1', [
+            'translations' => [
+                $this->lang => [
+                    'name' => 'test tag',
+                ]
+            ],
+            'color' => 'ababab',
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'test tag',
+                    ]
+                ],
+                'color' => 'ababab',
+            ]);
+
+        $this->assertDatabaseHas('tags', [
+            "name->{$this->lang}" => 'test tag',
+            'color' => 'ababab',
+            'published' => json_encode([$this->lang]),
         ]);
     }
 

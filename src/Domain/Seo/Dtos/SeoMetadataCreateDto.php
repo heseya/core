@@ -19,7 +19,7 @@ final class SeoMetadataCreateDto extends Data
     /**
      * @param array<string, array<string, string>> $translations
      * @param string[]|Optional|null $header_tags
-     * @param string[] $published
+     * @param string[]|Optional $published
      */
     public function __construct(
         #[Rule(new Translations(['title', 'description', 'keywords', 'no_index']))]
@@ -32,6 +32,6 @@ final class SeoMetadataCreateDto extends Data
         public readonly bool|Optional $no_index,
         public readonly array|Optional|null $header_tags,
         /** @var array<string> */
-        public readonly array $published = [],
+        public readonly array|Optional $published,
     ) {}
 }

@@ -21,6 +21,6 @@ final class TagCreateDto extends Data
         #[Max(6)]
         public readonly Optional|string|null $color,
         public readonly array $translations,
-        public readonly array|Optional $published = [],
+        public readonly array $published,
     ) {}
 }

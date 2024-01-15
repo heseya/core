@@ -226,4 +226,47 @@ class SeoMetadataTest extends TestCase
             'global' => true,
         ]);
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateNoPublished(string $user): void
+    {
+        $this->{$user}->givePermissionTo('seo.edit');
+
+        $seoGlobal = SeoMetadata::query()->where('global', '=', true)->first();
+        $seoGlobal->update([
+            'published' => [$this->lang],
+        ]);
+
+        $seo = [
+            'title' => 'title',
+            'description' => 'description',
+        ];
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', '/seo', [
+                'translations' => [
+                    $this->lang => $seo,
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonFragment(array_merge($seo, [
+                'published' => [
+                    $this->lang,
+                ],
+            ]))
+            ->assertJsonStructure([
+                'data' => $this->expected_structure,
+            ]);
+
+        $this->assertDatabaseCount('seo_metadata', 1);
+
+        $this->assertDatabaseHas('seo_metadata', [
+            "title->{$this->lang}" => 'title',
+            "description->{$this->lang}" => 'description',
+            'global' => true,
+            'published' => json_encode([$this->lang]),
+        ]);
+    }
 }
