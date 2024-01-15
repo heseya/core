@@ -27,7 +27,10 @@ class AttributeTest extends TestCase
     {
         parent::setUp();
 
-        $this->attribute = Attribute::factory()->create();
+        $this->attribute = Attribute::factory()->create([
+            'global' => true,
+            'sortable' => true,
+        ]);
 
         $this->option = AttributeOption::factory()->create([
             'index' => 1,
@@ -283,6 +286,72 @@ class AttributeTest extends TestCase
             ->json('GET', '/attributes', ['search' => $first->id])
             ->assertOk()
             ->assertJsonCount(2, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchGlobal(string $user): void
+    {
+        $this->{$user}->givePermissionTo('attributes.show');
+
+        Attribute::factory()->create([
+            'name' => 'global',
+            'description' => 'new description',
+            'global' => true,
+        ]);
+        Attribute::factory()->create([
+            'name' => 'no global',
+            'description' => 'test',
+            'slug' => 'description',
+            'global' => false,
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/attributes', ['global' => true])
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'name' => 'global',
+            ])
+            ->assertJsonFragment([
+                'id' => $this->attribute->getKey(),
+                'name' => $this->attribute->name,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchSortable(string $user): void
+    {
+        $this->{$user}->givePermissionTo('attributes.show');
+
+        Attribute::factory()->create([
+            'name' => 'sortable',
+            'description' => 'new description',
+            'sortable' => true,
+        ]);
+        Attribute::factory()->create([
+            'name' => 'no sortable',
+            'description' => 'test',
+            'slug' => 'description',
+            'sortable' => false,
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/attributes', ['sortable' => true])
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'name' => 'sortable',
+            ])
+            ->assertJsonFragment([
+                'id' => $this->attribute->getKey(),
+                'name' => $this->attribute->name,
+            ]);
     }
 
     /**

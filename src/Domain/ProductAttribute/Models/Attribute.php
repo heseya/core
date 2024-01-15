@@ -85,6 +85,7 @@ final class Attribute extends Model implements Translatable
         'ids' => WhereInIds::class,
         'published' => Like::class,
         'attribute.published' => Like::class,
+        'sortable',
     ];
 
     /**

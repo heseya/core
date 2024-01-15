@@ -55,6 +55,12 @@ Attributes:
         required: false
         schema:
           type: boolean
+      - name: sortable
+        in: query
+        required: false
+        description: search by global flag
+        schema:
+          type: boolean
     summary: 'list attributes'
     responses:
       200:
