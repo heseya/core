@@ -61,8 +61,8 @@ abstract class SchemaDto extends Data
         public readonly array|Optional $metadata_public,
         public readonly array|Optional $metadata_private,
         #[Rule(['sometimes', new Translations(['name'])])]
-        public array|Optional $translations = [],
-        public array|Optional $published = [],
+        public array|Optional $translations,
+        public array|Optional $published,
     ) {
         $this->metadata_computed = Map::toMetadata($metadata_public, $metadata_private);
     }
