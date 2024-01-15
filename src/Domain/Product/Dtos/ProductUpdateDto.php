@@ -57,6 +57,7 @@ final class ProductUpdateDto extends Data
         public array|Optional $attributes,
         public array|Optional $descriptions,
         public array|Optional $related_sets,
+        public Optional|ProductBannerMediaUpdateDto $banner_media,
         public array|Optional $translations = [],
         public array|Optional $published = [],
     ) {

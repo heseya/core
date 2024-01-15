@@ -6,6 +6,7 @@ use App\Models\Discount;
 use App\Models\Option;
 use Domain\Language\Language;
 use Domain\Language\LanguageService;
+use Domain\Product\Models\ProductBannerMedia;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\Seo\Models\SeoMetadata;
 use Illuminate\Support\Arr;
@@ -70,6 +71,10 @@ trait CustomHasTranslations
             if ($this instanceof Option) {
                 /** @var array<int, string> $translations */
                 $translations = $this->schema->published ?? [];
+            }
+            if ($this instanceof ProductBannerMedia) {
+                /** @var array<int, string> $translations */
+                $translations = $this->product->published ?? [];
             }
         }
 
