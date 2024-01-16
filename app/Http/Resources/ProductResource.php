@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
 use Domain\Page\PageResource;
+use Domain\Product\Resources\ProductBannerMediaResource;
 use Domain\ProductSet\ProductSet;
 use Domain\ProductSet\Resources\ProductSetResource;
 use Domain\Seo\Resources\SeoMetadataResource;
@@ -97,6 +98,7 @@ class ProductResource extends Resource
             'seo' => SeoMetadataResource::make($this->resource->seo),
             'sales' => SaleResource::collection($this->resource->sales),
             'attachments' => MediaAttachmentResource::collection($attachments),
+            'banner_media' => ProductBannerMediaResource::make($this->resource->bannerMedia),
         ];
     }
 

@@ -33,6 +33,7 @@ use App\Traits\HasSeoMetadata;
 use App\Traits\Sortable;
 use Domain\Page\Page;
 use Domain\Price\Enums\ProductPriceType;
+use Domain\Product\Models\ProductBannerMedia;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
@@ -43,6 +44,7 @@ use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -387,6 +389,14 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
                 : [],
             $attributes,
         );
+    }
+
+    /**
+     * @return BelongsTo<ProductBannerMedia, self>
+     */
+    public function bannerMedia(): BelongsTo
+    {
+        return $this->belongsTo(ProductBannerMedia::class, 'banner_media_id');
     }
 
     protected static function booted(): void

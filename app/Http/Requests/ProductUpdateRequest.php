@@ -35,6 +35,7 @@ class ProductUpdateRequest extends ProductCreateRequest
             'nullable',
             new Translations(['name', 'description_html', 'description_short']),
         ];
+        $rules['banner_media'] = ['nullable', 'array'];
 
         return $rules;
     }

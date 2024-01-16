@@ -9,6 +9,7 @@ use App\Enums\MediaSource;
 use App\Enums\MediaType;
 use App\Traits\HasMetadata;
 use Domain\Banner\Models\BannerMedia;
+use Domain\Product\Models\ProductBannerMedia;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -76,6 +77,15 @@ class Media extends Model
     {
         return $this->products()->count()
             + $this->documents()->count()
-            + $this->bannerMedia()->count();
+            + $this->bannerMedia()->count()
+            + $this->productBannerMedia()->count();
+    }
+
+    public function productBannerMedia(): BelongsToMany
+    {
+        return $this
+            ->belongsToMany(ProductBannerMedia::class, 'product_banner_responsive_media')
+            ->withPivot('min_screen_width')
+            ->using(MediaBannerMedia::class);
     }
 }
