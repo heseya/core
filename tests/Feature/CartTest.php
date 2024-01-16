@@ -2842,6 +2842,99 @@ class CartTest extends TestCase
             ]);
     }
 
+    public static function itemAvailableProvider(): array
+    {
+        return [
+            'first as user' => ['user', 1, 0, 2],
+            'second as user' => ['user', 0, 1, 2],
+            'last as user' => ['user', 0, 2, 1],
+            'first as app' => ['application', 1, 0, 2],
+            'second as app' => ['application', 0, 1, 2],
+            'last as app' => ['application', 0, 2, 1],
+        ];
+    }
+
+    /**
+     * @dataProvider itemAvailableProvider
+     */
+    public function testCartProcessWithNotAvailable(string $user, int $first, int $second, int $third): void
+    {
+        $this->{$user}->givePermissionTo('cart.verify');
+
+        /** @var Product $notAvailable */
+        $notAvailable = $this->productService->create(
+            FakeDto::productCreateDto([
+                'public' => true,
+                'prices_base' => [PriceDto::from(Money::of(2000.0, $this->currency->value))],
+            ])
+        );
+        $item = Item::factory()->create();
+        $notAvailable->items()->attach([$item->getKey() => ['required_quantity' => 1]]);
+
+        $anotherProduct = $this->productService->create(
+            FakeDto::productCreateDto([
+                'public' => true,
+                'prices_base' => [PriceDto::from(Money::of(500.0, $this->currency->value))],
+            ])
+        );
+
+        $cartItems = [
+            [
+                'cartitem_id' => '1',
+                'product_id' => $this->product->getKey(),
+                'quantity' => 2,
+                'schemas' => [],
+            ],
+            [
+                'cartitem_id' => '2',
+                'product_id' => $notAvailable->getKey(),
+                'quantity' => 2,
+                'schemas' => [],
+            ],
+            [
+                'cartitem_id' => '3',
+                'product_id' => $anotherProduct->getKey(),
+                'quantity' => 1,
+                'schemas' => [],
+            ],
+        ];
+
+        $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                $cartItems[$first],
+                $cartItems[$second],
+                $cartItems[$third],
+            ],
+        ])
+            ->assertValid()
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => '9700.00',
+                'cart_total' => '9700.00',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '9700.00',
+                'coupons' => [],
+                'sales' => [],
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => '4600.00',
+                'price_discounted' => '4600.00',
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '3',
+                'price' => '500.00',
+            ])
+            ->assertJsonMissing([
+                'cartitem_id' => '2',
+                'price' => '2000.00',
+            ]);
+    }
+
     private function prepareDataForCouponTest($coupon): array
     {
         $code = $coupon ? [] : ['code' => null];

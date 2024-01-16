@@ -141,6 +141,7 @@ class ItemService implements ItemServiceContract
             }
             $selectedItems = $this->addItemArrays($selectedItems, $productItems);
 
+            $schemaItems = [];
             /** @var Schema $schema */
             foreach ($product->schemas as $schema) {
                 $value = $schemas[$schema->getKey()] ?? null;
@@ -155,7 +156,8 @@ class ItemService implements ItemServiceContract
                 $selectedItems = $this->addItemArrays($selectedItems, $schemaItems);
             }
 
-            if ($this->validateCartItems($selectedItems)) {
+            $currentProductItems = $this->addItemArrays($productItems, $schemaItems);
+            if ($this->validateCartItems($currentProductItems)) {
                 $products->push($product);
             } else {
                 $cartItemToRemove[] = $item->getCartItemId();
