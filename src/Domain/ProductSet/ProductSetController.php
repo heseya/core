@@ -8,6 +8,7 @@ use App\Dtos\ProductsReorderDto;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductResource;
 use Domain\ProductSet\Dtos\ProductSetCreateDto;
+use Domain\ProductSet\Dtos\ProductSetProductsIndexDto;
 use Domain\ProductSet\Dtos\ProductSetUpdateDto;
 use Domain\ProductSet\Requests\ProductSetAttachRequest;
 use Domain\ProductSet\Requests\ProductSetIndexRequest;
@@ -87,9 +88,9 @@ final class ProductSetController extends Controller
         return ProductResource::collection($products);
     }
 
-    public function descendantProducts(ProductSet $productSet): JsonResource
+    public function descendantProducts(ProductSet $productSet, ProductSetProductsIndexDto $dto): JsonResource
     {
-        $products = $this->productSetService->descendantProducts($productSet);
+        $products = $this->productSetService->descendantProducts($productSet, $dto);
 
         return ProductResource::collection($products);
     }

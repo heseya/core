@@ -592,6 +592,176 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testShowAllProducts(string $user): void
+    {
+        $this->{$user}->givePermissionTo('product_sets.show_details');
+
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $child = ProductSet::factory()->create([
+            'public' => true,
+            'parent_id' => $set->getKey(),
+        ]);
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $product2 = Product::factory()->create([
+            'public' => false,
+        ]);
+        $product3 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $product4 = Product::factory()->create([
+            'public' => false,
+        ]);
+
+        $set->products()->sync([
+            $product1->getKey(),
+            $product2->getKey(),
+        ]);
+
+        $child->products()->sync([
+            $product3->getKey(),
+            $product4->getKey(),
+        ]);
+        $set->descendantProducts()->attach([
+            $product1->getKey() => ['order' => 0],
+            $product2->getKey() => ['order' => 1],
+            $product3->getKey() => ['order' => 2],
+            $product4->getKey() => ['order' => 3],
+        ]);
+
+        $this->actingAs($this->{$user})
+            ->json('GET', '/product-sets/id:' . $set->getKey() . '/products-all')
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'id' => $product1->getKey(),
+                'public' => true,
+            ])
+            ->assertJsonFragment([
+                'id' => $product3->getKey(),
+                'public' => true,
+            ]);
+
+        $this->actingAs($this->{$user})
+            ->json('GET', '/product-sets/id:' . $set->getKey() . '/products-all', ['public' => false])
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+
+        $this->actingAs($this->{$user})
+            ->json('GET', '/product-sets/id:' . $set->getKey() . '/products-all', ['public' => true])
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'id' => $product1->getKey(),
+                'public' => true,
+            ])
+            ->assertJsonFragment([
+                'id' => $product3->getKey(),
+                'public' => true,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowAllProductsHidden(string $user): void
+    {
+        $this->{$user}->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
+
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $child = ProductSet::factory()->create([
+            'public' => true,
+            'parent_id' => $set->getKey(),
+        ]);
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $product2 = Product::factory()->create([
+            'public' => false,
+        ]);
+        $product3 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $product4 = Product::factory()->create([
+            'public' => false,
+        ]);
+
+        $set->products()->sync([
+            $product1->getKey(),
+            $product2->getKey(),
+        ]);
+
+        $child->products()->sync([
+            $product3->getKey(),
+            $product4->getKey(),
+        ]);
+        $set->descendantProducts()->attach([
+            $product1->getKey() => ['order' => 0],
+            $product2->getKey() => ['order' => 1],
+            $product3->getKey() => ['order' => 2],
+            $product4->getKey() => ['order' => 3],
+        ]);
+
+        $this->actingAs($this->{$user})
+            ->json('GET', '/product-sets/id:' . $set->getKey() . '/products-all')
+            ->assertOk()
+            ->assertJsonCount(4, 'data')
+            ->assertJsonFragment([
+                'id' => $product1->getKey(),
+                'public' => true,
+            ])
+            ->assertJsonFragment([
+                'id' => $product2->getKey(),
+                'public' => false,
+            ])
+            ->assertJsonFragment([
+                'id' => $product3->getKey(),
+                'public' => true,
+            ])
+            ->assertJsonFragment([
+                'id' => $product4->getKey(),
+                'public' => false,
+            ]);
+
+        $this->actingAs($this->{$user})
+            ->json('GET', '/product-sets/id:' . $set->getKey() . '/products-all', ['public' => false])
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'id' => $product2->getKey(),
+                'public' => false,
+            ])
+            ->assertJsonFragment([
+                'id' => $product4->getKey(),
+                'public' => false,
+            ]);
+
+        $this->actingAs($this->{$user})
+            ->json('GET', '/product-sets/id:' . $set->getKey() . '/products-all', ['public' => true])
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'id' => $product1->getKey(),
+                'public' => true,
+            ])
+            ->assertJsonFragment([
+                'id' => $product3->getKey(),
+                'public' => true,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testProductReorderInSetLowerOrder(string $user): void
     {
         $this->{$user}->givePermissionTo(['product_sets.edit']);

@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Traits\GetPublishedLanguageFilter;
 use Domain\ProductSet\Dtos\ProductSetCreateDto;
+use Domain\ProductSet\Dtos\ProductSetProductsIndexDto;
 use Domain\ProductSet\Dtos\ProductSetUpdateDto;
 use Domain\ProductSet\Events\ProductSetCreated;
 use Domain\ProductSet\Events\ProductSetDeleted;
@@ -350,10 +351,11 @@ final readonly class ProductSetService
         return $query->paginate(Config::get('pagination.per_page'));
     }
 
-    public function descendantProducts(ProductSet $set): LengthAwarePaginator
+    public function descendantProducts(ProductSet $set, ProductSetProductsIndexDto $dto): LengthAwarePaginator
     {
         $query = $set->descendantProducts();
 
+        $query->searchByCriteria($dto->toArray());
         if (Gate::denies('product_sets.show_hidden')) {
             $query->public();
         }
