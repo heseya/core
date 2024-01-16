@@ -259,4 +259,49 @@ class ProductCreateTest extends TestCase
             'media_id' => $media->getKey(),
         ]);
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateProductBannerRemove(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.edit');
+
+        /** @var ProductBannerMedia $bannerMedia */
+        $bannerMedia = ProductBannerMedia::factory()->create();
+
+        $media = Media::factory()->create();
+        $bannerMedia->media()->attach([$media->getKey() => ['min_screen_width' => 512]]);
+
+        /** @var ProductService $productService */
+        $productService = App::make(ProductService::class);
+        $product = $productService->create(FakeDto::productCreateDto());
+        $bannerMedia->product()->save($product);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', "/products/id:{$product->getKey()}", [
+                'banner_media' => null,
+            ])
+            ->assertOk()
+            ->assertJsonMissing([
+                'url' => 'http://new.example.com',
+                'title' => 'new title',
+                'subtitle' => 'new subtitle',
+            ])
+            ->assertJsonMissing([
+                'min_screen_width' => 1024,
+            ]);
+
+        $this->assertDatabaseMissing('product_banner_media', [
+            'id' => $bannerMedia->getKey(),
+            "title->{$this->lang}" => 'new title',
+            "subtitle->{$this->lang}" => 'new subtitle',
+        ]);
+
+        $this->assertDatabaseMissing('product_banner_responsive_media', [
+            'product_banner_media_id' => $bannerMedia->getKey(),
+            'media_id' => $media->getKey(),
+        ]);
+    }
 }

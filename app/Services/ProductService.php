@@ -226,31 +226,7 @@ final readonly class ProductService
             ]);
         }
 
-        if (!($dto->banner_media instanceof Optional)) {
-            /** @var ProductBannerMedia|null $bannerMedia */
-            $bannerMedia = $product->bannerMedia;
-            if (!$bannerMedia) {
-                /** @var ProductBannerMedia $bannerMedia */
-                $bannerMedia = ProductBannerMedia::create($dto->banner_media->toArray());
-            } else {
-                $bannerMedia->fill($dto->banner_media->toArray());
-            }
-            if (!($dto->banner_media->translations instanceof Optional)) {
-                foreach ($dto->banner_media->translations as $lang => $translation) {
-                    $bannerMedia->setLocale($lang)->fill($translation);
-                }
-            }
-            $bannerMedia->save();
-
-            if (!($dto->banner_media->media instanceof Optional)) {
-                $medias = [];
-                foreach ($dto->banner_media->media as $media) {
-                    $medias[$media->media] = ['min_screen_width' => $media->min_screen_width];
-                }
-                $bannerMedia->media()->sync($medias);
-            }
-            $product->banner_media_id = $bannerMedia->getKey();
-        }
+        $this->setBannerMedia($product, $dto);
 
         $this->updateMinMaxPrices($product);
 
@@ -415,5 +391,38 @@ final readonly class ProductService
         $product->search_values = implode(' ', $searchValues);
 
         return $product;
+    }
+
+    private function setBannerMedia(Product $product, ProductCreateDto|ProductUpdateDto $dto): void
+    {
+        if (!($dto->banner_media instanceof Optional)) {
+            if ($dto->banner_media) {
+                /** @var ProductBannerMedia|null $bannerMedia */
+                $bannerMedia = $product->bannerMedia;
+                if (!$bannerMedia) {
+                    /** @var ProductBannerMedia $bannerMedia */
+                    $bannerMedia = ProductBannerMedia::create($dto->banner_media->toArray());
+                } else {
+                    $bannerMedia->fill($dto->banner_media->toArray());
+                }
+                if (!($dto->banner_media->translations instanceof Optional)) {
+                    foreach ($dto->banner_media->translations as $lang => $translation) {
+                        $bannerMedia->setLocale($lang)->fill($translation);
+                    }
+                }
+                $bannerMedia->save();
+
+                if (!($dto->banner_media->media instanceof Optional)) {
+                    $medias = [];
+                    foreach ($dto->banner_media->media as $media) {
+                        $medias[$media->media] = ['min_screen_width' => $media->min_screen_width];
+                    }
+                    $bannerMedia->media()->sync($medias);
+                }
+                $product->banner_media_id = $bannerMedia->getKey();
+            } else {
+                $product->bannerMedia()->delete();
+            }
+        }
     }
 }

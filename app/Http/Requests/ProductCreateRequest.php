@@ -76,6 +76,14 @@ class ProductCreateRequest extends FormRequest implements MetadataRequestContrac
 
                 'related_sets' => ['array'],
                 'related_sets.*' => ['uuid', 'exists:product_sets,id'],
+                'banner_media' => ['array'],
+                'banner_media.url' => ['string', 'nullable'],
+                'banner_media.translations' => ['array'],
+                'banner_media.translations.*.title' => ['string'],
+                'banner_media.translations.*.subtitle' => ['string'],
+                'banner_media.media' => ['array'],
+                'banner_media.media.*.min_screen_width' => ['required', 'int'],
+                'banner_media.media.*.media' => ['required', 'uuid', 'exists:media,id'],
             ],
         );
     }
