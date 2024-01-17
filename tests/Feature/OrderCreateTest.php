@@ -1093,6 +1093,7 @@ class OrderCreateTest extends TestCase
             'model_id' => $order->getKey(),
             'discount_id' => $discount->getKey(),
             'code' => $discount->code,
+            'currency' => $this->currency,
         ]);
 
         Event::assertDispatched(OrderCreated::class);
@@ -1208,18 +1209,21 @@ class OrderCreateTest extends TestCase
         $this->assertDatabaseHas('order_discounts', [
             'discount_id' => $discount->getKey(),
             'applied' => '14250', // -95%
+            'currency' => $this->currency,
         ]);
 
         $this->assertDatabaseHas('order_discounts', [
             'model_id' => $order->getKey(),
             'discount_id' => $saleOrder->getKey(),
             'applied' => '749', // discount -50, but price should be 7.49 when discount is applied
+            'currency' => $this->currency,
         ]);
 
         $this->assertDatabaseHas('order_discounts', [
             'model_id' => $order->getKey(),
             'discount_id' => $couponShipping->getKey(),
             'applied' => '999', // discount -15, but shipping_price_initial is 9.99
+            'currency' => $this->currency,
         ]);
 
         Event::assertDispatched(OrderCreated::class);
