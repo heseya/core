@@ -76,7 +76,7 @@ final class SalesChannelRepository
         return $channel;
     }
 
-    public function update(string $id, SalesCHannelUpdateDto $dto): void
+    public function update(string $id, SalesChannelUpdateDto $dto): void
     {
         /** @var SalesChannel $channel */
         $channel = SalesChannel::query()->where('id', '=', $id)->firstOrFail();

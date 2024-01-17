@@ -261,7 +261,7 @@ readonly class DiscountService implements DiscountServiceContract
             // This fits with current tests
             $value = $value->multipliedBy($percentage, RoundingMode::HALF_DOWN);
         } else {
-            [$amount] = $this->discountRepository::getDiscountAmounts($discount->getKey(), $currency);
+            [$amount] = $this->discountRepository->getDiscountAmounts($discount->getKey(), $currency);
 
             $value = $amount->value;
         }
@@ -1543,7 +1543,7 @@ readonly class DiscountService implements DiscountServiceContract
 
         $amount = null;
         if ($discount->percentage === null) {
-            [$dto] = $this->discountRepository::getDiscountAmounts($discount->getKey(), $object->currency);
+            [$dto] = $this->discountRepository->getDiscountAmounts($discount->getKey(), $object->currency);
             $amount = $dto->value;
         }
 
