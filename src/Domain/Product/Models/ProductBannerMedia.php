@@ -14,6 +14,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @mixin IdeHelperProductBannerMedia
+ */
 final class ProductBannerMedia extends Model implements Translatable
 {
     use CustomHasTranslations;
