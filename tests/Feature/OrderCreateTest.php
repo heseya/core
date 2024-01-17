@@ -277,7 +277,7 @@ class OrderCreateTest extends TestCase
             ],
         ])->assertCreated();
 
-        Mail::assertSent(OrderCreated::class);
+        Mail::assertSent(\App\Mail\OrderCreated::class);
     }
 
     /**

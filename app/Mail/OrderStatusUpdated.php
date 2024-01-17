@@ -4,6 +4,7 @@ namespace App\Mail;
 
 use App\Models\Order;
 use App\Traits\ModifyLangFallback;
+use Domain\Language\LanguageService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -44,7 +45,8 @@ class OrderStatusUpdated extends Mailable
     {
         $previousSettings = $this->getCurrentLangFallbackSettings();
         $this->setAnyLangFallback();
-        $status = $this->order->status?->getTranslation('name', $this->locale);
+        $lang = app(LanguageService::class)->firstByIsoOrDefault($this->order->language);
+        $status = $this->order->status?->getTranslation('name', $lang->getKey());
         $this->setLangFallbackSettings(...$previousSettings);
 
         return new Content(

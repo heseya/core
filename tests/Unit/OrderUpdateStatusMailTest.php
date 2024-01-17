@@ -57,4 +57,21 @@ final class OrderUpdateStatusMailTest extends TestCase
     {
         (new OrderStatusUpdated($this->order))->assertSeeInHtml('Nowy status');
     }
+
+    public function testMailContentDifferentLanguage(): void
+    {
+        /** @var Language $en */
+        $en = Language::firstOrCreate([
+            'iso' => 'en',
+        ], [
+            'name' => 'English',
+            'default' => false,
+        ]);
+        $this->status->setLocale($en->getKey())->fill([
+            'name' => 'New status',
+        ]);
+        $this->status->published = [$this->lang, $en->getKey()];
+        $this->status->save();
+        (new OrderStatusUpdated($this->order))->assertSeeInHtml('New status');
+    }
 }
