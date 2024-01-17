@@ -98,7 +98,7 @@ class ProductResource extends Resource
             'seo' => SeoMetadataResource::make($this->resource->seo),
             'sales' => SaleResource::collection($this->resource->sales),
             'attachments' => MediaAttachmentResource::collection($attachments),
-            'banner_media' => ProductBannerMediaResource::make($this->resource->bannerMedia),
+            'banner' => ProductBannerMediaResource::make($this->resource->banner),
         ];
     }
 

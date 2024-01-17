@@ -165,8 +165,8 @@ ProductView:
           type: array
           items:
             $ref: './MediaAttachments.yml#/MediaAttachment'
-        banner_media:
-          $ref: '#/ProductBannerMedia'
+        banner:
+          $ref: '#/ProductBanner'
 
 ProductWithAttributes:
   type: object
@@ -235,7 +235,7 @@ ProductShort:
     cover:
       $ref: './Media.yml#/Media'
 
-ProductBannerMedia:
+ProductBanner:
   type: object
   properties:
     title:

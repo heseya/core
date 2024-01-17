@@ -70,7 +70,7 @@ final class ProductCreateDto extends Data
         #[Rule(new Translations(['name']))]
         public array $translations,
         public array $published,
-        public Optional|ProductBannerMediaCreateDto $banner_media,
+        public Optional|ProductBannerMediaCreateDto $banner,
     ) {
         $this->metadata_computed = Map::toMetadata($metadata_public, $metadata_private);
     }
