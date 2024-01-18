@@ -2282,6 +2282,11 @@ class OrderCreateTest extends TestCase
             'sales_channel_id' => $salesChannelId,
             'language' => 'en',
         ]);
+
+        $this->assertDatabaseHas('order_products', [
+            'order_id' => $order->id,
+            'name' => 'English name',
+        ]);
     }
 
     /**
@@ -2335,6 +2340,81 @@ class OrderCreateTest extends TestCase
             'email' => $this->email,
             'sales_channel_id' => $salesChannelId,
             'language' => $language,
+        ]);
+
+        $this->assertDatabaseHas('order_products', [
+            'order_id' => $order->id,
+            'name' => $this->product->name,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     *
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws MoneyMismatchException
+     */
+    public function testCreateOrderLanguageDefaultProductName($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $this->productPrice = Money::of(10, $this->currency->value);
+
+        $this->productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
+        ]);
+
+        $productQuantity = 20;
+        $salesChannelId = SalesChannel::query()->value('id');
+
+        /** @var Language $en */
+        $en = Language::firstOrCreate([
+            'iso' => 'en',
+        ], [
+            'name' => 'English',
+            'default' => false,
+        ]);
+
+        $plName = $this->product->name;;
+
+        $response = $this->actingAs($this->{$user})->json('POST', '/orders', [
+            'sales_channel_id' => $salesChannelId,
+            'currency' => $this->currency,
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+            'language' => 'en',
+        ], [
+            'Accept-Language' => 'en, pl, es',
+        ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'name' => $plName,
+                'quantity' => $productQuantity,
+            ]);
+
+        $order = $response->getData()->data;
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'email' => $this->email,
+            'sales_channel_id' => $salesChannelId,
+            'language' => 'en',
+        ]);
+
+        $this->assertDatabaseHas('order_products', [
+            'order_id' => $order->id,
+            'name' => $plName,
         ]);
     }
 }
