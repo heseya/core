@@ -1,13 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Listeners;
 
 use App\Events\OrderUpdatedStatus as OrderStatusUpdatedEvent;
-use App\Notifications\OrderStatusUpdated;
+use App\Mail\OrderStatusUpdated;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Throwable;
 
-class OrderUpdatedStatusListener
+final class OrderUpdatedStatusListener
 {
     public function handle(OrderStatusUpdatedEvent $event): void
     {
@@ -15,10 +18,12 @@ class OrderUpdatedStatusListener
 
         try {
             if (!$order->status?->no_notifications) {
-                $order->notify(new OrderStatusUpdated($order));
+                Mail::to($order->email)
+                    ->locale($order->language)
+                    ->send(new OrderStatusUpdated($order));
             }
         } catch (Throwable) {
-            Log::error("Couldn't send order update to the address: {$order->email}");
+            Log::error("Couldn't send order {$order->code} update to the address: {$order->email}");
         }
     }
 }

@@ -2,25 +2,25 @@
 
 namespace App\Traits;
 
-use Domain\SalesChannel\Models\SalesChannel;
+use Domain\Language\LanguageService;
 use Domain\SalesChannel\SalesChannelRepository;
+use Illuminate\Support\Facades\App;
 
 trait GetLocale
 {
     public function getLocaleFromRequest(): string
     {
-        /** @var string|null $locale */
-        $locale = request()->header('Content-Language');
-
-        if (!$locale) {
-            /** @var SalesChannel $salesChannel */
-            $salesChannel = request()->header('X-Sales-Channel')
-                ? app(SalesChannelRepository::class)->getOne(request()->header('X-Sales-Channel'))
-                : app(SalesChannelRepository::class)->getDefault();
-            /** @var string $locale */
-            $locale = $salesChannel->defaultLanguage?->iso;
+        if (!request()->header('Accept-Language')) {
+            /** @var string|null $salesChannel */
+            $salesChannel = request()->header('X-Sales-Channel');
+            if ($salesChannel) {
+                $salesChannel = app(SalesChannelRepository::class)->getOne($salesChannel);
+                if ($salesChannel->defaultLanguage) {
+                    return $salesChannel->defaultLanguage->iso;
+                }
+            }
         }
 
-        return $locale;
+        return app(LanguageService::class)->firstByIdOrDefault(App::getLocale())->iso;
     }
 }

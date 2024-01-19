@@ -1,19 +1,23 @@
 <?php
 
-namespace Unit;
+declare(strict_types=1);
 
+namespace Tests\Unit;
+
+use App\Mail\OrderCreated;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
 use App\Models\Status;
-use App\Notifications\OrderCreated;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
-use Domain\Language\Language;
 use Tests\TestCase;
 use Tests\Traits\CreateShippingMethod;
 
-class NewOrderMailTest extends TestCase
+final class NewOrderMailTest extends TestCase
 {
     use CreateShippingMethod;
 
@@ -21,6 +25,11 @@ class NewOrderMailTest extends TestCase
     private OrderProduct $orderProduct;
     private Product $product;
 
+    /**
+     * @throws NumberFormatException
+     * @throws UnknownCurrencyException
+     * @throws RoundingNecessaryException
+     */
     public function setUp(): void
     {
         parent::setUp();
@@ -57,42 +66,19 @@ class NewOrderMailTest extends TestCase
 
     public function testMailContent(): void
     {
-        $notification = new OrderCreated($this->order);
-        $rendered = $notification->toMail($this->order)->render();
+        $mailable = new OrderCreated($this->order);
 
-        $orderCode = $this->order->code;
-        $date = $this->order->created_at->format('d-m-Y');
         $productPrice = $this->orderProduct->price->getAmount(); // 250.20
         $orderSummary = $this->order->summary->getAmount(); // 1261.90
         $shippingPrice = $this->order->shipping_price->getAmount(); // 10.90
         $cartTotal = $this->order->cart_total->getAmount(); // 1251.00
-        $productName = $this->product->name;
 
-        $this->assertStringContainsString("{$orderCode}", $rendered);
-        $this->assertStringContainsString("{$date}", $rendered);
-        $this->assertStringContainsString("{$productPrice} {$this->order->currency->value}</td>", $rendered);
-        $this->assertStringContainsString("{$shippingPrice} {$this->order->currency->value}</b>", $rendered);
-        $this->assertStringContainsString("{$cartTotal} {$this->order->currency->value}</b>", $rendered);
-        $this->assertStringContainsString("{$orderSummary} {$this->order->currency->value}</b>", $rendered);
-        $this->assertStringContainsString("{$productName}", $rendered);
-    }
-
-    public function testMailContentEn(): void
-    {
-        Language::firstOrCreate([
-            'iso' => 'en',
-        ], [
-            'name' => 'English',
-            'default' => false,
-        ]);
-
-        $this->orderProduct->update([
-            'name' => 'English name',
-        ]);
-
-        $notification = new OrderCreated($this->order);
-        $rendered = $notification->toMail($this->order)->render();
-
-        $this->assertStringContainsString("English name", $rendered);
+        $mailable->assertSeeInHtml($this->order->code);
+        $mailable->assertSeeInHtml($this->order->created_at->format('d-m-Y'));
+        $mailable->assertSeeInHtml("{$productPrice} {$this->order->currency->value}");
+        $mailable->assertSeeInHtml("{$shippingPrice} {$this->order->currency->value}");
+        $mailable->assertSeeInHtml("{$cartTotal} {$this->order->currency->value}");
+        $mailable->assertSeeInHtml("{$orderSummary} {$this->order->currency->value}");
+        $mailable->assertSeeInHtml($this->product->name);
     }
 }

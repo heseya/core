@@ -29,6 +29,8 @@ use App\Notifications\TFARecoveryCodes;
 use App\Notifications\TFASecurityCode;
 use App\Notifications\UserRegistered;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
+use Domain\Language\Language;
+use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
@@ -43,6 +45,7 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use PHPGangsta_GoogleAuthenticator;
 use Spatie\WebhookServer\CallWebhookJob;
+use Support\Enum\Status;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
@@ -486,8 +489,49 @@ class AuthTest extends TestCase
         ]);
 
         if ($method === TFAType::EMAIL) {
-            Notification::assertSentTo([$this->user], TFASecurityCode::class);
+            Notification::assertSentTo(
+                [$this->user],
+                TFASecurityCode::class,
+                function (TFASecurityCode $notification) {
+                    $mail = $notification->toMail($this->user);
+                    $this->assertEquals('Kod bezpieczeństwa 2FA', $mail->subject);
+
+                    return true;
+                }
+            );
         }
+
+        $response->assertStatus(Response::HTTP_FORBIDDEN)
+            ->assertJsonFragment([
+                'key' => Exceptions::CLIENT_TFA_REQUIRED->name,
+            ]);
+    }
+
+    public function testLoginEnabledTfaNoCodeAcceptLanguage(): void
+    {
+        Notification::fake();
+
+        $this->user->update([
+            'tfa_type' => TFAType::EMAIL,
+            'tfa_secret' => null,
+            'is_tfa_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->user)->json('POST', '/login', [
+            'email' => $this->user->email,
+            'password' => $this->password,
+        ], ['Accept-Language' => 'en', 'X-Sales-Channel' => SalesChannel::query()->value('id')]);
+
+        Notification::assertSentTo(
+            [$this->user],
+            TFASecurityCode::class,
+            function (TFASecurityCode $notification) {
+                $mail = $notification->toMail($this->user);
+                $this->assertEquals('2FA security code', $mail->subject);
+
+                return true;
+            }
+        );
 
         $response->assertStatus(Response::HTTP_FORBIDDEN)
             ->assertJsonFragment([
@@ -919,9 +963,108 @@ class AuthTest extends TestCase
             'redirect_url' => 'https://test.com',
         ]);
 
-        Notification::assertSentTo($user, ResetPassword::class);
+        Notification::assertSentTo(
+            $user,
+            ResetPassword::class,
+            function (ResetPassword $notification) use ($user) {
+                $mail = $notification->toMail($user);
+                $this->assertEquals('Wniosek o zmianę hasła', $mail->subject);
+
+                return true;
+            }
+        );
 
         $response->assertNoContent();
+    }
+
+    public function testResetPasswordMailAcceptLanguage(): void
+    {
+        $this->user->givePermissionTo('auth.password_reset');
+
+        $email = $this->faker->unique()->safeEmail;
+        $password = 'Passwd###111';
+
+        $user = User::factory()->create([
+            'name' => $this->faker->firstName() . ' ' . $this->faker->lastName(),
+            'email' => $email,
+            'password' => Hash::make($password),
+        ]);
+
+        Notification::fake();
+
+        $this->actingAs($this->user)
+            ->json(
+                'POST',
+                '/users/reset-password',
+                [
+                    'email' => $user->email,
+                    'redirect_url' => 'https://test.com',
+                ],
+                [
+                    'Accept-Language' => 'en',
+                    'X-Sales-Channel' => SalesChannel::query()->value('id'),
+                ],
+            )->assertNoContent();
+
+        Notification::assertSentTo(
+            $user,
+            ResetPassword::class,
+            function (ResetPassword $notification) use ($user) {
+                $mail = $notification->toMail($user);
+                $this->assertEquals('Request for password change', $mail->subject);
+
+                return true;
+            }
+        );
+    }
+
+    public function testResetPasswordMailSalesChannel(): void
+    {
+        $this->user->givePermissionTo('auth.password_reset');
+
+        $email = $this->faker->unique()->safeEmail;
+        $password = 'Passwd###111';
+
+        $en = Language::firstOrCreate([
+            'iso' => 'en',
+        ], [
+            'name' => 'English',
+            'default' => false,
+        ]);
+
+        $salesChannel = SalesChannel::factory()->create(['status' => Status::ACTIVE, 'default_language_id' => $en->getKey()]);
+
+        $user = User::factory()->create([
+            'name' => $this->faker->firstName() . ' ' . $this->faker->lastName(),
+            'email' => $email,
+            'password' => Hash::make($password),
+        ]);
+
+        Notification::fake();
+
+        $this->actingAs($this->user)
+            ->json(
+                'POST',
+                '/users/reset-password',
+                [
+                    'email' => $user->email,
+                    'redirect_url' => 'https://test.com',
+                ],
+                [
+                    'X-Sales-Channel' => $salesChannel->getKey(),
+                ],
+            )->assertNoContent();
+
+        Notification::assertSentTo(
+            $user,
+            ResetPassword::class,
+            function (ResetPassword $notification) use ($user) {
+                $mail = $notification->toMail($user);
+                $this->assertEquals('Request for password change', $mail->subject);
+
+                return true;
+            }
+        );
     }
 
     public function testResetPasswordWebhookEvent(): array
@@ -1862,6 +2005,12 @@ class AuthTest extends TestCase
         Notification::assertSentTo(
             [$this->user],
             TFAInitialization::class,
+            function (TFAInitialization $notification) {
+                $mail = $notification->toMail($this->user);
+                $this->assertEquals('Potwierdzenie 2FA', $mail->subject);
+
+                return true;
+            }
         );
 
         $this->assertDatabaseHas('users', [
@@ -1878,6 +2027,38 @@ class AuthTest extends TestCase
                     'type',
                 ],
             ]);
+    }
+
+    public function testSetupEmailTfaDifferentLanguage(): void
+    {
+        Notification::fake();
+
+        $this->actingAs($this->user)
+            ->json('POST', '/auth/2fa/setup', ['type' => TFAType::EMAIL,], ['Accept-Language' => 'en'])
+            ->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                    'type',
+                ],
+            ]);
+
+        Notification::assertSentTo(
+            [$this->user],
+            TFAInitialization::class,
+            function (TFAInitialization $notification) {
+                $mail = $notification->toMail($this->user);
+                $this->assertEquals('2FA confirmation', $mail->subject);
+
+                return true;
+            }
+        );
+
+        $this->assertDatabaseHas('users', [
+            'id' => $this->user->getKey(),
+            'tfa_type' => TFAType::EMAIL,
+            'tfa_secret' => null,
+            'is_tfa_active' => false,
+        ]);
     }
 
     public function testSetupEmailTfaWithWebhookEvent(): array
@@ -1965,6 +2146,56 @@ class AuthTest extends TestCase
         Notification::assertSentTo(
             [$this->user],
             TFARecoveryCodes::class,
+            function (TFARecoveryCodes $notification) {
+                $mail = $notification->toMail($this->user);
+                $this->assertEquals('Kody odzyskiwania 2FA', $mail->subject);
+
+                return true;
+            }
+        );
+
+        $this->assertDatabaseHas('users', [
+            'id' => $this->user->getKey(),
+            'is_tfa_active' => true,
+        ]);
+
+        $this->assertDatabaseCount('one_time_security_codes', 3);
+    }
+
+    public function testConfirmEmailTfaDifferentLanguage(): void
+    {
+        $this->user->preferences()->update([
+            'recovery_code_changed_alert' => true,
+        ]);
+        Notification::fake();
+
+        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(
+            $this->user,
+            Config::get('tfa.code_expires_time'),
+        );
+
+        $this->user->update([
+            'tfa_type' => TFAType::EMAIL,
+        ]);
+
+        $this->actingAs($this->user)
+            ->json('POST', '/auth/2fa/confirm', ['code' => $code,], ['Accept-Language' => 'en'])
+            ->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                    'recovery_codes',
+                ],
+            ]);
+
+        Notification::assertSentTo(
+            [$this->user],
+            TFARecoveryCodes::class,
+            function (TFARecoveryCodes $notification) {
+                $mail = $notification->toMail($this->user);
+                $this->assertEquals('2FA recovery codes', $mail->subject);
+
+                return true;
+            }
         );
 
         $this->assertDatabaseHas('users', [
@@ -2428,6 +2659,94 @@ class AuthTest extends TestCase
         Notification::assertSentTo(
             [$user],
             UserRegistered::class,
+            function (UserRegistered $notification) use ($user) {
+                $mail = $notification->toMail($user);
+                $this->assertEquals('Witamy na pokładzie! Konto utworzono', $mail->subject);
+
+                return true;
+            }
+        );
+    }
+
+    public function testRegisterMailWithAcceptLanguage(): void
+    {
+        Notification::fake();
+
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.register');
+
+        $salesChannel = SalesChannel::query()->value('id');
+
+        $email = $this->faker->email();
+        $this->json('POST', '/register', [
+            'name' => 'Registered user',
+            'email' => $email,
+            'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+        ], [
+            'Accept-Language' => 'en',
+            'X-Sales-Channel' => $salesChannel,
+        ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'name' => 'Registered user',
+                'email' => $email,
+            ]);
+
+        $user = User::where('email', $email)->first();
+
+        Notification::assertSentTo(
+            [$user],
+            UserRegistered::class,
+            function (UserRegistered $notification) use ($user) {
+                $mail = $notification->toMail($user);
+                $this->assertEquals('Welcome aboard! Account created', $mail->subject);
+
+                return true;
+            }
+        );
+    }
+
+    public function testRegisterMailWithSalesChannel(): void
+    {
+        Notification::fake();
+
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.register');
+
+        $en = Language::firstOrCreate([
+            'iso' => 'en',
+        ], [
+            'name' => 'English',
+            'default' => false,
+        ]);
+
+        $salesChannel = SalesChannel::factory()->create(['status' => Status::ACTIVE, 'default_language_id' => $en->getKey()]);
+
+        $email = $this->faker->email();
+        $this->json('POST', '/register', [
+            'name' => 'Registered user',
+            'email' => $email,
+            'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+        ], [
+            'X-Sales-Channel' => $salesChannel->getKey(),
+        ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'name' => 'Registered user',
+                'email' => $email,
+            ]);
+
+        $user = User::where('email', $email)->first();
+
+        Notification::assertSentTo(
+            [$user],
+            UserRegistered::class,
+            function (UserRegistered $notification) use ($user) {
+                $mail = $notification->toMail($user);
+                $this->assertEquals('Welcome aboard! Account created', $mail->subject);
+
+                return true;
+            }
         );
     }
 

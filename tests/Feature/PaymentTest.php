@@ -1,17 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Feature;
 
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\PaymentStatus;
 use App\Events\OrderUpdatedPaid;
+use App\Mail\OrderPaid;
 use App\Models\App;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\Status;
-use App\Notifications\OrderPaid;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\ShippingMethod\Models\ShippingMethod;
@@ -22,7 +24,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
-class PaymentTest extends TestCase
+final class PaymentTest extends TestCase
 {
     private Order $order;
     private App $appUser;
@@ -256,7 +258,7 @@ class PaymentTest extends TestCase
      */
     public function testPayuNotification($user): void
     {
-        $this->markTestSkipped("Ten test przechodzi na localu, nie wiem czemu nie przechodzi na gitlabie");
+        $this->markTestSkipped('Ten test przechodzi na localu, nie wiem czemu nie przechodzi na gitlabie');
 
         $initialEvent = Event::getFacadeRoot();
         Event::fake(OrderUpdatedPaid::class);
@@ -299,7 +301,7 @@ class PaymentTest extends TestCase
         $payment = Payment::factory()->make([
             'status' => PaymentStatus::PENDING,
             'currency' => $this->order->currency,
-            'additional_data' => 'random_token'
+            'additional_data' => 'random_token',
         ]);
 
         $this->order->payments()->save($payment);
@@ -412,7 +414,7 @@ class PaymentTest extends TestCase
             ->assertJsonFragment([
                 'method' => 'offline',
                 'status' => PaymentStatus::SUCCESSFUL->value,
-                'amount' => "$amount",
+                'amount' => "{$amount}",
                 'date' => $payment->created_at,
                 'redirect_url' => null,
                 'continue_url' => null,
@@ -535,7 +537,7 @@ class PaymentTest extends TestCase
             'summary' => 100,
         ]);
 
-        Notification::fake();
+        Mail::fake();
 
         $this->actingAs($this->{$user})->json('POST', '/payments', [
             'amount' => 100,
@@ -562,7 +564,7 @@ class PaymentTest extends TestCase
             'paid' => true,
         ]);
 
-        Notification::assertSentTo($this->order, OrderPaid::class);
+        Mail::assertSent(OrderPaid::class);
     }
 
     public function testStoreUnauthorized(): void
