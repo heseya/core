@@ -14,14 +14,13 @@ trait GetLocale
             /** @var string|null $salesChannel */
             $salesChannel = request()->header('X-Sales-Channel');
             if ($salesChannel) {
-                /** @var string $locale */
-                $locale = app(SalesChannelRepository::class)->getOne($salesChannel)->defaultLanguage?->iso;
-                return $locale;
+                $salesChannel = app(SalesChannelRepository::class)->getOne($salesChannel);
+                if ($salesChannel->defaultLanguage) {
+                    return $salesChannel->defaultLanguage->iso;
+                }
             }
         }
 
-        /** @var string $locale */
-        $locale = app(LanguageService::class)->firstByIdOrDefault(App::getLocale())->iso;
-        return $locale;
+        return app(LanguageService::class)->firstByIdOrDefault(App::getLocale())->iso;
     }
 }
