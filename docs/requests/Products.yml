@@ -119,8 +119,8 @@ ProductStore:
             $ref: './../schemas/Metadata.yml#/Metadata'
           metadata_private:
             $ref: './../schemas/Metadata.yml#/Metadata'
-          banner_media:
-            $ref: '#/ProductBannerMedia'
+          banner:
+            $ref: '#/ProductBanner'
 
 ProductUpdate:
   content:
@@ -130,10 +130,10 @@ ProductUpdate:
           - $ref: '#/Product'
         type: object
         properties:
-          banner_media:
-            $ref: '#/ProductBannerMedia'
+          banner:
+            $ref: '#/ProductBanner'
 
-ProductBannerMedia:
+ProductBanner:
   type: object
   properties:
     translations:

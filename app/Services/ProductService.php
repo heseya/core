@@ -395,33 +395,33 @@ final readonly class ProductService
 
     private function setBannerMedia(Product $product, ProductCreateDto|ProductUpdateDto $dto): void
     {
-        if (!($dto->banner_media instanceof Optional)) {
-            if ($dto->banner_media) {
+        if (!($dto->banner instanceof Optional)) {
+            if ($dto->banner) {
                 /** @var ProductBannerMedia|null $bannerMedia */
-                $bannerMedia = $product->bannerMedia;
+                $bannerMedia = $product->banner;
                 if (!$bannerMedia) {
                     /** @var ProductBannerMedia $bannerMedia */
-                    $bannerMedia = ProductBannerMedia::create($dto->banner_media->toArray());
+                    $bannerMedia = ProductBannerMedia::create($dto->banner->toArray());
                 } else {
-                    $bannerMedia->fill($dto->banner_media->toArray());
+                    $bannerMedia->fill($dto->banner->toArray());
                 }
-                if (!($dto->banner_media->translations instanceof Optional)) {
-                    foreach ($dto->banner_media->translations as $lang => $translation) {
+                if (!($dto->banner->translations instanceof Optional)) {
+                    foreach ($dto->banner->translations as $lang => $translation) {
                         $bannerMedia->setLocale($lang)->fill($translation);
                     }
                 }
                 $bannerMedia->save();
 
-                if (!($dto->banner_media->media instanceof Optional)) {
+                if (!($dto->banner->media instanceof Optional)) {
                     $medias = [];
-                    foreach ($dto->banner_media->media as $media) {
+                    foreach ($dto->banner->media as $media) {
                         $medias[$media->media] = ['min_screen_width' => $media->min_screen_width];
                     }
                     $bannerMedia->media()->sync($medias);
                 }
                 $product->banner_media_id = $bannerMedia->getKey();
             } else {
-                $product->bannerMedia()->delete();
+                $product->banner()->delete();
             }
         }
     }

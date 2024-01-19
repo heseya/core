@@ -394,7 +394,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     /**
      * @return BelongsTo<ProductBannerMedia, self>
      */
-    public function bannerMedia(): BelongsTo
+    public function banner(): BelongsTo
     {
         return $this->belongsTo(ProductBannerMedia::class, 'banner_media_id');
     }

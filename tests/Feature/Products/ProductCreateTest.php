@@ -81,7 +81,7 @@ class ProductCreateTest extends TestCase
                 'prices_base' => $prices,
                 'public' => true,
                 'shipping_digital' => false,
-                'banner_media' => [
+                'banner' => [
                     'url' => 'http://example.com',
                     'translations' => [
                         $this->lang => [
@@ -111,6 +111,56 @@ class ProductCreateTest extends TestCase
             "title->{$this->lang}" => 'banner title',
             "subtitle->{$this->lang}" => 'banner subtitle',
         ]);
+        $this->assertDatabaseCount('product_banner_responsive_media', 1);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateProductBannerNoTitle(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.add');
+
+        $media = Media::factory()->create();
+
+        $prices = array_map(fn (Currency $currency) => [
+            'value' => '100.00',
+            'currency' => $currency->value,
+        ], Currency::cases());
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/products', [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                    ],
+                ],
+                'published' => [$this->lang],
+                'slug' => 'slug',
+                'prices_base' => $prices,
+                'public' => true,
+                'shipping_digital' => false,
+                'banner' => [
+                    "translations" => [
+                        $this->lang => [
+                            'title' => null,
+                            'name' => null,
+                        ]
+                    ],
+                    'media' => [
+                        [
+                            'min_screen_width' => 1024,
+                            'media' => $media->getKey(),
+                        ],
+                    ],
+                ],
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'min_screen_width' => 1024,
+            ]);
+
         $this->assertDatabaseCount('product_banner_responsive_media', 1);
     }
 
@@ -161,7 +211,7 @@ class ProductCreateTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->json('PATCH', "/products/id:{$product->getKey()}", [
-                'banner_media' => [
+                'banner' => [
                     'url' => 'http://example.com',
                     'translations' => [
                         $this->lang => [
@@ -197,6 +247,45 @@ class ProductCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateProductBannerNewNoTitle(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.edit');
+
+        /** @var ProductService $productService */
+        $productService = App::make(ProductService::class);
+        $product = $productService->create(FakeDto::productCreateDto());
+
+        $media = Media::factory()->create();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', "/products/id:{$product->getKey()}", [
+                'banner' => [
+                    "translations" => [
+                        $this->lang => [
+                            'title' => null,
+                            'name' => null,
+                        ]
+                    ],
+                    'media' => [
+                        [
+                            'min_screen_width' => 1024,
+                            'media' => $media->getKey(),
+                        ],
+                    ],
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'min_screen_width' => 1024,
+            ]);
+
+        $this->assertDatabaseCount('product_banner_responsive_media', 1);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateProductBannerExisting(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
@@ -217,7 +306,7 @@ class ProductCreateTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->json('PATCH', "/products/id:{$product->getKey()}", [
-                'banner_media' => [
+                'banner' => [
                     'url' => 'http://new.example.com',
                     'translations' => [
                         $this->lang => [
@@ -263,6 +352,63 @@ class ProductCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateProductBannerExistingNoTitle(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.edit');
+
+        /** @var ProductBannerMedia $bannerMedia */
+        $bannerMedia = ProductBannerMedia::factory()->create();
+
+        $media = Media::factory()->create();
+        $bannerMedia->media()->attach([$media->getKey() => ['min_screen_width' => 512]]);
+
+        /** @var ProductService $productService */
+        $productService = App::make(ProductService::class);
+        $product = $productService->create(FakeDto::productCreateDto());
+        $bannerMedia->product()->save($product);
+
+        $newMedia = Media::factory()->create();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', "/products/id:{$product->getKey()}", [
+                'banner' => [
+                    'title' => $bannerMedia->title,
+                    'subtitle' => $bannerMedia->subtitle,
+                    'url' => 'http://new.example.com',
+                    'translations' => [
+                        $this->lang => [
+                            'title' => '',
+                            'subtitle' => '',
+                        ],
+                    ],
+                    'media' => [
+                        [
+                            'min_screen_width' => 1024,
+                            'media' => $newMedia->getKey(),
+                        ],
+                    ],
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'min_screen_width' => 1024,
+            ]);
+
+        $this->assertDatabaseHas('product_banner_responsive_media', [
+            'product_banner_media_id' => $bannerMedia->getKey(),
+            'media_id' => $newMedia->getKey(),
+        ]);
+
+        $this->assertDatabaseMissing('product_banner_responsive_media', [
+            'product_banner_media_id' => $bannerMedia->getKey(),
+            'media_id' => $media->getKey(),
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateProductBannerRemove(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
@@ -281,7 +427,7 @@ class ProductCreateTest extends TestCase
         $this
             ->actingAs($this->{$user})
             ->json('PATCH', "/products/id:{$product->getKey()}", [
-                'banner_media' => null,
+                'banner' => null,
             ])
             ->assertOk()
             ->assertJsonMissing([

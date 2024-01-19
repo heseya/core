@@ -120,9 +120,9 @@ final class ProductController extends Controller
             'sets.metadata',
             'sets.metadataPrivate',
             'sets.parent',
-            'bannerMedia.media',
-            'bannerMedia.media.metadata',
-            'bannerMedia.media.metadataPrivate',
+            'banner.media',
+            'banner.media.metadata',
+            'banner.media.metadataPrivate',
         ]);
         $product->load(['sales' => fn (BelongsToMany|Builder $belongsToMany) => $belongsToMany->withOrdersCount()]); // @phpstan-ignore-line
 
