@@ -11,7 +11,6 @@ use Tests\TestCase;
 class WishlistTest extends TestCase
 {
     protected Product $product;
-
     protected array $items;
     protected array $address;
     protected array $expected_structure;
@@ -82,6 +81,45 @@ class WishlistTest extends TestCase
                         ],
                     ],
                 ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCheck(string $user): void
+    {
+        $this->{$user}->givePermissionTo('profile.wishlist_manage');
+
+        $this->{$user}->wishlistProducts()->create([
+            'product_id' => $this->product->getKey(),
+        ]);
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $this->actingAs($this->{$user})->json(
+            'GET',
+            '/wishlist',
+            ['product_ids' => [$this->product->getKey(), $product->getKey()]]
+        )
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonStructure([
+                'data' => [
+                    0 => $this->expected_structure,
+                ],
+            ])
+            ->assertJsonFragment([
+                'id' => $this->product->getKey(),
+                'name' => $this->product->name,
+                'slug' => $this->product->slug,
+            ])
+            ->assertJsonMissing([
+                'id' => $product->getKey(),
+                'name' => $product->name,
+                'slug' => $product->slug,
             ]);
     }
 
