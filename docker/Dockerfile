@@ -13,9 +13,11 @@ RUN apt install -y sudo zip libxml2-dev libkrb5-dev libc-client-dev
 RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl
 RUN docker-php-ext-install soap pdo_mysql imap opcache
 
+RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+COPY ./docker/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 
-COPY ./docker/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 COPY . /var/www/html/
 RUN chown -R www-data:www-data /var/www/html
 
