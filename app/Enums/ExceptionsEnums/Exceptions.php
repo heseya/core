@@ -137,6 +137,9 @@ enum Exceptions: string
     case CLIENT_JOINING_NON_JOINABLE_ROLE = 'Can\'t join to a non joinable role';
     case CLIENT_UPDATE_NOT_REGULAR_JOINABLE = 'Can\'t update is_joinable field in role types other than regular';
 
+    case CLIENT_FULL_NAME = 'The name must contains first name and last name';
+    case CLIENT_STREET_NUMBER = 'The address must contains the street name and house number';
+
     // Aliases
     public const CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT = self::CLIENT_NO_ACCESS;
     public const CLIENT_PROVIDER_HAS_NO_CONFIG = self::CLIENT_PROVIDER_IS_NOT_ACTIVE;
