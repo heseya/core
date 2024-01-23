@@ -11,6 +11,7 @@ use App\Models\App;
 use App\Models\Product;
 use App\Models\User;
 use Domain\Wishlist\Dtos\WishlistCheckDto;
+use Domain\Wishlist\Resources\WishlistCheckResource;
 use Domain\Wishlist\Services\WishlistService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -39,7 +40,7 @@ final class WishlistController extends Controller
         /** @var User|App $user */
         $user = $request->user();
 
-        return WishlistProductResource::collection(
+        return WishlistCheckResource::make(
             $this->wishlistService->check($user, $dto),
         );
     }

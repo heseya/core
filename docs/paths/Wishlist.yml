@@ -110,4 +110,4 @@ WishlistProductCheck:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Wishlist.yml#/WishlistProduct'
+                    $ref: './../schemas/Wishlist.yml#/WishlistProductCheck'

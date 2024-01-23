@@ -99,28 +99,27 @@ class WishlistTest extends TestCase
             'public' => true,
         ]);
 
+        $productHidden = Product::factory()->create([
+            'public' => false,
+        ]);
+
+        $this->{$user}->wishlistProducts()->create([
+            'product_id' => $productHidden->getKey(),
+        ]);
+
         $this->actingAs($this->{$user})->json(
             'GET',
-            '/wishlist',
+            '/wishlist/check',
             ['product_ids' => [$this->product->getKey(), $product->getKey()]]
         )
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonStructure([
-                'data' => [
-                    0 => $this->expected_structure,
-                ],
+                'data' => ['products_in_wishlist'],
             ])
-            ->assertJsonFragment([
-                'id' => $this->product->getKey(),
-                'name' => $this->product->name,
-                'slug' => $this->product->slug,
-            ])
-            ->assertJsonMissing([
-                'id' => $product->getKey(),
-                'name' => $product->name,
-                'slug' => $product->slug,
-            ]);
+            ->assertJsonFragment([$this->product->getKey()])
+            ->assertJsonMissing([$product->getKey()])
+            ->assertJsonMissing([$productHidden->getKey()]);
     }
 
     public function testIndexUnauthorized(): void

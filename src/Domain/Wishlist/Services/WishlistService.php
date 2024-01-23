@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Models\WishlistProduct;
 use Domain\Wishlist\Dtos\WishlistCheckDto;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 
 final class WishlistService
@@ -61,14 +62,14 @@ final class WishlistService
     }
 
     /**
-     * @return LengthAwarePaginator<WishlistProduct>
+     * @return Collection<int, string>
      */
-    public function check(App|User $user, WishlistCheckDto $dto): LengthAwarePaginator
+    public function check(App|User $user, WishlistCheckDto $dto): Collection
     {
         $query = $user->hasPermissionTo('products.show_hidden') ?
             $user->wishlistProducts() :
             $user->wishlistProductsPublic();
 
-        return $query->whereIn('product_id', $dto->product_ids)->paginate(Config::get('pagination.per_page'));
+        return $query->whereIn('product_id', $dto->product_ids)->pluck('product_id');
     }
 }
