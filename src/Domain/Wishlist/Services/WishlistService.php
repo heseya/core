@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Services;
+declare(strict_types=1);
+
+namespace Domain\Wishlist\Services;
 
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
@@ -8,12 +10,16 @@ use App\Models\App;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\WishlistProduct;
-use App\Services\Contracts\WishlistServiceContract;
+use Domain\Wishlist\Dtos\WishlistCheckDto;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 
-class WishlistService implements WishlistServiceContract
+final class WishlistService
 {
+    /**
+     * @return LengthAwarePaginator<WishlistProduct>
+     */
     public function index(App|User $user): LengthAwarePaginator
     {
         $query = $user->hasPermissionTo('products.show_hidden') ?
@@ -53,5 +59,17 @@ class WishlistService implements WishlistServiceContract
     public function destroyAll(App|User $user): void
     {
         $user->wishlistProducts()->delete();
+    }
+
+    /**
+     * @return Collection<int, string>
+     */
+    public function check(App|User $user, WishlistCheckDto $dto): Collection
+    {
+        $query = $user->hasPermissionTo('products.show_hidden') ?
+            $user->wishlistProducts() :
+            $user->wishlistProductsPublic();
+
+        return $query->whereIn('product_id', $dto->product_ids)->pluck('product_id');
     }
 }

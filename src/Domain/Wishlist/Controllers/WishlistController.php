@@ -1,23 +1,28 @@
 <?php
 
-namespace App\Http\Controllers;
+declare(strict_types=1);
 
+namespace Domain\Wishlist\Controllers;
+
+use App\Http\Controllers\Controller;
 use App\Http\Requests\WishlistProductStoreRequest;
 use App\Http\Resources\WishlistProductResource;
 use App\Models\App;
 use App\Models\Product;
 use App\Models\User;
-use App\Services\Contracts\WishlistServiceContract;
+use Domain\Wishlist\Dtos\WishlistCheckDto;
+use Domain\Wishlist\Resources\WishlistCheckResource;
+use Domain\Wishlist\Services\WishlistService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
-class WishlistController extends Controller
+final class WishlistController extends Controller
 {
     public function __construct(
-        private readonly WishlistServiceContract $wishlistService,
+        private readonly WishlistService $wishlistService,
     ) {}
 
     public function index(Request $request): JsonResource
@@ -27,6 +32,16 @@ class WishlistController extends Controller
 
         return WishlistProductResource::collection(
             $this->wishlistService->index($user),
+        );
+    }
+
+    public function check(Request $request, WishlistCheckDto $dto): JsonResource
+    {
+        /** @var User|App $user */
+        $user = $request->user();
+
+        return WishlistCheckResource::make(
+            $this->wishlistService->check($user, $dto),
         );
     }
 

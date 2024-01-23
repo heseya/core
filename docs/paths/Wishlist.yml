@@ -84,3 +84,30 @@ WishlistProductParams:
     responses:
       204:
         description: No content
+
+WishlistProductCheck:
+  get:
+    tags:
+      - Wishlist
+    summary: 'check wishlist products'
+    parameters:
+      - name: product_ids
+        in: query
+        required: true
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Wishlist.yml#/WishlistProductCheck'

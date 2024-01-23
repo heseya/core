@@ -39,7 +39,6 @@ use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
 use App\Services\Contracts\UrlServiceContract;
 use App\Services\Contracts\WebHookServiceContract;
-use App\Services\Contracts\WishlistServiceContract;
 use App\Services\DepositService;
 use App\Services\DiscountService;
 use App\Services\DocumentService;
@@ -68,7 +67,6 @@ use App\Services\TokenService;
 use App\Services\TranslationService;
 use App\Services\UrlService;
 use App\Services\WebHookService;
-use App\Services\WishlistService;
 use Domain\GoogleCategory\Services\Contracts\GoogleCategoryServiceContract;
 use Domain\GoogleCategory\Services\GoogleCategoryService;
 use Domain\Setting\Services\Contracts\SettingsServiceContract;
@@ -112,7 +110,6 @@ class AppServiceProvider extends ServiceProvider
         ShippingTimeDateServiceContract::class => ShippingTimeDateService::class,
         ProviderServiceContract::class => ProviderService::class,
         GoogleCategoryServiceContract::class => GoogleCategoryService::class,
-        WishlistServiceContract::class => WishlistService::class,
         FavouriteServiceContract::class => FavouriteService::class,
         PaymentMethodServiceContract::class => PaymentMethodService::class,
         MediaAttachmentServiceContract::class => MediaAttachmentService::class,
