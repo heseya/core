@@ -69,14 +69,14 @@ final class ShippingPlaceValidation implements DataAwareRule, ValidationRule, Va
     private function point(mixed $value, Closure $fail): void
     {
         if (Address::query()->where('id', $value)->doesntExist()) {
-            $fail(Exceptions::CLIENT_SHIPPING_POINT_NOT_EXISTS);
+            $fail(Exceptions::CLIENT_SHIPPING_POINT_NOT_EXISTS->value);
         }
     }
 
     private function pointExternal(mixed $value, Closure $fail): void
     {
         if (!is_string($value)) {
-            $fail(Exceptions::CLIENT_SHIPPING_POINT_STRING);
+            $fail(Exceptions::CLIENT_SHIPPING_POINT_STRING->value);
         }
     }
 

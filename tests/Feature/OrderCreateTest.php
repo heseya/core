@@ -58,6 +58,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Str;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 use Tests\Utils\FakeDto;
@@ -2483,6 +2484,163 @@ class OrderCreateTest extends TestCase
                     'key' => ValidationError::STREETNUMBER->value,
                     'message' => Exceptions::CLIENT_STREET_NUMBER->value,
                 ]]
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     *
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws MoneyMismatchException
+     */
+    public function testCreateInvalidSchema($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.add');
+
+        $this->productPrice = Money::of(10, $this->currency->value);
+
+        $this->productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
+        ]);
+
+        $productQuantity = 20;
+        $salesChannelId = SalesChannel::query()->value('id');
+
+        $schemaID = Str::uuid()->toString();
+        $this->actingAs($this->{$user})->postJson('/orders', [
+            'sales_channel_id' => $salesChannelId,
+            'currency' => $this->currency,
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                    'schemas' => [
+                        $schemaID => Str::uuid()->toString(),
+                    ]
+                ],
+            ],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'message' => Exceptions::CLIENT_SCHEMA_INVALID->value . ': ' . $schemaID,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     *
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws MoneyMismatchException
+     */
+    public function testCreateInvalidSchemaOption($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.add');
+
+        $this->productPrice = Money::of(10, $this->currency->value);
+
+        $this->productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
+        ]);
+
+        $productQuantity = 20;
+        $salesChannelId = SalesChannel::query()->value('id');
+
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => SchemaType::SELECT,
+                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
+                'hidden' => false,
+            ])
+        );
+
+        $this->product->schemas()->sync([$schema->getKey()]);
+
+        $optionId = Str::uuid()->toString();
+        $this->actingAs($this->{$user})->postJson('/orders', [
+            'sales_channel_id' => $salesChannelId,
+            'currency' => $this->currency,
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                    'schemas' => [
+                        $schema->getKey() => $optionId,
+                    ]
+                ],
+            ],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'message' => Exceptions::CLIENT_SCHEMA_OPTIONS_INVALID->value . ': ' . $optionId,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     *
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws MoneyMismatchException
+     */
+    public function testCreateNoRequiredSchema($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.add');
+
+        $this->productPrice = Money::of(10, $this->currency->value);
+
+        $this->productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
+        ]);
+
+        $productQuantity = 20;
+        $salesChannelId = SalesChannel::query()->value('id');
+
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => SchemaType::SELECT,
+                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
+                'hidden' => false,
+                'required' => true,
+            ])
+        );
+
+        Option::factory()->create([
+            'name' => 'A',
+            'disabled' => false,
+            'order' => 0,
+            'schema_id' => $schema->getKey(),
+        ]);
+
+        $this->product->schemas()->sync([$schema->getKey()]);
+
+        $this->actingAs($this->{$user})->postJson('/orders', [
+            'sales_channel_id' => $salesChannelId,
+            'currency' => $this->currency,
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => Exceptions::CLIENT_PRODUCT_OPTION->name,
+                'message' => Exceptions::CLIENT_PRODUCT_OPTION->value,
             ]);
     }
 }

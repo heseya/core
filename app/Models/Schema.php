@@ -7,7 +7,9 @@ use App\Criteria\MetadataSearch;
 use App\Criteria\SchemaSearch;
 use App\Criteria\TranslatedLike;
 use App\Criteria\WhereInIds;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\SchemaType;
+use App\Exceptions\ClientException;
 use App\Models\Contracts\SortableContract;
 use App\Models\Interfaces\Translatable;
 use App\Rules\OptionAvailable;
@@ -29,7 +31,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 
 /**
  * @property string $name
@@ -102,7 +103,7 @@ class Schema extends Model implements SortableContract, Translatable
     /**
      * Check if user input is valid.
      *
-     * @throws ValidationException
+     * @throws ClientException
      */
     public function validate(mixed $value): void
     {
@@ -156,7 +157,7 @@ class Schema extends Model implements SortableContract, Translatable
         );
 
         if ($validator->fails()) {
-            throw new ValidationException($validator);
+            throw new ClientException(Exceptions::CLIENT_PRODUCT_OPTION, errorArray: $validator->messages()->messages());
         }
     }
 

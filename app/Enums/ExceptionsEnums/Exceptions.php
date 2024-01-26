@@ -139,6 +139,9 @@ enum Exceptions: string
 
     case CLIENT_FULL_NAME = 'The name must contains first name and last name';
     case CLIENT_STREET_NUMBER = 'The address must contains the street name and house number';
+    case CLIENT_PRODUCT_OPTION = 'The product option is required';
+    case CLIENT_SCHEMA_INVALID = 'Selected schemas are invalid';
+    case CLIENT_SCHEMA_OPTIONS_INVALID = 'Selected schemas options are invalid';
 
     // Aliases
     public const CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT = self::CLIENT_NO_ACCESS;
