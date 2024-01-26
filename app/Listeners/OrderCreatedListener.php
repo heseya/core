@@ -23,7 +23,7 @@ final readonly class OrderCreatedListener
 
         try {
             Mail::to($order->email)
-                ->locale($order->language)
+                ->locale($order->locale)
                 ->send(new OrderCreated($order));
         } catch (Throwable) {
             Log::error("Couldn't send order {$order->code} confirmation to the address: {$order->email}");

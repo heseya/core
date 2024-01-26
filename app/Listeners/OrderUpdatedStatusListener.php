@@ -19,7 +19,7 @@ final class OrderUpdatedStatusListener
         try {
             if (!$order->status?->no_notifications) {
                 Mail::to($order->email)
-                    ->locale($order->language)
+                    ->locale($order->locale)
                     ->send(new OrderStatusUpdated($order));
             }
         } catch (Throwable) {

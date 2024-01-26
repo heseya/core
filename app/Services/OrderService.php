@@ -529,7 +529,7 @@ final readonly class OrderService implements OrderServiceContract
         $products = $order->products()->has('urls')->get();
         if (!$products->isEmpty()) {
             Mail::to($order->email)
-                ->locale($order->language)
+                ->locale($order->locale)
                 ->send(new OrderUrls($order, $products));
 
             $products->toQuery()->update([

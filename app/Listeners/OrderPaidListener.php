@@ -19,7 +19,7 @@ final class OrderPaidListener
         try {
             if ($order->paid) {
                 Mail::to($order->email)
-                    ->locale($order->language)
+                    ->locale($order->locale)
                     ->send(new OrderPaid($order));
             }
         } catch (Throwable) {
