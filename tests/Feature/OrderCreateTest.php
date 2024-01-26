@@ -2559,7 +2559,7 @@ class OrderCreateTest extends TestCase
 
         $this->product->schemas()->sync([$schema->getKey()]);
 
-        $response = $this->actingAs($this->{$user})->postJson('/orders', [
+        $this->actingAs($this->{$user})->postJson('/orders', [
             'sales_channel_id' => $salesChannelId,
             'currency' => $this->currency,
             'email' => $this->email,
