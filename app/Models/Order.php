@@ -216,4 +216,9 @@ final class Order extends Model implements SortableContract
     {
         return $this->hasOne(SalesChannel::class, 'id', 'sales_channel_id');
     }
+
+    public function getLocaleAttribute(): string
+    {
+        return explode('-', $this->language)[0];
+    }
 }
