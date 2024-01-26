@@ -8,6 +8,7 @@ use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
 use App\Enums\SchemaType;
 use App\Enums\ShippingType;
+use App\Enums\ValidationError;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Exceptions\PublishingException;
@@ -2421,6 +2422,69 @@ class OrderCreateTest extends TestCase
             'order_id' => $order->id,
             'name' => $plName,
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderInvalidAddress($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.add');
+
+        $productQuantity = 2;
+
+        $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => [
+                'name' => 'Jan',
+                'address' => 'Testowa',
+                'phone' => '516516516',
+                'zip' => '80-111',
+                'city' => 'Gdańsk',
+                'country' => 'PL',
+            ],
+            'billing_address' => [
+                'name' => 'Jan',
+                'address' => 'Testowa',
+                'phone' => '516516516',
+                'zip' => '80-111',
+                'city' => 'Gdańsk',
+                'country' => 'PL',
+            ],
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+        ])
+            ->assertJsonFragment([
+                'shipping_place.name' => [[
+                    'key' => ValidationError::FULLNAME->value,
+                    'message' => Exceptions::CLIENT_FULL_NAME->value,
+                ]]
+            ])
+            ->assertJsonFragment([
+                'shipping_place.address' => [[
+                    'key' => ValidationError::STREETNUMBER->value,
+                    'message' => Exceptions::CLIENT_STREET_NUMBER->value,
+                ]]
+            ])
+            ->assertJsonFragment([
+                'billing_address.name' => [[
+                    'key' => ValidationError::FULLNAME->value,
+                    'message' => Exceptions::CLIENT_FULL_NAME->value,
+                ]]
+            ])
+            ->assertJsonFragment([
+                'billing_address.address' => [[
+                    'key' => ValidationError::STREETNUMBER->value,
+                    'message' => Exceptions::CLIENT_STREET_NUMBER->value,
+                ]]
+            ]);
     }
 
     /**

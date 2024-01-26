@@ -16,11 +16,11 @@ trait GetLocale
             if ($salesChannel) {
                 $salesChannel = app(SalesChannelRepository::class)->getOne($salesChannel);
                 if ($salesChannel->defaultLanguage) {
-                    return $salesChannel->defaultLanguage->iso;
+                    return explode('-', $salesChannel->defaultLanguage->iso)[0];
                 }
             }
         }
 
-        return app(LanguageService::class)->firstByIdOrDefault(App::getLocale())->iso;
+        return explode('-', app(LanguageService::class)->firstByIdOrDefault(App::getLocale())->iso)[0];
     }
 }

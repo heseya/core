@@ -2706,6 +2706,44 @@ class AuthTest extends TestCase
         );
     }
 
+    public function testRegisterMailWithAcceptLanguageRegional(): void
+    {
+        Notification::fake();
+
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.register');
+
+        $salesChannel = SalesChannel::query()->value('id');
+
+        $email = $this->faker->email();
+        $this->json('POST', '/register', [
+            'name' => 'Registered user',
+            'email' => $email,
+            'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+        ], [
+            'Accept-Language' => 'en-EN',
+            'X-Sales-Channel' => $salesChannel,
+        ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'name' => 'Registered user',
+                'email' => $email,
+            ]);
+
+        $user = User::where('email', $email)->first();
+
+        Notification::assertSentTo(
+            [$user],
+            UserRegistered::class,
+            function (UserRegistered $notification) use ($user) {
+                $mail = $notification->toMail($user);
+                $this->assertEquals('Welcome aboard! Account created', $mail->subject);
+
+                return true;
+            }
+        );
+    }
+
     public function testRegisterMailWithSalesChannel(): void
     {
         Notification::fake();

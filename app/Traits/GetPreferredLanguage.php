@@ -46,8 +46,8 @@ trait GetPreferredLanguage
             }
 
             // Check for de-regionized matches
-            if ($languageCodes->keys()->contains($code)) {
-                return $languages->firstWhere('iso', $languageCodes[$code]);
+            if ($languageCodes->keys()->contains($code) || $languageCodes->keys()->contains(explode('-', $code)[0])) {
+                return $languages->firstWhere('iso', $languageCodes[explode('-', $code)[0]]);
             }
         }
 
