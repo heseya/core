@@ -15,10 +15,11 @@ RUN docker-php-ext-install soap pdo_mysql imap opcache
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 COPY ./docker/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+COPY ./docker/file-upload.ini /usr/local/etc/php/conf.d/file-upload.ini
 
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 
 COPY . /var/www/html/
-RUN chown -R www-data:www-data /var/www/html
 
 RUN rm -f .env && composer install --no-dev
+RUN chown -R www-data:www-data /var/www/html
