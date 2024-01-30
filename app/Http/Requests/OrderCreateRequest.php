@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\FullName;
 use App\Rules\ShippingPlaceValidation;
 use App\Rules\StreetNumber;
 use App\Traits\MetadataRules;
@@ -31,7 +30,7 @@ class OrderCreateRequest extends OrderItemsRequest
                 'shipping_method_id' => ['nullable', 'uuid'],
                 'shipping_place' => ['nullable', 'required_with:shipping_method_id', new ShippingPlaceValidation()],
 
-                'billing_address.name' => ['required', 'string', 'max:255', new FullName()],
+                'billing_address.name' => ['required', 'string', 'max:255'],
                 'billing_address.phone' => ['required', 'string', 'max:20'],
                 'billing_address.address' => ['required', 'string', 'max:255', new StreetNumber()],
                 'billing_address.zip' => ['required', 'string', 'max:16'],

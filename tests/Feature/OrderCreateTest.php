@@ -2473,7 +2473,7 @@ class OrderCreateTest extends TestCase
                     'message' => Exceptions::CLIENT_STREET_NUMBER->value,
                 ]]
             ])
-            ->assertJsonFragment([
+            ->assertJsonMissing([
                 'billing_address.name' => [[
                     'key' => ValidationError::FULLNAME->value,
                     'message' => Exceptions::CLIENT_FULL_NAME->value,

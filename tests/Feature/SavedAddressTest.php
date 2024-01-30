@@ -664,4 +664,50 @@ class SavedAddressTest extends TestCase
                 'message' => Exceptions::CLIENT_FULL_NAME->value,
             ]);
     }
+
+    /**
+     * @dataProvider namesProvider
+     */
+    public function testCreateBillingAddressesName(string $name): void
+    {
+        $this->user->givePermissionTo('profile.addresses_manage');
+
+        $this->actingAs($this->user)->postJson('/auth/profile/billing-addresses', [
+            'name' => 'test',
+            'default' => false,
+            'address' => [
+                'name' => $name,
+                'phone' => '123456789',
+                'address' => 'Testowa 12',
+                'zip' => '123',
+                'city' => 'testcity',
+                'country' => 'ts',
+                'vat' => '10',
+            ],
+        ])
+            ->assertOk();
+    }
+
+    /**
+     * @dataProvider invalidNamesProvider
+     */
+    public function testCreateBillingAddressesShortName(string $name): void
+    {
+        $this->user->givePermissionTo('profile.addresses_manage');
+
+        $this->actingAs($this->user)->postJson('/auth/profile/billing-addresses', [
+            'name' => 'test',
+            'default' => false,
+            'address' => [
+                'name' => $name,
+                'phone' => '123456789',
+                'address' => 'Testowa 12',
+                'zip' => '123',
+                'city' => 'testcity',
+                'country' => 'ts',
+                'vat' => '10',
+            ],
+        ])
+            ->assertOk();
+    }
 }
