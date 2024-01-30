@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\ProductAttribute\Models;
 
+use App\Criteria\AttributeProductSetsCriteria;
 use App\Criteria\AttributeSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
@@ -84,8 +85,9 @@ final class Attribute extends Model implements Translatable
         'search' => AttributeSearch::class,
         'ids' => WhereInIds::class,
         'published' => Like::class,
-        'attribute.published' => Like::class,
+        'attributes.published' => Like::class,
         'sortable',
+        'sets' => AttributeProductSetsCriteria::class,
     ];
 
     /**

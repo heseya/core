@@ -47,6 +47,7 @@ class AttributeTest extends TestCase
             'type' => AttributeType::getRandomInstance(),
             'global' => false,
             'sortable' => true,
+            'published' => [$this->lang],
         ];
         $this->newAttribute = array_merge($this->attributeData, [
             'translations' => [
@@ -54,9 +55,6 @@ class AttributeTest extends TestCase
                     'name' => 'new attribute',
                     'description' => 'lorem ipsum',
                 ],
-            ],
-            'published' => [
-                $this->lang,
             ],
         ]);
         $this->newAttribute['options'] = [

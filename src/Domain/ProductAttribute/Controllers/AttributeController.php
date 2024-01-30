@@ -47,12 +47,7 @@ final class AttributeController extends Controller
     public function filters(FiltersDto $dto): JsonResource
     {
         return AttributeResource::collection(
-            Attribute::query()
-                ->whereHas(
-                    'productSets',
-                    fn ($query) => $query->whereIn('product_set_id', $dto->sets),
-                )
-                ->orWhere('global', '=', true)
+            Attribute::searchByCriteria($dto->toArray() + $this->getPublishedLanguageFilter('attributes'))
                 ->leftJoin('attribute_product_set', function (JoinClause $join) use ($dto): void {
                     $join
                         ->on('attribute_product_set.attribute_id', 'attributes.id')
