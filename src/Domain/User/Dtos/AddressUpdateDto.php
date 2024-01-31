@@ -44,7 +44,7 @@ final class AddressUpdateDto extends Data
         }
 
         return [
-            'name' => [new FullName()],
+            'name' => ['string', 'max:255', new FullName()],
         ];
     }
 }

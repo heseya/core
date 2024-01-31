@@ -45,7 +45,7 @@ final class AddressStoreDto extends Data
         }
 
         return [
-            'name' => [new FullName()],
+            'name' => ['required', 'string', 'max:255', new FullName()],
         ];
     }
 }
