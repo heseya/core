@@ -119,7 +119,15 @@ class ProductRepository implements ProductRepositoryContract
             $loadAttributes->push(...explode(';', request()->input('attribute_slug')));
         }
         if ($loadAttributes->isNotEmpty()) {
-            $query->with(['productAttributes' => fn (Builder|HasMany $subquery) => $subquery->slug($loadAttributes->toArray())]); // @phpstan-ignore-line
+            $query->with([
+                'productAttributes' => fn (Builder|HasMany $subquery) => $subquery->slug($loadAttributes->toArray()), // @phpstan-ignore-line
+                'productAttributes.attribute',
+                'productAttributes.attribute.metadata',
+                'productAttributes.attribute.metadataPrivate',
+                'productAttributes.options',
+                'productAttributes.options.metadata',
+                'productAttributes.options.metadataPrivate',
+            ]);
         }
 
         if (is_string($dto->price_sort_direction)) {
