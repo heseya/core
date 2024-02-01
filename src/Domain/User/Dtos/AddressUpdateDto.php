@@ -18,7 +18,6 @@ use Spatie\LaravelData\Support\Validation\ValidationContext;
 final class AddressUpdateDto extends Data
 {
     public function __construct(
-        #[StringType, Max(255)]
         public string $name,
         #[StringType, Max(255), Rule(new StreetNumber())]
         public string $address,
@@ -40,7 +39,9 @@ final class AddressUpdateDto extends Data
     public static function rules(ValidationContext $context): array
     {
         if (Str::contains(request()->url(), 'billing-addresses')) {
-            return [];
+            return [
+                'name' => ['string', 'max:255'],
+            ];
         }
 
         return [
