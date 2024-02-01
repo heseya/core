@@ -10,6 +10,7 @@ use Domain\Language\Enums\LangFallbackType;
 use Domain\Language\Language;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\ProductSet\ProductSet;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
@@ -819,6 +820,61 @@ class LanguageFallbackTest extends TestCase
             ->assertJsonFragment([
                 'id' => $product->getKey(),
                 'name' => 'Test ES',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testFilterFallback(string $user): void
+    {
+        /** @var Language $es */
+        $es = Language::create([
+            'iso' => 'es',
+            'name' => 'Espaniol',
+            'default' => false,
+            'hidden' => false,
+        ]);
+
+        $attribute = Attribute::factory()->create([
+            'name' => 'Atrybut 1',
+            'published' => [$this->language->getKey(), $es->getKey()],
+            'global' => true,
+        ]);
+        $attribute->setLocale($es->getKey())->fill([
+            'name' => 'Attribute 1',
+        ]);
+        $attribute->save();
+        $attributeOption = AttributeOption::factory()->create([
+            'index' => 1,
+            'name' => 'Opcja 1',
+            'attribute_id' => $attribute->getKey(),
+        ]);
+
+        $attribute2 = Attribute::factory()->create([
+            'name' => 'Atrybut 2',
+            'published' => [$this->language->getKey()],
+            'global' => true,
+        ]);
+
+        $productSet = ProductSet::factory()->create();
+        $productSet->attributes()->attach([
+            $attribute->getKey() => ['order' => 0],
+            $attribute2->getKey() => ['order' => 1],
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/filters', ['sets' => [$productSet->getKey()]], ['Accept-Language' => 'es'])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $attribute->getKey(),
+                'name' => 'Attribute 1',
+            ])
+            ->assertJsonMissing([
+                'id' => $attribute2->getKey(),
+                'name' => 'Attribute 2',
             ]);
     }
 }
