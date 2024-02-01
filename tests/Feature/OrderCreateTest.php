@@ -2559,7 +2559,15 @@ class OrderCreateTest extends TestCase
             ])
         );
 
-        $this->product->schemas()->sync([$schema->getKey()]);
+        $schema2 = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => SchemaType::SELECT,
+                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
+                'hidden' => false,
+            ])
+        );
+
+        $this->product->schemas()->sync([$schema->getKey(), $schema2->getKey()]);
 
         $optionId = Str::uuid()->toString();
         $this->actingAs($this->{$user})->postJson('/orders', [

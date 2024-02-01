@@ -30,7 +30,7 @@ class SchemaOption implements ValidationRule
 
             $invalidOptions = [];
             foreach ($schemasOptions as $schema => $options) {
-                if (!in_array($value['schemas'][$schema], $options->pluck('id')->toArray())) {
+                if (array_key_exists($schema, $value['schemas']) && !in_array($value['schemas'][$schema], $options->pluck('id')->toArray())) {
                     $invalidOptions[$schema] = $value['schemas'][$schema];
                 }
             }
