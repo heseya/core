@@ -142,6 +142,7 @@ enum Exceptions: string
     case CLIENT_PRODUCT_OPTION = 'The product option is required';
     case CLIENT_SCHEMA_INVALID = 'Selected schemas are invalid';
     case CLIENT_SCHEMA_OPTIONS_INVALID = 'Selected schemas options are invalid';
+    case CLIENT_EMAIL_TAKEN = 'The email has already been taken';
 
     // Aliases
     public const CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT = self::CLIENT_NO_ACCESS;
