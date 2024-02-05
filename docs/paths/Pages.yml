@@ -39,6 +39,11 @@ Pages:
         required: false
         schema:
           type: boolean
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
     summary: 'list page'
     responses:
       200:

@@ -167,6 +167,62 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexSearch(string $user): void
+    {
+        $this->{$user}->givePermissionTo('pages.show');
+
+        Page::factory()->count(10)->create();
+
+        $this->page->update([
+            'name' => 'Searched name',
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/pages', [
+                'search' => $this->page->name,
+            ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $this->page->getKey(),
+                'name' => 'Searched name',
+            ]);
+
+        $this->assertQueryCountLessThan(11);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchSlug(string $user): void
+    {
+        $this->{$user}->givePermissionTo('pages.show');
+
+        Page::factory()->count(10)->create();
+
+        $this->page->update([
+            'slug' => 'searched-slug',
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/pages', [
+                'search' => $this->page->slug,
+            ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $this->page->getKey(),
+                'slug' => 'searched-slug',
+            ]);
+
+        $this->assertQueryCountLessThan(11);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexPerformance(string $user): void
     {
         $this->{$user}->givePermissionTo('pages.show');
