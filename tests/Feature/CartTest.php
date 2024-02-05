@@ -2935,6 +2935,114 @@ class CartTest extends TestCase
             ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessWithRequiredSchema(string $user): void
+    {
+        $this->{$user}->givePermissionTo('cart.verify');
+
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => 'select',
+                'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
+                'hidden' => false,
+                'required' => true,
+                'options' => [
+                    [
+                        'name' => 'XL',
+                        'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
+                    ],
+                    [
+                        'name' => 'L',
+                        'prices' => [PriceDto::from(Money::of(100, $this->currency->value))],
+                    ],
+                ],
+            ])
+        );
+
+        $option = $schema->options->where('name', 'XL')->first();
+
+        $item = Item::factory()->create();
+        $item->deposits()->create([
+            'quantity' => 10,
+        ]);
+        $option->items()->sync([$item->getKey() => ['required_quantity' => 1]]);
+
+        $option2 = $schema->options->where('name', 'L')->first();
+        $item2 = Item::factory()->create();
+        $option2->items()->sync([$item2->getKey() => ['required_quantity' => 1]]);
+
+        $optionalSchema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => 'select',
+                'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
+                'hidden' => false,
+                'required' => false,
+                'options' => [
+                    [
+                        'name' => 'Tak',
+                        'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
+                    ],
+                ],
+            ])
+        );
+
+        $optionalOption = $optionalSchema->options->where('name', 'Tak')->first();
+
+        $optionalItem = Item::factory()->create();
+        $optionalOption->items()->sync([$optionalItem->getKey() => ['required_quantity' => 1]]);
+
+        $noItemSchema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => 'select',
+                'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
+                'hidden' => false,
+                'required' => true,
+                'options' => [
+                    [
+                        'name' => 'Tak',
+                        'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
+                    ],
+                ],
+            ])
+        );
+
+        $noItemOption = $noItemSchema->options->where('name', 'Tak')->first();
+
+        $this->product->schemas()->sync([$schema->getKey(), $optionalSchema->getKey(), $noItemSchema->getKey()]);
+
+        $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [
+                        $schema->getKey() => $option->getKey(),
+                        $optionalSchema->getKey() => $optionalOption->getKey(),
+                        $noItemSchema->getKey() => $noItemOption->getKey(),
+                    ],
+                ]
+            ],
+        ])
+            ->assertValid()
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => '0.00',
+                'cart_total' => '0.00',
+                'shipping_price_initial' => '8.11',
+                'shipping_price' => '8.11',
+                'summary' => '8.11',
+                'coupons' => [],
+                'sales' => [],
+                'items' => [],
+            ]);
+    }
+
     private function prepareDataForCouponTest($coupon): array
     {
         $code = $coupon ? [] : ['code' => null];
