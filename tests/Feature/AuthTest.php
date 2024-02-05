@@ -7,6 +7,7 @@ use App\Enums\IssuerType;
 use App\Enums\RoleType;
 use App\Enums\TFAType;
 use App\Enums\TokenType;
+use App\Enums\ValidationError;
 use App\Events\FailedLoginAttempt;
 use App\Events\NewLocalizationLoginAttempt;
 use App\Events\PasswordReset;
@@ -2604,7 +2605,12 @@ class AuthTest extends TestCase
             'name' => 'Registered user',
             'email' => $this->user->email,
             'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
-        ])->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+        ])
+            ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
+            ->assertJsonFragment([
+                'key' => ValidationError::EMAILUNIQUE->value,
+                'message' => Exceptions::CLIENT_EMAIL_TAKEN->value,
+            ]);
 
         Notification::assertNothingSent();
     }
