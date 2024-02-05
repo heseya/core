@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\PageReorderRequest;
 use App\Services\ReorderService;
 use Domain\Page\Dtos\PageCreateDto;
+use Domain\Page\Dtos\PageIndexDto;
 use Domain\Page\Dtos\PageUpdateDto;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response as HttpResponse;
@@ -21,10 +22,10 @@ final class PageController extends Controller
         private readonly ReorderService $reorderService,
     ) {}
 
-    public function index(PageIndexRequest $request): JsonResource
+    public function index(PageIndexDto $dto): JsonResource
     {
         return PageResource::collection(
-            $this->pageService->getPaginated($request->validated()),
+            $this->pageService->getPaginated($dto),
         );
     }
 
