@@ -99,10 +99,10 @@
                                            style="border-collapse:collapse;border-spacing:0px;">
                                         <tbody>
                                         <tr>
-                                            <td style="width:50px;"><img height="50"
-                                                                         src="{{ $settingsService->getSetting('store_logo')->value }}"
-                                                                         style="border:0;display:block;outline:none;text-decoration:none;height:50px;width:100%;font-size:13px;"
-                                                                         width="50"></td>
+                                            <td style="width:100px;"><img height="30"
+                                                                          src="{{ $settingsService->getSetting('store_logo')->value }}"
+                                                                          style="border:0;display:block;outline:none;text-decoration:none;height:30px;width:100%;font-size:13px;object-fit:contain;"
+                                                                          width="100"></td>
                                         </tr>
                                         </tbody>
                                     </table>

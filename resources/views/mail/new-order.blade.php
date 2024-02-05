@@ -124,7 +124,7 @@
                                             <td style="width:100px;">
                                                 <img height="30"
                                                      src="{{ $settingsService->getSetting('mail_logo')->value ?? $settingsService->getSetting('store_logo')->value }}"
-                                                     style="border:0;display:block;outline:none;text-decoration:none;height:30px;width:100%;font-size:13px;"
+                                                     style="border:0;display:block;outline:none;text-decoration:none;height:30px;width:100%;font-size:13px;object-fit:contain;"
                                                      width="100"/>
                                             </td>
                                         </tr>
