@@ -41,6 +41,22 @@ class ItemService implements ItemServiceContract
         return $totalItems;
     }
 
+    public function substractItemArrays(array $items1, array $items2): array
+    {
+        $totalItems = $items1;
+
+        foreach ($items2 as $id => $count) {
+            if ($totalItems[$id]) {
+                $totalItems[$id] -= $count;
+                if ($totalItems[$id] < 0) {
+                    unset($totalItems[$id]);
+                }
+            }
+        }
+
+        return $totalItems;
+    }
+
     public function validateItems(array $items): void
     {
         foreach ($items as $id => $count) {
@@ -141,7 +157,7 @@ class ItemService implements ItemServiceContract
             }
             $selectedItems = $this->addItemArrays($selectedItems, $productItems);
 
-            $schemaItems = [];
+            $currentProductItems = $this->addItemArrays($selectedItems, $productItems);
             /** @var Schema $schema */
             foreach ($product->schemas as $schema) {
                 $value = $schemas[$schema->getKey()] ?? null;
@@ -154,13 +170,14 @@ class ItemService implements ItemServiceContract
 
                 $schemaItems = $schema->getItems($value, $item->getQuantity());
                 $selectedItems = $this->addItemArrays($selectedItems, $schemaItems);
+                $currentProductItems = $this->addItemArrays($currentProductItems, $schemaItems);
             }
 
-            $currentProductItems = $this->addItemArrays($productItems, $schemaItems);
-            if ($this->validateCartItems($currentProductItems)) {
+            if ($this->validateCartItems($selectedItems)) {
                 $products->push($product);
             } else {
                 $cartItemToRemove[] = $item->getCartItemId();
+                $selectedItems = $this->substractItemArrays($selectedItems, $currentProductItems);
             }
         }
 
