@@ -76,7 +76,7 @@ class ProductCreateRequest extends FormRequest implements MetadataRequestContrac
 
                 'related_sets' => ['array'],
                 'related_sets.*' => ['uuid', 'exists:product_sets,id'],
-                'banner' => ['array'],
+                'banner' => ['nullable', 'array'],
                 'banner.url' => ['string', 'nullable'],
                 'banner.translations' => ['array'],
                 'banner.translations.*.title' => ['nullable', 'string'],
