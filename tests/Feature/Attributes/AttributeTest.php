@@ -30,6 +30,7 @@ class AttributeTest extends TestCase
         $this->attribute = Attribute::factory()->create([
             'global' => true,
             'sortable' => true,
+            'type' => AttributeType::SINGLE_OPTION,
         ]);
 
         $this->option = AttributeOption::factory()->create([
@@ -44,7 +45,7 @@ class AttributeTest extends TestCase
             'name' => 'new attribute',
             'slug' => 'new-attribute',
             'description' => 'lorem ipsum',
-            'type' => AttributeType::getRandomInstance(),
+            'type' => AttributeType::SINGLE_OPTION,
             'global' => false,
             'sortable' => true,
             'published' => [$this->lang],
@@ -1089,6 +1090,9 @@ class AttributeTest extends TestCase
         unset($this->newOption['published']);
         unset($this->optionData['name']);
 
+        $this->newOption['value_number'] = '12';
+        $this->optionData['value_number'] = 12;
+
         $this
             ->actingAs($this->{$user})
             ->postJson('/attributes/id:' . $attribute->getKey() . '/options', $this->newOption)
@@ -1096,6 +1100,29 @@ class AttributeTest extends TestCase
             ->assertJsonFragment($this->optionData);
 
         $this->assertDatabaseHas('attribute_options', $this->newOption);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testAddOptionNumberWithoutNumber(string $user): void
+    {
+        $this->{$user}->givePermissionTo('attributes.edit');
+
+        $attribute = Attribute::factory([
+            'type' => AttributeType::NUMBER,
+        ])->create();
+        unset($this->newOption['translations']);
+        unset($this->newOption['published']);
+        unset($this->optionData['name']);
+
+        $this
+            ->actingAs($this->{$user})
+            ->postJson('/attributes/id:' . $attribute->getKey() . '/options', $this->newOption)
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'message' => 'The value number field is required.'
+            ]);
     }
 
     /**
