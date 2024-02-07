@@ -117,6 +117,39 @@ class ProductCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateProductBannerNull(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.add');
+
+        $prices = array_map(fn (Currency $currency) => [
+            'value' => '100.00',
+            'currency' => $currency->value,
+        ], Currency::cases());
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/products', [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                    ],
+                ],
+                'published' => [$this->lang],
+                'slug' => 'slug',
+                'prices_base' => $prices,
+                'public' => true,
+                'shipping_digital' => false,
+                'banner' => null,
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'banner' => null,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateProductBannerNoTitle(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
