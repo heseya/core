@@ -390,12 +390,9 @@ readonly class DiscountService implements DiscountServiceContract
         }
         $cartShippingTimeAndDate = $this->shippingTimeDateService->getTimeAndDateForCart($cart, $products);
 
-        $shippingPrice = $shippingMethod?->getPrice($cartValue) ?? Money::zero($currency->value);
-        $shippingPrice = $shippingPrice->plus(
-            $shippingMethodDigital?->getPrice($cartValue) ?? Money::zero($currency->value),
-        );
+        $shippingPrice = Money::zero($currency->value);
 
-        $summary = $cartValue->plus($shippingPrice);
+        $summary = $cartValue;
 
         $cartResource = new CartResource(
             Collection::make($cartItems),
@@ -422,27 +419,30 @@ readonly class DiscountService implements DiscountServiceContract
                 $cartResource = $this->applyDiscountOnCart($discount, $cart, $cartResource);
                 $newSummary = $cartResource->cart_total->plus($cartResource->shipping_price);
                 $appliedDiscount = $summary->minus($newSummary);
-
-                if ($discount->code !== null) {
-                    $cartResource->coupons->push(
-                        new CouponShortResource(
-                            $discount->getKey(),
-                            $discount->name,
-                            $appliedDiscount,
-                            $discount->code,
-                        ),
-                    );
-                } else {
-                    $cartResource->sales->push(
-                        new SalesShortResource(
-                            $discount->getKey(),
-                            $discount->name,
-                            $appliedDiscount,
-                        ),
-                    );
-                }
+                $cartResource = $this->addDiscountToCartResource($appliedDiscount, $discount, $cartResource);
 
                 $summary = $newSummary;
+            }
+        }
+
+        $shippingPrice = $shippingMethod?->getPrice($summary) ?? Money::zero($currency->value);
+        $shippingPrice = $shippingPrice->plus(
+            $shippingMethodDigital?->getPrice($summary) ?? Money::zero($currency->value),
+        );
+
+        $cartResource->summary = $cartValue->plus($shippingPrice);
+        $cartResource->shipping_price_initial = $shippingPrice;
+        $cartResource->shipping_price = $shippingPrice;
+
+        foreach ($discounts->filter(fn ($discount) => $discount->target_type === DiscountTargetType::SHIPPING_PRICE) as $discount) {
+            if (
+                $this->checkShippingPriceTarget($discount, $cart)
+                && $this->checkConditionGroups($discount, $cart, $cartResource->cart_total)
+            ) {
+                $oldShipping = $cartResource->shipping_price;
+                $cartResource = $this->applyDiscountOnCart($discount, $cart, $cartResource);
+                $appliedDiscount = $oldShipping->minus($cartResource->shipping_price);
+                $cartResource = $this->addDiscountToCartResource($appliedDiscount, $discount, $cartResource);
             }
         }
 
@@ -459,6 +459,23 @@ readonly class DiscountService implements DiscountServiceContract
         $cartResource->summary = $cartResource->cart_total->plus($cartResource->shipping_price);
 
         return $cartResource;
+    }
+
+    private function checkShippingPriceTarget(Discount $discount, CartDto $cart): bool
+    {
+        if ($discount->target_type === DiscountTargetType::SHIPPING_PRICE) {
+            if ($discount->target_is_allow_list) {
+                return $discount->shippingMethods->contains(
+                    fn ($value): bool => $value->getKey() === $cart->getShippingMethodId(),
+                );
+            }
+
+            return $discount->shippingMethods->doesntContain(
+                fn ($value): bool => $value->getKey() === $cart->getShippingMethodId(),
+            );
+        }
+
+        return false;
     }
 
     /**
@@ -1659,18 +1676,6 @@ readonly class DiscountService implements DiscountServiceContract
             }
         }
 
-        if ($discount->target_type === DiscountTargetType::SHIPPING_PRICE) {
-            if ($discount->target_is_allow_list) {
-                return $discount->shippingMethods->contains(
-                    fn ($value): bool => $value->getKey() === $cart->getShippingMethodId(),
-                );
-            }
-
-            return $discount->shippingMethods->doesntContain(
-                fn ($value): bool => $value->getKey() === $cart->getShippingMethodId(),
-            );
-        }
-
         return in_array(
             $discount->target_type,
             [DiscountTargetType::ORDER_VALUE, DiscountTargetType::CHEAPEST_PRODUCT],
@@ -2024,5 +2029,32 @@ readonly class DiscountService implements DiscountServiceContract
         }
 
         return false;
+    }
+
+    private function addDiscountToCartResource(
+        Money $appliedDiscount,
+        mixed $discount,
+        CartResource $cartResource,
+    ): CartResource {
+        if ($discount->code !== null) {
+            $cartResource->coupons->push(
+                new CouponShortResource(
+                    $discount->getKey(),
+                    $discount->name,
+                    $appliedDiscount,
+                    $discount->code,
+                ),
+            );
+        } else {
+            $cartResource->sales->push(
+                new SalesShortResource(
+                    $discount->getKey(),
+                    $discount->name,
+                    $appliedDiscount,
+                ),
+            );
+        }
+
+        return $cartResource;
     }
 }

@@ -24,7 +24,7 @@ class SalesChannelFactory extends Factory
     {
         return [
             'name' => $this->faker->word,
-            'slug' => Str::limit($this->faker->unique()->slug(2), 31),
+            'slug' => Str::limit($this->faker->unique()->slug(2), 30),
             'status' => $this->faker->randomElement(Status::cases())->value,
             'countries_block_list' => false,
             'default_currency' => Currency::DEFAULT,
