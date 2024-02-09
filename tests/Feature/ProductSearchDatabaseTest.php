@@ -752,16 +752,16 @@ class ProductSearchDatabaseTest extends TestCase
             )
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonFragment([
+            ->assertJsonMissing([
                 'name' => $attribute->name,
             ])
             ->assertJsonFragment([
-                'id' => $options[0]->getKey(),
-                'name' => $options[0]->name,
+                'id' => $products[0]->getKey(),
+                'name' => $products[0]->name,
             ])
             ->assertJsonMissing([
-                'id' => $options[1]->getKey(),
-                'name' => $options[1]->name,
+                'id' => $products[1]->getKey(),
+                'name' => $products[1]->name,
             ]);
     }
 
@@ -818,16 +818,16 @@ class ProductSearchDatabaseTest extends TestCase
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
-            ->assertJsonFragment([
+            ->assertJsonMissing([
                 'name' => $attribute->name,
             ])
             ->assertJsonFragment([
-                'id' => $option1->getKey(),
-                'name' => $option1->name,
+                'id' => $products[0]->getKey(),
+                'name' => $products[0]->name,
             ])
             ->assertJsonFragment([
-                'id' => $option2->getKey(),
-                'name' => $option2->name,
+                'id' => $products[1]->getKey(),
+                'name' => $products[1]->name,
             ]);
     }
 
@@ -883,16 +883,14 @@ class ProductSearchDatabaseTest extends TestCase
             )
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonFragment([
+            ->assertJsonMissing([
                 'name' => $attribute->name,
             ])
             ->assertJsonFragment([
-                'id' => $option1->getKey(),
-                'value_number' => $option1->value_number,
+                'id' => $products[0]->getKey(),
             ])
             ->assertJsonMissing([
-                'id' => $option2->getKey(),
-                'value_number' => $option2->value_number,
+                'id' => $products[1]->getKey(),
             ]);
 
         $this
@@ -910,16 +908,14 @@ class ProductSearchDatabaseTest extends TestCase
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
-            ->assertJsonFragment([
+            ->assertJsonMissing([
                 'name' => $attribute->name,
             ])
             ->assertJsonFragment([
-                'id' => $option1->getKey(),
-                'value_number' => $option1->value_number,
+                'id' => $products[0]->getKey(),
             ])
             ->assertJsonFragment([
-                'id' => $option2->getKey(),
-                'value_number' => $option2->value_number,
+                'id' => $products[1]->getKey(),
             ]);
 
         $this
@@ -1007,16 +1003,16 @@ class ProductSearchDatabaseTest extends TestCase
 
         $response->assertOk()
             ->assertJsonCount(2, 'data')
-            ->assertJsonFragment([
+            ->assertJsonMissing([
                 'name' => $attribute->name,
             ])
             ->assertJsonFragment([
-                'id' => $option1->getKey(),
-                'name' => $option1->name,
+                'id' => $products[0]->getKey(),
+                'name' => $products[0]->name,
             ])
             ->assertJsonFragment([
-                'id' => $option2->getKey(),
-                'name' => $option2->name,
+                'id' => $products[1]->getKey(),
+                'name' => $products[1]->name,
             ]);
     }
 
@@ -1072,16 +1068,14 @@ class ProductSearchDatabaseTest extends TestCase
             )
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonFragment([
+            ->assertJsonMissing([
                 'name' => $attribute->name,
             ])
             ->assertJsonFragment([
-                'id' => $option1->getKey(),
-                'value_date' => $option1->value_date,
+                'id' => $products[0]->getKey(),
             ])
             ->assertJsonMissing([
-                'id' => $option2->getKey(),
-                'value_date' => $option2->value_date,
+                'id' => $products[1]->getKey(),
             ]);
 
         $this
@@ -1100,16 +1094,14 @@ class ProductSearchDatabaseTest extends TestCase
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
-            ->assertJsonFragment([
+            ->assertJsonMissing([
                 'name' => $attribute->name,
             ])
             ->assertJsonFragment([
-                'id' => $option1->getKey(),
-                'value_date' => $option1->value_date,
+                'id' => $products[0]->getKey(),
             ])
             ->assertJsonFragment([
-                'id' => $option2->getKey(),
-                'value_date' => $option2->value_date,
+                'id' => $products[1]->getKey(),
             ]);
 
         $this
