@@ -31,6 +31,7 @@ final class StatusTest extends TestCase
             'hidden' => $this->status_model->hidden,
             'no_notifications' => $this->status_model->no_notifications,
             'metadata' => [],
+            'published' => [$this->lang],
         ];
     }
 

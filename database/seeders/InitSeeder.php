@@ -48,12 +48,14 @@ class InitSeeder extends Seeder
 
     private function createStatuses(string $language): void
     {
+        $published = [App::getLocale(), $language];
         /** @var Status $status */
         $status = Status::query()->create([
             'name' => 'Nowe',
             'color' => 'ffd600',
             'description' => 'Twoje zamówienie zostało zapisane w systemie!',
             'order' => 1,
+            'published' => $published,
         ]);
         $status->setLocale($language)->fill([
             'name' => 'New',
@@ -67,6 +69,7 @@ class InitSeeder extends Seeder
             'color' => '1faa00',
             'description' => 'Zamówienie zostało wysłane i wkrótce do trafi w Twoje ręce :)',
             'order' => 2,
+            'published' => $published,
         ]);
         $status->setLocale($language)->fill([
             'name' => 'Sent',
@@ -78,9 +81,10 @@ class InitSeeder extends Seeder
         $status = Status::query()->create([
             'name' => 'Anulowane',
             'color' => 'a30000',
-            'description' => 'Twoje zamówienie zostało anulowane, jeśli to pomyłka, proszę skontaktuj sie z nami',
+            'description' => 'Twoje zamówienie zostało anulowane, jeśli to pomyłka, proszę skontaktuj się z nami',
             'order' => 3,
             'cancel' => true,
+            'published' => $published,
         ]);
         $status->setLocale($language)->fill([
             'name' => 'Canceled',
