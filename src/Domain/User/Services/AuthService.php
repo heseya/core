@@ -39,7 +39,6 @@ use Domain\User\Dtos\TFAConfirmDto;
 use Domain\User\Dtos\TFAPasswordDto;
 use Domain\User\Dtos\TFASetupDto;
 use Domain\User\Dtos\TokenRefreshDto;
-use Domain\User\Dtos\VerifyEmailDto;
 use Exception;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Carbon;
@@ -104,9 +103,7 @@ final class AuthService
             'typ' => TokenType::ACCESS->value,
             'jti' => $uuid,
         ]);
-
         Auth::login($user);
-
         /** @phpstan-ignore-next-line */
         $token = Auth::fromUser($user);
 
@@ -681,14 +678,5 @@ final class AuthService
             'identity_token' => $identityToken,
             'refresh_token' => $refreshToken,
         ];
-    }
-
-    public function verifyEmail(VerifyEmailDto $dto): void
-    {
-        /** @var ?User $user */
-        $user = User::where('email_verify_token', $dto->token)->first();
-        if ($user) {
-            $user->markEmailAsVerified();
-        }
     }
 }

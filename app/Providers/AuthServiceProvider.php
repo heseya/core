@@ -11,7 +11,6 @@ use App\Policies\DiscountPolicy;
 use App\Policies\OrderPolicy;
 use App\Policies\UserPolicy;
 use App\Policies\WebHookPolicy;
-use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
@@ -42,10 +41,5 @@ class AuthServiceProvider extends ServiceProvider
             return Password::min(Config::get('validation.password_min_length'))
                 ->uncompromised();
         });
-
-        VerifyEmail::createUrlUsing(
-            fn (User $user) => $user->email_verify_url ?? Config::get('store_url', '') .
-            '?token=' . $user->email_verify_token,
-        );
     }
 }
