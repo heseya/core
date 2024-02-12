@@ -1215,6 +1215,131 @@ class ProductSetOtherTest extends TestCase
             ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteProductDescendant(string $user): void
+    {
+        $this->{$user}->givePermissionTo('product_sets.remove');
+
+        $parent = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $otherChild = ProductSet::factory()->create([
+            'public' => true,
+            'parent_id' => $parent->getKey(),
+        ]);
+
+        $otherChildChild = ProductSet::factory()->create([
+            'public' => true,
+            'parent_id' => $otherChild->getKey(),
+        ]);
+
+        $toDelete = ProductSet::factory()->create([
+            'public' => true,
+            'parent_id' => $parent->getKey(),
+        ]);
+
+        $child = ProductSet::factory()->create([
+            'public' => true,
+            'parent_id' => $toDelete->getKey(),
+        ]);
+
+        $sharedProduct = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $childSharedProduct = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $otherChildChildProduct = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $otherChildProduct = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $toDeleteProduct = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $childProduct = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $otherChild->descendantProducts()->attach([
+            $sharedProduct->getKey() => ['order' => 0],
+            $otherChildProduct->getKey() => ['order' => 1],
+            $childSharedProduct->getKey() => ['order' => 2],
+            $otherChildChildProduct->getKey() => ['order' => 3],
+        ]);
+
+        $otherChildChild->descendantProducts()->attach([
+            $childSharedProduct->getKey() => ['order' => 0],
+            $otherChildChildProduct->getKey() => ['order' => 1],
+        ]);
+
+        $toDelete->descendantProducts()->attach([
+            $sharedProduct->getKey() => ['order' => 0],
+            $toDeleteProduct->getKey() => ['order' => 1],
+            $childSharedProduct->getKey() => ['order' => 2],
+            $childProduct->getKey() => ['order' => 3],
+        ]);
+
+        $child->descendantProducts()->attach([
+            $childSharedProduct->getKey() => ['order' => 0],
+            $childProduct->getKey() => ['order' => 1],
+        ]);
+
+        $parent->descendantProducts()->attach([
+            $sharedProduct->getKey() => ['order' => 0],
+            $otherChildProduct->getKey() => ['order' => 1],
+            $childSharedProduct->getKey() => ['order' => 2],
+            $otherChildChildProduct->getKey() => ['order' => 3],
+            $toDeleteProduct->getKey() => ['order' => 4],
+            $childProduct->getKey() => ['order' => 5],
+        ]);
+
+        $response = $this->actingAs($this->{$user})->deleteJson(
+            '/product-sets/id:' . $toDelete->getKey(),
+        );
+        $response->assertNoContent();
+        $this->assertSoftDeleted($toDelete);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $parent->getKey(),
+            'product_id' => $sharedProduct->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $parent->getKey(),
+            'product_id' => $otherChildProduct->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $parent->getKey(),
+            'product_id' => $childSharedProduct->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $parent->getKey(),
+            'product_id' => $otherChildChildProduct->getKey(),
+        ]);
+
+        $this->assertDatabaseMissing('product_set_product_descendant', [
+            'product_set_id' => $parent->getKey(),
+            'product_id' => $toDeleteProduct->getKey(),
+        ]);
+
+        $this->assertDatabaseMissing('product_set_product_descendant', [
+            'product_set_id' => $parent->getKey(),
+            'product_id' => $childProduct->getKey(),
+        ]);
+    }
+
     private function prepareOrderData(): ProductSet
     {
         $set = ProductSet::factory()->create([

@@ -6,6 +6,7 @@ use App\Enums\MediaType;
 use App\Enums\ValidationError;
 use App\Listeners\WebHookEventListener;
 use App\Models\Media;
+use App\Models\Product;
 use App\Models\WebHook;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductSet\Events\ProductSetCreated;
@@ -770,5 +771,138 @@ class ProductSetCreateTest extends TestCase
             ->assertJsonFragment([
                 'message' => 'The slug suffix field is required.',
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateProductDescendant(string $user): void
+    {
+        $this->{$user}->givePermissionTo('product_sets.add');
+
+        $set1 = ProductSet::factory()->create(['public' => true]);
+        $set2 = ProductSet::factory()->create(['public' => true]);
+
+        $product1 = Product::factory()->create(['public' => true]);
+        $product2 = Product::factory()->create(['public' => true]);
+
+        $set1->descendantProducts()->attach([
+            $product1->getKey() => ['order' => 0],
+        ]);
+
+        $set2->descendantProducts()->attach([
+            $product2->getKey() => ['order' => 0],
+        ]);
+
+        $response = $this
+            ->actingAs($this->{$user})
+            ->postJson('/product-sets', [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                        'description_html' => null,
+                    ],
+                ],
+                'published' => [$this->lang],
+                'public' => true,
+                'slug_suffix' => 'test',
+                'slug_override' => false,
+                'children_ids' => [
+                    $set1->getKey(),
+                    $set2->getKey(),
+                ],
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'children_ids' => [
+                    $set1->getKey(),
+                    $set2->getKey(),
+                ]
+            ]);
+
+        $setId = $response->json('data.id');
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $setId,
+            'product_id' => $product1->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $setId,
+            'product_id' => $product2->getKey(),
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateProductDescendantParent(string $user): void
+    {
+        $this->{$user}->givePermissionTo('product_sets.add');
+
+        $parent = ProductSet::factory()->create(['public' => true]);
+
+        $set1 = ProductSet::factory()->create(['public' => true]);
+        $set2 = ProductSet::factory()->create(['public' => true]);
+
+        $product1 = Product::factory()->create(['public' => true]);
+        $product2 = Product::factory()->create(['public' => true]);
+
+        $set1->descendantProducts()->attach([
+            $product1->getKey() => ['order' => 0],
+        ]);
+
+        $set2->descendantProducts()->attach([
+            $product2->getKey() => ['order' => 0],
+        ]);
+
+        $response = $this
+            ->actingAs($this->{$user})
+            ->postJson('/product-sets', [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                        'description_html' => null,
+                    ],
+                ],
+                'published' => [$this->lang],
+                'public' => true,
+                'slug_suffix' => 'test',
+                'slug_override' => false,
+                'children_ids' => [
+                    $set1->getKey(),
+                    $set2->getKey(),
+                ],
+                'parent_id' => $parent->getKey(),
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'children_ids' => [
+                    $set1->getKey(),
+                    $set2->getKey(),
+                ]
+            ]);
+
+        $setId = $response->json('data.id');
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $setId,
+            'product_id' => $product1->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $setId,
+            'product_id' => $product2->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $parent->getKey(),
+            'product_id' => $product1->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $parent->getKey(),
+            'product_id' => $product2->getKey(),
+        ]);
     }
 }
