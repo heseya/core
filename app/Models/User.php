@@ -20,10 +20,10 @@ use App\Traits\Sortable;
 use Domain\Consent\Models\Consent;
 use Domain\Consent\Models\ConsentUser;
 use Domain\Metadata\Models\MetadataPersonal;
-use Domain\User\Traits\MustVerifyEmail;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Auth\Authenticatable;
+use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
@@ -64,7 +64,6 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
     // Bez tego nie działały testy, w których jako aplikacja tworzy się użytkownika z określoną rolą
     protected string $guard_name = 'api';
-
     protected $fillable = [
         'name',
         'email',
@@ -76,14 +75,11 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'birthday_date',
         'phone_country',
         'phone_number',
-        'email_verified_at',
     ];
-
     protected $hidden = [
         'password',
         'remember_token',
     ];
-
     protected array $criteria = [
         'name' => Like::class,
         'email' => Like::class,
@@ -95,13 +91,11 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'consent_id' => ConsentIdSearch::class,
         'roles' => RolesSearch::class,
     ];
-
     protected array $sortable = [
         'name',
         'created_at',
         'updated_at',
     ];
-
     protected $casts = [
         'is_tfa_active' => 'bool',
         'tfa_type' => TFAType::class,

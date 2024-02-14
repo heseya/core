@@ -55,7 +55,6 @@ final class UserUpdateDto extends Data
         #[Nullable, Required, StringType, Max(255)]
         public Optional|string|null $name,
         public Optional|string|null $email,
-        public Optional|string|null $email_verify_url,
         #[ArrayType]
         public array|Optional $roles,
         #[Nullable, Date, StringType, BeforeOrEqual('now')]
@@ -91,11 +90,6 @@ final class UserUpdateDto extends Data
                 Rule::unique('users')
                     ->ignoreModel($user)
                     ->whereNull('deleted_at'),
-            ],
-            'email_verify_url' => [
-                'url',
-                'max:255',
-                'required_with:email',
             ],
             'password' => [Password::defaults()],
             'roles.*' => [

@@ -89,9 +89,6 @@ final readonly class UserService
 
         $user->save();
 
-        $user->markEmailAsUnverified();
-        $user->sendEmailVerificationNotification();
-
         UserCreated::dispatch($user);
 
         return $user;
@@ -162,11 +159,6 @@ final readonly class UserService
         $user->update($dto->toArray());
 
         UserUpdated::dispatch($user);
-
-        if ($user->wasChanged('email')) {
-            $user->markEmailAsUnverified();
-            $user->sendEmailVerificationNotification();
-        }
 
         return $user;
     }
