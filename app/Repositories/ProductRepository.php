@@ -111,16 +111,9 @@ class ProductRepository implements ProductRepositoryContract
             $query->where('products.public', true);
         }
 
-        $loadAttributes = collect();
-        if (is_array($dto->attribute)) {
-            $loadAttributes->push(...array_keys($dto->attribute));
-        }
         if (request()->filled('attribute_slug')) {
-            $loadAttributes->push(...explode(';', request()->input('attribute_slug')));
-        }
-        if ($loadAttributes->isNotEmpty()) {
             $query->with([
-                'productAttributes' => fn (Builder|HasMany $subquery) => $subquery->slug($loadAttributes->toArray()), // @phpstan-ignore-line
+                'productAttributes' => fn (Builder|HasMany $subquery) => $subquery->slug(explode(';', request()->input('attribute_slug'))), // @phpstan-ignore-line
                 'productAttributes.attribute',
                 'productAttributes.attribute.metadata',
                 'productAttributes.attribute.metadataPrivate',

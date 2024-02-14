@@ -766,12 +766,16 @@ class ProductTest extends TestCase
             'attribute_id' => $attribute1->getKey(),
         ]);
 
-        $attribute2 = Attribute::factory()->create();
+        $attribute2 = Attribute::factory()->create([
+            'type' => AttributeType::SINGLE_OPTION,
+        ]);
 
         $option2 = AttributeOption::factory()->create([
             'index' => 1,
             'attribute_id' => $attribute2->getKey(),
         ]);
+
+        $attribute3 = Attribute::factory()->create();
 
         $product->attributes()->attach($attribute1->getKey());
         $product->attributes()->attach($attribute2->getKey());
@@ -806,6 +810,45 @@ class ProductTest extends TestCase
                 'value_number' => $option2->value_number,
                 'value_date' => $option2->value_date,
                 'attribute_id' => $attribute2->getKey(),
+            ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products', [
+                'attribute_slug' => "{$attribute1->slug}",
+                'attribute' => [
+                    $attribute2->slug => $option2->getKey(),
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'name' => $attribute1->name,
+                'slug' => $attribute1->slug,
+            ])
+            ->assertJsonMissing([
+                'name' => $attribute2->name,
+                'slug' => $attribute2->slug,
+            ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products', [
+                'attribute_slug' => "{$attribute3->slug}",
+                'attribute' => [
+                    $attribute2->slug => $option2->getKey(),
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'attributes' => [],
+            ])
+            ->assertJsonMissing([
+                'name' => $attribute1->name,
+                'slug' => $attribute1->slug,
+            ])
+            ->assertJsonMissing([
+                'name' => $attribute2->name,
+                'slug' => $attribute2->slug,
             ]);
     }
 
