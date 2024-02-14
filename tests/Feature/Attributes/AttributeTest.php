@@ -1239,6 +1239,82 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateValueNumberInvalidMax(string $user): void
+    {
+        $this->{$user}->givePermissionTo('attributes.edit');
+
+        $optionUpdate = [
+            'value_number' => 999999.99999,
+            'value_date' => Carbon::now()->toDateString(),
+            'attribute_id' => $this->option->attribute_id,
+        ];
+
+        $this
+            ->actingAs($this->{$user})
+            ->json(
+                'PATCH',
+                '/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey(),
+                array_merge([
+                    'translations' => [
+                        $this->lang => [
+                            'name' => 'Test ' . $this->option->name,
+                        ],
+                    ],
+                    'published' => [
+                        $this->lang,
+                    ],
+                ], $optionUpdate)
+            )
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => 'VALIDATION_MAX',
+                'message' => 'The value number may not be greater than 999999.9999.',
+            ])
+            ->assertJsonFragment([
+                'key' => 'VALIDATION_DECIMAL',
+                'message' => 'The value number field must have 0-4 decimal places.',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateValueNumberInvalidMin(string $user): void
+    {
+        $this->{$user}->givePermissionTo('attributes.edit');
+
+        $optionUpdate = [
+            'value_number' => -1,
+            'value_date' => Carbon::now()->toDateString(),
+            'attribute_id' => $this->option->attribute_id,
+        ];
+
+        $this
+            ->actingAs($this->{$user})
+            ->json(
+                'PATCH',
+                '/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey(),
+                array_merge([
+                    'translations' => [
+                        $this->lang => [
+                            'name' => 'Test ' . $this->option->name,
+                        ],
+                    ],
+                    'published' => [
+                        $this->lang,
+                    ],
+                ], $optionUpdate)
+            )
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => 'VALIDATION_MIN',
+                'message' => 'The value number must be at least  0.',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateOptionIncompleteData(string $user): void
     {
         $this->{$user}->givePermissionTo('attributes.edit');

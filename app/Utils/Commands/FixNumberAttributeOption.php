@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Utils\Commands;
 
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
@@ -13,7 +13,7 @@ class FixNumberAttributeOption extends Command
      *
      * @var string
      */
-    protected $signature = 'attributes:number-options';
+    protected $signature = 'utils:fix-attribute-number-options';
 
     /**
      * The console command description.

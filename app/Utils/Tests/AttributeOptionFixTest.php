@@ -1,15 +1,17 @@
 <?php
 
-namespace Tests\Feature\Attributes;
+namespace App\Utils\Tests;
 
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
+use Illuminate\Testing\PendingCommand;
 use Tests\TestCase;
 
 class AttributeOptionFixTest extends TestCase
 {
     public function testFixNumberOptions(): void
     {
+        /** @var Attribute $attribute */
         $attribute = Attribute::factory()->create([
             'type' => AttributeType::NUMBER->value,
         ]);
@@ -38,7 +40,8 @@ class AttributeOptionFixTest extends TestCase
             'index' => 3,
         ]);
 
-        $this->artisan('attributes:number-options')->expectsOutput('Done.');
+        // @phpstan-ignore-next-line
+        $this->artisan('utils:fix-attribute-number-options')->expectsOutput('Done.');
 
         $this->assertDatabaseHas('attribute_options', [
             'id' => $option1->getKey(),
@@ -62,6 +65,7 @@ class AttributeOptionFixTest extends TestCase
 
     public function testFixDateOptions(): void
     {
+        /** @var Attribute $attribute */
         $attribute = Attribute::factory()->create([
             'type' => AttributeType::DATE->value,
         ]);
@@ -108,7 +112,8 @@ class AttributeOptionFixTest extends TestCase
             'index' => 6,
         ]);
 
-        $this->artisan('attributes:date-options')->expectsOutput('Done.');
+        // @phpstan-ignore-next-line
+        $this->artisan('utils:fix-attribute-date-options')->expectsOutput('Done.');
 
         $this->assertDatabaseHas('attribute_options', [
             'id' => $option1->getKey(),

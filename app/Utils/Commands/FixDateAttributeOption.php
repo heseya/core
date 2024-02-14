@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Utils\Commands;
 
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
@@ -13,7 +13,7 @@ class FixDateAttributeOption extends Command
      *
      * @var string
      */
-    protected $signature = 'attributes:date-options';
+    protected $signature = 'utils:fix-attribute-date-options';
 
     /**
      * The console command description.

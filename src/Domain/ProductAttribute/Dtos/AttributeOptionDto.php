@@ -60,7 +60,7 @@ final class AttributeOptionDto extends Data
         $attribute = request()->attribute;
 
         return [
-            'value_number' => ['nullable', 'regex:/^\d{1,6}(\.\d{1,4}|)$/', FacadeRule::requiredIf($attribute->type->is(AttributeTypeValues::NUMBER))],
+            'value_number' => ['nullable', 'min: 0', 'max:999999.9999', 'decimal:0,4', FacadeRule::requiredIf($attribute->type->is(AttributeTypeValues::NUMBER))],
             'value_date' => ['nullable', FacadeRule::requiredIf($attribute->type->is(AttributeTypeValues::DATE))],
             'translations' => [new Translations(['name']), FacadeRule::requiredIf($attribute->type->is(AttributeTypeValues::SINGLE_OPTION) || $attribute->type->is(AttributeTypeValues::MULTI_CHOICE_OPTION))],
         ];
