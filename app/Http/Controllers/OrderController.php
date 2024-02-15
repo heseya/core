@@ -65,7 +65,6 @@ class OrderController extends Controller
                 'status',
                 'shippingMethod',
                 'shippingMethod.paymentMethods',
-                'shippingMethod.salesChannels',
                 'digitalShippingMethod',
                 'digitalShippingMethod.paymentMethods',
                 'shippingAddress',
@@ -238,12 +237,10 @@ class OrderController extends Controller
         Order $order,
         OrderProduct $product,
     ): JsonResource {
-        return OrderProductResource::make(
-            $this->orderService->processOrderProductUrls(
-                OrderProductUpdateDto::instantiateFromRequest($request),
-                $product,
-            ),
-        );
+        return OrderProductResource::make($this->orderService->processOrderProductUrls(
+            OrderProductUpdateDto::instantiateFromRequest($request),
+            $product,
+        ));
     }
 
     public function myOrderProducts(OrderProductSearchRequest $request): JsonResource

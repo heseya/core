@@ -197,7 +197,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(26);
+        $this->assertQueryCountLessThan(23);
     }
 
     /**
@@ -229,7 +229,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(26);
+        $this->assertQueryCountLessThan(23);
     }
 
     /**
@@ -251,7 +251,7 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(27);
+        $this->assertQueryCountLessThan(24);
     }
 
     /**
@@ -346,7 +346,7 @@ class OrderTest extends TestCase
                 'id' => $order_no_user->getKey(),
             ]);
 
-        $this->assertQueryCountLessThan(25);
+        $this->assertQueryCountLessThan(22);
     }
 
     /**
@@ -371,7 +371,7 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(25);
+        $this->assertQueryCountLessThan(22);
     }
 
     /**
@@ -405,7 +405,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(26);
+        $this->assertQueryCountLessThan(23);
     }
 
     /**
@@ -450,7 +450,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(26);
+        $this->assertQueryCountLessThan(23);
     }
 
     public function testIndexUserUnauthenticated(): void
@@ -884,7 +884,7 @@ class OrderTest extends TestCase
             ->assertJsonFragment(['code' => $this->order->code])
             ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
 
-        $this->assertQueryCountLessThan(40);
+        $this->assertQueryCountLessThan(35);
     }
 
     /**
@@ -998,7 +998,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(41);
+        $this->assertQueryCountLessThan(36);
     }
 
     public function testViewSummaryUnauthorized(): void
@@ -1068,7 +1068,7 @@ class OrderTest extends TestCase
                 'summary_paid' => $summaryPaid->getAmount(),
             ]);
 
-        $this->assertQueryCountLessThan(40);
+        $this->assertQueryCountLessThan(35);
     }
 
     /**
@@ -1327,7 +1327,7 @@ class OrderTest extends TestCase
                     ->etc();
             });
 
-        $this->assertQueryCountLessThan(50);
+        $this->assertQueryCountLessThan(46);
     }
 
     public function testUpdateOrderStatusUnauthorized(): void

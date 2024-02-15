@@ -59,7 +59,6 @@ final class ShippingMethodCreateDto extends Data
      * @param array<array<string>>|Optional $shipping_points
      * @param array<string,string>|Optional $metadata_public
      * @param array<string, string>|Optional $metadata_private
-     * @param string[]|Optional $sales_channels
      * @param array<string>|Optional $product_ids
      * @param array<string>|Optional $product_set_ids
      * @param bool $is_block_list_products
@@ -102,9 +101,6 @@ final class ShippingMethodCreateDto extends Data
         public readonly array|Optional $metadata_private,
 
         #[ArrayType]
-        public readonly array|Optional $sales_channels,
-
-        #[ArrayType]
         public readonly array|Optional $product_ids,
 
         #[ArrayType]
@@ -145,9 +141,17 @@ final class ShippingMethodCreateDto extends Data
             'shipping_points.*.id' => ['string', 'exists:addresses,id'],
             'product_ids.*' => ['uuid', 'exists:products,id'],
             'product_set_ids.*' => ['uuid', 'exists:product_sets,id'],
-            'sales_channels' => ['array'],
-            'sales_channels.*' => ['string', 'exists:sales_channels,id'],
         ];
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function isPublic(): bool
+    {
+        return $this->public;
     }
 
     /**
