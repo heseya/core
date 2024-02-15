@@ -237,7 +237,9 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
 
     public function productAttributes(): HasMany
     {
-        return $this->hasMany(ProductAttribute::class);
+        return $this->hasMany(ProductAttribute::class)
+            ->leftJoin('attributes', 'attribute_id', '=', 'attributes.id')
+            ->orderBy('attributes.order', 'asc');
     }
 
     public function sales(): BelongsToMany
