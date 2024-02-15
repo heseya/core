@@ -4,7 +4,6 @@ namespace App\Utils\Tests;
 
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
-use Illuminate\Testing\PendingCommand;
 use Tests\TestCase;
 
 class AttributeOptionFixTest extends TestCase
