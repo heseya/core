@@ -30,6 +30,7 @@ class AttributeTest extends TestCase
         $this->attribute = Attribute::factory()->create([
             'global' => true,
             'sortable' => true,
+            'type' => AttributeType::SINGLE_OPTION,
         ]);
 
         $this->option = AttributeOption::factory()->create([
@@ -44,7 +45,7 @@ class AttributeTest extends TestCase
             'name' => 'new attribute',
             'slug' => 'new-attribute',
             'description' => 'lorem ipsum',
-            'type' => AttributeType::getRandomInstance(),
+            'type' => AttributeType::SINGLE_OPTION,
             'global' => false,
             'sortable' => true,
             'published' => [$this->lang],
@@ -1089,6 +1090,9 @@ class AttributeTest extends TestCase
         unset($this->newOption['published']);
         unset($this->optionData['name']);
 
+        $this->newOption['value_number'] = '12';
+        $this->optionData['value_number'] = 12;
+
         $this
             ->actingAs($this->{$user})
             ->postJson('/attributes/id:' . $attribute->getKey() . '/options', $this->newOption)
@@ -1096,6 +1100,29 @@ class AttributeTest extends TestCase
             ->assertJsonFragment($this->optionData);
 
         $this->assertDatabaseHas('attribute_options', $this->newOption);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testAddOptionNumberWithoutNumber(string $user): void
+    {
+        $this->{$user}->givePermissionTo('attributes.edit');
+
+        $attribute = Attribute::factory([
+            'type' => AttributeType::NUMBER,
+        ])->create();
+        unset($this->newOption['translations']);
+        unset($this->newOption['published']);
+        unset($this->optionData['name']);
+
+        $this
+            ->actingAs($this->{$user})
+            ->postJson('/attributes/id:' . $attribute->getKey() . '/options', $this->newOption)
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'message' => 'The value number field is required.'
+            ]);
     }
 
     /**
@@ -1207,6 +1234,82 @@ class AttributeTest extends TestCase
             )
             ->assertCreated()
             ->assertJsonFragment($optionUpdate);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateValueNumberInvalidMax(string $user): void
+    {
+        $this->{$user}->givePermissionTo('attributes.edit');
+
+        $optionUpdate = [
+            'value_number' => 999999.99999,
+            'value_date' => Carbon::now()->toDateString(),
+            'attribute_id' => $this->option->attribute_id,
+        ];
+
+        $this
+            ->actingAs($this->{$user})
+            ->json(
+                'PATCH',
+                '/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey(),
+                array_merge([
+                    'translations' => [
+                        $this->lang => [
+                            'name' => 'Test ' . $this->option->name,
+                        ],
+                    ],
+                    'published' => [
+                        $this->lang,
+                    ],
+                ], $optionUpdate)
+            )
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => 'VALIDATION_MAX',
+                'message' => 'The value number may not be greater than 999999.9999.',
+            ])
+            ->assertJsonFragment([
+                'key' => 'VALIDATION_DECIMAL',
+                'message' => 'The value number field must have 0-4 decimal places.',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateValueNumberInvalidMin(string $user): void
+    {
+        $this->{$user}->givePermissionTo('attributes.edit');
+
+        $optionUpdate = [
+            'value_number' => -1,
+            'value_date' => Carbon::now()->toDateString(),
+            'attribute_id' => $this->option->attribute_id,
+        ];
+
+        $this
+            ->actingAs($this->{$user})
+            ->json(
+                'PATCH',
+                '/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey(),
+                array_merge([
+                    'translations' => [
+                        $this->lang => [
+                            'name' => 'Test ' . $this->option->name,
+                        ],
+                    ],
+                    'published' => [
+                        $this->lang,
+                    ],
+                ], $optionUpdate)
+            )
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => 'VALIDATION_MIN',
+                'message' => 'The value number must be at least  0.',
+            ]);
     }
 
     /**
