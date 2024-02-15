@@ -855,6 +855,54 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testShowAttributesOrder(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.show_details');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $attribute1 = Attribute::factory()->create([
+            'order' => 2,
+        ]);
+
+        $option1 = AttributeOption::factory()->create([
+            'index' => 1,
+            'attribute_id' => $attribute1->getKey(),
+        ]);
+
+        $attribute2 = Attribute::factory()->create([
+            'type' => AttributeType::SINGLE_OPTION,
+            'order' => 0,
+        ]);
+
+        $option2 = AttributeOption::factory()->create([
+            'index' => 1,
+            'attribute_id' => $attribute2->getKey(),
+        ]);
+
+        Attribute::factory()->create([
+            'order' => 1,
+        ]);
+
+        $product->attributes()->attach($attribute1->getKey());
+        $product->attributes()->attach($attribute2->getKey());
+
+        $product->attributes->first(fn (Attribute $productAttribute) => $productAttribute->getKey() === $attribute1->getKey())->product_attribute_pivot->options()->attach($option1->getKey());
+        $product->attributes->first(fn (Attribute $productAttribute) => $productAttribute->getKey() === $attribute2->getKey())->product_attribute_pivot->options()->attach($option2->getKey());
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', "/products/id:{$product->getKey()}")
+            ->assertOk()
+            ->assertJsonPath('data.attributes.0.id', $attribute2->getKey())
+            ->assertJsonPath('data.attributes.1.id', $attribute1->getKey());
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testShowPrivateMetadata(string $user): void
     {
         $this->{$user}->givePermissionTo(['products.show_details', 'products.show_metadata_private']);
