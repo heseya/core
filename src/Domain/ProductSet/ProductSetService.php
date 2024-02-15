@@ -109,8 +109,16 @@ final readonly class ProductSetService
 
         $children = Collection::make($dto->children_ids);
         if ($children->isNotEmpty()) {
-            $children = $children->map(fn ($id) => ProductSet::query()->findOrFail($id));
+            $toAttach = [];
+            $children = $children->map(fn ($id) => ProductSet::query()->with('descendantProducts')->findOrFail($id));
             $this->updateChildren($children, $set->getKey(), $slug, $publicParent && $dto->public);
+            /** @var ProductSet $child */
+            foreach ($children as $child) {
+                $toAttach = array_merge($toAttach, $child->descendantProducts->pluck('id')->toArray());
+            }
+
+            $toAttach = array_unique($toAttach);
+            $this->syncDescendantProducts($set, $toAttach, []);
         }
 
         if (!($dto->seo instanceof Optional)) {
@@ -162,6 +170,7 @@ final readonly class ProductSetService
 
     public function update(ProductSet $set, ProductSetUpdateDto $dto): ProductSet
     {
+        $oldParent = $set->parent_id;
         if (!($dto->parent_id instanceof Optional) && $dto->parent_id !== null) {
             /** @var ProductSet $parent */
             $parent = ProductSet::query()->findOrFail($dto->parent_id);
@@ -193,13 +202,36 @@ final readonly class ProductSetService
             'slug' => Rule::unique('product_sets', 'slug')->whereNull('deleted_at')->ignoreModel($set),
         ])->validate();
 
+        $toAttach = [];
+        $toDetach = [];
+        $oldDescendantProducts = $set->descendantProducts()->pluck('id')->toArray();
         if (!($dto->children_ids instanceof Optional)) {
-            $children = ProductSet::query()->whereIn('id', $dto->children_ids)->get();
+            $setChildrenIds = $set->children->pluck('id')->toArray();
+            $toAttachChildrenProducts = array_diff($dto->children_ids, $setChildrenIds);
+            $toDetachChildrenProducts = array_diff($setChildrenIds, $dto->children_ids);
+
+            $children = ProductSet::query()->with('descendantProducts')->whereIn('id', $dto->children_ids)->get();
             $this->updateChildren($children, $set->getKey(), $slug, $publicParent && $dto->public);
+
+            /** @var ProductSet $child */
+            foreach ($children as $child) {
+                if (in_array($child->getKey(), $toAttachChildrenProducts, true)) {
+                    $toAttach = array_merge($toAttach, $child->descendantProducts->pluck('id')->toArray());
+                }
+            }
+            $toAttach = array_unique($toAttach);
 
             $rootOrder = ProductSet::reversed()->first()?->order + 1;
 
-            $productIds = $set->allProductsIds()->merge($set->relatedProducts->pluck('id'));
+            $oldChildren = $set->children()->whereNotIn('id', $dto->children_ids)->get();
+            /** @var ProductSet $child */
+            foreach ($oldChildren as $child) {
+                if (in_array($child->getKey(), $toDetachChildrenProducts, true)) {
+                    $toDetach = array_merge($toDetach, $child->descendantProducts->pluck('id')->toArray());
+                }
+            }
+            $toDetach = array_unique($toDetach);
+
             $set->children()
                 ->whereNotIn('id', $dto->children_ids)
                 ->update([
@@ -221,6 +253,21 @@ final readonly class ProductSetService
         }
 
         $set->save();
+        $set->refresh();
+
+        $this->syncDescendantProducts($set, $toAttach, $toDetach);
+        if ($set->parent_id !== $oldParent) {
+            if ($set->parent_id !== null) {
+                $this->syncDescendantProducts($set->parent, $set->descendantProducts->pluck('id')->toArray(), []);
+            }
+            if ($oldParent !== null) {
+                /** @var ProductSet|null $parent */
+                $parent = ProductSet::query()->find($oldParent);
+                if ($parent) {
+                    $this->syncDescendantProducts($parent, [], $oldDescendantProducts);
+                }
+            }
+        }
 
         if (!($dto->attributes instanceof Optional)) {
             $set->attributes()->sync($dto->attributes);
@@ -337,6 +384,10 @@ final readonly class ProductSetService
             if ($set->seo !== null) {
                 $this->seoMetadataService->delete($set->seo);
             }
+        }
+
+        if ($set->parent) {
+            $this->syncDescendantProducts($set->parent, [], $set->descendantProducts->pluck('id')->toArray());
         }
     }
 
