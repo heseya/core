@@ -499,6 +499,17 @@ final readonly class ProductSetService
         });
     }
 
+    public function getAllAncestorsIds(array $setsIds): array
+    {
+        $result = [];
+        $sets = ProductSet::query()->whereIn('id', $setsIds)->get();
+        foreach ($sets as $set) {
+            $result = array_merge($result, $this->getAllSetAncestors($set));
+        }
+
+        return array_keys($result);
+    }
+
     private function getAllSetAncestors(ProductSet $set): array
     {
         $ancestors = $set->parent !== null
@@ -513,7 +524,7 @@ final readonly class ProductSetService
     private function fixNullOrders(ProductSet $set, Collection $productsWithoutOrder): void
     {
         $existingOrder = $set->descendantProducts->pluck('pivot.order')->filter(fn (?int $order) => $order !== null);
-        $missingOrders = array_diff(range(0, $set->descendantProducts->count() - 1), $existingOrder->toArray());
+        $missingOrders = array_diff(range(0, max($set->descendantProducts->count() - 1, $set->products->count() - 1, 0)), $existingOrder->toArray());
 
         $productsWithoutOrder->each(function (Product $product) use (&$missingOrders): void {
             $product->pivot->update(['order' => array_shift($missingOrders)]);

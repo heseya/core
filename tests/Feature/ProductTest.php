@@ -3403,6 +3403,136 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateSets(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.edit');
+
+        Event::fake([ProductUpdated::class]);
+
+        $parent = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $child = ProductSet::factory()->create([
+            'public' => true,
+            'parent_id' => $parent->getKey(),
+        ]);
+
+        $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
+            'name' => $this->product->name,
+            'slug' => $this->product->slug,
+            'public' => $this->product->public,
+            'sets' => [
+                $child->getKey(),
+            ],
+        ])->assertOk();
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_id' => $this->product->getKey(),
+            'product_set_id' => $parent->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_id' => $this->product->getKey(),
+            'product_set_id' => $child->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product', [
+            'product_id' => $this->product->getKey(),
+            'product_set_id' => $child->getKey(),
+        ]);
+
+        $this->assertDatabaseMissing('product_set_product', [
+            'product_id' => $this->product->getKey(),
+            'product_set_id' => $parent->getKey(),
+        ]);
+
+        Event::assertDispatched(ProductUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateNewSets(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.edit');
+
+        Event::fake([ProductUpdated::class]);
+
+        $parent = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $child = ProductSet::factory()->create([
+            'public' => true,
+            'parent_id' => $parent->getKey(),
+        ]);
+
+        $newParent = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $newChild = ProductSet::factory()->create([
+            'public' => true,
+            'parent_id' => $newParent->getKey(),
+        ]);
+
+        $this->product->sets()->attach([$child->getKey()]);
+        $this->product->ancestorSets()->attach([
+            $parent->getKey() => ['order' => 0],
+            $child->getKey() => ['order' => 0],
+        ]);
+
+        $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
+            'name' => $this->product->name,
+            'slug' => $this->product->slug,
+            'public' => $this->product->public,
+            'sets' => [
+                $newChild->getKey(),
+            ],
+        ])->assertOk();
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_id' => $this->product->getKey(),
+            'product_set_id' => $newParent->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_id' => $this->product->getKey(),
+            'product_set_id' => $newChild->getKey(),
+        ]);
+
+        $this->assertDatabaseMissing('product_set_product_descendant', [
+            'product_id' => $this->product->getKey(),
+            'product_set_id' => $parent->getKey(),
+        ]);
+
+        $this->assertDatabaseMissing('product_set_product_descendant', [
+            'product_id' => $this->product->getKey(),
+            'product_set_id' => $child->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product', [
+            'product_id' => $this->product->getKey(),
+            'product_set_id' => $newChild->getKey(),
+        ]);
+
+        $this->assertDatabaseMissing('product_set_product', [
+            'product_id' => $this->product->getKey(),
+            'product_set_id' => $child->getKey(),
+        ]);
+
+        $this->assertDatabaseMissing('product_set_product', [
+            'product_id' => $this->product->getKey(),
+            'product_set_id' => $newParent->getKey(),
+        ]);
+
+        Event::assertDispatched(ProductUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testDeleteSchemaMinMaxPrice(string $user): void
     {
         $this->{$user}->givePermissionTo('schemas.remove');
