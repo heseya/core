@@ -18,6 +18,7 @@ use App\Services\Contracts\UrlServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App as AppFacade;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
@@ -120,10 +121,12 @@ class AppService implements AppServiceContract
 
         $url = $this->urlService->urlAppendPath($dto->getUrl(), '/install');
 
+        /** @var UrlServiceContract $urlService */
+        $urlService = AppFacade::make(UrlServiceContract::class);
         try {
             /** @var Response $response */
             $response = Http::post($url, [
-                'api_url' => Config::get('app.url'),
+                'api_url' => $urlService->normalizeUrl(Config::get('app.url')),
                 'api_name' => Config::get('app.name'),
                 'api_version' => Config::get('app.ver'),
                 'licence_key' => $dto->getLicenceKey(),
