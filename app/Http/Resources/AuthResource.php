@@ -3,19 +3,19 @@
 namespace App\Http\Resources;
 
 use App\Models\User;
-use App\Services\Contracts\TokenServiceContract;
+use Domain\Auth\Services\TokenService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 
 class AuthResource extends Resource
 {
-    private TokenServiceContract $tokenService;
+    private TokenService $tokenService;
 
     public function __construct($resource)
     {
         parent::__construct($resource);
 
-        $this->tokenService = App::make(TokenServiceContract::class);
+        $this->tokenService = App::make(TokenService::class);
     }
 
     public function base(Request $request): array

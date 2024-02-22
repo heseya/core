@@ -35,7 +35,6 @@ use App\Services\Contracts\ShippingTimeDateServiceContract;
 use App\Services\Contracts\SilverboxServiceContract;
 use App\Services\Contracts\SortServiceContract;
 use App\Services\Contracts\StatusServiceContract;
-use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
 use App\Services\Contracts\UrlServiceContract;
 use App\Services\Contracts\WebHookServiceContract;
@@ -63,7 +62,6 @@ use App\Services\ShippingTimeDateService;
 use App\Services\SilverboxService;
 use App\Services\SortService;
 use App\Services\StatusService;
-use App\Services\TokenService;
 use App\Services\TranslationService;
 use App\Services\UrlService;
 use App\Services\WebHookService;
@@ -94,7 +92,6 @@ class AppServiceProvider extends ServiceProvider
         ShippingMethodServiceContract::class => ShippingMethodService::class,
         RoleServiceContract::class => RoleService::class,
         PermissionServiceContract::class => PermissionService::class,
-        TokenServiceContract::class => TokenService::class,
         WebHookServiceContract::class => WebHookService::class,
         EventServiceContract::class => EventService::class,
         UrlServiceContract::class => UrlService::class,

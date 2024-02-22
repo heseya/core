@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Services;
+declare(strict_types=1);
+
+namespace Domain\Auth\Services;
 
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\TokenType;
@@ -8,28 +10,27 @@ use App\Exceptions\ClientException;
 use App\Models\App;
 use App\Models\Token;
 use App\Models\User;
-use App\Services\Contracts\TokenServiceContract;
 use Exception;
 use Illuminate\Auth\EloquentUserProvider;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use PHPOpenSourceSaver\JWTAuth\Http\Parser\Parser;
-use PHPOpenSourceSaver\JWTAuth\JWT;
 use PHPOpenSourceSaver\JWTAuth\Manager;
 use PHPOpenSourceSaver\JWTAuth\Payload;
 
-class TokenService implements TokenServiceContract
+final class TokenService
 {
-    private JWT $jwt;
+    private JWTCustom $jwt;
     private EloquentUserProvider $userProvider;
     private EloquentUserProvider $appProvider;
 
     public function __construct(Manager $manager)
     {
-        $this->jwt = new JWT($manager, new Parser(new Request()));
+        $this->jwt = new JWTCustom($manager, new Parser(new Request()));
         $this->userProvider = new EloquentUserProvider(app(Hasher::class), User::class);
         $this->appProvider = new EloquentUserProvider(app(Hasher::class), App::class);
     }
@@ -60,6 +61,16 @@ class TokenService implements TokenServiceContract
         return null;
     }
 
+    /**
+     * @return array<string, string>
+     */
+    public function payloadNoValidate(string $token): array
+    {
+        $this->jwt->setToken($token);
+
+        return $this->jwt->getPayloadNoValidation();
+    }
+
     public function payload(string $token): ?Payload
     {
         $this->jwt->setToken($token);
@@ -84,6 +95,14 @@ class TokenService implements TokenServiceContract
 
         if ($uuid !== null) {
             $claims['jti'] = $uuid;
+        }
+
+        if ($user instanceof App && $type->is(TokenType::REFRESH)) {
+            $claims['url'] = $user->url;
+            $claims['key'] = Str::random();
+            $user->update([
+                'refresh_token_key' => $claims['key'],
+            ]);
         }
 
         return $this->jwt->claims($claims)->fromUser($user);

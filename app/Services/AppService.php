@@ -13,8 +13,8 @@ use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
-use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UrlServiceContract;
+use Domain\Auth\Services\TokenService;
 use Heseya\Dto\Missing;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
@@ -30,7 +30,7 @@ use Throwable;
 class AppService implements AppServiceContract
 {
     public function __construct(
-        protected TokenServiceContract $tokenService,
+        protected TokenService $tokenService,
         protected UrlServiceContract $urlService,
         protected MetadataServiceContract $metadataService,
     ) {}

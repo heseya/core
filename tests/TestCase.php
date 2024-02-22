@@ -7,8 +7,8 @@ use App\Enums\TokenType;
 use App\Models\App as Application;
 use App\Models\Role;
 use App\Models\User;
-use App\Services\Contracts\TokenServiceContract;
 use Database\Seeders\InitSeeder;
+use Domain\Auth\Services\TokenService;
 use Domain\Language\Language;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -29,7 +29,7 @@ abstract class TestCase extends BaseTestCase
     public Application $application;
 
     public string $password = 'secret';
-    public TokenServiceContract $tokenService;
+    public TokenService $tokenService;
 
     public string $lang;
 
@@ -43,7 +43,7 @@ abstract class TestCase extends BaseTestCase
         $this->lang = Language::query()->where('default', true)->firstOrFail()->getKey();
         App::setLocale($this->lang);
 
-        $this->tokenService = App::make(TokenServiceContract::class);
+        $this->tokenService = App::make(TokenService::class);
 
         Role::query()
             ->where('type', RoleType::UNAUTHENTICATED)

@@ -33,6 +33,7 @@ use App\Services\Contracts\OneTimeSecurityCodeContract;
 use Domain\Language\Language;
 use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -44,6 +45,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use PHPGangsta_GoogleAuthenticator;
+use PHPOpenSourceSaver\JWTAuth\Payload;
 use Spatie\WebhookServer\CallWebhookJob;
 use Support\Enum\Status;
 use Symfony\Component\HttpFoundation\Response;
@@ -810,6 +812,27 @@ class AuthTest extends TestCase
             ]);
     }
 
+    public function testRefreshTokenExpiredUser(): void
+    {
+        $token = $this->tokenService->createToken(
+            $this->user,
+            TokenType::REFRESH,
+        );
+
+        Carbon::setTestNow(Carbon::now()->addDays(91));
+
+        $this->assertFalse($this->tokenService->validate($token));
+
+        $this->actingAs($this->user)->postJson('/auth/refresh', [
+            'refresh_token' => $token,
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => Exceptions::CLIENT_INVALID_TOKEN->name,
+                'message' => Exceptions::CLIENT_INVALID_TOKEN->value,
+            ]);
+    }
+
     public function testRefreshTokenApp(): void
     {
         $token = $this->tokenService->createToken(
@@ -817,11 +840,11 @@ class AuthTest extends TestCase
             TokenType::REFRESH,
         );
 
+        $oldTokenKey = $this->application->refresh_token_key;
+
         $response = $this->actingAs($this->application)->postJson('/auth/refresh', [
             'refresh_token' => $token,
-        ]);
-
-        $response
+        ])
             ->assertOk()
             ->assertJsonStructure([
                 'data' => [
@@ -843,6 +866,113 @@ class AuthTest extends TestCase
                 ],
             ])->assertJsonFragment([
                 'identity_token' => null,
+            ]);
+
+        $this->assertDatabaseMissing('apps', [
+            'id' => $this->application->getKey(),
+            'refresh_token_key' => $oldTokenKey,
+        ]);
+
+        /** @var Payload $payload */
+        $payload = $this->tokenService->payload($response->json('data.refresh_token'));
+
+        $this->assertDatabaseHas('apps', [
+            'id' => $this->application->getKey(),
+            'refresh_token_key' => $payload->get('key'),
+        ]);
+    }
+
+    public function testRefreshTokenExpiredApp(): void
+    {
+        $token = $this->tokenService->createToken(
+            $this->application,
+            TokenType::REFRESH,
+        );
+
+        $oldTokenKey = $this->application->refresh_token_key;
+
+        Carbon::setTestNow(Carbon::now()->addDays(91));
+
+        $this->assertFalse($this->tokenService->validate($token));
+
+        $response = $this->actingAs($this->application)->postJson('/auth/refresh', [
+            'refresh_token' => $token,
+        ])
+            ->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                    'token',
+                    'identity_token',
+                    'refresh_token',
+                    'user' => [
+                        'id',
+                        'url',
+                        'microfrontend_url',
+                        'name',
+                        'slug',
+                        'version',
+                        'description',
+                        'icon',
+                        'author',
+                        'permissions',
+                    ],
+                ],
+            ])->assertJsonFragment([
+                'identity_token' => null,
+            ]);
+
+        $this->assertDatabaseMissing('apps', [
+            'id' => $this->application->getKey(),
+            'refresh_token_key' => $oldTokenKey,
+        ]);
+
+        /** @var Payload $payload */
+        $payload = $this->tokenService->payload($response->json('data.refresh_token'));
+
+        $this->assertDatabaseHas('apps', [
+            'id' => $this->application->getKey(),
+            'refresh_token_key' => $payload->get('key'),
+        ]);
+    }
+
+    public function testRefreshTokenExpiredAppOldKey(): void
+    {
+        $oldToken = $this->tokenService->createToken(
+            $this->application,
+            TokenType::REFRESH,
+        );
+
+        $token = $this->tokenService->createToken(
+            $this->application,
+            TokenType::REFRESH,
+        );
+
+        Carbon::setTestNow(Carbon::now()->addDays(91));
+
+        $this->assertFalse($this->tokenService->validate($oldToken));
+        $this->assertFalse($this->tokenService->validate($token));
+
+        $this->actingAs($this->user)->postJson('/auth/refresh', [
+            'refresh_token' => $oldToken,
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => Exceptions::CLIENT_INVALID_TOKEN->name,
+                'message' => Exceptions::CLIENT_INVALID_TOKEN->value,
+            ]);
+
+        $this->actingAs($this->user)->postJson('/auth/refresh', [
+            'refresh_token' => $token,
+        ])
+            ->assertOk();
+
+        $this->actingAs($this->user)->postJson('/auth/refresh', [
+            'refresh_token' => $oldToken,
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => Exceptions::CLIENT_INVALID_TOKEN->name,
+                'message' => Exceptions::CLIENT_INVALID_TOKEN->value,
             ]);
     }
 

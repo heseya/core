@@ -27,7 +27,7 @@ use App\Notifications\TFAInitialization;
 use App\Notifications\TFASecurityCode;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
-use App\Services\Contracts\TokenServiceContract;
+use Domain\Auth\Services\TokenService;
 use Domain\Consent\Services\ConsentService;
 use Domain\User\Dtos\ChangePasswordDto;
 use Domain\User\Dtos\LoginDto;
@@ -56,7 +56,7 @@ use Spatie\LaravelData\Optional;
 final class AuthService
 {
     public function __construct(
-        protected TokenServiceContract $tokenService,
+        protected TokenService $tokenService,
         protected OneTimeSecurityCodeContract $oneTimeSecurityCodeService,
         protected ConsentService $consentService,
         protected UserLoginAttemptService $userLoginAttemptService,
@@ -117,22 +117,37 @@ final class AuthService
      */
     public function refresh(TokenRefreshDto $dto): array
     {
-        if (!$this->tokenService->validate($dto->refresh_token)) {
+        $payload = $this->tokenService->payloadNoValidate($dto->refresh_token);
+        $app = null;
+        if (isset($payload['url'], $payload['key'])) {
+            $app = App::query()
+                ->where('url', '=', $payload['url'])
+                ->where('refresh_token_key', '=', $payload['key'])
+                ->first();
+        }
+        if (!$this->tokenService->validate($dto->refresh_token) && $app === null) {
             throw new ClientException(Exceptions::CLIENT_INVALID_TOKEN);
         }
 
-        $payload = $this->tokenService->payload($dto->refresh_token);
+        if ($app === null) {
+            $payload = $this->tokenService->payload($dto->refresh_token);
+            $type = $payload?->get('typ');
+            $jti = $payload?->get('jti');
+        } else {
+            $type = $payload['typ'];
+            $jti = $payload['jti'];
+        }
 
         if (
-            $payload?->get('typ') !== TokenType::REFRESH->value
-            || Token::where('id', $payload->get('jti'))->where('invalidated', true)->exists()
+            $type !== TokenType::REFRESH->value
+            || Token::where('id', $jti)->where('invalidated', true)->exists()
         ) {
             throw new ClientException(Exceptions::CLIENT_INVALID_TOKEN);
         }
 
         $uuid = Str::uuid()->toString();
         /** @var JWTSubject|null $user */
-        $user = $this->tokenService->getUser($dto->refresh_token);
+        $user = $app ?? $this->tokenService->getUser($dto->refresh_token);
         $this->tokenService->invalidateToken($dto->refresh_token);
 
         if ($user === null) {

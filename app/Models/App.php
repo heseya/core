@@ -54,6 +54,7 @@ class App extends Model implements AuthenticatableContract, AuthorizableContract
         'author',
         'uninstall_token',
         'role_id',
+        'refresh_token_key',
     ];
     protected array $criteria = [
         'metadata' => MetadataSearch::class,
