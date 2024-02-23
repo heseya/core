@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Domain\User\Dtos;
 
 use App\Rules\FullName;
-use App\Rules\StreetNumber;
 use Illuminate\Support\Str;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
-use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Attributes\Validation\StringType;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -19,7 +17,7 @@ final class AddressUpdateDto extends Data
 {
     public function __construct(
         public string $name,
-        #[StringType, Max(255), Rule(new StreetNumber())]
+        #[StringType, Max(255)]
         public string $address,
         #[StringType, Max(20)]
         public string $phone,
