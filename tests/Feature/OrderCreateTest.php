@@ -2467,22 +2467,10 @@ class OrderCreateTest extends TestCase
                     'message' => Exceptions::CLIENT_FULL_NAME->value,
                 ]]
             ])
-            ->assertJsonFragment([
-                'shipping_place.address' => [[
-                    'key' => ValidationError::STREETNUMBER->value,
-                    'message' => Exceptions::CLIENT_STREET_NUMBER->value,
-                ]]
-            ])
             ->assertJsonMissing([
                 'billing_address.name' => [[
                     'key' => ValidationError::FULLNAME->value,
                     'message' => Exceptions::CLIENT_FULL_NAME->value,
-                ]]
-            ])
-            ->assertJsonFragment([
-                'billing_address.address' => [[
-                    'key' => ValidationError::STREETNUMBER->value,
-                    'message' => Exceptions::CLIENT_STREET_NUMBER->value,
                 ]]
             ]);
     }

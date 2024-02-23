@@ -86,7 +86,7 @@ final class ShippingPlaceValidation implements DataAwareRule, ValidationRule, Va
             'shipping_place' => ['nullable', 'array', new ShippingAddressRequired()],
             'shipping_place.name' => ['string', 'max:255', new FullName()],
             'shipping_place.phone' => ['string', 'max:20'],
-            'shipping_place.address' => ['string', 'max:255', new StreetNumber()],
+            'shipping_place.address' => ['string', 'max:255'],
             'shipping_place.zip' => ['string', 'max:16'],
             'shipping_place.city' => ['string', 'max:255'],
             'shipping_place.country' => ['string', 'size:2'],

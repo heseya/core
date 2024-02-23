@@ -551,40 +551,6 @@ class SavedAddressTest extends TestCase
             ]);
     }
 
-    public static function invalidAddressesProvider(): array
-    {
-        return [
-            'simple' => ['Krótka'],
-            'with number' => ['3 Maja'],
-        ];
-    }
-
-    /**
-     * @dataProvider invalidAddressesProvider
-     */
-    public function testCreateInvalidAddresses(string $address): void
-    {
-        $this->user->givePermissionTo('profile.addresses_manage');
-
-        $response = $this->actingAs($this->user)->postJson('/auth/profile/shipping-addresses', [
-            'name' => 'test',
-            'default' => false,
-            'address' => [
-                'name' => 'Jan Nowak',
-                'phone' => '123456789',
-                'address' => $address,
-                'zip' => '123',
-                'city' => 'testcity',
-                'country' => 'ts',
-                'vat' => '10',
-            ],
-        ])
-            ->assertUnprocessable()
-            ->assertJsonFragment([
-                'message' => Exceptions::CLIENT_STREET_NUMBER->value,
-            ]);
-    }
-
     public static function namesProvider(): array
     {
         return [

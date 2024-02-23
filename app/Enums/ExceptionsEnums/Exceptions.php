@@ -138,7 +138,6 @@ enum Exceptions: string
     case CLIENT_UPDATE_NOT_REGULAR_JOINABLE = 'Can\'t update is_joinable field in role types other than regular';
 
     case CLIENT_FULL_NAME = 'The name must contains first name and last name';
-    case CLIENT_STREET_NUMBER = 'The address must contains the street name and house number';
     case CLIENT_PRODUCT_OPTION = 'The product option is required';
     case CLIENT_SCHEMA_INVALID = 'Selected schemas are invalid';
     case CLIENT_SCHEMA_OPTIONS_INVALID = 'Selected schemas options are invalid';

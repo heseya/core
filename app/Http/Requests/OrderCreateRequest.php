@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Rules\ShippingPlaceValidation;
-use App\Rules\StreetNumber;
 use App\Traits\MetadataRules;
 use Domain\Currency\Currency;
 use Illuminate\Validation\Rule;
@@ -32,7 +31,7 @@ class OrderCreateRequest extends OrderItemsRequest
 
                 'billing_address.name' => ['required', 'string', 'max:255'],
                 'billing_address.phone' => ['required', 'string', 'max:20'],
-                'billing_address.address' => ['required', 'string', 'max:255', new StreetNumber()],
+                'billing_address.address' => ['required', 'string', 'max:255'],
                 'billing_address.zip' => ['required', 'string', 'max:16'],
                 'billing_address.city' => ['required', 'string', 'max:255'],
                 'billing_address.country' => ['required', 'string', 'size:2'],
