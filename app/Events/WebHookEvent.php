@@ -74,6 +74,6 @@ abstract class WebHookEvent
 
     protected function getModelClass(Authenticatable|Model|Pivot $model): string
     {
-        return Str::remove('App\\Models\\', $model::class);
+        return Str::afterLast($model::class, '\\');
     }
 }
