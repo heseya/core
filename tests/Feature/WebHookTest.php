@@ -4,9 +4,9 @@ namespace Tests\Feature;
 
 use App\Events\ItemUpdatedQuantity;
 use App\Listeners\WebHookEventListener;
-use App\Models\App;
 use App\Models\Item;
 use App\Models\WebHook;
+use Domain\App\Models\App;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Config;
 use Spatie\WebhookServer\CallWebhookJob;

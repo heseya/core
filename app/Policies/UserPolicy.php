@@ -4,8 +4,8 @@ namespace App\Policies;
 
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
-use App\Models\App;
 use App\Models\User;
+use Domain\App\Models\App;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Auth\Access\Response;
 

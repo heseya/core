@@ -6,10 +6,8 @@ use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Repositories\DiscountRepository;
 use App\Repositories\ProductRepository;
 use App\Services\AnalyticsService;
-use App\Services\AppService;
 use App\Services\AvailabilityService;
 use App\Services\Contracts\AnalyticsServiceContract;
-use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
@@ -79,7 +77,6 @@ class AppServiceProvider extends ServiceProvider
 {
     private const CONTRACTS = [
         AnalyticsServiceContract::class => AnalyticsService::class,
-        AppServiceContract::class => AppService::class,
         DiscountServiceContract::class => DiscountService::class,
         ReorderServiceContract::class => ReorderService::class,
         NameServiceContract::class => NameService::class,

@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\App;
+use Domain\App\Models\App;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 

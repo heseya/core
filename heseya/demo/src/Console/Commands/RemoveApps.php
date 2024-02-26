@@ -2,8 +2,8 @@
 
 namespace Heseya\Demo\Console\Commands;
 
-use App\Models\App;
-use App\Services\Contracts\AppServiceContract;
+use Domain\App\Models\App;
+use Domain\App\Services\AppService;
 use Exception;
 use Illuminate\Console\Command;
 
@@ -29,7 +29,7 @@ class RemoveApps extends Command
      * @return void
      */
     public function __construct(
-        private AppServiceContract $appService,
+        private AppService $appService,
     ) {
         parent::__construct();
     }

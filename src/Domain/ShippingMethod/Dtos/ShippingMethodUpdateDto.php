@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Domain\ShippingMethod\Dtos;
 
 use App\Enums\ShippingType;
-use App\Models\App;
 use App\Models\User;
 use App\Rules\Price;
 use App\Rules\ShippingMethodPriceRanges;
 use Brick\Math\BigDecimal;
+use Domain\App\Models\App;
 use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Illuminate\Support\Facades\Auth;
 use Spatie\LaravelData\Attributes\Computed;

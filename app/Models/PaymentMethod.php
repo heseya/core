@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Criteria\WhereHasOrderWithCode;
 use App\Criteria\WhereHasShippingMethod;
 use App\Criteria\WhereInIds;
+use Domain\App\Models\App;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

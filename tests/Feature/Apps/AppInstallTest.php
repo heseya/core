@@ -1,13 +1,13 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Apps;
 
 use App\Enums\RoleType;
-use App\Models\App;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\UrlServiceContract;
+use Domain\App\Models\App;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\App as FacadesApp;

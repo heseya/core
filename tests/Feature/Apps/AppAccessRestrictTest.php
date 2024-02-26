@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Apps;
 
-use App\Models\App;
+use Domain\App\Models\App;
 use Tests\TestCase;
 
 class AppAccessRestrictTest extends TestCase

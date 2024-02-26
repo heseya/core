@@ -3,9 +3,9 @@
 namespace App\Http\Middleware;
 
 use App\Exceptions\AppAccessException;
-use App\Models\App;
 use App\Models\User;
 use Closure;
+use Domain\App\Models\App;
 use Illuminate\Http\Request;
 
 class AppAccessRestrict

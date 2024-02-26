@@ -2,8 +2,8 @@
 
 namespace App\Criteria;
 
-use App\Models\App;
 use App\Models\User;
+use Domain\App\Models\App;
 use Heseya\Searchable\Criteria\Criterion;
 use Illuminate\Database\Eloquent\Builder;
 

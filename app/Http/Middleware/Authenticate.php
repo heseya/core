@@ -3,8 +3,8 @@
 namespace App\Http\Middleware;
 
 use App\Enums\TokenType;
-use App\Models\App;
 use Closure;
+use Domain\App\Models\App;
 use Domain\User\Services\AuthService;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\Authenticate as Middleware;

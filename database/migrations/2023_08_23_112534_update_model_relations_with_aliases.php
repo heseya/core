@@ -55,7 +55,7 @@ return new class extends Migration {
                     'id_second_column' => 'model_id',
                     'relations' => [
                         'App\Models\User' => 'User',
-                        'App\Models\App' => 'App',
+                        'Domain\App\Models\App' => 'App',
                     ],
                 ],
             ],
@@ -77,7 +77,7 @@ return new class extends Migration {
                     'id_second_column' => null,
                     'relations' => [
                         'App\Models\User' => 'User',
-                        'App\Models\App' => 'App',
+                        'Domain\App\Models\App' => 'App',
                     ],
                 ],
             ],
@@ -87,7 +87,7 @@ return new class extends Migration {
                     'id_second_column' => null,
                     'relations' => [
                         'App\Models\User' => 'User',
-                        'App\Models\App' => 'App',
+                        'Domain\App\Models\App' => 'App',
                     ],
                 ],
             ],
@@ -132,7 +132,7 @@ return new class extends Migration {
                     'id_column' => 'permission_id',
                     'id_second_column' => 'model_id',
                     'relations' => [
-                        'App\Models\App' => 'App',
+                        'Domain\App\Models\App' => 'App',
                         'App\Models\User' => 'User',
                     ],
                 ],
@@ -182,7 +182,7 @@ return new class extends Migration {
                         'Domain\Page\Page' => 'Page',
                         'App\Models\Option' => 'Option',
                         'App\Models\Item' => 'Item',
-                        'App\Models\App' => 'App',
+                        'Domain\App\Models\App' => 'App',
                         'App\Models\User' => 'User',
                         'App\Models\Media' => 'Media',
                         'Domain\ShippingMethod\Models\ShippingMethod' => 'ShippingMethod',
@@ -204,7 +204,7 @@ return new class extends Migration {
                     'id_second_column' => null,
                     'relations' => [
                         'App\Models\User' => 'User',
-                        'App\Models\App' => 'App',
+                        'Domain\App\Models\App' => 'App',
                     ],
                 ],
             ],

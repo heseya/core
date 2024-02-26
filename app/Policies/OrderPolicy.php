@@ -2,9 +2,9 @@
 
 namespace App\Policies;
 
-use App\Models\App;
 use App\Models\Order;
 use App\Models\User;
+use Domain\App\Models\App;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Auth\Access\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;

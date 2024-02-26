@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\App;
 use App\Models\Discount;
 use App\Models\DiscountCondition;
 use App\Models\Item;
@@ -15,6 +14,7 @@ use App\Models\Schema;
 use App\Models\Status;
 use App\Models\User;
 use App\Models\WebHook;
+use Domain\App\Models\App;
 use Domain\Banner\Models\Banner;
 use Domain\Page\Page;
 use Domain\ProductAttribute\Models\Attribute;

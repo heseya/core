@@ -6,10 +6,10 @@ namespace Domain\Wishlist\Services;
 
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
-use App\Models\App;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\WishlistProduct;
+use Domain\App\Models\App;
 use Domain\Wishlist\Dtos\WishlistCheckDto;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;

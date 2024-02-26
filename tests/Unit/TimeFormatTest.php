@@ -3,7 +3,6 @@
 namespace Tests\Unit;
 
 use App\Models\Address;
-use App\Models\App;
 use App\Models\Deposit;
 use App\Models\Discount;
 use App\Models\Item;
@@ -27,6 +26,7 @@ use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
+use Domain\App\Models\App;
 use Domain\Currency\Currency;
 use Domain\Page\Page;
 use Domain\Price\Enums\ProductPriceType;

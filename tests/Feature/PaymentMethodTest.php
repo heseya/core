@@ -3,9 +3,9 @@
 namespace Tests\Feature;
 
 use App\Enums\ExceptionsEnums\Exceptions;
-use App\Models\App;
 use App\Models\Order;
 use App\Models\PaymentMethod;
+use Domain\App\Models\App;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Tests\TestCase;
 

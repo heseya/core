@@ -99,3 +99,21 @@ AppsParams:
     responses:
       204:
         description: Success
+
+AppUpdatePermission:
+  post:
+    tags:
+      - Apps
+    summary: 'update app permissions'
+    requestBody:
+      $ref: './../requests/Apps.yml#/AppUpdatePermissions'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Apps.yml#/AppView'
+              type: object

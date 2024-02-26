@@ -16,10 +16,10 @@ use App\Http\Resources\TFARecoveryCodesResource;
 use App\Http\Resources\TFAResource;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\UserWithSavedAddressesResource;
-use App\Models\App;
 use App\Models\SavedAddress;
 use App\Models\User;
-use App\Services\Contracts\AppServiceContract;
+use Domain\App\Models\App;
+use Domain\App\Services\AppService;
 use Domain\User\Dtos\ChangePasswordDto;
 use Domain\User\Dtos\LoginDto;
 use Domain\User\Dtos\PasswordResetDto;
@@ -46,7 +46,7 @@ final class AuthController extends Controller
 {
     public function __construct(
         private readonly AuthService $authService,
-        private readonly AppServiceContract $appService,
+        private readonly AppService $appService,
         private readonly SavedAddressService $savedAddersService,
     ) {}
 

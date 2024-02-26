@@ -1,11 +1,18 @@
 <?php
 
-namespace App\Models;
+declare(strict_types=1);
+
+namespace Domain\App\Models;
 
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\WhereInIds;
 use App\Enums\SavedAddressType;
+use App\Models\FavouriteProductSet;
+use App\Models\Model;
+use App\Models\Order;
+use App\Models\Role;
+use App\Models\SavedAddress;
 use App\Services\Contracts\UrlServiceContract;
 use App\Traits\HasMetadata;
 use App\Traits\HasWebHooks;
@@ -29,7 +36,7 @@ use Spatie\Permission\Traits\HasPermissions;
 /**
  * @mixin IdeHelperApp
  */
-class App extends Model implements AuthenticatableContract, AuthorizableContract, JWTSubject
+final class App extends Model implements AuthenticatableContract, AuthorizableContract, JWTSubject
 {
     use Authenticatable;
     use Authorizable;
@@ -56,6 +63,8 @@ class App extends Model implements AuthenticatableContract, AuthorizableContract
         'role_id',
         'refresh_token_key',
     ];
+
+    /** @var string[] */
     protected array $criteria = [
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
@@ -75,38 +84,59 @@ class App extends Model implements AuthenticatableContract, AuthorizableContract
         return $this->getKey();
     }
 
+    /**
+     * @return array<int, mixed>
+     */
     public function getJWTCustomClaims(): array
     {
         return [];
     }
 
+    /**
+     * @return HasMany<SavedAddress>
+     */
     public function shippingAddresses(): HasMany
     {
         return $this->hasMany(SavedAddress::class, 'user_id')
             ->where('type', '=', SavedAddressType::SHIPPING->value);
     }
 
+    /**
+     * @return HasMany<SavedAddress>
+     */
     public function billingAddresses(): HasMany
     {
         return $this->hasMany(SavedAddress::class, 'user_id')
             ->where('type', '=', SavedAddressType::BILLING->value);
     }
 
+    /**
+     * @return MorphMany<Order>
+     */
     public function orders(): MorphMany
     {
         return $this->morphMany(Order::class, 'buyer');
     }
 
+    /**
+     * @return BelongsTo<Role, self>
+     */
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
     }
 
+    /**
+     * @return HasMany<ShippingMethod>
+     */
     public function shippingMethods(): HasMany
     {
         return $this->hasMany(ShippingMethod::class);
     }
 
+    /**
+     * @param array<int, Role>|Collection<int, Role>|int|\Spatie\Permission\Contracts\Role|string $roles
+     */
     public function hasRole(
         array|Collection|int|\Spatie\Permission\Contracts\Role|string $roles,
         ?string $guard = null,
@@ -114,6 +144,9 @@ class App extends Model implements AuthenticatableContract, AuthorizableContract
         return false;
     }
 
+    /**
+     * @return MorphMany<FavouriteProductSet>
+     */
     public function favouriteProductSets(): MorphMany
     {
         return $this->morphMany(FavouriteProductSet::class, 'user');

@@ -2,8 +2,8 @@
 
 namespace App\Rules;
 
-use App\Models\App;
 use App\Services\Contracts\UrlServiceContract;
+use Domain\App\Models\App;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\App as AppFacade;
 

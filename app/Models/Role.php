@@ -11,6 +11,7 @@ use App\Enums\RoleType;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasMetadata;
 use App\Traits\HasUuid;
+use Domain\App\Models\App;
 use Heseya\Searchable\Criteria\Equals;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;

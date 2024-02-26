@@ -5,10 +5,10 @@ namespace App\Services;
 use App\Dtos\PaymentMethodDto;
 use App\Dtos\PaymentMethodIndexDto;
 use App\Exceptions\ClientException;
-use App\Models\App;
 use App\Models\PaymentMethod;
 use App\Models\User;
 use App\Services\Contracts\PaymentMethodServiceContract;
+use Domain\App\Models\App;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 

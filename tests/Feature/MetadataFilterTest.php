@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\App;
 use App\Models\Discount;
 use App\Models\Item;
 use App\Models\Order;
@@ -10,6 +9,7 @@ use App\Models\Role;
 use App\Models\Schema;
 use App\Models\Status;
 use App\Models\User;
+use Domain\App\Models\App;
 use Domain\Banner\Models\Banner;
 use Domain\Metadata\Enums\MetadataType;
 use Domain\Page\Page;

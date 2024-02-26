@@ -1,11 +1,11 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Apps;
 
-use App\Models\App;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\WebHook;
+use Domain\App\Models\App;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;

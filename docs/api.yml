@@ -10,6 +10,8 @@ paths:
     $ref: ./paths/Apps.yml#/Apps
   /apps/id:{id}:
     $ref: ./paths/Apps.yml#/AppsParams
+  /apps/id:{id}/update-permissions:
+    $ref: ./paths/Apps.yml#/AppUpdatePermission
   /login:
     $ref: ./paths/Auth.yml#/Login
   /register:

@@ -4,10 +4,10 @@ namespace Tests;
 
 use App\Enums\RoleType;
 use App\Enums\TokenType;
-use App\Models\App as Application;
 use App\Models\Role;
 use App\Models\User;
 use Database\Seeders\InitSeeder;
+use Domain\App\Models\App as Application;
 use Domain\Auth\Services\TokenService;
 use Domain\Language\Language;
 use Illuminate\Contracts\Auth\Authenticatable;

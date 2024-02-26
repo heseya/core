@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\AppController;
 use App\Http\Controllers\MetadataController;
+use Domain\App\Controllers\AppController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('apps')->group(function (): void {
@@ -10,6 +10,8 @@ Route::prefix('apps')->group(function (): void {
     Route::get('id:{app:id}', [AppController::class, 'show'])
         ->middleware('can:apps.show_details');
     Route::post('/', [AppController::class, 'store'])
+        ->middleware('can:apps.install');
+    Route::post('id:{app:id}/update-permissions', [AppController::class, 'updatePermissions'])
         ->middleware('can:apps.install');
     Route::patch('id:{app:id}/metadata', [MetadataController::class, 'updateOrCreate'])
         ->middleware('can:apps.install');

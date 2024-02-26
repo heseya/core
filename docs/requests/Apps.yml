@@ -35,3 +35,24 @@ AppStore:
             $ref: './../schemas/Metadata.yml#/Metadata'
           metadata_private:
             $ref: './../schemas/Metadata.yml#/Metadata'
+
+AppUpdatePermissions:
+  content:
+    application/json:
+      schema:
+        required:
+          - allowed_permissions
+        type: object
+        properties:
+          allowed_permissions:
+            description: 'Permissions granted to the app'
+            type: array
+            items:
+              type: string
+              example: products.add
+          public_app_permissions:
+            description: 'App permissions granted to unauthenticated users'
+            type: array
+            items:
+              type: string
+              example: review.add

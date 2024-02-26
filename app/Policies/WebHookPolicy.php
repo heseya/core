@@ -4,9 +4,9 @@ namespace App\Policies;
 
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
-use App\Models\App;
 use App\Models\User;
 use App\Models\WebHook;
+use Domain\App\Models\App;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Support\Facades\Config;

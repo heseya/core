@@ -19,6 +19,8 @@ enum Exceptions: string
     case CLIENT_APP_WANTS_INVALID_PERMISSION = 'App wants invalid permissions';
     case CLIENT_ADD_APP_WITHOUT_REQUIRED_PERMISSIONS = 'Can\'t add app without all required permissions';
     case CLIENT_ADD_PERMISSION_APP_DOESNT_WANT = 'Can\'t add any permissions application doesn\'t want';
+    case CLIENT_APP_PERMISSIONS_DIFFERENCES = 'App permissions differences';
+    case CLIENT_APP_NO_PERMISSIONS_CHANGES = 'App no permissions changes';
     case CLIENT_MODEL_NOT_AUDITABLE = 'Model not auditable';
     case CLIENT_INVALID_CREDENTIALS = 'Invalid credentials';
     case CLIENT_INVALID_PASSWORD = 'Invalid password';
