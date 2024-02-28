@@ -405,6 +405,7 @@ readonly class DiscountService implements DiscountServiceContract
             $shippingPrice,
             $shippingPrice,
             $summary,
+            Collection::make($cart->getUnavailableItems()),
             $cartShippingTimeAndDate['shipping_time'] ?? null,
             $cartShippingTimeAndDate['shipping_date'] ?? null,
         );

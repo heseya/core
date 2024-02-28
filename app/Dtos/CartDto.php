@@ -21,6 +21,7 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
         public readonly Missing|string $shipping_method_id,
         public readonly Missing|string $digital_shipping_method_id,
         public readonly string $sales_channel_id,
+        public array $unavailable_items = [],
     ) {}
 
     /**
@@ -72,6 +73,19 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
     public function setItems(array $items): void
     {
         $this->items = $items;
+    }
+
+    public function getUnavailableItems(): array
+    {
+        return $this->unavailable_items;
+    }
+
+    /**
+     * @param array<CartUnavailableItemDto> $items
+     */
+    public function setUnavailableItems(array $items): void
+    {
+        $this->unavailable_items = $items;
     }
 
     public function getCoupons(): array|Missing

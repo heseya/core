@@ -502,8 +502,9 @@ final readonly class OrderService implements OrderServiceContract
         $vat_rate = $this->salesChannelService->getVatRate($cartDto->sales_channel_id);
 
         // Lista tylko dostępnych produktów
-        [$products, $items] = $this->itemService->checkCartItems($cartDto->getItems());
+        [$products, $items, $unavailableItems] = $this->itemService->checkCartItems($cartDto->getItems());
         $cartDto->setItems($items);
+        $cartDto->setUnavailableItems($unavailableItems);
 
         if ($products->isNotEmpty()) {
             $this->getDeliveryMethods($cartDto, $products, false);

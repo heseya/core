@@ -148,6 +148,8 @@ enum Exceptions: string
     case CLIENT_ORGANIZATION_DOES_NOT_EXIST = 'Organization does not exist.';
     case CLIENT_ORGANIZATION_SALES_CHANNEL_MISSMATCH = 'Organization does not have access to requested sales channel.';
 
+    case PRODUCT_NOT_ENOUGH_ITEMS_IN_WAREHOUSE = 'Product is not available in the selected configuration in the selected quantity.';
+
     // Aliases
     public const CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT = self::CLIENT_NO_ACCESS;
     public const CLIENT_PROVIDER_HAS_NO_CONFIG = self::CLIENT_PROVIDER_IS_NOT_ACTIVE;

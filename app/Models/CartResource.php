@@ -16,6 +16,7 @@ class CartResource
         public Money $shipping_price_initial,
         public Money $shipping_price,
         public Money $summary,
+        public Collection $unavailable_items,
         public ?float $shipping_time = null,
         public ?string $shipping_date = null,
     ) {}

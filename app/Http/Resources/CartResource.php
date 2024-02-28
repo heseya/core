@@ -20,6 +20,7 @@ class CartResource extends Resource
             'items' => CartItemResource::collection($this->resource->items),
             'coupons' => CouponShortResource::collection($this->resource->coupons),
             'sales' => SalesShortResource::collection($this->resource->sales),
+            'unavailable_items' => CartUnavailableItemResource::collection($this->resource->unavailable_items),
         ];
     }
 }

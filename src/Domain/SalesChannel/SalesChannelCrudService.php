@@ -38,7 +38,7 @@ final readonly class SalesChannelCrudService
         return $this->salesChannelRepository->store($dto);
     }
 
-    public function update(string $id, SalesCHannelUpdateDto $dto): void
+    public function update(string $id, SalesChannelUpdateDto $dto): void
     {
         $this->salesChannelRepository->update($id, $dto);
     }

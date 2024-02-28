@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
 use App\Enums\ShippingType;
 use App\Models\ConditionGroup;
@@ -563,13 +564,13 @@ class CartTest extends TestCase
             ->assertJsonFragment([
                 'cart_total_initial' => [
                     'currency' => Currency::DEFAULT->value,
-                    'gross' => '9200.00',
-                    'net' => '9200.00',
+                    'gross' => '9300.00',
+                    'net' => '9300.00',
                 ],
                 'cart_total' => [
                     'currency' => Currency::DEFAULT->value,
-                    'gross' => '9200.00',
-                    'net' => '9200.00',
+                    'gross' => '9300.00',
+                    'net' => '9300.00',
                 ],
                 'shipping_price_initial' => [
                     'currency' => Currency::DEFAULT->value,
@@ -583,8 +584,8 @@ class CartTest extends TestCase
                 ],
                 'summary' => [
                     'currency' => Currency::DEFAULT->value,
-                    'gross' => '9200.00',
-                    'net' => '9200.00',
+                    'gross' => '9300.00',
+                    'net' => '9300.00',
                 ],
                 'coupons' => [],
                 'sales' => [],
@@ -601,7 +602,8 @@ class CartTest extends TestCase
                     'gross' => '4600.00',
                     'net' => '4600.00',
                 ],
-            ])->assertJsonMissing([
+                'quantity' => 2,
+            ])->assertJsonFragment([
                 'cartitem_id' => '2',
                 'price' => [
                     'currency' => Currency::DEFAULT->value,
@@ -613,6 +615,88 @@ class CartTest extends TestCase
                     'gross' => '100.00',
                     'net' => '100.00',
                 ],
+                'quantity' => 1,
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '2',
+                'quantity' => 1,
+                'error' => [
+                    'key' => Exceptions::PRODUCT_NOT_ENOUGH_ITEMS_IN_WAREHOUSE->name,
+                    'message' => Exceptions::PRODUCT_NOT_ENOUGH_ITEMS_IN_WAREHOUSE->value,
+                ]
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessAllProductNotAvailable($user): void
+    {
+        $this->{$user}->givePermissionTo('cart.verify');
+
+        $item = Item::factory()->create();
+
+        $item->deposits()->create([
+            'quantity' => 0,
+        ]);
+
+        $this->product->items()->sync([$item->getKey() => ['required_quantity' => 1]]);
+
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [],
+                ],
+            ],
+        ]);
+//        dd($response->json());
+
+        $response
+            ->assertValid()
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => [
+                    'currency' => Currency::DEFAULT->value,
+                    'gross' => '0.00',
+                    'net' => '0.00',
+                ],
+                'cart_total' => [
+                    'currency' => Currency::DEFAULT->value,
+                    'gross' => '0.00',
+                    'net' => '0.00',
+                ],
+                'shipping_price_initial' => [
+                    'currency' => Currency::DEFAULT->value,
+                    'gross' => '8.11',
+                    'net' => '8.11',
+                ],
+                'shipping_price' => [
+                    'currency' => Currency::DEFAULT->value,
+                    'gross' => '8.11',
+                    'net' => '8.11',
+                ],
+                'summary' => [
+                    'currency' => Currency::DEFAULT->value,
+                    'gross' => '8.11',
+                    'net' => '8.11',
+                ],
+                'coupons' => [],
+                'sales' => [],
+                'items' => [],
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'quantity' => 2,
+                'error' => [
+                    'key' => Exceptions::PRODUCT_NOT_ENOUGH_ITEMS_IN_WAREHOUSE->name,
+                    'message' => Exceptions::PRODUCT_NOT_ENOUGH_ITEMS_IN_WAREHOUSE->value,
+                ]
             ]);
     }
 
@@ -2017,7 +2101,7 @@ class CartTest extends TestCase
             ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'shipping_time' => null,
-                'shipping_date' => null,
+                'shipping_date' => $shippingDate,
             ]);
 
         $shippingDate2 = Carbon::now()->startOfDay()->addDays(20)->toIso8601String();
@@ -2196,7 +2280,7 @@ class CartTest extends TestCase
             ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'shipping_time' => null,
-                'shipping_date' => null,
+                'shipping_date' => $shippingDate,
             ]);
     }
 
@@ -2234,13 +2318,13 @@ class CartTest extends TestCase
             ->assertJsonFragment([
                 'cart_total_initial' => [
                     'currency' => Currency::DEFAULT->value,
-                    'gross' => '0.00',
-                    'net' => '0.00',
+                    'gross' => '100.00',
+                    'net' => '100.00',
                 ],
                 'cart_total' => [
                     'currency' => Currency::DEFAULT->value,
-                    'gross' => '0.00',
-                    'net' => '0.00',
+                    'gross' => '100.00',
+                    'net' => '100.00',
                 ],
                 'shipping_price_initial' => [
                     'currency' => Currency::DEFAULT->value,
@@ -2254,13 +2338,13 @@ class CartTest extends TestCase
                 ],
                 'summary' => [
                     'currency' => Currency::DEFAULT->value,
-                    'gross' => '8.11',
-                    'net' => '8.11',
+                    'gross' => '108.11',
+                    'net' => '108.11',
                 ],
                 'coupons' => [],
                 'sales' => [],
             ])
-            ->assertJsonMissing([
+            ->assertJsonFragment([
                 'cartitem_id' => '1',
                 'price' => [
                     'currency' => Currency::DEFAULT->value,
@@ -2272,6 +2356,15 @@ class CartTest extends TestCase
                     'gross' => '100.00',
                     'net' => '100.00',
                 ],
+                'quantity' => 1,
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'quantity' => 6,
+                'error' => [
+                    'key' => Exceptions::PRODUCT_NOT_ENOUGH_ITEMS_IN_WAREHOUSE->name,
+                    'message' => Exceptions::PRODUCT_NOT_ENOUGH_ITEMS_IN_WAREHOUSE->value,
+                ]
             ]);
     }
 
@@ -2307,44 +2400,53 @@ class CartTest extends TestCase
             ->assertJsonFragment([
                 'cart_total_initial' => [
                     'currency' => Currency::DEFAULT->value,
-                    'gross' => '0.00',
-                    'net' => '0.00',
+                    'gross' => '4600.00',
+                    'net' => '4600.00',
                 ],
                 'cart_total' => [
                     'currency' => Currency::DEFAULT->value,
-                    'gross' => '0.00',
-                    'net' => '0.00',
+                    'gross' => '4600.00',
+                    'net' => '4600.00',
                 ],
                 'shipping_price_initial' => [
                     'currency' => Currency::DEFAULT->value,
-                    'gross' => '8.11',
-                    'net' => '8.11',
+                    'gross' => '0.00',
+                    'net' => '0.00',
                 ],
                 'shipping_price' => [
                     'currency' => Currency::DEFAULT->value,
-                    'gross' => '8.11',
-                    'net' => '8.11',
+                    'gross' => '0.00',
+                    'net' => '0.00',
                 ],
                 'summary' => [
                     'currency' => Currency::DEFAULT->value,
-                    'gross' => '8.11',
-                    'net' => '8.11',
+                    'gross' => '4600.00',
+                    'net' => '4600.00',
                 ],
                 'coupons' => [],
                 'sales' => [],
             ])
-            ->assertJsonMissing([
+            ->assertJsonFragment([
                 'cartitem_id' => '1',
                 'price' => [
                     'currency' => Currency::DEFAULT->value,
-                    'gross' => '100.00',
-                    'net' => '100.00',
+                    'gross' => '4600.00',
+                    'net' => '4600.00',
                 ],
                 'price_discounted' => [
                     'currency' => Currency::DEFAULT->value,
-                    'gross' => '100.00',
-                    'net' => '100.00',
+                    'gross' => '4600.00',
+                    'net' => '4600.00',
                 ],
+                'quantity' => 1,
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'quantity' => 6,
+                'error' => [
+                    'key' => Exceptions::PRODUCT_NOT_ENOUGH_ITEMS_IN_WAREHOUSE->name,
+                    'message' => Exceptions::PRODUCT_NOT_ENOUGH_ITEMS_IN_WAREHOUSE->value,
+                ]
             ]);
     }
 
@@ -2942,6 +3044,15 @@ class CartTest extends TestCase
                     'gross' => '4600.00',
                     'net' => '4600.00',
                 ],
+                'quantity' => 1,
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'quantity' => 1,
+                'error' => [
+                    'key' => Exceptions::PRODUCT_PURCHASE_LIMIT->name,
+                    'message' => Exceptions::PRODUCT_PURCHASE_LIMIT->value,
+                ]
             ]);
     }
 

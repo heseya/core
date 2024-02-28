@@ -176,6 +176,7 @@ class DiscountApplyTest extends TestCase
             Money::zero($this->currency->value),
             Money::zero($this->currency->value),
             Money::zero($this->currency->value),
+            Collection::make([]),
         );
 
         $this->orderProductDto = OrderProductDto::fromArray([

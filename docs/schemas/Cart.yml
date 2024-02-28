@@ -25,6 +25,10 @@ Cart:
       type: array
       items:
         $ref: '#/CartItemResponse'
+    unavailable_items:
+      type: array
+      items:
+        $ref: '#/CartUnavailableItemResponse'
     coupons:
       type: array
       items:
@@ -47,6 +51,26 @@ CartItemResponse:
     quantity:
       type: number
       example: 1
+
+CartUnavailableItemResponse:
+  type: object
+  properties:
+    cartitem_id:
+      type: string
+      example: 1
+    quantity:
+      type: number
+      example: 1
+    error:
+      $ref: '#/CartItemErrorResponse'
+
+CartItemErrorResponse:
+  type: object
+  properties:
+    key:
+      type: string
+    message:
+      type: string
 
 SalesShortResource:
   type: object

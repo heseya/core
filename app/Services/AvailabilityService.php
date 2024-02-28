@@ -311,7 +311,7 @@ class AvailabilityService implements AvailabilityServiceContract
             $usedItems[$item->getKey()] = $requiredItem->pivot->required_quantity;
 
             // round product quantity to product qty step
-            if ($requiredQuantity === 0) {
+            if ($requiredQuantity === 0 || $requiredQuantity === 0.0) {
                 throw new Exception('Item with id ' . $item->getKey() . 'doesn\'t have required quantity');
             }
 
