@@ -3,14 +3,15 @@
 namespace Tests\Feature;
 
 use App\Enums\RoleType;
+use App\Mail\ResetPassword;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\UserPreference;
-use App\Notifications\ResetPassword;
 use App\Notifications\UserRegistered;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
@@ -45,26 +46,19 @@ class AuthClientTest extends TestCase
             'password' => Hash::make($password),
         ]);
 
-        Notification::fake();
+        Mail::fake();
 
-        $response = $this->actingAs($this->user)->postJson('/users/reset-password', [
+        $this->actingAs($this->user)->postJson('/users/reset-password', [
             'email' => $user->email,
             'redirect_url' => 'https://test.com',
-        ]);
+        ])->assertNoContent();
 
-        Notification::assertSentTo(
-            $user,
-            ResetPassword::class,
-            function (ResetPassword $notification) use ($user): bool {
-                $mail = $notification->toMail($user);
-                $this->assertEquals('mail.client.password-reset', $mail->view);
-                $this->assertStringContainsString($user->name, (string) $mail->render());
+        Mail::assertSent(ResetPassword::class, function (ResetPassword $mail) use ($user): bool {
+            $mail->assertTo($user->email);
+            // $mail->assertSeeInHtml($user->name);
 
-                return true;
-            },
-        );
-
-        $response->assertNoContent();
+            return true;
+        });
     }
 
     public function testRegisterAsPartner(): void

@@ -23,7 +23,6 @@ use App\Models\Role;
 use App\Models\Token;
 use App\Models\User;
 use App\Models\UserPreference;
-use App\Notifications\ResetPassword;
 use App\Notifications\TFAInitialization;
 use App\Notifications\TFASecurityCode;
 use App\Services\Contracts\MetadataServiceContract;

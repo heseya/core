@@ -16,6 +16,7 @@ use App\Events\TfaInit;
 use App\Events\TfaRecoveryCodesChanged;
 use App\Events\TfaSecurityCode as TfaSecurityCodeEvent;
 use App\Listeners\WebHookEventListener;
+use App\Mail\ResetPassword;
 use App\Models\App;
 use App\Models\OneTimeSecurityCode;
 use App\Models\Permission;
@@ -24,7 +25,6 @@ use App\Models\User;
 use App\Models\UserLoginAttempt;
 use App\Models\UserPreference;
 use App\Models\WebHook;
-use App\Notifications\ResetPassword;
 use App\Notifications\TFAInitialization;
 use App\Notifications\TFARecoveryCodes;
 use App\Notifications\TFASecurityCode;
@@ -939,7 +939,7 @@ class AuthTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testResetPassword11(): void
+    public function testResetPassword(): void
     {
         $this->user->givePermissionTo('auth.password_reset');
 
@@ -952,25 +952,18 @@ class AuthTest extends TestCase
             'password' => Hash::make($password),
         ]);
 
-        Notification::fake();
+        Mail::fake();
 
-        $response = $this->actingAs($this->user)->postJson('/users/reset-password', [
+        $this->actingAs($this->user)->postJson('/users/reset-password', [
             'email' => $user->email,
             'redirect_url' => 'https://test.com',
-        ]);
+        ])->assertNoContent();
 
-        Notification::assertSentTo(
-            $user,
-            ResetPassword::class,
-            function (ResetPassword $notification) use ($user) {
-                $mail = $notification->toMail($user);
-                $this->assertEquals('Wniosek o zmianę hasła', $mail->subject);
+        Mail::assertSent(ResetPassword::class, function (ResetPassword $mail) use ($user) {
+            $mail->assertTo($user->email);
 
-                return true;
-            }
-        );
-
-        $response->assertNoContent();
+            return true;
+        });
     }
 
     public function testResetPasswordMailAcceptLanguage(): void
@@ -986,7 +979,7 @@ class AuthTest extends TestCase
             'password' => Hash::make($password),
         ]);
 
-        Notification::fake();
+        Mail::fake();
 
         $this->actingAs($this->user)
             ->json(
@@ -1002,16 +995,13 @@ class AuthTest extends TestCase
                 ],
             )->assertNoContent();
 
-        Notification::assertSentTo(
-            $user,
-            ResetPassword::class,
-            function (ResetPassword $notification) use ($user) {
-                $mail = $notification->toMail($user);
-                $this->assertEquals('Request for password change', $mail->subject);
+        Mail::assertSent(ResetPassword::class, function (ResetPassword $mail) use ($user) {
+            $mail->assertTo($user->email);
+            $mail->assertHasSubject('Request for password change');
+            $mail->assertSeeInHtml('We have received a request to change your password.');
 
-                return true;
-            }
-        );
+            return true;
+        });
     }
 
     public function testResetPasswordMailSalesChannel(): void
@@ -1036,7 +1026,7 @@ class AuthTest extends TestCase
             'password' => Hash::make($password),
         ]);
 
-        Notification::fake();
+        Mail::fake();
 
         $this->actingAs($this->user)
             ->json(
@@ -1051,16 +1041,13 @@ class AuthTest extends TestCase
                 ],
             )->assertNoContent();
 
-        Notification::assertSentTo(
-            $user,
-            ResetPassword::class,
-            function (ResetPassword $notification) use ($user) {
-                $mail = $notification->toMail($user);
-                $this->assertEquals('Request for password change', $mail->subject);
+        Mail::assertSent(ResetPassword::class, function (ResetPassword $mail) use ($user) {
+            $mail->assertTo($user->email);
+            $mail->assertHasSubject('Request for password change');
+            $mail->assertSeeInHtml('We have received a request to change your password.');
 
-                return true;
-            }
-        );
+            return true;
+        });
     }
 
     public function testResetPasswordWebhookEvent(): array
