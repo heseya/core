@@ -20,6 +20,7 @@ use App\Models\App;
 use App\Models\SavedAddress;
 use App\Models\User;
 use App\Services\Contracts\AppServiceContract;
+use App\Traits\GetLocale;
 use Domain\User\Dtos\ChangePasswordDto;
 use Domain\User\Dtos\LoginDto;
 use Domain\User\Dtos\PasswordResetDto;
@@ -44,6 +45,8 @@ use Illuminate\Support\Facades\Response;
 
 final class AuthController extends Controller
 {
+    use GetLocale;
+
     public function __construct(
         private readonly AuthService $authService,
         private readonly AppServiceContract $appService,
@@ -73,7 +76,7 @@ final class AuthController extends Controller
 
     public function resetPassword(PasswordResetDto $dto): HttpResponse
     {
-        $this->authService->resetPassword($dto);
+        $this->authService->resetPassword($dto, $this->getLocaleFromRequest());
 
         return Response::noContent();
     }

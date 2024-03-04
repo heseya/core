@@ -17,6 +17,7 @@ use App\Events\UserCreated;
 use App\Exceptions\AuthException;
 use App\Exceptions\ClientException;
 use App\Exceptions\TFAException;
+use App\Mail\ResetPassword as ResetPasswordMail;
 use App\Models\App;
 use App\Models\Role;
 use App\Models\Token;
@@ -46,6 +47,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use PHPGangsta_GoogleAuthenticator;
@@ -168,15 +170,30 @@ final class AuthService
         $this->tokenService->invalidateToken(Auth::getToken()->get());
     }
 
-    public function resetPassword(PasswordResetDto $dto): void
+    public function resetPassword(PasswordResetDto $dto, string $locate): void
     {
         $user = User::whereEmail($dto->email)->first();
-        if ($user) {
-            $token = Password::createToken($user);
 
-            PasswordReset::dispatch($user, $dto->redirect_url);
-            $user->notify(new ResetPassword($token, $dto->redirect_url));
+        if (!($user instanceof User)) {
+            return;
         }
+
+        $email = $user->getEmailForPasswordReset();
+        $token = Password::createToken($user);
+        $param = http_build_query([
+            'token' => $token,
+            'email' => $email,
+        ]);
+
+        Mail::to($email)
+            ->locale($locate)
+            ->send(new ResetPasswordMail(
+                "{$dto->redirect_url}?{$param}",
+                $user->name,
+            ));
+
+        // webhook
+        PasswordReset::dispatch($user, $dto->redirect_url);
     }
 
     /**
