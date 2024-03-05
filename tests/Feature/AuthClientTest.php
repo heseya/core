@@ -4,15 +4,14 @@ namespace Tests\Feature;
 
 use App\Enums\RoleType;
 use App\Mail\ResetPassword;
+use App\Mail\UserRegistered;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\UserPreference;
-use App\Notifications\UserRegistered;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class AuthClientTest extends TestCase
@@ -63,7 +62,7 @@ class AuthClientTest extends TestCase
 
     public function testRegisterAsPartner(): void
     {
-        Notification::fake();
+        Mail::fake();
 
         $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
         $role->givePermissionTo('auth.register');
@@ -84,6 +83,7 @@ class AuthClientTest extends TestCase
                 ],
             ]);
 
+        /** @var User $user */
         $user = User::where('email', $email)->first();
 
         $this->assertDatabaseHas('metadata_personals', [
@@ -92,22 +92,18 @@ class AuthClientTest extends TestCase
             'value' => true,
         ]);
 
-        Notification::assertSentTo(
-            [$user],
-            UserRegistered::class,
-            function (UserRegistered $notification) use ($user): bool {
-                $mail = $notification->toMail($user);
-                $this->assertEquals('mail.client.partner-register', $mail->view);
-                $this->assertStringContainsString($user->name, (string) $mail->render());
+        Mail::assertSent(UserRegistered::class, function (UserRegistered $mail) use ($user) {
+            $mail->assertTo($user->email);
+            $mail->assertHasSubject('Partner account registered');
+            $this->assertEquals('mail.client.partner-register', $mail->view);
 
-                return true;
-            },
-        );
+            return true;
+        });
     }
 
     public function testRegisterAsUser(): void
     {
-        Notification::fake();
+        Mail::fake();
 
         $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
         $role->givePermissionTo('auth.register');
@@ -128,6 +124,7 @@ class AuthClientTest extends TestCase
                 ],
             ]);
 
+        /** @var User $user */
         $user = User::where('email', $email)->first();
 
         $this->assertDatabaseHas('metadata_personals', [
@@ -136,16 +133,12 @@ class AuthClientTest extends TestCase
             'value' => false,
         ]);
 
-        Notification::assertSentTo(
-            [$user],
-            UserRegistered::class,
-            function (UserRegistered $notification) use ($user): bool {
-                $mail = $notification->toMail($user);
-                $this->assertEquals('mail.client.user-register', $mail->view);
-                $this->assertStringContainsString($user->name, (string) $mail->render());
+        Mail::assertSent(UserRegistered::class, function (UserRegistered $mail) use ($user) {
+            $mail->assertTo($user->email);
+            $mail->assertHasSubject('User account registered');
+            $this->assertEquals('mail.client.user-register', $mail->view);
 
-                return true;
-            },
-        );
+            return true;
+        });
     }
 }

@@ -18,16 +18,15 @@ use App\Exceptions\AuthException;
 use App\Exceptions\ClientException;
 use App\Exceptions\TFAException;
 use App\Mail\ResetPassword as ResetPasswordMail;
+use App\Mail\TFAInitialization;
 use App\Models\App;
 use App\Models\Role;
 use App\Models\Token;
 use App\Models\User;
 use App\Models\UserPreference;
-use App\Notifications\TFAInitialization;
-use App\Notifications\TFASecurityCode;
 use App\Services\Contracts\MetadataServiceContract;
-use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\TokenServiceContract;
+use App\Traits\GetLocale;
 use Domain\Consent\Services\ConsentService;
 use Domain\User\Dtos\ChangePasswordDto;
 use Domain\User\Dtos\LoginDto;
@@ -56,9 +55,11 @@ use Spatie\LaravelData\Optional;
 
 final class AuthService
 {
+    use GetLocale;
+
     public function __construct(
         protected TokenServiceContract $tokenService,
-        protected OneTimeSecurityCodeContract $oneTimeSecurityCodeService,
+        protected OneTimeSecurityCodeService $oneTimeSecurityCodeService,
         protected ConsentService $consentService,
         protected UserLoginAttemptService $userLoginAttemptService,
         protected UserService $userService,
@@ -169,7 +170,7 @@ final class AuthService
         $this->tokenService->invalidateToken(Auth::getToken()->get());
     }
 
-    public function resetPassword(PasswordResetDto $dto, string $locate): void
+    public function resetPassword(PasswordResetDto $dto): void
     {
         $user = User::whereEmail($dto->email)->first();
 
@@ -185,7 +186,7 @@ final class AuthService
         ]);
 
         Mail::to($email)
-            ->locale($locate)
+            ->locale($this->getLocaleFromRequest())
             ->send(new ResetPasswordMail(
                 "{$dto->redirect_url}?{$param}",
                 $user->name,
@@ -319,7 +320,7 @@ final class AuthService
             'is_tfa_active' => true,
         ]);
 
-        return $this->oneTimeSecurityCodeService->generateRecoveryCodes();
+        return $this->oneTimeSecurityCodeService->generateRecoveryCodes($this->getLocaleFromRequest());
     }
 
     /**
@@ -334,7 +335,7 @@ final class AuthService
 
         $this->checkNoTFA($user);
 
-        return $this->oneTimeSecurityCodeService->generateRecoveryCodes();
+        return $this->oneTimeSecurityCodeService->generateRecoveryCodes($this->getLocaleFromRequest());
     }
 
     /**
@@ -481,7 +482,11 @@ final class AuthService
             );
 
             TfaSecurityCodeEvent::dispatch(Auth::user(), $code);
-            Auth::user()->notify(new TFASecurityCode($code));
+            Mail::to(Auth::user()->email)
+                ->locale($this->getLocaleFromRequest())
+                ->send(new \App\Mail\TFASecurityCode(
+                    $code,
+                ));
         }
         throw new ClientException(Exceptions::CLIENT_TFA_REQUIRED, simpleLogs: true, errorArray: ['type' => Auth::user()?->tfa_type]);
     }
@@ -646,7 +651,11 @@ final class AuthService
         ]);
 
         TfaInit::dispatch($user, $code);
-        $user->notify(new TFAInitialization($code));
+        Mail::to($user->email)
+            ->locale($this->getLocaleFromRequest())
+            ->send(new TFAInitialization(
+                $code,
+            ));
 
         return [
             'type' => TFAType::EMAIL->value,

@@ -1,18 +1,20 @@
 <?php
 
-namespace App\Services;
+declare(strict_types=1);
+
+namespace Domain\User\Services;
 
 use App\Events\TfaRecoveryCodesChanged;
+use App\Mail\TFARecoveryCodes;
 use App\Models\OneTimeSecurityCode;
 use App\Models\User;
-use App\Notifications\TFARecoveryCodes;
-use App\Services\Contracts\OneTimeSecurityCodeContract;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
-class OneTimeSecurityCodeService implements OneTimeSecurityCodeContract
+final class OneTimeSecurityCodeService
 {
     public function generateOneTimeSecurityCode(User $user, int $expires_time = 0): string
     {
@@ -27,7 +29,10 @@ class OneTimeSecurityCodeService implements OneTimeSecurityCodeContract
         return $code;
     }
 
-    public function generateRecoveryCodes(int $codes = 3): array
+    /**
+     * @return array<string>
+     */
+    public function generateRecoveryCodes(string $locale, int $codes = 3): array
     {
         /** @var User $user */
         $user = Auth::user();
@@ -40,12 +45,17 @@ class OneTimeSecurityCodeService implements OneTimeSecurityCodeContract
 
         if ($user->preferences !== null && $user->preferences->recovery_code_changed_alert) {
             TfaRecoveryCodesChanged::dispatch($user);
-            $user->notify(new TFARecoveryCodes());
+            Mail::to($user->email)
+                ->locale($locale)
+                ->send(new TFARecoveryCodes());
         }
 
         return $recovery_codes;
     }
 
+    /**
+     * @param array<int> $modules
+     */
     private function generateCode(array $modules, string $separator = ''): string
     {
         $code = '';
