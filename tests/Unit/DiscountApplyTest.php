@@ -62,27 +62,26 @@ class DiscountApplyTest extends TestCase
     public static function discountProductDataProvider(): array
     {
         return [
-            /** TODO: REVERT */
-//            'as amount coupon' => [
-//                DiscountType::AMOUNT,
-//                20.0,
-//                110.0,
-//                'coupon',
-//            ],
+            'as amount coupon' => [
+                DiscountType::AMOUNT,
+                '20.0',
+                110.0,
+                'coupon',
+            ],
             'as percentage coupon' => [
-                'percentage',
+                DiscountType::PERCENTAGE,
                 '20.0',
                 104.0,
                 'coupon',
             ],
-//            'as amount sale' => [
-//                DiscountType::AMOUNT,
-//                20.0,
-//                110.0,
-//                'sale',
-//            ],
+            'as amount sale' => [
+                DiscountType::AMOUNT,
+                '20.0',
+                110.0,
+                'sale',
+            ],
             'as percentage sale' => [
-                'percentage',
+                DiscountType::PERCENTAGE,
                 '20.0',
                 104.0,
                 'sale',
@@ -93,27 +92,26 @@ class DiscountApplyTest extends TestCase
     public static function discountDataProvider(): array
     {
         return [
-            /** TODO: REVERT */
-//            'as amount coupon' => [
-//                DiscountType::AMOUNT,
-//                20.0,
-//                100.0,
-//                'coupon',
-//            ],
+            'as amount coupon' => [
+                DiscountType::AMOUNT,
+                '20.0',
+                100.0,
+                'coupon',
+            ],
             'as percentage coupon' => [
-                'percentage',
+                DiscountType::PERCENTAGE,
                 '20.0',
                 96.0,
                 'coupon',
             ],
-//            'as amount sale' => [
-//                DiscountType::AMOUNT,
-//                20.0,
-//                100.0,
-//                'sale',
-//            ],
+            'as amount sale' => [
+                DiscountType::AMOUNT,
+                '20.0',
+                100.0,
+                'sale',
+            ],
             'as percentage sale' => [
-                'percentage',
+                DiscountType::PERCENTAGE,
                 '20.0',
                 96.0,
                 'sale',
@@ -139,14 +137,14 @@ class DiscountApplyTest extends TestCase
 
         $this->product = $this->productService->create(
             FakeDto::productCreateDto([
-                'prices_base' => [PriceDto::from(Money::of(120, $this->currency->value))],
+                'prices_base' => [PriceDto::from(Money::of(120.0, $this->currency->value))],
                 'public' => true,
             ])
         );
 
         $this->schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'prices' => [PriceDto::from(Money::of(10, $this->currency->value))],
+                'prices' => [PriceDto::from(Money::of(10.0, $this->currency->value))],
                 'type' => 'string',
                 'hidden' => false,
             ])
@@ -198,7 +196,7 @@ class DiscountApplyTest extends TestCase
         $order = Order::factory()->create();
         $this->productToOrderProduct = $this->productService->create(
             FakeDto::productCreateDto([
-                'prices_base' => [PriceDto::from(Money::of(120, $this->currency->value))],
+                'prices_base' => [PriceDto::from(Money::of(120.0, $this->currency->value))],
                 'public' => true,
             ])
         );
@@ -398,19 +396,11 @@ class DiscountApplyTest extends TestCase
     /**
      * @dataProvider discountProductDataProvider
      */
-    public function testApplyDiscountToProduct($type, $value, $result, $discountKind): void
+    public function testApplyDiscountToProduct(DiscountType $type, string $value, float $result, string $discountKind): void
     {
         $this->product->schemas()->sync([$this->schema->getKey()]);
 
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
-
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => true,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, true);
 
         $discount->products()->attach($this->product);
 
@@ -433,7 +423,7 @@ class DiscountApplyTest extends TestCase
      *
      * @throws DtoException
      */
-    public function testApplyDiscountToProductNotAllowList($type, $value, $result, $discountKind): void
+    public function testApplyDiscountToProductNotAllowList(DiscountType $type, string $value, float $result, string $discountKind): void
     {
         $this->product->schemas()->sync([$this->schema->getKey()]);
         $product = $this->productService->create(
@@ -443,15 +433,7 @@ class DiscountApplyTest extends TestCase
             ])
         );
 
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
-
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => false,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, false);
 
         $discount->products()->attach($product);
 
@@ -472,19 +454,11 @@ class DiscountApplyTest extends TestCase
     /**
      * @dataProvider discountProductDataProvider
      */
-    public function testApplyDiscountToProductInProductSets($type, $value, $result, $discountKind): void
+    public function testApplyDiscountToProductInProductSets(DiscountType $type, string $value, float $result, string $discountKind): void
     {
         $this->product->schemas()->sync([$this->schema->getKey()]);
 
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
-
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => true,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, true);
 
         $this->product->sets()->sync([$this->set->getKey()]);
 
@@ -507,22 +481,14 @@ class DiscountApplyTest extends TestCase
     /**
      * @dataProvider discountProductDataProvider
      */
-    public function testApplyDiscountToProductInProductSetsNotAllowList($type, $value, $result, $discountKind): void
+    public function testApplyDiscountToProductInProductSetsNotAllowList(DiscountType $type, string $value, float $result, string $discountKind): void
     {
         $this->product->schemas()->sync([$this->schema->getKey()]);
         $set = ProductSet::factory()->create([
             'public' => true,
         ]);
 
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
-
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => false,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, false);
 
         $this->product->sets()->sync([$set->getKey()]);
 
@@ -545,17 +511,9 @@ class DiscountApplyTest extends TestCase
     /**
      * @dataProvider discountProductDataProvider
      */
-    public function testDiscountNotApplyToProduct($type, $value, $result, $discountKind): void
+    public function testDiscountNotApplyToProduct(DiscountType $type, string $value, float $result, string $discountKind): void
     {
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
-
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => true,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, true);
 
         $this->product->sets()->sync([$this->set->getKey()]);
 
@@ -576,17 +534,9 @@ class DiscountApplyTest extends TestCase
     /**
      * @dataProvider discountProductDataProvider
      */
-    public function testDiscountNotApplyToProductNotAllowList($type, $value, $result, $discountKind): void
+    public function testDiscountNotApplyToProductNotAllowList(DiscountType $type, string $value, float $result, string $discountKind): void
     {
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
-
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => false,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, false);
 
         $discount->products()->attach($this->product);
 
@@ -609,17 +559,9 @@ class DiscountApplyTest extends TestCase
     /**
      * @dataProvider discountProductDataProvider
      */
-    public function testDiscountNotApplyToProductInProductSets($type, $value, $result, $discountKind): void
+    public function testDiscountNotApplyToProductInProductSets(DiscountType $type, string $value, float $result, string $discountKind): void
     {
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
-
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => true,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, true);
 
         $orderProduct = $this->discountService->applyDiscountOnProduct(
             $this->product,
@@ -638,17 +580,9 @@ class DiscountApplyTest extends TestCase
     /**
      * @dataProvider discountProductDataProvider
      */
-    public function testDiscountNotApplyToProductInProductSetsNotAllowList($type, $value, $result, $discountKind): void
+    public function testDiscountNotApplyToProductInProductSetsNotAllowList(DiscountType $type, string $value, float $result, string $discountKind): void
     {
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
-
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => false,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, false);
 
         $this->product->sets()->sync([$this->set->getKey()]);
 
@@ -671,17 +605,9 @@ class DiscountApplyTest extends TestCase
     /**
      * @dataProvider discountDataProvider
      */
-    public function testApplyDiscountToOrderProduct($type, $value, $result, $discountKind): void
+    public function testApplyDiscountToOrderProduct(DiscountType $type, string $value, float $result, string $discountKind): void
     {
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
-
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => true,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, true);
 
         $discount->products()->attach($this->productToOrderProduct);
 
@@ -695,9 +621,8 @@ class DiscountApplyTest extends TestCase
      *
      * @throws DtoException
      */
-    public function testApplyDiscountToOrderProductNotAllowList($type, $value, $result, $discountKind): void
+    public function testApplyDiscountToOrderProductNotAllowList(DiscountType $type, string $value, float $result, string $discountKind): void
     {
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
         $product = $this->productService->create(
             FakeDto::productCreateDto([
                 'prices_base' => [PriceDto::from(Money::of(220, $this->currency->value))],
@@ -705,13 +630,7 @@ class DiscountApplyTest extends TestCase
             ])
         );
 
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => false,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, false);
 
         $discount->products()->attach($product);
 
@@ -723,17 +642,9 @@ class DiscountApplyTest extends TestCase
     /**
      * @dataProvider discountDataProvider
      */
-    public function testApplyDiscountToOrderProductInProductSets($type, $value, $result, $discountKind): void
+    public function testApplyDiscountToOrderProductInProductSets(DiscountType $type, string $value, float $result, string $discountKind): void
     {
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
-
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => true,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, true);
 
         $this->productToOrderProduct->sets()->sync([$this->set->getKey()]);
 
@@ -748,23 +659,16 @@ class DiscountApplyTest extends TestCase
      * @dataProvider discountDataProvider
      */
     public function testApplyDiscountToOrderProductInProductSetsNotAllowList(
-        $type,
-        $value,
-        $result,
-        $discountKind,
+        DiscountType $type,
+        string $value,
+        float $result,
+        string $discountKind,
     ): void {
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
         $set = ProductSet::factory()->create([
             'public' => true,
         ]);
 
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => false,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, false);
 
         $this->product->sets()->sync([$this->set->getKey()]);
 
@@ -778,17 +682,9 @@ class DiscountApplyTest extends TestCase
     /**
      * @dataProvider discountDataProvider
      */
-    public function testDiscountNotApplyToOrderProduct($type, $value, $result, $discountKind): void
+    public function testDiscountNotApplyToOrderProduct(DiscountType $type, string $value, float $result, string $discountKind): void
     {
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
-
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => true,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, true);
 
         $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
 
@@ -798,17 +694,9 @@ class DiscountApplyTest extends TestCase
     /**
      * @dataProvider discountDataProvider
      */
-    public function testDiscountNotApplyToOrderProductNotAllowList($type, $value, $result, $discountKind): void
+    public function testDiscountNotApplyToOrderProductNotAllowList(DiscountType $type, string $value, float $result, string $discountKind): void
     {
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
-
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => false,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, false);
 
         $discount->products()->attach($this->productToOrderProduct);
 
@@ -820,17 +708,9 @@ class DiscountApplyTest extends TestCase
     /**
      * @dataProvider discountDataProvider
      */
-    public function testDiscountNotApplyToOrderProductInProductSets($type, $value, $result, $discountKind): void
+    public function testDiscountNotApplyToOrderProductInProductSets(DiscountType $type, string $value, float $result, string $discountKind): void
     {
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
-
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => true,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, true);
 
         $discount->productSets()->attach($this->set);
 
@@ -843,20 +723,12 @@ class DiscountApplyTest extends TestCase
      * @dataProvider discountDataProvider
      */
     public function testDiscountNotApplyToOrderProductInProductSetsNotAllowList(
-        $type,
-        $value,
-        $result,
-        $discountKind,
+        DiscountType $type,
+        string $value,
+        float $result,
+        string $discountKind,
     ): void {
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
-
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => false,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, false);
 
         $this->productToOrderProduct->sets()->sync([$this->set->getKey()]);
 
@@ -870,17 +742,9 @@ class DiscountApplyTest extends TestCase
     /**
      * @dataProvider discountDataProvider
      */
-    public function testApplyDiscountToCartItem($type, $value, $result, $discountKind): void
+    public function testApplyDiscountToCartItem(DiscountType $type, string $value, float $result, string $discountKind): void
     {
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
-
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => true,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, true);
 
         $discount->products()->attach($this->product);
 
@@ -894,9 +758,8 @@ class DiscountApplyTest extends TestCase
      *
      * @throws DtoException
      */
-    public function testApplyDiscountToCartItemNotAllowList($type, $value, $result, $discountKind): void
+    public function testApplyDiscountToCartItemNotAllowList(DiscountType $type, string $value, float $result, string $discountKind): void
     {
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
         $product = $this->productService->create(
             FakeDto::productCreateDto([
                 'prices_base' => [PriceDto::from(Money::of(220, $this->currency->value))],
@@ -904,13 +767,7 @@ class DiscountApplyTest extends TestCase
             ])
         );
 
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => false,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, false);
 
         $discount->products()->attach($product);
 
@@ -922,17 +779,9 @@ class DiscountApplyTest extends TestCase
     /**
      * @dataProvider discountDataProvider
      */
-    public function testApplyDiscountToCartItemInProductSets($type, $value, $result, $discountKind): void
+    public function testApplyDiscountToCartItemInProductSets(DiscountType $type, string $value, float $result, string $discountKind): void
     {
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
-
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => true,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, true);
 
         $this->product->sets()->sync([$this->set->getKey()]);
 
@@ -946,20 +795,13 @@ class DiscountApplyTest extends TestCase
     /**
      * @dataProvider discountDataProvider
      */
-    public function testApplyDiscountToCartItemInProductSetsNotAllowList($type, $value, $result, $discountKind): void
+    public function testApplyDiscountToCartItemInProductSetsNotAllowList(DiscountType $type, string $value, float $result, string $discountKind): void
     {
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
         $set = ProductSet::factory()->create([
             'public' => true,
         ]);
 
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => false,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, false);
 
         $this->product->sets()->sync([$this->set->getKey()]);
 
@@ -973,17 +815,9 @@ class DiscountApplyTest extends TestCase
     /**
      * @dataProvider discountDataProvider
      */
-    public function testDiscountNotApplyToCartItem($type, $value, $result, $discountKind): void
+    public function testDiscountNotApplyToCartItem(DiscountType $type, string $value, float $result, string $discountKind): void
     {
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
-
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => true,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, true);
 
         $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
 
@@ -993,17 +827,9 @@ class DiscountApplyTest extends TestCase
     /**
      * @dataProvider discountDataProvider
      */
-    public function testDiscountNotApplyToCartItemNotAllowList($type, $value, $result, $discountKind): void
+    public function testDiscountNotApplyToCartItemNotAllowList(DiscountType $type, string $value, float $result, string $discountKind): void
     {
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
-
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => false,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, false);
 
         $discount->products()->attach($this->product);
 
@@ -1015,17 +841,9 @@ class DiscountApplyTest extends TestCase
     /**
      * @dataProvider discountDataProvider
      */
-    public function testDiscountNotApplyToCartItemInProductSets($type, $value, $result, $discountKind): void
+    public function testDiscountNotApplyToCartItemInProductSets(DiscountType $type, string $value, float $result, string $discountKind): void
     {
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
-
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => true,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, true);
 
         $this->product->sets()->sync([$this->set->getKey()]);
 
@@ -1037,17 +855,9 @@ class DiscountApplyTest extends TestCase
     /**
      * @dataProvider discountDataProvider
      */
-    public function testDiscountNotApplyToCartItemInProductSetsNotAllowList($type, $value, $result, $discountKind): void
+    public function testDiscountNotApplyToCartItemInProductSetsNotAllowList(DiscountType $type, string $value, float $result, string $discountKind): void
     {
-        $code = $discountKind === 'coupon' ? [] : ['code' => null];
-
-        $discount = Discount::factory(
-            [
-                $type => $value,
-                'target_type' => DiscountTargetType::PRODUCTS,
-                'target_is_allow_list' => false,
-            ] + $code,
-        )->create();
+        $discount = $this->prepareDiscount($type, $value, $discountKind, false);
 
         $this->product->sets()->sync([$this->set->getKey()]);
 
@@ -1301,5 +1111,29 @@ class DiscountApplyTest extends TestCase
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $order);
 
         $this->assertEquals(550, $discountedOrder->cart_total->getAmount()->toInt()); // 120.0 * 3 + (80 - 50) * 3
+    }
+
+    private function prepareDiscount(DiscountType $type, string $value, string $discountKind, bool $allowList): Discount
+    {
+        $code = $discountKind === 'coupon' ? [] : ['code' => null];
+
+        /** @var Discount $discount */
+        $discount = Discount::factory(
+            [
+                'percentage' => $type->is(DiscountType::PERCENTAGE) ? $value : null,
+                'target_type' => DiscountTargetType::PRODUCTS,
+                'target_is_allow_list' => $allowList,
+            ] + $code,
+        )->create();
+
+        if ($type->is(DiscountType::AMOUNT)) {
+            $amounts = array_map(fn (Currency $currency) => PriceDto::fromMoney(
+                Money::of($value, $currency->value),
+            ), Currency::cases());
+
+            $this->discountRepository::setDiscountAmounts($discount->getKey(), $amounts);
+        }
+
+        return $discount;
     }
 }
