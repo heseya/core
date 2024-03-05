@@ -27,6 +27,7 @@ use App\Models\UserPreference;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Traits\GetLocale;
+use App\Traits\UserRegisterMail;
 use Domain\Consent\Services\ConsentService;
 use Domain\User\Dtos\ChangePasswordDto;
 use Domain\User\Dtos\LoginDto;
@@ -56,6 +57,7 @@ use Spatie\LaravelData\Optional;
 final class AuthService
 {
     use GetLocale;
+    use UserRegisterMail;
 
     public function __construct(
         protected TokenServiceContract $tokenService,
@@ -399,6 +401,8 @@ final class AuthService
         $user->save();
 
         UserCreated::dispatch($user);
+
+        $this->sendRegisterMail($user, $this->getLocaleFromRequest());
 
         return $user;
     }

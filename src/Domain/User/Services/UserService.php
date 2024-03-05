@@ -17,6 +17,8 @@ use App\Models\SavedAddress;
 use App\Models\User;
 use App\Models\UserPreference;
 use App\Services\Contracts\MetadataServiceContract;
+use App\Traits\GetLocale;
+use App\Traits\UserRegisterMail;
 use Domain\User\Dtos\UserCreateDto;
 use Domain\User\Dtos\UserIndexDto;
 use Domain\User\Dtos\UserUpdateDto;
@@ -32,6 +34,9 @@ use Spatie\LaravelData\Optional;
 
 final readonly class UserService
 {
+    use GetLocale;
+    use UserRegisterMail;
+
     public function __construct(
         private MetadataServiceContract $metadataService,
     ) {}
@@ -90,6 +95,8 @@ final readonly class UserService
         $user->save();
 
         UserCreated::dispatch($user);
+
+        $this->sendRegisterMail($user, $this->getLocaleFromRequest());
 
         return $user;
     }
