@@ -17,17 +17,17 @@ use App\Events\UserCreated;
 use App\Exceptions\AuthException;
 use App\Exceptions\ClientException;
 use App\Exceptions\TFAException;
+use App\Mail\ResetPassword as ResetPasswordMail;
+use App\Mail\TFAInitialization;
 use App\Models\App;
 use App\Models\Role;
 use App\Models\Token;
 use App\Models\User;
 use App\Models\UserPreference;
-use App\Notifications\ResetPassword;
-use App\Notifications\TFAInitialization;
-use App\Notifications\TFASecurityCode;
 use App\Services\Contracts\MetadataServiceContract;
-use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\TokenServiceContract;
+use App\Traits\GetLocale;
+use App\Traits\UserRegisterMail;
 use Domain\Consent\Services\ConsentService;
 use Domain\User\Dtos\ChangePasswordDto;
 use Domain\User\Dtos\LoginDto;
@@ -46,6 +46,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use PHPGangsta_GoogleAuthenticator;
@@ -55,9 +56,12 @@ use Spatie\LaravelData\Optional;
 
 final class AuthService
 {
+    use GetLocale;
+    use UserRegisterMail;
+
     public function __construct(
         protected TokenServiceContract $tokenService,
-        protected OneTimeSecurityCodeContract $oneTimeSecurityCodeService,
+        protected OneTimeSecurityCodeService $oneTimeSecurityCodeService,
         protected ConsentService $consentService,
         protected UserLoginAttemptService $userLoginAttemptService,
         protected UserService $userService,
@@ -171,12 +175,27 @@ final class AuthService
     public function resetPassword(PasswordResetDto $dto): void
     {
         $user = User::whereEmail($dto->email)->first();
-        if ($user) {
-            $token = Password::createToken($user);
 
-            PasswordReset::dispatch($user, $dto->redirect_url);
-            $user->notify(new ResetPassword($token, $dto->redirect_url));
+        if (!($user instanceof User)) {
+            return;
         }
+
+        $email = $user->getEmailForPasswordReset();
+        $token = Password::createToken($user);
+        $param = http_build_query([
+            'token' => $token,
+            'email' => $email,
+        ]);
+
+        Mail::to($email)
+            ->locale($this->getLocaleFromRequest())
+            ->send(new ResetPasswordMail(
+                "{$dto->redirect_url}?{$param}",
+                $user->name,
+            ));
+
+        // webhook
+        PasswordReset::dispatch($user, $dto->redirect_url);
     }
 
     /**
@@ -303,7 +322,7 @@ final class AuthService
             'is_tfa_active' => true,
         ]);
 
-        return $this->oneTimeSecurityCodeService->generateRecoveryCodes();
+        return $this->oneTimeSecurityCodeService->generateRecoveryCodes($this->getLocaleFromRequest());
     }
 
     /**
@@ -318,7 +337,7 @@ final class AuthService
 
         $this->checkNoTFA($user);
 
-        return $this->oneTimeSecurityCodeService->generateRecoveryCodes();
+        return $this->oneTimeSecurityCodeService->generateRecoveryCodes($this->getLocaleFromRequest());
     }
 
     /**
@@ -382,6 +401,8 @@ final class AuthService
         $user->save();
 
         UserCreated::dispatch($user);
+
+        $this->sendRegisterMail($user, $this->getLocaleFromRequest());
 
         return $user;
     }
@@ -465,7 +486,11 @@ final class AuthService
             );
 
             TfaSecurityCodeEvent::dispatch(Auth::user(), $code);
-            Auth::user()->notify(new TFASecurityCode($code));
+            Mail::to(Auth::user()->email)
+                ->locale($this->getLocaleFromRequest())
+                ->send(new \App\Mail\TFASecurityCode(
+                    $code,
+                ));
         }
         throw new ClientException(Exceptions::CLIENT_TFA_REQUIRED, simpleLogs: true, errorArray: ['type' => Auth::user()?->tfa_type]);
     }
@@ -630,7 +655,11 @@ final class AuthService
         ]);
 
         TfaInit::dispatch($user, $code);
-        $user->notify(new TFAInitialization($code));
+        Mail::to($user->email)
+            ->locale($this->getLocaleFromRequest())
+            ->send(new TFAInitialization(
+                $code,
+            ));
 
         return [
             'type' => TFAType::EMAIL->value,

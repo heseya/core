@@ -40,7 +40,6 @@ use App\Listeners\OrderCreatedListener;
 use App\Listeners\OrderPaidListener;
 use App\Listeners\OrderUpdatedStatusListener;
 use App\Listeners\ProductSearchValueListener;
-use App\Listeners\UserCreatedListener;
 use App\Listeners\WebHookEventListener;
 use App\Listeners\WebHookFailedListener;
 use App\Models\Deposit;
@@ -87,9 +86,6 @@ class EventServiceProvider extends ServiceProvider
         ],
         ItemUpdatedQuantity::class => [
             ItemUpdatedQuantityListener::class,
-        ],
-        UserCreated::class => [
-            UserCreatedListener::class,
         ],
         OrderUpdatedPaid::class => [
             OrderPaidListener::class,
