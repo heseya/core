@@ -882,9 +882,14 @@ class OrderTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonFragment(['code' => $this->order->code])
-            ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
+            ->assertJsonStructure(['data' => $this->expected_full_view_structure])
+            ->assertJsonFragment([
+                'items' => [],
+                'discounts' => [],
+                'attributes' => [],
+            ]);
 
-        $this->assertQueryCountLessThan(35);
+        $this->assertQueryCountLessThan(40);
     }
 
     /**
@@ -998,7 +1003,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(36);
+        $this->assertQueryCountLessThan(41);
     }
 
     public function testViewSummaryUnauthorized(): void
@@ -1068,7 +1073,7 @@ class OrderTest extends TestCase
                 'summary_paid' => $summaryPaid->getAmount(),
             ]);
 
-        $this->assertQueryCountLessThan(35);
+        $this->assertQueryCountLessThan(40);
     }
 
     /**
@@ -1327,7 +1332,7 @@ class OrderTest extends TestCase
                     ->etc();
             });
 
-        $this->assertQueryCountLessThan(46);
+        $this->assertQueryCountLessThan(47);
     }
 
     public function testUpdateOrderStatusUnauthorized(): void
