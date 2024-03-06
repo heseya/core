@@ -2,7 +2,11 @@
 
 namespace Tests\Feature\Products;
 
+use App\Enums\ValidationError;
+use App\Events\ProductCreated;
+use App\Listeners\WebHookEventListener;
 use App\Models\Media;
+use App\Models\Product;
 use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
@@ -11,7 +15,10 @@ use Domain\Currency\Currency;
 use Domain\Page\Page;
 use Domain\Product\Models\ProductBannerMedia;
 use Heseya\Dto\DtoException;
+use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Queue;
+use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 use Tests\Utils\FakeDto;
 
@@ -195,6 +202,77 @@ class ProductCreateTest extends TestCase
             ]);
 
         $this->assertDatabaseCount('product_banner_responsive_media', 1);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateExistingSlug(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.add');
+
+        /** @var ProductService $productService */
+        $productService = App::make(ProductService::class);
+        $productService->create(FakeDto::productCreateDto(['slug' => 'existing-slug']));
+
+        $prices = array_map(fn (Currency $currency) => [
+            'value' => '100.00',
+            'currency' => $currency->value,
+        ], Currency::cases());
+
+        $this->actingAs($this->{$user})->json('POST', '/products', [
+            'slug' => 'existing-slug',
+            'prices_base' => $prices,
+            'public' => true,
+            'shipping_digital' => false,
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                    'description_html' => '<h1>Description</h1>',
+                    'description_short' => 'So called short description...',
+                ],
+            ],
+            'published' => [$this->lang],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::UNIQUE,
+                'message' => 'The slug has already been taken.',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateExistingSlugDeleted(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.add');
+
+        /** @var ProductService $productService */
+        $productService = App::make(ProductService::class);
+        $product = $productService->create(FakeDto::productCreateDto(['slug' => 'existing-slug']));
+
+        $product->delete();
+
+        $prices = array_map(fn (Currency $currency) => [
+            'value' => '100.00',
+            'currency' => $currency->value,
+        ], Currency::cases());
+
+        $this->actingAs($this->{$user})->json('POST', '/products', [
+            'slug' => 'existing-slug',
+            'prices_base' => $prices,
+            'public' => true,
+            'shipping_digital' => false,
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                    'description_html' => '<h1>Description</h1>',
+                    'description_short' => 'So called short description...',
+                ],
+            ],
+            'published' => [$this->lang],
+        ])->assertCreated();
     }
 
     /**
@@ -482,5 +560,50 @@ class ProductCreateTest extends TestCase
             'product_banner_media_id' => $bannerMedia->getKey(),
             'media_id' => $media->getKey(),
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateExistingSlug(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.edit');
+
+        /** @var ProductService $productService */
+        $productService = App::make(ProductService::class);
+        $productService->create(FakeDto::productCreateDto(['slug' => 'existing-slug']));
+        $product = $productService->create(FakeDto::productCreateDto());
+
+        $this->actingAs($this->{$user})->json('PATCH', '/products/id:' . $product->getKey(), [
+            'slug' => 'existing-slug',
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::UNIQUE,
+                'message' => 'The slug has already been taken.',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateExistingSlugDeleted(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.edit');
+
+        /** @var ProductService $productService */
+        $productService = App::make(ProductService::class);
+        $existingSlug = $productService->create(FakeDto::productCreateDto(['slug' => 'existing-slug']));
+        $product = $productService->create(FakeDto::productCreateDto());
+
+        $existingSlug->delete();
+
+        $this->actingAs($this->{$user})->json('PATCH', '/products/id:' . $product->getKey(), [
+            'slug' => 'existing-slug',
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'slug' => 'existing-slug',
+            ]);
     }
 }

@@ -31,7 +31,7 @@ class SaleCreateRequest extends FormRequest
             'translations.*.description_html' => ['nullable', 'string'],
             'translations.*.description' => ['nullable', 'string'],
 
-            'slug' => ['nullable', 'string', 'max:128', 'alpha_dash'],
+            'slug' => ['nullable', 'string', 'max:128', 'alpha_dash', Rule::unique('discounts', 'slug')->whereNull('deleted_at')],
 
             'percentage' => ['nullable', 'required_without:amounts', 'prohibits:amounts', 'numeric', 'string', 'gte:0', 'lte:100'],
             'amounts' => ['nullable', 'required_without:percentage', 'prohibits:percentage', new PricesEveryCurrency()],

@@ -27,7 +27,7 @@ class ProductUpdateRequest extends ProductCreateRequest
             'string',
             'max:255',
             'alpha_dash',
-            Rule::unique('products')->ignore($product->slug, 'slug'),
+            Rule::unique('products', 'slug')->whereNull('deleted_at')->ignoreModel($product),
         ];
 
         $rules['published'] = ['nullable', 'array', 'min:1'];
