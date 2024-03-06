@@ -626,6 +626,50 @@ class ItemTest extends TestCase
         });
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateExistingSku(string $user): void
+    {
+        $this->{$user}->givePermissionTo('items.add');
+
+        Item::factory()->create(['sku' => 'TES/T1']);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/items', [
+                'name' => 'Test',
+                'sku' => 'TES/T1',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::UNIQUE,
+                'message' => 'The sku has already been taken.'
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateExistingSkuDeleted(string $user): void
+    {
+        $this->{$user}->givePermissionTo('items.add');
+
+        $existingItem = Item::factory()->create(['sku' => 'TES/T1']);
+        $existingItem->delete();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/items', [
+                'name' => 'Test',
+                'sku' => 'TES/T1',
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'sku' => 'TES/T1',
+            ]);
+    }
+
     public function testUpdateUnauthorized(): void
     {
         Event::fake(ItemUpdated::class);
@@ -854,6 +898,50 @@ class ItemTest extends TestCase
                 && $payload['data_type'] === 'Item'
                 && $payload['event'] === 'ItemUpdated';
         });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateExistingSku(string $user): void
+    {
+        $this->{$user}->givePermissionTo('items.edit');
+
+        Item::factory()->create(['sku' => 'TES/T1']);
+        $item = Item::factory()->create();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', '/items/id:' . $item->getKey(), [
+                'sku' => 'TES/T1',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::UNIQUE,
+                'message' => 'The sku has already been taken.'
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateExistingSkuDeleted(string $user): void
+    {
+        $this->{$user}->givePermissionTo('items.edit');
+
+        $item = Item::factory()->create(['sku' => 'TES/T1']);
+        $existingItem = Item::factory()->create(['sku' => 'TES/T1']);
+        $existingItem->delete();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', '/items/id:' . $item->getKey(), [
+                'sku' => 'TES/T1',
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'sku' => 'TES/T1',
+            ]);
     }
 
     public function testDeleteUnauthorized(): void

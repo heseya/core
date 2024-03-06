@@ -14,6 +14,7 @@ use App\Traits\MetadataRules;
 use App\Traits\SeoRules;
 use Brick\Math\BigDecimal;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ProductCreateRequest extends FormRequest implements MetadataRequestContract, SeoRequestContract
 {
@@ -37,7 +38,7 @@ class ProductCreateRequest extends FormRequest implements MetadataRequestContrac
                 'published' => ['required', 'array', 'min:1'],
                 'published.*' => ['uuid', 'exists:languages,id'],
 
-                'slug' => ['required', 'string', 'max:255', 'unique:products', 'alpha_dash'],
+                'slug' => ['required', 'string', 'max:255', 'alpha_dash', Rule::unique('products', 'slug')->whereNull('deleted_at')],
 
                 'prices_base' => ['required', new PricesEveryCurrency()],
                 'prices_base.*' => [new Price(['value'], min: BigDecimal::zero())],

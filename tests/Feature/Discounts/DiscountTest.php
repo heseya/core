@@ -1983,6 +1983,88 @@ class DiscountTest extends TestCase
     }
 
     /**
+     * @dataProvider authWithDiscountProvider
+     */
+    public function testCreateExistingSlug(string $user, string $discountKind): void
+    {
+        $this->{$user}->givePermissionTo("{$discountKind}.add");
+
+        Discount::factory()->create(['slug' => 'existing-slug']);
+
+        $discount = [
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Coupon',
+                    'description' => 'Test coupon',
+                    'description_html' => 'html',
+                ],
+            ],
+            'slug' => 'existing-slug',
+            'percentage' => '10.0000',
+            'priority' => 1,
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => true,
+            'published' => [
+                $this->lang,
+            ],
+        ];
+
+        if ($discountKind === 'coupons') {
+            $discount['code'] = 'S43SA2';
+        }
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', "/{$discountKind}", $discount)
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::UNIQUE,
+                'message' => 'The slug has already been taken.'
+            ]);
+    }
+
+    /**
+     * @dataProvider authWithDiscountProvider
+     */
+    public function testCreateExistingSlugDeleted(string $user, string $discountKind): void
+    {
+        $this->{$user}->givePermissionTo("{$discountKind}.add");
+
+        $existing = Discount::factory()->create(['slug' => 'existing-slug']);
+        $existing->delete();
+
+        $discount = [
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Coupon',
+                    'description' => 'Test coupon',
+                    'description_html' => 'html',
+                ],
+            ],
+            'slug' => 'existing-slug',
+            'percentage' => '10.0000',
+            'priority' => 1,
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => true,
+            'published' => [
+                $this->lang,
+            ],
+        ];
+
+        if ($discountKind === 'coupons') {
+            $discount['code'] = 'S43SA2';
+        }
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', "/{$discountKind}", $discount)
+            ->assertCreated()
+            ->assertJsonFragment([
+                'slug' => 'existing-slug',
+            ]);
+    }
+
+    /**
      * @dataProvider couponOrSaleProvider
      */
     public function testUpdateUnauthorized($discountKind): void
@@ -2030,7 +2112,7 @@ class DiscountTest extends TestCase
     {
         $this->{$user}->givePermissionTo("{$discountKind}.edit");
         $code = $discountKind === 'coupons' ? [] : ['code' => null];
-        $discount = Discount::factory(['target_type' => DiscountTargetType::ORDER_VALUE] + $code)->create();
+        $discount = Discount::factory(['target_type' => DiscountTargetType::ORDER_VALUE, 'slug' => 'slug'] + $code)->create();
 
         $conditionGroup = ConditionGroup::create();
         $discountCondition = $conditionGroup->conditions()->create(
@@ -2938,6 +3020,54 @@ class DiscountTest extends TestCase
             ProductPriceType::PRICE_MIN->value => 290,
             ProductPriceType::PRICE_MAX->value => 350,
         ]);
+    }
+
+    /**
+     * @dataProvider authWithDiscountProvider
+     */
+    public function testUpdateExistingSlug(string $user, string $discountKind): void
+    {
+        $this->{$user}->givePermissionTo("{$discountKind}.edit");
+
+        Discount::factory()->create(['slug' => 'existing-slug']);
+        $code = $discountKind === 'coupons' ? ['code' => 'S43SA2'] : [];
+        $discount = Discount::factory()->create($code);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', "/{$discountKind}/id:{$discount->getKey()}", [
+                'slug' => 'existing-slug',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::UNIQUE,
+                'message' => 'The slug has already been taken.'
+            ]);
+    }
+
+    /**
+     * @dataProvider authWithDiscountProvider
+     */
+    public function testUpdateExistingSlugDeleted(string $user, string $discountKind): void
+    {
+        $this->{$user}->givePermissionTo("{$discountKind}.edit");
+
+        $existing = Discount::factory()->create(['slug' => 'existing-slug']);
+
+        $code = $discountKind === 'coupons' ? ['code' => 'S43SA2'] : ['code' => null];
+        $discount = Discount::factory()->create($code);
+
+        $existing->delete();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', "/{$discountKind}/id:{$discount->getKey()}", [
+                'slug' => 'existing-slug',
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'slug' => 'existing-slug',
+            ]);
     }
 
     /**

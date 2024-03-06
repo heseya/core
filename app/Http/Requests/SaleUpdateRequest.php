@@ -3,10 +3,12 @@
 namespace App\Http\Requests;
 
 use App\Enums\DiscountTargetType;
+use App\Models\Discount;
 use App\Rules\Price;
 use App\Rules\PricesEveryCurrency;
 use App\Rules\Translations;
 use Brick\Math\BigDecimal;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
 class SaleUpdateRequest extends SaleCreateRequest
@@ -16,6 +18,9 @@ class SaleUpdateRequest extends SaleCreateRequest
      */
     public function rules(): array
     {
+        /** @var Discount $discount */
+        $discount = $this->route('coupon', $this->route('sale'));
+
         return array_merge(parent::rules(), [
             'translations' => ['sometimes', new Translations(['name', 'description_html', 'description'])],
             'translations.*.name' => ['sometimes', 'string', 'max:255'],
@@ -30,6 +35,7 @@ class SaleUpdateRequest extends SaleCreateRequest
             'target_type' => [new Enum(DiscountTargetType::class)],
             'target_is_allow_list' => ['boolean'],
             'active' => ['boolean'],
+            'slug' => ['nullable', 'string', 'max:128', 'alpha_dash', Rule::unique('discounts', 'slug')->whereNull('deleted_at')->ignoreModel($discount)],
         ]);
     }
 }
