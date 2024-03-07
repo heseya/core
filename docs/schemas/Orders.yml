@@ -110,7 +110,7 @@ OrderProduct:
       items:
         $ref: '#/OrderProductUrl'
     product:
-      $ref: './Products.yml#/ProductWithAttributes'
+      $ref: './Products.yml#/ProductView'
 
 OrderDiscount:
   type: object
