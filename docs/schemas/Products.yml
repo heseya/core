@@ -112,9 +112,6 @@ ProductView:
   allOf:
     - $ref: '#/Product'
     - properties:
-        user_id:
-          type: string
-          format: uuid
         description_html:
           description: 'HTML formatted text to be displayed as a product description'
           type: string
@@ -167,17 +164,6 @@ ProductView:
             $ref: './MediaAttachments.yml#/MediaAttachment'
         banner:
           $ref: '#/ProductBanner'
-
-ProductWithAttributes:
-  type: object
-  allOf:
-    - $ref: '#/Product'
-    - properties:
-        attributes:
-          description: 'Array of assigned attributes'
-          type: array
-          items:
-            $ref: './Attributes.yml#/AttributeProductList'
 
 ProductIndex:
   type: object
