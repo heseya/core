@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Services\Contracts\AnalyticsServiceContract;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
@@ -147,6 +148,63 @@ class AnalyticsTest extends TestCase
                 'amount' => '1000.00',
                 'count' => 2,
                 'currency' => $order->currency,
+            ]);
+    }
+
+    public function testPaymentsUnauthorized(): void
+    {
+        $to = Carbon::today();
+        $from = $to->copy()->subDays(30);
+
+        $response = $this->getJson('/analytics/payments', [
+            'from' => $from->toDateString(),
+            'to' => $to->toDateString(),
+            'group' => 'total',
+        ]);
+
+        $response->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testPayments($auth): void
+    {
+        $this->{$auth}->givePermissionTo('analytics.payments');
+
+        $to = Carbon::today();
+        $from = $to->copy()->subDays(30);
+
+        $this->mock(AnalyticsServiceContract::class, function ($mock): void {
+            $mock->shouldReceive('getPaymentsOverPeriod')
+                ->andReturn([
+                    'total' => [
+                        [
+                            'amount' => 1000.0,
+                            'count' => 7,
+                            'currency' => Currency::DEFAULT->value,
+                        ]
+                    ],
+                ]);
+        });
+
+        $response = $this->actingAs($this->{$auth})->getJson('/analytics/payments', [
+            'from' => $from->toDateString(),
+            'to' => $to->toDateString(),
+            'group' => 'total',
+        ]);
+
+        $response->assertOk()
+            ->assertJson([
+                'data' => [
+                    'total' => [
+                        [
+                            'amount' => 1000.0,
+                            'count' => 7,
+                            'currency' => Currency::DEFAULT->value,
+                        ]
+                    ],
+                ],
             ]);
     }
 }

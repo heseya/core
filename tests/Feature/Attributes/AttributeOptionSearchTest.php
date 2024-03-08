@@ -9,12 +9,12 @@ use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductSet\ProductSet;
 use Tests\TestCase;
 
-class AttributeOptionTest extends TestCase
+class AttributeOptionSearchTest extends TestCase
 {
     /**
      * @dataProvider authProvider
      */
-    public function testSearch($user): void
+    public function testSearch(string $user): void
     {
         $this->{$user}->givePermissionTo('attributes.show');
 
@@ -44,7 +44,7 @@ class AttributeOptionTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testSearchByIds($user): void
+    public function testSearchByIds(string $user): void
     {
         $this->{$user}->givePermissionTo('attributes.show');
 
@@ -76,7 +76,7 @@ class AttributeOptionTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testSearchNoString($user): void
+    public function testSearchNoString(string $user): void
     {
         $this->{$user}->givePermissionTo('attributes.show');
 
@@ -93,7 +93,7 @@ class AttributeOptionTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testSearchByProductSetSlug($user): void
+    public function testSearchByProductSetSlug(string $user): void
     {
         $this->{$user}->givePermissionTo('attributes.show');
 
@@ -230,99 +230,5 @@ class AttributeOptionTest extends TestCase
             ->assertJsonMissing(['name' => $optionSet->name])
             ->assertJsonMissing(['name' => $optionHidden->name])
             ->assertJsonMissing(['name' => $optionHiddenChild->name]);
-    }
-
-    public static function optionsSortProvider(): array
-    {
-        return [
-            'as user text' => ['user', AttributeType::SINGLE_OPTION],
-            'as user number' => ['user', AttributeType::NUMBER],
-            'as user date' => ['user', AttributeType::DATE],
-            'as app text' => ['application', AttributeType::SINGLE_OPTION],
-            'as app number' => ['application', AttributeType::NUMBER],
-            'as app date' => ['application', AttributeType::DATE],
-        ];
-    }
-
-    /**
-     * @dataProvider optionsSortProvider
-     */
-    public function testIndexSortDefault($user, $type): void
-    {
-        $this->{$user}->givePermissionTo('attributes.show');
-
-        $attribute = Attribute::factory()->create([
-            'type' => $type,
-        ]);
-        $option1 = AttributeOption::factory()->create([
-            'name' => 'Bname',
-            'attribute_id' => $attribute->getKey(),
-            'index' => 0,
-            'order' => 1,
-            'value_number' => 12,
-            'value_date' => '2023-12-29',
-        ]);
-
-        $option2 = AttributeOption::factory()->create([
-            'name' => 'Aname',
-            'attribute_id' => $attribute->getKey(),
-            'index' => 0,
-            'order' => 0,
-            'value_number' => 10,
-            'value_date' => '2023-12-28',
-        ]);
-
-        $this
-            ->actingAs($this->{$user})
-            ->json('GET', "/attributes/id:{$attribute->getKey()}/options")
-            ->assertOk()
-            ->assertJsonCount(2, 'data')
-            ->assertJsonPath('data.0.id', $option2->getKey())
-            ->assertJsonPath('data.1.id', $option1->getKey());
-    }
-
-    /**
-     * @dataProvider optionsSortProvider
-     */
-    public function testIndexSort($user, $type): void
-    {
-        $this->{$user}->givePermissionTo('attributes.show');
-
-        $attribute = Attribute::factory()->create([
-            'type' => $type,
-        ]);
-        $option1 = AttributeOption::factory()->create([
-            'name' => 'Bname',
-            'attribute_id' => $attribute->getKey(),
-            'index' => 0,
-            'order' => 1,
-            'value_number' => 12,
-            'value_date' => '2023-12-29',
-        ]);
-
-        $option2 = AttributeOption::factory()->create([
-            'name' => 'Aname',
-            'attribute_id' => $attribute->getKey(),
-            'index' => 0,
-            'order' => 0,
-            'value_number' => 10,
-            'value_date' => '2023-12-28',
-        ]);
-
-        $this
-            ->actingAs($this->{$user})
-            ->json('GET', "/attributes/id:{$attribute->getKey()}/options", ['sort' => 'asc'])
-            ->assertOk()
-            ->assertJsonCount(2, 'data')
-            ->assertJsonPath('data.0.id', $option2->getKey())
-            ->assertJsonPath('data.1.id', $option1->getKey());
-
-        $this
-            ->actingAs($this->{$user})
-            ->json('GET', "/attributes/id:{$attribute->getKey()}/options", ['sort' => 'desc'])
-            ->assertOk()
-            ->assertJsonCount(2, 'data')
-            ->assertJsonPath('data.0.id', $option1->getKey())
-            ->assertJsonPath('data.1.id', $option2->getKey());
     }
 }

@@ -3,10 +3,13 @@
 namespace Tests\Feature;
 
 use App\Enums\ShippingType;
+use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderUpdated;
 use App\Events\OrderUpdatedShippingNumber;
+use App\Events\OrderUpdatedStatus;
 use App\Listeners\WebHookEventListener;
 use App\Models\Address;
+use App\Models\Item;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
@@ -19,6 +22,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
@@ -1442,6 +1446,241 @@ class OrderUpdateTest extends TestCase
                 'id' => $address->getKey(),
             ] + $newAddress
         );
+    }
+
+    public function testUpdateOrderStatusUnauthorized(): void
+    {
+        Event::fake([OrderUpdatedStatus::class]);
+
+        $status = Status::factory()->create();
+
+        $response = $this->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
+            'status_id' => $status->getKey(),
+        ]);
+
+        $response->assertForbidden();
+        Event::assertNotDispatched(OrderUpdatedStatus::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderStatus($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.edit.status');
+
+        Event::fake([OrderUpdatedStatus::class]);
+
+        $status = Status::factory()->create();
+
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
+                'status_id' => $status->getKey(),
+            ])
+            ->assertNoContent();
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+
+        Event::assertDispatched(OrderUpdatedStatus::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderStatusNoNotifications($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.edit.status');
+
+        Notification::fake();
+
+        $status = Status::factory([
+            'no_notifications' => true,
+        ])->create();
+
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
+                'status_id' => $status->getKey(),
+            ])
+            ->assertNoContent();
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+
+        Notification::assertNothingSent();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderStatusCancel($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.edit.status');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ItemUpdatedQuantity',
+            ],
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Event::fake([OrderUpdatedStatus::class, ItemUpdatedQuantity::class]);
+
+        $item = Item::factory()->create();
+
+        $item_product = $this->order->products[0];
+
+        $item_product->deposits()->create([
+            'item_id' => $item->getKey(),
+            'quantity' => -1 * $item_product->quantity,
+        ]);
+
+        $status = Status::factory()->create([
+            'cancel' => true,
+        ]);
+
+        $response = $this->actingAs($this->{$user})->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
+            'status_id' => $status->getKey(),
+        ]);
+
+        $response->assertNoContent();
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+
+        Event::assertDispatched(OrderUpdatedStatus::class);
+        Event::assertDispatched(ItemUpdatedQuantity::class);
+
+        Bus::fake();
+
+        $item = Item::find($item->getKey());
+        $event = new ItemUpdatedQuantity($item);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $item) {
+            $payload = $job->payload;
+
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $item->getKey()
+                && $payload['data_type'] === 'Item'
+                && $payload['event'] === 'ItemUpdatedQuantity';
+        });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderStatusWithWebHookQueue($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.edit.status');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrderUpdatedStatus',
+            ],
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Event::fake([OrderUpdatedStatus::class]);
+
+        $status = Status::factory()->create();
+
+        $response = $this->actingAs($this->{$user})->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
+            'status_id' => $status->getKey(),
+        ]);
+
+        $response->assertNoContent();
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+        Event::assertDispatched(OrderUpdatedStatus::class);
+
+        Queue::fake();
+
+        $order = Order::find($this->order->getKey());
+        $event = new OrderUpdatedStatus($order);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $order) {
+            $payload = $job->payload;
+
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $order->getKey()
+                && $payload['data_type'] === 'Order'
+                && $payload['event'] === 'OrderUpdatedStatus';
+        });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderStatusWithWebHookDispatched($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.edit.status');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrderUpdatedStatus',
+            ],
+            'model_type' => $this->{$user}::class,
+            'creator_id' => $this->{$user}->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Event::fake([OrderUpdatedStatus::class]);
+
+        $status = Status::factory()->create();
+
+        $response = $this->actingAs($this->{$user})->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
+            'status_id' => $status->getKey(),
+        ]);
+
+        $response->assertNoContent();
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+
+        Event::assertDispatched(OrderUpdatedStatus::class);
+
+        Bus::fake();
+
+        $order = Order::find($this->order->getKey());
+        $event = new OrderUpdatedStatus($order);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $order) {
+            $payload = $job->payload;
+
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $order->getKey()
+                && $payload['data_type'] === 'Order'
+                && $payload['event'] === 'OrderUpdatedStatus';
+        });
     }
 
     private function checkAddress(Address $address): void

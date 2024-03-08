@@ -1947,7 +1947,10 @@ readonly class DiscountService implements DiscountServiceContract
 
         if ($startAt !== null && $endAt !== null) {
             if ($endAt->lessThanOrEqualTo($startAt)) {
-                $startAt = $startAt->subDay();
+                $fromYesterday = $actualTime->between($startAt->copy()->subDay(), $endAt) === $conditionDto->isIsInRange();
+                $toTomorrow = $actualTime->between($startAt, $endAt->copy()->addDay()) === $conditionDto->isIsInRange();
+
+                return $conditionDto->isIsInRange() ? $fromYesterday || $toTomorrow : $fromYesterday && $toTomorrow;
             }
 
             return $actualTime->between($startAt, $endAt) === $conditionDto->isIsInRange();

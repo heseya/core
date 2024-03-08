@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Apps;
 
 use App\Enums\RoleType;
 use App\Models\App;
