@@ -9,10 +9,13 @@ use App\Models\Media;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Models\WebHook;
+use App\Services\ProductService;
+use App\Services\SchemaCrudService;
 use Domain\Currency\Currency;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\Seo\Models\SeoMetadata;
 use Illuminate\Events\CallQueuedListener;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
@@ -22,6 +25,17 @@ use Tests\Utils\FakeDto;
 
 class ProductDeleteTest extends ProductTestCase
 {
+    private SchemaCrudService $schemaCrudService;
+    private ProductService $productService;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->schemaCrudService = App::make(SchemaCrudService::class);
+        $this->productService = App::make(ProductService::class);
+    }
+
     /**
      * @dataProvider authProvider
      */
