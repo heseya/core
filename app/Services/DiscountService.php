@@ -330,9 +330,7 @@ readonly class DiscountService implements DiscountServiceContract
         }
         $cartShippingTimeAndDate = $this->shippingTimeDateService->getTimeAndDateForCart($cart, $products);
 
-        $shippingPrice = $shippingMethod !== null ? $shippingMethod->getPrice($cartValue) : 0;
-        $shippingPrice += $shippingMethodDigital !== null ? $shippingMethodDigital->getPrice($cartValue) : 0;
-        $summary = $cartValue + $shippingPrice;
+        $summary = $cartValue;
 
         $cartResource = new CartResource(
             Collection::make($cartItems),
@@ -340,8 +338,8 @@ readonly class DiscountService implements DiscountServiceContract
             Collection::make(),
             $cartValue,
             $cartValue,
-            $shippingPrice,
-            $shippingPrice,
+            0.0,
+            0.0,
             $cartShippingTimeAndDate['shipping_time'] ?? null,
             $cartShippingTimeAndDate['shipping_date'] ?? null,
             $summary,
@@ -357,7 +355,7 @@ readonly class DiscountService implements DiscountServiceContract
                 && $this->checkConditionGroups($discount, $cart, $cartResource->cart_total)
             ) {
                 $cartResource = $this->applyDiscountOnCart($discount, $cart, $cartResource);
-                $newSummary = $cartResource->cart_total + $cartResource->shipping_price;
+                $newSummary = $cartResource->cart_total;
                 $appliedDiscount = round($summary - $newSummary, 2, PHP_ROUND_HALF_UP);
 
                 if ($discount->code !== null) {
@@ -375,8 +373,11 @@ readonly class DiscountService implements DiscountServiceContract
         }
 
         $cartResource->cart_total = round($cartResource->cart_total, 2, PHP_ROUND_HALF_UP);
-        $cartResource->shipping_price = round($cartResource->shipping_price, 2, PHP_ROUND_HALF_UP);
 
+        $shippingPrice = $shippingMethod !== null ? $shippingMethod->getPrice($cartResource->cart_total) : 0;
+        $shippingPrice += $shippingMethodDigital !== null ? $shippingMethodDigital->getPrice($cartResource->cart_total) : 0;
+
+        $cartResource->shipping_price = round($shippingPrice, 2, PHP_ROUND_HALF_UP);
         $cartResource->summary = $cartResource->cart_total + $cartResource->shipping_price;
 
         return $cartResource;
