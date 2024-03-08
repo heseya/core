@@ -330,6 +330,8 @@ readonly class DiscountService implements DiscountServiceContract
         }
         $cartShippingTimeAndDate = $this->shippingTimeDateService->getTimeAndDateForCart($cart, $products);
 
+        $shippingPrice = $shippingMethod !== null ? $shippingMethod->getPrice($cartValue) : 0;
+        $shippingPrice += $shippingMethodDigital !== null ? $shippingMethodDigital->getPrice($cartValue) : 0;
         $summary = $cartValue;
 
         $cartResource = new CartResource(
@@ -338,8 +340,8 @@ readonly class DiscountService implements DiscountServiceContract
             Collection::make(),
             $cartValue,
             $cartValue,
-            0.0,
-            0.0,
+            $shippingPrice,
+            $shippingPrice,
             $cartShippingTimeAndDate['shipping_time'] ?? null,
             $cartShippingTimeAndDate['shipping_date'] ?? null,
             $summary,
