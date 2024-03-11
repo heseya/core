@@ -34,14 +34,10 @@ class ProductsAvailabilityTest extends TestCase
     // Product not have any schema or items related
     public function testDigital(): void
     {
+        /** @var Product $product */
         $product = Product::factory()->create();
 
-        $availability = $this->availabilityService->getCalculateProductAvailability($product);
-
-        $this->assertTrue($availability['available']);
-        $this->assertNull($availability['quantity']);
-        $this->assertNull($availability['shipping_time']);
-        $this->assertNull($availability['shipping_date']);
+        $this->assertAvailableQuantityNull($product);
     }
 
     // Product have only non required schemas
@@ -63,12 +59,7 @@ class ProductsAvailabilityTest extends TestCase
         $option->items()->attach($item->getKey());
         $product->schemas()->attach($schema->getKey());
 
-        $availability = $this->availabilityService->getCalculateProductAvailability($product);
-
-        $this->assertTrue($availability['available']);
-        $this->assertNull($availability['quantity']);
-        $this->assertNull($availability['shipping_time']);
-        $this->assertNull($availability['shipping_date']);
+        $this->assertAvailableQuantityNull($product);
     }
 
     // Product have schema and options but without any items
@@ -95,12 +86,7 @@ class ProductsAvailabilityTest extends TestCase
         );
         $this->assertTrue($requiredSchemas->isEmpty());
 
-        $availability = $this->availabilityService->getCalculateProductAvailability($product);
-
-        $this->assertTrue($availability['available']);
-        $this->assertNull($availability['quantity']);
-        $this->assertNull($availability['shipping_time']);
-        $this->assertNull($availability['shipping_date']);
+        $this->assertAvailableQuantityNull($product);
     }
 
     // Product have schema and options with required items but item is not available
@@ -122,12 +108,7 @@ class ProductsAvailabilityTest extends TestCase
         $product = Product::factory()->create();
         $product->schemas()->attach($schema->getKey());
 
-        $availability = $this->availabilityService->getCalculateProductAvailability($product);
-
-        $this->assertFalse($availability['available']);
-        $this->assertEquals(0, $availability['quantity']);
-        $this->assertNull($availability['shipping_time']);
-        $this->assertNull($availability['shipping_date']);
+        $this->assertUnavailable($product);
     }
 
     // Product have schema and options with required items but item is not available
@@ -154,12 +135,7 @@ class ProductsAvailabilityTest extends TestCase
         $product = Product::factory()->create();
         $product->schemas()->sync([$schema1->getKey(), $schema2->getKey()]);
 
-        $availability = $this->availabilityService->getCalculateProductAvailability($product);
-
-        $this->assertFalse($availability['available']);
-        $this->assertEquals(0, $availability['quantity']);
-        $this->assertNull($availability['shipping_time']);
-        $this->assertNull($availability['shipping_date']);
+        $this->assertUnavailable($product);
     }
 
     // 10 items in warehouse but required quantity is 4 so only 2 products should be available
@@ -195,12 +171,7 @@ class ProductsAvailabilityTest extends TestCase
         $item->deposits()->create(['quantity' => 10]);
         $product->items()->attach([$item->getKey() => ['required_quantity' => 4]]);
 
-        $availability = $this->availabilityService->getCalculateProductAvailability($product);
-
-        $this->assertFalse($availability['available']);
-        $this->assertEquals(0, $availability['quantity']);
-        $this->assertNull($availability['shipping_time']);
-        $this->assertNull($availability['shipping_date']);
+        $this->assertUnavailable($product);
     }
 
     public function testItemRequiredQuantityStep(): void
@@ -240,12 +211,7 @@ class ProductsAvailabilityTest extends TestCase
         $option->items()->sync([$item1->getKey() => ['required_quantity' => 1]]);
         $product->schemas()->sync([$schema->getKey()]);
 
-        $availability = $this->availabilityService->getCalculateProductAvailability($product);
-
-        $this->assertFalse($availability['available']);
-        $this->assertEquals(0, $availability['quantity']);
-        $this->assertNull($availability['shipping_time']);
-        $this->assertNull($availability['shipping_date']);
+        $this->assertUnavailable($product);
     }
 
     public function testRequiredSchemasAndItemsUnavailableItem(): void
@@ -267,10 +233,25 @@ class ProductsAvailabilityTest extends TestCase
         $option->items()->sync([$item1->getKey() => ['required_quantity' => 1]]);
         $product->schemas()->sync([$schema->getKey()]);
 
+        $this->assertUnavailable($product);
+    }
+
+    private function assertUnavailable(Product $product): void
+    {
         $availability = $this->availabilityService->getCalculateProductAvailability($product);
 
         $this->assertFalse($availability['available']);
         $this->assertEquals(0, $availability['quantity']);
+        $this->assertNull($availability['shipping_time']);
+        $this->assertNull($availability['shipping_date']);
+    }
+
+    private function assertAvailableQuantityNull(Product $product): void
+    {
+        $availability = $this->availabilityService->getCalculateProductAvailability($product);
+
+        $this->assertTrue($availability['available']);
+        $this->assertNull($availability['quantity']);
         $this->assertNull($availability['shipping_time']);
         $this->assertNull($availability['shipping_date']);
     }
