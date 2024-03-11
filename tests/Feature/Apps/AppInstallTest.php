@@ -22,6 +22,10 @@ class AppInstallTest extends TestCase
 
     private string $url = 'https://example.com:9000';
     private UrlServiceContract $urlService;
+    /** @var array<string, mixed> */
+    private array $fakeResponse;
+    /** @var array<string, string> */
+    private array $appData;
 
     public function setUp(): void
     {
@@ -29,6 +33,30 @@ class AppInstallTest extends TestCase
 
         $this->urlService = FacadesApp::make(UrlServiceContract::class);
         $this->url = $this->urlService->normalizeUrl($this->url);
+
+        $this->fakeResponse = [
+            'name' => 'App name',
+            'author' => 'Mr. Author',
+            'version' => '1.0.0',
+            'api_version' => '^1.4.0', // '^1.2.0' [TODO]
+            'description' => 'Cool description',
+            'microfrontend_url' => 'https://front.example.com',
+            'icon' => 'https://picsum.photos/200',
+            'licence_required' => false,
+            'required_permissions' => [],
+            'internal_permissions' => [],
+        ];
+
+        $this->appData = [
+            'url' => $this->url,
+            'microfrontend_url' => 'https://front.example.com',
+            'name' => 'App name',
+            'slug' => Str::slug('App name'),
+            'author' => 'Mr. Author',
+            'version' => '1.0.0',
+            'description' => 'Cool description',
+            'icon' => 'https://picsum.photos/200',
+        ];
     }
 
     public function testInstallUnauthorized(): void
@@ -75,15 +103,7 @@ class AppInstallTest extends TestCase
         ]);
 
         Http::fake([
-            $this->url => Http::response([
-                'name' => 'App name',
-                'author' => 'Mr. Author',
-                'version' => '1.0.0',
-                'api_version' => '^2.0.0', // [TODO]
-                'description' => 'Cool description',
-                'microfrontend_url' => 'https://front.example.com',
-                'icon' => 'https://picsum.photos/200',
-                'licence_required' => false,
+            $this->url => Http::response(array_merge($this->fakeResponse, [
                 'required_permissions' => [
                     'products.show',
                 ],
@@ -93,7 +113,7 @@ class AppInstallTest extends TestCase
                         'description' => 'Setup layouts of products page',
                     ],
                 ],
-            ]),
+            ])),
             $this->url . '/install' => Http::response([], 404),
         ]);
 
@@ -150,14 +170,7 @@ class AppInstallTest extends TestCase
         ]);
 
         Http::fake([
-            $this->url => Http::response([
-                'name' => 'App name',
-                'author' => 'Mr. Author',
-                'version' => '1.0.0',
-                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
-                'required_permissions' => [],
-                'internal_permissions' => [],
-            ]),
+            $this->url => Http::response($this->fakeResponse),
             $this->url . '/install' => Http::response($invalidResponse),
         ]);
 
@@ -184,15 +197,7 @@ class AppInstallTest extends TestCase
         $uninstallToken = Str::random(128);
 
         Http::fake([
-            $this->url => Http::response([
-                'name' => 'App name',
-                'author' => 'Mr. Author',
-                'version' => '1.0.0',
-                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
-                'description' => 'Cool description',
-                'microfrontend_url' => 'https://front.example.com',
-                'icon' => 'https://picsum.photos/200',
-                'licence_required' => false,
+            $this->url => Http::response(array_merge($this->fakeResponse, [
                 'required_permissions' => [
                     'products.show',
                 ],
@@ -219,7 +224,7 @@ class AppInstallTest extends TestCase
                         'name' => 'no_description',
                     ],
                 ],
-            ]),
+            ])),
             $this->url . '/install' => Http::response([
                 'uninstall_token' => $uninstallToken,
             ]),
@@ -236,29 +241,14 @@ class AppInstallTest extends TestCase
         $name = 'App name';
 
         $response->assertCreated()
-            ->assertJsonFragment([
-                'url' => $this->url,
-                'microfrontend_url' => 'https://front.example.com',
-                'name' => $name,
-                'slug' => Str::slug('App name'),
-                'author' => 'Mr. Author',
-                'version' => '1.0.0',
-                'description' => 'Cool description',
-                'icon' => 'https://picsum.photos/200',
+            ->assertJsonFragment(array_merge($this->appData, [
                 'metadata' => [],
-            ]);
+            ]));
 
-        $this->assertDatabaseHas('apps', [
-            'name' => $name,
-            'author' => 'Mr. Author',
-            'version' => '1.0.0',
+        $this->assertDatabaseHas('apps', array_merge($this->appData, [
             'api_version' => '^1.4.0',
-            'description' => 'Cool description',
-            'microfrontend_url' => 'https://front.example.com',
-            'icon' => 'https://picsum.photos/200',
             'uninstall_token' => $uninstallToken,
-            'url' => $this->url,
-        ]);
+        ]));
 
         $this->assertDatabaseHas('permissions', [
             'name' => 'app.' . Str::slug($name) . '.with_description_and_display_name',
@@ -329,20 +319,11 @@ class AppInstallTest extends TestCase
 
         $url = 'https://example-url.com/';
         Http::fake([
-            $url => Http::response([
-                'name' => 'App name',
-                'author' => 'Mr. Author',
-                'version' => '1.0.0',
-                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
-                'description' => 'Cool description',
-                'microfrontend_url' => 'https://front.example.com',
-                'icon' => 'https://picsum.photos/200',
-                'licence_required' => false,
+            $url => Http::response(array_merge($this->fakeResponse, [
                 'required_permissions' => [
                     'products.show',
                 ],
-                'internal_permissions' => [],
-            ]),
+            ])),
             $url . 'install' => Http::response([
                 'uninstall_token' => $uninstallToken,
             ]),
@@ -359,29 +340,16 @@ class AppInstallTest extends TestCase
         $name = 'App name';
 
         $response->assertCreated()
-            ->assertJsonFragment([
-                'url' => 'https://example-url.com',
-                'microfrontend_url' => 'https://front.example.com',
-                'name' => $name,
-                'slug' => Str::slug('App name'),
-                'author' => 'Mr. Author',
-                'version' => '1.0.0',
-                'description' => 'Cool description',
-                'icon' => 'https://picsum.photos/200',
+            ->assertJsonFragment(array_merge($this->appData, [
+                'url' => rtrim($url, '/'),
                 'metadata' => [],
-            ]);
+            ]));
 
-        $this->assertDatabaseHas('apps', [
-            'name' => $name,
-            'author' => 'Mr. Author',
-            'version' => '1.0.0',
-            'api_version' => '^1.4.0',
-            'description' => 'Cool description',
-            'microfrontend_url' => 'https://front.example.com',
-            'icon' => 'https://picsum.photos/200',
+        $this->assertDatabaseHas('apps', array_merge($this->appData, [
+            'url' => rtrim($url, '/'),
             'uninstall_token' => $uninstallToken,
-            'url' => 'https://example-url.com',
-        ]);
+            'api_version' => '^1.4.0',
+        ]));
 
         $app = App::where('name', $name)->firstOrFail();
 
@@ -404,42 +372,7 @@ class AppInstallTest extends TestCase
         $uninstallToken = Str::random(128);
 
         Http::fake([
-            $this->url => Http::response([
-                'name' => 'App name',
-                'author' => 'Mr. Author',
-                'version' => '1.0.0',
-                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
-                'description' => 'Cool description',
-                'microfrontend_url' => 'https://front.example.com',
-                'icon' => 'https://picsum.photos/200',
-                'licence_required' => false,
-                'required_permissions' => [
-                    'products.show',
-                ],
-                'internal_permissions' => [
-                    [
-                        'name' => 'with_description_and_display_name',
-                        'display_name' => 'Permission name',
-                        'description' => 'Permission description',
-                    ],
-                    [
-                        'name' => 'with_description_and_no_display_name',
-                        'display_name' => null,
-                        'description' => 'Permission description',
-                    ],
-                    [
-                        'name' => 'with_description',
-                        'description' => 'Permission description',
-                    ],
-                    [
-                        'name' => 'null_description',
-                        'description' => null,
-                    ],
-                    [
-                        'name' => 'no_description',
-                    ],
-                ],
-            ]),
+            $this->url => Http::response($this->fakeResponse),
             $this->url . '/install' => Http::response([
                 'uninstall_token' => $uninstallToken,
             ]),
@@ -449,27 +382,17 @@ class AppInstallTest extends TestCase
             ->actingAs($this->{$user})
             ->postJson('/apps', [
                 'url' => $this->url,
-                'allowed_permissions' => [
-                    'products.show',
-                ],
+                'allowed_permissions' => [],
                 'public_app_permissions' => [],
                 'metadata' => [
                     'attributeMeta' => 'attributeValue',
                 ],
             ])->assertCreated()
-            ->assertJsonFragment([
-                'url' => $this->url,
-                'microfrontend_url' => 'https://front.example.com',
-                'name' => 'App name',
-                'slug' => Str::slug('App name'),
-                'author' => 'Mr. Author',
-                'version' => '1.0.0',
-                'description' => 'Cool description',
-                'icon' => 'https://picsum.photos/200',
+            ->assertJsonFragment(array_merge($this->appData, [
                 'metadata' => [
                     'attributeMeta' => 'attributeValue',
                 ],
-            ]);
+            ]));
     }
 
     /**
@@ -486,42 +409,7 @@ class AppInstallTest extends TestCase
         $uninstallToken = Str::random(128);
 
         Http::fake([
-            $this->url => Http::response([
-                'name' => 'App name',
-                'author' => 'Mr. Author',
-                'version' => '1.0.0',
-                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
-                'description' => 'Cool description',
-                'microfrontend_url' => 'https://front.example.com',
-                'icon' => 'https://picsum.photos/200',
-                'licence_required' => false,
-                'required_permissions' => [
-                    'products.show',
-                ],
-                'internal_permissions' => [
-                    [
-                        'name' => 'with_description_and_display_name',
-                        'display_name' => 'Permission name',
-                        'description' => 'Permission description',
-                    ],
-                    [
-                        'name' => 'with_description_and_no_display_name',
-                        'display_name' => null,
-                        'description' => 'Permission description',
-                    ],
-                    [
-                        'name' => 'with_description',
-                        'description' => 'Permission description',
-                    ],
-                    [
-                        'name' => 'null_description',
-                        'description' => null,
-                    ],
-                    [
-                        'name' => 'no_description',
-                    ],
-                ],
-            ]),
+            $this->url => Http::response($this->fakeResponse),
             $this->url . '/install' => Http::response([
                 'uninstall_token' => $uninstallToken,
             ]),
@@ -531,27 +419,17 @@ class AppInstallTest extends TestCase
             ->actingAs($this->{$user})
             ->postJson('/apps', [
                 'url' => $this->url,
-                'allowed_permissions' => [
-                    'products.show',
-                ],
+                'allowed_permissions' => [],
                 'public_app_permissions' => [],
                 'metadata_private' => [
                     'attributeMetaPriv' => 'attributeValue',
                 ],
             ])->assertCreated()
-            ->assertJsonFragment([
-                'url' => $this->url,
-                'microfrontend_url' => 'https://front.example.com',
-                'name' => 'App name',
-                'slug' => Str::slug('App name'),
-                'author' => 'Mr. Author',
-                'version' => '1.0.0',
-                'description' => 'Cool description',
-                'icon' => 'https://picsum.photos/200',
+            ->assertJsonFragment(array_merge($this->appData, [
                 'metadata_private' => [
                     'attributeMetaPriv' => 'attributeValue',
                 ],
-            ]);
+            ]));
     }
 
     /**
@@ -568,15 +446,7 @@ class AppInstallTest extends TestCase
         $uninstallToken = Str::random(128);
 
         Http::fake([
-            $this->url => Http::response([
-                'name' => 'App name',
-                'author' => 'Mr. Author',
-                'version' => '1.0.0',
-                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
-                'description' => 'Cool description',
-                'microfrontend_url' => 'https://front.example.com',
-                'icon' => 'https://picsum.photos/200',
-                'licence_required' => false,
+            $this->url => Http::response(array_merge($this->fakeResponse, [
                 'required_permissions' => [
                     'products.show',
                 ],
@@ -589,7 +459,7 @@ class AppInstallTest extends TestCase
                         'description' => 'Setup layouts of products page',
                     ],
                 ],
-            ]),
+            ])),
             $this->url . '/install' => Http::response([
                 'uninstall_token' => $uninstallToken,
             ]),
@@ -605,28 +475,14 @@ class AppInstallTest extends TestCase
         ]);
 
         $response->assertCreated()
-            ->assertJsonFragment([
-                'url' => $this->url,
-                'microfrontend_url' => 'https://front.example.com',
-                'name' => 'App name',
-                'slug' => Str::slug('App name'),
-                'author' => 'Mr. Author',
-                'version' => '1.0.0',
-                'description' => 'Cool description',
-                'icon' => 'https://picsum.photos/200',
+            ->assertJsonFragment(array_merge($this->appData, [
                 'metadata' => [],
-            ]);
+            ]));
 
-        $this->assertDatabaseHas('apps', [
-            'name' => 'App name',
-            'author' => 'Mr. Author',
-            'version' => '1.0.0',
-            'api_version' => '^1.4.0',
-            'description' => 'Cool description',
-            'microfrontend_url' => 'https://front.example.com',
-            'icon' => 'https://picsum.photos/200',
+        $this->assertDatabaseHas('apps', array_merge($this->appData, [
             'uninstall_token' => $uninstallToken,
-        ]);
+            'api_version' => '^1.4.0',
+        ]));
 
         $app = App::where('name', 'App name')->firstOrFail();
 
@@ -647,11 +503,7 @@ class AppInstallTest extends TestCase
         $uninstallToken = Str::random(128);
 
         Http::fake([
-            $this->url => Http::response([
-                'name' => 'App name',
-                'author' => 'Mr. Author',
-                'version' => '1.0.0',
-                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
+            $this->url => Http::response(array_merge($this->fakeResponse, [
                 'required_permissions' => [],
                 'internal_permissions' => [
                     [
@@ -671,7 +523,7 @@ class AppInstallTest extends TestCase
                         'unauthenticated' => false,
                     ],
                 ],
-            ]),
+            ])),
             $this->url . '/install' => Http::response([
                 'uninstall_token' => $uninstallToken,
             ]),
@@ -745,20 +597,12 @@ class AppInstallTest extends TestCase
         $uninstallToken = Str::random(128);
 
         Http::fake([
-            $this->url => Http::response([
-                'name' => 'App name',
-                'author' => 'Mr. Author',
-                'version' => '1.0.0',
-                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
-                'description' => 'Cool description',
-                'microfrontend_url' => 'https://front.example.com',
-                'icon' => 'https://picsum.photos/200',
-                'licence_required' => false,
+            $this->url => Http::response(array_merge($this->fakeResponse, [
                 'required_permissions' => [
                     'products.show',
                 ],
                 'internal_permissions' => [],
-            ]),
+            ])),
             $this->url . '/install' => Http::response([
                 'uninstall_token' => $uninstallToken,
             ]),
@@ -836,15 +680,7 @@ class AppInstallTest extends TestCase
         ]);
 
         Http::fake([
-            $this->url => Http::response([
-                'name' => 'App name',
-                'author' => 'Mr. Author',
-                'version' => '1.0.0',
-                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
-                'description' => 'Cool description',
-                'microfrontend_url' => 'https://front.example.com',
-                'icon' => 'https://picsum.photos/200',
-                'licence_required' => false,
+            $this->url => Http::response(array_merge($this->fakeResponse, [
                 'required_permissions' => [
                     'nonexistent.permission',
                 ],
@@ -854,7 +690,7 @@ class AppInstallTest extends TestCase
                         'description' => 'Setup layouts of products page',
                     ],
                 ],
-            ]),
+            ])),
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/apps', [
@@ -880,15 +716,7 @@ class AppInstallTest extends TestCase
         ]);
 
         Http::fake([
-            $this->url => Http::response([
-                'name' => 'App name',
-                'author' => 'Mr. Author',
-                'version' => '1.0.0',
-                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
-                'description' => 'Cool description',
-                'microfrontend_url' => 'https://front.example.com',
-                'icon' => 'https://picsum.photos/200',
-                'licence_required' => false,
+            $this->url => Http::response(array_merge($this->fakeResponse, [
                 'required_permissions' => [
                     'products.show',
                 ],
@@ -898,7 +726,7 @@ class AppInstallTest extends TestCase
                         'description' => 'Setup layouts of products page',
                     ],
                 ],
-            ]),
+            ])),
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/apps', [
@@ -924,15 +752,7 @@ class AppInstallTest extends TestCase
         ]);
 
         Http::fake([
-            $this->url => Http::response([
-                'name' => 'App name',
-                'author' => 'Mr. Author',
-                'version' => '1.0.0',
-                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
-                'description' => 'Cool description',
-                'microfrontend_url' => 'https://front.example.com',
-                'icon' => 'https://picsum.photos/200',
-                'licence_required' => false,
+            $this->url => Http::response(array_merge($this->fakeResponse, [
                 'required_permissions' => [
                     'products.show',
                 ],
@@ -945,7 +765,7 @@ class AppInstallTest extends TestCase
                         'description' => 'Setup layouts of products page',
                     ],
                 ],
-            ]),
+            ])),
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/apps', [
@@ -1007,15 +827,7 @@ class AppInstallTest extends TestCase
         Http::retry(0);
 
         Http::fake([
-            $this->url => Http::response([
-                'name' => 'App name',
-                'author' => 'Mr. Author',
-                'version' => '1.0.0',
-                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
-                'description' => 'Cool description',
-                'microfrontend_url' => 'https://front.example.com',
-                'icon' => 'https://picsum.photos/200',
-                'licence_required' => false,
+            $this->url => Http::response(array_merge($this->fakeResponse, [
                 'required_permissions' => [
                     'products.show',
                 ],
@@ -1025,7 +837,7 @@ class AppInstallTest extends TestCase
                         'description' => 'Setup layouts of products page',
                     ],
                 ],
-            ]),
+            ])),
             $this->url . '/install' => new ConnectionException('Test', 7),
         ]);
 
@@ -1058,18 +870,7 @@ class AppInstallTest extends TestCase
         ]);
 
         Http::fake([
-            $this->url => Http::response([
-                'name' => 'App name',
-                'author' => 'Mr. Author',
-                'version' => '1.0.0',
-                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
-                'description' => 'Cool description',
-                'microfrontend_url' => 'https://front.example.com',
-                'icon' => 'https://picsum.photos/200',
-                'licence_required' => false,
-                'required_permissions' => [],
-                'internal_permissions' => [],
-            ]),
+            $this->url => Http::response($this->fakeResponse),
             $this->url . '/install' => Http::response([
                 'uninstall_token' => Str::random(128),
             ]),
@@ -1115,15 +916,8 @@ class AppInstallTest extends TestCase
         $this->actingAs($this->{$user})->json('delete', '/apps/id:' . $app->getKey(), ['force' => true]);
 
         Http::fake([
-            $this->url => Http::response([
+            $this->url => Http::response(array_merge($this->fakeResponse, [
                 'name' => 'test',
-                'author' => 'Mr. Author',
-                'version' => '1.0.0',
-                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
-                'description' => 'Cool description',
-                'microfrontend_url' => 'https://front.example.com',
-                'icon' => 'https://picsum.photos/200',
-                'licence_required' => false,
                 'required_permissions' => [
                     'products.show',
                 ],
@@ -1134,7 +928,7 @@ class AppInstallTest extends TestCase
                         'description' => 'test',
                     ],
                 ],
-            ]),
+            ])),
             $this->url . '/install' => Http::response([
                 'uninstall_token' => $uninstallToken,
             ]),
@@ -1151,27 +945,17 @@ class AppInstallTest extends TestCase
         $name = 'test';
 
         $response->assertCreated()
-            ->assertJsonFragment([
-                'url' => $this->url,
-                'microfrontend_url' => 'https://front.example.com',
+            ->assertJsonFragment(array_merge($this->appData, [
                 'name' => $name,
                 'slug' => Str::slug($name),
-                'author' => 'Mr. Author',
-                'version' => '1.0.0',
-                'description' => 'Cool description',
-                'icon' => 'https://picsum.photos/200',
-            ]);
+            ]));
 
-        $this->assertDatabaseHas('apps', [
+        $this->assertDatabaseHas('apps', array_merge($this->appData, [
             'name' => $name,
-            'author' => 'Mr. Author',
-            'version' => '1.0.0',
+            'slug' => Str::slug($name),
             'api_version' => '^1.4.0',
-            'description' => 'Cool description',
-            'microfrontend_url' => 'https://front.example.com',
-            'icon' => 'https://picsum.photos/200',
             'uninstall_token' => $uninstallToken,
-        ]);
+        ]));
 
         $this->assertDatabaseHas('permissions', [
             'name' => 'app.' . Str::slug($name) . '.test',
@@ -1238,18 +1022,7 @@ class AppInstallTest extends TestCase
         ]);
 
         Http::fake([
-            $this->url => Http::response([
-                'name' => 'App name',
-                'author' => 'Mr. Author',
-                'version' => '1.0.0',
-                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
-                'description' => 'Cool description',
-                'microfrontend_url' => 'https://front.example.com',
-                'icon' => 'https://picsum.photos/200',
-                'licence_required' => false,
-                'required_permissions' => [],
-                'internal_permissions' => [],
-            ]),
+            $this->url => Http::response($this->fakeResponse),
             $this->url . '/install' => Http::response([
                 'uninstall_token' => Str::random(256),
             ]),
