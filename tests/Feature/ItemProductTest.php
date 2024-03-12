@@ -4,33 +4,59 @@ namespace Tests\Feature;
 
 use App\Models\Item;
 use App\Models\Product;
+use App\Services\ProductService;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Domain\Currency\Currency;
+use Heseya\Dto\DtoException;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class ItemProductTest extends TestCase
 {
     private Product $product;
     private Collection $items;
+    private array $prices;
 
+    /**
+     * @throws RoundingNecessaryException
+     * @throws DtoException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
     public function setUp(): void
     {
         parent::setUp();
         Product::query()->delete();
         Item::query()->delete();
-        $this->product = Product::factory()->create();
+
+        /** @var ProductService $productService */
+        $productService = App::make(ProductService::class);
+        $this->product = $productService->create(FakeDto::productCreateDto());
+
         $this->items = Item::factory()->count(3)->create();
+        $this->prices = array_map(fn (Currency $currency) => [
+            'value' => '10.00',
+            'currency' => $currency->value,
+        ], Currency::cases());
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testStoreProductWithItems($user): void
+    public function testStoreProductWithItems(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
-        $response = $this->actingAs($this->{$user})->postJson('/products', [
-            'name' => 'test',
+        $response = $this->actingAs($this->{$user})->json('POST', '/products', [
+            'translations' => [
+                $this->lang => ['name' => 'Test'],
+            ],
+            'published' => [$this->lang],
             'slug' => 'test',
-            'price' => 50,
+            'prices_base' => $this->prices,
             'public' => true,
             'shipping_digital' => false,
             'items' => [
@@ -52,7 +78,7 @@ class ItemProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductItemsCannotSetRequiredQuantityBelowZero($user): void
+    public function testProductItemsCannotSetRequiredQuantityBelowZero(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
         $this
@@ -60,7 +86,7 @@ class ItemProductTest extends TestCase
             ->postJson('/products', [
                 'name' => 'test',
                 'slug' => 'test',
-                'price' => 50,
+                'prices_base' => $this->prices,
                 'public' => true,
                 'shipping_digital' => false,
                 'items' => [
@@ -70,19 +96,19 @@ class ItemProductTest extends TestCase
                     ],
                 ],
             ])
-            ->assertStatus(422);
+            ->assertUnprocessable();
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateProductWithItems($user): void
+    public function testUpdateProductWithItems(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
         $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
-            'price' => 50,
+            'prices_base' => $this->prices,
             'public' => true,
             'items' => [
                 [
@@ -103,13 +129,13 @@ class ItemProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateProductWithoutItems($user): void
+    public function testUpdateProductWithoutItems(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
         $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
-            'price' => 50,
+            'prices_base' => $this->prices,
             'public' => true,
         ]);
         $response
@@ -120,13 +146,13 @@ class ItemProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateProductWithEmptyItems($user): void
+    public function testUpdateProductWithEmptyItems(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
         $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
-            'price' => 50,
+            'prices_base' => $this->prices,
             'public' => true,
             'items' => [],
         ]);
@@ -139,7 +165,7 @@ class ItemProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateProductWithItemsOverride($user): void
+    public function testUpdateProductWithItemsOverride(string $user): void
     {
         $this->product->items()->attach($this->items->get(0)->getKey(), ['required_quantity' => 5]);
         $this->product->items()->attach($this->items->get(1)->getKey(), ['required_quantity' => 15]);
@@ -148,7 +174,7 @@ class ItemProductTest extends TestCase
         $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
-            'price' => 50,
+            'prices_base' => $this->prices,
             'public' => true,
             'items' => [
                 [
@@ -158,7 +184,7 @@ class ItemProductTest extends TestCase
             ],
         ]);
 
-        $response
+        $response->assertValid()
             ->assertOk()
             ->assertJsonCount(1, 'data.items');
 
@@ -174,7 +200,7 @@ class ItemProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateProductWithClearItems($user): void
+    public function testUpdateProductWithClearItems(string $user): void
     {
         $this->product->items()->attach($this->items->get(0)->getKey(), ['required_quantity' => 5]);
         $this->product->items()->attach($this->items->get(1)->getKey(), ['required_quantity' => 15]);
@@ -183,7 +209,7 @@ class ItemProductTest extends TestCase
         $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
-            'price' => 50,
+            'prices_base' => $this->prices,
             'public' => true,
             'items' => [],
         ]);
@@ -209,7 +235,7 @@ class ItemProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateProductWithoutItemsOverride($user): void
+    public function testUpdateProductWithoutItemsOverride(string $user): void
     {
         $this->product->items()->attach($this->items->get(0)->getKey(), ['required_quantity' => 5]);
         $this->product->items()->attach($this->items->get(1)->getKey(), ['required_quantity' => 15]);
@@ -219,7 +245,7 @@ class ItemProductTest extends TestCase
         $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
-            'price' => 50,
+            'prices_base' => $this->prices,
             'public' => true,
         ]);
 
@@ -244,7 +270,7 @@ class ItemProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductItemsHasRequiredQuantityInsteadOfQuantity($user): void
+    public function testProductItemsHasRequiredQuantityInsteadOfQuantity(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
 
@@ -254,11 +280,12 @@ class ItemProductTest extends TestCase
         $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
-            'price' => 50,
+            'prices_base' => $this->prices,
             'public' => true,
         ]);
 
         $response
+            ->assertOk()
             ->assertJsonFragment(['required_quantity' => 5])
             ->assertJsonFragment(['required_quantity' => 15])
             ->assertJsonMissing(['quantity']);

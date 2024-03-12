@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
+use App\Exceptions\PublishingException;
 use App\Models\Address;
 use App\Models\Item;
 use App\Models\Option;
@@ -12,10 +13,22 @@ use App\Models\Product;
 use App\Models\Schema;
 use App\Models\Status;
 use App\Services\Contracts\AvailabilityServiceContract;
+use App\Services\ProductService;
+use App\Services\SchemaCrudService;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
+use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
+use Domain\SalesChannel\Models\SalesChannel;
+use Heseya\Dto\DtoException;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 use Tests\Traits\CreateShippingMethod;
+use Tests\Utils\FakeDto;
 
 class OrderDepositTest extends TestCase
 {
@@ -30,6 +43,18 @@ class OrderDepositTest extends TestCase
     private array $request;
     private array $addressExpected;
 
+    private ProductService $productService;
+    private Currency $currency;
+
+    private SchemaCrudService $schemaCrudService;
+
+    /**
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws DtoException
+     * @throws PublishingException
+     */
     public function setUp(): void
     {
         parent::setUp();
@@ -38,27 +63,37 @@ class OrderDepositTest extends TestCase
 
         Event::fake([OrderCreated::class, OrderUpdatedStatus::class]);
 
-        $this->product = Product::factory()->create([
-            'price' => 100,
+        $this->productService = App::make(ProductService::class);
+        $this->schemaCrudService  = App::make(SchemaCrudService::class);
+
+        $this->currency = Currency::DEFAULT;
+        $this->product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-        ]);
-        $this->schema = Schema::factory()->create([
+            'prices_base' => [PriceDto::from(Money::of(100.00, $this->currency->value))],
+        ]));
+
+        $this->schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 'select',
-            'price' => 0,
+            'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
             'hidden' => false,
             'required' => true,
-        ]);
+            'options' => [
+                [
+                    'name' => 'XL',
+                    'prices' =>  [PriceDto::from(Money::of(0, $this->currency->value))],
+                ],
+            ]
+        ]));
         $this->product->schemas()->sync([$this->schema->getKey()]);
-        $this->option = $this->schema->options()->create([
-            'name' => 'XL',
-            'price' => 0,
-        ]);
+        $this->option = $this->schema->options->where('name', 'XL')->first();
         $this->item = Item::factory()->create();
         $this->option->items()->sync([$this->item->getKey()]);
         $this->address = Address::factory()->create();
         $this->addressExpected = $this->address->only(['name', 'phone', 'address', 'zip', 'city', 'country', 'id']);
 
         $this->request = [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_place' => $this->address->toArray(),
@@ -152,16 +187,16 @@ class OrderDepositTest extends TestCase
         $orderProduct = $order->products()->create([
             'product_id' => $this->product->getKey(),
             'quantity' => 2,
-            'price_initial' => 100,
-            'price' => 100,
+            'price_initial' => Money::of(100, $this->currency->value),
+            'price' => Money::of(100, $this->currency->value),
             'name' => $this->product->name,
         ]);
         $orderProduct->schemas()->create([
             'order_product_id' => $orderProduct->getKey(),
             'name' => 'Size',
             'value' => 'XL',
-            'price_initial' => 0,
-            'price' => 0,
+            'price_initial' => Money::zero($this->currency->value),
+            'price' => Money::zero($this->currency->value),
         ]);
         $deposit = $orderProduct->deposits()->create([
             'order_product_id' => $orderProduct->getKey(),
@@ -232,16 +267,22 @@ class OrderDepositTest extends TestCase
      */
     public function testCantCreateOrderWithoutMultipleItems($user): void
     {
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 'select',
-            'price' => 0,
+            'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
             'hidden' => false,
-        ]);
+            'options' => [
+                [
+                    'name' => 'XL',
+                    'prices' =>  [PriceDto::from(Money::of(0, $this->currency->value))],
+                ],
+            ]
+        ]));
+
         $this->product->schemas()->sync([$schema->getKey()]);
-        $option = $schema->options()->create([
-            'name' => 'XL',
-            'price' => 0,
-        ]);
+
+        $option = $schema->options->where('name', 'XL')->first();
+
         $option->items()->sync([$this->item->getKey()]);
 
         $this->item->deposits()->create([
@@ -339,6 +380,11 @@ class OrderDepositTest extends TestCase
      * now this product is available within 3 days shipping time
      *
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testCreateOrdersAndCheckDeposits($user): void
     {
@@ -357,10 +403,10 @@ class OrderDepositTest extends TestCase
             'unlimited_stock_shipping_time' => 10,
         ]);
 
-        $product = Product::factory()->create([
-            'price' => 100,
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-        ]);
+            'prices_base' => [PriceDto::from(Money::of(100.00, $this->currency->value))],
+        ]));
 
         $product->items()->attach($this->item->getKey(), ['required_quantity' => 1]);
 
@@ -373,6 +419,8 @@ class OrderDepositTest extends TestCase
 
         // first order 20 product
         $request = [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -387,6 +435,8 @@ class OrderDepositTest extends TestCase
         ];
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -422,7 +472,7 @@ class OrderDepositTest extends TestCase
         ]);
 
         /** @var AvailabilityServiceContract $service */
-        $service = app(AvailabilityServiceContract::class);
+        $service = App::make(AvailabilityServiceContract::class);
         $service->calculateItemAvailability($this->item);
 
         $this->assertDatabaseHas('products', [
@@ -434,6 +484,8 @@ class OrderDepositTest extends TestCase
 
         // second order 3 product
         $request = [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'test1@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -448,6 +500,8 @@ class OrderDepositTest extends TestCase
         ];
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -489,6 +543,8 @@ class OrderDepositTest extends TestCase
 
         // third order 1 product
         $request = [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'test1@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -503,6 +559,8 @@ class OrderDepositTest extends TestCase
         ];
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [
@@ -564,16 +622,16 @@ class OrderDepositTest extends TestCase
         $orderProduct = $order->products()->create([
             'product_id' => $this->product->getKey(),
             'quantity' => 2,
-            'price_initial' => 100,
-            'price' => 100,
+            'price_initial' => Money::of(100, $this->currency->value),
+            'price' => Money::of(100, $this->currency->value),
             'name' => $this->product->name,
         ]);
         $orderProduct->schemas()->create([
             'order_product_id' => $orderProduct->getKey(),
             'name' => 'Size',
             'value' => 'XL',
-            'price_initial' => 0,
-            'price' => 0,
+            'price_initial' => Money::zero($this->currency->value),
+            'price' => Money::zero($this->currency->value),
         ]);
         $deposit = $orderProduct->deposits()->create([
             'order_product_id' => $orderProduct->getKey(),
@@ -619,6 +677,11 @@ class OrderDepositTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testCreateOrdersWithPreOrderItemAndCheckDeposits($user): void
     {
@@ -631,10 +694,10 @@ class OrderDepositTest extends TestCase
             'unlimited_stock_shipping_date' => $date,
         ]);
 
-        $product = Product::factory()->create([
-            'price' => 100,
+        $product = $this->productService->create(FakeDto::productCreateDto([
             'public' => true,
-        ]);
+            'prices_base' => [PriceDto::from(Money::of(100.00, $this->currency->value))],
+        ]));
 
         $product->items()->attach($this->item->getKey(), ['required_quantity' => 1]);
 
@@ -644,6 +707,8 @@ class OrderDepositTest extends TestCase
         ]);
 
         $request = [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
@@ -658,6 +723,8 @@ class OrderDepositTest extends TestCase
         ];
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
                 [

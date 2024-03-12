@@ -3,10 +3,14 @@
   <coverage/>
   <testsuites>
     <testsuite name="Unit">
+      <directory suffix="Test.php">./src/Domain</directory>
       <directory suffix="Test.php">./tests/Unit</directory>
     </testsuite>
     <testsuite name="Feature">
       <directory suffix="Test.php">./tests/Feature</directory>
+    </testsuite>
+    <testsuite name="Utils">
+      <directory suffix="Test.php">./app/Utils/Tests</directory>
     </testsuite>
   </testsuites>
   <php>

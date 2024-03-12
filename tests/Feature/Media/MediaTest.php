@@ -4,11 +4,12 @@ namespace Tests\Feature\Media;
 
 use App\Enums\MediaAttachmentType;
 use App\Enums\MediaType;
-use App\Models\Banner;
-use App\Models\BannerMedia;
 use App\Models\Media;
 use App\Models\Order;
 use App\Models\Product;
+use Domain\Banner\Models\Banner;
+use Domain\Banner\Models\BannerMedia;
+use Domain\Page\Page;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
@@ -39,21 +40,21 @@ class MediaTest extends TestCase
             'as user ogg' => ['user', '.ogg', 'video/ogg'],
             'as user mov' => ['user', '.mov', 'video/quicktime'],
             'as user wmv' => ['user', '.wmv', 'video/x-ms-wmv'],
+            'as user avi' => ['user', '.avi', 'video/x-msvideo'],
             'as app mp4' => ['application', '.mp4', 'video/mp4'],
             'as app webm' => ['application', '.webm', 'video/webm'],
             'as app ogv' => ['application', '.ogv', 'video/ogg'],
             'as app ogg' => ['application', '.ogg', 'video/ogg'],
             'as app mov' => ['application', '.mov', 'video/quicktime'],
             'as app wmv' => ['application', '.wmv', 'video/x-ms-wmv'],
+            'as app avi' => ['application', '.avi', 'video/x-msvideo'],
         ];
     }
 
     public static function invalidVideoProvider(): array
     {
         return [
-            'as user avi' => ['user', '.avi', 'video/x-msvideo'],
             'as user ogg audio' => ['user', '.ogg', 'audio/ogg'],
-            'as app avi' => ['application', '.avi', 'video/x-msvideo'],
             'as app ogg audio' => ['application', '.ogg', 'audio/ogg'],
         ];
     }
@@ -77,7 +78,7 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexLegacyPermissionPagesAdd($user): void
+    public function testIndexLegacyPermissionPagesAdd(string $user): void
     {
         $this->{$user}->givePermissionTo('pages.add');
 
@@ -88,7 +89,7 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndex($user): void
+    public function testIndex(string $user): void
     {
         $this->{$user}->givePermissionTo('media.show');
 
@@ -206,7 +207,7 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexByIds($user): void
+    public function testIndexByIds(string $user): void
     {
         $this->{$user}->givePermissionTo('media.show');
 
@@ -231,7 +232,7 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexFilteredByType($user): void
+    public function testIndexFilteredByType(string $user): void
     {
         $this->{$user}->givePermissionTo('media.show');
 
@@ -253,7 +254,7 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexFilteredByRelations($user): void
+    public function testIndexFilteredByRelations(string $user): void
     {
         $this->{$user}->givePermissionTo('media.show');
 
@@ -291,7 +292,7 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexFilteredByNoRelations($user): void
+    public function testIndexFilteredByNoRelations(string $user): void
     {
         $this->{$user}->givePermissionTo('media.show');
 
@@ -320,7 +321,7 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpload($user): void
+    public function testUpload(string $user): void
     {
         $this->{$user}->givePermissionTo('media.add');
 
@@ -357,7 +358,7 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUploadWithSlug($user): void
+    public function testUploadWithSlug(string $user): void
     {
         $this->{$user}->givePermissionTo('media.add');
 
@@ -389,7 +390,7 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUploadWithExistingSlug($user): void
+    public function testUploadWithExistingSlug(string $user): void
     {
         $this->{$user}->givePermissionTo('media.add');
 
@@ -410,7 +411,7 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUploadPdf($user): void
+    public function testUploadPdf(string $user): void
     {
         $this->{$user}->givePermissionTo('media.add');
 
@@ -440,7 +441,7 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUploadLegacyPermissionPagesAdd($user): void
+    public function testUploadLegacyPermissionPagesAdd(string $user): void
     {
         $this->{$user}->givePermissionTo('pages.add');
 
@@ -453,7 +454,7 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUploadLegacyPermissionPagesEdit($user): void
+    public function testUploadLegacyPermissionPagesEdit(string $user): void
     {
         $this->{$user}->givePermissionTo('pages.edit');
 
@@ -466,7 +467,7 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUploadLegacyPermissionProductsAdd($user): void
+    public function testUploadLegacyPermissionProductsAdd(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
@@ -479,7 +480,7 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUploadLegacyPermissionProductsEdit($user): void
+    public function testUploadLegacyPermissionProductsEdit(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
 
@@ -514,9 +515,11 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDelete($user): void
+    public function testDelete(string $user): void
     {
         $this->{$user}->givePermissionTo('media.remove');
+
+        Http::fake(['*' => Http::response([])]);
 
         $this
             ->actingAs($this->{$user})
@@ -529,9 +532,11 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteFromProduct($user): void
+    public function testDeleteFromProduct(string $user): void
     {
         $this->{$user}->givePermissionTo('media.remove');
+
+        Http::fake(['*' => Http::response([])]);
 
         $product = Product::factory()->create();
         $media = Media::factory()->create([
@@ -550,9 +555,11 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteFromProductSilverboxMedia($user): void
+    public function testDeleteFromProductSilverboxMedia(string $user): void
     {
         $this->{$user}->givePermissionTo('media.remove');
+
+        Http::fake(['*' => Http::response([])]);
 
         $product = Product::factory()->create();
         $media = Media::factory()->create([
@@ -620,7 +627,7 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUploadVideoLegacyPermissionsPagesAdd($user): void
+    public function testUploadVideoLegacyPermissionsPagesAdd(string $user): void
     {
         $this->{$user}->givePermissionTo('pages.add');
 
@@ -633,7 +640,7 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUploadVideoLegacyPermissionsPagesEdit($user): void
+    public function testUploadVideoLegacyPermissionsPagesEdit(string $user): void
     {
         $this->{$user}->givePermissionTo('pages.edit');
 
@@ -646,7 +653,7 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUploadVideoLegacyPermissionsProductsAdd($user): void
+    public function testUploadVideoLegacyPermissionsProductsAdd(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
@@ -659,7 +666,7 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUploadVideoLegacyPermissionsProductsEdit($user): void
+    public function testUploadVideoLegacyPermissionsProductsEdit(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
 
@@ -672,7 +679,7 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUploadWithError($user): void
+    public function testUploadWithError(string $user): void
     {
         $this->{$user}->givePermissionTo('media.add');
         $file = UploadedFile::fake()->image('video.mp4');
@@ -688,36 +695,38 @@ class MediaTest extends TestCase
             ->assertStatus(500);
     }
 
-    //    // Uncomment when Pages and media will be related
-    //
-    //    public function testDeleteFromPagUnauthorizede(): void
-    //    {
-    //        $this->user->givePermissionTo('pages.add');
-    //
-    //        $page = Page::factory()->create();
-    //        $media = Media::factory()->create([
-    //            'type' => Media::PHOTO,
-    //            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
-    //        ]);
-    //        $page->media()->sync($media);
-    //
-    //        $this->actingAs($this->user)->deleteJson('/media/id:' . $media->getKey())
-    //            ->assertForbidden();
-    //    }
-    //
-    //    public function testDeleteFromPage(): void
-    //    {
-    //        $this->user->givePermissionTo('pages.edit');
-    //
-    //        $page = Page::factory()->create();
-    //        $media = Media::factory()->create([
-    //            'type' => Media::PHOTO,
-    //            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
-    //        ]);
-    //        $page->media()->sync($media);
-    //
-    //        $this->actingAs($this->user)->deleteJson('/media/id:' . $media->getKey())
-    //            ->assertNoContent();
-    //        $this->assertDatabaseMissing('media', ['id' => $media->getKey()]);
-    //    }
+    public function testDeleteFromPageUnauthorizede(): void
+    {
+        $this->markTestSkipped('Pages are currently unrelated to Media');
+
+        $this->user->givePermissionTo('pages.add');
+
+        $page = Page::factory()->create();
+        $media = Media::factory()->create([
+            'type' => MediaType::PHOTO,
+            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+        ]);
+        $page->media()->sync($media);
+
+        $this->actingAs($this->user)->deleteJson('/media/id:' . $media->getKey())
+            ->assertForbidden();
+    }
+
+    public function testDeleteFromPage(): void
+    {
+        $this->markTestSkipped('Pages are currently unrelated to Media');
+
+        $this->user->givePermissionTo('pages.edit');
+
+        $page = Page::factory()->create();
+        $media = Media::factory()->create([
+            'type' => MediaType::PHOTO,
+            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+        ]);
+        $page->media()->sync($media);
+
+        $this->actingAs($this->user)->deleteJson('/media/id:' . $media->getKey())
+            ->assertNoContent();
+        $this->assertDatabaseMissing('media', ['id' => $media->getKey()]);
+    }
 }

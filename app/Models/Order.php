@@ -2,20 +2,27 @@
 
 namespace App\Models;
 
-use App\Audits\Redactors\AddressRedactor;
-use App\Audits\Redactors\StatusRedactor;
+use App\Casts\MoneyCast;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\OrderPayments;
 use App\Criteria\OrderSearch;
 use App\Criteria\WhereCreatedAfter;
 use App\Criteria\WhereCreatedBefore;
 use App\Criteria\WhereHasStatusHidden;
 use App\Criteria\WhereInIds;
 use App\Enums\PaymentStatus;
+use App\Enums\ShippingType;
 use App\Models\Contracts\SortableContract;
 use App\Traits\HasMetadata;
 use App\Traits\HasOrderDiscount;
 use App\Traits\Sortable;
+use Brick\Math\Exception\MathException;
+use Brick\Money\Exception\MoneyMismatchException;
+use Brick\Money\Money;
+use Domain\Currency\Currency;
+use Domain\SalesChannel\Models\SalesChannel;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -25,68 +32,46 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Str;
-use OwenIt\Auditing\Auditable;
-use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
+ * @property Money $summary
+ * @property Currency $currency
+ *
  * @mixin IdeHelperOrder
  */
-class Order extends Model implements AuditableContract, SortableContract
+final class Order extends Model implements SortableContract
 {
-    use Auditable;
     use HasCriteria;
     use HasFactory;
     use HasMetadata;
     use HasOrderDiscount;
-    use Notifiable;
     use Sortable;
 
     protected $fillable = [
         'code',
         'email',
-        'currency',
         'comment',
         'status_id',
         'shipping_method_id',
         'digital_shipping_method_id',
-        'shipping_price_initial',
-        'shipping_price',
         'shipping_number',
         'billing_address_id',
         'shipping_address_id',
         'created_at',
         'buyer_id',
         'buyer_type',
-        'summary',
         'paid',
-        'cart_total_initial',
-        'cart_total',
         'shipping_place',
         'invoice_requested',
         'shipping_type',
-    ];
-
-    protected array $auditInclude = [
-        'code',
-        'email',
+        'sales_channel_id',
         'currency',
-        'comment',
-        'status_id',
-        'shipping_method_id',
-        'digital_shipping_method_id',
+        'cart_total_initial',
+        'cart_total',
+        'shipping_price_initial',
         'shipping_price',
-        'shipping_number',
-        'billing_address_id',
-        'shipping_address_id',
-    ];
-
-    protected array $attributeModifiers = [
-        'status_id' => StatusRedactor::class,
-        'billing_address_id' => AddressRedactor::class,
-        'shipping_address_id' => AddressRedactor::class,
+        'summary',
+        'language',
     ];
 
     protected array $criteria = [
@@ -94,6 +79,7 @@ class Order extends Model implements AuditableContract, SortableContract
         'status_id',
         'shipping_method_id',
         'digital_shipping_method_id',
+        'sales_channel_id',
         'code' => Like::class,
         'email' => Like::class,
         'buyer_id',
@@ -104,6 +90,7 @@ class Order extends Model implements AuditableContract, SortableContract
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,
+        'payment_method_id' => OrderPayments::class,
     ];
 
     protected array $sortable = [
@@ -117,18 +104,30 @@ class Order extends Model implements AuditableContract, SortableContract
     protected $casts = [
         'paid' => 'boolean',
         'invoice_requested' => 'boolean',
+        'currency' => Currency::class,
+        'cart_total_initial' => MoneyCast::class,
+        'cart_total' => MoneyCast::class,
+        'shipping_price_initial' => MoneyCast::class,
+        'shipping_price' => MoneyCast::class,
+        'summary' => MoneyCast::class,
     ];
 
     /**
      * Summary amount of paid.
      */
-    public function getPaidAmountAttribute(): float
+    public function getPaidAmountAttribute(): Money
     {
         return $this->payments
             ->where('status', PaymentStatus::SUCCESSFUL)
-            ->sum('amount');
+            ->reduce(
+                fn (Money $carry, Payment $payment) => $carry->plus($payment->amount),
+                Money::zero($this->currency->value),
+            );
     }
 
+    /**
+     * @return HasMany<Payment>
+     */
     public function payments(): HasMany
     {
         return $this
@@ -149,16 +148,20 @@ class Order extends Model implements AuditableContract, SortableContract
             && $paymentMethodCount > 0;
     }
 
-    public function getShippingTypeAttribute(): string|null
+    public function getShippingTypeAttribute(): ?ShippingType
     {
         return $this->shippingMethod
             ? $this->shippingMethod->shipping_type
             : ($this->digitalShippingMethod ? $this->digitalShippingMethod->shipping_type : null);
     }
 
+    /**
+     * @throws MathException
+     * @throws MoneyMismatchException
+     */
     public function isPaid(): bool
     {
-        return $this->paid_amount >= $this->summary;
+        return $this->paid_amount->isGreaterThanOrEqualTo($this->summary);
     }
 
     public function status(): BelongsTo
@@ -168,12 +171,12 @@ class Order extends Model implements AuditableContract, SortableContract
 
     public function shippingMethod(): BelongsTo
     {
-        return $this->belongsTo(ShippingMethod::class, 'shipping_method_id');
+        return $this->belongsTo(ShippingMethod::class, 'shipping_method_id')->withTrashed();
     }
 
     public function digitalShippingMethod(): BelongsTo
     {
-        return $this->belongsTo(ShippingMethod::class, 'digital_shipping_method_id');
+        return $this->belongsTo(ShippingMethod::class, 'digital_shipping_method_id')->withTrashed();
     }
 
     public function shippingAddress(): HasOne
@@ -191,17 +194,6 @@ class Order extends Model implements AuditableContract, SortableContract
         return $this->hasManyThrough(Deposit::class, OrderProduct::class);
     }
 
-    /**
-     * @param array $items
-     */
-    public function saveItems($items): void
-    {
-        foreach ($items as $item) {
-            $item = OrderProduct::query()->create($item);
-            $this->products()->save($item);
-        }
-    }
-
     public function products(): HasMany
     {
         return $this->hasMany(OrderProduct::class);
@@ -215,30 +207,18 @@ class Order extends Model implements AuditableContract, SortableContract
             ->withPivot('id', 'type', 'name');
     }
 
-    public function generateCode(): string
-    {
-        do {
-            $code = Str::upper(Str::random(6));
-        } while (self::query()->where('code', $code)->exists());
-
-        return $code;
-    }
-
     public function buyer(): MorphTo
     {
         return $this->morphTo('order', 'buyer_type', 'buyer_id', 'id');
     }
 
-    public function preferredLocale(): string
+    public function salesChannel(): HasOne
     {
-        $country = Str::of($this->shippingAddress?->country ?? '')
-            ->limit(2, '')
-            ->lower()
-            ->toString();
+        return $this->hasOne(SalesChannel::class, 'id', 'sales_channel_id');
+    }
 
-        return match ($country) {
-            'pl', 'en' => $country,
-            default => Config::get('app.locale'),
-        };
+    public function getLocaleAttribute(): string
+    {
+        return explode('-', $this->language)[0];
     }
 }

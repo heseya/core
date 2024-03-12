@@ -1,0 +1,17 @@
+Currencies:
+  get:
+    tags:
+      - Currencies
+    summary: 'list of all currencies'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Currencies.yml#/Currency'
+              type: object

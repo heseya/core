@@ -2,14 +2,17 @@
 
 namespace Database\Factories;
 
-use App\Models\Banner;
-use Illuminate\Database\Eloquent\Factories\Factory;
+use Domain\Banner\Models\Banner;
 
 /**
  * @extends Factory<Banner>
  */
 class BannerFactory extends Factory
 {
+    /**
+     * @var string
+     */
+    protected $model = Banner::class;
     /**
      * Define the model's default state.
      *

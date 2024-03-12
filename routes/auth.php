@@ -1,9 +1,9 @@
 <?php
 
 use App\Enums\SavedAddressType;
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MetadataController;
 use App\Http\Controllers\ProviderController;
+use Domain\User\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function (): void {
@@ -12,6 +12,8 @@ Route::prefix('auth')->group(function (): void {
 
     Route::get('profile', [AuthController::class, 'profile']);
     Route::patch('profile', [AuthController::class, 'updateProfile'])
+        ->middleware('can:authenticated');
+    Route::patch('profile/roles', [AuthController::class, 'selfUpdateRoles'])
         ->middleware('can:authenticated');
     Route::patch('profile/metadata-personal', [MetadataController::class, 'updateOrCreateLoggedMyPersonal'])
         ->middleware('can:authenticated');
@@ -66,4 +68,4 @@ Route::post('login', [AuthController::class, 'login'])
 Route::post('register', [AuthController::class, 'register'])
     ->middleware(['app.restrict', 'can:auth.register']);
 Route::put('users/password', [AuthController::class, 'changePassword'])
-    ->middleware(['app.restrict', 'can:auth.password_change']);
+    ->middleware(['can:authenticated', 'app.restrict', 'can:auth.password_change']);

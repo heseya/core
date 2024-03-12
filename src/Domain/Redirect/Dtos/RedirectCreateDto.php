@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\Redirect\Dtos;
 
 use Domain\Redirect\Enums\RedirectType;
@@ -12,7 +14,7 @@ use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
-class RedirectCreateDto extends Data
+final class RedirectCreateDto extends Data
 {
     public function __construct(
         #[Required, StringType, Max(255)]

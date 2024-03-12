@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Criteria\WhereHasOrderWithCode;
 use App\Criteria\WhereHasShippingMethod;
 use App\Criteria\WhereInIds;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,7 +30,6 @@ class PaymentMethod extends Model
         'icon',
         'url',
     ];
-
     /**
      * The attributes that should be cast to native types.
      *
@@ -38,7 +38,6 @@ class PaymentMethod extends Model
     protected $casts = [
         'public' => 'boolean',
     ];
-
     protected array $criteria = [
         'id',
         'public',

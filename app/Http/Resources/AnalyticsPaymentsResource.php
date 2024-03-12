@@ -12,9 +12,12 @@ class AnalyticsPaymentsResource extends Resource
         /** @var Collection<int, mixed> $resource */
         $resource = $this->resource;
 
-        return Collection::make($resource)->map(fn ($item) => [
-            'amount' => $item['amount'],
-            'count' => $item['count'],
-        ])->toArray();
+        return Collection::make($resource)->map(
+            fn (array $items) => collect($items)->map(fn ($item) => [
+                'amount' => $item['amount'],
+                'count' => $item['count'],
+                'currency' => $item['currency'],
+            ])->toArray(),
+        )->toArray();
     }
 }

@@ -7,6 +7,7 @@ use App\Enums\IssuerType;
 use App\Enums\RoleType;
 use App\Enums\TFAType;
 use App\Enums\TokenType;
+use App\Enums\ValidationError;
 use App\Events\FailedLoginAttempt;
 use App\Events\NewLocalizationLoginAttempt;
 use App\Events\PasswordReset;
@@ -15,6 +16,11 @@ use App\Events\TfaInit;
 use App\Events\TfaRecoveryCodesChanged;
 use App\Events\TfaSecurityCode as TfaSecurityCodeEvent;
 use App\Listeners\WebHookEventListener;
+use App\Mail\ResetPassword;
+use App\Mail\TFAInitialization;
+use App\Mail\TFARecoveryCodes;
+use App\Mail\TFASecurityCode;
+use App\Mail\UserRegistered;
 use App\Models\App;
 use App\Models\OneTimeSecurityCode;
 use App\Models\Permission;
@@ -23,12 +29,10 @@ use App\Models\User;
 use App\Models\UserLoginAttempt;
 use App\Models\UserPreference;
 use App\Models\WebHook;
-use App\Notifications\ResetPassword;
-use App\Notifications\TFAInitialization;
-use App\Notifications\TFARecoveryCodes;
-use App\Notifications\TFASecurityCode;
-use App\Notifications\UserRegistered;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
+use Domain\Language\Language;
+use Domain\SalesChannel\Models\SalesChannel;
+use Domain\User\Services\OneTimeSecurityCodeService;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Config;
@@ -42,6 +46,7 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use PHPGangsta_GoogleAuthenticator;
 use Spatie\WebhookServer\CallWebhookJob;
+use Support\Enum\Status;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
@@ -50,19 +55,29 @@ class AuthTest extends TestCase
     use WithFaker;
 
     private string $expectedLog;
-    private OneTimeSecurityCodeContract $oneTimeSecurityCodeService;
+    private OneTimeSecurityCodeService $oneTimeSecurityCodeService;
     private array $expected;
     private string $cipher;
     private string $webhookKey;
 
+    public static function tfaMethodProvider(): array
+    {
+        return [
+            'as app 2fa' => [TFAType::APP, 'secret'],
+            'as email 2fa' => [TFAType::EMAIL, null],
+        ];
+    }
+
     public function setUp(): void
     {
         parent::setUp();
-        $this->user->preferences()->associate(UserPreference::create([
-            'failed_login_attempt_alert' => false,
-            'new_localization_login_alert' => false,
-            'recovery_code_changed_alert' => false,
-        ]));
+        $this->user->preferences()->associate(
+            UserPreference::create([
+                'failed_login_attempt_alert' => false,
+                'new_localization_login_alert' => false,
+                'recovery_code_changed_alert' => false,
+            ]),
+        );
         $this->user->save();
 
         $this->expectedLog = 'ClientException(code: 422): Invalid credentials at';
@@ -157,6 +172,33 @@ class AuthTest extends TestCase
         return [$this->user, $attempt, new SuccessfulLoginAttempt($attempt)];
     }
 
+    public function testSuccessfulLoginAttemptWithoutUserAgent(): array
+    {
+        $this->user->preferences()->update([
+            'successful_login_attempt_alert' => true,
+        ]);
+
+        Event::fake([SuccessfulLoginAttempt::class]);
+
+        $this
+            ->actingAs($this->user)
+            ->withHeaders([
+                'User-Agent' => null,
+            ])
+            ->postJson('/login', [
+                'email' => $this->user->email,
+                'password' => $this->password,
+            ])
+            ->assertOk()
+            ->assertJsonStructure(['data' => $this->expected]);
+
+        $attempt = UserLoginAttempt::where('user_id', $this->user->id)->latest()->first();
+
+        Event::assertDispatched(SuccessfulLoginAttempt::class);
+
+        return [$this->user, $attempt, new SuccessfulLoginAttempt($attempt)];
+    }
+
     /**
      * @depends testSuccessfulLoginAttempt
      */
@@ -198,7 +240,7 @@ class AuthTest extends TestCase
                 && $data['ip'] === $attempt->ip
                 && $payload['data_type'] === 'LocalizedLoginAttempt'
                 && $payload['event'] === 'SuccessfulLoginAttempt'
-                && $payload['issuer_type'] === IssuerType::USER;
+                && IssuerType::USER->is($payload['issuer_type']);
         });
     }
 
@@ -289,7 +331,7 @@ class AuthTest extends TestCase
                 && $data['ip'] === $attempt->ip
                 && $payload['data_type'] === 'LocalizedLoginAttempt'
                 && $payload['event'] === 'NewLocalizationLoginAttempt'
-                && $payload['issuer_type'] === IssuerType::USER;
+                && IssuerType::USER->is($payload['issuer_type']);
         });
 
         $attemptFailed->user()->associate($userFailed);
@@ -316,7 +358,7 @@ class AuthTest extends TestCase
                     && $data['ip'] === $attemptFailed->ip
                     && $payload['data_type'] === 'LocalizedLoginAttempt'
                     && $payload['event'] === 'NewLocalizationLoginAttempt'
-                    && $payload['issuer_type'] === IssuerType::USER;
+                    && IssuerType::USER->is($payload['issuer_type']);
             },
         );
     }
@@ -408,7 +450,7 @@ class AuthTest extends TestCase
                 && $data['ip'] === $attempt->ip
                 && $payload['data_type'] === 'LocalizedLoginAttempt'
                 && $payload['event'] === 'FailedLoginAttempt'
-                && $payload['issuer_type'] === IssuerType::USER;
+                && IssuerType::USER->is($payload['issuer_type']);
         });
     }
 
@@ -423,7 +465,7 @@ class AuthTest extends TestCase
             ])
             ->assertUnprocessable()
             ->assertJsonFragment([
-                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_NOT_SET_UP)->key,
+                'key' => Exceptions::CLIENT_TFA_NOT_SET_UP->name,
             ]);
     }
 
@@ -432,7 +474,7 @@ class AuthTest extends TestCase
      */
     public function testLoginEnabledTfaNoCode($method, $secret): void
     {
-        Notification::fake();
+        Mail::fake();
 
         $this->user->update([
             'tfa_type' => $method,
@@ -446,18 +488,51 @@ class AuthTest extends TestCase
         ]);
 
         if ($method === TFAType::EMAIL) {
-            Notification::assertSentTo([$this->user], TFASecurityCode::class);
+            Mail::assertSent(TFASecurityCode::class, function (TFASecurityCode $mail) {
+                $mail->assertTo($this->user->email);
+                $mail->assertHasSubject('Kod bezpieczeństwa 2FA');
+
+                return true;
+            });
         }
 
         $response->assertStatus(Response::HTTP_FORBIDDEN)
             ->assertJsonFragment([
-                'key' => Exceptions::getKey(Exceptions::CLIENT_TFA_REQUIRED),
+                'key' => Exceptions::CLIENT_TFA_REQUIRED->name,
+            ]);
+    }
+
+    public function testLoginEnabledTfaNoCodeAcceptLanguage(): void
+    {
+        Mail::fake();
+
+        $this->user->update([
+            'tfa_type' => TFAType::EMAIL,
+            'tfa_secret' => null,
+            'is_tfa_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->user)->json('POST', '/login', [
+            'email' => $this->user->email,
+            'password' => $this->password,
+        ], ['Accept-Language' => 'en', 'X-Sales-Channel' => SalesChannel::query()->value('id')]);
+
+        Mail::assertSent(TFASecurityCode::class, function (TFASecurityCode $mail) {
+            $mail->assertTo($this->user->email);
+            $mail->assertHasSubject('2FA security code');
+
+            return true;
+        });
+
+        $response->assertStatus(Response::HTTP_FORBIDDEN)
+            ->assertJsonFragment([
+                'key' => Exceptions::CLIENT_TFA_REQUIRED->name,
             ]);
     }
 
     public function testLoginEnabledTfaAppNoCodeWebhookEvent(): void
     {
-        Event::fake([TFASecurityCode::class]);
+        Event::fake([TfaSecurityCodeEvent::class]);
 
         $this->user->update([
             'tfa_type' => TFAType::APP,
@@ -472,7 +547,7 @@ class AuthTest extends TestCase
 
         $response->assertStatus(Response::HTTP_FORBIDDEN);
 
-        Event::assertNotDispatched(TFASecurityCode::class);
+        Event::assertNotDispatched(TfaSecurityCodeEvent::class);
     }
 
     public function testLoginEnabledTfaEmailNoCodeWebhookEvent(): array
@@ -538,7 +613,7 @@ class AuthTest extends TestCase
                 && $data['security_code'] === $code
                 && $payload['data_type'] === 'TfaCode'
                 && $payload['event'] === 'TfaSecurityCode'
-                && $payload['issuer_type'] === IssuerType::USER;
+                && IssuerType::USER->is($payload['issuer_type']);
         });
     }
 
@@ -608,7 +683,7 @@ class AuthTest extends TestCase
         $response
             ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
             ->assertJsonFragment([
-                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_INVALID_TOKEN)->key,
+                'key' => Exceptions::CLIENT_TFA_INVALID_TOKEN->name,
             ]);
 
         $this->assertDatabaseCount('one_time_security_codes', 1);
@@ -663,7 +738,7 @@ class AuthTest extends TestCase
         $response
             ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
             ->assertJsonFragment([
-                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_INVALID_TOKEN)->key,
+                'key' => Exceptions::CLIENT_TFA_INVALID_TOKEN->name,
             ]);
     }
 
@@ -683,7 +758,7 @@ class AuthTest extends TestCase
     {
         $token = $this->tokenService->createToken(
             $this->user,
-            new TokenType(TokenType::REFRESH),
+            TokenType::REFRESH,
         );
 
         $response = $this->actingAs($this->user)->json('POST', 'auth/refresh', [
@@ -697,14 +772,14 @@ class AuthTest extends TestCase
         ]);
 
         $responseFail->assertStatus(422)
-            ->assertJsonFragment(['key' => Exceptions::fromValue(Exceptions::CLIENT_USER_DOESNT_EXIST)->key]);
+            ->assertJsonFragment(['key' => Exceptions::CLIENT_USER_DOESNT_EXIST->name]);
     }
 
     public function testRefreshTokenUser(): void
     {
         $token = $this->tokenService->createToken(
             $this->user,
-            new TokenType(TokenType::REFRESH),
+            TokenType::REFRESH,
         );
 
         $response = $this->actingAs($this->user)->postJson('/auth/refresh', [
@@ -713,17 +788,18 @@ class AuthTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonStructure(['data' => [
-                'token',
-                'identity_token',
-                'refresh_token',
-                'user' => [
-                    'id',
-                    'email',
-                    'name',
-                    'avatar',
+            ->assertJsonStructure([
+                'data' => [
+                    'token',
+                    'identity_token',
+                    'refresh_token',
+                    'user' => [
+                        'id',
+                        'email',
+                        'name',
+                        'avatar',
+                    ],
                 ],
-            ],
             ]);
     }
 
@@ -731,7 +807,7 @@ class AuthTest extends TestCase
     {
         $token = $this->tokenService->createToken(
             $this->application,
-            new TokenType(TokenType::REFRESH),
+            TokenType::REFRESH,
         );
 
         $response = $this->actingAs($this->application)->postJson('/auth/refresh', [
@@ -740,23 +816,24 @@ class AuthTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonStructure(['data' => [
-                'token',
-                'identity_token',
-                'refresh_token',
-                'user' => [
-                    'id',
-                    'url',
-                    'microfrontend_url',
-                    'name',
-                    'slug',
-                    'version',
-                    'description',
-                    'icon',
-                    'author',
-                    'permissions',
+            ->assertJsonStructure([
+                'data' => [
+                    'token',
+                    'identity_token',
+                    'refresh_token',
+                    'user' => [
+                        'id',
+                        'url',
+                        'microfrontend_url',
+                        'name',
+                        'slug',
+                        'version',
+                        'description',
+                        'icon',
+                        'author',
+                        'permissions',
+                    ],
                 ],
-            ],
             ])->assertJsonFragment([
                 'identity_token' => null,
             ]);
@@ -769,7 +846,7 @@ class AuthTest extends TestCase
     {
         $token = $this->tokenService->createToken(
             $this->{$user},
-            new TokenType(TokenType::REFRESH),
+            TokenType::REFRESH,
         );
         $this->tokenService->invalidateToken($token);
 
@@ -785,7 +862,7 @@ class AuthTest extends TestCase
         $uuid = Str::uuid()->toString();
         $token = $this->tokenService->createToken(
             $this->user,
-            new TokenType(TokenType::ACCESS),
+            TokenType::ACCESS,
             $uuid,
         );
 
@@ -855,7 +932,7 @@ class AuthTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testResetPassword11(): void
+    public function testResetPassword(): void
     {
         $this->user->givePermissionTo('auth.password_reset');
 
@@ -868,16 +945,102 @@ class AuthTest extends TestCase
             'password' => Hash::make($password),
         ]);
 
-        Notification::fake();
+        Mail::fake();
 
-        $response = $this->actingAs($this->user)->postJson('/users/reset-password', [
+        $this->actingAs($this->user)->postJson('/users/reset-password', [
             'email' => $user->email,
             'redirect_url' => 'https://test.com',
+        ])->assertNoContent();
+
+        Mail::assertSent(ResetPassword::class, function (ResetPassword $mail) use ($user) {
+            $mail->assertTo($user->email);
+
+            return true;
+        });
+    }
+
+    public function testResetPasswordMailAcceptLanguage(): void
+    {
+        $this->user->givePermissionTo('auth.password_reset');
+
+        $email = $this->faker->unique()->safeEmail;
+        $password = 'Passwd###111';
+
+        $user = User::factory()->create([
+            'name' => $this->faker->firstName() . ' ' . $this->faker->lastName(),
+            'email' => $email,
+            'password' => Hash::make($password),
         ]);
 
-        Notification::assertSentTo($user, ResetPassword::class);
+        Mail::fake();
 
-        $response->assertNoContent();
+        $this->actingAs($this->user)
+            ->json(
+                'POST',
+                '/users/reset-password',
+                [
+                    'email' => $user->email,
+                    'redirect_url' => 'https://test.com',
+                ],
+                [
+                    'Accept-Language' => 'en',
+                    'X-Sales-Channel' => SalesChannel::query()->value('id'),
+                ],
+            )->assertNoContent();
+
+        Mail::assertSent(ResetPassword::class, function (ResetPassword $mail) use ($user) {
+            $mail->assertTo($user->email);
+            $mail->assertHasSubject('Request for password change');
+            $mail->assertSeeInHtml('We have received a request to change your password.');
+
+            return true;
+        });
+    }
+
+    public function testResetPasswordMailSalesChannel(): void
+    {
+        $this->user->givePermissionTo('auth.password_reset');
+
+        $email = $this->faker->unique()->safeEmail;
+        $password = 'Passwd###111';
+
+        $en = Language::firstOrCreate([
+            'iso' => 'en',
+        ], [
+            'name' => 'English',
+            'default' => false,
+        ]);
+
+        $salesChannel = SalesChannel::factory()->create(['status' => Status::ACTIVE, 'default_language_id' => $en->getKey()]);
+
+        $user = User::factory()->create([
+            'name' => $this->faker->firstName() . ' ' . $this->faker->lastName(),
+            'email' => $email,
+            'password' => Hash::make($password),
+        ]);
+
+        Mail::fake();
+
+        $this->actingAs($this->user)
+            ->json(
+                'POST',
+                '/users/reset-password',
+                [
+                    'email' => $user->email,
+                    'redirect_url' => 'https://test.com',
+                ],
+                [
+                    'X-Sales-Channel' => $salesChannel->getKey(),
+                ],
+            )->assertNoContent();
+
+        Mail::assertSent(ResetPassword::class, function (ResetPassword $mail) use ($user) {
+            $mail->assertTo($user->email);
+            $mail->assertHasSubject('Request for password change');
+            $mail->assertSeeInHtml('We have received a request to change your password.');
+
+            return true;
+        });
     }
 
     public function testResetPasswordWebhookEvent(): array
@@ -958,7 +1121,7 @@ class AuthTest extends TestCase
                 && $data['recovery_url'] === $url
                 && $payload['data_type'] === 'PasswordRecovery'
                 && $payload['event'] === 'PasswordReset'
-                && $payload['issuer_type'] === IssuerType::USER;
+                && IssuerType::USER->is($payload['issuer_type']);
         });
     }
 
@@ -1100,6 +1263,17 @@ class AuthTest extends TestCase
         $response->assertForbidden();
     }
 
+    public function testChangePasswordNoUser(): void
+    {
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.password_change');
+
+        $this->putJson('/users/password', [
+            'password' => 'test',
+            'password_new' => 'Test1@3456',
+        ])->assertForbidden();
+    }
+
     public function testChangePassword(): void
     {
         $user = User::factory()->create([
@@ -1129,7 +1303,12 @@ class AuthTest extends TestCase
 
         Log::shouldReceive('error')
             ->once()
-            ->withArgs(fn ($message) => str_contains($message, 'App\Exceptions\ClientException(code: 422): Invalid password at'));
+            ->withArgs(
+                fn ($message) => str_contains(
+                    $message,
+                    'App\Exceptions\ClientException(code: 422): Invalid password at',
+                ),
+            );
 
         $response = $this->actingAs($user)->json('PUT', '/users/password', [
             'password' => 'tests',
@@ -1163,26 +1342,28 @@ class AuthTest extends TestCase
 
         $this->actingAs($user)->getJson('/auth/profile')
             ->assertOk()
-            ->assertJson(['data' => [
-                'id' => $user->getKey(),
-                'email' => $user->email,
-                'name' => $user->name,
-                'avatar' => $user->avatar,
-                'roles' => [[
-                    $role1->getKeyName() => $role1->getKey(),
-                    'name' => $role1->name,
-                    'description' => $role1->description,
-                    'assignable' => true,
+            ->assertJson([
+                'data' => [
+                    'id' => $user->getKey(),
+                    'email' => $user->email,
+                    'name' => $user->name,
+                    'avatar' => $user->avatar,
+                    'roles' => [
+                        [
+                            $role1->getKeyName() => $role1->getKey(),
+                            'name' => $role1->name,
+                            'description' => $role1->description,
+                            'assignable' => true,
+                        ],
+                    ],
+                    'permissions' => [
+                        'permission.1',
+                        'permission.2',
+                    ],
+                    'metadata' => [],
+                    'metadata_personal' => [],
+                    'created_at' => $user->created_at,
                 ],
-                ],
-                'permissions' => [
-                    'permission.1',
-                    'permission.2',
-                ],
-                'metadata' => [],
-                'metadata_personal' => [],
-                'created_at' => $user->created_at,
-            ],
             ]);
     }
 
@@ -1197,21 +1378,22 @@ class AuthTest extends TestCase
 
         $this->actingAs($app)->getJson('/auth/profile')
             ->assertOk()
-            ->assertJson(['data' => [
-                'id' => $app->getKey(),
-                'url' => $app->url,
-                'microfrontend_url' => $app->microfrontend_url,
-                'name' => $app->name,
-                'slug' => $app->slug,
-                'version' => $app->version,
-                'description' => $app->description,
-                'icon' => $app->icon,
-                'author' => $app->author,
-                'permissions' => [
-                    'permission.1',
-                    'permission.2',
+            ->assertJson([
+                'data' => [
+                    'id' => $app->getKey(),
+                    'url' => $app->url,
+                    'microfrontend_url' => $app->microfrontend_url,
+                    'name' => $app->name,
+                    'slug' => $app->slug,
+                    'version' => $app->version,
+                    'description' => $app->description,
+                    'icon' => $app->icon,
+                    'author' => $app->author,
+                    'permissions' => [
+                        'permission.1',
+                        'permission.2',
+                    ],
                 ],
-            ],
             ]);
     }
 
@@ -1265,13 +1447,144 @@ class AuthTest extends TestCase
         ]);
     }
 
+    public function testUpdateProfileRemovePhone(): void
+    {
+        $user = User::factory()->create([
+            'phone_country' => 'PL',
+            'phone_number' => '12 345 67 89',
+        ]);
+        $user->preferences()->associate(UserPreference::create());
+        $user->save();
+
+        $this->actingAs($user)->json('PATCH', '/auth/profile', [
+            'phone' => null,
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $user->getKey(),
+                'email' => $user->email,
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+                'phone' => null,
+                'phone_country' => null,
+                'phone_number' => null,
+            ]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->getKey(),
+            'phone_number' => null,
+            'phone_country' => null,
+        ]);
+    }
+
+    public function testSelfUpdateRolesUnauthorized(): void
+    {
+        $role = Role::factory()->create([
+            'is_joinable' => true,
+        ]);
+
+        $this->json('PATCH', '/auth/profile/roles', [
+            'roles' => [
+                $role->getKey(),
+            ],
+        ])
+            ->assertForbidden();
+    }
+
+    public function testSelfUpdateRoles(): void
+    {
+        $role = Role::factory()->create([
+            'name' => 'New joinable role',
+            'type' => RoleType::REGULAR,
+            'is_joinable' => true,
+        ]);
+
+        $noJoinable = Role::factory()->create([
+            'name' => 'No joinable role',
+            'type' => RoleType::REGULAR,
+            'is_joinable' => false,
+        ]);
+
+        $this->user->roles()->attach($noJoinable->getKey());
+
+        $this->actingAs($this->user)->json('PATCH', '/auth/profile/roles', [
+            'roles' => [
+                $role->getKey(),
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $noJoinable->getKey(),
+                'name' => 'No joinable role',
+                'is_joinable' => false,
+            ])
+            ->assertJsonFragment([
+                'id' => $role->getKey(),
+                'name' => 'New joinable role',
+                'is_joinable' => true,
+            ]);
+    }
+
+    public function testSelfUpdateRolesNoJoinable(): void
+    {
+        $role = Role::factory()->create([
+            'name' => 'New joinable role',
+            'type' => RoleType::REGULAR,
+            'is_joinable' => false,
+        ]);
+
+        $this->actingAs($this->user)->json('PATCH', '/auth/profile/roles', [
+            'roles' => [
+                $role->getKey(),
+            ],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => Exceptions::CLIENT_JOINING_NON_JOINABLE_ROLE->name,
+            ])->assertJsonFragment([
+                'message' => Exceptions::CLIENT_JOINING_NON_JOINABLE_ROLE,
+            ]);
+    }
+
+    public function testSelfUpdateRolesRemove(): void
+    {
+        $role = Role::factory()->create([
+            'name' => 'New joinable role',
+            'type' => RoleType::REGULAR,
+            'is_joinable' => true,
+        ]);
+
+        $noJoinable = Role::factory()->create([
+            'name' => 'No joinable role',
+            'type' => RoleType::REGULAR,
+            'is_joinable' => false,
+        ]);
+
+        $this->user->roles()->saveMany([$role, $noJoinable]);
+
+        $this->actingAs($this->user)->json('PATCH', '/auth/profile/roles', [
+            'roles' => [],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $noJoinable->getKey(),
+                'name' => 'No joinable role',
+                'is_joinable' => false,
+            ])
+            ->assertJsonMissing([
+                'id' => $role->getKey(),
+                'name' => 'New joinable role',
+                'is_joinable' => true,
+            ]);
+    }
+
     public function testCheckIdentityUnauthorized(): void
     {
         $user = User::factory()->create();
 
         $token = $this->tokenService->createToken(
             $user,
-            new TokenType(TokenType::IDENTITY),
+            TokenType::IDENTITY,
         );
 
         $this->actingAs($user)->getJson("/auth/check/{$token}")
@@ -1286,9 +1599,9 @@ class AuthTest extends TestCase
         $this->{$user}->givePermissionTo('auth.check_identity');
 
         $token = $this->tokenService->createToken(
-            User::factory()->create(),
-            new TokenType(TokenType::IDENTITY),
-        ) . 'invalid_hash';
+                User::factory()->create(),
+                TokenType::IDENTITY,
+            ) . 'invalid_hash';
 
         $this
             ->actingAs($this->{$user})
@@ -1333,20 +1646,21 @@ class AuthTest extends TestCase
 
         $token = $this->tokenService->createToken(
             $otherUser,
-            new TokenType(TokenType::IDENTITY),
+            TokenType::IDENTITY,
         );
 
         $this->actingAs($this->{$user})->getJson("/auth/check/{$token}")
             ->assertOk()
-            ->assertJson(['data' => [
-                'id' => $otherUser->getKey(),
-                'name' => $otherUser->name,
-                'avatar' => $otherUser->avatar,
-                'permissions' => [
-                    'permission.1',
-                    'permission.2',
+            ->assertJson([
+                'data' => [
+                    'id' => $otherUser->getKey(),
+                    'name' => $otherUser->name,
+                    'avatar' => $otherUser->avatar,
+                    'permissions' => [
+                        'permission.1',
+                        'permission.2',
+                    ],
                 ],
-            ],
             ]);
     }
 
@@ -1373,21 +1687,22 @@ class AuthTest extends TestCase
 
         $token = $this->tokenService->createToken(
             $otherUser,
-            new TokenType(TokenType::IDENTITY),
+            TokenType::IDENTITY,
         );
 
         $this->actingAs($this->{$user})->getJson("/auth/check/{$token}")
             ->assertOk()
-            ->assertJson(['data' => [
-                'id' => $otherUser->getKey(),
-                'name' => $otherUser->name,
-                'avatar' => $otherUser->avatar,
-                'permissions' => [
-                    'app.app_slug.raw_name',
-                    'permission.1',
-                    'permission.2',
+            ->assertJson([
+                'data' => [
+                    'id' => $otherUser->getKey(),
+                    'name' => $otherUser->name,
+                    'avatar' => $otherUser->avatar,
+                    'permissions' => [
+                        'app.app_slug.raw_name',
+                        'permission.1',
+                        'permission.2',
+                    ],
                 ],
-            ],
             ]);
     }
 
@@ -1411,21 +1726,22 @@ class AuthTest extends TestCase
 
         $token = $this->tokenService->createToken(
             $user,
-            new TokenType(TokenType::IDENTITY),
+            TokenType::IDENTITY,
         );
 
         $this->actingAs($app)->getJson("/auth/check/{$token}")
             ->assertOk()
-            ->assertJson(['data' => [
-                'id' => $user->getKey(),
-                'name' => $user->name,
-                'avatar' => $user->avatar,
-                'permissions' => [
-                    'permission.1',
-                    'permission.2',
-                    'raw_name',
+            ->assertJson([
+                'data' => [
+                    'id' => $user->getKey(),
+                    'name' => $user->name,
+                    'avatar' => $user->avatar,
+                    'permissions' => [
+                        'permission.1',
+                        'permission.2',
+                        'raw_name',
+                    ],
                 ],
-            ],
             ]);
     }
 
@@ -1441,14 +1757,6 @@ class AuthTest extends TestCase
         $this->json('POST', '/auth/2fa/confirm', [
             'code' => '123456',
         ])->assertForbidden();
-    }
-
-    public static function tfaMethodProvider(): array
-    {
-        return [
-            'as app 2fa' => [TFAType::APP, 'secret'],
-            'as email 2fa' => [TFAType::EMAIL, null],
-        ];
     }
 
     /**
@@ -1467,7 +1775,7 @@ class AuthTest extends TestCase
         ])
             ->assertStatus(422)
             ->assertJsonFragment([
-                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_ALREADY_SET_UP)->key,
+                'key' => Exceptions::CLIENT_TFA_ALREADY_SET_UP->name,
             ]);
     }
 
@@ -1549,11 +1857,12 @@ class AuthTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonStructure(['data' => [
-                'type',
-                'secret',
-                'qr_code_url',
-            ],
+            ->assertJsonStructure([
+                'data' => [
+                    'type',
+                    'secret',
+                    'qr_code_url',
+                ],
             ]);
 
         Event::assertNotDispatched(TfaInit::class);
@@ -1564,7 +1873,7 @@ class AuthTest extends TestCase
         $this->user->preferences()->update([
             'recovery_code_changed_alert' => true,
         ]);
-        Notification::fake();
+        Mail::fake();
 
         $google_authenticator = new PHPGangsta_GoogleAuthenticator();
 
@@ -1578,15 +1887,18 @@ class AuthTest extends TestCase
 
         $this->actingAs($this->user)->json('POST', '/auth/2fa/confirm', [
             'code' => $code,
-        ])->assertOk()->assertJsonStructure(['data' => [
-            'recovery_codes',
-        ],
+        ])->assertOk()->assertJsonStructure([
+            'data' => [
+                'recovery_codes',
+            ],
         ]);
 
-        Notification::assertSentTo(
-            [$this->user],
-            TFARecoveryCodes::class,
-        );
+        Mail::assertSent(TFARecoveryCodes::class, function (TFARecoveryCodes $mail) {
+            $mail->assertTo($this->user->email);
+            $mail->assertHasSubject('Kody odzyskiwania 2FA');
+
+            return true;
+        });
 
         $this->assertDatabaseHas('users', [
             'id' => $this->user->getKey(),
@@ -1601,6 +1913,7 @@ class AuthTest extends TestCase
         $this->user->preferences()->update([
             'recovery_code_changed_alert' => true,
         ]);
+        Mail::fake();
         Notification::fake();
         Event::fake([TfaRecoveryCodesChanged::class]);
 
@@ -1625,7 +1938,7 @@ class AuthTest extends TestCase
 
     public function testConfirmAppTfaNoPreferences(): void
     {
-        Notification::fake();
+        Mail::fake();
         Event::fake([TfaRecoveryCodesChanged::class]);
 
         $google_authenticator = new PHPGangsta_GoogleAuthenticator();
@@ -1640,15 +1953,13 @@ class AuthTest extends TestCase
 
         $this->actingAs($this->user)->json('POST', '/auth/2fa/confirm', [
             'code' => $code,
-        ])->assertOk()->assertJsonStructure(['data' => [
-            'recovery_codes',
-        ],
+        ])->assertOk()->assertJsonStructure([
+            'data' => [
+                'recovery_codes',
+            ],
         ]);
 
-        Notification::assertNotSentTo(
-            [$this->user],
-            TFARecoveryCodes::class,
-        );
+        Mail::assertNotSent(TFARecoveryCodes::class);
         Event::assertNotDispatched(TfaRecoveryCodesChanged::class);
 
         $this->assertDatabaseHas('users', [
@@ -1661,16 +1972,18 @@ class AuthTest extends TestCase
 
     public function testSetupEmailTfa(): void
     {
-        Notification::fake();
+        Mail::fake();
 
         $response = $this->actingAs($this->user)->json('POST', '/auth/2fa/setup', [
             'type' => TFAType::EMAIL,
         ]);
 
-        Notification::assertSentTo(
-            [$this->user],
-            TFAInitialization::class,
-        );
+        Mail::assertSent(TFAInitialization::class, function (TFAInitialization $mail) {
+            $mail->assertTo($this->user->email);
+            $mail->assertHasSubject('Potwierdzenie 2FA');
+
+            return true;
+        });
 
         $this->assertDatabaseHas('users', [
             'id' => $this->user->getKey(),
@@ -1681,10 +1994,39 @@ class AuthTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonStructure(['data' => [
-                'type',
-            ],
+            ->assertJsonStructure([
+                'data' => [
+                    'type',
+                ],
             ]);
+    }
+
+    public function testSetupEmailTfaDifferentLanguage(): void
+    {
+        Mail::fake();
+
+        $this->actingAs($this->user)
+            ->json('POST', '/auth/2fa/setup', ['type' => TFAType::EMAIL,], ['Accept-Language' => 'en'])
+            ->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                    'type',
+                ],
+            ]);
+
+        Mail::assertSent(TFAInitialization::class, function (TFAInitialization $mail) {
+            $mail->assertTo($this->user->email);
+            $mail->assertHasSubject('2FA confirmation');
+
+            return true;
+        });
+
+        $this->assertDatabaseHas('users', [
+            'id' => $this->user->getKey(),
+            'tfa_type' => TFAType::EMAIL,
+            'tfa_secret' => null,
+            'is_tfa_active' => false,
+        ]);
     }
 
     public function testSetupEmailTfaWithWebhookEvent(): array
@@ -1741,7 +2083,7 @@ class AuthTest extends TestCase
                 && $data['security_code'] === $code
                 && $payload['data_type'] === 'TfaCode'
                 && $payload['event'] === 'TfaInit'
-                && $payload['issuer_type'] === IssuerType::USER;
+                && IssuerType::USER->is($payload['issuer_type']);
         });
     }
 
@@ -1750,7 +2092,7 @@ class AuthTest extends TestCase
         $this->user->preferences()->update([
             'recovery_code_changed_alert' => true,
         ]);
-        Notification::fake();
+        Mail::fake();
 
         $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(
             $this->user,
@@ -1763,15 +2105,58 @@ class AuthTest extends TestCase
 
         $this->actingAs($this->user)->json('POST', '/auth/2fa/confirm', [
             'code' => $code,
-        ])->assertOk()->assertJsonStructure(['data' => [
-            'recovery_codes',
-        ],
+        ])->assertOk()->assertJsonStructure([
+            'data' => [
+                'recovery_codes',
+            ],
         ]);
 
-        Notification::assertSentTo(
-            [$this->user],
-            TFARecoveryCodes::class,
+        Mail::assertSent(TFARecoveryCodes::class, function (TFARecoveryCodes $mail) {
+            $mail->assertTo($this->user->email);
+            $mail->assertHasSubject('Kody odzyskiwania 2FA');
+
+            return true;
+        });
+
+        $this->assertDatabaseHas('users', [
+            'id' => $this->user->getKey(),
+            'is_tfa_active' => true,
+        ]);
+
+        $this->assertDatabaseCount('one_time_security_codes', 3);
+    }
+
+    public function testConfirmEmailTfaDifferentLanguage(): void
+    {
+        $this->user->preferences()->update([
+            'recovery_code_changed_alert' => true,
+        ]);
+        Mail::fake();
+
+        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(
+            $this->user,
+            Config::get('tfa.code_expires_time'),
         );
+
+        $this->user->update([
+            'tfa_type' => TFAType::EMAIL,
+        ]);
+
+        $this->actingAs($this->user)
+            ->json('POST', '/auth/2fa/confirm', ['code' => $code,], ['Accept-Language' => 'en'])
+            ->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                    'recovery_codes',
+                ],
+            ]);
+
+        Mail::assertSent(TFARecoveryCodes::class, function (TFARecoveryCodes $mail) {
+            $mail->assertTo($this->user->email);
+            $mail->assertHasSubject('2FA recovery codes');
+
+            return true;
+        });
 
         $this->assertDatabaseHas('users', [
             'id' => $this->user->getKey(),
@@ -1807,7 +2192,7 @@ class AuthTest extends TestCase
 
     public function testConfirmEmailTfaNoPreferences(): void
     {
-        Notification::fake();
+        Mail::fake();
         Event::fake([TfaRecoveryCodesChanged::class]);
 
         $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(
@@ -1821,15 +2206,13 @@ class AuthTest extends TestCase
 
         $this->actingAs($this->user)->json('POST', '/auth/2fa/confirm', [
             'code' => $code,
-        ])->assertOk()->assertJsonStructure(['data' => [
-            'recovery_codes',
-        ],
+        ])->assertOk()->assertJsonStructure([
+            'data' => [
+                'recovery_codes',
+            ],
         ]);
 
-        Notification::assertNotSentTo(
-            [$this->user],
-            TFARecoveryCodes::class,
-        );
+        Mail::assertNotSent(TFARecoveryCodes::class);
         Event::assertNotDispatched(TfaRecoveryCodesChanged::class);
 
         $this->assertDatabaseHas('users', [
@@ -1854,7 +2237,7 @@ class AuthTest extends TestCase
         ])
             ->assertStatus(422)
             ->assertJsonFragment([
-                'key' => Exceptions::getKey(Exceptions::CLIENT_INVALID_PASSWORD),
+                'key' => Exceptions::CLIENT_INVALID_PASSWORD->name,
             ]);
     }
 
@@ -1865,7 +2248,7 @@ class AuthTest extends TestCase
         ])
             ->assertStatus(422)
             ->assertJsonFragment([
-                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_NOT_SET_UP)->key,
+                'key' => Exceptions::CLIENT_TFA_NOT_SET_UP->name,
             ]);
     }
 
@@ -1877,7 +2260,7 @@ class AuthTest extends TestCase
         $this->user->preferences()->update([
             'recovery_code_changed_alert' => true,
         ]);
-        Notification::fake();
+        Mail::fake();
 
         $this->user->update([
             'tfa_type' => $method,
@@ -1889,18 +2272,21 @@ class AuthTest extends TestCase
             'password' => $this->password,
         ])->assertOk();
 
-        Notification::assertSentTo(
-            [$this->user],
-            TFARecoveryCodes::class,
-        );
+        Mail::assertSent(TFARecoveryCodes::class, function (TFARecoveryCodes $mail) {
+            $mail->assertTo($this->user->email);
+            $mail->assertHasSubject('Kody odzyskiwania 2FA');
+
+            return true;
+        });
 
         $recovery_codes = OneTimeSecurityCode::where('user_id', '=', $this->user->getKey())
             ->whereNull('expires_at')
             ->get();
 
-        $response->assertJsonStructure(['data' => [
-            'recovery_codes',
-        ],
+        $response->assertJsonStructure([
+            'data' => [
+                'recovery_codes',
+            ],
         ]);
 
         $this->assertDatabaseCount('one_time_security_codes', count($recovery_codes));
@@ -1911,7 +2297,7 @@ class AuthTest extends TestCase
      */
     public function testRecoveryCodesCreateNoPreferences($method, $secret): void
     {
-        Notification::fake();
+        Mail::fake();
         Event::fake([TfaRecoveryCodesChanged::class]);
 
         $this->user->update([
@@ -1924,19 +2310,17 @@ class AuthTest extends TestCase
             'password' => $this->password,
         ])->assertOk();
 
-        Notification::assertNotSentTo(
-            [$this->user],
-            TFARecoveryCodes::class,
-        );
+        Mail::assertNotSent(TFARecoveryCodes::class);
         Event::assertNotDispatched(TfaRecoveryCodesChanged::class);
 
         $recovery_codes = OneTimeSecurityCode::where('user_id', '=', $this->user->getKey())
             ->whereNull('expires_at')
             ->get();
 
-        $response->assertJsonStructure(['data' => [
-            'recovery_codes',
-        ],
+        $response->assertJsonStructure([
+            'data' => [
+                'recovery_codes',
+            ],
         ]);
 
         $this->assertDatabaseCount('one_time_security_codes', count($recovery_codes));
@@ -2009,7 +2393,7 @@ class AuthTest extends TestCase
                 && $data['id'] === $user1->getKey()
                 && $payload['data_type'] === 'User'
                 && $payload['event'] === 'TfaRecoveryCodesChanged'
-                && $payload['issuer_type'] === IssuerType::USER;
+                && IssuerType::USER->is($payload['issuer_type']);
         });
 
         // Webhook after email TFA is confirmed
@@ -2027,7 +2411,7 @@ class AuthTest extends TestCase
                 && $data['id'] === $user2->getKey()
                 && $payload['data_type'] === 'User'
                 && $payload['event'] === 'TfaRecoveryCodesChanged'
-                && $payload['issuer_type'] === IssuerType::USER;
+                && IssuerType::USER->is($payload['issuer_type']);
         });
 
         // Webhook after recovery codes are created
@@ -2045,7 +2429,7 @@ class AuthTest extends TestCase
                 && $data['id'] === $user3->getKey()
                 && $payload['data_type'] === 'User'
                 && $payload['event'] === 'TfaRecoveryCodesChanged'
-                && $payload['issuer_type'] === IssuerType::USER;
+                && IssuerType::USER->is($payload['issuer_type']);
         });
     }
 
@@ -2063,7 +2447,7 @@ class AuthTest extends TestCase
         ])
             ->assertStatus(422)
             ->assertJsonFragment([
-                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_NOT_SET_UP)->key,
+                'key' => Exceptions::CLIENT_TFA_NOT_SET_UP->name,
             ]);
     }
 
@@ -2112,7 +2496,7 @@ class AuthTest extends TestCase
         $this->actingAs($this->user)->json('POST', '/users/id:' . $otherUser->getKey() . '/2fa/remove')
             ->assertStatus(422)
             ->assertJsonFragment([
-                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_NOT_SET_UP)->key,
+                'key' => Exceptions::CLIENT_TFA_NOT_SET_UP->name,
             ]);
     }
 
@@ -2123,7 +2507,7 @@ class AuthTest extends TestCase
         $this->actingAs($this->user)->json('POST', '/users/id:' . $this->user->getKey() . '/2fa/remove')
             ->assertStatus(422)
             ->assertJsonFragment([
-                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_CANNOT_REMOVE)->key,
+                'key' => Exceptions::CLIENT_TFA_CANNOT_REMOVE->name,
             ]);
     }
 
@@ -2176,14 +2560,19 @@ class AuthTest extends TestCase
             'name' => 'Registered user',
             'email' => $this->user->email,
             'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
-        ])->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+        ])
+            ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
+            ->assertJsonFragment([
+                'key' => ValidationError::EMAILUNIQUE->value,
+                'message' => Exceptions::CLIENT_EMAIL_TAKEN->value,
+            ]);
 
         Notification::assertNothingSent();
     }
 
     public function testRegister(): void
     {
-        Notification::fake();
+        Mail::fake();
 
         $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
         $role->givePermissionTo('auth.register');
@@ -2228,10 +2617,120 @@ class AuthTest extends TestCase
             'recovery_code_changed_alert' => true,
         ]);
 
-        Notification::assertSentTo(
-            [$user],
-            UserRegistered::class,
-        );
+        Mail::assertSent(UserRegistered::class, function (UserRegistered $mail) use ($user) {
+            $mail->assertTo($user->email);
+            $mail->assertHasSubject('Witamy na pokładzie! Konto utworzono');
+
+            return true;
+        });
+    }
+
+    public function testRegisterMailWithAcceptLanguage(): void
+    {
+        Mail::fake();
+
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.register');
+
+        $salesChannel = SalesChannel::query()->value('id');
+
+        $email = $this->faker->email();
+        $this->json('POST', '/register', [
+            'name' => 'Registered user',
+            'email' => $email,
+            'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+        ], [
+            'Accept-Language' => 'en',
+            'X-Sales-Channel' => $salesChannel,
+        ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'name' => 'Registered user',
+                'email' => $email,
+            ]);
+
+        $user = User::where('email', $email)->first();
+
+        Mail::assertSent(UserRegistered::class, function (UserRegistered $mail) use ($user) {
+            $mail->assertTo($user->email);
+            $mail->assertHasSubject('Welcome aboard! Account created');
+
+            return true;
+        });
+    }
+
+    public function testRegisterMailWithAcceptLanguageRegional(): void
+    {
+        Mail::fake();
+
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.register');
+
+        $salesChannel = SalesChannel::query()->value('id');
+
+        $email = $this->faker->email();
+        $this->json('POST', '/register', [
+            'name' => 'Registered user',
+            'email' => $email,
+            'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+        ], [
+            'Accept-Language' => 'en-EN',
+            'X-Sales-Channel' => $salesChannel,
+        ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'name' => 'Registered user',
+                'email' => $email,
+            ]);
+
+        $user = User::where('email', $email)->first();
+
+        Mail::assertSent(UserRegistered::class, function (UserRegistered $mail) use ($user) {
+            $mail->assertTo($user->email);
+            $mail->assertHasSubject('Welcome aboard! Account created');
+
+            return true;
+        });
+    }
+
+    public function testRegisterMailWithSalesChannel(): void
+    {
+        Mail::fake();
+
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.register');
+
+        $en = Language::firstOrCreate([
+            'iso' => 'en',
+        ], [
+            'name' => 'English',
+            'default' => false,
+        ]);
+
+        $salesChannel = SalesChannel::factory()->create(['status' => Status::ACTIVE, 'default_language_id' => $en->getKey()]);
+
+        $email = $this->faker->email();
+        $this->json('POST', '/register', [
+            'name' => 'Registered user',
+            'email' => $email,
+            'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+        ], [
+            'X-Sales-Channel' => $salesChannel->getKey(),
+        ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'name' => 'Registered user',
+                'email' => $email,
+            ]);
+
+        $user = User::where('email', $email)->first();
+
+        Mail::assertSent(UserRegistered::class, function (UserRegistered $mail) use ($user) {
+            $mail->assertTo($user->email);
+            $mail->assertHasSubject('Welcome aboard! Account created');
+
+            return true;
+        });
     }
 
     public function testRegisterWithUnassignableRoles(): void
@@ -2271,7 +2770,7 @@ class AuthTest extends TestCase
 
     public function testRegisterWithRoles(): void
     {
-        Notification::fake();
+        Mail::fake();
 
         /** @var Role $role */
         $role = Role::query()
@@ -2290,14 +2789,15 @@ class AuthTest extends TestCase
         ]);
 
         $email = $this->faker->email();
-        $this->json('POST', '/register', [
-            'name' => 'Registered user',
-            'email' => $email,
-            'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
-            'roles' => [
-                $newRole->getKey(),
-            ],
-        ])
+        $this
+            ->json('POST', '/register', [
+                'name' => 'Registered user',
+                'email' => $email,
+                'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+                'roles' => [
+                    $newRole->getKey(),
+                ],
+            ])
             ->assertStatus(Response::HTTP_CREATED)
             ->assertJsonFragment([
                 $newRole->getKeyName() => $newRole->getKey(),
@@ -2311,15 +2811,17 @@ class AuthTest extends TestCase
             $user->hasAllRoles([$newRole, $authenticated]),
         );
 
-        Notification::assertSentTo(
-            [$user],
-            UserRegistered::class,
-        );
+        Mail::assertSent(UserRegistered::class, function (UserRegistered $mail) use ($user) {
+            $mail->assertTo($user->email);
+            $mail->assertHasSubject('Witamy na pokładzie! Konto utworzono');
+
+            return true;
+        });
     }
 
     public function testRegisterWithPhone(): void
     {
-        Notification::fake();
+        Mail::fake();
 
         $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
         $role->givePermissionTo('auth.register');
@@ -2366,9 +2868,10 @@ class AuthTest extends TestCase
 
     public function testRegisterWithMetadata(): void
     {
-        Notification::fake();
+        Mail::fake();
 
-        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        /** @var Role $role */
+        $role = Role::query()->where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
         $role->givePermissionTo('auth.register');
         $email = $this->faker->email();
         $longText = $this->faker->text(1000);
@@ -2404,7 +2907,8 @@ class AuthTest extends TestCase
                 ],
             ]);
 
-        $user = User::where('email', $email)->first();
+        /** @var User $user */
+        $user = User::query()->where('email', $email)->first();
 
         $this->assertDatabaseMissing('metadata', [
             'model_id' => $user->getKey(),
@@ -2424,10 +2928,12 @@ class AuthTest extends TestCase
             'value' => 'test2',
         ]);
 
-        Notification::assertSentTo(
-            [$user],
-            UserRegistered::class,
-        );
+        Mail::assertSent(UserRegistered::class, function (UserRegistered $mail) use ($user) {
+            $mail->assertTo($user->email);
+            $mail->assertHasSubject('Witamy na pokładzie! Konto utworzono');
+
+            return true;
+        });
     }
 
     private function decryptData(string $data): array|false

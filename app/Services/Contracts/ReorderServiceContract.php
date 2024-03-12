@@ -13,4 +13,9 @@ interface ReorderServiceContract
      * @param class-string<Model> $class
      */
     public function reorderAndSave(string $class, ReorderDto $dto): void;
+
+    /**
+     * @param class-string<Model> $class
+     */
+    public function assignOrderToAll(string $class): void;
 }

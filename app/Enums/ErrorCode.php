@@ -2,28 +2,32 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
+use App\Enums\Traits\EnumTrait;
 
-final class ErrorCode extends Enum
+enum ErrorCode: string
 {
-    public const NOT_FOUND = 'Not found';
-    public const INTERNAL_SERVER_ERROR = 'Internal server error';
-    public const UNAUTHORIZED = 'Unauthorized';
-    public const FORBIDDEN = 'Forbidden';
-    public const UNPROCESSABLE_ENTITY = 'Unprocessable entity';
-    public const BAD_REQUEST = 'Bad request';
-    public const BAD_GATEWAY = 'Bad gateway';
-    public const VALIDATION_ERROR = 'Validation error';
+    use EnumTrait;
 
-    public static function getCode(string $value): int
+    case BAD_GATEWAY = 'Bad gateway';
+    case BAD_REQUEST = 'Bad request';
+    case FORBIDDEN = 'Forbidden';
+    case INTERNAL_SERVER_ERROR = 'Internal server error';
+    case NOT_FOUND = 'Not found';
+    case UNAUTHORIZED = 'Unauthorized';
+    case UNPROCESSABLE_ENTITY = 'Unprocessable entity';
+    case VALIDATION_ERROR = 'Validation error';
+    case NOT_ACCEPTABLE = 'Not acceptable';
+
+    public function getCode(): int
     {
-        return match ($value) {
+        return match ($this) {
+            self::BAD_GATEWAY => 502,
+            self::BAD_REQUEST => 400,
+            self::FORBIDDEN => 403,
             self::NOT_FOUND => 404,
             self::UNAUTHORIZED => 401,
-            self::FORBIDDEN => 403,
+            self::NOT_ACCEPTABLE => 406,
             self::UNPROCESSABLE_ENTITY, self::VALIDATION_ERROR => 422,
-            self::BAD_REQUEST => 400,
-            self::BAD_GATEWAY => 502,
             default => 500,
         };
     }

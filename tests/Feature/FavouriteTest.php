@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\ProductSet;
+use Domain\ProductSet\ProductSet;
 use Tests\TestCase;
 
 class FavouriteTest extends TestCase
@@ -134,6 +134,7 @@ class FavouriteTest extends TestCase
 
         $this->{$user}->favouriteProductSets()->create([
             'product_set_id' => $this->productSet->getKey(),
+            'user_type' => $this->{$user}->getMorphClass(),
         ]);
 
         $this

@@ -17,7 +17,7 @@ return new class extends Migration {
         ]);
 
         Role::query()
-            ->where('type', RoleType::OWNER)
+            ->where('type', RoleType::OWNER->value)
             ->firstOrFail()
             ->givePermissionTo('products.show_attachments_private');
     }
@@ -28,7 +28,7 @@ return new class extends Migration {
     public function down(): void
     {
         Role::query()
-            ->where('type', RoleType::OWNER)
+            ->where('type', RoleType::OWNER->value)
             ->firstOrFail()
             ->revokePermissionTo('products.show_attachments_private');
 

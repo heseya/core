@@ -3,18 +3,18 @@
 namespace Tests\Feature;
 
 use App\Enums\ShippingType;
-use App\Events\OrderRequestedShipping;
 use App\Events\OrderUpdated;
 use App\Events\OrderUpdatedShippingNumber;
 use App\Listeners\WebHookEventListener;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\OrderProduct;
-use App\Models\PackageTemplate;
 use App\Models\Product;
-use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\WebHook;
+use Brick\Money\Money;
+use Domain\Currency\Currency;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Bus;
@@ -37,6 +37,7 @@ class OrderUpdateTest extends TestCase
     private Address $addressDelivery;
     private Address $addressInvoice;
     private Address $address;
+    private Currency $currency;
 
     public function setUp(): void
     {
@@ -66,6 +67,8 @@ class OrderUpdateTest extends TestCase
         $this->order->products()->save(
             OrderProduct::factory()->make(),
         );
+
+        $this->currency = Currency::DEFAULT;
     }
 
     public function testUpdateUnauthorized(): void
@@ -113,6 +116,7 @@ class OrderUpdateTest extends TestCase
                     'hidden' => $this->status->hidden,
                     'no_notifications' => $this->status->no_notifications,
                     'metadata' => [],
+                    'published' => [$this->lang],
                 ],
                 'shipping_place' => [
                     'id' => $responseData->shipping_place->id,
@@ -283,6 +287,7 @@ class OrderUpdateTest extends TestCase
                     'hidden' => $this->status->hidden,
                     'no_notifications' => $this->status->no_notifications,
                     'metadata' => [],
+                    'published' => [$this->lang],
                 ],
                 'shipping_place' => [
                     'id' => $responseData->shipping_place->id,
@@ -373,6 +378,7 @@ class OrderUpdateTest extends TestCase
                     'hidden' => $this->status->hidden,
                     'no_notifications' => $this->status->no_notifications,
                     'metadata' => [],
+                    'published' => [$this->lang],
                 ],
                 'shipping_place' => [
                     'id' => $responseData->shipping_place->id,
@@ -457,6 +463,7 @@ class OrderUpdateTest extends TestCase
                     'hidden' => $this->status->hidden,
                     'no_notifications' => $this->status->no_notifications,
                     'metadata' => [],
+                    'published' => [$this->lang],
                 ],
             ]);
 
@@ -502,6 +509,7 @@ class OrderUpdateTest extends TestCase
                     'hidden' => $this->status->hidden,
                     'no_notifications' => $this->status->no_notifications,
                     'metadata' => [],
+                    'published' => [$this->lang],
                 ],
             ]);
 
@@ -578,6 +586,7 @@ class OrderUpdateTest extends TestCase
                     'hidden' => $this->status->hidden,
                     'no_notifications' => $this->status->no_notifications,
                     'metadata' => [],
+                    'published' => [$this->lang],
                 ],
                 'shipping_place' => [
                     'address' => $this->addressDelivery->address,
@@ -676,6 +685,7 @@ class OrderUpdateTest extends TestCase
                     'hidden' => $this->status->hidden,
                     'no_notifications' => $this->status->no_notifications,
                     'metadata' => [],
+                    'published' => [$this->lang],
                 ],
                 'billing_address' => [
                     'address' => $this->addressInvoice->address,
@@ -796,7 +806,7 @@ class OrderUpdateTest extends TestCase
             'id' => $order->getKey(),
             'invoice_requested' => true,
             'shipping_place' => $order->shipping_place,
-            'shipping_type' => ShippingType::ADDRESS,
+            'shipping_type' => ShippingType::ADDRESS->value,
             'shipping_address_id' => $this->addressDelivery->getKey(),
         ]);
 
@@ -843,7 +853,7 @@ class OrderUpdateTest extends TestCase
             'invoice_requested' => true,
             'shipping_address_id' => $pointAddress->getKey(),
             'shipping_place' => null,
-            'shipping_type' => ShippingType::POINT,
+            'shipping_type' => ShippingType::POINT->value,
         ]);
 
         $this->assertDatabaseHas('addresses', [
@@ -885,7 +895,7 @@ class OrderUpdateTest extends TestCase
             'invoice_requested' => true,
             'shipping_address_id' => null,
             'shipping_place' => 'Testowy numer domu w testowym mieście',
-            'shipping_type' => ShippingType::POINT_EXTERNAL,
+            'shipping_type' => ShippingType::POINT_EXTERNAL->value,
         ]);
 
         Event::assertDispatched(OrderUpdated::class);
@@ -937,82 +947,6 @@ class OrderUpdateTest extends TestCase
         $response->assertStatus(422);
 
         Event::assertNotDispatched(OrderUpdated::class);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testShippingListDispatched($user): void
-    {
-        $this->{$user}->givePermissionTo(['orders.edit', 'orders.edit.status']);
-
-        $webHook = WebHook::factory()->create([
-            'events' => [
-                'OrderRequestedShipping',
-            ],
-            'model_type' => $this->{$user}::class,
-            'creator_id' => $this->{$user}->getKey(),
-            'with_issuer' => false,
-            'with_hidden' => false,
-        ]);
-
-        $package = PackageTemplate::factory()->create();
-
-        Event::fake([OrderRequestedShipping::class]);
-
-        $this->actingAs($this->{$user})
-            ->postJson(
-                '/orders/id:' . $this->order->getKey() . '/shipping-lists',
-                [
-                    'package_template_id' => $package->getKey(),
-                ],
-            )->assertOk()
-            ->assertJsonFragment([
-                'id' => $this->order->getKey(),
-            ]);
-
-        Event::assertDispatched(OrderRequestedShipping::class);
-
-        Bus::fake();
-
-        $event = new OrderRequestedShipping($this->order, $package);
-        $listener = new WebHookEventListener();
-
-        $listener->handle($event);
-
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $package) {
-            $payload = $job->payload;
-
-            return $job->webhookUrl === $webHook->url
-                && isset($job->headers['Signature'])
-                && $payload['data']['order']['id'] === $this->order->getKey()
-                && $payload['data']['package']['id'] === $package->getKey()
-                && $payload['data_type'] === 'ShippingRequest'
-                && $payload['event'] === 'OrderRequestedShipping';
-        });
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testShippingListNotExistingPackageTemplate($user): void
-    {
-        $this->{$user}->givePermissionTo(['orders.edit', 'orders.edit.status']);
-
-        Event::fake([OrderRequestedShipping::class]);
-
-        $package = PackageTemplate::factory()->create();
-        $package->delete();
-
-        $this->actingAs($this->{$user})
-            ->postJson(
-                '/orders/id:' . $this->order->getKey() . '/shipping-lists',
-                [
-                    'package_template_id' => $package->getKey(),
-                ],
-            )->assertUnprocessable();
-
-        Event::assertNotDispatched(OrderRequestedShipping::class);
     }
 
     /**
@@ -1091,8 +1025,8 @@ class OrderUpdateTest extends TestCase
         $orderProduct = $this->order->products()->create([
             'product_id' => $product->getKey(),
             'quantity' => 3,
-            'price' => 80.00,
-            'price_initial' => 80.00,
+            'price' => Money::of(80.00, $this->currency->value),
+            'price_initial' => Money::of(80.00, $this->currency->value),
             'name' => $product->name,
         ]);
 
@@ -1139,8 +1073,8 @@ class OrderUpdateTest extends TestCase
         $orderProduct = $this->order->products()->create([
             'product_id' => $product->getKey(),
             'quantity' => 3,
-            'price' => 80.00,
-            'price_initial' => 80.00,
+            'price' => Money::of(80.00, $this->currency->value),
+            'price_initial' => Money::of(80.00, $this->currency->value),
             'name' => $product->name,
         ]);
 
@@ -1209,8 +1143,8 @@ class OrderUpdateTest extends TestCase
         $order->products()->create([
             'product_id' => $product->getKey(),
             'quantity' => 3,
-            'price' => 80.00,
-            'price_initial' => 80.00,
+            'price' => Money::of(80.00, $this->currency->value),
+            'price_initial' => Money::of(80.00, $this->currency->value),
             'name' => $product->name,
             'shipping_digital' => true,
         ]);
@@ -1258,8 +1192,8 @@ class OrderUpdateTest extends TestCase
         $order->products()->create([
             'product_id' => $product->getKey(),
             'quantity' => 3,
-            'price' => 80.00,
-            'price_initial' => 80.00,
+            'price' => Money::of(80.00, $this->currency->value),
+            'price_initial' => Money::of(80.00, $this->currency->value),
             'name' => $product->name,
             'shipping_digital' => true,
         ]);
@@ -1293,8 +1227,8 @@ class OrderUpdateTest extends TestCase
         $orderProduct = $this->order->products()->create([
             'product_id' => $product->getKey(),
             'quantity' => 3,
-            'price' => 80.00,
-            'price_initial' => 80.00,
+            'price' => Money::of(80.00, $this->currency->value),
+            'price_initial' => Money::of(80.00, $this->currency->value),
             'name' => $product->name,
         ]);
 
@@ -1370,15 +1304,16 @@ class OrderUpdateTest extends TestCase
             'shipping_place' => 'external shipping place',
         ]);
 
+        $price = Money::of(1000.00, $this->currency->value);
         $orderProduct = new OrderProduct([
             'product_id' => $product->getKey(),
             'quantity' => 1,
-            'price_initial' => $product->price,
-            'price' => $product->price,
-            'base_price_initial' => $product->price,
-            'base_price' => $product->price,
+            'price_initial' => $price,
+            'price' => $price,
+            'base_price_initial' => $price,
+            'base_price' => $price,
             'name' => $product->name,
-            'vat_rate' => 0.23,
+            'vat_rate' => '0',
             'shipping_digital' => $product->shipping_digital,
         ]);
 
@@ -1445,15 +1380,16 @@ class OrderUpdateTest extends TestCase
             'shipping_address_id' => $address->getKey(),
         ]);
 
+        $price = Money::of(1000.00, $this->currency->value);
         $orderProduct = new OrderProduct([
             'product_id' => $product->getKey(),
             'quantity' => 1,
-            'price_initial' => $product->price,
-            'price' => $product->price,
-            'base_price_initial' => $product->price,
-            'base_price' => $product->price,
+            'price_initial' => $price,
+            'price' => $price,
+            'base_price_initial' => $price,
+            'base_price' => $price,
             'name' => $product->name,
-            'vat_rate' => 0.23,
+            'vat_rate' => '0',
             'shipping_digital' => $product->shipping_digital,
         ]);
 
@@ -1500,9 +1436,12 @@ class OrderUpdateTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('addresses', $newAddress);
-        $this->assertDatabaseMissing('addresses', [
-            'id' => $address->getKey(),
-        ] + $newAddress);
+        $this->assertDatabaseMissing(
+            'addresses',
+            [
+                'id' => $address->getKey(),
+            ] + $newAddress
+        );
     }
 
     private function checkAddress(Address $address): void

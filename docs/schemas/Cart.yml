@@ -1,18 +1,21 @@
 Cart:
   type: object
   properties:
+    currency:
+      type: string
+      example: 'PLN'
     cart_total_initial:
-      type: number
-      example: 380.7
+      type: string
+      example: '380.7'
     cart_total:
-      type: number
-      example: 180.7
+      type: string
+      example: '180.7'
     shipping_price_initial:
-      type: number
-      example: 38.7
+      type: string
+      example: '38.7'
     shipping_price:
-      type: number
-      example: 18.7
+      type: string
+      example: '18.7'
     shipping_time:
       type: integer
       example: 5
@@ -21,8 +24,8 @@ Cart:
       format: date-time
       example: '2021-09-13T11:11'
     summary:
-      type: number
-      example: 189.4
+      type: string
+      example: '189.4'
     items:
       type: array
       items:
@@ -43,11 +46,11 @@ CartItemResponse:
       type: string
       example: 1
     price:
-      type: number
-      example: 380.7
+      type: string
+      example: '380.7'
     price_discounted:
-      type: number
-      example: 180.7
+      type: string
+      example: '180.7'
     quantity:
       type: number
       example: 1
@@ -62,8 +65,8 @@ SalesShortResource:
       type: string
       example: 'Black Week'
     value:
-      type: number
-      example: 100
+      type: string
+      example: '50.0'
 
 CouponShortResource:
   type: object

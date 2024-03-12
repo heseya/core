@@ -13,22 +13,15 @@ use App\Events\ItemUpdatedQuantity;
 use App\Events\NewLocalizationLoginAttempt;
 use App\Events\OrderCreated;
 use App\Events\OrderDocumentEvent;
-use App\Events\OrderRequestedShipping;
 use App\Events\OrderUpdated;
 use App\Events\OrderUpdatedPaid;
 use App\Events\OrderUpdatedShippingNumber;
 use App\Events\OrderUpdatedStatus;
-use App\Events\PageCreated;
-use App\Events\PageDeleted;
-use App\Events\PageUpdated;
 use App\Events\PasswordReset;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductPriceUpdated;
 use App\Events\ProductSearchValueEvent;
-use App\Events\ProductSetCreated;
-use App\Events\ProductSetDeleted;
-use App\Events\ProductSetUpdated;
 use App\Events\ProductUpdated;
 use App\Events\SaleCreated;
 use App\Events\SaleDeleted;
@@ -44,21 +37,30 @@ use App\Events\UserDeleted;
 use App\Events\UserUpdated;
 use App\Listeners\ItemUpdatedQuantityListener;
 use App\Listeners\OrderCreatedListener;
+use App\Listeners\OrderPaidListener;
 use App\Listeners\OrderUpdatedStatusListener;
 use App\Listeners\ProductSearchValueListener;
-use App\Listeners\UserCreatedListener;
 use App\Listeners\WebHookEventListener;
 use App\Listeners\WebHookFailedListener;
-use App\Models\AttributeOption;
 use App\Models\Deposit;
 use App\Models\ItemProduct;
 use App\Models\Payment;
 use App\Models\Schema;
-use App\Observers\AttributeOptionObserver;
 use App\Observers\DepositObserver;
 use App\Observers\ItemProductObserver;
 use App\Observers\PaymentObserver;
 use App\Observers\SchemaObserver;
+use Domain\Language\Events\LanguageCreated;
+use Domain\Language\Events\LanguageDeleted;
+use Domain\Language\Events\LanguageUpdated;
+use Domain\Page\Events\PageCreated;
+use Domain\Page\Events\PageDeleted;
+use Domain\Page\Events\PageUpdated;
+use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\ProductAttribute\Observers\AttributeOptionObserver;
+use Domain\ProductSet\Events\ProductSetCreated;
+use Domain\ProductSet\Events\ProductSetDeleted;
+use Domain\ProductSet\Events\ProductSetUpdated;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
 use SocialiteProviders\Apple\AppleExtendSocialite;
@@ -85,14 +87,13 @@ class EventServiceProvider extends ServiceProvider
         ItemUpdatedQuantity::class => [
             ItemUpdatedQuantityListener::class,
         ],
-        UserCreated::class => [
-            UserCreatedListener::class,
+        OrderUpdatedPaid::class => [
+            OrderPaidListener::class,
         ],
         ProductSearchValueEvent::class => [
             ProductSearchValueListener::class,
         ],
     ];
-
     /** @var array<class-string> */
     private array $webhookEvents = [
         CouponCreated::class,
@@ -103,30 +104,32 @@ class EventServiceProvider extends ServiceProvider
         ItemDeleted::class,
         ItemUpdated::class,
         ItemUpdatedQuantity::class,
+        LanguageCreated::class,
+        LanguageDeleted::class,
+        LanguageUpdated::class,
         NewLocalizationLoginAttempt::class,
         OrderCreated::class,
         OrderDocumentEvent::class,
-        OrderRequestedShipping::class,
         OrderUpdated::class,
         OrderUpdatedPaid::class,
         OrderUpdatedShippingNumber::class,
         OrderUpdatedStatus::class,
-        SendOrderUrls::class,
         PageCreated::class,
         PageDeleted::class,
         PageUpdated::class,
         PasswordReset::class,
         ProductCreated::class,
         ProductDeleted::class,
+        ProductUpdated::class,
+        ProductPriceUpdated::class,
         ProductSetCreated::class,
         ProductSetDeleted::class,
         ProductSetUpdated::class,
-        ProductUpdated::class,
-        ProductPriceUpdated::class,
         SaleCreated::class,
         SaleDeleted::class,
         SaleUpdated::class,
         SendOrderDocument::class,
+        SendOrderUrls::class,
         SuccessfulLoginAttempt::class,
         TfaInit::class,
         TfaRecoveryCodesChanged::class,

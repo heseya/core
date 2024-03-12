@@ -35,8 +35,8 @@ return new class extends Migration {
         ]);
 
         Role::whereIn('type', [
-            RoleType::OWNER,
-            RoleType::AUTHENTICATED,
+            RoleType::OWNER->value,
+            RoleType::AUTHENTICATED->value,
         ])
             ->get()
             ->each(fn (Role $role) => $role->givePermissionTo(['auth.sessions.revoke', 'auth.sessions.show']));

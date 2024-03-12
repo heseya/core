@@ -1,0 +1,44 @@
+SalesChannel:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string
+    vat_rate:
+      type: string
+      example: '23'
+    slug:
+      type: string
+    status:
+      type: string
+      enum:
+        - inactive
+        - active
+        - hidden
+    default_currency:
+      type: object
+      $ref: ./Currencies.yml#/Currency
+    default_language:
+      type: object
+      $ref: ./Languages.yml#/Language
+    countries_block_list:
+      type: boolean
+    countries:
+      type: array
+      items:
+        type: string
+    translations:
+      type: object
+      properties:
+        lang_uuid:
+          type: object
+          properties:
+            name:
+              type: string
+    published:
+      type: array
+      items:
+        type: string
+        format: uuid

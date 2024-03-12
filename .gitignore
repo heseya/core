@@ -4,6 +4,9 @@
 /public/js
 /public/mix-manifest.json
 /storage/*.key
+/storage/*.index
+/storage/*.index-shm
+/storage/*.index-wal
 /vendor
 .env
 .phpunit.result.cache
@@ -17,3 +20,4 @@ _ide_helper_models.php
 .phpstorm.meta.php
 .deptrac.cache
 .phpunit.cache
+silverbox

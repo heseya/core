@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
 use App\Models\Permission;
 use App\Models\Role;
@@ -60,6 +61,7 @@ class RoleTest extends TestCase
                 'deletable' => true,
                 'metadata' => [],
                 'users_count' => 1,
+                'is_joinable' => false,
             ],
             ])
             ->assertJsonFragment([[
@@ -71,6 +73,7 @@ class RoleTest extends TestCase
                 'deletable' => true,
                 'metadata' => [],
                 'users_count' => 0,
+                'is_joinable' => false,
             ],
             ]);
     }
@@ -309,6 +312,7 @@ class RoleTest extends TestCase
                 'deletable' => true,
                 'users_count' => 0,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ])
             ->assertJsonFragment([[
@@ -320,6 +324,7 @@ class RoleTest extends TestCase
                 'deletable' => true,
                 'users_count' => 0,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ])
             ->assertJsonFragment([[
@@ -331,6 +336,7 @@ class RoleTest extends TestCase
                 'deletable' => false,
                 'users_count' => 0,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ])
             ->assertJsonFragment([[
@@ -342,6 +348,7 @@ class RoleTest extends TestCase
                 'deletable' => false,
                 'users_count' => 0,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ]);
     }
@@ -388,6 +395,7 @@ class RoleTest extends TestCase
                 'deletable' => true,
                 'users_count' => 0,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ])
             ->assertJsonFragment([[
@@ -399,6 +407,7 @@ class RoleTest extends TestCase
                 'deletable' => true,
                 'users_count' => 0,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ]);
     }
@@ -638,6 +647,7 @@ class RoleTest extends TestCase
                 'test.custom1',
                 'test.custom2',
             ],
+            'is_joinable' => true,
         ]);
 
         $response
@@ -653,6 +663,7 @@ class RoleTest extends TestCase
                     'test.custom2',
                 ],
                 'metadata' => [],
+                'is_joinable' => true,
             ],
             ]);
 
@@ -972,6 +983,8 @@ class RoleTest extends TestCase
         $role = Role::create([
             'name' => 'role1',
             'description' => 'Role 1',
+            'is_joinable' => false,
+            'type' => RoleType::REGULAR,
         ]);
 
         $permission1 = Permission::create(['name' => 'test.custom1']);
@@ -980,16 +993,15 @@ class RoleTest extends TestCase
         $role->syncPermissions([$permission1, $permission2]);
         $this->{$user}->givePermissionTo([$permission1, $permission2, $permission3]);
 
-        $response = $this->actingAs($this->{$user})->patchJson('/roles/id:' . $role->getKey(), [
+        $this->actingAs($this->{$user})->patchJson('/roles/id:' . $role->getKey(), [
             'name' => 'test_role',
             'description' => 'Test role',
             'permissions' => [
                 'test.custom2',
                 'test.custom3',
             ],
-        ]);
-
-        $response
+            'is_joinable' => true,
+        ])
             ->assertOk()
             ->assertJson(['data' => [
                 'name' => 'test_role',
@@ -1002,6 +1014,7 @@ class RoleTest extends TestCase
                     'test.custom3',
                 ],
                 'metadata' => [],
+                'is_joinable' => true,
             ],
             ]);
 
@@ -1009,6 +1022,7 @@ class RoleTest extends TestCase
             $role->getKeyName() => $role->getKey(),
             'name' => 'test_role',
             'description' => 'Test role',
+            'is_joinable' => true,
         ]);
 
         $role = Role::findByName('test_role');
@@ -1057,6 +1071,35 @@ class RoleTest extends TestCase
             'description' => 'Role 1',
             'is_registration_role' => true,
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOwnerIsJoinable($user): void
+    {
+        $this->{$user}->givePermissionTo('roles.edit');
+
+        $role = Role::create([
+            'name' => 'role1',
+            'description' => 'Role 1',
+            'is_joinable' => false,
+        ]);
+        $role->type = RoleType::OWNER;
+        $role->save();
+
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson('/roles/id:' . $role->getKey(), [
+                'name' => 'test_role',
+                'is_joinable' => true,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => Exceptions::CLIENT_UPDATE_NOT_REGULAR_JOINABLE->name,
+            ])->assertJsonFragment([
+                'message' => Exceptions::CLIENT_UPDATE_NOT_REGULAR_JOINABLE,
+            ]);
     }
 
     /**

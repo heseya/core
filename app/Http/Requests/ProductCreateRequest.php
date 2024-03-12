@@ -5,11 +5,16 @@ namespace App\Http\Requests;
 use App\Http\Requests\Contracts\MetadataRequestContract;
 use App\Http\Requests\Contracts\SeoRequestContract;
 use App\Rules\AttributeOptionExist;
+use App\Rules\Price;
+use App\Rules\PricesEveryCurrency;
 use App\Rules\ProductAttributeOptions;
+use App\Rules\Translations;
 use App\Rules\UniqueIdInRequest;
 use App\Traits\MetadataRules;
 use App\Traits\SeoRules;
+use Brick\Math\BigDecimal;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ProductCreateRequest extends FormRequest implements MetadataRequestContract, SeoRequestContract
 {
@@ -19,19 +24,27 @@ class ProductCreateRequest extends FormRequest implements MetadataRequestContrac
     public function rules(): array
     {
         return array_merge(
-            $this->seoRules(),
             $this->metadataRules(),
             [
                 'id' => ['uuid'],
+                'translations' => [
+                    'required',
+                    new Translations(['name', 'description_html', 'description_short']),
+                ],
+                'translations.*.name' => ['required', 'string', 'max:255'],
+                'translations.*.description_html' => ['nullable', 'string'],
+                'translations.*.description_short' => ['nullable', 'string'],
 
-                'name' => ['required', 'string', 'max:255'],
-                'slug' => ['required', 'string', 'max:255', 'unique:products', 'alpha_dash'],
-                'price' => ['required', 'numeric', 'min:0'],
+                'published' => ['required', 'array', 'min:1'],
+                'published.*' => ['uuid', 'exists:languages,id'],
+
+                'slug' => ['required', 'string', 'max:255', 'alpha_dash', Rule::unique('products', 'slug')->whereNull('deleted_at')],
+
+                'prices_base' => ['required', new PricesEveryCurrency()],
+                'prices_base.*' => [new Price(['value'], min: BigDecimal::zero())],
+
                 'public' => ['required', 'boolean'],
                 'shipping_digital' => ['required', 'boolean'],
-
-                'description_html' => ['nullable', 'string'],
-                'description_short' => ['nullable', 'string', 'max:5000'],
 
                 'quantity_step' => ['numeric'],
                 'vat_rate' => ['numeric', 'min:0', 'max:100'],
@@ -64,6 +77,14 @@ class ProductCreateRequest extends FormRequest implements MetadataRequestContrac
 
                 'related_sets' => ['array'],
                 'related_sets.*' => ['uuid', 'exists:product_sets,id'],
+                'banner' => ['nullable', 'array'],
+                'banner.url' => ['string', 'nullable'],
+                'banner.translations' => ['array'],
+                'banner.translations.*.title' => ['nullable', 'string'],
+                'banner.translations.*.subtitle' => ['nullable', 'string'],
+                'banner.media' => ['array'],
+                'banner.media.*.min_screen_width' => ['required', 'int'],
+                'banner.media.*.media' => ['required', 'uuid', 'exists:media,id'],
             ],
         );
     }

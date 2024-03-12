@@ -12,6 +12,8 @@ use Omnipay\PayPal\RestGateway;
 
 class PayPal implements PaymentMethod
 {
+    private const APPROVAL_URL = 'approval_url';
+
     public static function generateUrl(Payment $payment): array
     {
         /**
@@ -22,17 +24,19 @@ class PayPal implements PaymentMethod
         $gateway->setSecret(Config::get('paypal.client_secret'));
         $gateway->setTestMode(Config::get('paypal.sandbox'));
 
+        $amount = $payment->amount->getAmount()->toFloat();
+
         $response = $gateway->purchase([
-            'amount' => $payment->amount,
+            'amount' => $amount,
             'items' => [
                 [
                     'name' => $payment->order->code,
-                    'price' => $payment->amount,
+                    'price' => $amount,
                     'description' => 'Order ' . $payment->order->code,
                     'quantity' => 1,
                 ],
             ],
-            'currency' => $payment->order->currency,
+            'currency' => $payment->currency->value,
             'returnUrl' => Config::get('app.url') . '/payments/paypal',
             'cancelUrl' => Config::get('app.url') . '/payments/paypal',
         ])->send();
@@ -40,6 +44,7 @@ class PayPal implements PaymentMethod
         return [
             'external_id' => $response->getData()['id'],
             'redirect_url' => $response->getRedirectUrl(),
+            'additional_data' => self::getTokenTransaction($response->getData()),
         ];
     }
 
@@ -53,14 +58,30 @@ class PayPal implements PaymentMethod
         $gateway->setSecret(Config::get('paypal.client_secret'));
         $gateway->setTestMode(Config::get('paypal.sandbox'));
 
+        $validated = $request->validate([
+            'PayerID' => ['sometimes', 'required', 'string'],
+            'paymentId' => ['required_with:PayerID', 'string'],
+            'token' => ['sometimes', 'required', 'string'],
+        ]);
+
+        if (array_key_exists('token', $validated)
+            && !array_key_exists('PayerID', $validated)
+            && !array_key_exists('paymentId', $validated)) {
+            $payment = Payment::query()
+                ->where('additional_data', $validated['token'])
+                ->firstOrFail();
+
+            return Redirect::to($payment->continue_url ?? Config::get('app.store_url'));
+        }
+
         $transaction = $gateway->completePurchase([
-            'payer_id' => $request->input('PayerID'),
-            'transactionReference' => $request->input('paymentId'),
+            'payer_id' => $validated['PayerID'],
+            'transactionReference' => $validated['paymentId'],
         ]);
         $response = $transaction->send();
 
         $payment = Payment::query()
-            ->where('external_id', $request->input('paymentId'))
+            ->where('external_id', $validated['paymentId'])
             ->firstOrFail();
 
         if (!$response->isSuccessful()) {
@@ -72,5 +93,53 @@ class PayPal implements PaymentMethod
         ]);
 
         return Redirect::to($payment->continue_url ?? Config::get('app.store_url'));
+    }
+
+    private static function getUrlQueryVariables(string $variablesString): array
+    {
+        $variables = explode('&', $variablesString);
+        $result = [];
+
+        foreach ($variables as $variable) {
+            $explode = explode('=', $variable);
+            $result[$explode[0]] = $explode[1];
+        }
+
+        return $result;
+    }
+
+    private static function getTokenTransaction(array $data): ?string
+    {
+        if (!array_key_exists('links', $data)) {
+            return null;
+        }
+        $token = null;
+
+        foreach ($data['links'] as $link) {
+            if (!array_key_exists('href', $link) && !array_key_exists('rel', $link)) {
+                continue;
+            }
+
+            if ($link['rel'] !== self::APPROVAL_URL) {
+                continue;
+            }
+
+            $urlQueryString = parse_url($link['href'], PHP_URL_QUERY);
+
+            if (!is_string($urlQueryString)) {
+                return null;
+            }
+
+            $queryVariables = self::getUrlQueryVariables($urlQueryString);
+
+            if (!array_key_exists('token', $queryVariables)) {
+                return null;
+            }
+
+            $token = $queryVariables['token'];
+            break;
+        }
+
+        return $token;
     }
 }

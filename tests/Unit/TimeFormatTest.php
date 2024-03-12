@@ -4,7 +4,6 @@ namespace Tests\Unit;
 
 use App\Models\Address;
 use App\Models\App;
-use App\Models\Audit;
 use App\Models\Deposit;
 use App\Models\Discount;
 use App\Models\Item;
@@ -13,23 +12,28 @@ use App\Models\Option;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\OrderSchema;
-use App\Models\PackageTemplate;
-use App\Models\Page;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\Permission;
 use App\Models\Price;
 use App\Models\PriceRange;
 use App\Models\Product;
-use App\Models\ProductSet;
 use App\Models\Role;
 use App\Models\Schema;
-use App\Models\Setting;
-use App\Models\ShippingMethod;
 use App\Models\Status;
-use App\Models\Tag;
 use App\Models\Token;
 use App\Models\User;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
+use Domain\Currency\Currency;
+use Domain\Page\Page;
+use Domain\Price\Enums\ProductPriceType;
+use Domain\ProductSet\ProductSet;
+use Domain\Setting\Models\Setting;
+use Domain\ShippingMethod\Models\ShippingMethod;
+use Domain\Tag\Models\Tag;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -47,17 +51,6 @@ class TimeFormatTest extends TestCase
     public function testAppTimeFormat(): void
     {
         $this->modelTimeFormat(App::factory()->create(), ['created_at', 'updated_at']);
-    }
-
-    public function testAuditTimeFormat(): void
-    {
-        $audit = Audit::create([
-            'event' => 'event',
-            'auditable_type' => 'auditable_type',
-            'auditable_id' => 'auditable_id',
-        ]);
-
-        $this->modelTimeFormat($audit, ['created_at']);
     }
 
     public function testDepositTimeFormat(): void
@@ -155,11 +148,6 @@ class TimeFormatTest extends TestCase
         $this->modelTimeFormat($orderSchema, ['created_at', 'updated_at']);
     }
 
-    public function testPackageTemplateTimeFormat(): void
-    {
-        $this->modelTimeFormat(PackageTemplate::factory()->create(), ['created_at', 'updated_at']);
-    }
-
     public function testPageTimeFormat(): void
     {
         $this->modelTimeFormat(Page::factory()->create(), ['created_at', 'updated_at']);
@@ -171,6 +159,7 @@ class TimeFormatTest extends TestCase
         $order = Order::factory()->create();
         $payment = Payment::factory()->create([
             'order_id' => $order->getKey(),
+            'currency' => $order->currency,
         ]);
 
         $this->modelTimeFormat($payment, ['created_at', 'updated_at']);
@@ -190,21 +179,35 @@ class TimeFormatTest extends TestCase
         $this->modelTimeFormat($permission, ['created_at', 'updated_at']);
     }
 
+    /**
+     * @throws UnknownCurrencyException
+     * @throws RoundingNecessaryException
+     * @throws NumberFormatException
+     */
     public function testPriceTimeFormat(): void
     {
         $price = Price::query()->create([
             'model_id' => 'model_id',
             'model_type' => 'model_type',
-            'value' => 10,
+            'price_type' => ProductPriceType::PRICE_BASE,
+            'value' => Money::of(10, Currency::DEFAULT->value),
         ]);
 
         $this->modelTimeFormat($price, ['created_at', 'updated_at']);
     }
 
+    /**
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     */
     public function testPriceRangeTimeFormat(): void
     {
+        $currency = Currency::DEFAULT->value;
+
         $priceRange = PriceRange::query()->create([
-            'start' => 0,
+            'start' => Money::zero($currency),
+            'value' => Money::of(10, $currency),
         ]);
 
         $this->modelTimeFormat($priceRange, ['created_at', 'updated_at']);

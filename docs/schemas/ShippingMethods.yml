@@ -7,13 +7,16 @@ ShippingMethod:
     name:
       type: string
       example: 'Next Day Courier'
-    price:
-      description: 'on index shows shipping price for provided "cart_value" (for 0 by default)'
-      type: number
-      example: 2
+    prices:
+      description: 'on index shows shipping prices for provided "cart_value" (for 0 by default)'
+      type: array
+      items:
+        $ref: './../schemas/Prices.yml#/PriceResource'
     public:
       type: boolean
-    block_list:
+    is_block_list_countries:
+      type: boolean
+    is_block_list_products:
       type: boolean
     payment_methods:
       type: array
@@ -47,6 +50,16 @@ ShippingMethod:
         - address
         - point
         - point-external
+    product_ids:
+      type: array
+      items:
+        type: string
+        format: uuid
+    product_set_ids:
+      type: array
+      items:
+        type: string
+        format: uuid
     metadata:
       $ref: './../schemas/Metadata.yml#/Metadata'
     metadata_private:

@@ -1,0 +1,78 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Setting\Services;
+
+use Domain\Setting\Models\Setting;
+use Domain\Setting\Services\Contracts\SettingsServiceContract;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
+
+final class SettingsService implements SettingsServiceContract
+{
+    public function getSettings(bool $publicOnly = false): Collection
+    {
+        $settings = Setting::orderBy('name')->get();
+
+        /** @var Collection<int, mixed> $configSettings */
+        $configSettings = Config::get('settings');
+
+        Collection::make($configSettings)->each(function ($setting, $key) use ($settings): void {
+            if (!$settings->contains('name', $key)) {
+                $settings->push(
+                    new Setting(
+                        $setting + [
+                            'name' => $key,
+                        ],
+                    ),
+                );
+            }
+        });
+
+        if ($publicOnly) {
+            $settings = $settings->filter(fn ($setting) => $setting->public);
+        }
+
+        return $settings;
+    }
+
+    public function getSetting(string $name, mixed $default = null): Setting
+    {
+        $config = Config::get("settings.{$name}");
+
+        if ($config === null && $default === null) {
+            return Setting::where('name', $name)->firstOrFail();
+        }
+
+        $setting = Setting::where('name', $name)->first();
+
+        if ($setting === null) {
+            $setting = new Setting(
+                ($config ?? ['value' => $default]) + ['name' => $name],
+            );
+        }
+
+        return $setting;
+    }
+
+    public function getMinimalPrice(string $name): float
+    {
+        $value = Cache::get($name);
+        if ($value === null) {
+            $value = (float) $this->getSetting($name)->value;
+            Cache::put($name, $value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getAdminMails(): array
+    {
+        return explode(';', $this->getSetting('admin_mails')->value);
+    }
+}

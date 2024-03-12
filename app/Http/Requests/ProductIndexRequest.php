@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use App\Rules\AttributeSearch;
 use App\Rules\CanShowPrivateMetadata;
+use App\Rules\Price;
+use Brick\Math\BigDecimal;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -50,14 +52,15 @@ class ProductIndexRequest extends FormRequest
             'metadata_private' => ['nullable', 'array', new CanShowPrivateMetadata()],
             'metadata_private.*' => ['filled'],
 
-            'price' => ['nullable', 'array'],
-            'price.min' => ['nullable', 'numeric', 'min:0'],
-            'price.max' => ['nullable', 'numeric'],
+            'price' => ['nullable', new Price(['min', 'max'], min: BigDecimal::zero(), nullable: true)],
 
             'attribute' => ['nullable', 'array'],
             'attribute.*' => [new AttributeSearch()],
             'attribute_not' => ['nullable', 'array'],
             'attribute_not.*' => [new AttributeSearch()],
+
+            'with_translations' => ['sometimes', 'boolean'],
+            'attribute_slug' => ['sometimes', 'nullable', 'string'],
 
             'full' => ['boolean'],
         ];

@@ -11,11 +11,10 @@ class PackageException extends StoreException
 
     public function __construct(
         string $message = '',
-        int $code = 0,
         mixed $errors = [],
         ?Throwable $previous = null,
     ) {
-        parent::__construct($message, $code, $previous);
+        parent::__construct($message, $previous);
         $this->errors = $errors;
     }
 
@@ -24,12 +23,14 @@ class PackageException extends StoreException
         if (is_array($this->errors)) {
             $response = [];
             foreach ($this->errors as $key) {
+                /** @var string $field */
                 $field = Str::replace('/', '.', $key->field);
                 $response[$field] = [$key->message . ' [' . $field . ']'];
             }
 
             return $response;
         }
+        /** @var string $field */
         $field = Str::replace('/', '.', $this->errors->field);
 
         return [$field => [$this->errors->message . ' [' . $field . ']']];

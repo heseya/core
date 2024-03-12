@@ -5,7 +5,6 @@ namespace Database\Factories;
 use App\Enums\EventType;
 use App\Models\WebHook;
 use App\Models\WebHookEventLogEntry;
-use Illuminate\Database\Eloquent\Factories\Factory;
 
 class WebHookEventLogEntryFactory extends Factory
 {
@@ -31,7 +30,7 @@ class WebHookEventLogEntryFactory extends Factory
             'url' => $this->faker->url,
             'status_code' => $this->faker->randomElement([200, 400, 500]),
             'payload' => [
-                'event' => EventType::getRandomKey(),
+                'event' => EventType::getRandomName(),
             ],
         ];
     }

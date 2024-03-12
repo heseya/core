@@ -20,13 +20,10 @@ class PrecalculateProductVisibility extends Migration
                     || $product->sets->where('public', true)->where('public_parent', true);
 
                 $newPublic = $product->public && $isAnySetPublic;
-
-                Product::withoutSyncingToSearch(function () use ($product, $newPublic): void {
-                    $product->update([
-                        'public_legacy' => $product->public,
-                        'public' => $newPublic,
-                    ]);
-                });
+                $product->update([
+                    'public_legacy' => $product->public,
+                    'public' => $newPublic,
+                ]);
             },
         ));
     }

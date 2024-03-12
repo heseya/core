@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Product;
-use App\Services\Contracts\ProductServiceContract;
+use App\Services\ProductService;
 use Illuminate\Console\Command;
 
 class UpdateProductsIndex extends Command
@@ -14,7 +14,6 @@ class UpdateProductsIndex extends Command
      * @var string
      */
     protected $signature = 'products:update-index {id?}';
-
     /**
      * The console command description.
      *
@@ -41,8 +40,8 @@ class UpdateProductsIndex extends Command
             return;
         }
 
-        /** @var ProductServiceContract $productService */
-        $productService = app(ProductServiceContract::class);
+        /** @var ProductService $productService */
+        $productService = app(ProductService::class);
 
         $bar = $this->output->createProgressBar($count);
 

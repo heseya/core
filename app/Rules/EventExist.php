@@ -3,33 +3,17 @@
 namespace App\Rules;
 
 use App\Enums\EventType;
-use Illuminate\Contracts\Validation\Rule;
+use Closure;
+use Illuminate\Contracts\Validation\ValidationRule;
 
-class EventExist implements Rule
+class EventExist implements ValidationRule
 {
-    private mixed $event;
-
-    /**
-     * Determine if the validation rule passes.
-     */
-    public function passes($attribute, $value): bool
+    public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         foreach ($value as $v) {
-            if (!EventType::hasValue($v)) {
-                $this->event = $v;
-
-                return false;
+            if (EventType::tryFrom($v) === null) {
+                $fail("The event {$v} not found.");
             }
         }
-
-        return true;
-    }
-
-    /**
-     * Get the validation error message.
-     */
-    public function message(): string
-    {
-        return "The event {$this->event} not found.";
     }
 }

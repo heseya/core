@@ -13,14 +13,14 @@ return new class extends Migration {
             'display_name' => 'Możliwość wyświetlania szczegółów zgody',
         ]);
 
-        Role::where('type', RoleType::OWNER)
+        Role::where('type', RoleType::OWNER->value)
             ->firstOrFail()
             ->givePermissionTo('consents.show_details');
     }
 
     public function down(): void
     {
-        Role::where('type', RoleType::OWNER)
+        Role::where('type', RoleType::OWNER->value)
             ->firstOrFail()
             ->revokePermissionTo('consents.show_details');
 

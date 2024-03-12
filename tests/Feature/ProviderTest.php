@@ -217,7 +217,7 @@ class ProviderTest extends TestCase
         ]);
 
         $response->assertJsonFragment([
-            'key' => Exceptions::getKey(Exceptions::CLIENT_PROVIDER_IS_NOT_ACTIVE),
+            'key' => Exceptions::CLIENT_PROVIDER_IS_NOT_ACTIVE->name,
         ]);
     }
 
@@ -231,7 +231,7 @@ class ProviderTest extends TestCase
         ]);
 
         $response->assertJsonFragment([
-            'key' => Exceptions::getKey(Exceptions::CLIENT_PROVIDER_HAS_NO_CONFIG),
+            'key' => Exceptions::CLIENT_PROVIDER_HAS_NO_CONFIG->name,
         ]);
     }
 

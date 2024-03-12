@@ -20,12 +20,15 @@ use App\Models\DiscountCondition;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
+use Brick\Math\BigDecimal;
+use Brick\Money\Money;
+use Domain\Currency\Currency;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 interface DiscountServiceContract
 {
-    public function calc(float $value, Discount $discount): float;
+    public function calc(Money $value, Discount $discount): Money;
 
     public function index(CouponIndexDto|SaleIndexDto $dto): LengthAwarePaginator;
 
@@ -37,18 +40,19 @@ interface DiscountServiceContract
 
     public function checkCondition(
         DiscountCondition $condition,
+        Money $cartValue,
         ?CartOrderDto $dto = null,
-        float $cartValue = 0,
     ): bool;
 
-    public function checkConditionGroup(ConditionGroup $group, CartOrderDto $dto, float $cartValue): bool;
+    public function checkConditionGroup(ConditionGroup $group, CartOrderDto $dto, Money $cartValue): bool;
 
-    public function checkConditionGroups(Discount $discount, CartOrderDto $dto, float $cartValue): bool;
+    public function checkConditionGroups(Discount $discount, CartOrderDto $dto, Money $cartValue): bool;
 
     public function applyDiscountOnProduct(
         Product $product,
         OrderProductDto $orderProductDto,
         Discount $discount,
+        Currency $currency,
     ): OrderProduct;
 
     public function applyDiscountsOnProducts(Collection $products): void;
@@ -63,7 +67,7 @@ interface DiscountServiceContract
         CartResource $cart,
     ): CartItemResponse;
 
-    public function calcCartDiscounts(CartDto $cart, Collection $products): CartResource;
+    public function calcCartDiscounts(CartDto $cart, Collection $products, BigDecimal $vat_rate): CartResource;
 
     /**
      * @return ProductPriceDto[]
@@ -76,7 +80,7 @@ interface DiscountServiceContract
 
     public function applyDiscountOnOrder(Discount $discount, Order $order): Order;
 
-    public function calcAppliedDiscount(float $price, float $appliedDiscount, string $setting): float;
+    public function calcAppliedDiscount(Money $price, Money $appliedDiscount, string $setting): Money;
 
     public function activeSales(): Collection;
 

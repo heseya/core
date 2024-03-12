@@ -2,16 +2,28 @@
 
 namespace Tests\Feature;
 
-use App\Models\Attribute;
-use App\Models\AttributeOption;
 use App\Models\Media;
 use App\Models\Product;
-use App\Models\ProductSet;
-use App\Models\Tag;
+use App\Repositories\Contracts\ProductRepositoryContract;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
+use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\ProductPriceType;
+use Domain\ProductAttribute\Enums\AttributeType;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\ProductSet\ProductSet;
+use Domain\Tag\Models\Tag;
+use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\App;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
+use function Symfony\Component\String\s;
 
 class ProductSearchDatabaseTest extends TestCase
 {
@@ -43,7 +55,7 @@ class ProductSearchDatabaseTest extends TestCase
                 'id' => $product->getKey(),
             ]);
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(22);
     }
 
     /**
@@ -87,25 +99,34 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
-        Product::factory()->create([
+        $product1 = Product::factory()->create([
             'public' => true,
             'name' => 'First',
         ]);
 
-        Product::factory()->create([
+        $product2 = Product::factory()->create([
             'public' => true,
             'created_at' => Carbon::now()->addHour(),
             'name' => 'Second',
         ]);
 
+        $attribute = Attribute::factory()->create([
+            'name' => 'data wydania',
+            'slug' => 'data-wydania',
+        ]);
+
+        $product1->attributes()->attach($attribute->getKey());
+        $product2->attributes()->attach($attribute->getKey());
+
         // This test check if there is no SQL error that 'name' is ambiguous
-        $this
+        $response = $this
             ->actingAs($this->{$user})
             ->json('GET', '/products', [
                 'search' => 'First',
                 'sort' => 'attribute.data-wydania:desc',
-            ])
-            ->assertOk();
+            ]);
+
+        $response->assertOk();
     }
 
     /**
@@ -335,36 +356,6 @@ class ProductSearchDatabaseTest extends TestCase
             ->assertJsonFragment(['id' => $product->getKey()]);
     }
 
-    private function getProductsByParentSet(
-        Authenticatable $user,
-        bool $isChildSetPublic,
-        ?Product &$productRef = null,
-    ): TestResponse {
-        $parentSet = ProductSet::factory()->create([
-            'public' => true,
-        ]);
-
-        $childSet = ProductSet::factory()->create([
-            'parent_id' => $parentSet->getKey(),
-            'public' => $isChildSetPublic,
-        ]);
-
-        $productRef = Product::factory()->create([
-            'public' => true,
-        ]);
-
-        // Product not in set
-        Product::factory()->create([
-            'public' => true,
-        ]);
-
-        $childSet->products()->attach($productRef);
-
-        return $this
-            ->actingAs($user)
-            ->getJson("/products?sets[]={$parentSet->slug}");
-    }
-
     /**
      * @dataProvider authProvider
      */
@@ -403,7 +394,7 @@ class ProductSearchDatabaseTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $productRef->getKey()]);
         // + 1 additional query per nesting level
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(23);
     }
 
     /**
@@ -624,32 +615,53 @@ class ProductSearchDatabaseTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function testSearchByPrice($user): void
     {
         $this->{$user}->givePermissionTo('products.show');
 
+        /** @var ProductRepositoryContract $productRepository */
+        $productRepository = App::make(ProductRepositoryContract::class);
+        $currency = Currency::DEFAULT;
+
         $product = Product::factory()->create([
             'public' => true,
-            'price_min' => 100,
-            'price_max' => 200,
+        ]);
+        $productRepository->setProductPrices($product->getKey(), [
+            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(100, $currency->value))],
+            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(200, $currency->value))],
         ]);
 
-        Product::factory()->create([
+        $product2 = Product::factory()->create([
             'public' => true,
-            'price_min' => 300,
-            'price_max' => 1000,
+        ]);
+        $productRepository->setProductPrices($product2->getKey(), [
+            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(300, $currency->value))],
+            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(1000, $currency->value))],
         ]);
 
-        Product::factory()->create([
+        $product3 = Product::factory()->create([
             'public' => true,
-            'price_min' => 10,
-            'price_max' => 10,
+        ]);
+        $productRepository->setProductPrices($product3->getKey(), [
+            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(10, $currency->value))],
+            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(10, $currency->value))],
         ]);
 
         $this
             ->actingAs($this->{$user})
-            ->json('GET', '/products', ['price' => ['min' => 100, 'max' => 200]])
+            ->json('GET', '/products', [
+                'price' => [
+                    'min' => '100.00',
+                    'max' => '200.00',
+                    'currency' => $currency->value,
+                ],
+            ])
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $product->getKey()]);
@@ -722,10 +734,10 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         $products[0]->attributes()->attach($attribute->getKey());
-        $products[0]->attributes->first()->pivot->options()->attach($options[0]->getKey());
+        $products[0]->attributes->first()->product_attribute_pivot->options()->attach($options[0]->getKey());
 
         $products[1]->attributes()->attach($attribute->getKey());
-        $products[1]->attributes->first()->pivot->options()->attach($options[1]->getKey());
+        $products[1]->attributes->first()->product_attribute_pivot->options()->attach($options[1]->getKey());
 
         $this
             ->actingAs($this->{$user})
@@ -740,16 +752,16 @@ class ProductSearchDatabaseTest extends TestCase
             )
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonFragment([
+            ->assertJsonMissing([
                 'name' => $attribute->name,
             ])
             ->assertJsonFragment([
-                'id' => $options[0]->getKey(),
-                'name' => $options[0]->name,
+                'id' => $products[0]->getKey(),
+                'name' => $products[0]->name,
             ])
             ->assertJsonMissing([
-                'id' => $options[1]->getKey(),
-                'name' => $options[1]->name,
+                'id' => $products[1]->getKey(),
+                'name' => $products[1]->name,
             ]);
     }
 
@@ -785,10 +797,10 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         $products[0]->attributes()->attach($attribute->getKey());
-        $products[0]->attributes->first()->pivot->options()->attach($option1->getKey());
+        $products[0]->attributes->first()->product_attribute_pivot->options()->attach($option1->getKey());
 
         $products[1]->attributes()->attach($attribute->getKey());
-        $products[1]->attributes->first()->pivot->options()->attach($option2->getKey());
+        $products[1]->attributes->first()->product_attribute_pivot->options()->attach($option2->getKey());
 
         $this
             ->actingAs($this->{$user})
@@ -806,16 +818,16 @@ class ProductSearchDatabaseTest extends TestCase
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
-            ->assertJsonFragment([
+            ->assertJsonMissing([
                 'name' => $attribute->name,
             ])
             ->assertJsonFragment([
-                'id' => $option1->getKey(),
-                'name' => $option1->name,
+                'id' => $products[0]->getKey(),
+                'name' => $products[0]->name,
             ])
             ->assertJsonFragment([
-                'id' => $option2->getKey(),
-                'name' => $option2->name,
+                'id' => $products[1]->getKey(),
+                'name' => $products[1]->name,
             ]);
     }
 
@@ -850,10 +862,10 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         $products[0]->attributes()->attach($attribute->getKey());
-        $products[0]->attributes->first()->pivot->options()->attach($option1->getKey());
+        $products[0]->attributes->first()->product_attribute_pivot->options()->attach($option1->getKey());
 
         $products[1]->attributes()->attach($attribute->getKey());
-        $products[1]->attributes->first()->pivot->options()->attach($option2->getKey());
+        $products[1]->attributes->first()->product_attribute_pivot->options()->attach($option2->getKey());
 
         $this
             ->actingAs($this->{$user})
@@ -871,16 +883,14 @@ class ProductSearchDatabaseTest extends TestCase
             )
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonFragment([
+            ->assertJsonMissing([
                 'name' => $attribute->name,
             ])
             ->assertJsonFragment([
-                'id' => $option1->getKey(),
-                'value_number' => $option1->value_number,
+                'id' => $products[0]->getKey(),
             ])
             ->assertJsonMissing([
-                'id' => $option2->getKey(),
-                'value_number' => $option2->value_number,
+                'id' => $products[1]->getKey(),
             ]);
 
         $this
@@ -898,16 +908,14 @@ class ProductSearchDatabaseTest extends TestCase
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
-            ->assertJsonFragment([
+            ->assertJsonMissing([
                 'name' => $attribute->name,
             ])
             ->assertJsonFragment([
-                'id' => $option1->getKey(),
-                'value_number' => $option1->value_number,
+                'id' => $products[0]->getKey(),
             ])
             ->assertJsonFragment([
-                'id' => $option2->getKey(),
-                'value_number' => $option2->value_number,
+                'id' => $products[1]->getKey(),
             ]);
 
         $this
@@ -946,6 +954,71 @@ class ProductSearchDatabaseTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testSearchByAttributeNumberUsingOptionId($user): void
+    {
+        $this->{$user}->givePermissionTo('products.show');
+
+        $products = Product::factory()->count(2)->create([
+            'public' => true,
+        ]);
+
+        $attribute = Attribute::factory()->create([
+            'name' => 'Ilość stron',
+            'slug' => 'ilosc-stron',
+            'sortable' => 1,
+            'type' => 'number',
+        ]);
+
+        $option1 = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+            'value_number' => 1437,
+        ]);
+
+        $option2 = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+            'value_number' => 2237,
+        ]);
+
+        $products[0]->attributes()->attach($attribute->getKey());
+        $products[0]->attributes->first()->product_attribute_pivot->options()->attach($option1->getKey());
+
+        $products[1]->attributes()->attach($attribute->getKey());
+        $products[1]->attributes->first()->product_attribute_pivot->options()->attach($option2->getKey());
+
+        $response = $this->actingAs($this->{$user})
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute' => [
+                        $attribute->slug => [
+                            $option1->getKey(),
+                            $option2->getKey(),
+                        ],
+                    ],
+                ],
+            );
+
+        $response->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonMissing([
+                'name' => $attribute->name,
+            ])
+            ->assertJsonFragment([
+                'id' => $products[0]->getKey(),
+                'name' => $products[0]->name,
+            ])
+            ->assertJsonFragment([
+                'id' => $products[1]->getKey(),
+                'name' => $products[1]->name,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testSearchByAttributeDate($user): void
     {
         $this->{$user}->givePermissionTo('products.show');
@@ -974,10 +1047,10 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         $products[0]->attributes()->attach($attribute->getKey());
-        $products[0]->attributes->first()->pivot->options()->attach($option1->getKey());
+        $products[0]->attributes->first()->product_attribute_pivot->options()->attach($option1->getKey());
 
         $products[1]->attributes()->attach($attribute->getKey());
-        $products[1]->attributes->first()->pivot->options()->attach($option2->getKey());
+        $products[1]->attributes->first()->product_attribute_pivot->options()->attach($option2->getKey());
 
         $this
             ->actingAs($this->{$user})
@@ -995,16 +1068,14 @@ class ProductSearchDatabaseTest extends TestCase
             )
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonFragment([
+            ->assertJsonMissing([
                 'name' => $attribute->name,
             ])
             ->assertJsonFragment([
-                'id' => $option1->getKey(),
-                'value_date' => $option1->value_date,
+                'id' => $products[0]->getKey(),
             ])
             ->assertJsonMissing([
-                'id' => $option2->getKey(),
-                'value_date' => $option2->value_date,
+                'id' => $products[1]->getKey(),
             ]);
 
         $this
@@ -1023,16 +1094,14 @@ class ProductSearchDatabaseTest extends TestCase
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
-            ->assertJsonFragment([
+            ->assertJsonMissing([
                 'name' => $attribute->name,
             ])
             ->assertJsonFragment([
-                'id' => $option1->getKey(),
-                'value_date' => $option1->value_date,
+                'id' => $products[0]->getKey(),
             ])
             ->assertJsonFragment([
-                'id' => $option2->getKey(),
-                'value_date' => $option2->value_date,
+                'id' => $products[1]->getKey(),
             ]);
 
         $this
@@ -1092,10 +1161,10 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         $products[0]->attributes()->attach($attribute->getKey());
-        $products[0]->attributes->first()->pivot->options()->attach($options[0]->getKey());
+        $products[0]->attributes->first()->product_attribute_pivot->options()->attach($options[0]->getKey());
 
         $products[1]->attributes()->attach($attribute->getKey());
-        $products[1]->attributes->first()->pivot->options()->attach($options[1]->getKey());
+        $products[1]->attributes->first()->product_attribute_pivot->options()->attach($options[1]->getKey());
 
         $this
             ->actingAs($this->{$user})
@@ -1149,10 +1218,10 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         $products[0]->attributes()->attach($attribute->getKey());
-        $products[0]->attributes->first()->pivot->options()->attach($option1->getKey());
+        $products[0]->attributes->first()->product_attribute_pivot->options()->attach($option1->getKey());
 
         $products[1]->attributes()->attach($attribute->getKey());
-        $products[1]->attributes->first()->pivot->options()->attach($option2->getKey());
+        $products[1]->attributes->first()->product_attribute_pivot->options()->attach($option2->getKey());
 
         $this
             ->actingAs($this->{$user})
@@ -1269,10 +1338,10 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         $products[0]->attributes()->attach($attribute->getKey());
-        $products[0]->attributes->first()->pivot->options()->attach($option1->getKey());
+        $products[0]->attributes->first()->product_attribute_pivot->options()->attach($option1->getKey());
 
         $products[1]->attributes()->attach($attribute->getKey());
-        $products[1]->attributes->first()->pivot->options()->attach($option2->getKey());
+        $products[1]->attributes->first()->product_attribute_pivot->options()->attach($option2->getKey());
 
         $this
             ->actingAs($this->{$user})
@@ -1379,7 +1448,7 @@ class ProductSearchDatabaseTest extends TestCase
             'slug' => 'test',
             'public' => true,
         ]);
-        $set->products()->sync([
+        $set->descendantProducts()->sync([
             $product1->getKey() => ['order' => 1],
             $product2->getKey() => ['order' => 2],
             $product3->getKey() => ['order' => 3],
@@ -1397,7 +1466,7 @@ class ProductSearchDatabaseTest extends TestCase
         $this->assertEquals($product2->getKey(), $data[1]->id);
         $this->assertEquals($product3->getKey(), $data[2]->id);
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(27);
 
         // desc
         $response = $this
@@ -1408,5 +1477,115 @@ class ProductSearchDatabaseTest extends TestCase
         $this->assertEquals($product1->getKey(), $data[2]->id);
         $this->assertEquals($product2->getKey(), $data[1]->id);
         $this->assertEquals($product3->getKey(), $data[0]->id);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSortByAttribute(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.show');
+
+        $products = Product::factory()->count(3)->create([
+            'public' => true,
+        ]);
+
+        $set = ProductSet::factory()->create([
+            'slug' => 'all-maritime',
+            'public' => true,
+        ]);
+        $set->products()->sync([
+            $products[0]->getKey() => ['order' => 1],
+            $products[1]->getKey() => ['order' => 2],
+            $products[2]->getKey() => ['order' => 3],
+        ]);
+
+        $attribute = Attribute::factory()->create([
+            'name' => 'Data wydania',
+            'slug' => 'data-wydania',
+            'sortable' => true,
+            'type' => AttributeType::DATE,
+        ]);
+
+        $option1 = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+            'value_date' => '2022-01-01',
+        ]);
+
+        $option2 = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+            'value_date' => '2023-02-01',
+        ]);
+
+        $option3 = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+            'value_date' => '2022-12-12',
+        ]);
+
+        $products[0]->attributes()->attach($attribute->getKey());
+        $products[0]->attributes->first()->product_attribute_pivot->options()->attach($option2->getKey());
+
+        $products[1]->attributes()->attach($attribute->getKey());
+        $products[1]->attributes->first()->product_attribute_pivot->options()->attach($option1->getKey());
+
+        $products[2]->attributes()->attach($attribute->getKey());
+        $products[2]->attributes->first()->product_attribute_pivot->options()->attach($option3->getKey());
+
+        $response = $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products', ['sets[]' => $set->slug, 'sort' => "attribute.{$attribute->getKey()}"]);
+        $response
+            ->assertOk()
+            ->assertJsonCount(3, 'data');
+
+        $data = $response->getData()->data;
+        $this->assertEquals($products[1]->getKey(), $data[0]->id); //01-01
+        $this->assertEquals($products[2]->getKey(), $data[1]->id); //12-12
+        $this->assertEquals($products[0]->getKey(), $data[2]->id); //23
+
+        $this->assertQueryCountLessThan(31);
+
+        // desc
+        $response = $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products', ['sets[]' => $set->slug, 'sort' => "attribute.{$attribute->getKey()}:desc"]);
+
+        $data = $response->getData()->data;
+        $this->assertEquals($products[0]->getKey(), $data[0]->id); //23
+        $this->assertEquals($products[2]->getKey(), $data[1]->id); //12-12
+        $this->assertEquals($products[1]->getKey(), $data[2]->id); //01-01
+    }
+
+    private function getProductsByParentSet(
+        Authenticatable $user,
+        bool $isChildSetPublic,
+        ?Product &$productRef = null,
+    ): TestResponse {
+        $parentSet = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $childSet = ProductSet::factory()->create([
+            'parent_id' => $parentSet->getKey(),
+            'public' => $isChildSetPublic,
+        ]);
+
+        $productRef = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        // Product not in set
+        Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $childSet->products()->attach($productRef);
+
+        return $this
+            ->actingAs($user)
+            ->getJson("/products?sets[]={$parentSet->slug}");
     }
 }

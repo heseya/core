@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Deposit;
 use App\Models\Item;
 use Carbon\Carbon;
+use Domain\Currency\Currency;
 use Tests\TestCase;
 
 class ProductShippingCacheTest extends TestCase
@@ -92,10 +93,13 @@ class ProductShippingCacheTest extends TestCase
         $this->{$user}->givePermissionTo('products.add');
 
         $date = Carbon::now()->startOfDay()->addDays(7)->toIso8601String();
-        $item = Item::factory()->create();
+        $item = Item::factory()->create([
+            'shipping_time' => null,
+        ]);
         Deposit::factory()->create([
             'item_id' => $item->getKey(),
             'quantity' => 1,
+            'shipping_time' => null,
             'shipping_date' => $date,
         ]);
 
@@ -117,15 +121,22 @@ class ProductShippingCacheTest extends TestCase
      */
     private function productDataWithItem(Item $item): array
     {
+        $prices = array_map(fn (Currency $currency) => [
+            'value' => '10.00',
+            'currency' => $currency->value,
+        ], Currency::cases());
+
         return [
-            'name' => 'Test',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                ],
+            ],
+            'published' => [$this->lang],
             'slug' => 'test',
-            'price' => 100.00,
-            'description_html' => '<h1>Description</h1>',
-            'description_short' => 'So called short description...',
+            'prices_base' => $prices,
             'public' => true,
             'shipping_digital' => false,
-            'vat_rate' => 23,
             'items' => [
                 [
                     'id' => $item->getKey(),

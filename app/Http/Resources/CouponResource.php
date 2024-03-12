@@ -10,6 +10,7 @@ class CouponResource extends SaleResource
     {
         return parent::base($request) + [
             'code' => $this->resource->code,
+            ...$request->boolean('with_translations') ? $this->getAllTranslations('coupons.show_hidden') : [],
         ] + $this->metadataResource('coupons.show_metadata_private');
     }
 }

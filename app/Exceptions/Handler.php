@@ -5,6 +5,9 @@ namespace App\Exceptions;
 use App\Enums\ErrorCode;
 use App\Enums\ValidationError;
 use App\Http\Resources\ErrorResource;
+use Domain\GoogleCategory\Exceptions\GoogleProductCategoryFileException;
+use Domain\Language\Exceptions\TranslationException;
+use Domain\Language\Resources\TranslationExceptionResource;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
@@ -25,6 +28,7 @@ use Throwable;
 
 final class Handler extends ExceptionHandler
 {
+    /** @var array<class-string, ErrorCode> */
     private const ERRORS = [
         // 400
         AppAccessException::class => ErrorCode::BAD_REQUEST,
@@ -45,12 +49,16 @@ final class Handler extends ExceptionHandler
         ModelNotFoundException::class => ErrorCode::NOT_FOUND,
         TokenInvalidException::class => ErrorCode::NOT_FOUND,
 
+        // 406
+        TranslationException::class => ErrorCode::NOT_ACCEPTABLE,
+
         // 422
         ValidationException::class => ErrorCode::VALIDATION_ERROR,
         ClientException::class => ErrorCode::UNPROCESSABLE_ENTITY,
         TFAException::class => ErrorCode::UNPROCESSABLE_ENTITY,
         GoogleProductCategoryFileException::class => ErrorCode::UNPROCESSABLE_ENTITY,
         OrderException::class => ErrorCode::UNPROCESSABLE_ENTITY,
+        PublishingException::class => ErrorCode::UNPROCESSABLE_ENTITY,
 
         // 500
         ServerException::class => ErrorCode::INTERNAL_SERVER_ERROR,
@@ -59,7 +67,6 @@ final class Handler extends ExceptionHandler
         PackageException::class => ErrorCode::BAD_GATEWAY,
         PackageAuthException::class => ErrorCode::BAD_GATEWAY,
     ];
-
     /**
      * A list of the inputs that are never flashed for validation exceptions.
      *
@@ -88,12 +95,23 @@ final class Handler extends ExceptionHandler
                     ->response()
                     ->setStatusCode($exception->getCode());
             }
+            if (method_exists($exception, 'published')) {
+                if (!($exception instanceof TranslationException)) {
+                    throw new Exception('$exception must be an instance of TranslationException');
+                }
+
+                return TranslationExceptionResource::make($exception->toArray())
+                    ->response()
+                    ->setStatusCode($exception->getCode());
+            }
             $error = new Error(
                 $exception->getMessage(),
-                $exception instanceof StoreException ?
-                    $exception->getCode() : ErrorCode::getCode(self::ERRORS[$class]),
-                $exception instanceof StoreException ?
-                    $exception->getKey() : ErrorCode::fromValue(self::ERRORS[$class])->key ?? '',
+                $exception instanceof StoreException
+                    ? $exception->getCode()
+                    : self::ERRORS[$class]->getCode(),
+                $exception instanceof StoreException
+                    ? $exception->getKey()
+                    : self::ERRORS[$class]->name ?? '',
                 $this->getExceptionData($exception),
             );
         } else {
@@ -109,7 +127,12 @@ final class Handler extends ExceptionHandler
         }
 
         if (Config::get('app.debug') === true) {
-            $error->setStack($this->convertExceptionToArray($exception));
+            $stack = [];
+            $stack[] = $this->convertExceptionToArray($exception);
+            if ($exception->getPrevious() !== null) {
+                $stack[] = $this->convertExceptionToArray($exception->getPrevious());
+            }
+            $error->setStack($stack);
         }
 
         return ErrorResource::make($error)
@@ -133,22 +156,22 @@ final class Handler extends ExceptionHandler
 
             foreach ($value as $attribute => $attrValue) {
                 $attribute = Str::of($attribute)->afterLast('\\')->toString();
-                $key = ValidationError::coerce($attribute)->value ?? 'INTERNAL_SERVER_ERROR';
+                $errorEnum = ValidationError::coerce($attribute) ?? ValidationError::INTERNAL_SERVER_ERROR;
 
-                $message = array_key_exists($field, $errors) ?
-                    array_key_exists($index, $errors[$field]) ?
-                        $errors[$field][$index] : null
+                $message = array_key_exists($field, $errors)
+                    ? (array_key_exists($index, $errors[$field]) ? $errors[$field][$index] : null)
                     : null;
 
                 // Workaround for Password::defaults() rule
-                if ($key === ValidationError::PASSWORD) {
-                    $key = Str::contains($message, 'data leak') ?
-                        ValidationError::PASSWORDCOMPROMISED : ValidationError::PASSWORDLENGTH;
+                if ($errorEnum === ValidationError::PASSWORD) {
+                    $errorEnum = Str::contains($message, 'data leak')
+                        ? ValidationError::PASSWORDCOMPROMISED
+                        : ValidationError::PASSWORDLENGTH;
                 }
 
                 $validationErrors[$field][$index] = [
-                    'key' => $key,
-                ] + $this->createValidationAttributeData($key, $attrValue);
+                    'key' => $errorEnum->value,
+                ] + $this->createValidationAttributeData($errorEnum, $attrValue);
 
                 if ($message !== null) {
                     $validationErrors[$field][$index] += [
@@ -178,9 +201,9 @@ final class Handler extends ExceptionHandler
         return [];
     }
 
-    private function createValidationAttributeData(string $key, array $data): array
+    private function createValidationAttributeData(ValidationError $errorEnum, array $data): array
     {
-        return match ($key) {
+        return match ($errorEnum) {
             ValidationError::MIN => [
                 'min' => $data[0],
             ],
@@ -212,8 +235,8 @@ final class Handler extends ExceptionHandler
                 'types' => $data,
             ],
             ValidationError::EXISTS => [
-                'table' => $data[0],
-                'field' => $data[1],
+                'table' => $data[0] ?? '',
+                'field' => $data[1] ?? '',
             ],
             ValidationError::GTE => [
                 'field' => $data[0],

@@ -3,7 +3,10 @@
 namespace Database\Factories;
 
 use App\Models\Option;
-use Illuminate\Database\Eloquent\Factories\Factory;
+use Domain\Price\Enums\ProductPriceType;
+use Domain\Price\PriceRepository;
+use Illuminate\Database\Eloquent\Model;
+use Tests\Utils\FakeDto;
 
 class OptionFactory extends Factory
 {
@@ -21,8 +24,31 @@ class OptionFactory extends Factory
     {
         return [
             'name' => $this->faker->word,
-            'price' => mt_rand(0, 1) ? $this->faker->numberBetween(0, 100) : 0,
             'disabled' => mt_rand(0, 10) === 0,
         ];
+    }
+
+    public function create($attributes = [], ?Model $parent = null)
+    {
+        $prices = $attributes['prices'] ?? [];
+        unset($attributes['prices']);
+
+        $result = parent::create($attributes, $parent);
+
+        if (!empty($prices)) {
+            if ($result instanceof Model) {
+                $result = collect([$result]);
+            }
+
+            $priceRepository = app(PriceRepository::class);
+
+            $prices = FakeDto::generatePricesInAllCurrencies($prices);
+
+            $result->each(fn (Option $option) => $priceRepository->setModelPrices($option, [
+                ProductPriceType::PRICE_BASE->value => $prices,
+            ]));
+        }
+
+        return $result->count() > 1 ? $result : $result->first();
     }
 }

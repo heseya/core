@@ -2,16 +2,15 @@
 
 namespace Database\Factories;
 
-use App\Models\ProductSet;
-use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
+use Domain\ProductSet\ProductSet;
+use Illuminate\Support\Facades\App;
 
 class ProductSetFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
-     * @var string
+     * @var class-string<ProductSet>
      */
     protected $model = ProductSet::class;
 
@@ -20,14 +19,13 @@ class ProductSetFactory extends Factory
      */
     public function definition(): array
     {
-        $name = $this->faker->words(mt_rand(1, 4), true);
-
         return [
-            'name' => $name,
-            'slug' => Str::of($name)->slug() . '-' . mt_rand(1, 99999),
+            'name' => $this->faker->words(mt_rand(1, 4), true),
+            'slug' => $this->faker->unique()->slug,
             'public' => $this->faker->boolean,
             'public_parent' => true,
             'description_html' => '<p>' . $this->faker->sentence(10) . '</p>',
+            'published' => [App::getLocale()],
         ];
     }
 }

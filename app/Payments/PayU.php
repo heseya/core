@@ -6,7 +6,9 @@ use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\PaymentStatus;
 use App\Exceptions\ClientException;
 use App\Models\Payment;
+use Brick\Math\Exception\MathException;
 use Exception;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -15,6 +17,10 @@ use Illuminate\Support\Facades\Response;
 
 class PayU implements PaymentMethod
 {
+    /**
+     * @throws RequestException
+     * @throws MathException
+     */
     public static function generateUrl(Payment $payment): array
     {
         $client_id = Config::get('payu.client_id');
@@ -28,7 +34,7 @@ class PayU implements PaymentMethod
                 $client_id . '&client_secret=' . $client_secret,
         )->throw();
 
-        $amount = round($payment->amount * 100, 0);
+        $amount = $payment->amount->getMinorAmount()->toInt();
 
         $response = Http::withToken($response['access_token'])->withOptions([
             'allow_redirects' => false,
@@ -37,7 +43,7 @@ class PayU implements PaymentMethod
             'customerIp' => '127.0.0.1',
             'merchantPosId' => Config::get('payu.pos_id'),
             'description' => 'Zamowienie nr ' . $payment->order->code,
-            'currencyCode' => $payment->order->currency,
+            'currencyCode' => $payment->currency->value,
             'totalAmount' => $amount,
             'extOrderId' => $payment->getKey(),
             'continueUrl' => $payment->continue_url,

@@ -27,10 +27,15 @@ class ShippingTimeDateTest extends TestCase
      */
     public function testProductWithShippingTimeAndDateAndCountQuantityNeed($user): void
     {
-        $itemData = ['unlimited_stock_shipping_date' => Carbon::now()->addDays(10)->toDateTimeString()];
+        $itemData = [
+            'unlimited_stock_shipping_date' => Carbon::now()->addDays(10)->toDateTimeString(),
+            'shipping_time' => null,
+        ];
 
         $item = Item::factory()->create($itemData);
-        $item2 = Item::factory()->create();
+        $item2 = Item::factory()->create([
+            'shipping_time' => null,
+        ]);
 
         /** @var Product $product */
         $product = Product::factory()->create();
@@ -39,6 +44,7 @@ class ShippingTimeDateTest extends TestCase
         $deposit1 = Deposit::factory()->create([
             'item_id' => $item->getKey(),
             'quantity' => 2.0,
+            'shipping_time' => null,
             'shipping_date' => Carbon::now()->startOfDay()->addDays(4)->toDateTimeString(),
         ]);
         $product->items()->detach($item->getKey());
@@ -54,6 +60,7 @@ class ShippingTimeDateTest extends TestCase
         $deposit2 = Deposit::factory()->create([
             'item_id' => $item->getKey(),
             'quantity' => 2.0,
+            'shipping_time' => null,
             'shipping_date' => Carbon::now()->startOfDay()->addDays(2)->toDateTimeString(),
         ]);
         $product->items()->detach($item->getKey());
@@ -71,6 +78,7 @@ class ShippingTimeDateTest extends TestCase
         Deposit::factory()->create([
             'item_id' => $item->getKey(),
             'quantity' => 2.0,
+            'shipping_time' => null,
             'shipping_date' => Carbon::now()->startOfDay()->addDays(6)->toDateTimeString(),
         ]);
         $this->availabilityService->calculateProductAvailability($product);
@@ -118,6 +126,7 @@ class ShippingTimeDateTest extends TestCase
         Deposit::factory()->create([
             'item_id' => $item2->getKey(),
             'quantity' => 4.0,
+            'shipping_time' => null,
             'shipping_date' => Carbon::now()->addDays(4)->toDateTimeString(),
         ]);
         $this->availabilityService->calculateProductAvailability($product);
@@ -166,13 +175,16 @@ class ShippingTimeDateTest extends TestCase
     {
         /** @var Product $product */
         $product = Product::factory()->create();
-        $item = Item::factory()->create();
+        $item = Item::factory()->create([
+            'shipping_time' => null,
+        ]);
 
         $product->items()->attach($item->getKey(), ['required_quantity' => 5]);
 
         $depositItem1 = Deposit::factory()->create([
             'item_id' => $item->getKey(),
             'quantity' => 4.0,
+            'shipping_time' => null,
             'shipping_date' => Carbon::now()->startOfDay()->addDays(4)->toDateTimeString(),
         ]);
 

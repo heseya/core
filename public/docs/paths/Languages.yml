@@ -1,0 +1,74 @@
+Languages:
+  get:
+    tags:
+      - Languages
+    summary: 'List of languages'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Languages.yml#/Language'
+              type: object
+  post:
+    tags:
+      - Languages
+    summary: 'Add new language'
+    requestBody:
+      $ref: './../requests/Languages.yml#/LanguageStore'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Languages.yml#/Language'
+              type: object
+
+LanguagesParams:
+  delete:
+    tags:
+      - Languages
+    summary: 'Delete language'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: af42facf-2386-4a1f-9f68-c7ed87d8fa32
+    responses:
+      204:
+        description: Success
+    security:
+      - oauth: [ ]
+  patch:
+    tags:
+      - Languages
+    summary: 'Update a language'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: af42facf-2386-4a1f-9f68-c7ed87d8fa32
+    requestBody:
+      $ref: './../requests/Languages.yml#/LanguageUpdate'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Languages.yml#/Language'
+              type: object

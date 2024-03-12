@@ -29,9 +29,9 @@ return new class extends Migration {
         Permission::create(['name' => 'consents.edit', 'display_name' => 'Możliwość edycji zgód']);
         Permission::create(['name' => 'consents.remove', 'display_name' => 'Możliwość usuwania zgód']);
 
-        Role::where('type', RoleType::AUTHENTICATED)->firstOrFail()->givePermissionTo('consents.show');
-        Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail()->givePermissionTo('consents.show');
-        Role::where('type', RoleType::OWNER)->firstOrFail()->givePermissionTo([
+        Role::where('type', RoleType::AUTHENTICATED->value)->firstOrFail()->givePermissionTo('consents.show');
+        Role::where('type', RoleType::UNAUTHENTICATED->value)->firstOrFail()->givePermissionTo('consents.show');
+        Role::where('type', RoleType::OWNER->value)->firstOrFail()->givePermissionTo([
             'consents.show',
             'consents.add',
             'consents.edit',

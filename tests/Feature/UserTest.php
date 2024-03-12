@@ -2,19 +2,19 @@
 
 namespace Tests\Feature;
 
-use App\Enums\MetadataType;
 use App\Enums\RoleType;
 use App\Enums\ValidationError;
 use App\Events\UserCreated;
 use App\Events\UserUpdated;
 use App\Listeners\WebHookEventListener;
-use App\Models\Consent;
-use App\Models\Metadata;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\UserPreference;
 use App\Models\WebHook;
+use Domain\Consent\Models\Consent;
+use Domain\Metadata\Enums\MetadataType;
+use Domain\Metadata\Models\Metadata;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -109,17 +109,18 @@ class UserTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data')
-            ->assertJson(['data' => [
-                $this->expected,
-                [
-                    'id' => $otherUser->getKey(),
-                    'email' => $otherUser->email,
-                    'name' => $otherUser->name,
-                    'avatar' => $otherUser->avatar,
-                    'roles' => [],
-                    'created_at' => $otherUser->created_at,
+            ->assertJson([
+                'data' => [
+                    $this->expected,
+                    [
+                        'id' => $otherUser->getKey(),
+                        'email' => $otherUser->email,
+                        'name' => $otherUser->name,
+                        'avatar' => $otherUser->avatar,
+                        'roles' => [],
+                        'created_at' => $otherUser->created_at,
+                    ],
                 ],
-            ],
             ]);
     }
 
@@ -140,17 +141,18 @@ class UserTest extends TestCase
             ->json('GET', '/users', ['full' => true])
             ->assertOk()
             ->assertJsonCount(2, 'data')
-            ->assertJson(['data' => [
-                $this->expected,
-                [
-                    'id' => $otherUser->getKey(),
-                    'email' => $otherUser->email,
-                    'name' => $otherUser->name,
-                    'avatar' => $otherUser->avatar,
-                    'roles' => [],
-                    'permissions' => [],
+            ->assertJson([
+                'data' => [
+                    $this->expected,
+                    [
+                        'id' => $otherUser->getKey(),
+                        'email' => $otherUser->email,
+                        'name' => $otherUser->name,
+                        'avatar' => $otherUser->avatar,
+                        'roles' => [],
+                        'permissions' => [],
+                    ],
                 ],
-            ],
             ]);
     }
 
@@ -170,16 +172,17 @@ class UserTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data')
-            ->assertJson(['data' => [
-                [
-                    'id' => $otherUser->getKey(),
-                    'email' => $otherUser->email,
-                    'name' => $otherUser->name,
-                    'avatar' => $otherUser->avatar,
-                    'roles' => [],
+            ->assertJson([
+                'data' => [
+                    [
+                        'id' => $otherUser->getKey(),
+                        'email' => $otherUser->email,
+                        'name' => $otherUser->name,
+                        'avatar' => $otherUser->avatar,
+                        'roles' => [],
+                    ],
+                    $this->expected,
                 ],
-                $this->expected,
-            ],
             ]);
     }
 
@@ -362,7 +365,7 @@ class UserTest extends TestCase
             'is_tfa_active' => false,
         ])->create();
 
-        $consent = Consent::factory()->create(['required' => false]);
+        $consent = Consent::factory()->create(['required' => false, 'published' => [$this->lang]]);
 
         $otherUser->consents()->save($consent, ['value' => true]);
 
@@ -385,6 +388,9 @@ class UserTest extends TestCase
                         'description_html' => $consent->description_html,
                         'required' => $consent->required,
                         'value' => true,
+                        'published' => [
+                            $this->lang,
+                        ],
                     ],
                 ],
                 'birthday_date' => null,
@@ -409,7 +415,7 @@ class UserTest extends TestCase
             'is_tfa_active' => false,
         ])->create();
 
-        $consent = Consent::factory()->create(['required' => false]);
+        $consent = Consent::factory()->create(['required' => false, 'published' => [$this->lang]]);
 
         $otherUser->consents()->save($consent, ['value' => true]);
 
@@ -432,6 +438,9 @@ class UserTest extends TestCase
                         'description_html' => $consent->description_html,
                         'required' => $consent->required,
                         'value' => true,
+                        'published' => [
+                            $this->lang,
+                        ],
                     ],
                 ],
                 'birthday_date' => null,
@@ -537,11 +546,12 @@ class UserTest extends TestCase
         $response = $this->actingAs($this->{$user})->getJson('/users/id:' . $this->user->getKey());
         $response
             ->assertOk()
-            ->assertJson(['data' => $this->expected +
-                [
-                    'permissions' => [],
-                    'metadata_private' => [$privateMetadata->name => $privateMetadata->value],
-                ],
+            ->assertJson([
+                'data' => $this->expected +
+                    [
+                        'permissions' => [],
+                        'metadata_private' => [$privateMetadata->name => $privateMetadata->value],
+                    ],
             ]);
     }
 
@@ -695,6 +705,7 @@ class UserTest extends TestCase
     {
         $this->{$user}->givePermissionTo('users.add');
 
+        /** @var WebHook $webHook */
         $webHook = WebHook::factory()->create([
             'events' => [
                 'UserCreated',
@@ -725,6 +736,7 @@ class UserTest extends TestCase
             'email' => $data['email'],
         ]);
 
+        /** @var User $user */
         $foundUser = User::find($userId);
         $this->assertTrue(Hash::check($data['password'], $foundUser->password));
 
@@ -737,7 +749,7 @@ class UserTest extends TestCase
         $listener = new WebHookEventListener();
         $listener->handle($event);
 
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $foundUser) {
+        Bus::assertDispatched(CallWebhookJob::class, function (CallWebhookJob $job) use ($webHook, $foundUser) {
             $payload = $job->payload;
 
             return $job->webhookUrl === $webHook->url
@@ -834,7 +846,7 @@ class UserTest extends TestCase
                 return str_contains(
                     $message,
                     'ClientException(code: 422): '
-                    . "Can't give a role with permissions you don't have to the user at",
+                    . "Can't give a role with permissions you don't have to the user at"
                 );
             });
 
@@ -900,6 +912,7 @@ class UserTest extends TestCase
                 'deletable' => true,
                 'users_count' => null,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ])->assertJsonFragment([[
                 'id' => $role2->getKey(),
@@ -910,6 +923,7 @@ class UserTest extends TestCase
                 'deletable' => true,
                 'users_count' => null,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ])->assertJsonFragment([[
                 'id' => $role3->getKey(),
@@ -920,6 +934,7 @@ class UserTest extends TestCase
                 'deletable' => true,
                 'users_count' => null,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ])->assertJsonPath('data.permissions', $permissions);
 
@@ -1249,6 +1264,7 @@ class UserTest extends TestCase
                 'deletable' => true,
                 'users_count' => null,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ])->assertJsonFragment([[
                 'id' => $role2->getKey(),
@@ -1259,6 +1275,7 @@ class UserTest extends TestCase
                 'deletable' => true,
                 'users_count' => null,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ])->assertJsonFragment([[
                 'id' => $role3->getKey(),
@@ -1269,6 +1286,7 @@ class UserTest extends TestCase
                 'deletable' => true,
                 'users_count' => null,
                 'metadata' => [],
+                'is_joinable' => false,
             ],
             ])->assertJsonPath('data.permissions', $permissions);
 

@@ -2,33 +2,22 @@
 
 namespace Tests\Feature;
 
-use App\Events\ProductSetUpdated;
-use App\Models\Attribute;
-use App\Models\ProductSet;
-use App\Models\SeoMetadata;
+use App\Models\Product;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductSet\Events\ProductSetUpdated;
+use Domain\ProductSet\ProductSet;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
-class ProductSetUpdateTest extends TestCase
+final class ProductSetUpdateTest extends TestCase
 {
     public function testUpdateUnauthorized(): void
     {
         Event::fake([ProductSetUpdated::class]);
 
-        $newSet = ProductSet::factory()->create([
-            'public' => false,
-            'order' => 40,
-        ]);
+        $newSet = ProductSet::factory()->create();
 
-        $set = [
-            'name' => 'Test Edit',
-            'slug' => 'test-edit',
-            'public' => false,
-            'parent_id' => null,
-            'children_ids' => [],
-        ];
-
-        $response = $this->patchJson('/product-sets/id:' . $newSet->getKey(), $set);
+        $response = $this->patchJson('/product-sets/id:' . $newSet->getKey());
         $response->assertForbidden();
 
         Event::assertNotDispatched(ProductSetUpdated::class);
@@ -37,47 +26,91 @@ class ProductSetUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdate($user): void
+    public function testUpdate(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.edit');
 
         Event::fake([ProductSetUpdated::class]);
 
-        $newSet = ProductSet::factory()->create([
-            'public' => false,
-            'order' => 40,
-        ]);
+        /** @var ProductSet $set */
+        $set = ProductSet::factory()->create();
 
-        $set = [
-            'name' => 'Test Edit',
-            'public' => true,
-        ];
+        /** @var Attribute $attribute */
+        $attribute = Attribute::factory()->create();
+        $set->attributes()->sync($attribute->getKey());
 
-        $parentId = [
-            'parent_id' => null,
-        ];
-
-        $response = $this->actingAs($this->{$user})->patchJson(
-            '/product-sets/id:' . $newSet->getKey(),
-            $set + $parentId + [
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson("/product-sets/id:{$set->getKey()}", [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test Edit',
+                    ],
+                ],
+                'parent_id' => null,
                 'children_ids' => [],
                 'slug_suffix' => 'test-edit',
                 'slug_override' => false,
-            ],
-        );
-        $response
+            ])
             ->assertOk()
-            ->assertJson(['data' => $set + [
-                'parent' => null,
-                'children_ids' => [],
-                'slug' => 'test-edit',
-                'slug_suffix' => 'test-edit',
-                'slug_override' => false,
-            ],
+            ->assertJson([
+                'data' => [
+                    'name' => 'Test Edit',
+                    'parent' => null,
+                    'children_ids' => [],
+                    'slug' => 'test-edit',
+                    'slug_suffix' => 'test-edit',
+                    'slug_override' => false,
+                ],
             ]);
 
-        $this->assertDatabaseHas('product_sets', $set + $parentId + [
+        $this->assertDatabaseHas('product_sets', [
+            "name->{$this->lang}" => 'Test Edit',
+            'parent_id' => null,
             'slug' => 'test-edit',
+        ]);
+
+        // attributes should remain the same
+        $this->assertTrue($set->attributes->contains($attribute));
+
+        Event::assertDispatched(ProductSetUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateEmptyDescription(string $user): void
+    {
+        $this->{$user}->givePermissionTo('product_sets.edit');
+
+        Event::fake([ProductSetUpdated::class]);
+
+        /** @var ProductSet $set */
+        $set = ProductSet::factory()->create([
+            'description_html' => null,
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson("/product-sets/id:{$set->getKey()}", [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test Edit',
+                        'description_html' => null,
+                    ],
+                ],
+            ])
+            ->assertOk()
+            ->assertJson([
+                'data' => [
+                    'name' => 'Test Edit',
+                    'description_html' => '',
+                ],
+            ]);
+
+        $this->assertDatabaseHas('product_sets', [
+            "name->{$this->lang}" => 'Test Edit',
+            "description_html->{$this->lang}" => null,
         ]);
 
         Event::assertDispatched(ProductSetUpdated::class);
@@ -98,8 +131,12 @@ class ProductSetUpdateTest extends TestCase
         ]);
 
         $set = [
-            'name' => 'Test Edit',
             'public' => true,
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test Edit',
+                ],
+            ],
         ];
 
         $parentId = [
@@ -118,7 +155,8 @@ class ProductSetUpdateTest extends TestCase
             )
             ->assertOk()
             ->assertJson([
-                'data' => $set + [
+                'data' => [
+                    'public' => true,
                     'parent' => null,
                     'children_ids' => [],
                     'slug' => 'test-edit',
@@ -130,8 +168,10 @@ class ProductSetUpdateTest extends TestCase
 
         $this->assertDatabaseHas(
             'product_sets',
-            $set + $parentId + [
+            $parentId + [
+                'public' => true,
                 'slug' => 'test-edit',
+                "name->{$this->lang}" => 'Test Edit',
             ],
         );
 
@@ -141,64 +181,39 @@ class ProductSetUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateWithPartialData($user): void
+    public function testUpdateWithPartialData(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.edit');
 
         Event::fake([ProductSetUpdated::class]);
 
-        $newSet = ProductSet::factory()->create([
-            'public' => false,
-            'order' => 40,
-        ]);
+        $set = ProductSet::factory()->create();
 
-        $set = [
-            'name' => 'Test Edit',
-        ];
-
-        $parentId = [
-            'parent_id' => null,
-        ];
-
-        $response = $this->actingAs($this->{$user})->patchJson(
-            '/product-sets/id:' . $newSet->getKey(),
-            $set + $parentId + [
-                'children_ids' => [],
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson("/product-sets/id:{$set->getKey()}", [
                 'slug_suffix' => 'test-edit',
                 'slug_override' => false,
-            ],
-        );
-        $response
-            ->assertOk()
-            ->assertJson(['data' => $set + [
-                'parent' => null,
-                'children_ids' => [],
-                'slug' => 'test-edit',
-                'slug_suffix' => 'test-edit',
-                'slug_override' => false,
-            ],
-            ]);
+                'parent_id' => null,
+            ])
+            ->assertOk();
 
         $this->assertDatabaseHas('product_sets', [
-            'name' => 'Test Edit',
-            'public' => false,
-        ] +
-            $parentId + [
-                'slug' => 'test-edit',
-            ]);
+            'slug' => 'test-edit',
+            'parent_id' => null,
+        ]);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateParentSlug($user): void
+    public function testUpdateParentSlug(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.edit');
 
         Event::fake([ProductSetUpdated::class]);
 
         $parent = ProductSet::factory()->create([
-            'name' => 'Parent',
             'slug' => 'parent',
             'public' => true,
             'public_parent' => false,
@@ -206,7 +221,6 @@ class ProductSetUpdateTest extends TestCase
 
         $child = ProductSet::factory()->create([
             'parent_id' => $parent->getKey(),
-            'name' => 'Child',
             'slug' => 'parent-child',
             'public' => true,
             'public_parent' => false,
@@ -214,16 +228,13 @@ class ProductSetUpdateTest extends TestCase
 
         $grandchild = ProductSet::factory()->create([
             'parent_id' => $child->getKey(),
-            'name' => 'Grandchild',
             'slug' => 'parent-child-grandchild',
-            'public' => true,
             'public_parent' => false,
         ]);
 
-        $response = $this->actingAs($this->{$user})->patchJson(
-            '/product-sets/id:' . $parent->getKey(),
-            [
-                'name' => 'New',
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson('/product-sets/id:' . $parent->getKey(), [
                 'public' => true,
                 'parent_id' => null,
                 'slug_suffix' => 'new',
@@ -231,20 +242,8 @@ class ProductSetUpdateTest extends TestCase
                 'children_ids' => [
                     $child->getKey(),
                 ],
-            ],
-        );
-        $response
-            ->assertOk()
-            ->assertJson(['data' => [
-                'parent' => null,
-                'slug' => 'new',
-                'slug_suffix' => 'new',
-                'slug_override' => false,
-                'children_ids' => [
-                    $child->getKey(),
-                ],
-            ],
-            ]);
+            ])
+            ->assertOk();
 
         $this->assertDatabaseHas('product_sets', [
             'id' => $parent->getKey(),
@@ -267,156 +266,47 @@ class ProductSetUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateParentSlugTree($user): void
+    public function testUpdateWithSeo(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.edit');
 
-        Event::fake([ProductSetUpdated::class]);
-
-        $parent = ProductSet::factory()->create([
-            'name' => 'Parent',
-            'slug' => 'parent',
-            'public' => true,
-            'public_parent' => false,
-        ]);
-
-        $child = ProductSet::factory()->create([
-            'parent_id' => $parent->getKey(),
-            'name' => 'Child',
-            'slug' => 'parent-child',
-            'public' => true,
-            'public_parent' => false,
-        ]);
-
-        $grandchild = ProductSet::factory()->create([
-            'parent_id' => $child->getKey(),
-            'name' => 'Grandchild',
-            'slug' => 'parent-child-grandchild',
-            'public' => true,
-            'public_parent' => false,
-        ]);
-
-        $response = $this->actingAs($this->{$user})->patchJson(
-            '/product-sets/id:' . $parent->getKey() . '?tree=1',
-            [
-                'name' => 'New',
-                'public' => true,
-                'parent_id' => null,
-                'slug_suffix' => 'new',
-                'slug_override' => false,
-                'children_ids' => [
-                    $child->getKey(),
-                ],
-            ],
-        );
-        $response
-            ->assertOk()
-            ->assertJson(['data' => [
-                'parent' => null,
-                'slug' => 'new',
-                'slug_suffix' => 'new',
-                'slug_override' => false,
-                'children' => [
-                    [
-                        'id' => $child->getKey(),
-                        'name' => 'Child',
-                        'slug' => 'new-child',
-                        'slug_suffix' => 'child',
-                        'slug_override' => false,
-                        'public' => true,
-                        'visible' => true,
-                        'parent_id' => $parent->getKey(),
-                        'children' => [
-                            [
-                                'id' => $grandchild->getKey(),
-                                'name' => 'Grandchild',
-                                'slug' => 'new-child-grandchild',
-                                'slug_suffix' => 'grandchild',
-                                'slug_override' => false,
-                                'public' => true,
-                                'visible' => true,
-                                'parent_id' => $child->getKey(),
-                                'children' => [],
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-            ]);
-
-        Event::assertDispatched(ProductSetUpdated::class);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdateWithSeo($user): void
-    {
-        $this->{$user}->givePermissionTo('product_sets.edit');
-
-        $newSet = ProductSet::factory()->create([
+        $set = ProductSet::factory()->create([
             'public' => false,
             'order' => 40,
         ]);
 
-        $set = [
-            'name' => 'Test Edit',
-            'public' => true,
-        ];
-
-        $seo = SeoMetadata::factory()->create();
-        $newSet->seo()->save($seo);
-
-        $parentId = [
-            'parent_id' => null,
-        ];
-
-        $response = $this->actingAs($this->{$user})->patchJson(
-            '/product-sets/id:' . $newSet->getKey(),
-            $set + $parentId + [
-                'children_ids' => [],
-                'slug_suffix' => 'test-edit',
-                'slug_override' => false,
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson("/product-sets/id:{$set->getKey()}", [
                 'seo' => [
-                    'title' => 'seo title',
-                    'description' => 'seo description',
+                    'published' => [$this->lang],
+                    'translations' => [
+                        $this->lang => [
+                            'title' => 'seo title',
+                            'description' => 'seo description',
+                        ],
+                    ],
                 ],
-            ],
-        );
-        $response
-            ->assertOk()
-            ->assertJson(['data' => $set + [
-                'parent' => null,
-                'children_ids' => [],
-                'slug' => 'test-edit',
-                'slug_suffix' => 'test-edit',
-                'slug_override' => false,
-                'seo' => [
-                    'title' => 'seo title',
-                    'description' => 'seo description',
-                ],
-            ],
-            ]);
+            ])
+            ->assertOk();
 
-        $this->assertDatabaseHas('product_sets', $set + $parentId + [
-            'slug' => 'test-edit',
-        ]);
         $this->assertDatabaseHas('seo_metadata', [
-            'title' => 'seo title',
-            'description' => 'seo description',
+            "title->{$this->lang}" => 'seo title',
+            "description->{$this->lang}" => 'seo description',
         ]);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateWithAttributes($user): void
+    public function testUpdateWithAttributes(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.edit');
 
         Event::fake([ProductSetUpdated::class]);
 
-        $newSet = ProductSet::factory()->create([
+        /** @var ProductSet $set */
+        $set = ProductSet::factory()->create([
             'public' => false,
             'order' => 40,
         ]);
@@ -425,48 +315,33 @@ class ProductSetUpdateTest extends TestCase
         $attrTwo = Attribute::factory()->create();
         $attrThree = Attribute::factory()->create();
 
-        $newSet->attributes()->sync($attrOne->getKey());
+        $set->attributes()->sync($attrOne->getKey());
 
-        $set = [
-            'name' => 'Test Edit',
-            'public' => true,
-        ];
-
-        $parentId = [
-            'parent_id' => null,
-        ];
-
-        $response = $this->actingAs($this->{$user})->patchJson(
-            '/product-sets/id:' . $newSet->getKey(),
-            $set + $parentId + [
-                'children_ids' => [],
-                'slug_suffix' => 'test-edit',
-                'slug_override' => false,
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson("/product-sets/id:{$set->getKey()}", [
                 'attributes' => [
                     $attrTwo->getKey(),
                     $attrThree->getKey(),
                 ],
-            ],
-        );
+            ])
+            ->assertOk();
 
-        $response
-            ->assertOk()
-            ->assertJson(['data' => $set + [
-                'parent' => null,
-                'children_ids' => [],
-                'slug' => 'test-edit',
-                'slug_suffix' => 'test-edit',
-                'slug_override' => false,
-            ],
-            ]);
+        $this->assertFalse($set->attributes->contains($attrOne));
+        $this->assertTrue($set->attributes->contains($attrTwo));
+        $this->assertTrue($set->attributes->contains($attrThree));
 
-        $this->assertDatabaseHas('product_sets', $set + $parentId + [
-            'slug' => 'test-edit',
+        $this->assertDatabaseHas('attribute_product_set', [
+            'attribute_id' => $attrTwo->getKey(),
+            'product_set_id' => $set->getKey(),
+            'order' => 0,
         ]);
 
-        $this->assertTrue(!$newSet->attributes->contains($attrOne));
-        $this->assertTrue($newSet->attributes->contains($attrTwo));
-        $this->assertTrue($newSet->attributes->contains($attrThree));
+        $this->assertDatabaseHas('attribute_product_set', [
+            'attribute_id' => $attrThree->getKey(),
+            'product_set_id' => $set->getKey(),
+            'order' => 1,
+        ]);
 
         Event::assertDispatched(ProductSetUpdated::class);
     }
@@ -474,56 +349,28 @@ class ProductSetUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateWithEmptyAttributes($user): void
+    public function testUpdateWithEmptyAttributes(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.edit');
 
         Event::fake([ProductSetUpdated::class]);
 
-        $newSet = ProductSet::factory()->create([
+        /** @var ProductSet $set */
+        $set = ProductSet::factory()->create([
             'public' => false,
             'order' => 40,
         ]);
 
         $attrOne = Attribute::factory()->create();
+        $set->attributes()->sync($attrOne->getKey());
 
-        $newSet->attributes()->sync($attrOne->getKey());
-
-        $set = [
-            'name' => 'Test Edit',
-            'public' => true,
-        ];
-
-        $parentId = [
-            'parent_id' => null,
-        ];
-
-        $response = $this->actingAs($this->{$user})->patchJson(
-            '/product-sets/id:' . $newSet->getKey(),
-            $set + $parentId + [
-                'children_ids' => [],
-                'slug_suffix' => 'test-edit',
-                'slug_override' => false,
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson("/product-sets/id:{$set->getKey()}", [
                 'attributes' => [],
-            ],
-        );
+            ])->assertOk();
 
-        $response
-            ->assertOk()
-            ->assertJson(['data' => $set + [
-                'parent' => null,
-                'children_ids' => [],
-                'slug' => 'test-edit',
-                'slug_suffix' => 'test-edit',
-                'slug_override' => false,
-            ],
-            ]);
-
-        $this->assertDatabaseHas('product_sets', $set + $parentId + [
-            'slug' => 'test-edit',
-        ]);
-
-        $this->assertTrue(!$newSet->attributes->contains($attrOne));
+        $this->assertFalse($set->attributes->contains($attrOne));
 
         Event::assertDispatched(ProductSetUpdated::class);
     }
@@ -531,56 +378,426 @@ class ProductSetUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateWithoutAttributes($user): void
+    public function testUpdateChangeParent(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.edit');
 
         Event::fake([ProductSetUpdated::class]);
 
-        $newSet = ProductSet::factory()->create([
-            'public' => false,
-            'order' => 40,
+        $parent = ProductSet::factory()->create([
+            'slug' => 'parent',
+            'public' => true,
+            'public_parent' => false,
         ]);
 
-        $attrOne = Attribute::factory()->create();
-
-        $newSet->attributes()->sync($attrOne->getKey());
-
-        $set = [
-            'name' => 'Test Edit',
+        $set = ProductSet::factory()->create([
+            'parent_id' => $parent->getKey(),
+            'slug' => 'child',
             'public' => true,
-        ];
+            'public_parent' => false,
+        ]);
 
-        $parentId = [
-            'parent_id' => null,
-        ];
+        $newParent = ProductSet::factory()->create([
+            'slug' => 'new-parent',
+            'public' => true,
+            'public_parent' => false,
+        ]);
 
-        $response = $this->actingAs($this->{$user})->patchJson(
-            '/product-sets/id:' . $newSet->getKey(),
-            $set + $parentId + [
-                'children_ids' => [],
-                'slug_suffix' => 'test-edit',
-                'slug_override' => false,
-            ],
-        );
-
-        $response
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson('/product-sets/id:' . $set->getKey(), [
+                'parent_id' => $newParent->getKey(),
+            ])
             ->assertOk()
-            ->assertJson(['data' => $set + [
-                'parent' => null,
-                'children_ids' => [],
-                'slug' => 'test-edit',
-                'slug_suffix' => 'test-edit',
-                'slug_override' => false,
-            ],
+            ->assertJsonFragment([
+                'id' => $set->getKey(),
+                'slug' => 'child',
             ]);
 
-        $this->assertDatabaseHas('product_sets', $set + $parentId + [
-            'slug' => 'test-edit',
+        $this->assertDatabaseHas('product_sets', [
+            'id' => $set->getKey(),
+            'slug' => 'child',
         ]);
 
-        $this->assertTrue($newSet->attributes->contains($attrOne));
-
         Event::assertDispatched(ProductSetUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateChildrenProductDescendant(string $user): void
+    {
+        $this->{$user}->givePermissionTo('product_sets.edit');
+
+        $parent = ProductSet::factory()->create([
+            'slug' => 'parent',
+            'public' => true,
+            'public_parent' => false,
+        ]);
+
+        $set = ProductSet::factory()->create([
+            'parent_id' => $parent->getKey(),
+            'slug' => 'set',
+            'public' => true,
+            'public_parent' => false,
+        ]);
+
+        $oldChild = ProductSet::factory()->create([
+            'slug' => 'old-child',
+            'public' => true,
+            'public_parent' => false,
+            'parent_id' => $set->getKey(),
+        ]);
+
+        $newChild = ProductSet::factory()->create([
+            'slug' => 'new-child',
+            'public' => true,
+            'public_parent' => false,
+        ]);
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $product2 = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $oldChild->descendantProducts()->attach([
+            $product1->getKey() => ['order' => 0],
+        ]);
+        $set->descendantProducts()->attach([
+            $product1->getKey() => ['order' => 0],
+        ]);
+        $parent->descendantProducts()->attach([
+            $product1->getKey() => ['order' => 0],
+        ]);
+
+        $newChild->descendantProducts()->attach([
+            $product2->getKey() => ['order' => 0],
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson('/product-sets/id:' . $set->getKey(), [
+                'children_ids' => [
+                    $newChild->getKey(),
+                ],
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('product_sets', [
+            'id' => $newChild->getKey(),
+            'parent_id' => $set->getKey(),
+        ]);
+
+        $this->assertDatabaseMissing('product_sets', [
+            'id' => $oldChild->getKey(),
+            'parent_id' => $set->getKey(),
+        ]);
+
+        $this->assertDatabaseMissing('product_set_product_descendant', [
+            'product_set_id' => $parent->getKey(),
+            'product_id' => $product1->getKey(),
+        ]);
+
+        $this->assertDatabaseMissing('product_set_product_descendant', [
+            'product_set_id' => $set->getKey(),
+            'product_id' => $product1->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $parent->getKey(),
+            'product_id' => $product2->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $set->getKey(),
+            'product_id' => $product2->getKey(),
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateParentNullProductDescendant(string $user): void
+    {
+        $this->{$user}->givePermissionTo('product_sets.edit');
+
+        $parent = ProductSet::factory()->create([
+            'slug' => 'parent',
+            'public' => true,
+            'public_parent' => false,
+        ]);
+
+        $parentChild = ProductSet::factory()->create([
+            'slug' => 'parent-child',
+            'public' => true,
+            'public_parent' => false,
+            'parent_id' => $parent->getKey(),
+        ]);
+
+        $parentChildProduct = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $set = ProductSet::factory()->create([
+            'parent_id' => $parent->getKey(),
+            'slug' => 'set',
+            'public' => true,
+            'public_parent' => false,
+        ]);
+
+        $child = ProductSet::factory()->create([
+            'slug' => 'child',
+            'public' => true,
+            'public_parent' => false,
+            'parent_id' => $set->getKey(),
+        ]);
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $child->descendantProducts()->attach([
+            $product1->getKey() => ['order' => 0],
+        ]);
+        $set->descendantProducts()->attach([
+            $product1->getKey() => ['order' => 0],
+        ]);
+        $parent->descendantProducts()->attach([
+            $product1->getKey() => ['order' => 0],
+            $parentChildProduct->getKey() => ['order' => 1],
+        ]);
+        $parentChild->descendantProducts()->attach([
+            $parentChildProduct->getKey() => ['order' => 0],
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson('/product-sets/id:' . $set->getKey(), [
+                'parent_id' => null,
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('product_sets', [
+            'id' => $set->getKey(),
+            'parent_id' => null,
+        ]);
+
+        $this->assertDatabaseMissing('product_set_product_descendant', [
+            'product_set_id' => $parent->getKey(),
+            'product_id' => $product1->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $parent->getKey(),
+            'product_id' => $parentChildProduct->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $set->getKey(),
+            'product_id' => $product1->getKey(),
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateParentProductDescendant(string $user): void
+    {
+        $this->{$user}->givePermissionTo('product_sets.edit');
+
+        $parent = ProductSet::factory()->create([
+            'slug' => 'parent',
+            'public' => true,
+            'public_parent' => false,
+        ]);
+
+        $parentChild = ProductSet::factory()->create([
+            'slug' => 'parent-child',
+            'public' => true,
+            'public_parent' => false,
+            'parent_id' => $parent->getKey(),
+        ]);
+
+        $parentChildProduct = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $set = ProductSet::factory()->create([
+            'parent_id' => null,
+            'slug' => 'set',
+            'public' => true,
+            'public_parent' => false,
+        ]);
+
+        $child = ProductSet::factory()->create([
+            'slug' => 'child',
+            'public' => true,
+            'public_parent' => false,
+            'parent_id' => $set->getKey(),
+        ]);
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $child->descendantProducts()->attach([
+            $product1->getKey() => ['order' => 0],
+        ]);
+        $set->descendantProducts()->attach([
+            $product1->getKey() => ['order' => 0],
+        ]);
+        $parent->descendantProducts()->attach([
+            $parentChildProduct->getKey() => ['order' => 1],
+        ]);
+        $parentChild->descendantProducts()->attach([
+            $parentChildProduct->getKey() => ['order' => 0],
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson('/product-sets/id:' . $set->getKey(), [
+                'parent_id' => $parent->getKey(),
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('product_sets', [
+            'id' => $set->getKey(),
+            'parent_id' => $parent->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $parent->getKey(),
+            'product_id' => $product1->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $parent->getKey(),
+            'product_id' => $parentChildProduct->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $set->getKey(),
+            'product_id' => $product1->getKey(),
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateNewParentProductDescendant(string $user): void
+    {
+        $this->{$user}->givePermissionTo('product_sets.edit');
+
+        $oldParent = ProductSet::factory()->create([
+            'slug' => 'parent',
+            'public' => true,
+            'public_parent' => false,
+        ]);
+
+        $parentChild = ProductSet::factory()->create([
+            'slug' => 'parent-child',
+            'public' => true,
+            'public_parent' => false,
+            'parent_id' => $oldParent->getKey(),
+        ]);
+
+        $parentChildProduct = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $set = ProductSet::factory()->create([
+            'parent_id' => $oldParent->getKey(),
+            'slug' => 'child',
+            'public' => true,
+            'public_parent' => false,
+        ]);
+
+        $child = ProductSet::factory()->create([
+            'slug' => 'old-child',
+            'public' => true,
+            'public_parent' => false,
+            'parent_id' => $set->getKey(),
+        ]);
+
+        $newParent = ProductSet::factory()->create([
+            'parent_id' => null,
+            'slug' => 'new-parent',
+            'public' => true,
+            'public_parent' => false,
+        ]);
+
+        $newParentChild = ProductSet::factory()->create([
+            'parent_id' => $newParent->getKey(),
+            'slug' => 'new-parent-child',
+            'public' => true,
+            'public_parent' => false,
+        ]);
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $newParentChildProduct = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $child->descendantProducts()->attach([
+            $product1->getKey() => ['order' => 0],
+        ]);
+        $set->descendantProducts()->attach([
+            $product1->getKey() => ['order' => 0],
+        ]);
+        $oldParent->descendantProducts()->attach([
+            $parentChildProduct->getKey() => ['order' => 1],
+        ]);
+        $parentChild->descendantProducts()->attach([
+            $parentChildProduct->getKey() => ['order' => 0],
+        ]);
+        $newParent->descendantProducts()->attach([
+            $newParentChildProduct->getKey() => ['order' => 1],
+        ]);
+        $newParentChild->descendantProducts()->attach([
+            $newParentChildProduct->getKey() => ['order' => 0],
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->patchJson('/product-sets/id:' . $set->getKey(), [
+                'parent_id' => $newParent->getKey(),
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('product_sets', [
+            'id' => $set->getKey(),
+            'parent_id' => $newParent->getKey(),
+        ]);
+
+        $this->assertDatabaseMissing('product_set_product_descendant', [
+            'product_set_id' => $oldParent->getKey(),
+            'product_id' => $product1->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $oldParent->getKey(),
+            'product_id' => $parentChildProduct->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $set->getKey(),
+            'product_id' => $product1->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $newParent->getKey(),
+            'product_id' => $product1->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $newParent->getKey(),
+            'product_id' => $newParentChildProduct->getKey(),
+        ]);
     }
 }

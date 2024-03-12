@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Enums\RoleType;
-use App\Models\Consent;
 use App\Models\Role;
+use Domain\Consent\Models\Consent;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
@@ -27,7 +27,7 @@ class ConsentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexUnauthorized($user): void
+    public function testIndexUnauthorized(string $user): void
     {
         Consent::factory()->count(10)->create();
 
@@ -39,7 +39,7 @@ class ConsentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndex($user): void
+    public function testIndex(string $user): void
     {
         $this->{$user}->givePermissionTo('consents.show');
 
@@ -54,7 +54,7 @@ class ConsentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShow($user): void
+    public function testShow(string $user): void
     {
         $this->{$user}->givePermissionTo('consents.show_details');
 
@@ -77,7 +77,7 @@ class ConsentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowUnauthorized($user): void
+    public function testShowUnauthorized(string $user): void
     {
         Consent::factory()->count(10)->create();
         $consent = Consent::factory()->create();
@@ -90,7 +90,7 @@ class ConsentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testStoreUnauthorized($user): void
+    public function testStoreUnauthorized(string $user): void
     {
         $consent = Consent::factory()->make();
 
@@ -102,86 +102,89 @@ class ConsentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testStore($user): void
+    public function testStore(string $user): void
     {
         $this->{$user}->givePermissionTo('consents.add');
 
-        $consent = Consent::factory()->make();
-
-        $response = $this->actingAs($this->{$user})->json('post', '/consents', $consent->toArray());
-
-        $response->assertCreated();
-        $response->assertJsonFragment($consent->toArray());
-
-        $this->assertDatabaseCount('consents', 3)
-            ->assertDatabaseHas('consents', [
-                'id' => $response->getData()->data->id,
-            ] + $consent->toArray());
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdateUnauthorized($user): void
-    {
-        $consent = Consent::factory()->make();
-
-        $response = $this->actingAs($this->{$user})
-            ->json('patch', '/consents/id:' . $this->consent->getKey(), $consent->toArray());
-
-        $response->assertForbidden();
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testFullUpdate($user): void
-    {
-        $this->{$user}->givePermissionTo('consents.edit');
-
-        $consent = Consent::factory()->make();
-
-        $response = $this->actingAs($this->{$user})
-            ->json('patch', '/consents/id:' . $this->consent->getKey(), $consent->toArray());
-
-        $response->assertOk();
-        $response->assertJsonFragment($consent->toArray());
-
-        $this->assertDatabaseCount('consents', 2)
-            ->assertDatabaseHas('consents', $consent->toArray());
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdate($user): void
-    {
-        $this->{$user}->givePermissionTo('consents.edit');
-
-        $data = ['name' => 'updated'];
-
-        $response = $this->actingAs($this->{$user})
-            ->json('patch', '/consents/id:' . $this->consent->getKey(), $data);
-
-        $response->assertOk();
-        $response->assertJsonFragment([
-            'name' => 'updated',
-            'description_html' => $this->consent->description_html,
-            'required' => $this->consent->required,
+        $response = $this->actingAs($this->{$user})->json('post', '/consents', [
+            'translations' => [
+                $this->lang => [
+                    'name' => 'New consent',
+                    'description_html' => '<p>Lorem ipsum</p>',
+                ],
+            ],
+            'required' => false,
+            'published' => [
+                $this->lang,
+            ]
         ]);
 
-        $this->assertDatabaseCount('consents', 2)
+        $response->assertCreated();
+        $response->assertJsonFragment([
+            'name' => 'New consent',
+            'description_html' => '<p>Lorem ipsum</p>',
+            'required' => false,
+        ]);
+
+        $this
+            ->assertDatabaseCount('consents', 3)
             ->assertDatabaseHas('consents', [
-                'name' => 'updated',
-                'description_html' => $this->consent->description_html,
-                'required' => $this->consent->required,
+                'id' => $response->getData()->data->id,
+                "name->{$this->lang}" => 'New consent',
+                "description_html->{$this->lang}" => '<p>Lorem ipsum</p>',
+                'required' => false,
             ]);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteUnauthorized($user): void
+    public function testUpdateUnauthorized(string $user): void
+    {
+        $consent = Consent::factory()->make();
+
+        $response = $this->actingAs($this->{$user})
+            ->json('patch', '/consents/id:' . $this->consent->getKey(), $consent->toArray());
+
+        $response->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdate(string $user): void
+    {
+        $this->{$user}->givePermissionTo('consents.edit');
+
+        $response = $this->actingAs($this->{$user})
+            ->json('patch', '/consents/id:' . $this->consent->getKey(), [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Updated name',
+                        'description_html' => '<p>Lorem ipsum</p>',
+                    ],
+                ],
+                'required' => false,
+            ]);
+
+        $response->assertOk();
+        $response->assertJsonFragment([
+
+        ]);
+
+        $this->assertDatabaseCount('consents', 2)
+            ->assertDatabaseHas('consents', [
+                'id' => $this->consent->getKey(),
+                "name->{$this->lang}" => 'Updated name',
+                "description_html->{$this->lang}" => '<p>Lorem ipsum</p>',
+                'required' => false,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteUnauthorized(string $user): void
     {
         $response = $this->actingAs($this->{$user})
             ->json('delete', '/consents/id:' . $this->consent->getKey());
@@ -192,7 +195,7 @@ class ConsentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDelete($user): void
+    public function testDelete(string $user): void
     {
         $this->{$user}->givePermissionTo('consents.remove');
 
@@ -204,22 +207,49 @@ class ConsentTest extends TestCase
         $this->assertDatabaseMissing('consents', $this->consent->toArray());
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteHasUsers(string $user): void
+    {
+        $this->{$user}->givePermissionTo('consents.remove');
+
+        $this->consent->users()->save($this->user, ['value' => true]);
+
+        $response = $this->actingAs($this->{$user})
+            ->json('delete', '/consents/id:' . $this->consent->getKey());
+
+        $response->assertStatus(204);
+
+        $this->assertDatabaseMissing('consents', $this->consent->toArray());
+        $this->assertDatabaseMissing('consent_user', [
+            'consent_id' => $this->consent->getKey(),
+            'user_id' => $this->user->getKey(),
+        ]);
+
+        $this->assertNotSoftDeleted('users', [
+            'id' => $this->user->getKey(),
+        ]);
+    }
+
     public function testRegisterWithoutConsentWhenExists(): void
     {
-        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        /** @var Role $role */
+        $role = Role::query()->where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
         $role->givePermissionTo('auth.register');
 
         Consent::factory()->create([
             'required' => true,
         ]);
 
-        $response = $this->json('POST', '/register', [
-            'name' => 'test',
-            'email' => 'test@test.test',
-            'password' => 'TestTset432!!',
-        ]);
-
-        $response->assertStatus(422)
+        $this
+            ->json('POST', '/register', [
+                'name' => 'test',
+                'email' => 'test@test.test',
+                'password' => 'TestTset432!!',
+                'consents' => [],
+            ])
+            ->assertStatus(422)
             ->assertJsonFragment(['message' => 'You must accept the required consents.']);
     }
 
@@ -227,7 +257,8 @@ class ConsentTest extends TestCase
     {
         Notification::fake();
 
-        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        /** @var Role $role */
+        $role = Role::query()->where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
         $role->givePermissionTo('auth.register');
 
         $response = $this->json('POST', '/register', [
@@ -239,7 +270,8 @@ class ConsentTest extends TestCase
             ],
         ]);
 
-        $response->assertCreated()
+        $response
+            ->assertCreated()
             ->assertJsonFragment([
                 'name' => 'test',
                 'email' => 'test@test.test',

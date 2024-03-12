@@ -2,40 +2,47 @@
 
 namespace App\Rules;
 
-use Illuminate\Contracts\Validation\Rule;
+use Brick\Math\BigDecimal;
+use Closure;
+use Domain\Currency\Currency;
+use Exception;
+use Illuminate\Contracts\Validation\ValidationRule;
 
-class ShippingMethodPriceRanges implements Rule
+readonly class ShippingMethodPriceRanges implements ValidationRule
 {
-    /**
-     * Determine if the validation rule passes.
-     */
-    public function passes($attribute, $value): bool
+    public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        // for update
-        if ($value === null || !$value) {
-            return true;
+        if (!is_array($value)) {
+            $fail('The :attribute is not an array');
+
+            return;
         }
 
-        foreach ($value as $item) {
-            if (!isset($item['start'])) {
-                return false;
-            }
+        $currencyTable = [];
 
-            $minimumValue = (float) $item['start'];
+        foreach ($value as $price_range) {
+            $currency = $price_range['currency'] ?? '';
 
-            if ($minimumValue === 0.0) {
-                return true;
+            try {
+                $start = BigDecimal::of($price_range['start']);
+
+                if ($start->isZero()) {
+                    $currencyTable[$currency] = ($currencyTable[$currency] ?? 0) + 1;
+                }
+            } catch (Exception) {
             }
         }
 
-        return false;
-    }
+        foreach (Currency::cases() as $currency) {
+            $startingRanges = $currencyTable[$currency->value] ?? 0;
 
-    /**
-     * Get the validation error message.
-     */
-    public function message(): string
-    {
-        return 'No element of the price range begins with 0';
+            if ($startingRanges === 0) {
+                $fail("The :attribute has no range starting with 0 for currency {$currency->value}");
+            }
+
+            if ($startingRanges >= 2) {
+                $fail("The :attribute already has a range starting with 0 for currency {$currency->value}");
+            }
+        }
     }
 }

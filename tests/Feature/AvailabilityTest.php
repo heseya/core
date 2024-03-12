@@ -12,18 +12,31 @@ use App\Models\Deposit;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Order;
+use App\Models\Price;
 use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\Schema;
-use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Services\AvailabilityService;
 use App\Services\Contracts\AvailabilityServiceContract;
+use App\Services\ProductService;
+use App\Services\SchemaCrudService;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
+use Domain\Currency\Currency;
+use Domain\SalesChannel\Models\SalesChannel;
+use Domain\ShippingMethod\Models\ShippingMethod;
+use Domain\ShippingMethod\Services\Contracts\ShippingMethodServiceContract;
+use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class AvailabilityTest extends TestCase
 {
@@ -34,39 +47,72 @@ class AvailabilityTest extends TestCase
     private Option $option;
     private Schema $schema;
     private Product $product;
+    private ShippingMethodServiceContract $shippingMethodService;
+    private SchemaCrudService $schemaCrudService;
+    private Currency $currency;
 
+    public static function multipleSchemasProvider(): array
+    {
+        return [
+            'as user three schemas' => ['user', 3],
+            'as user four schemas' => ['user', 4],
+            'as app three schemas' => ['application', 3],
+            'as app four schemas' => ['application', 4],
+        ];
+    }
+
+    /**
+     * @throws RoundingNecessaryException
+     * @throws DtoException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
     public function setUp(): void
     {
         parent::setUp();
         Product::query()->delete();
-        $this->product = Product::factory()->create([
+
+        /** @var ProductService $productService */
+        $productService = App::make(ProductService::class);
+        $this->product = $productService->create(FakeDto::productCreateDto());
+        $this->product->update([
             'available' => false,
             'public' => true,
             'quantity' => 0,
         ]);
+
+        $this->shippingMethodService = App::make(ShippingMethodServiceContract::class);
+        $this->schemaCrudService = App::make(SchemaCrudService::class);
+
+        $this->currency = Currency::DEFAULT;
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testRestockAvailable($user): void
+    public function testRestockAvailable(string $user): void
     {
         Event::fake(ProductUpdated::class);
 
         $this->{$user}->givePermissionTo('deposits.add');
 
-        $schema = Schema::factory()->create([
-            'required' => true,
-            'type' => SchemaType::SELECT,
-            'available' => false,
-        ]);
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'required' => true,
+                'type' => SchemaType::SELECT,
+                'available' => false,
+            ])
+        );
 
         $this->product->schemas()->save($schema);
 
         /** @var Item $item */
-        $item = Item::factory()->create();
+        $item = Item::factory()->create([
+            'shipping_time' => null,
+        ]);
         $item->deposits()->create([
             'quantity' => 0,
+            'shipping_time' => null,
         ]);
 
         $option = Option::factory()->create([
@@ -111,24 +157,28 @@ class AvailabilityTest extends TestCase
      * @dataProvider authProvider
      * Case when options' permutations require both items' quantity to be greater than 0, restocking only 1 item.
      */
-    public function testRestockUnavailable($user): void
+    public function testRestockUnavailable(string $user): void
     {
         $this->{$user}->givePermissionTo('deposits.add');
 
         Event::fake(ProductUpdated::class);
 
-        $schemaOne = Schema::factory()->create([
-            'name' => 'schemaOne',
-            'type' => SchemaType::SELECT,
-            'required' => true,
-            'available' => false,
-        ]);
-        $schemaTwo = Schema::factory()->create([
-            'name' => 'schemaTwo',
-            'type' => SchemaType::SELECT,
-            'required' => true,
-            'available' => false,
-        ]);
+        $schemaOne = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'name' => 'schemaOne',
+                'type' => SchemaType::SELECT,
+                'required' => true,
+                'available' => false,
+            ])
+        );
+        $schemaTwo = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'name' => 'schemaTwo',
+                'type' => SchemaType::SELECT,
+                'required' => true,
+                'available' => false,
+            ])
+        );
 
         $optionOne = Option::factory()->create([
             'schema_id' => $schemaOne->getKey(),
@@ -163,11 +213,13 @@ class AvailabilityTest extends TestCase
 
         $this->product->schemas()->saveMany([$schemaOne, $schemaTwo]);
 
-        $this->actingAs($this->{$user})
+        $response = $this->actingAs($this->{$user})
             ->postJson('/items/id:' . $itemTwo->getKey() . '/deposits', [
                 'quantity' => 20,
                 'shipping_time' => 0,
-            ])
+            ]);
+
+        $response->assertValid()
             ->assertCreated();
 
         $this
@@ -206,7 +258,7 @@ class AvailabilityTest extends TestCase
      * @dataProvider authProvider
      * Case when permutation requires single item with greater quantity.
      */
-    public function testProductRequiresSingleItemWithGreaterQuantity($user): void
+    public function testProductRequiresSingleItemWithGreaterQuantity(string $user): void
     {
         Event::fake(ProductUpdated::class);
 
@@ -254,7 +306,7 @@ class AvailabilityTest extends TestCase
      * @dataProvider authProvider
      * Case when permutation requires single item with greater quantity failed due to too small deposit.
      */
-    public function testProductRequiresSingleItemWithGreaterQuantityFailed($user): void
+    public function testProductRequiresSingleItemWithGreaterQuantityFailed(string $user): void
     {
         Event::fake(ProductUpdated::class);
 
@@ -301,8 +353,13 @@ class AvailabilityTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
-    public function testUnavailableAfterOrder($user): void
+    public function testUnavailableAfterOrder(string $user): void
     {
         Event::fake(ProductUpdated::class);
 
@@ -315,16 +372,22 @@ class AvailabilityTest extends TestCase
             'quantity' => 2,
         ]);
 
+        $shippingMethod = $this->shippingMethodService->store(
+            FakeDto::shippingMethodCreate([
+                'shipping_type' => ShippingType::ADDRESS->value,
+            ])
+        );
+
         $data->get('item')->options()->saveMany([$data->get('optionOne'), $data->get('optionTwo')]);
 
         $this->product->schemas()->saveMany([$data->get('schemaOne'), $data->get('schemaTwo')]);
         $this->product->update(['available' => true]);
 
         $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'test@test.test',
-            'shipping_method_id' => ShippingMethod::factory()->create([
-                'shipping_type' => ShippingType::ADDRESS,
-            ])->getKey(),
+            'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_place' => Address::factory()->create()->toArray(),
             'billing_address' => Address::factory()->create()->toArray(),
             'items' => [
@@ -366,8 +429,13 @@ class AvailabilityTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
-    public function testAvailableAfterOrderCancel($user): void
+    public function testAvailableAfterOrderCancel(string $user): void
     {
         Event::fake(ProductUpdated::class);
 
@@ -384,17 +452,23 @@ class AvailabilityTest extends TestCase
 
         $this->product->update([
             'available' => true,
-            'price' => 0,
+            'prices' => [['value' => 0, 'currency' => Currency::DEFAULT->value]],
         ]);
+
+        $shippingMethod = $this->shippingMethodService->store(
+            FakeDto::shippingMethodCreate([
+                'shipping_type' => ShippingType::ADDRESS->value,
+            ])
+        );
 
         $this->{$user}->givePermissionTo('orders.add');
         $this->{$user}->givePermissionTo('orders.edit.status');
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => 'test@test.test',
-            'shipping_method_id' => ShippingMethod::factory()->create([
-                'shipping_type' => ShippingType::ADDRESS,
-            ])->getKey(),
+            'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_place' => Address::factory()->create()->toArray(),
             'billing_address' => Address::factory()->create()->toArray(),
             'items' => [
@@ -407,7 +481,7 @@ class AvailabilityTest extends TestCase
                     ],
                 ],
             ],
-        ]);
+        ])->assertCreated();
 
         $order = Order::find($response->getData()->data->id);
 
@@ -469,7 +543,7 @@ class AvailabilityTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductAvailabilityAfterProductUpdate($user): void
+    public function testProductAvailabilityAfterProductUpdate(string $user): void
     {
         Event::fake(ProductUpdated::class);
 
@@ -485,7 +559,7 @@ class AvailabilityTest extends TestCase
         $this->actingAs($this->{$user})->patchJson('/products/id:' . $product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
-            'price' => 10,
+            'prices' => [['value' => 10, 'currency' => Currency::DEFAULT->value]],
             'public' => true,
             'items' => [
                 [
@@ -511,7 +585,7 @@ class AvailabilityTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductAvailabilityAfterProductUpdateFailed($user): void
+    public function testProductAvailabilityAfterProductUpdateFailed(string $user): void
     {
         Event::fake(ProductUpdated::class);
 
@@ -527,7 +601,7 @@ class AvailabilityTest extends TestCase
         $this->actingAs($this->{$user})->patchJson('/products/id:' . $product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
-            'price' => 10,
+            'prices' => [['value' => 10, 'currency' => Currency::DEFAULT->value]],
             'public' => true,
             'items' => [
                 [
@@ -550,16 +624,6 @@ class AvailabilityTest extends TestCase
         Event::assertDispatched(ProductUpdated::class);
     }
 
-    public static function multipleSchemasProvider(): array
-    {
-        return [
-            'as user three schemas' => ['user', 3],
-            'as user four schemas' => ['user', 4],
-            'as app three schemas' => ['application', 3],
-            'as app four schemas' => ['application', 4],
-        ];
-    }
-
     /**
      * @dataProvider multipleSchemasProvider
      */
@@ -568,16 +632,17 @@ class AvailabilityTest extends TestCase
         $this->{$user}->givePermissionTo('orders.add');
         $email = $this->faker->freeEmail;
 
-        $product = Product::factory()->create([
-            'public' => true,
+        $currency = Currency::DEFAULT->value;
+        $shippingMethod = ShippingMethod::factory()->create(['public' => true]);
+        $lowRange = PriceRange::create([
+            'start' => Money::zero($currency),
+            'value' => Money::of(8.11, $currency),
         ]);
 
-        $shippingMethod = ShippingMethod::factory()->create(['public' => true]);
-        $lowRange = PriceRange::create(['start' => 0]);
-        $lowRange->prices()->create(['value' => 8.11]);
-
-        $highRange = PriceRange::create(['start' => 210]);
-        $highRange->prices()->create(['value' => 0.0]);
+        $highRange = PriceRange::create([
+            'start' => Money::of(210, $currency),
+            'value' => Money::zero($currency),
+        ]);
 
         $shippingMethod->priceRanges()->saveMany([$lowRange, $highRange]);
 
@@ -587,20 +652,21 @@ class AvailabilityTest extends TestCase
 
         $schemas = $this->createSchemasWithOptions($schemaCount);
 
-        $product->schemas()->sync(array_keys($schemas));
-        $product->update([
+        $this->product->schemas()->sync(array_keys($schemas));
+        $this->product->update([
             'has_schemas' => true,
-            'price' => 100,
         ]);
 
         $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'email' => $email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_place' => $address->toArray(),
             'billing_address' => $address->toArray(),
             'items' => [
                 [
-                    'product_id' => $product->getKey(),
+                    'product_id' => $this->product->getKey(),
                     'quantity' => 1,
                     'schemas' => $schemas,
                 ],
@@ -614,16 +680,24 @@ class AvailabilityTest extends TestCase
     /**
      * @dataProvider multipleSchemasProvider
      */
-    public function testCreateWithMultipleSchemasWithOptions($user, int $schemaCount): void
+    public function testCreateWithMultipleSchemasWithOptions(string $user, int $schemaCount): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
         $schemas = $this->createSchemasWithOptions($schemaCount);
 
+        $prices = array_map(fn (Currency $currency) => [
+            'value' => '10.00',
+            'currency' => $currency->value,
+        ], Currency::cases());
+
         $this->actingAs($this->{$user})->postJson('/products', [
-            'name' => 'Test',
+            'translations' => [
+                $this->lang => ['name' => 'Test'],
+            ],
+            'published' => [$this->lang],
             'slug' => 'test',
-            'price' => 10,
+            'prices_base' => $prices,
             'public' => false,
             'shipping_digital' => false,
             'sets' => [],
@@ -634,7 +708,7 @@ class AvailabilityTest extends TestCase
     /**
      * @dataProvider multipleSchemasProvider
      */
-    public function testAddDepositToItemInSchemaOption($user, int $schemaCount): void
+    public function testAddDepositToItemInSchemaOption(string $user, int $schemaCount): void
     {
         $this->{$user}->givePermissionTo('deposits.add');
 
@@ -657,24 +731,31 @@ class AvailabilityTest extends TestCase
 
     private function createDataPatternOne(): Collection
     {
-        $schemaOne = Schema::factory()->create([
-            'type' => SchemaType::SELECT,
-            'required' => true,
-        ]);
-        $schemaTwo = Schema::factory()->create([
-            'type' => SchemaType::SELECT,
-            'required' => true,
-        ]);
+        $schemaOne = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => SchemaType::SELECT,
+                'required' => true,
+            ])
+        );
+
+        $schemaTwo = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => SchemaType::SELECT,
+                'required' => true,
+            ])
+        );
 
         $optionOne = Option::factory()->create([
             'schema_id' => $schemaOne->getKey(),
             'disabled' => false,
         ]);
+        $optionOne->prices()->createMany(Price::factory(['value' => 0])->prepareForCreateMany());
 
         $optionTwo = Option::factory()->create([
             'schema_id' => $schemaTwo->getKey(),
             'disabled' => false,
         ]);
+        $optionTwo->prices()->createMany(Price::factory(['value' => 0])->prepareForCreateMany());
 
         /** @var Item $item */
         $item = Item::factory()->create();
@@ -694,16 +775,18 @@ class AvailabilityTest extends TestCase
     private function prepareToCheckAvailabilityWithDirectProductItemRelation(int $itemQuantity): void
     {
         /** @var AvailabilityService $availabilityService */
-        $availabilityService = app(AvailabilityServiceContract::class);
+        $availabilityService = App::make(AvailabilityServiceContract::class);
 
         $this->product->update(['available' => false]);
 
-        $schema = Schema::factory()->create([
-            'name' => 'schemaOne',
-            'type' => SchemaType::SELECT,
-            'required' => true,
-            'available' => false,
-        ]);
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'name' => 'schemaOne',
+                'type' => SchemaType::SELECT,
+                'required' => true,
+                'available' => false,
+            ])
+        );
 
         $this->product->schemas()->attach($schema->getKey());
 
@@ -718,24 +801,26 @@ class AvailabilityTest extends TestCase
         $availabilityService->calculateProductAvailability($this->product->refresh());
     }
 
+    /**
+     * @throws RoundingNecessaryException
+     * @throws DtoException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
     private function createProductForAvailabilityCheckWithDirectItems(): Product
     {
-        $product = Product::factory()->create();
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'name' => 'schemaOne',
+                'type' => SchemaType::SELECT,
+                'required' => true,
+                'available' => false,
+            ])
+        );
 
-        $product->update([
-            'available' => false,
-        ]);
+        $this->product->schemas()->attach($schema->getKey());
 
-        $schema = Schema::factory()->create([
-            'name' => 'schemaOne',
-            'type' => SchemaType::SELECT,
-            'required' => true,
-            'available' => false,
-        ]);
-
-        $product->schemas()->attach($schema->getKey());
-
-        return $product->refresh();
+        return $this->product->refresh();
     }
 
     private function createSchemasWithOptions(int $schemaCount): array
@@ -754,36 +839,38 @@ class AvailabilityTest extends TestCase
                 'quantity' => 10,
             ]);
 
-            $schema1 = Schema::factory()->create([
-                'required' => true,
-                'type' => SchemaType::SELECT,
-                'price' => 10,
-                'hidden' => false,
-                'available' => true,
-            ]);
+            $schema1 = $this->schemaCrudService->store(
+                FakeDto::schemaDto([
+                    'required' => true,
+                    'type' => SchemaType::SELECT,
+                    'prices' => [['value' => 10, 'currency' => Currency::DEFAULT->value]],
+                    'hidden' => false,
+                    'available' => true,
+                    'options' => [
+                        [
+                            'name' => 'A',
+                            'prices' => [['value' => 10, 'currency' => Currency::DEFAULT->value]],
+                            'disabled' => false,
+                            'available' => true,
+                            'order' => 0,
+                        ] + Option::factory()->definition(),
+                        [
+                            'name' => 'B',
+                            'prices' => [['value' => 10, 'currency' => Currency::DEFAULT->value]],
+                            'disabled' => false,
+                            'available' => true,
+                            'order' => 2,
+                        ] + Option::factory()->definition(),
+                    ],
+                ])
+            );
 
-            $option1 = Option::factory()->create([
-                'name' => 'A',
-                'price' => 10,
-                'disabled' => false,
-                'available' => true,
-                'order' => 0,
-                'schema_id' => $schema1->getKey(),
-            ]);
-
+            $option1 = $schema1->options->where('name', 'A')->first();
             $option1->items()->sync([
                 $item1->getKey(),
             ]);
 
-            $option2 = Option::factory()->create([
-                'name' => 'B',
-                'price' => 10,
-                'disabled' => false,
-                'available' => true,
-                'order' => 2,
-                'schema_id' => $schema1->getKey(),
-            ]);
-
+            $option2 = $schema1->options->where('name', 'B')->first();
             $option2->items()->sync([
                 $item1->getKey(),
             ]);

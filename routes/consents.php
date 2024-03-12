@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Controllers\ConsentController;
+use Domain\Consent\Controllers\ConsentController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('consents')->group(function (): void {
     Route::get('/id:{consent:id}', [ConsentController::class, 'show'])
-        ->middleware('can:consents.show_details');
+        ->middleware('can:consents.show_details', 'published:consent');
     Route::get('/', [ConsentController::class, 'index'])
         ->middleware('can:consents.show');
     Route::post('/', [ConsentController::class, 'store'])

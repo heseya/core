@@ -1,22 +1,46 @@
 <?php
 
+namespace Tests\Feature;
+
 use App\Models\Product;
-use App\Models\ProductSet;
+use App\Services\ProductService;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Domain\Currency\Currency;
+use Domain\ProductSet\ProductSet;
+use Heseya\Dto\DtoException;
+use Illuminate\Support\Facades\App;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class ProductRelatedSetsTest extends TestCase
 {
+    private Product $product;
+
+    /**
+     * @throws DtoException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        /** @var ProductService $productService */
+        $productService = App::make(ProductService::class);
+        $this->product = $productService->create(FakeDto::productCreateDto([
+            'public' => true,
+        ]));
+    }
+
     /**
      * @dataProvider authProvider
      */
-    public function testShowRelatedSets($user): void
+    public function testShowRelatedSets(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show_details');
-
-        /** @var Product $product */
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
 
         $set1 = ProductSet::factory()->create([
             'public' => true,
@@ -25,11 +49,11 @@ class ProductRelatedSetsTest extends TestCase
             'public' => true,
         ]);
 
-        $product->relatedSets()->sync([$set1->getKey(), $set2->getKey()]);
+        $this->product->relatedSets()->sync([$set1->getKey(), $set2->getKey()]);
 
         $this
             ->actingAs($this->{$user})
-            ->getJson('/products/' . $product->slug)
+            ->getJson('/products/' . $this->product->slug)
             ->assertOk()
             ->assertJsonFragment(['related_sets' => [
                 [
@@ -44,6 +68,9 @@ class ProductRelatedSetsTest extends TestCase
                     'children_ids' => [],
                     'cover' => null,
                     'metadata' => [],
+                    'published' => [
+                        $this->lang,
+                    ],
                 ],
                 [
                     'id' => $set2->getKey(),
@@ -57,6 +84,9 @@ class ProductRelatedSetsTest extends TestCase
                     'children_ids' => [],
                     'cover' => null,
                     'metadata' => [],
+                    'published' => [
+                        $this->lang,
+                    ],
                 ],
             ]]);
     }
@@ -64,14 +94,9 @@ class ProductRelatedSetsTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowPrivateRelatedSetsNoPermission($user): void
+    public function testShowPrivateRelatedSetsNoPermission(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show_details');
-
-        /** @var Product $product */
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
 
         $set1 = ProductSet::factory()->create([
             'public' => true,
@@ -80,11 +105,11 @@ class ProductRelatedSetsTest extends TestCase
             'public' => false,
         ]);
 
-        $product->relatedSets()->sync([$set1->getKey(), $set2->getKey()]);
+        $this->product->relatedSets()->sync([$set1->getKey(), $set2->getKey()]);
 
         $this
             ->actingAs($this->{$user})
-            ->getJson('/products/' . $product->slug)
+            ->getJson('/products/' . $this->product->slug)
             ->assertOk()
             ->assertJsonFragment(['related_sets' => [
                 [
@@ -99,6 +124,9 @@ class ProductRelatedSetsTest extends TestCase
                     'children_ids' => [],
                     'cover' => null,
                     'metadata' => [],
+                    'published' => [
+                        $this->lang,
+                    ],
                 ],
             ]]);
     }
@@ -106,15 +134,10 @@ class ProductRelatedSetsTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowPrivateRelatedSetsWithPermission($user): void
+    public function testShowPrivateRelatedSetsWithPermission(string $user): void
     {
         $this->{$user}->givePermissionTo(['products.show_details', 'product_sets.show_hidden']);
 
-        /** @var Product $product */
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
-
         $set1 = ProductSet::factory()->create([
             'public' => true,
         ]);
@@ -122,11 +145,11 @@ class ProductRelatedSetsTest extends TestCase
             'public' => false,
         ]);
 
-        $product->relatedSets()->sync([$set1->getKey(), $set2->getKey()]);
+        $this->product->relatedSets()->sync([$set1->getKey(), $set2->getKey()]);
 
         $this
             ->actingAs($this->{$user})
-            ->getJson('/products/' . $product->slug)
+            ->getJson('/products/' . $this->product->slug)
             ->assertOk()
             ->assertJsonFragment(['related_sets' => [
                 [
@@ -141,6 +164,9 @@ class ProductRelatedSetsTest extends TestCase
                     'children_ids' => [],
                     'cover' => null,
                     'metadata' => [],
+                    'published' => [
+                        $this->lang,
+                    ],
                 ],
                 [
                     'id' => $set2->getKey(),
@@ -154,25 +180,37 @@ class ProductRelatedSetsTest extends TestCase
                     'children_ids' => [],
                     'cover' => null,
                     'metadata' => [],
+                    'published' => [
+                        $this->lang,
+                    ],
                 ],
-            ],
-            ]);
+            ]]);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithRelatedSets($user): void
+    public function testCreateWithRelatedSets(string $user): void
     {
         $this->{$user}->givePermissionTo('products.add');
 
         $set1 = ProductSet::factory()->create();
         $set2 = ProductSet::factory()->create();
 
+        $prices = array_map(fn (Currency $currency) => [
+            'value' => '10.00',
+            'currency' => $currency->value,
+        ], Currency::cases());
+
         $response = $this->actingAs($this->{$user})->postJson('/products', [
-            'name' => 'Test',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                ],
+            ],
+            'published' => [$this->lang],
             'slug' => 'test',
-            'price' => 150,
+            'prices_base' => $prices,
             'public' => false,
             'shipping_digital' => false,
             'related_sets' => [
@@ -182,15 +220,15 @@ class ProductRelatedSetsTest extends TestCase
         ]);
 
         $response->assertCreated();
-        $product = $response->getData()->data;
+        $product = $response->json('data.id');
 
         $this->assertDatabaseHas('related_product_sets', [
-            'product_id' => $product->id,
+            'product_id' => $product,
             'product_set_id' => $set1->getKey(),
         ]);
 
         $this->assertDatabaseHas('related_product_sets', [
-            'product_id' => $product->id,
+            'product_id' => $product,
             'product_set_id' => $set2->getKey(),
         ]);
     }
@@ -198,20 +236,17 @@ class ProductRelatedSetsTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateChangeRelatedSets($user): void
+    public function testUpdateChangeRelatedSets(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
-
-        /** @var Product $product */
-        $product = Product::factory()->create();
 
         $set1 = ProductSet::factory()->create();
         $set2 = ProductSet::factory()->create();
         $set3 = ProductSet::factory()->create();
 
-        $product->relatedSets()->sync([$set1->getKey(), $set2->getKey()]);
+        $this->product->relatedSets()->sync([$set1->getKey(), $set2->getKey()]);
 
-        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $product->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'related_sets' => [
                 $set2->getKey(),
                 $set3->getKey(),
@@ -221,17 +256,17 @@ class ProductRelatedSetsTest extends TestCase
         $response->assertOk();
 
         $this->assertDatabaseHas('related_product_sets', [
-            'product_id' => $product->getKey(),
+            'product_id' => $this->product->getKey(),
             'product_set_id' => $set2->getKey(),
         ]);
 
         $this->assertDatabaseHas('related_product_sets', [
-            'product_id' => $product->getKey(),
+            'product_id' => $this->product->getKey(),
             'product_set_id' => $set3->getKey(),
         ]);
 
         $this->assertDatabaseMissing('related_product_sets', [
-            'product_id' => $product->getKey(),
+            'product_id' => $this->product->getKey(),
             'product_set_id' => $set1->getKey(),
         ]);
     }
@@ -239,26 +274,23 @@ class ProductRelatedSetsTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateDeleteRelatedSets($user): void
+    public function testUpdateDeleteRelatedSets(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
-
-        /** @var Product $product */
-        $product = Product::factory()->create();
 
         $set1 = ProductSet::factory()->create();
         $set2 = ProductSet::factory()->create();
 
-        $product->relatedSets()->sync([$set1->getKey(), $set2->getKey()]);
+        $this->product->relatedSets()->sync([$set1->getKey(), $set2->getKey()]);
 
-        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $product->getKey(), [
+        $response = $this->actingAs($this->{$user})->patchJson('/products/id:' . $this->product->getKey(), [
             'related_sets' => [],
         ]);
 
         $response->assertOk();
 
         $this->assertDatabaseMissing('related_product_sets', [
-            'product_id' => $product->getKey(),
+            'product_id' => $this->product->getKey(),
         ]);
     }
 }

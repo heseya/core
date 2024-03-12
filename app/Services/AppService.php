@@ -18,6 +18,7 @@ use App\Services\Contracts\UrlServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App as AppFacade;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
@@ -55,11 +56,11 @@ class AppService implements AppServiceContract
         }
 
         if ($response->failed()) {
-            throw new ClientException(Exceptions::CLIENT_APP_INFO_RESPONDED_WITH_INVALID_CODE, 0, null, false, ['code' => $response->status(), 'body' => $response->body()]);
+            throw new ClientException(Exceptions::CLIENT_APP_INFO_RESPONDED_WITH_INVALID_CODE, null, false, ['code' => $response->status(), 'body' => $response->body()]);
         }
 
         if (!$this->isAppRootValid($response)) {
-            throw new ClientException(Exceptions::CLIENT_APP_RESPONDED_WITH_INVALID_INFO, 0, null, false, ["Body: {$response->body()}"]);
+            throw new ClientException(Exceptions::CLIENT_APP_RESPONDED_WITH_INVALID_INFO, null, false, ["Body: {$response->body()}"]);
         }
 
         /** @var array $appConfig */
@@ -108,22 +109,24 @@ class AppService implements AppServiceContract
         $uuid = Str::uuid()->toString();
         $integrationToken = $this->tokenService->createToken(
             $app,
-            new TokenType(TokenType::ACCESS),
+            TokenType::ACCESS,
             $uuid,
         );
 
         $refreshToken = $this->tokenService->createToken(
             $app,
-            new TokenType(TokenType::REFRESH),
+            TokenType::REFRESH,
             $uuid,
         );
 
         $url = $this->urlService->urlAppendPath($dto->getUrl(), '/install');
 
+        /** @var UrlServiceContract $urlService */
+        $urlService = AppFacade::make(UrlServiceContract::class);
         try {
             /** @var Response $response */
             $response = Http::post($url, [
-                'api_url' => Config::get('app.url'),
+                'api_url' => $urlService->normalizeUrl(Config::get('app.url')),
                 'api_name' => Config::get('app.name'),
                 'api_version' => Config::get('app.ver'),
                 'licence_key' => $dto->getLicenceKey(),
@@ -137,14 +140,14 @@ class AppService implements AppServiceContract
         if ($response->failed()) {
             $app->delete();
 
-            throw new ClientException(Exceptions::CLIENT_APP_INSTALLATION_RESPONDED_WITH_INVALID_CODE, 0, null, false, ["Status code: {$response->status()}", "Body: {$response->body()}"]);
+            throw new ClientException(Exceptions::CLIENT_APP_INSTALLATION_RESPONDED_WITH_INVALID_CODE, null, false, ["Status code: {$response->status()}", "Body: {$response->body()}"]);
         }
         if (!$this->isResponseValid($response, [
             'uninstall_token' => ['required', 'string', 'max:255'],
         ])) {
             $app->delete();
 
-            throw new ClientException(Exceptions::CLIENT_INVALID_INSTALLATION_RESPONSE, 0, null, false, ["Body: {$response->body()}"]);
+            throw new ClientException(Exceptions::CLIENT_INVALID_INSTALLATION_RESPONSE, null, false, ["Body: {$response->body()}"]);
         }
 
         $app->update([
@@ -161,7 +164,7 @@ class AppService implements AppServiceContract
                 'description' => $permission['description'] ?? null,
             ]));
 
-        $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
+        $owner = Role::where('type', RoleType::OWNER->value)->firstOrFail();
         $owner->givePermissionTo($internalPermissions);
 
         if ($internalPermissions->isNotEmpty()) {
@@ -281,7 +284,7 @@ class AppService implements AppServiceContract
         );
 
         /** @var Role $unauthenticated */
-        $unauthenticated = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $unauthenticated = Role::where('type', RoleType::UNAUTHENTICATED->value)->firstOrFail();
 
         $internalPermissions->each(
             fn ($permission) => !$publicPermissions->contains($permission->name)

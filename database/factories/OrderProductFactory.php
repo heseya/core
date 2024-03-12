@@ -4,7 +4,8 @@ namespace Database\Factories;
 
 use App\Models\OrderProduct;
 use App\Models\Product;
-use Illuminate\Database\Eloquent\Factories\Factory;
+use Brick\Money\Money;
+use Domain\Currency\Currency;
 
 class OrderProductFactory extends Factory
 {
@@ -20,11 +21,14 @@ class OrderProductFactory extends Factory
      */
     public function definition(): array
     {
-        $price = mt_rand(100, 200);
+//        $currency = Currency::getRandomValue();
+        $currency = Currency::DEFAULT->value;
+        $price = Money::of(mt_rand(100, 200), $currency);
 
         return [
             'name' => $this->faker->word,
             'quantity' => mt_rand(1, 4),
+            'currency' => $currency,
             'price' => $price,
             'price_initial' => $price,
             'base_price' => $price,

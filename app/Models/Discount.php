@@ -10,23 +10,28 @@ use App\Criteria\WhereHasCode;
 use App\Criteria\WhereInIds;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Models\Contracts\SeoContract;
+use App\Models\Interfaces\Translatable;
+use App\Traits\CustomHasTranslations;
 use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
+use Domain\ProductSet\ProductSet;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use OwenIt\Auditing\Auditable;
-use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @property mixed $pivot
+ * @property OrderDiscount|null $order_discount
  * @property DiscountType $type
  * @property DiscountTargetType $target_type
  * @property int $uses
@@ -34,14 +39,16 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  *
  * @mixin IdeHelperDiscount
  */
-class Discount extends Model implements AuditableContract
+class Discount extends Model implements SeoContract, Translatable
 {
-    use Auditable;
+    use CustomHasTranslations;
     use HasCriteria;
     use HasFactory;
     use HasMetadata;
     use HasSeoMetadata;
     use SoftDeletes;
+
+    public const HIDDEN_PERMISSION = 'sales.show_hidden';
 
     protected $fillable = [
         'name',
@@ -49,19 +56,26 @@ class Discount extends Model implements AuditableContract
         'description',
         'description_html',
         'code',
-        'value',
-        'type',
         'target_type',
         'target_is_allow_list',
         'priority',
         'active',
+        'percentage',
+        'published',
+    ];
+
+    /** @var string[] */
+    protected array $translatable = [
+        'name',
+        'description',
+        'description_html',
     ];
 
     protected $casts = [
-        'type' => DiscountType::class,
         'target_type' => DiscountTargetType::class,
         'target_is_allow_list' => 'boolean',
         'active' => 'boolean',
+        'published' => 'array',
     ];
 
     protected array $criteria = [
@@ -73,6 +87,8 @@ class Discount extends Model implements AuditableContract
         'coupon' => WhereHasCode::class,
         'for_role' => ForRoleDiscountSearch::class,
         'ids' => WhereInIds::class,
+        'published' => Like::class,
+        'discounts.published' => Like::class,
     ];
 
     public function scopeWithOrdersCount(Builder $query): Builder
@@ -88,7 +104,7 @@ class Discount extends Model implements AuditableContract
      */
     protected function uses(): Attribute
     {
-        return Attribute::get(fn (mixed $value, array $attributes = []) => match ($this->target_type->value) {
+        return Attribute::get(fn (mixed $value, array $attributes = []) => match ($this->target_type) {
             DiscountTargetType::PRODUCTS, DiscountTargetType::CHEAPEST_PRODUCT => match (true) {
                 $this->orders_through_products_count !== null => $this->orders_through_products_count,
                 $this->relationLoaded('orderProducts') => $this->orderProducts->unique('order_id')->count(),
@@ -104,7 +120,17 @@ class Discount extends Model implements AuditableContract
 
     public function orders(): MorphToMany
     {
-        return $this->morphedByMany(Order::class, 'model', 'order_discounts');
+        return $this->morphedByMany(Order::class, 'model', 'order_discounts')
+            ->using(OrderDiscount::class)
+            ->as('order_discount')
+            ->withPivot([
+                'name',
+                'amount',
+                'currency',
+                'percentage',
+                'target_type',
+                'applied',
+            ]);
     }
 
     public function orderProducts(): MorphToMany
@@ -122,7 +148,7 @@ class Discount extends Model implements AuditableContract
 
     public function ordersWithUses(): Builder
     {
-        return match ($this->target_type->value) {
+        return match ($this->target_type) {
             DiscountTargetType::PRODUCTS, DiscountTargetType::CHEAPEST_PRODUCT => $this->ordersThroughProducts(),
             default => $this->orders()->getQuery(),
         };
@@ -169,5 +195,10 @@ class Discount extends Model implements AuditableContract
         }
 
         return $products->unique();
+    }
+
+    public function amounts(): MorphMany
+    {
+        return $this->morphMany(Price::class, 'model');
     }
 }

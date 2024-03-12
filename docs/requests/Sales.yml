@@ -4,8 +4,6 @@ SaleStore:
       schema:
         required:
           - name
-          - type
-          - value
           - priority
           - target_type
           - target_is_allow_list
@@ -20,8 +18,6 @@ SaleUpdate:
       schema:
         required:
           - name
-          - type
-          - value
           - priority
           - target_type
           - target_is_allow_list

@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\FavouriteController;
 use App\Http\Controllers\MetadataController;
-use App\Http\Controllers\ProductSetController;
+use Domain\ProductSet\ProductSetController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('product-sets')->group(function (): void {
@@ -19,9 +19,9 @@ Route::prefix('product-sets')->group(function (): void {
     Route::get('/', [ProductSetController::class, 'index'])
         ->middleware('permission:product_sets.show|products.add|products.edit');
     Route::get('id:{product_set:id}', [ProductSetController::class, 'show'])
-        ->middleware('can:product_sets.show_details');
+        ->middleware('can:product_sets.show_details', 'published:product_set');
     Route::get('{product_set:slug}', [ProductSetController::class, 'show'])
-        ->middleware('can:product_sets.show_details');
+        ->middleware('can:product_sets.show_details', 'published:product_set');
     Route::post('/', [ProductSetController::class, 'store'])
         ->middleware('can:product_sets.add');
     Route::patch('id:{product_set:id}', [ProductSetController::class, 'update'])
@@ -38,6 +38,8 @@ Route::prefix('product-sets')->group(function (): void {
         ->middleware('can:product_sets.remove');
 
     Route::get('id:{product_set:id}/products', [ProductSetController::class, 'products'])
+        ->middleware('can:product_sets.show_details');
+    Route::get('id:{product_set:id}/products-all', [ProductSetController::class, 'descendantProducts'])
         ->middleware('can:product_sets.show_details');
     Route::post('id:{product_set:id}/products', [ProductSetController::class, 'attach'])
         ->middleware('can:product_sets.edit');

@@ -14,7 +14,6 @@ use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\SchemaType;
 use App\Enums\ShippingType;
 use App\Events\OrderCreated;
-use App\Events\OrderRequestedShipping;
 use App\Events\OrderUpdated;
 use App\Events\OrderUpdatedShippingNumber;
 use App\Events\SendOrderUrls;
@@ -23,61 +22,78 @@ use App\Exceptions\OrderException;
 use App\Exceptions\ServerException;
 use App\Exceptions\StoreException;
 use App\Http\Resources\OrderResource;
+use App\Mail\OrderUrls;
 use App\Models\Address;
 use App\Models\App;
 use App\Models\CartResource;
+use App\Models\Discount;
 use App\Models\Option;
 use App\Models\Order;
 use App\Models\OrderProduct;
-use App\Models\PackageTemplate;
 use App\Models\Product;
 use App\Models\Schema;
-use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\User;
-use App\Notifications\SendUrls;
+use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
+use App\Traits\ModifyLangFallback;
+use Brick\Math\Exception\MathException;
+use Brick\Money\Exception\MoneyMismatchException;
+use Brick\Money\Money;
+use Domain\Price\Enums\ProductPriceType;
+use Domain\SalesChannel\SalesChannelService;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Exception;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App as AppSupport;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Throwable;
 
-class OrderService implements OrderServiceContract
+final readonly class OrderService implements OrderServiceContract
 {
+    use ModifyLangFallback;
+
     public function __construct(
         private DiscountServiceContract $discountService,
         private ItemServiceContract $itemService,
         private NameServiceContract $nameService,
         private MetadataServiceContract $metadataService,
         private DepositServiceContract $depositService,
+        private ProductRepositoryContract $productRepository,
+        private SalesChannelService $salesChannelService,
     ) {}
 
-    public function calcSummary(Order $order): float
+    /**
+     * @throws MathException
+     * @throws MoneyMismatchException
+     */
+    public function calcSummary(Order $order): Money
     {
-        $value = 0;
+        $value = Money::zero($order->currency->value);
+        /** @var OrderProduct $item */
         foreach ($order->products as $item) {
-            $value += $item->price * $item->quantity;
+            $value = $value->plus($item->price->multipliedBy($item->quantity));
         }
 
-        $cartValue = $value;
         foreach ($order->discounts as $discount) {
-            $value -= $this->discountService->calc($cartValue, $discount);
+            $value = $value->minus($this->discountService->calc($value, $discount));
         }
 
-        $value = max($value, 0) + $order->shipping_price;
+        // return round($value, 2, PHP_ROUND_HALF_UP);
 
-        return round($value, 2, PHP_ROUND_HALF_UP);
+        return $order->shipping_price->plus(Money::max($value, Money::zero($order->currency->value)));
     }
 
     /**
@@ -87,6 +103,9 @@ class OrderService implements OrderServiceContract
      */
     public function store(OrderDto $dto): Order
     {
+        $currency = $dto->currency;
+        $vat_rate = $this->salesChannelService->getVatRate($dto->sales_channel_id);
+
         DB::beginTransaction();
 
         try {
@@ -125,6 +144,19 @@ class OrderService implements OrderServiceContract
                     break;
             }
 
+            if ($shippingMethod) {
+                $country = null;
+                if ($shippingPlace instanceof AddressDto && is_string($shippingPlace->getCountry())) {
+                    $country = $shippingPlace->getCountry();
+                }
+                if ($shippingAddressId) {
+                    $country = Address::query()->where('id', $shippingAddressId)->first()?->country;
+                }
+                if ($country !== null && $shippingMethod->isCountryBlocked($country)) {
+                    throw new OrderException(Exceptions::CLIENT_SHIPPING_METHOD_INVALID_COUNTRY);
+                }
+            }
+
             if (!($dto->getBillingAddress() instanceof Missing)) {
                 $billingAddress = Address::query()->firstOrCreate($dto->getBillingAddress()->toArray());
             }
@@ -137,7 +169,9 @@ class OrderService implements OrderServiceContract
             $status = Status::query()
                 ->select('id')
                 ->orderBy('order')
-                ->firstOr(callback: fn () => throw new ServerException(Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED));
+                ->firstOr(
+                    callback: fn () => throw new ServerException(Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED),
+                );
 
             /** @var User|App $buyer */
             $buyer = Auth::user();
@@ -146,53 +180,65 @@ class OrderService implements OrderServiceContract
             $order = Order::query()->create(
                 [
                     'code' => $this->nameService->generate(),
-                    'currency' => 'PLN',
-                    'shipping_price_initial' => 0.0,
-                    'shipping_price' => 0.0,
-                    'cart_total_initial' => 0.0,
-                    'cart_total' => 0.0,
+                    'currency' => $currency->value,
+                    'shipping_price_initial' => Money::zero($currency->value),
+                    'shipping_price' => Money::zero($currency->value),
+                    'cart_total_initial' => Money::zero($currency->value),
+                    'cart_total' => Money::zero($currency->value),
+                    'summary' => Money::zero($currency->value),
                     'status_id' => $status->getKey(),
                     'shipping_address_id' => $shippingAddressId,
                     'billing_address_id' => isset($billingAddress) ? $billingAddress->getKey() : null,
                     'buyer_id' => $buyer->getKey(),
-                    'buyer_type' => $buyer::class,
+                    'buyer_type' => $buyer->getMorphClass(),
                     'invoice_requested' => $getInvoiceRequested,
                     'shipping_place' => $shippingPlace,
-                    'shipping_type' => $shippingMethod->shipping_type ?? $digitalShippingMethod->shipping_type,
+                    'shipping_type' => $shippingMethod->shipping_type ?? $digitalShippingMethod->shipping_type ?? null,
                 ] + $dto->toArray(),
             );
 
             // Add products to order
-            $cartValueInitial = 0;
+            $cartValueInitial = Money::zero($currency->value);
             $tempSchemaOrderProduct = [];
             try {
+                $previousSettings = $this->getCurrentLangFallbackSettings();
+                $this->setAnyLangFallback();
+                $language = AppSupport::getLocale();
                 foreach ($items as $item) {
                     /** @var Product $product */
                     $product = $products->firstWhere('id', $item->getProductId());
 
+                    $prices = $this->productRepository->getProductPrices($product->getKey(), [
+                        ProductPriceType::PRICE_BASE,
+                    ], $currency);
+
+                    /** @var Money $price */
+                    $price = $prices->get(ProductPriceType::PRICE_BASE->value)->firstOrFail()->value;
+
                     $orderProduct = new OrderProduct([
                         'product_id' => $item->getProductId(),
                         'quantity' => $item->getQuantity(),
-                        'price_initial' => $product->price,
-                        'price' => $product->price,
-                        'base_price_initial' => $product->price,
-                        'base_price' => $product->price,
-                        'name' => $product->name,
-                        'vat_rate' => $product->vat_rate,
+                        'currency' => $order->currency,
+                        'price_initial' => $price,
+                        'price' => $price,
+                        'base_price_initial' => $price,
+                        'base_price' => $price,
+                        'name' => $product->getTranslation('name', $language),
+                        'vat_rate' => $vat_rate->multipliedBy(100)->toFloat(),
                         'shipping_digital' => $product->shipping_digital,
                     ]);
 
                     $order->products()->save($orderProduct);
-                    $cartValueInitial += $product->price * $item->getQuantity();
+                    $cartValueInitial = $cartValueInitial->plus($price->multipliedBy($item->getQuantity()));
 
-                    $schemaProductPrice = 0;
+                    $schemaProductPrice = Money::zero($currency->value);
                     // Add schemas to products
                     foreach ($item->getSchemas() as $schemaId => $value) {
                         /** @var Schema $schema */
                         $schema = $product->schemas()->findOrFail($schemaId);
-                        $price = $schema->getPrice($value, $item->getSchemas());
+                        $price = $schema->getPrice($value, $item->getSchemas(), $currency);
 
-                        if ($schema->type->is(SchemaType::SELECT)) {
+                        if ($schema->type === SchemaType::SELECT) {
                             /** @var Option $option */
                             $option = $schema->options()->findOrFail($value);
                             $tempSchemaOrderProduct[$schema->name . '_' . $item->getProductId()] = [$schemaId, $value];
@@ -200,22 +246,23 @@ class OrderService implements OrderServiceContract
                         }
 
                         $orderProduct->schemas()->create([
-                            'name' => $schema->name,
+                            'name' => $schema->getTranslation('name', $language),
                             'value' => $value,
                             'price_initial' => $price,
                             'price' => $price,
                         ]);
 
-                        $schemaProductPrice += $price;
-                        $cartValueInitial += $price * $item->getQuantity();
+                        $schemaProductPrice = $schemaProductPrice->plus($price);
+                        $cartValueInitial = $cartValueInitial->plus($price->multipliedBy($item->getQuantity()));
                     }
 
-                    if ($schemaProductPrice) {
-                        $orderProduct->price += $schemaProductPrice;
-                        $orderProduct->price_initial += $schemaProductPrice;
+                    if ($schemaProductPrice->isPositive()) {
+                        $orderProduct->price = $schemaProductPrice->plus($orderProduct->price);
+                        $orderProduct->price_initial = $schemaProductPrice->plus($orderProduct->price_initial);
                         $orderProduct->save();
                     }
                 }
+                $this->setLangFallbackSettings(...$previousSettings);
 
                 if (!($dto->getMetadata() instanceof Missing)) {
                     $this->metadataService->sync($order, $dto->getMetadata());
@@ -227,21 +274,77 @@ class OrderService implements OrderServiceContract
                 // Apply discounts to order/products
                 $order = $this->discountService->calcOrderProductsAndTotalDiscounts($order, $dto);
 
-                $shippingPrice = $shippingMethod?->getPrice($order->cart_total) ?? 0;
-                $shippingPrice += $digitalShippingMethod?->getPrice($order->cart_total) ?? 0;
+                $shippingPrice = $shippingMethod?->getPrice($order->cart_total) ?? Money::zero($currency->value);
+                $shippingPrice = $shippingPrice->plus(
+                    $digitalShippingMethod?->getPrice($order->cart_total) ?? Money::zero($currency->value),
+                );
 
+                // Always gross
                 $order->shipping_price_initial = $shippingPrice;
                 $order->shipping_price = $shippingPrice;
 
                 // Apply discounts to order
                 $order = $this->discountService->calcOrderShippingDiscounts($order, $dto);
 
+                /** @var OrderProduct $orderProduct */
                 foreach ($order->products as $orderProduct) {
                     // Remove items from warehouse
                     if (!$this->removeItemsFromWarehouse($orderProduct, $tempSchemaOrderProduct)) {
                         throw new OrderException(Exceptions::ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE);
                     }
+
+                    $orderProduct->base_price_initial = $this->salesChannelService->addVat(
+                        $orderProduct->base_price_initial,
+                        $vat_rate,
+                    );
+                    $orderProduct->base_price = $this->salesChannelService->addVat(
+                        $orderProduct->base_price,
+                        $vat_rate,
+                    );
+                    $orderProduct->price_initial = $this->salesChannelService->addVat(
+                        $orderProduct->price_initial,
+                        $vat_rate,
+                    );
+                    $orderProduct->price = $this->salesChannelService->addVat(
+                        $orderProduct->price,
+                        $vat_rate,
+                    );
+
+                    /** @var Discount $discount */
+                    foreach ($orderProduct->discounts as $discount) {
+                        if ($discount->order_discount?->applied !== null) {
+                            $discount->order_discount->applied = $this->salesChannelService->addVat(
+                                $discount->order_discount->applied,
+                                $vat_rate,
+                            );
+                            $discount->order_discount->save();
+                        }
+                    }
                 }
+
+                /** @var Discount $discount */
+                foreach ($order->discounts as $discount) {
+                    if ($discount->order_discount?->applied !== null) {
+                        $discount->order_discount->applied = $this->salesChannelService->addVat(
+                            $discount->order_discount->applied,
+                            $vat_rate,
+                        );
+                        $discount->order_discount->save();
+                    }
+                }
+
+                $order->cart_total_initial = $this->salesChannelService->addVat(
+                    $order->cart_total_initial,
+                    $vat_rate,
+                );
+                $order->cart_total = $this->salesChannelService->addVat(
+                    $order->cart_total,
+                    $vat_rate,
+                );
+
+                // shipping price magic 🙈
+                $order->summary = $order->shipping_price->plus($order->cart_total);
+
                 $order->push();
             } catch (Throwable $exception) {
                 $order->delete();
@@ -257,13 +360,16 @@ class OrderService implements OrderServiceContract
             DB::rollBack();
 
             throw $exception;
-        } catch (Throwable) {
+        } catch (Throwable $throwable) {
             DB::rollBack();
 
-            throw new ServerException(Exceptions::SERVER_TRANSACTION_ERROR);
+            throw new ServerException(Exceptions::SERVER_TRANSACTION_ERROR, $throwable);
         }
     }
 
+    /**
+     * @throws ClientException
+     */
     public function update(OrderUpdateDto $dto, Order $order): JsonResponse
     {
         DB::beginTransaction();
@@ -279,6 +385,7 @@ class OrderService implements OrderServiceContract
                     ? $digitalShippingMethod->shipping_type : $order->digitalShippingMethod?->shipping_type;
             }
 
+            /** @var ShippingType $shippingType */
             if ($shippingType !== ShippingType::POINT) {
                 $shippingPlace = $dto->getShippingPlace() instanceof AddressDto ?
                     $this->modifyAddress(
@@ -305,11 +412,13 @@ class OrderService implements OrderServiceContract
                 ? ['billing_address_id' => $billingAddress->getKey()]
                 : (!$dto->getBillingAddress() instanceof Missing ? ['billing_address_id' => null] : []);
 
-            $order->update([
-                'shipping_address_id' => $this->resolveShippingAddress($shippingPlace, $shippingType, $order),
-                'shipping_place' => $this->resolveShippingPlace($shippingPlace, $shippingType, $order),
-                'shipping_type' => $shippingType,
-            ] + $dto->toArray() + $billingAddressId);
+            $order->update(
+                [
+                    'shipping_address_id' => $this->resolveShippingAddress($shippingPlace, $shippingType, $order),
+                    'shipping_place' => $this->resolveShippingPlace($shippingPlace, $shippingType, $order),
+                    'shipping_type' => $shippingType,
+                ] + $dto->toArray() + $billingAddressId,
+            );
 
             if ($shippingMethod) {
                 $order->shippingMethod()->dissociate();
@@ -338,7 +447,7 @@ class OrderService implements OrderServiceContract
         } catch (Exception $error) {
             DB::rollBack();
 
-            throw new ClientException(Exceptions::CLIENT_ORDER_EDIT_ERROR);
+            throw new ClientException(Exceptions::CLIENT_ORDER_EDIT_ERROR, $error);
         }
     }
 
@@ -362,16 +471,13 @@ class OrderService implements OrderServiceContract
             ->paginate(Config::get('pagination.per_page'));
     }
 
-    public function shippingList(Order $order, string $packageTemplateId): Order
-    {
-        $packageTemplate = PackageTemplate::findOrFail($packageTemplateId);
-        OrderRequestedShipping::dispatch($order, $packageTemplate);
-
-        return $order;
-    }
-
+    /**
+     * @throws OrderException
+     */
     public function cartProcess(CartDto $cartDto): CartResource
     {
+        $vat_rate = $this->salesChannelService->getVatRate($cartDto->sales_channel_id);
+
         // Lista tylko dostępnych produktów
         [$products, $items] = $this->itemService->checkCartItems($cartDto->getItems());
         $cartDto->setItems($items);
@@ -380,7 +486,7 @@ class OrderService implements OrderServiceContract
             $this->getDeliveryMethods($cartDto, $products, false);
         }
 
-        return $this->discountService->calcCartDiscounts($cartDto, $products);
+        return $this->discountService->calcCartDiscounts($cartDto, $products, $vat_rate);
     }
 
     public function processOrderProductUrls(OrderProductUpdateDto $dto, OrderProduct $product): OrderProduct
@@ -422,7 +528,9 @@ class OrderService implements OrderServiceContract
     {
         $products = $order->products()->has('urls')->get();
         if (!$products->isEmpty()) {
-            $order->notify(new SendUrls($order, $products));
+            Mail::to($order->email)
+                ->locale($order->locale)
+                ->send(new OrderUrls($order, $products));
 
             $products->toQuery()->update([
                 'is_delivered' => true,
@@ -432,6 +540,11 @@ class OrderService implements OrderServiceContract
         }
     }
 
+    /**
+     * @return (ShippingMethod|null)[]
+     *
+     * @throws OrderException
+     */
     private function getDeliveryMethods(
         CartDto|OrderDto|OrderUpdateDto $dto,
         Collection $products,
@@ -440,11 +553,11 @@ class OrderService implements OrderServiceContract
         try {
             // Validate whether delivery methods are the proper type
             $shippingMethod = $dto->getShippingMethodId() instanceof Missing ? null :
-                ShippingMethod::whereNot('shipping_type', ShippingType::DIGITAL)
+                ShippingMethod::whereNot('shipping_type', ShippingType::DIGITAL->value)
                     ->findOrFail($dto->getShippingMethodId());
 
             $digitalShippingMethod = $dto->getDigitalShippingMethodId() instanceof Missing ? null :
-                ShippingMethod::where('shipping_type', ShippingType::DIGITAL)
+                ShippingMethod::where('shipping_type', ShippingType::DIGITAL->value)
                     ->findOrFail($dto->getDigitalShippingMethodId());
         } catch (Throwable $e) {
             throw new OrderException(Exceptions::CLIENT_SHIPPING_METHOD_INVALID_TYPE);
@@ -490,7 +603,6 @@ class OrderService implements OrderServiceContract
 
         $old = Address::find($order->{$attribute});
         Cache::add('address.' . $order->{$attribute}, $old ? ((string) $old) : null);
-        $order->forceAudit($attribute);
         if ($attribute === 'shipping_address_id' && $order->shipping_type === ShippingType::POINT) {
             return Address::create($addressDto->toArray());
         }
@@ -537,7 +649,7 @@ class OrderService implements OrderServiceContract
 
     private function resolveShippingAddress(
         Address|Missing|string|null $shippingPlace,
-        string $shippingType,
+        ShippingType $shippingType,
         Order $order,
     ): ?string {
         if ($shippingPlace instanceof Missing) {
@@ -568,7 +680,7 @@ class OrderService implements OrderServiceContract
 
     private function resolveShippingPlace(
         Address|Missing|string|null $shippingPlace,
-        string $shippingType,
+        ShippingType $shippingType,
         Order $order,
     ): ?string {
         if ($shippingPlace instanceof Missing) {

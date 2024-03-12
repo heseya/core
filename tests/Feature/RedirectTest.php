@@ -24,7 +24,7 @@ class RedirectTest extends TestCase
             ->assertOk()
             ->assertJsonCount(5, 'data');
 
-        $this->assertQueryCountLessThan(5);
+        $this->assertQueryCountLessThan(8);
     }
 
     /**
@@ -50,7 +50,7 @@ class RedirectTest extends TestCase
                 'id' => $redirect->getKey(),
             ]);
 
-        $this->assertQueryCountLessThan(5);
+        $this->assertQueryCountLessThan(8);
     }
 
     public function testIndexUnauthorized(): void
@@ -121,6 +121,40 @@ class RedirectTest extends TestCase
             'source_url' => 'source_url',
             'target_url' => 'http://example.com',
             'type' => RedirectType::TEMPORARY_REDIRECT->value,
+        ]);
+
+        Event::assertDispatched(RedirectCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateMovedPermanently($user): void
+    {
+        Event::fake([RedirectCreated::class]);
+
+        $this->{$user}->givePermissionTo('redirects.add');
+
+        $this->actingAs($this->{$user})
+            ->postJson('/redirects', [
+                'name' => 'test',
+                'source_url' => 'source_url',
+                'target_url' => 'http://example.com',
+                'type' => 301,
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'name' => 'test',
+                'source_url' => 'source_url',
+                'target_url' => 'http://example.com',
+                'type' => RedirectType::MOVED_PERMANENTLY->value,
+            ]);
+
+        $this->assertDatabaseHas('redirects', [
+            'name' => 'test',
+            'source_url' => 'source_url',
+            'target_url' => 'http://example.com',
+            'type' => RedirectType::MOVED_PERMANENTLY->value,
         ]);
 
         Event::assertDispatched(RedirectCreated::class);

@@ -2,11 +2,11 @@
 
 namespace App\Traits;
 
-use App\Dtos\MetadataDto;
-use App\Dtos\MetadataPersonalDto;
+use Domain\Metadata\Dtos\MetadataPersonalDto;
+use Domain\Metadata\Dtos\MetadataUpdateDto;
+use Domain\Metadata\Enums\MetadataType;
 use Heseya\Dto\Missing;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 
 trait MapMetadata
 {
@@ -18,44 +18,46 @@ trait MapMetadata
             data_set($data, $key, $value);
         }
 
-        $metadata = Collection::make();
-        if (array_key_exists('metadata', $data)) {
-            foreach ($data['metadata'] as $key => $value) {
-                $metadata->push(MetadataDto::manualInit($key, $value, true));
-            }
-        }
-
-        if ($request->has('metadata_private')) {
-            foreach ($request->input('metadata_private') as $key => $value) {
-                $metadata->push(MetadataDto::manualInit($key, $value, false));
-            }
-        }
-
-        if ($request->has('metadata_personal')) {
-            foreach ($request->input('metadata_personal') as $key => $value) {
-                $metadata->push(MetadataPersonalDto::manualInit($key, $value));
-            }
-        }
-
-        return $metadata->isEmpty() ? new Missing() : $metadata->toArray();
+        return self::mapMetadataFromArray($data);
     }
 
     public static function mapMetadataFromArray(array $data): array|Missing
     {
-        $metadata = Collection::make();
+        $metadata = [];
+
         if (array_key_exists('metadata', $data)) {
             foreach ($data['metadata'] as $key => $value) {
-                $metadata->push(MetadataDto::manualInit($key, $value, true));
+                $metadata[] = new MetadataUpdateDto(
+                    $key,
+                    $value,
+                    true,
+                    MetadataType::matchType($value),
+                );
             }
         }
 
         if (array_key_exists('metadata_private', $data)) {
             foreach ($data['metadata_private'] as $key => $value) {
-                $metadata->push(MetadataDto::manualInit($key, $value, false));
+                $metadata[] = new MetadataUpdateDto(
+                    $key,
+                    $value,
+                    false,
+                    MetadataType::matchType($value),
+                );
             }
         }
 
-        return $metadata->isEmpty() ? new Missing() : $metadata->toArray();
+        if (array_key_exists('metadata_personal', $data)) {
+            foreach ($data['metadata_personal'] as $key => $value) {
+                $metadata[] = new MetadataPersonalDto(
+                    $key,
+                    $value,
+                    MetadataType::matchType($value),
+                );
+            }
+        }
+
+        return count($metadata) > 0 ? $metadata : new Missing();
     }
 
     public function getMetadata(): array|Missing

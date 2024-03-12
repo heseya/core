@@ -6,7 +6,7 @@ ShippingMethod:
       example: dpd
     public:
       type: boolean
-    block_list:
+    is_block_list_countries:
       type: boolean
     payment_methods:
       type: array
@@ -21,17 +21,21 @@ ShippingMethod:
         example: PL
     price_ranges:
       type: array
+      description: 'Needs a price range for each currency'
       items:
         properties:
           start:
             description: 'Start of the range. The range goes to the start of the next range or infinity'
-            type: number
-            minimum: 0
-            example: 0
+            type: string
+            example: '0.00'
           value:
             description: 'price in this range'
-            type: number
-            example: 18.7
+            type: string
+            example: '18.70'
+          currency:
+            description: 'currency of this range'
+            type: string
+            example: 'PLN'
         type: object
     shipping_time_min:
       type: number
@@ -91,6 +95,18 @@ ShippingMethodStore:
                 $ref: './../schemas/Metadata.yml#/Metadata'
               metadata_private:
                 $ref: './../schemas/Metadata.yml#/Metadata'
+              is_blocklist:
+                type: boolean
+              product_ids:
+                type: array
+                items:
+                  type: string
+                  format: uuid
+              product_set_ids:
+                type: array
+                items:
+                  type: string
+                  format: uuid
 
 ShippingMethodUpdate:
   content:
@@ -99,3 +115,27 @@ ShippingMethodUpdate:
         allOf:
           - $ref: '#/ShippingMethod'
         type: object
+        properties:
+          shipping_type:
+            type: string
+            enum:
+              - digital
+              - address
+              - point
+              - point-external
+          metadata:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+          metadata_private:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+          is_blocklist:
+            type: boolean
+          product_ids:
+            type: array
+            items:
+              type: string
+              format: uuid
+          product_set_ids:
+            type: array
+            items:
+              type: string
+              format: uuid

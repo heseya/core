@@ -206,6 +206,7 @@ class InitDatabase extends Migration
             $table->string('name');
             $table->boolean('public')->default(false);
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('shipping_method_payment_method', function (Blueprint $table): void {

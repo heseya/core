@@ -2,9 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Enums\MetadataType;
-use App\Models\Metadata;
-use Illuminate\Database\Eloquent\Factories\Factory;
+use Domain\Metadata\Enums\MetadataType;
+use Domain\Metadata\Models\Metadata;
 
 class MetadataFactory extends Factory
 {
@@ -23,7 +22,7 @@ class MetadataFactory extends Factory
         return [
             'name' => $this->faker->word,
             'value' => $this->faker->word,
-            'value_type' => MetadataType::getRandomValue(),
+            'value_type' => MetadataType::getRandomInstance(),
             'public' => $this->faker->boolean,
         ];
     }

@@ -49,9 +49,9 @@ return new class extends Migration {
         Permission::create(['name' => 'banners.edit', 'display_name' => 'Możliwość edytowania bannerów']);
         Permission::create(['name' => 'banners.remove', 'display_name' => 'Możliwość usuwania bannerów']);
 
-        Role::where('type', RoleType::AUTHENTICATED)->firstOrFail()->givePermissionTo('banners.show');
-        Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail()->givePermissionTo('banners.show');
-        Role::where('type', RoleType::OWNER)->firstOrFail()->givePermissionTo([
+        Role::where('type', RoleType::AUTHENTICATED->value)->firstOrFail()->givePermissionTo('banners.show');
+        Role::where('type', RoleType::UNAUTHENTICATED->value)->firstOrFail()->givePermissionTo('banners.show');
+        Role::where('type', RoleType::OWNER->value)->firstOrFail()->givePermissionTo([
             'banners.show',
             'banners.add',
             'banners.edit',
@@ -68,8 +68,8 @@ return new class extends Migration {
             'banners.remove',
         ];
 
-        Role::where('type', RoleType::AUTHENTICATED)->firstOrFail()->revokePermissionTo('banners.show');
-        Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail()->revokePermissionTo('banners.show');
+        Role::where('type', RoleType::AUTHENTICATED->value)->firstOrFail()->revokePermissionTo('banners.show');
+        Role::where('type', RoleType::UNAUTHENTICATED->value)->firstOrFail()->revokePermissionTo('banners.show');
         $owner = Role::query()->where('type', '=', RoleType::OWNER)->firstOrFail();
         $owner->revokePermissionTo($permissions);
         $owner->save();

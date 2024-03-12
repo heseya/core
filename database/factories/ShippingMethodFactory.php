@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\ShippingMethod;
-use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Enums\ShippingType;
+use Domain\ShippingMethod\Models\ShippingMethod;
 
 class ShippingMethodFactory extends Factory
 {
@@ -21,11 +21,40 @@ class ShippingMethodFactory extends Factory
     {
         return [
             'name' => $this->faker->randomElement([
+                'dpd_pickup',
                 'dpd',
-                'inpostkurier',
+                'inpost_kurier',
+                'inpost',
             ]),
             'public' => $this->faker->boolean,
-            'block_list' => $this->faker->boolean,
+            'is_block_list_countries' => $this->faker->boolean,
+            'is_block_list_products' => true,
         ];
+    }
+
+    public function allMethods(): static
+    {
+        return $this->forEachSequence(
+            [
+                'name' => 'dpd_pickup',
+                'shipping_type' => ShippingType::POINT_EXTERNAL,
+            ],
+            //            [
+            //                'name' => 'dpd',
+            //               'shipping_type' => ShippingType::ADDRESS,
+            //            ],
+            [
+                'name' => 'inpost_kurier',
+                'shipping_type' => ShippingType::ADDRESS,
+            ],
+            [
+                'name' => 'inpost',
+                'shipping_type' => ShippingType::POINT,
+            ],
+            [
+                'name' => 'digital',
+                'shipping_type' => ShippingType::DIGITAL,
+            ]
+        );
     }
 }

@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Models\Product;
-use App\Models\Tag;
+use Domain\Language\Language;
+use Domain\Tag\Models\Tag;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
@@ -102,15 +104,31 @@ class TagTest extends TestCase
 
     public function create($user): void
     {
-        $response = $this->actingAs($this->{$user})->postJson('/tags', [
-            'name' => 'test sale',
+        $this->actingAs($this->{$user})->postJson('/tags?with_translations=1', [
+            'translations' => [
+                $this->lang => [
+                    'name' => 'test sale',
+                ],
+            ],
             'color' => '444444',
-        ]);
-
-        $response->assertCreated();
+            'published' => [
+                $this->lang,
+            ],
+        ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'test sale',
+                    ],
+                ],
+                'published' => [
+                    $this->lang,
+                ],
+            ]);
 
         $this->assertDatabaseHas('tags', [
-            'name' => 'test sale',
+            "name->{$this->lang}" => 'test sale',
             'color' => '444444',
         ]);
     }
@@ -145,18 +163,48 @@ class TagTest extends TestCase
         $id = Uuid::uuid4()->toString();
 
         $response = $this->actingAs($this->{$user})->postJson('/tags', [
-            'name' => 'test sale',
+            'translations' => [
+                $this->lang => [
+                    'name' => 'test sale',
+                ],
+            ],
             'color' => '444444',
             'id' => $id,
+            'published' => [$this->lang],
         ]);
 
         $response->assertCreated();
 
         $this->assertDatabaseHas('tags', [
-            'name' => 'test sale',
+            "name->{$this->lang}" => 'test sale',
             'color' => '444444',
             'id' => $id,
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreatePublishTranslationEmptyName($user): void
+    {
+        $this->{$user}->givePermissionTo('tags.add');
+
+        $this->actingAs($this->{$user})->json('POST', '/tags?with_translations=1', [
+            'translations' => [
+                $this->lang => [
+                    'name' => '',
+                ]
+            ],
+            'color' => 'ababab',
+            'published' => [
+                $this->lang,
+            ],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => Exceptions::PUBLISHING_TRANSLATION_EXCEPTION->name,
+                'message' => Exceptions::PUBLISHING_TRANSLATION_EXCEPTION->value . ' in ' . $this->lang,
+            ]);
     }
 
     public function testUpdateUnauthorized(): void
@@ -175,16 +223,141 @@ class TagTest extends TestCase
 
         $tag = Tag::factory()->create();
 
-        $response = $this->actingAs($this->{$user})->patchJson('/tags/id:' . $tag->getKey(), [
-            'name' => 'test tag',
+        $this->actingAs($this->{$user})->patchJson('/tags/id:' . $tag->getKey() . '?with_translations=1', [
+            'translations' => [
+                $this->lang => [
+                    'name' => 'test tag',
+                ]
+            ],
             'color' => 'ababab',
-        ]);
-
-        $response->assertOk();
+            'published' => [
+                $this->lang,
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'test tag',
+                    ]
+                ],
+                'color' => 'ababab',
+                'published' => [
+                    $this->lang,
+                ],
+            ]);
 
         $this->assertDatabaseHas('tags', [
-            'name' => 'test tag',
+            "name->{$this->lang}" => 'test tag',
             'color' => 'ababab',
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateNoPublished($user): void
+    {
+        $this->{$user}->givePermissionTo('tags.edit');
+
+        $tag = Tag::factory()->create();
+
+        $this->actingAs($this->{$user})->patchJson('/tags/id:' . $tag->getKey() . '?with_translations=1', [
+            'translations' => [
+                $this->lang => [
+                    'name' => 'test tag',
+                ]
+            ],
+            'color' => 'ababab',
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'test tag',
+                    ]
+                ],
+                'color' => 'ababab',
+            ]);
+
+        $this->assertDatabaseHas('tags', [
+            "name->{$this->lang}" => 'test tag',
+            'color' => 'ababab',
+            'published' => json_encode([$this->lang]),
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testPublishTranslationEmptyName($user): void
+    {
+        $this->{$user}->givePermissionTo('tags.edit');
+
+        $tag = Tag::factory()->create();
+
+        $this->actingAs($this->{$user})->patchJson('/tags/id:' . $tag->getKey() . '?with_translations=1', [
+            'translations' => [
+                $this->lang => [
+                    'name' => '',
+                ]
+            ],
+            'color' => 'ababab',
+            'published' => [
+                $this->lang,
+            ],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => Exceptions::PUBLISHING_TRANSLATION_EXCEPTION->name,
+                'message' => Exceptions::PUBLISHING_TRANSLATION_EXCEPTION->value . ' in ' . $this->lang,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateSecondTranslations($user): void
+    {
+        $this->{$user}->givePermissionTo('tags.edit');
+
+        $tag = Tag::factory()->create();
+
+        /** @var Language $en */
+        $en = Language::query()->where('iso', '=', 'en')->first();
+
+        $this->actingAs($this->{$user})->patchJson('/tags/id:' . $tag->getKey() . '?with_translations=1', [
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Nowy tag',
+                ],
+                $en->getKey() => [
+                    'name' => 'New tag',
+                ],
+            ],
+            'color' => 'ababab',
+            'published' => [
+                $this->lang,
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Nowy tag',
+                    ],
+                ],
+                'color' => 'ababab',
+                'published' => [
+                    $this->lang,
+                ],
+                'name' => 'Nowy tag',
+            ]);
+
+        $this->assertDatabaseHas('tags', [
+            'id' => $tag->getKey(),
+            "name->{$this->lang}" => 'Nowy tag',
+            "name->{$en->getKey()}" => 'New tag',
         ]);
     }
 
@@ -202,7 +375,7 @@ class TagTest extends TestCase
         $response->assertOk();
 
         $this->assertDatabaseHas('tags', [
-            'name' => $tag->name,
+            "name->{$this->lang}" => $tag->name,
             'color' => $tag->color,
         ]);
     }
@@ -230,5 +403,43 @@ class TagTest extends TestCase
         $this->assertDatabaseMissing('tags', [
             'id' => $tag->getKey(),
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testTagsTranslationOnProducts(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.show');
+
+        /** @var Language $en */
+        $en = Language::query()->where('iso', '=', 'en')->first();
+        $product = Product::factory()->create([
+            'public' => true,
+            'published' => $this->lang,
+        ]);
+
+        $tagPl = Tag::factory()->create([
+            'name' => 'Tag pl',
+            'published' => $this->lang,
+        ]);
+        /** @var Tag $tagEn */
+        $tagEn = Tag::factory()->create([
+            'name' => 'Tag en',
+            'published' => $en->getKey(),
+        ]);
+        $tagEn->setLocale($en->getKey())->fill(['name' => 'Tag en']);
+        $tagEn->save();
+        $product->tags()->sync([$tagPl->getKey(), $tagEn->getKey()]);
+
+        $this->actingAs($this->{$user})
+            ->json('GET', '/products')
+            ->assertOk()
+            ->assertJsonFragment([
+                'name' => 'Tag pl',
+            ])
+            ->assertJsonMissing([
+                'name' => 'Tag en',
+            ]);
     }
 }

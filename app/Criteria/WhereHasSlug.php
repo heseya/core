@@ -2,7 +2,7 @@
 
 namespace App\Criteria;
 
-use App\Models\ProductSet;
+use Domain\ProductSet\ProductSet;
 use Heseya\Searchable\Criteria\Criterion;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;

@@ -59,6 +59,14 @@ class RoleService implements RoleServiceContract
     {
         $user = Auth::user();
 
+        if (
+            !($dto->getIsJoinable() instanceof Missing)
+            && !$role->type->is(RoleType::REGULAR)
+            && $dto->getIsJoinable() !== $role->is_joinable
+        ) {
+            throw new ClientException(Exceptions::CLIENT_UPDATE_NOT_REGULAR_JOINABLE);
+        }
+
         if (!$user?->hasAllPermissions($role->getAllPermissions())) {
             throw new ClientException(Exceptions::CLIENT_UPDATE_ROLE_WITHOUT_PERMISSION);
         }
@@ -89,11 +97,7 @@ class RoleService implements RoleServiceContract
      */
     public function delete(Role $role): void
     {
-        if (
-            $role->type->is(RoleType::OWNER)
-            || $role->type->is(RoleType::UNAUTHENTICATED)
-            || $role->type->is(RoleType::AUTHENTICATED)
-        ) {
+        if (in_array($role->type, [RoleType::OWNER, RoleType::UNAUTHENTICATED, RoleType::AUTHENTICATED])) {
             throw new ClientException(Exceptions::CLIENT_DELETE_BUILT_IN_ROLE);
         }
 

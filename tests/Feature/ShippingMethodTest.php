@@ -9,7 +9,14 @@ use App\Models\App;
 use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\PriceRange;
-use App\Models\ShippingMethod;
+use App\Models\Product;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
+use Domain\Currency\Currency;
+use Domain\ProductSet\ProductSet;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
@@ -19,43 +26,53 @@ class ShippingMethodTest extends TestCase
 
     public ShippingMethod $shipping_method;
     public ShippingMethod $shipping_method_hidden;
-
     public array $expected;
+    public array $priceRanges;
     public array $priceRangesWithNoInitialStart;
 
+    /**
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     */
     public function setUp(): void
     {
         parent::setUp();
 
         $this->shipping_method = ShippingMethod::factory()->create([
             'public' => true,
-            'block_list' => true,
+            'is_block_list_countries' => true,
             'shipping_time_min' => 1,
             'shipping_time_max' => 2,
         ]);
 
-        $lowRange = PriceRange::query()->create(['start' => 0]);
-        $lowRange->prices()->create([
-            'value' => mt_rand(8, 15) + (mt_rand(0, 99) / 100),
+        $currency = Currency::DEFAULT->value;
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero($currency),
+            'value' => Money::of(mt_rand(8, 15) + (mt_rand(0, 99) / 100), $currency),
         ]);
 
-        $highRange = PriceRange::query()->create(['start' => 210]);
-        $highRange->prices()->create(['value' => 0.0]);
+        $highRange = PriceRange::query()->create([
+            'start' => Money::of(210, $currency),
+            'value' => Money::zero($currency),
+        ]);
 
         $this->shipping_method->priceRanges()->saveMany([$lowRange, $highRange]);
 
         $this->shipping_method_hidden = ShippingMethod::factory()->create([
             'public' => false,
-            'block_list' => true,
+            'is_block_list_countries' => true,
         ]);
 
-        $lowRange = PriceRange::query()->create(['start' => 0]);
-        $lowRange->prices()->create([
-            'value' => mt_rand(8, 15) + (mt_rand(0, 99) / 100),
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero($currency),
+            'value' => Money::of(mt_rand(8, 15) + (mt_rand(0, 99) / 100), $currency),
         ]);
 
-        $highRange = PriceRange::query()->create(['start' => 210]);
-        $highRange->prices()->create(['value' => 0.0]);
+        $highRange = PriceRange::query()->create([
+            'start' => Money::of(210, $currency),
+            'value' => Money::zero($currency),
+        ]);
 
         $this->shipping_method_hidden->priceRanges()->saveMany([$lowRange, $highRange]);
 
@@ -69,20 +86,29 @@ class ShippingMethodTest extends TestCase
             'metadata' => [],
         ];
 
-        $this->priceRangesWithNoInitialStart = [
-            [
-                'start' => $this->faker()->randomFloat(2, 1, 49),
-                'value' => $this->faker()->randomFloat(2, 20),
-            ],
-            [
-                'start' => $this->faker()->randomFloat(2, 50, 99),
-                'value' => $this->faker()->randomFloat(2, 100),
-            ],
-            [
-                'start' => $this->faker()->numberBetween(100, 1000),
-                'value' => $this->faker()->numberBetween(100, 1000),
-            ],
-        ];
+        $this->priceRangesWithNoInitialStart = [];
+        foreach (Currency::cases() as $currency) {
+            $this->priceRangesWithNoInitialStart[] = [
+                'currency' => $currency->value,
+                'start' => '' . $this->faker()->randomFloat(2, 1, 49),
+                'value' => '' . $this->faker()->randomFloat(2, 20),
+            ];
+        }
+
+        $this->priceRanges = [];
+        foreach (Currency::cases() as $currency) {
+            $this->priceRanges[] = [
+                'currency' => $currency->value,
+                'start' => '0',
+                'value' => '10.37',
+            ];
+
+            $this->priceRanges[] = [
+                'currency' => $currency->value,
+                'start' => '200',
+                'value' => '0',
+            ];
+        }
     }
 
     public function testIndexUnauthorized(): void
@@ -101,9 +127,140 @@ class ShippingMethodTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public shipping methods.
-            ->assertJson(['data' => [
-                0 => $this->expected,
+            ->assertJson([
+                'data' => [
+                    0 => $this->expected,
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexBlocklistProductsAndSets($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.show');
+
+        ShippingMethod::query()->delete();
+
+        $product1 = Product::factory()->create();
+        $product2 = Product::factory()->create();
+        $product3 = Product::factory()->create();
+        $product4 = Product::factory()->create();
+        $product5 = Product::factory()->create();
+
+        $productSet1 = ProductSet::factory()->create();
+        $productForSet1 = Product::factory()->create();
+        $productForSet2 = Product::factory()->create();
+        $productSet1->products()->sync([$productForSet1->getKey(), $productForSet2->getKey()]);
+
+        $productSet2 = ProductSet::factory()->create();
+        $productForSet3 = Product::factory()->create();
+        $productForSet4 = Product::factory()->create();
+        $productSet2->products()->sync([$productForSet3->getKey(), $productForSet4->getKey()]);
+
+        $productSet3 = ProductSet::factory()->create();
+        $productForSet5 = Product::factory()->create();
+        $productForSet6 = Product::factory()->create();
+        $productSet3->products()->sync([$productForSet5->getKey(), $productForSet6->getKey()]);
+
+        $shippingMethodAllowList = ShippingMethod::factory()->create([
+            'name' => 'Test Allow-list',
+            'is_block_list_products' => false,
+            'public' => true,
+        ]);
+
+        $shippingMethodAllowList->products()->sync([
+            $product1->getKey(),
+            $product2->getKey(),
+            $product5->getKey(),
+        ]);
+
+        $shippingMethodAllowList->productSets()->sync([
+            $productSet1->getKey(),
+            $productSet2->getKey(),
+            $productSet3->getKey(),
+        ]);
+
+        $shippingMethodBlocklist = ShippingMethod::factory()->create([
+            'name' => 'Test Block-list',
+            'is_block_list_products' => true,
+            'public' => true,
+        ]);
+
+        $shippingMethodBlocklist->products()->sync([
+            $product4->getKey(),
+            $product5->getKey(),
+        ]);
+
+        $shippingMethodBlocklist->productSets()->sync([
+            $productSet1->getKey(),
+            $productSet2->getKey(),
+        ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
+            'items' => [
+                $product1->getKey(),
+                $product5->getKey(),
+                $productForSet1->getKey(),
+                $productForSet2->getKey(),
             ],
+        ])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonCount(3, 'data.0.product_ids')
+            ->assertJsonCount(3, 'data.0.product_set_ids')
+            ->assertJsonFragment([
+                'id' => $shippingMethodAllowList->getKey(),
+            ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
+            'items' => [
+                $product1->getKey(),
+                $product5->getKey(),
+                $productForSet1->getKey(),
+                $productForSet2->getKey(),
+                $product3->getKey(),
+            ],
+        ])
+            ->assertJsonCount(0, 'data');
+
+        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
+            'items' => [
+                $product3->getKey(),
+                $productForSet5->getKey(),
+                $productForSet6->getKey(),
+            ],
+        ])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $shippingMethodBlocklist->getKey(),
+            ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
+            'items' => [$product1->getKey(), $product2->getKey()],
+        ])
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'id' => $shippingMethodAllowList->getKey(),
+            ])
+            ->assertJsonFragment([
+                'id' => $shippingMethodBlocklist->getKey(),
+            ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
+            'items' => [$product1->getKey(), $product3->getKey()],
+        ])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $shippingMethodBlocklist->getKey(),
+            ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
+            'items' => [$product5->getKey()],
+        ])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $shippingMethodAllowList->getKey(),
             ]);
     }
 
@@ -116,16 +273,18 @@ class ShippingMethodTest extends TestCase
 
         ShippingMethod::factory()->count(10)->create();
 
-        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', [
-            'ids' => [
-                $this->shipping_method->getKey(),
-            ],
-        ])
+        $this->actingAs($this->{$user})
+            ->json('GET', '/shipping-methods', [
+                'ids' => [
+                    $this->shipping_method->getKey(),
+                ],
+            ])
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJson(['data' => [
-                0 => $this->expected,
-            ],
+            ->assertJson([
+                'data' => [
+                    0 => $this->expected,
+                ],
             ]);
     }
 
@@ -172,9 +331,10 @@ class ShippingMethodTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public shipping methods.
-            ->assertJson(['data' => [
-                0 => $this->expected,
-            ],
+            ->assertJson([
+                'data' => [
+                    0 => $this->expected,
+                ],
             ])
             ->assertJsonCount(1, 'data.0.payment_methods')
             ->assertJsonFragment(['id' => $paymentMethod->getKey()]);
@@ -204,9 +364,10 @@ class ShippingMethodTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public shipping methods.
-            ->assertJson(['data' => [
-                0 => $this->expected,
-            ],
+            ->assertJson([
+                'data' => [
+                    0 => $this->expected,
+                ],
             ])
             ->assertJsonCount(2, 'data.0.payment_methods')
             ->assertJsonFragment(['id' => $paymentMethod->getKey()])
@@ -237,9 +398,10 @@ class ShippingMethodTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public shipping methods.
-            ->assertJson(['data' => [
-                0 => $this->expected,
-            ],
+            ->assertJson([
+                'data' => [
+                    0 => $this->expected,
+                ],
             ])
             ->assertJsonCount(2, 'data.0.payment_methods')
             ->assertJsonFragment(['id' => $paymentMethod->getKey()])
@@ -256,14 +418,14 @@ class ShippingMethodTest extends TestCase
         // All countries without Germany
         $shippingMethod = ShippingMethod::factory()->create([
             'public' => true,
-            'block_list' => true,
+            'is_block_list_countries' => true,
         ]);
         $shippingMethod->countries()->sync(['DE']);
 
         // Only Germany
         $shippingMethod2 = ShippingMethod::factory()->create([
             'public' => true,
-            'block_list' => false,
+            'is_block_list_countries' => false,
         ]);
         $shippingMethod2->countries()->sync(['DE']);
 
@@ -288,7 +450,7 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test 4',
             'public' => false,
-            'shipping_type' => ShippingType::ADDRESS,
+            'shipping_type' => ShippingType::ADDRESS->value,
         ];
 
         $response = $this->actingAs($this->{$user})->postJson(
@@ -299,6 +461,102 @@ class ShippingMethodTest extends TestCase
         );
 
         $response->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateByPriceRangesStartZero($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.add');
+
+        $shipping_method = [
+            'name' => 'Test 4',
+            'public' => false,
+            'shipping_type' => ShippingType::DIGITAL->value,
+            'shipping_time_max' => 0,
+            'shipping_time_min' => 0,
+            'payment_on_delivery' => false,
+        ];
+
+        $response = $this->actingAs($this->{$user})->postJson(
+            '/shipping-methods',
+            $shipping_method + [
+                'price_ranges' => [
+                    [
+                        'currency' => Currency::GBP->value,
+                        'start' => '0',
+                        'value' => '0',
+                    ],
+                    [
+                        'currency' => Currency::PLN->value,
+                        'start' => '0.00',
+                        'value' => '16.61',
+                    ],
+                ],
+            ],
+        );
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment([
+                'start' => [
+                    'gross' => '0.00',
+                    'currency' => Currency::GBP->value,
+                ],
+            ])
+            ->assertJsonFragment([
+                'value' => [
+                    'gross' => '0.00',
+                    'currency' => Currency::GBP->value,
+                ],
+            ])
+            ->assertJsonFragment([
+                'start' => [
+                    'gross' => '0.00',
+                    'currency' => Currency::PLN->value,
+                ],
+            ])
+            ->assertJsonFragment([
+                'value' => [
+                    'gross' => '16.61',
+                    'currency' => Currency::PLN->value,
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateByPriceRangesAsNumbers($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.add');
+
+        $shipping_method = [
+            'name' => 'Test 4',
+            'public' => false,
+            'shipping_type' => ShippingType::DIGITAL->value,
+            'shipping_time_max' => 0,
+            'shipping_time_min' => 0,
+        ];
+
+        $this->actingAs($this->{$user})->postJson(
+            '/shipping-methods',
+            $shipping_method + [
+                'price_ranges' => [
+                    [
+                        'currency' => Currency::DEFAULT->value,
+                        'start' => 0.0,
+                        'value' => 0.0,
+                    ],
+                ],
+            ],
+        )
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::PRICE,
+                'message' => 'The price_ranges.0 value must be a decimal string, integer found',
+            ]);
     }
 
     /**
@@ -313,25 +571,30 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test 5',
             'public' => false,
+            'shipping_time_min' => 2,
+            'shipping_time_max' => 3,
+            'shipping_type' => ShippingType::ADDRESS->value,
         ];
+
+        $price_ranges = [];
+        foreach (Currency::cases() as $currency) {
+            $price_ranges[] = [
+                'currency' => $currency->value,
+                'start' => '0',
+                'value' => '0',
+            ];
+
+            $price_ranges[] = [
+                'currency' => $currency->value,
+                'start' => '0',
+                'value' => '10',
+            ];
+        }
 
         $response = $this->actingAs($this->{$user})->postJson(
             '/shipping-methods',
             $shipping_method + [
-                'price_ranges' => [
-                    [
-                        'start' => 0,
-                        'value' => 0,
-                    ],
-                    [
-                        'start' => 0,
-                        'value' => 0,
-                    ],
-                    [
-                        'start' => 10,
-                        'value' => 0,
-                    ],
-                ],
+                'price_ranges' => $price_ranges,
             ],
         );
 
@@ -356,37 +619,93 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test',
             'public' => true,
-            'block_list' => false,
+            'is_block_list_countries' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
-            'shipping_type' => ShippingType::ADDRESS,
+            'shipping_type' => ShippingType::ADDRESS->value,
             'payment_on_delivery' => true,
         ];
 
         $response = $this->actingAs($this->{$user})
-            ->postJson('/shipping-methods', $shipping_method + [
-                'price_ranges' => [
-                    [
-                        'start' => 0,
-                        'value' => 10.37,
-                    ],
-                    [
-                        'start' => 200,
-                        'value' => 0,
-                    ],
-                ],
-            ]);
+            ->postJson(
+                '/shipping-methods',
+                $shipping_method + [
+                    'price_ranges' => $this->priceRanges,
+                ]
+            );
 
         $response
             ->assertCreated()
             ->assertJson(['data' => $shipping_method])
-            ->assertJsonCount(2, 'data.price_ranges')
-            ->assertJsonFragment(['start' => 0])
-            ->assertJsonFragment(['value' => 10.37])
-            ->assertJsonFragment(['start' => 200])
-            ->assertJsonFragment(['value' => 0]);
+            ->assertJsonFragment([
+                'start' => [
+                    'gross' => '0.00',
+                    'currency' => Currency::DEFAULT->value,
+                ],
+            ])
+            ->assertJsonFragment([
+                'value' => [
+                    'gross' => '10.37',
+                    'currency' => Currency::DEFAULT->value,
+                ],
+            ])
+            ->assertJsonFragment([
+                'start' => [
+                    'gross' => '200.00',
+                    'currency' => Currency::DEFAULT->value,
+                ],
+            ])
+            ->assertJsonFragment([
+                'value' => [
+                    'gross' => '0.00',
+                    'currency' => Currency::DEFAULT->value,
+                ],
+            ]);
 
         $this->assertDatabaseHas('shipping_methods', $shipping_method);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithBlocklist($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.add');
+
+        ShippingMethod::query()->delete();
+
+        $product = Product::factory()->create();
+        $productSet = ProductSet::factory()->create();
+
+        $shipping_method = [
+            'name' => 'Test',
+            'public' => true,
+            'is_block_list_countries' => false,
+            'shipping_time_min' => 2,
+            'shipping_time_max' => 3,
+            'shipping_type' => ShippingType::ADDRESS->value,
+            'payment_on_delivery' => true,
+            'is_block_list_products' => true,
+            'product_ids' => [$product->getKey()],
+            'product_set_ids' => [$productSet->getKey()],
+        ];
+
+        $response = $this->actingAs($this->{$user})
+            ->postJson(
+                '/shipping-methods',
+                $shipping_method + [
+                    'price_ranges' => $this->priceRanges,
+                ]
+            );
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment(['is_block_list_products' => true]);
+
+        $shippingMethod = ShippingMethod::find($response->json('data.id'));
+
+        $this->assertTrue($shippingMethod->products()->count() === 1);
+        $this->assertTrue($shippingMethod->productSets()->count() === 1);
     }
 
     /**
@@ -401,10 +720,10 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test',
             'public' => true,
-            'block_list' => false,
+            'is_block_list_countries' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
-            'shipping_type' => ShippingType::ADDRESS,
+            'shipping_type' => ShippingType::ADDRESS->value,
             'payment_on_delivery' => false,
             'metadata' => [
                 'attributeMeta' => 'attributeValue',
@@ -413,18 +732,12 @@ class ShippingMethodTest extends TestCase
 
         $this
             ->actingAs($this->{$user})
-            ->postJson('/shipping-methods', $shipping_method + [
-                'price_ranges' => [
-                    [
-                        'start' => 0,
-                        'value' => 10.37,
-                    ],
-                    [
-                        'start' => 200,
-                        'value' => 0,
-                    ],
-                ],
-            ])
+            ->postJson(
+                '/shipping-methods',
+                $shipping_method + [
+                    'price_ranges' => $this->priceRanges,
+                ]
+            )
             ->assertCreated()
             ->assertJson(['data' => $shipping_method]);
     }
@@ -441,10 +754,10 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test',
             'public' => true,
-            'block_list' => false,
+            'is_block_list_countries' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
-            'shipping_type' => ShippingType::ADDRESS,
+            'shipping_type' => ShippingType::ADDRESS->value,
             'payment_on_delivery' => true,
             'metadata_private' => [
                 'attributeMetaPriv' => 'attributeValue',
@@ -453,18 +766,12 @@ class ShippingMethodTest extends TestCase
 
         $this
             ->actingAs($this->{$user})
-            ->postJson('/shipping-methods', $shipping_method + [
-                'price_ranges' => [
-                    [
-                        'start' => 0,
-                        'value' => 10.37,
-                    ],
-                    [
-                        'start' => 200,
-                        'value' => 0,
-                    ],
-                ],
-            ])
+            ->postJson(
+                '/shipping-methods',
+                $shipping_method + [
+                    'price_ranges' => $this->priceRanges,
+                ]
+            )
             ->assertCreated()
             ->assertJson(['data' => $shipping_method]);
     }
@@ -481,26 +788,21 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test Shipping Time',
             'public' => true,
-            'block_list' => false,
+            'is_block_list_countries' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
-            'shipping_type' => ShippingType::ADDRESS,
+            'shipping_type' => ShippingType::ADDRESS->value,
             'payment_on_delivery' => true,
         ];
 
         $response = $this->actingAs($this->{$user})
-            ->json('POST', '/shipping-methods', $shipping_method + [
-                'price_ranges' => [
-                    [
-                        'start' => 0,
-                        'value' => 10.37,
-                    ],
-                    [
-                        'start' => 200,
-                        'value' => 0,
-                    ],
-                ],
-            ]);
+            ->json(
+                'POST',
+                '/shipping-methods',
+                $shipping_method + [
+                    'price_ranges' => $this->priceRanges,
+                ]
+            );
 
         $response
             ->assertCreated()
@@ -522,21 +824,12 @@ class ShippingMethodTest extends TestCase
             ->json('POST', '/shipping-methods', [
                 'name' => 'Test Shipping Time',
                 'public' => true,
-                'block_list' => false,
+                'is_block_list_countries' => false,
                 'shipping_time_min' => 3,
                 'shipping_time_max' => 2,
-                'shipping_type' => ShippingType::ADDRESS,
+                'shipping_type' => ShippingType::ADDRESS->value,
+                'price_ranges' => $this->priceRanges,
                 'payment_on_delivery' => false,
-                'price_ranges' => [
-                    [
-                        'start' => 0,
-                        'value' => 10.37,
-                    ],
-                    [
-                        'start' => 200,
-                        'value' => 0,
-                    ],
-                ],
             ]);
 
         $response->assertStatus(422);
@@ -545,29 +838,27 @@ class ShippingMethodTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateBlacklist($user): void
+    public function testCreateBlockList($user): void
     {
         $this->{$user}->givePermissionTo('shipping_methods.add');
 
         $shipping_method = [
             'name' => 'Test',
             'public' => true,
-            'block_list' => true,
+            'is_block_list_countries' => true,
             'shipping_time_min' => 2,
             'shipping_time_max' => 2,
-            'shipping_type' => ShippingType::ADDRESS,
+            'shipping_type' => ShippingType::ADDRESS->value,
             'payment_on_delivery' => false,
         ];
 
         $response = $this->actingAs($this->{$user})
-            ->postJson('/shipping-methods', $shipping_method + [
-                'price_ranges' => [
-                    [
-                        'start' => 0,
-                        'value' => 10.37,
-                    ],
-                ],
-            ]);
+            ->postJson(
+                '/shipping-methods',
+                $shipping_method + [
+                    'price_ranges' => $this->priceRanges,
+                ]
+            );
 
         $response
             ->assertCreated()
@@ -591,10 +882,10 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test',
             'public' => true,
-            'block_list' => false,
+            'is_block_list_countries' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
-            'shipping_type' => ShippingType::POINT,
+            'shipping_type' => ShippingType::POINT->value,
             'payment_on_delivery' => false,
         ];
         $shipping_points = [
@@ -610,18 +901,12 @@ class ShippingMethodTest extends TestCase
         ];
 
         $response = $this->actingAs($this->{$user})
-            ->postJson('/shipping-methods', $shipping_method + [
-                'price_ranges' => [
-                    [
-                        'start' => 0,
-                        'value' => 10.37,
-                    ],
-                    [
-                        'start' => 200,
-                        'value' => 0,
-                    ],
-                ],
-            ] + $shipping_points);
+            ->postJson(
+                '/shipping-methods',
+                $shipping_method + [
+                    'price_ranges' => $this->priceRanges,
+                ] + $shipping_points
+            );
 
         $addressSaved = Address::where('name', 'test2')->first();
 
@@ -629,16 +914,15 @@ class ShippingMethodTest extends TestCase
             ->assertCreated()
             ->assertJson(['data' => $shipping_method])
             ->assertJsonCount(2, 'data.shipping_points')
-            ->assertJsonCount(2, 'data.price_ranges')
-            ->assertJsonFragment(['start' => 0])
-            ->assertJsonFragment(['value' => 10.37])
-            ->assertJsonFragment(['start' => 200])
-            ->assertJsonFragment(['value' => 0])
-            ->assertJsonFragment(['shipping_type' => ShippingType::POINT]);
+            ->assertJsonFragment(['shipping_type' => ShippingType::POINT->value]);
 
-        $this->assertDatabaseHas('shipping_methods', $shipping_method + [
-            'app_id' => $this->{$user} instanceof App ? $this->{$user}->getKey() : null,
-        ])
+        $this
+            ->assertDatabaseHas(
+                'shipping_methods',
+                $shipping_method + [
+                    'app_id' => $this->{$user} instanceof App ? $this->{$user}->getKey() : null,
+                ]
+            )
             ->assertDatabaseHas('address_shipping_method', [
                 'address_id' => $address->getKey(),
                 'shipping_method_id' => $response->getData()->data->id,
@@ -725,7 +1009,7 @@ class ShippingMethodTest extends TestCase
         $response = $this->actingAs($this->{$user})
             ->patchJson('/shipping-methods/id:' . $shippingMethod->getKey(), [
                 'name' => 'test',
-                'shipping_type' => ShippingType::ADDRESS,
+                'shipping_type' => ShippingType::ADDRESS->value,
                 'shipping_points' => [
                     [
                         'id' => $address->getKey(),
@@ -741,7 +1025,7 @@ class ShippingMethodTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonFragment(['shipping_type' => ShippingType::ADDRESS])
+            ->assertJsonFragment(['shipping_type' => ShippingType::ADDRESS->value])
             ->assertJsonCount(2, 'data.shipping_points');
 
         $this
@@ -769,23 +1053,25 @@ class ShippingMethodTest extends TestCase
             'public' => false,
         ];
 
+        $price_ranges = [];
+        foreach (Currency::cases() as $currency) {
+            $price_ranges[] = [
+                'currency' => $currency->value,
+                'start' => '0',
+                'value' => '0',
+            ];
+
+            $price_ranges[] = [
+                'currency' => $currency->value,
+                'start' => '0',
+                'value' => '10',
+            ];
+        }
+
         $response = $this->actingAs($this->{$user})->patchJson(
             '/shipping-methods/id:' . $this->shipping_method->getKey(),
             $shipping_method + [
-                'price_ranges' => [
-                    [
-                        'start' => 0,
-                        'value' => 10.37,
-                    ],
-                    [
-                        'start' => 0,
-                        'value' => 0,
-                    ],
-                    [
-                        'start' => 10,
-                        'value' => 0,
-                    ],
-                ],
+                'price_ranges' => $price_ranges,
             ],
         );
 
@@ -801,6 +1087,36 @@ class ShippingMethodTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateWithBlocklist($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.edit');
+
+        $this->shipping_method->update(['is_block_list_products' => false]);
+
+        $product = Product::factory()->create();
+        $productSet = ProductSet::factory()->create();
+
+        $response = $this->actingAs($this->{$user})->patchJson(
+            '/shipping-methods/id:' . $this->shipping_method->getKey(),
+            [
+                'price_ranges' => $this->priceRanges,
+                'is_block_list_products' => true,
+                'product_ids' => [$product->getKey()],
+                'product_set_ids' => [$productSet->getKey()],
+            ],
+        );
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['is_block_list_products' => true]);
+
+        $this->assertTrue($this->shipping_method->products()->count() === 1);
+        $this->assertTrue($this->shipping_method->productSets()->count() === 1);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdate($user): void
     {
         $this->{$user}->givePermissionTo('shipping_methods.edit');
@@ -808,7 +1124,61 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test 2',
             'public' => false,
-            'block_list' => false,
+            'is_block_list_countries' => false,
+        ];
+
+        $response = $this->actingAs($this->{$user})->patchJson(
+            '/shipping-methods/id:' . $this->shipping_method->getKey(),
+            $shipping_method + [
+                'price_ranges' => $this->priceRanges,
+            ],
+        );
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => $shipping_method])
+            ->assertJsonFragment([
+                'start' => [
+                    'gross' => '0.00',
+                    'currency' => Currency::DEFAULT->value,
+                ],
+            ])
+            ->assertJsonFragment([
+                'value' => [
+                    'gross' => '10.37',
+                    'currency' => Currency::DEFAULT->value,
+                ],
+            ])
+            ->assertJsonFragment([
+                'start' => [
+                    'gross' => '200.00',
+                    'currency' => Currency::DEFAULT->value,
+                ],
+            ])
+            ->assertJsonFragment([
+                'value' => [
+                    'gross' => '0.00',
+                    'currency' => Currency::DEFAULT->value,
+                ],
+            ]);
+
+        $this->assertDatabaseHas(
+            'shipping_methods',
+            $shipping_method + ['id' => $this->shipping_method->getKey()],
+        );
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateByPriceRangesStartZero($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.edit');
+
+        $shipping_method = [
+            'name' => 'Test 2',
+            'public' => false,
+            'is_block_list_countries' => false,
         ];
 
         $response = $this->actingAs($this->{$user})->patchJson(
@@ -816,12 +1186,14 @@ class ShippingMethodTest extends TestCase
             $shipping_method + [
                 'price_ranges' => [
                     [
-                        'start' => 0,
-                        'value' => 10.37,
+                        'currency' => Currency::GBP->value,
+                        'start' => '0',
+                        'value' => '0',
                     ],
                     [
-                        'start' => 200,
-                        'value' => 0,
+                        'currency' => Currency::PLN->value,
+                        'start' => '0.00',
+                        'value' => '16.61',
                     ],
                 ],
             ],
@@ -830,16 +1202,30 @@ class ShippingMethodTest extends TestCase
         $response
             ->assertOk()
             ->assertJson(['data' => $shipping_method])
-            ->assertJsonCount(2, 'data.price_ranges')
-            ->assertJsonFragment(['start' => 0])
-            ->assertJsonFragment(['value' => 10.37])
-            ->assertJsonFragment(['start' => 200])
-            ->assertJsonFragment(['value' => 0]);
-
-        $this->assertDatabaseHas(
-            'shipping_methods',
-            $shipping_method + ['id' => $this->shipping_method->getKey()],
-        );
+            ->assertJsonFragment([
+                'start' => [
+                    'gross' => '0.00',
+                    'currency' => Currency::GBP->value,
+                ],
+            ])
+            ->assertJsonFragment([
+                'value' => [
+                    'gross' => '0.00',
+                    'currency' => Currency::GBP->value,
+                ],
+            ])
+            ->assertJsonFragment([
+                'start' => [
+                    'gross' => '0.00',
+                    'currency' => Currency::PLN->value,
+                ],
+            ])
+            ->assertJsonFragment([
+                'value' => [
+                    'gross' => '16.61',
+                    'currency' => Currency::PLN->value,
+                ],
+            ]);
     }
 
     /**
@@ -856,26 +1242,46 @@ class ShippingMethodTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJson(['data' => [
-                'id' => $this->shipping_method->getKey(),
-                'name' => $this->shipping_method->name,
-                'public' => $this->shipping_method->public,
-                'block_list' => $this->shipping_method->block_list,
-                'shipping_time_min' => $this->shipping_method->shipping_time_min,
-                'shipping_time_max' => $this->shipping_method->shipping_time_max,
-            ],
+            ->assertJson([
+                'data' => [
+                    'id' => $this->shipping_method->getKey(),
+                    'name' => $this->shipping_method->name,
+                    'public' => $this->shipping_method->public,
+                    'is_block_list_countries' => $this->shipping_method->is_block_list_countries,
+                    'shipping_time_min' => $this->shipping_method->shipping_time_min,
+                    'shipping_time_max' => $this->shipping_method->shipping_time_max,
+                ],
             ])
-            ->assertJsonCount(2, 'data.price_ranges')
-            ->assertJsonFragment(['start' => $this->shipping_method->priceRanges->first()->start])
-            ->assertJsonFragment(['value' => $this->shipping_method->priceRanges->first()->prices()->first()->value])
-            ->assertJsonFragment(['start' => $this->shipping_method->priceRanges->last()->start])
-            ->assertJsonFragment(['value' => $this->shipping_method->priceRanges->last()->prices()->first()->value]);
+            ->assertJsonFragment([
+                'start' => [
+                    'gross' => $this->shipping_method->priceRanges->first()->start->getAmount(),
+                    'currency' => Currency::DEFAULT->value,
+                ],
+            ])
+            ->assertJsonFragment([
+                'value' => [
+                    'gross' => $this->shipping_method->priceRanges->first()->value->getAmount(),
+                    'currency' => Currency::DEFAULT->value,
+                ],
+            ])
+            ->assertJsonFragment([
+                'start' => [
+                    'gross' => $this->shipping_method->priceRanges->last()->start->getAmount(),
+                    'currency' => Currency::DEFAULT->value,
+                ],
+            ])
+            ->assertJsonFragment([
+                'value' => [
+                    'gross' => $this->shipping_method->priceRanges->last()->value->getAmount(),
+                    'currency' => Currency::DEFAULT->value,
+                ],
+            ]);
 
         $this->assertDatabaseHas('shipping_methods', [
             'id' => $this->shipping_method->getKey(),
             'name' => $this->shipping_method->name,
             'public' => $this->shipping_method->public,
-            'block_list' => $this->shipping_method->block_list,
+            'is_block_list_countries' => $this->shipping_method->is_block_list_countries,
             'shipping_time_min' => $this->shipping_method->shipping_time_min,
             'shipping_time_max' => $this->shipping_method->shipping_time_max,
         ]);
@@ -888,23 +1294,18 @@ class ShippingMethodTest extends TestCase
     {
         $this->{$user}->givePermissionTo('shipping_methods.edit');
 
-        $this->shipping_method->update(['block_list' => false]);
+        $this->shipping_method->update(['is_block_list_countries' => false]);
 
         $shipping_method = [
             'name' => 'Test 2',
             'public' => false,
-            'block_list' => true,
+            'is_block_list_countries' => true,
         ];
 
         $response = $this->actingAs($this->{$user})->patchJson(
             '/shipping-methods/id:' . $this->shipping_method->getKey(),
             $shipping_method + [
-                'price_ranges' => [
-                    [
-                        'start' => 0,
-                        'value' => 10.37,
-                    ],
-                ],
+                'price_ranges' => $this->priceRanges,
             ],
         );
 
@@ -940,7 +1341,7 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test 2',
             'public' => false,
-            'block_list' => false,
+            'is_block_list_countries' => false,
             'payment_on_delivery' => true,
             'payment_methods' => [],
         ];
@@ -1009,7 +1410,18 @@ class ShippingMethodTest extends TestCase
 
         $response = $this->actingAs($this->{$user})
             ->deleteJson('/shipping-methods/id:' . $this->shipping_method->getKey());
-        $response->assertStatus(400);
-        $this->assertDatabaseHas('shipping_methods', $this->shipping_method->toArray());
+        $response->assertStatus(204);
+
+        $this->assertDatabaseHas('shipping_methods', [
+            'id' => $this->shipping_method->getKey(),
+        ]);
+        $this->assertDatabaseMissing('shipping_methods', [
+            'id' => $this->shipping_method->getKey(),
+            'deleted_at' => null,
+        ]);
+
+        $this->shipping_method->refresh();
+
+        $this->assertTrue($this->shipping_method->trashed());
     }
 }

@@ -8,22 +8,22 @@ use App\Events\UserDeleted;
 use App\Listeners\WebHookEventListener;
 use App\Models\Address;
 use App\Models\ConditionGroup;
-use App\Models\Consent;
 use App\Models\Discount;
 use App\Models\DiscountCondition;
-use App\Models\Metadata;
-use App\Models\MetadataPersonal;
 use App\Models\OneTimeSecurityCode;
 use App\Models\Order;
 use App\Models\Permission;
 use App\Models\Product;
-use App\Models\ProductSet;
 use App\Models\Role;
 use App\Models\SavedAddress;
 use App\Models\User;
 use App\Models\UserPreference;
 use App\Models\UserProvider;
 use App\Models\WebHook;
+use Domain\Consent\Models\Consent;
+use Domain\Metadata\Models\Metadata;
+use Domain\Metadata\Models\MetadataPersonal;
+use Domain\ProductSet\ProductSet;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Bus;
@@ -233,9 +233,17 @@ class UserDeleteTest extends TestCase
             ->deleteJson('/users/id:' . $this->user->getKey())
             ->assertNoContent();
 
+        $this->assertSoftDeleted('users', [
+            'id' => $this->user->getKey(),
+        ]);
+
         $this->assertDatabaseMissing('consent_user', [
             'user_id' => $this->user->getKey(),
             'consent_id' => $consent->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('consents', [
+            'id' => $consent->getKey(),
         ]);
     }
 
@@ -392,7 +400,7 @@ class UserDeleteTest extends TestCase
 
         $order = Order::factory()->create([
             'buyer_id' => $this->user->getKey(),
-            'buyer_type' => User::class,
+            'buyer_type' => $this->user->getMorphClass(),
         ]);
 
         $this
@@ -491,34 +499,6 @@ class UserDeleteTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteWithAudits($user): void
-    {
-        $this->{$user}->givePermissionTo('users.remove');
-
-        $audit = $this->user->audits()->create([
-            'event' => 'created',
-            'auditable_id' => $this->user->getKey(),
-            'auditable_type' => User::class,
-            'old_values' => '',
-            'new_values' => '',
-            'url' => 'test',
-            'ip_address' => 'test',
-            'user_agent' => 'test',
-            'tags' => '',
-            'created_at' => now(),
-        ]);
-
-        $this
-            ->actingAs($this->{$user})
-            ->deleteJson('/users/id:' . $this->user->getKey())
-            ->assertNoContent();
-
-        $this->assertModelMissing($audit);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testDeleteWithPreferences($user): void
     {
         $this->{$user}->givePermissionTo('users.remove');
@@ -569,6 +549,33 @@ class UserDeleteTest extends TestCase
             ->assertNoContent();
 
         $this->assertSoftDeleted($this->user->refresh());
+    }
+
+    public function testSelfDeleteWithConsents(): void
+    {
+        $this->user->givePermissionTo('users.self_remove');
+
+        $consent = Consent::factory()->create([
+            'required' => false,
+        ]);
+
+        $this->user->consents()->save($consent, ['value' => true]);
+
+        $this
+            ->actingAs($this->user)
+            ->postJson('/users/self-remove', [
+                'password' => $this->password,
+            ])
+            ->assertNoContent();
+
+        $this->assertSoftDeleted($this->user->refresh());
+        $this->assertDatabaseMissing('consent_user', [
+            'user_id' => $this->user->getKey(),
+            'consent_id' => $consent->getKey(),
+        ]);
+        $this->assertDatabaseHas('consents', [
+            'id' => $consent->getKey(),
+        ]);
     }
 
     /**

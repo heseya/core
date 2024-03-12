@@ -38,7 +38,7 @@ class AvailabilityService implements AvailabilityServiceContract
 
         // Schemas
         $schemas = Schema::query()
-            ->where('type', SchemaType::SELECT)
+            ->where('type', SchemaType::SELECT->value)
             ->whereIn('id', $options->pluck('schema_id'))
             ->get();
         $schemas->each(fn (Schema $schema) => $this->calculateSchemaAvailability($schema));
@@ -153,7 +153,7 @@ class AvailabilityService implements AvailabilityServiceContract
      */
     public function getCalculateSchemaAvailability(Schema $schema): array
     {
-        if ($schema->type->isNot(SchemaType::SELECT)) {
+        if ($schema->type !== SchemaType::SELECT) {
             return [
                 'available' => true,
                 'shipping_time' => null,
@@ -190,6 +190,9 @@ class AvailabilityService implements AvailabilityServiceContract
         ];
     }
 
+    /**
+     * @throws ServerException
+     */
     public function getCalculateProductAvailability(Product $product): array
     {
         $quantityStep = $product->quantity_step ?? 1;
@@ -321,7 +324,7 @@ class AvailabilityService implements AvailabilityServiceContract
             $usedItems[$item->getKey()] = $requiredItem->pivot->required_quantity;
 
             // round product quantity to product qty step
-            if ($requiredQuantity === 0) {
+            if ($requiredQuantity == 0) {
                 throw new Exception('Item with id ' . $item->getKey() . 'doesn\'t have required quantity');
             }
 
@@ -386,7 +389,7 @@ class AvailabilityService implements AvailabilityServiceContract
     {
         return $product
             ->requiredSchemas()
-            ->where('type', SchemaType::SELECT)
+            ->where('type', SchemaType::SELECT->value)
             ->whereHas('options', fn (Builder $query) => $query->whereHas('items'))
             ->with('options.items')
             ->get();

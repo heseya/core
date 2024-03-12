@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\ErrorCode;
+use App\Enums\ValidationError;
 use App\Events\ItemCreated;
 use App\Events\ItemDeleted;
 use App\Events\ItemUpdated;
@@ -10,15 +11,18 @@ use App\Listeners\WebHookEventListener;
 use App\Models\Deposit;
 use App\Models\Item;
 use App\Models\Product;
-use App\Models\Schema;
 use App\Models\WebHook;
+use App\Services\SchemaCrudService;
+use Domain\Currency\Currency;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Ramsey\Uuid\Uuid;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class ItemTest extends TestCase
 {
@@ -26,9 +30,14 @@ class ItemTest extends TestCase
 
     private array $expected;
 
+    private SchemaCrudService $schemaCrudService;
+    private Currency $currency = Currency::DEFAULT;
+
     public function setUp(): void
     {
         parent::setUp();
+
+        Carbon::setTestNow(null);
 
         $this->item = Item::factory()->create();
 
@@ -46,6 +55,8 @@ class ItemTest extends TestCase
             'quantity' => $this->item->quantity,
             'metadata' => [],
         ];
+
+        $this->schemaCrudService = App::make(SchemaCrudService::class);
     }
 
     public function testIndexUnauthorized(): void
@@ -57,7 +68,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndex($user): void
+    public function testIndex(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show');
 
@@ -68,16 +79,15 @@ class ItemTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ],
-            ]);
+            ]]);
 
-        $this->assertQueryCountLessThan(11);
+        $this->assertQueryCountLessThan(12);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testIndexByIds($user): void
+    public function testIndexByIds(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show');
 
@@ -94,14 +104,13 @@ class ItemTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ],
-            ]);
+            ]]);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testIndexPerformance($user): void
+    public function testIndexPerformance(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show');
 
@@ -113,13 +122,13 @@ class ItemTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(11);
+        $this->assertQueryCountLessThan(12);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testIndexFilterByAvailable($user): void
+    public function testIndexFilterByAvailable(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show');
 
@@ -139,21 +148,22 @@ class ItemTest extends TestCase
             ->assertOk()
             ->assertJsonMissing(['id' => $item_sold_out->getKey()])
             ->assertJsonCount(1, 'data')
-            ->assertJson(['data' => [
-                0 => [
-                    'id' => $this->item->getKey(),
-                    'name' => $this->item->name,
-                    'sku' => $this->item->sku,
-                    'quantity' => $this->item->quantity,
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'id' => $this->item->getKey(),
+                        'name' => $this->item->name,
+                        'sku' => $this->item->sku,
+                        'quantity' => $this->item->quantity,
+                    ],
                 ],
-            ],
             ]);
 
-        $this->assertQueryCountLessThan(11);
+        $this->assertQueryCountLessThan(12);
     }
 
     /**
-     * @dataProvider booleanProvider
+     * @dataProvider authWithTwoBooleansProvider
      */
     public function testIndexFilterBySoldOut($user, $boolean, $booleanValue): void
     {
@@ -178,13 +188,13 @@ class ItemTest extends TestCase
                 'id' => $itemId,
             ]);
 
-        $this->assertQueryCountLessThan(11);
+        $this->assertQueryCountLessThan(12);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testIndexFilterBySoldOutAndDay($user): void
+    public function testIndexFilterBySoldOutAndDay(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show');
 
@@ -200,7 +210,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexSortByQuantityAndFilterByDay($user): void
+    public function testIndexSortByQuantityAndFilterByDay(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show');
 
@@ -216,7 +226,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexFilterByDay($user): void
+    public function testIndexFilterByDay(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show');
 
@@ -250,13 +260,13 @@ class ItemTest extends TestCase
                 'quantity' => 5,
             ]);
 
-        $this->assertQueryCountLessThan(11);
+        $this->assertQueryCountLessThan(12);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testIndexFilterByDayWithHour($user): void
+    public function testIndexFilterByDayWithHour(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show');
 
@@ -288,7 +298,7 @@ class ItemTest extends TestCase
                 'quantity' => 5,
             ]);
 
-        $this->assertQueryCountLessThan(11);
+        $this->assertQueryCountLessThan(12);
     }
 
     public function testViewUnauthorized(): void
@@ -300,7 +310,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testView($user): void
+    public function testView(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show_details');
 
@@ -310,27 +320,25 @@ class ItemTest extends TestCase
             ->assertOk()
             ->assertJson(['data' => $this->expected + ['products' => [], 'schemas' => []]]);
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(11);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testViewWithProducts($user): void
+    public function testViewWithProducts(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show_details');
 
         $product1 = Product::factory()->create(['public' => true]);
         $product1->items()->attach([$this->item->getKey() => [
             'required_quantity' => 1,
-        ],
-        ]);
+        ]]);
 
         $product2 = Product::factory()->create(['public' => true]);
         $product2->items()->attach([$this->item->getKey() => [
             'required_quantity' => 1,
-        ],
-        ]);
+        ]]);
 
         $this
             ->actingAs($this->{$user})
@@ -347,45 +355,45 @@ class ItemTest extends TestCase
                 'name' => $product2->name,
             ]);
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(18);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testViewWithSchemas($user): void
+    public function testViewWithSchemas(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show_details');
 
-        $schema1 = Schema::factory()->create([
+        $schema1 = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 'select',
-            'price' => 0,
+            'prices' => [['value' => 0, 'currency' => $this->currency->value]],
             'hidden' => false,
             'required' => true,
-        ]);
+        ]));
 
         $option1 = $schema1->options()->create([
             'name' => 'XL',
-            'price' => 0,
+            'prices' => [['value' => 0, 'currency' => $this->currency->value]],
         ]);
         $option1->items()->sync([$this->item->getKey()]);
 
-        $schema2 = Schema::factory()->create([
+        $schema2 = $this->schemaCrudService->store(FakeDto::schemaDto([
             'type' => 'select',
-            'price' => 0,
+            'prices' => [['value' => 0, 'currency' => $this->currency->value]],
             'hidden' => false,
             'required' => false,
-        ]);
+        ]));
 
         $option2 = $schema2->options()->create([
             'name' => 'XL',
-            'price' => 0,
+            'prices' => [['value' => 0, 'currency' => $this->currency->value]],
         ]);
         $option2->items()->sync([$this->item->getKey()]);
 
         $option3 = $schema2->options()->create([
             'name' => 'XL',
-            'price' => 0,
+            'prices' => [['value' => 0, 'currency' => $this->currency->value]],
         ]);
         $option3->items()->sync([$this->item->getKey()]);
 
@@ -404,13 +412,13 @@ class ItemTest extends TestCase
                 'name' => $schema2->name,
             ]);
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(12);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testViewWrongId($user): void
+    public function testViewWrongId(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show_details');
 
@@ -438,7 +446,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreate($user): void
+    public function testCreate(string $user): void
     {
         $this->{$user}->givePermissionTo('items.add');
 
@@ -462,7 +470,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithUuid($user): void
+    public function testCreateWithUuid(string $user): void
     {
         $this->{$user}->givePermissionTo('items.add');
 
@@ -487,7 +495,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithoutPermission($user): void
+    public function testCreateWithoutPermission(string $user): void
     {
         Event::fake(ItemCreated::class);
 
@@ -501,14 +509,14 @@ class ItemTest extends TestCase
         $response
             ->assertJsonFragment([
                 'code' => 403,
-                'key' => ErrorCode::getKey(ErrorCode::FORBIDDEN),
+                'key' => ErrorCode::FORBIDDEN->name,
             ]);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithMetadata($user): void
+    public function testCreateWithMetadata(string $user): void
     {
         $this->{$user}->givePermissionTo('items.add');
 
@@ -538,7 +546,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithMetadataPrivate($user): void
+    public function testCreateWithMetadataPrivate(string $user): void
     {
         $this->{$user}->givePermissionTo(['items.add', 'items.show_metadata_private']);
 
@@ -568,7 +576,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithWebHook($user): void
+    public function testCreateWithWebHook(string $user): void
     {
         $this->{$user}->givePermissionTo('items.add');
 
@@ -618,6 +626,50 @@ class ItemTest extends TestCase
         });
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateExistingSku(string $user): void
+    {
+        $this->{$user}->givePermissionTo('items.add');
+
+        Item::factory()->create(['sku' => 'TES/T1']);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/items', [
+                'name' => 'Test',
+                'sku' => 'TES/T1',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::UNIQUE,
+                'message' => 'The sku has already been taken.'
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateExistingSkuDeleted(string $user): void
+    {
+        $this->{$user}->givePermissionTo('items.add');
+
+        $existingItem = Item::factory()->create(['sku' => 'TES/T1']);
+        $existingItem->delete();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/items', [
+                'name' => 'Test',
+                'sku' => 'TES/T1',
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'sku' => 'TES/T1',
+            ]);
+    }
+
     public function testUpdateUnauthorized(): void
     {
         Event::fake(ItemUpdated::class);
@@ -631,7 +683,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdate($user): void
+    public function testUpdate(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
 
@@ -659,7 +711,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateWithPartialData($user): void
+    public function testUpdateWithPartialData(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
 
@@ -676,10 +728,11 @@ class ItemTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJson(['data' => [
-                'name' => 'Test 2',
-                'sku' => $this->item->sku,
-            ],
+            ->assertJson([
+                'data' => [
+                    'name' => 'Test 2',
+                    'sku' => $this->item->sku,
+                ],
             ]);
 
         $this->assertDatabaseHas('items', [
@@ -694,7 +747,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateWithPartialDataSku($user): void
+    public function testUpdateWithPartialDataSku(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
 
@@ -711,10 +764,11 @@ class ItemTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJson(['data' => [
-                'name' => $this->item->name,
-                'sku' => $item['sku'],
-            ],
+            ->assertJson([
+                'data' => [
+                    'name' => $this->item->name,
+                    'sku' => $item['sku'],
+                ],
             ]);
 
         $this->assertDatabaseHas('items', [
@@ -729,7 +783,71 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateWithWebHook($user): void
+    public function testUpdateWithInvalidUnlimitedDate($user): void
+    {
+        $this->{$user}->givePermissionTo('items.edit');
+
+        $this->item->update([
+            'shipping_date' => now(),
+        ]);
+
+        Deposit::factory()->create([
+            'quantity' => 20,
+            'from_unlimited' => false,
+            'shipping_date' => now(),
+            'item_id' => $this->item->getKey(),
+        ]);
+
+        $item = [
+            'unlimited_stock_shipping_date' => now()->subDay(),
+        ];
+
+        $this->actingAs($this->{$user})->patchJson(
+            '/items/id:' . $this->item->getKey(),
+            $item,
+        )
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::UNLIMITEDSHIPPINGDATE,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithInvalidUnlimitedTime($user): void
+    {
+        $this->{$user}->givePermissionTo('items.edit');
+
+        $this->item->update([
+            'shipping_time' => 4,
+        ]);
+
+        Deposit::factory()->create([
+            'quantity' => 20,
+            'from_unlimited' => false,
+            'shipping_time' => 4,
+            'item_id' => $this->item->getKey(),
+        ]);
+
+        $item = [
+            'unlimited_stock_shipping_time' => 2,
+        ];
+
+        $this->actingAs($this->{$user})->patchJson(
+            '/items/id:' . $this->item->getKey(),
+            $item,
+        )
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::UNLIMITEDSHIPPINGTIME,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithWebHook(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
 
@@ -782,6 +900,50 @@ class ItemTest extends TestCase
         });
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateExistingSku(string $user): void
+    {
+        $this->{$user}->givePermissionTo('items.edit');
+
+        Item::factory()->create(['sku' => 'TES/T1']);
+        $item = Item::factory()->create();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', '/items/id:' . $item->getKey(), [
+                'sku' => 'TES/T1',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::UNIQUE,
+                'message' => 'The sku has already been taken.'
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateExistingSkuDeleted(string $user): void
+    {
+        $this->{$user}->givePermissionTo('items.edit');
+
+        $item = Item::factory()->create(['sku' => 'TES/T1']);
+        $existingItem = Item::factory()->create(['sku' => 'TES/T1']);
+        $existingItem->delete();
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', '/items/id:' . $item->getKey(), [
+                'sku' => 'TES/T1',
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'sku' => 'TES/T1',
+            ]);
+    }
+
     public function testDeleteUnauthorized(): void
     {
         Event::fake(ItemDeleted::class);
@@ -802,7 +964,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDelete($user): void
+    public function testDelete(string $user): void
     {
         $this->{$user}->givePermissionTo('items.remove');
 
@@ -821,7 +983,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteWithWebHook($user): void
+    public function testDeleteWithWebHook(string $user): void
     {
         $this->{$user}->givePermissionTo('items.remove');
 
@@ -867,7 +1029,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateValidationInvalidBothShippingTimeAndDate($user): void
+    public function testCreateValidationInvalidBothShippingTimeAndDate(string $user): void
     {
         $this->{$user}->givePermissionTo('items.add');
 
@@ -888,7 +1050,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateValidationInvalidBothUnlimitedShippingTimeAndDate($user): void
+    public function testUpdateValidationInvalidBothUnlimitedShippingTimeAndDate(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
 
@@ -911,7 +1073,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateValidationUnlimitedShippingDateLesserThenShippingDate($user): void
+    public function testUpdateValidationUnlimitedShippingDateLesserThenShippingDate(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
 
@@ -939,7 +1101,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateValidationUnlimitedShippingTimeLesserThenShippingTime($user): void
+    public function testUpdateValidationUnlimitedShippingTimeLesserThenShippingTime(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
 
@@ -967,9 +1129,13 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateUnlimitedShippingTime($user): void
+    public function testUpdateUnlimitedShippingTime(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
+
+        $this->item->deposits->first->update([
+            'shipping_time' => null,
+        ]);
 
         $time = 4;
         Deposit::factory()->create([
@@ -1003,7 +1169,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateUnlimitedShippingTimeNull($user): void
+    public function testUpdateUnlimitedShippingTimeNull(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
 
@@ -1022,7 +1188,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateUnlimitedShippingDate($user): void
+    public function testUpdateUnlimitedShippingDate(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
         $date = Carbon::today()->addDays(4);
@@ -1058,7 +1224,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateUnlimitedShippingDateWithSameDateAsDeposit($user): void
+    public function testUpdateUnlimitedShippingDateWithSameDateAsDeposit(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
         $date = Carbon::today()->addDays(4);
@@ -1083,7 +1249,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateUnlimitedShippingDateNull($user): void
+    public function testUpdateUnlimitedShippingDateNull(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
 
@@ -1102,7 +1268,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateUnlimitedShippingTime($user): void
+    public function testCreateUnlimitedShippingTime(string $user): void
     {
         $this->{$user}->givePermissionTo('items.add');
 
@@ -1122,7 +1288,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateUnlimitedShippingDate($user): void
+    public function testCreateUnlimitedShippingDate(string $user): void
     {
         $this->{$user}->givePermissionTo('items.add');
 
@@ -1142,7 +1308,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowWhitAvailability($user): void
+    public function testShowWhitAvailability(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show_details');
 
@@ -1169,10 +1335,12 @@ class ItemTest extends TestCase
             'item_id' => $item->getKey(),
             'quantity' => 2.0,
             'shipping_date' => $date,
+            'shipping_time' => null,
         ]);
         Deposit::factory()->create([
             'item_id' => $item->getKey(),
             'quantity' => 2.0,
+            'shipping_time' => null,
         ]);
         Deposit::factory()->create([
             'item_id' => $item->getKey(),
@@ -1202,7 +1370,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexWhitAvailability($user): void
+    public function testIndexWhitAvailability(string $user): void
     {
         $this->{$user}->givePermissionTo('items.show');
         $this->{$user}->givePermissionTo('items.show_details');

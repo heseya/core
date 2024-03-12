@@ -2,9 +2,16 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Order;
 use App\Traits\MetadataResource;
+use Domain\Order\Resources\OrderStatusResource;
+use Domain\SalesChannel\Resources\SalesChannelResource;
+use Domain\ShippingMethod\Resources\ShippingMethodResource;
 use Illuminate\Http\Request;
 
+/**
+ * @property Order $resource
+ */
 class OrderPublicResource extends Resource
 {
     use MetadataResource;
@@ -14,18 +21,20 @@ class OrderPublicResource extends Resource
         return array_merge([
             'id' => $this->resource->getKey(),
             'code' => $this->resource->code,
-            'status' => StatusResource::make($this->resource->status),
+            'status' => OrderStatusResource::make($this->resource->status),
             'paid' => $this->resource->paid,
             'payable' => $this->resource->payable,
-            'cart_total_initial' => $this->resource->cart_total_initial,
-            'cart_total' => $this->resource->cart_total,
-            'shipping_price_initial' => $this->resource->shipping_price_initial,
-            'shipping_price' => $this->resource->shipping_price,
-            'summary' => $this->resource->summary,
+            'cart_total_initial' => $this->resource->cart_total_initial->getAmount(),
+            'cart_total' => $this->resource->cart_total->getAmount(),
+            'shipping_price_initial' => $this->resource->shipping_price_initial->getAmount(),
+            'shipping_price' => $this->resource->shipping_price->getAmount(),
+            'summary' => $this->resource->summary->getAmount(),
             'currency' => $this->resource->currency,
             'shipping_method' => ShippingMethodResource::make($this->resource->shippingMethod),
             'digital_shipping_method' => ShippingMethodResource::make($this->resource->digitalShippingMethod),
             'created_at' => $this->resource->created_at,
+            'sales_channel' => SalesChannelResource::make($this->resource->salesChannel),
+            'language' => $this->resource->language,
         ], $this->metadataResource('orders.show_metadata_private'));
     }
 }

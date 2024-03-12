@@ -6,11 +6,14 @@ use App\Enums\AuthProviderKey;
 use App\Enums\RoleType;
 use App\Models\AuthProvider;
 use App\Models\Role;
-use App\Models\SeoMetadata;
 use App\Models\Status;
 use App\Models\User;
+use Domain\Language\Language;
+use Domain\Seo\Models\SeoMetadata;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 
@@ -18,13 +21,14 @@ class InitSeeder extends Seeder
 {
     public function run(): void
     {
+        $language = $this->createLanguage()->getKey();
         $this->createUser();
-        $this->createStatuses();
+        $this->createStatuses($language);
 
         $seeder = new CountriesSeeder();
         $seeder->run();
 
-        $this->createGlobalSeo();
+        $this->createGlobalSeo($language);
         $this->createAuthProviders();
     }
 
@@ -42,36 +46,63 @@ class InitSeeder extends Seeder
         );
     }
 
-    private function createStatuses(): void
+    private function createStatuses(string $language): void
     {
-        Status::query()->create([
-            'name' => 'New',
+        $published = [App::getLocale(), $language];
+        /** @var Status $status */
+        $status = Status::query()->create([
+            'name' => 'Nowe',
             'color' => 'ffd600',
-            'description' => 'Your order has been saved in system!',
+            'description' => 'Twoje zamówienie zostało zapisane w systemie!',
             'order' => 1,
+            'published' => $published,
         ]);
+        $status->setLocale($language)->fill([
+            'name' => 'New',
+            'description' => 'Your order has been saved in system!',
+        ]);
+        $status->save();
 
-        Status::query()->create([
-            'name' => 'Sent',
+        /** @var Status $status */
+        $status = Status::query()->create([
+            'name' => 'Wysłane',
             'color' => '1faa00',
-            'description' => 'The order has been shipped and it will be in your hands soon :)',
+            'description' => 'Zamówienie zostało wysłane i wkrótce do trafi w Twoje ręce :)',
             'order' => 2,
+            'published' => $published,
         ]);
+        $status->setLocale($language)->fill([
+            'name' => 'Sent',
+            'description' => 'The order has been shipped and it will be in your hands soon :)',
+        ]);
+        $status->save();
 
-        Status::query()->create([
-            'name' => 'Canceled',
+        /** @var Status $status */
+        $status = Status::query()->create([
+            'name' => 'Anulowane',
             'color' => 'a30000',
-            'description' => 'Your order has been canceled, if this is mistake, please contact us.',
+            'description' => 'Twoje zamówienie zostało anulowane, jeśli to pomyłka, proszę skontaktuj się z nami',
             'order' => 3,
             'cancel' => true,
+            'published' => $published,
         ]);
+        $status->setLocale($language)->fill([
+            'name' => 'Canceled',
+            'description' => 'Your order has been canceled, if this is mistake, please contact us.',
+        ]);
+        $status->save();
     }
 
-    private function createGlobalSeo(): void
+    private function createGlobalSeo(string $language): void
     {
+        /** @var SeoMetadata $seo */
         $seo = SeoMetadata::query()->create([
             'global' => true,
         ]);
+        $seoTranslation = SeoMetadata::factory()->definition();
+        $seo->setLocale($language)->fill(Arr::only($seoTranslation, ['title', 'description', 'keywords', 'no_index']));
+        $seo->fill(['published' => array_merge([App::getLocale(), $language])]);
+        $seo->save();
         Cache::put('seo.global', $seo);
     }
 
@@ -84,5 +115,16 @@ class InitSeeder extends Seeder
             'client_id' => null,
             'client_secret' => null,
         ]));
+    }
+
+    private function createLanguage(): Language
+    {
+        return Language::query()->firstOrCreate([
+            'iso' => 'en',
+        ], [
+            'name' => 'English',
+            'hidden' => false,
+            'default' => false,
+        ]);
     }
 }

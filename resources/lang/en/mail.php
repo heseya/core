@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     // new order
     'subject-new-order' => 'Order :number confirmation',
@@ -10,6 +12,7 @@ return [
     'delivery' => 'Delivery',
     'products' => 'Products',
     'name' => 'Name',
+    'product_name' => 'Title',
     'quantity' => 'Qty',
     'price' => 'Price',
     'summary-products' => 'Products',
@@ -17,11 +20,12 @@ return [
     'summary-discount' => 'Discount',
     'summary-paid' => 'Summary',
     'purchaser' => 'Purchaser',
-    'company' => 'Company',
+    'company' => 'Name',
     'name-surname' => 'Full name',
     'address' => 'Address',
     'zip' => 'Zip code',
     'city' => 'City',
+    'country' => 'Country',
     'phone' => 'Phone',
     'regards' => 'Best Regards',
     'team' => ':team crew',
@@ -46,6 +50,10 @@ return [
     'benefits' => 'By logging into your account, you will gain access to your personal customer panel.
         You will be able to see all of your orders, along with information on their status.
         The customer account also allows you to manage your contact information and delivery addresses.',
+
+    // order paid
+    'subject-order-paid' => 'Order :number has been paid',
+    'order-paid' => 'Your order has been paid.',
 
     'client' => [
         'user-register' => [
@@ -77,4 +85,27 @@ return [
             'footer-3' => 'Please note that the password reset link will expire after 60 mins, so we recommend completing the password reset as soon as possible.',
         ],
     ],
+
+    // send-urls
+    'subject-send-urls' => 'Digital product from order :code',
+    'send-url-header' => 'Your list of digital products from order :code',
+    'send-url-message' => 'Below is the list of purchased products from the order <strong>:code</strong>, along with links to download them.',
+    'send-url-ordered-products' => 'ORDERED PRODUCTS:',
+    'send-url-download' => 'Download',
+    'send-url-regards' => 'Best Regards,<br>Team :team',
+
+    // 2FA initialization
+    'subject-tfa-initialization' => '2FA confirmation',
+    'tfa-initialization-hello' => "Dear user,<br/>Here's your one-time security code:",
+    'tfa-initialization-message' => 'Use it to finish your Two-Factor Authentication setup process.<br/><br/>If this message is not for you, please ignore it.',
+
+    // 2FA recovery codes
+    'subject-recovery-codes' => '2FA recovery codes',
+    'recovery-codes-hello' => 'Dear user,<br />Your 2FA recovery codes have been changed!',
+    'recovery-codes-message' => "If you didn't try to log in, that means someone has broken your password and is trying to access your account.<br/>Please change your password as soon as possible!",
+
+    // 2FA security code
+    'subject-security-code' => '2FA security code',
+    'security-code-hello' => "Dear user,<br />Here's your one-time security code:",
+    'security-code-message' => "Use it to authenticate your operation.<br/><br/>If you didn't try to log in, that means someone has broken your password and is trying to access your account.<br/>Please change your password as soon as possible!",
 ];

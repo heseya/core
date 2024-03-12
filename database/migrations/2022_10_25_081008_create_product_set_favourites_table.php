@@ -23,11 +23,11 @@ return new class extends Migration {
 
         Permission::create(['name' => 'profile.favourites_manage', 'display_name' => 'Możliwość zarządzania swoją listą ulubionych']);
 
-        $authenticated = Role::where('type', '=', RoleType::AUTHENTICATED)->firstOrFail();
+        $authenticated = Role::where('type', '=', RoleType::AUTHENTICATED->value)->firstOrFail();
         $authenticated->givePermissionTo('profile.favourites_manage');
         $authenticated->save();
 
-        $owner = Role::where('type', RoleType::OWNER)->first();
+        $owner = Role::where('type', RoleType::OWNER->value)->first();
         $owner->givePermissionTo('profile.favourites_manage');
         $owner->save();
     }
@@ -39,11 +39,11 @@ return new class extends Migration {
     {
         Schema::dropIfExists('favourite_product_sets');
 
-        $authenticated = Role::where('type', '=', RoleType::AUTHENTICATED)->firstOrFail();
+        $authenticated = Role::where('type', '=', RoleType::AUTHENTICATED->value)->firstOrFail();
         $authenticated->revokePermissionTo('profile.favourites_manage');
         $authenticated->save();
 
-        $owner = Role::where('type', RoleType::OWNER)->first();
+        $owner = Role::where('type', RoleType::OWNER->value)->first();
         $owner->revokePermissionTo('profile.favourites_manage');
         $owner->save();
 

@@ -2,8 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\AttributeOption;
-use Illuminate\Database\Eloquent\Factories\Factory;
+use Domain\ProductAttribute\Models\AttributeOption;
 
 class AttributeOptionFactory extends Factory
 {

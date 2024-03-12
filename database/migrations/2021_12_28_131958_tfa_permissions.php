@@ -11,7 +11,7 @@ class TfaPermissions extends Migration
     {
         Permission::create(['name' => 'users.2fa_remove', 'display_name' => 'Możliwość usuwania Two-Factor Authentication użytkownikom']);
 
-        $owner = Role::where('type', RoleType::OWNER)->first();
+        $owner = Role::where('type', RoleType::OWNER->value)->first();
         $owner->givePermissionTo([
             'users.2fa_remove',
         ]);
@@ -20,7 +20,7 @@ class TfaPermissions extends Migration
 
     public function down(): void
     {
-        $owner = Role::where('type', RoleType::OWNER)->first();
+        $owner = Role::where('type', RoleType::OWNER->value)->first();
         $owner->revokePermissionTo([
             'users.2fa_remove',
         ]);

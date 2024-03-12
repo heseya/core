@@ -10,13 +10,20 @@ ShippingMethods:
         schema:
           type: string
           example: DE
-      - name: cart_value
+      - name: cart_value.value
         description: 'cart total you want to display shipping price for'
         in: query
         required: false
         schema:
-          type: number
-          example: 1200
+          type: string
+          example: '1200.00'
+      - name: cart_value.currency
+        description: 'currency of the cart total, required with value'
+        in: query
+        required: false
+        schema:
+          type: string
+          example: 'PLN'
       - name: metadata
         in: query
         description: search by metadata
@@ -36,6 +43,14 @@ ShippingMethods:
       - name: 'ids[]'
         in: query
         example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+      - name: 'items[]'
+        in: query
+        description: 'product ids to check if shipping method is blocked for them'
         schema:
           type: array
           items:

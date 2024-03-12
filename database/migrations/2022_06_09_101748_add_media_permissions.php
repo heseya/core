@@ -19,14 +19,14 @@ return new class extends Migration {
             Permission::create(['name' => $name, 'display_name' => $displayName]);
         }
 
-        $owner = Role::where('type', RoleType::OWNER)->first();
+        $owner = Role::where('type', RoleType::OWNER->value)->first();
         $owner->givePermissionTo(array_keys($this->newPermissions));
         $owner->save();
     }
 
     public function down(): void
     {
-        $owner = Role::where('type', RoleType::OWNER)->first();
+        $owner = Role::where('type', RoleType::OWNER->value)->first();
         $owner->revokePermissionTo(array_keys($this->newPermissions));
         $owner->save();
 

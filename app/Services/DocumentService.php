@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class DocumentService implements DocumentServiceContract
+final readonly class DocumentService implements DocumentServiceContract
 {
     public function __construct(
         private MediaServiceContract $mediaService,

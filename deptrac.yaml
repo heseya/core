@@ -1,6 +1,7 @@
 deptrac:
   paths:
     - ./app
+    - ./src
   exclude_files:
     - '#.*test.*#'
   layers:
@@ -21,4 +22,4 @@ deptrac:
       - Service
     Service:
       - Repository
-    Repository:
+    Repository: ~

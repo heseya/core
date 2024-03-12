@@ -2,19 +2,26 @@
 
 namespace App\Traits;
 
-use App\Models\Metadata;
-use App\Models\MetadataPersonal;
+use App\Models\Model;
+use Domain\Metadata\Models\Metadata;
+use Domain\Metadata\Models\MetadataPersonal;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 
 trait MetadataResource
 {
-    public function metadataResource(?string $privateMetadataPermission = null): array
+    public function metadataResource(?string $privateMetadataPermission = null, ?Model $overrideResource = null): array
     {
-        $data['metadata'] = $this->processMetadata($this->resource->metadata);
+        $metadata = $overrideResource?->metadata ?? $this->resource->metadata ?? null;
+
+        $data['metadata'] = empty($metadata) ? (object) [] : $this->processMetadata($metadata);
 
         if ($privateMetadataPermission !== null && Gate::allows($privateMetadataPermission)) {
-            $data['metadata_private'] = $this->processMetadata($this->resource->metadataPrivate);
+            $metadataPrivate = $overrideResource?->metadataPrivate ?? $this->resource->metadataPrivate ?? null;
+
+            if (!empty($metadataPrivate)) {
+                $data['metadata_private'] = $this->processMetadata($metadataPrivate);
+            }
         }
 
         return $data;

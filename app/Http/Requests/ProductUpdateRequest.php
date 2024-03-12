@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Models\Product;
+use App\Rules\PricesEveryCurrency;
+use App\Rules\Translations;
 use Illuminate\Validation\Rule;
 
 class ProductUpdateRequest extends ProductCreateRequest
@@ -18,15 +20,22 @@ class ProductUpdateRequest extends ProductCreateRequest
         // $rules['metadata'] = ['prohibited'];
         // $rules['metadata_private'] = ['prohibited'];
         $rules['name'] = ['string', 'max:255'];
-        $rules['price'] = ['numeric', 'min:0'];
+        $rules['prices_base'] = [new PricesEveryCurrency()];
         $rules['public'] = ['boolean'];
         $rules['shipping_digital'] = ['boolean'];
         $rules['slug'] = [
             'string',
             'max:255',
             'alpha_dash',
-            Rule::unique('products')->ignore($product->slug, 'slug'),
+            Rule::unique('products', 'slug')->whereNull('deleted_at')->ignoreModel($product),
         ];
+
+        $rules['published'] = ['nullable', 'array', 'min:1'];
+        $rules['translations'] = [
+            'nullable',
+            new Translations(['name', 'description_html', 'description_short']),
+        ];
+        $rules['banner'] = ['nullable', 'array'];
 
         return $rules;
     }

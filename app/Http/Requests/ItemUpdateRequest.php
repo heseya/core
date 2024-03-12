@@ -20,7 +20,7 @@ class ItemUpdateRequest extends FormRequest
             'sku' => [
                 'string',
                 'max:255',
-                Rule::unique('items')->ignore($item->sku, 'sku'),
+                Rule::unique('items', 'sku')->whereNull('deleted_at')->ignoreModel($item),
             ],
             'unlimited_stock_shipping_time' => [
                 'nullable',

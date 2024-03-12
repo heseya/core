@@ -10,9 +10,11 @@ use App\Models\User;
 use App\Services\Contracts\UrlServiceContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\App as FacadesApp;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Tests\TestCase;
+use TRegx\PhpUnit\DataProviders\DataProvider;
 
 class AppInstallTest extends TestCase
 {
@@ -25,7 +27,7 @@ class AppInstallTest extends TestCase
     {
         parent::setUp();
 
-        $this->urlService = app(UrlServiceContract::class);
+        $this->urlService = FacadesApp::make(UrlServiceContract::class);
         $this->url = $this->urlService->normalizeUrl($this->url);
     }
 
@@ -85,10 +87,11 @@ class AppInstallTest extends TestCase
                 'required_permissions' => [
                     'products.show',
                 ],
-                'internal_permissions' => [[
-                    'name' => 'product_layout',
-                    'description' => 'Setup layouts of products page',
-                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'product_layout',
+                        'description' => 'Setup layouts of products page',
+                    ],
                 ],
             ]),
             $this->url . '/install' => Http::response([], 404),
@@ -106,18 +109,14 @@ class AppInstallTest extends TestCase
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
-    public static function invalidResponseProvider(): array
+    public static function invalidResponsesBaseProvider(): iterable
     {
-        return [
-            'null as user' => ['user', null],
-            'not an array as user' => ['user', 'not an array'],
-            'empty array as user' => ['user', []],
-            'flat array as user' => ['user', ['flat array']],
-            'null as app' => ['application', null],
-            'not an array as app' => ['application', 'not an array'],
-            'empty array as app' => ['application', []],
-            'flat array as app' => ['application', ['flat array']],
-        ];
+        return DataProvider::list(null, 'not an array', [], ['flat array']);
+    }
+
+    public static function invalidResponseProvider(): DataProvider
+    {
+        return DataProvider::cross(DataProvider::of(self::authProvider()), self::invalidResponsesBaseProvider());
     }
 
     /**
@@ -258,6 +257,7 @@ class AppInstallTest extends TestCase
             'microfrontend_url' => 'https://front.example.com',
             'icon' => 'https://picsum.photos/200',
             'uninstall_token' => $uninstallToken,
+            'url' => $this->url,
         ]);
 
         $this->assertDatabaseHas('permissions', [
@@ -313,6 +313,82 @@ class AppInstallTest extends TestCase
 
         $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
         $this->assertTrue($owner->hasAllPermissions(Permission::all()));
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testInstallUrl($user): void
+    {
+        $this->{$user}->givePermissionTo([
+            'apps.install',
+            'products.show',
+        ]);
+
+        $uninstallToken = Str::random(128);
+
+        $url = 'https://example-url.com/';
+        Http::fake([
+            $url => Http::response([
+                'name' => 'App name',
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
+                'description' => 'Cool description',
+                'microfrontend_url' => 'https://front.example.com',
+                'icon' => 'https://picsum.photos/200',
+                'licence_required' => false,
+                'required_permissions' => [
+                    'products.show',
+                ],
+                'internal_permissions' => [],
+            ]),
+            $url . 'install' => Http::response([
+                'uninstall_token' => $uninstallToken,
+            ]),
+        ]);
+
+        $response = $this->actingAs($this->{$user})->postJson('/apps', [
+            'url' => $url,
+            'allowed_permissions' => [
+                'products.show',
+            ],
+            'public_app_permissions' => [],
+        ]);
+
+        $name = 'App name';
+
+        $response->assertCreated()
+            ->assertJsonFragment([
+                'url' => 'https://example-url.com',
+                'microfrontend_url' => 'https://front.example.com',
+                'name' => $name,
+                'slug' => Str::slug('App name'),
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'description' => 'Cool description',
+                'icon' => 'https://picsum.photos/200',
+                'metadata' => [],
+            ]);
+
+        $this->assertDatabaseHas('apps', [
+            'name' => $name,
+            'author' => 'Mr. Author',
+            'version' => '1.0.0',
+            'api_version' => '^1.4.0',
+            'description' => 'Cool description',
+            'microfrontend_url' => 'https://front.example.com',
+            'icon' => 'https://picsum.photos/200',
+            'uninstall_token' => $uninstallToken,
+            'url' => 'https://example-url.com',
+        ]);
+
+        $app = App::where('name', $name)->firstOrFail();
+
+        $this->assertTrue($app->hasAllPermissions([
+            'auth.check_identity',
+            'products.show',
+        ]));
     }
 
     /**
@@ -507,10 +583,11 @@ class AppInstallTest extends TestCase
                 'optional_permissions' => [
                     'products.add',
                 ],
-                'internal_permissions' => [[
-                    'name' => 'product_layout',
-                    'description' => 'Setup layouts of products page',
-                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'product_layout',
+                        'description' => 'Setup layouts of products page',
+                    ],
                 ],
             ]),
             $this->url . '/install' => Http::response([
@@ -771,10 +848,11 @@ class AppInstallTest extends TestCase
                 'required_permissions' => [
                     'nonexistent.permission',
                 ],
-                'internal_permissions' => [[
-                    'name' => 'product_layout',
-                    'description' => 'Setup layouts of products page',
-                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'product_layout',
+                        'description' => 'Setup layouts of products page',
+                    ],
                 ],
             ]),
         ]);
@@ -814,10 +892,11 @@ class AppInstallTest extends TestCase
                 'required_permissions' => [
                     'products.show',
                 ],
-                'internal_permissions' => [[
-                    'name' => 'product_layout',
-                    'description' => 'Setup layouts of products page',
-                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'product_layout',
+                        'description' => 'Setup layouts of products page',
+                    ],
                 ],
             ]),
         ]);
@@ -860,10 +939,11 @@ class AppInstallTest extends TestCase
                 'optional_permissions' => [
                     'products.add',
                 ],
-                'internal_permissions' => [[
-                    'name' => 'product_layout',
-                    'description' => 'Setup layouts of products page',
-                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'product_layout',
+                        'description' => 'Setup layouts of products page',
+                    ],
                 ],
             ]),
         ]);
@@ -939,10 +1019,11 @@ class AppInstallTest extends TestCase
                 'required_permissions' => [
                     'products.show',
                 ],
-                'internal_permissions' => [[
-                    'name' => 'product_layout',
-                    'description' => 'Setup layouts of products page',
-                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'product_layout',
+                        'description' => 'Setup layouts of products page',
+                    ],
                 ],
             ]),
             $this->url . '/install' => new ConnectionException('Test', 7),

@@ -2,34 +2,21 @@
 
 namespace App\Rules;
 
-use App\Models\Consent;
-use Illuminate\Contracts\Validation\ImplicitRule;
+use App\Enums\ExceptionsEnums\Exceptions;
+use Closure;
+use Domain\Consent\Models\Consent;
+use Illuminate\Contracts\Validation\ValidationRule;
 
-class RequiredConsents implements ImplicitRule
+readonly class RequiredConsents implements ValidationRule
 {
-    /**
-     * Determine if the validation rule passes.
-     *
-     * @param string $attribute
-     *
-     * @return bool
-     */
-    public function passes($attribute, $value)
+    public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $consents = Consent::where('required', true)->get();
+        $consents = Consent::query()->where('required', true)->pluck('id');
 
-        return $consents
-            ->every(fn ($consent) => array_key_exists($consent->getKey(), $value ?? [])
-                && $value[$consent->getKey()] === true);
-    }
-
-    /**
-     * Get the validation error message.
-     *
-     * @return string
-     */
-    public function message()
-    {
-        return 'You must accept the required consents.';
+        if (!$consents->every(
+            fn ($consent) => array_key_exists($consent, $value) && $value[$consent],
+        )) {
+            $fail(Exceptions::CLIENT_NOT_ACCEPTED_ALL_REQUIRED_CONSENTS->value);
+        }
     }
 }

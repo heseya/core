@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Enums\AuthProviderKey;
 use App\Models\AuthProvider;
-use Illuminate\Database\Eloquent\Factories\Factory;
 
 class AuthProviderFactory extends Factory
 {

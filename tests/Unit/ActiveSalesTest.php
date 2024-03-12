@@ -4,11 +4,20 @@ namespace Unit;
 
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
-use App\Enums\DiscountType;
+use App\Repositories\DiscountRepository;
+use Domain\Price\Enums\ProductPriceType;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
 use App\Models\Product;
-use App\Services\Contracts\DiscountServiceContract;
+use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Services\DiscountService;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
+use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
+use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -20,19 +29,19 @@ class ActiveSalesTest extends TestCase
 {
     use RefreshDatabase;
 
-    private DiscountServiceContract $discountService;
+    private DiscountService $discountService;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->discountService = App::make(DiscountServiceContract::class);
+        $this->discountService = App::make(DiscountService::class);
     }
 
     public static function conditionTypeProvider(): array
     {
         return [
-            ConditionType::DATE_BETWEEN => [
+            ConditionType::DATE_BETWEEN->value => [
                 ConditionType::DATE_BETWEEN,
                 [
                     'start_at' => '2022-04-20T12:00:00',
@@ -43,7 +52,7 @@ class ActiveSalesTest extends TestCase
                     'end_at' => '2022-05-22',
                 ],
             ],
-            ConditionType::TIME_BETWEEN => [
+            ConditionType::TIME_BETWEEN->value => [
                 ConditionType::TIME_BETWEEN,
                 [
                     'start_at' => '10:00:00',
@@ -178,46 +187,77 @@ class ActiveSalesTest extends TestCase
         $this->assertFalse($activeSales->contains($sale7));
     }
 
+    /**
+     * @throws DtoException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
     public function testCheckActiveSalesJob(): void
     {
         Carbon::setTestNow('2022-04-21T10:00:00');
 
+        $currency = Currency::DEFAULT->value;
+
+        $discountRepository = App::make(DiscountRepository::class);
+
+        /** @var ProductRepositoryContract $productRepository */
+        $productRepository = App::make(ProductRepositoryContract::class);
+
         $product1 = Product::factory()->create([
             'name' => 'Product had discount',
             'public' => true,
-            'price' => 1000,
-            'price_min_initial' => 1000,
-            'price_max_initial' => 3500,
+        ]);
+        $productRepository->setProductPrices($product1->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(1000, $currency))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(1000, $currency))],
+            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(1000, $currency))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(3500, $currency))],
+            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(3500, $currency))],
         ]);
 
         $product2 = Product::factory()->create([
             'name' => 'Product will have discount',
             'public' => true,
-            'price' => 2500,
-            'price_min_initial' => 2000,
-            'price_max_initial' => 4000,
+        ]);
+        $productRepository->setProductPrices($product2->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(2500, $currency))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(2000, $currency))],
+            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(2000, $currency))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(4000, $currency))],
+            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(4000, $currency))],
         ]);
 
         $product3 = Product::factory()->create([
             'name' => 'Just the product',
             'public' => true,
-            'price' => 1500,
-            'price_min_initial' => 1200,
-            'price_max_initial' => 2000,
+        ]);
+        $productRepository->setProductPrices($product3->getKey(), [
+            ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(1500, $currency))],
+            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(1200, $currency))],
+            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(1200, $currency))],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(2000, $currency))],
+            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(2000, $currency))],
         ]);
 
         $sale1 = Discount::factory()->create([
             'code' => null,
             'target_type' => DiscountTargetType::PRODUCTS,
             'name' => 'Old active sale',
-            'type' => DiscountType::AMOUNT,
-            'value' => 200,
             'target_is_allow_list' => true,
+            'percentage' => null,
+        ]);
+        $discountRepository->setDiscountAmounts($sale1->getKey(), [
+            PriceDto::from([
+                'value' => '200.00',
+                'currency' => Currency::DEFAULT,
+            ])
         ]);
 
         $sale1->products()->sync($product1->getKey());
 
-        $conditionGroup1 = ConditionGroup::create();
+        /** @var ConditionGroup $conditionGroup1 */
+        $conditionGroup1 = ConditionGroup::query()->create();
 
         $conditionGroup1->conditions()->create([
             'type' => ConditionType::TIME_BETWEEN,
@@ -234,14 +274,21 @@ class ActiveSalesTest extends TestCase
             'code' => null,
             'target_type' => DiscountTargetType::PRODUCTS,
             'name' => 'New active sale',
-            'type' => DiscountType::AMOUNT,
-            'value' => 300,
             'target_is_allow_list' => true,
+            'percentage' => null,
+        ]);
+
+        $discountRepository->setDiscountAmounts($sale2->getKey(), [
+            PriceDto::from([
+                'value' => '300.00',
+                'currency' => Currency::DEFAULT,
+            ])
         ]);
 
         $sale2->products()->sync($product2->getKey());
 
-        $conditionGroup2 = ConditionGroup::create();
+        /** @var ConditionGroup $conditionGroup2 */
+        $conditionGroup2 = ConditionGroup::query()->create();
 
         $conditionGroup2->conditions()->create([
             'type' => ConditionType::TIME_BETWEEN,
@@ -254,42 +301,42 @@ class ActiveSalesTest extends TestCase
 
         $sale2->conditionGroups()->attach($conditionGroup2);
 
-        $this->discountService->applyDiscountsOnProducts(Collection::make([$product1, $product2, $product3]));
-        Cache::put('sales.active', [$sale1->getKey()]);
+        $this->discountService->applyDiscountsOnProducts(Collection::make([$product1, $product2, $product3]), Currency::from($currency));
+        Cache::put('sales.active', collect([$sale1->getKey()]));
 
         $product1->refresh();
         $product2->refresh();
         $product3->refresh();
 
-        $this->assertEquals(800, $product1->price_min);
-        $this->assertEquals(3300, $product1->price_max);
+        $this->assertEquals(800, $product1->pricesMin()->where('currency', $currency)->first()->value->getAmount()->toInt());
+        $this->assertEquals(3300, $product1->pricesMax()->where('currency', $currency)->first()->value->getAmount()->toInt());
 
-        $this->assertEquals(2000, $product2->price_min);
-        $this->assertEquals(4000, $product2->price_max);
+        $this->assertEquals(2000, $product2->pricesMin()->where('currency', $currency)->first()->value->getAmount()->toInt());
+        $this->assertEquals(4000, $product2->pricesMax()->where('currency', $currency)->first()->value->getAmount()->toInt());
 
-        $this->assertEquals(1200, $product3->price_min);
-        $this->assertEquals(2000, $product3->price_max);
+        $this->assertEquals(1200, $product3->pricesMin()->where('currency', $currency)->first()->value->getAmount()->toInt());
+        $this->assertEquals(2000, $product3->pricesMax()->where('currency', $currency)->first()->value->getAmount()->toInt());
 
         Carbon::setTestNow('2022-04-21T12:00:00');
         $this->travelTo('2022-04-21T12:00:00');
         $this->artisan('schedule:run');
 
-        $product1->refresh();
-        $product2->refresh();
-        $product3->refresh();
-
-        $this->assertEquals(1000, $product1->price_min);
-        $this->assertEquals(3500, $product1->price_max);
-
-        $this->assertEquals(1700, $product2->price_min);
-        $this->assertEquals(3700, $product2->price_max);
-
-        $this->assertEquals(1200, $product3->price_min);
-        $this->assertEquals(2000, $product3->price_max);
-
         $activeSales = Cache::get('sales.active');
         $this->assertCount(1, $activeSales);
         $this->assertTrue($activeSales->contains($sale2->getKey()));
         $this->assertFalse($activeSales->contains($sale1->getKey()));
+
+        $product1->refresh();
+        $product2->refresh();
+        $product3->refresh();
+
+        $this->assertEquals(1000, $product1->pricesMin()->where('currency', $currency)->first()->value->getAmount()->toInt());
+        $this->assertEquals(3500, $product1->pricesMax()->where('currency', $currency)->first()->value->getAmount()->toInt());
+
+        $this->assertEquals(1700, $product2->pricesMin()->where('currency', $currency)->first()->value->getAmount()->toInt());
+        $this->assertEquals(3700, $product2->pricesMax()->where('currency', $currency)->first()->value->getAmount()->toInt());
+
+        $this->assertEquals(1200, $product3->pricesMin()->where('currency', $currency)->first()->value->getAmount()->toInt());
+        $this->assertEquals(2000, $product3->pricesMax()->where('currency', $currency)->first()->value->getAmount()->toInt());
     }
 }

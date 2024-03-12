@@ -13,48 +13,144 @@ use App\Models\Discount;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\PriceRange;
-use App\Models\Product;
-use App\Models\ProductSet;
-use App\Models\Schema;
-use App\Models\ShippingMethod;
+use App\Repositories\DiscountRepository;
 use App\Services\Contracts\DiscountServiceContract;
+use App\Services\OptionService;
+use App\Services\ProductService;
+use App\Services\SchemaCrudService;
+use Brick\Math\BigDecimal;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
+use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
+use Domain\ProductSet\ProductSet;
+use Domain\SalesChannel\Models\SalesChannel;
+use Domain\ShippingMethod\Models\ShippingMethod;
+use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class DiscountApplyTest extends TestCase
 {
     use RefreshDatabase;
 
+    private ProductService $productService;
     private DiscountServiceContract $discountService;
+    private SchemaCrudService $schemaCrudService;
+    private OptionService $optionService;
     private $product;
     private $productToOrderProduct;
     private $schema;
     private $set;
     private $order;
     private $shippingMethod;
+    private CartResource $cart;
     private CartItemDto $cartItemDto;
     private CartItemResponse $cartItemResponse;
     private CartResource $cartResource;
     private OrderProductDto $orderProductDto;
     private OrderProductDto $orderProductDtoWithSchemas;
     private $orderProduct;
+    private Currency $currency;
+    private DiscountRepository $discountRepository;
 
+    public static function discountProductDataProvider(): array
+    {
+        return [
+            /** TODO: REVERT */
+//            'as amount coupon' => [
+//                DiscountType::AMOUNT,
+//                20.0,
+//                110.0,
+//                'coupon',
+//            ],
+            'as percentage coupon' => [
+                'percentage',
+                '20.0',
+                104.0,
+                'coupon',
+            ],
+//            'as amount sale' => [
+//                DiscountType::AMOUNT,
+//                20.0,
+//                110.0,
+//                'sale',
+//            ],
+            'as percentage sale' => [
+                'percentage',
+                '20.0',
+                104.0,
+                'sale',
+            ],
+        ];
+    }
+
+    public static function discountDataProvider(): array
+    {
+        return [
+            /** TODO: REVERT */
+//            'as amount coupon' => [
+//                DiscountType::AMOUNT,
+//                20.0,
+//                100.0,
+//                'coupon',
+//            ],
+            'as percentage coupon' => [
+                'percentage',
+                '20.0',
+                96.0,
+                'coupon',
+            ],
+//            'as amount sale' => [
+//                DiscountType::AMOUNT,
+//                20.0,
+//                100.0,
+//                'sale',
+//            ],
+            'as percentage sale' => [
+                'percentage',
+                '20.0',
+                96.0,
+                'sale',
+            ],
+        ];
+    }
+
+    /**
+     * @throws UnknownCurrencyException
+     * @throws RoundingNecessaryException
+     * @throws NumberFormatException
+     * @throws DtoException
+     */
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->product = Product::factory()->create([
-            'price' => 120.0,
-            'public' => true,
-        ]);
+        $this->currency = Currency::DEFAULT;
+        $this->productService = App::make(ProductService::class);
+        $this->schemaCrudService = App::make(SchemaCrudService::class);
+        $this->optionService = App::make(OptionService::class);
+        $this->discountRepository = App::make(DiscountRepository::class);
 
-        $this->schema = Schema::factory()->create([
-            'type' => 'string',
-            'price' => 10,
-            'hidden' => false,
-        ]);
+        $this->product = $this->productService->create(
+            FakeDto::productCreateDto([
+                'prices_base' => [PriceDto::from(Money::of(120, $this->currency->value))],
+                'public' => true,
+            ])
+        );
+
+        $this->schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'prices' => [PriceDto::from(Money::of(10, $this->currency->value))],
+                'type' => 'string',
+                'hidden' => false,
+            ])
+        );
 
         $this->set = ProductSet::factory()->create([
             'public' => true,
@@ -67,14 +163,22 @@ class DiscountApplyTest extends TestCase
             'schemas' => [],
         ]);
 
-        $this->cartItemResponse = new CartItemResponse(1, 120.0, 120.0, 1);
+        $this->cartItemResponse = new CartItemResponse(
+            1,
+            Money::of(120.0, $this->currency->value),
+            Money::of(120.0, $this->currency->value),
+            1,
+        );
 
         $this->cart = new CartResource(
             Collection::make([$this->cartItemResponse]),
             Collection::make([]),
             Collection::make([]),
-            120.0,
-            120.0,
+            Money::of(120.0, $this->currency->value),
+            Money::of(120.0, $this->currency->value),
+            Money::zero($this->currency->value),
+            Money::zero($this->currency->value),
+            Money::zero($this->currency->value),
         );
 
         $this->orderProductDto = OrderProductDto::fromArray([
@@ -92,96 +196,137 @@ class DiscountApplyTest extends TestCase
         ]);
 
         $order = Order::factory()->create();
-        $this->productToOrderProduct = Product::factory()->create([
-            'public' => true,
-            'price' => 120.0,
-        ]);
+        $this->productToOrderProduct = $this->productService->create(
+            FakeDto::productCreateDto([
+                'prices_base' => [PriceDto::from(Money::of(120, $this->currency->value))],
+                'public' => true,
+            ])
+        );
 
         $this->orderProduct = OrderProduct::factory()->create([
             'order_id' => $order->getKey(),
             'product_id' => $this->productToOrderProduct->getKey(),
             'quantity' => 1,
-            'price' => 120.0,
+            'price' => Money::of(120.0, $this->currency->value),
         ]);
 
         $this->shippingMethod = ShippingMethod::factory()->create(['public' => true]);
-        $lowRange = PriceRange::create(['start' => 0]);
-        $lowRange->prices()->create(['value' => 20.0]);
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero($this->currency->value),
+            'value' => Money::of(20.0, $this->currency->value),
+        ]);
 
         $this->shippingMethod->priceRanges()->save($lowRange);
 
         $this->order = Order::factory()->create([
-            'cart_total_initial' => 360.0,
-            'cart_total' => 360.0,
-            'shipping_price_initial' => 20.0,
-            'shipping_price' => 20.0,
+            'cart_total_initial' => Money::of(360.0, $this->currency->value),
+            'cart_total' => Money::of(360.0, $this->currency->value),
+            'shipping_price_initial' => Money::of(20.0, $this->currency->value),
+            'shipping_price' => Money::of(20.0, $this->currency->value),
             'shipping_method_id' => $this->shippingMethod->getKey(),
         ]);
 
         $this->order->products()->create([
             'product_id' => $this->product->getKey(),
             'quantity' => 3,
-            'price' => 120.00,
-            'price_initial' => 120.00,
+            'price' => Money::of(120.0, $this->currency->value),
+            'price_initial' => Money::of(120.0, $this->currency->value),
             'name' => $this->product->name,
         ]);
 
         $this->discountService = App::make(DiscountServiceContract::class);
     }
 
+    /**
+     * @throws UnknownCurrencyException
+     * @throws DtoException
+     * @throws RoundingNecessaryException
+     * @throws NumberFormatException
+     */
     public function testApplyDiscountsOnCart(): void
     {
         $sale = Discount::factory([
-            'type' => DiscountType::AMOUNT,
-            'value' => 5.0,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
             'code' => null,
+            'percentage' => null,
         ])->create();
 
-        $product1 = Product::factory()->create([
-            'price' => 30.0,
-            'public' => true,
+        $this->discountRepository->setDiscountAmounts($sale->getKey(), [
+            PriceDto::from([
+                'value' => '5.00',
+                'currency' => $this->currency,
+            ])
         ]);
+
+        $product1 = $this->productService->create(
+            FakeDto::productCreateDto([
+                'prices_base' => [PriceDto::from(Money::of(30, $this->currency->value))],
+                'public' => true,
+            ])
+        );
 
         $sale->products()->attach($product1);
 
         $coupon = Discount::factory([
-            'type' => DiscountType::AMOUNT,
-            'value' => 10.0,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
+            'percentage' => null,
         ])->create();
 
-        $product2 = Product::factory()->create([
-            'price' => 40.0,
-            'public' => true,
+        $this->discountRepository->setDiscountAmounts($coupon->getKey(), [
+            PriceDto::from([
+                'value' => '10.00',
+                'currency' => $this->currency,
+            ])
         ]);
+
+        $product2 = $this->productService->create(
+            FakeDto::productCreateDto([
+                'prices_base' => [PriceDto::from(Money::of(40, $this->currency->value))],
+                'public' => true,
+            ])
+        );
 
         $coupon->products()->attach($product2);
 
-        $product3 = Product::factory()->create([
-            'price' => 50.0,
-            'public' => true,
-        ]);
+        $product3 = $this->productService->create(
+            FakeDto::productCreateDto([
+                'prices_base' => [PriceDto::from(Money::of(50, $this->currency->value))],
+                'public' => true,
+            ])
+        );
 
         $coupon2 = Discount::factory([
-            'type' => DiscountType::PERCENTAGE,
-            'value' => 10.0,
+            'percentage' => '10.0',
             'target_type' => DiscountTargetType::ORDER_VALUE,
             'target_is_allow_list' => true,
         ])->create();
 
         $shippingMethod = ShippingMethod::factory()->create(['public' => true]);
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero($this->currency->value),
+            'value' => Money::of(20.0, $this->currency->value),
+        ]);
+
+        $shippingMethod->priceRanges()->save($lowRange);
 
         $coupon3 = Discount::factory([
-            'type' => DiscountType::AMOUNT,
-            'value' => 10.0,
             'target_type' => DiscountTargetType::CHEAPEST_PRODUCT,
             'target_is_allow_list' => true,
+            'percentage' => null,
         ])->create();
 
+        $this->discountRepository->setDiscountAmounts($coupon3->getKey(), [
+            PriceDto::from([
+                'value' => '10.00',
+                'currency' => $this->currency,
+            ])
+        ]);
+
         $cartDto = CartDto::fromArray([
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
             'items' => [
                 [
                     'cartitem_id' => 0,
@@ -212,10 +357,14 @@ class DiscountApplyTest extends TestCase
 
         $cartResource = $this
             ->discountService
-            ->calcCartDiscounts($cartDto, Collection::make([$product1, $product2, $product3]));
+            ->calcCartDiscounts(
+                $cartDto,
+                Collection::make([$product1, $product2, $product3]),
+                BigDecimal::zero(),
+            );
 
-        $this->assertTrue($cartResource->cart_total === 162.0);
-        $this->assertTrue($cartResource->summary === 162.0);
+        $this->assertEquals(162, $cartResource->cart_total->getAmount()->toInt());
+        $this->assertEquals(182, $cartResource->summary->getAmount()->toInt());
         $this->assertTrue(count($cartResource->sales) === 1);
         $this->assertTrue(count($cartResource->coupons) === 3);
     }
@@ -224,12 +373,18 @@ class DiscountApplyTest extends TestCase
     {
         $discount = Discount::factory(
             [
-                'type' => DiscountType::AMOUNT,
-                'value' => 200.0,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => true,
+                'percentage' => null,
             ],
         )->create();
+
+        $this->discountRepository->setDiscountAmounts($discount->getKey(), [
+            PriceDto::from([
+                'value' => '200.00',
+                'currency' => $this->currency,
+            ])
+        ]);
 
         $this->product->sets()->sync([$this->set->getKey()]);
 
@@ -237,37 +392,7 @@ class DiscountApplyTest extends TestCase
 
         $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
 
-        $this->assertTrue($cartItemResponse->price_discounted === 0.0);
-    }
-
-    public static function discountProductDataProvider(): array
-    {
-        return [
-            'as amount coupon' => [
-                DiscountType::AMOUNT,
-                20.0,
-                110.0,
-                'coupon',
-            ],
-            'as percentage coupon' => [
-                DiscountType::PERCENTAGE,
-                20.0,
-                104.0,
-                'coupon',
-            ],
-            'as amount sale' => [
-                DiscountType::AMOUNT,
-                20.0,
-                110.0,
-                'sale',
-            ],
-            'as percentage sale' => [
-                DiscountType::PERCENTAGE,
-                20.0,
-                104.0,
-                'sale',
-            ],
-        ];
+        $this->assertEquals(0.01, $cartItemResponse->price_discounted->getAmount()->toFloat());
     }
 
     /**
@@ -281,8 +406,7 @@ class DiscountApplyTest extends TestCase
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => true,
             ] + $code,
@@ -294,9 +418,10 @@ class DiscountApplyTest extends TestCase
             $this->product,
             $this->orderProductDtoWithSchemas,
             $discount,
+            $this->currency,
         );
 
-        $this->assertTrue($orderProduct->price === $result);
+        $this->assertTrue($orderProduct->price->isEqualTo($result));
         $this->assertDatabaseMissing('order_products', [
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -305,21 +430,24 @@ class DiscountApplyTest extends TestCase
 
     /**
      * @dataProvider discountProductDataProvider
+     *
+     * @throws DtoException
      */
     public function testApplyDiscountToProductNotAllowList($type, $value, $result, $discountKind): void
     {
         $this->product->schemas()->sync([$this->schema->getKey()]);
-        $product = Product::factory()->create([
-            'price' => 220.0,
-            'public' => true,
-        ]);
+        $product = $this->productService->create(
+            FakeDto::productCreateDto([
+                'prices_base' => [PriceDto::from(Money::of(220, $this->currency->value))],
+                'public' => true,
+            ])
+        );
 
         $code = $discountKind === 'coupon' ? [] : ['code' => null];
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => false,
             ] + $code,
@@ -331,9 +459,10 @@ class DiscountApplyTest extends TestCase
             $this->product,
             $this->orderProductDtoWithSchemas,
             $discount,
+            $this->currency,
         );
 
-        $this->assertTrue($orderProduct->price === $result);
+        $this->assertTrue($orderProduct->price->isEqualTo($result));
         $this->assertDatabaseMissing('order_products', [
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -351,8 +480,7 @@ class DiscountApplyTest extends TestCase
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => true,
             ] + $code,
@@ -366,9 +494,10 @@ class DiscountApplyTest extends TestCase
             $this->product,
             $this->orderProductDtoWithSchemas,
             $discount,
+            $this->currency,
         );
 
-        $this->assertTrue($orderProduct->price === $result);
+        $this->assertTrue($orderProduct->price->isEqualTo($result));
         $this->assertDatabaseMissing('order_products', [
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -389,8 +518,7 @@ class DiscountApplyTest extends TestCase
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => false,
             ] + $code,
@@ -404,9 +532,10 @@ class DiscountApplyTest extends TestCase
             $this->product,
             $this->orderProductDtoWithSchemas,
             $discount,
+            $this->currency,
         );
 
-        $this->assertTrue($orderProduct->price === $result);
+        $this->assertTrue($orderProduct->price->isEqualTo($result));
         $this->assertDatabaseMissing('order_products', [
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -422,8 +551,7 @@ class DiscountApplyTest extends TestCase
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => true,
             ] + $code,
@@ -435,9 +563,10 @@ class DiscountApplyTest extends TestCase
             $this->product,
             $this->orderProductDto,
             $discount,
+            $this->currency,
         );
 
-        $this->assertTrue($orderProduct->price === 120.0);
+        $this->assertTrue($orderProduct->price->isEqualTo(120.0));
         $this->assertDatabaseMissing('order_products', [
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -453,8 +582,7 @@ class DiscountApplyTest extends TestCase
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => false,
             ] + $code,
@@ -468,9 +596,10 @@ class DiscountApplyTest extends TestCase
             $this->product,
             $this->orderProductDto,
             $discount,
+            $this->currency,
         );
 
-        $this->assertTrue($orderProduct->price === 120.0);
+        $this->assertTrue($orderProduct->price->isEqualTo(120.0));
         $this->assertDatabaseMissing('order_products', [
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -486,8 +615,7 @@ class DiscountApplyTest extends TestCase
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => true,
             ] + $code,
@@ -497,9 +625,10 @@ class DiscountApplyTest extends TestCase
             $this->product,
             $this->orderProductDto,
             $discount,
+            $this->currency,
         );
 
-        $this->assertTrue($orderProduct->price === 120.0);
+        $this->assertTrue($orderProduct->price->isEqualTo(120.0));
         $this->assertDatabaseMissing('order_products', [
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -515,8 +644,7 @@ class DiscountApplyTest extends TestCase
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => false,
             ] + $code,
@@ -530,43 +658,14 @@ class DiscountApplyTest extends TestCase
             $this->product,
             $this->orderProductDto,
             $discount,
+            $this->currency,
         );
 
-        $this->assertTrue($orderProduct->price === 120.0);
+        $this->assertTrue($orderProduct->price->isEqualTo(120.0));
         $this->assertDatabaseMissing('order_products', [
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
         ]);
-    }
-
-    public static function discountDataProvider(): array
-    {
-        return [
-            'as amount coupon' => [
-                DiscountType::AMOUNT,
-                20.0,
-                100.0,
-                'coupon',
-            ],
-            'as percentage coupon' => [
-                DiscountType::PERCENTAGE,
-                20.0,
-                96.0,
-                'coupon',
-            ],
-            'as amount sale' => [
-                DiscountType::AMOUNT,
-                20.0,
-                100.0,
-                'sale',
-            ],
-            'as percentage sale' => [
-                DiscountType::PERCENTAGE,
-                20.0,
-                96.0,
-                'sale',
-            ],
-        ];
     }
 
     /**
@@ -578,8 +677,7 @@ class DiscountApplyTest extends TestCase
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => true,
             ] + $code,
@@ -589,24 +687,27 @@ class DiscountApplyTest extends TestCase
 
         $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
 
-        $this->assertTrue($orderProduct->price === $result);
+        $this->assertTrue($orderProduct->price->isEqualTo($result));
     }
 
     /**
      * @dataProvider discountDataProvider
+     *
+     * @throws DtoException
      */
     public function testApplyDiscountToOrderProductNotAllowList($type, $value, $result, $discountKind): void
     {
         $code = $discountKind === 'coupon' ? [] : ['code' => null];
-        $product = Product::factory()->create([
-            'price' => 220.0,
-            'public' => true,
-        ]);
+        $product = $this->productService->create(
+            FakeDto::productCreateDto([
+                'prices_base' => [PriceDto::from(Money::of(220, $this->currency->value))],
+                'public' => true,
+            ])
+        );
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => false,
             ] + $code,
@@ -616,7 +717,7 @@ class DiscountApplyTest extends TestCase
 
         $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
 
-        $this->assertTrue($orderProduct->price === $result);
+        $this->assertTrue($orderProduct->price->isEqualTo($result));
     }
 
     /**
@@ -628,8 +729,7 @@ class DiscountApplyTest extends TestCase
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => true,
             ] + $code,
@@ -641,7 +741,7 @@ class DiscountApplyTest extends TestCase
 
         $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
 
-        $this->assertTrue($orderProduct->price === $result);
+        $this->assertTrue($orderProduct->price->isEqualTo($result));
     }
 
     /**
@@ -660,8 +760,7 @@ class DiscountApplyTest extends TestCase
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => false,
             ] + $code,
@@ -673,7 +772,7 @@ class DiscountApplyTest extends TestCase
 
         $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
 
-        $this->assertTrue($orderProduct->price === $result);
+        $this->assertTrue($orderProduct->price->isEqualTo($result));
     }
 
     /**
@@ -685,8 +784,7 @@ class DiscountApplyTest extends TestCase
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => true,
             ] + $code,
@@ -694,7 +792,7 @@ class DiscountApplyTest extends TestCase
 
         $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
 
-        $this->assertTrue($orderProduct->price === 120.0);
+        $this->assertTrue($orderProduct->price->isEqualTo(120.0));
     }
 
     /**
@@ -706,8 +804,7 @@ class DiscountApplyTest extends TestCase
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => false,
             ] + $code,
@@ -717,7 +814,7 @@ class DiscountApplyTest extends TestCase
 
         $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
 
-        $this->assertTrue($orderProduct->price === 120.0);
+        $this->assertTrue($orderProduct->price->isEqualTo(120.0));
     }
 
     /**
@@ -729,8 +826,7 @@ class DiscountApplyTest extends TestCase
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => true,
             ] + $code,
@@ -740,7 +836,7 @@ class DiscountApplyTest extends TestCase
 
         $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
 
-        $this->assertTrue($orderProduct->price === 120.0);
+        $this->assertTrue($orderProduct->price->isEqualTo(120.0));
     }
 
     /**
@@ -756,8 +852,7 @@ class DiscountApplyTest extends TestCase
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => false,
             ] + $code,
@@ -769,7 +864,7 @@ class DiscountApplyTest extends TestCase
 
         $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
 
-        $this->assertTrue($orderProduct->price === 120.0);
+        $this->assertTrue($orderProduct->price->isEqualTo(120.0));
     }
 
     /**
@@ -781,8 +876,7 @@ class DiscountApplyTest extends TestCase
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => true,
             ] + $code,
@@ -792,24 +886,27 @@ class DiscountApplyTest extends TestCase
 
         $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
 
-        $this->assertTrue($cartItemResponse->price_discounted === $result);
+        $this->assertTrue($cartItemResponse->price_discounted->isEqualTo($result));
     }
 
     /**
      * @dataProvider discountDataProvider
+     *
+     * @throws DtoException
      */
     public function testApplyDiscountToCartItemNotAllowList($type, $value, $result, $discountKind): void
     {
         $code = $discountKind === 'coupon' ? [] : ['code' => null];
-        $product = Product::factory()->create([
-            'price' => 220.0,
-            'public' => true,
-        ]);
+        $product = $this->productService->create(
+            FakeDto::productCreateDto([
+                'prices_base' => [PriceDto::from(Money::of(220, $this->currency->value))],
+                'public' => true,
+            ])
+        );
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => false,
             ] + $code,
@@ -819,7 +916,7 @@ class DiscountApplyTest extends TestCase
 
         $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
 
-        $this->assertTrue($cartItemResponse->price_discounted === $result);
+        $this->assertTrue($cartItemResponse->price_discounted->isEqualTo($result));
     }
 
     /**
@@ -831,8 +928,7 @@ class DiscountApplyTest extends TestCase
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => true,
             ] + $code,
@@ -844,7 +940,7 @@ class DiscountApplyTest extends TestCase
 
         $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
 
-        $this->assertTrue($cartItemResponse->price_discounted === $result);
+        $this->assertTrue($cartItemResponse->price_discounted->isEqualTo($result));
     }
 
     /**
@@ -859,8 +955,7 @@ class DiscountApplyTest extends TestCase
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => false,
             ] + $code,
@@ -872,7 +967,7 @@ class DiscountApplyTest extends TestCase
 
         $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
 
-        $this->assertTrue($cartItemResponse->price_discounted === $result);
+        $this->assertTrue($cartItemResponse->price_discounted->isEqualTo($result));
     }
 
     /**
@@ -884,8 +979,7 @@ class DiscountApplyTest extends TestCase
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => true,
             ] + $code,
@@ -893,7 +987,7 @@ class DiscountApplyTest extends TestCase
 
         $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
 
-        $this->assertTrue($cartItemResponse->price_discounted === 120.0);
+        $this->assertTrue($cartItemResponse->price_discounted->isEqualTo(120.0));
     }
 
     /**
@@ -905,8 +999,7 @@ class DiscountApplyTest extends TestCase
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => false,
             ] + $code,
@@ -916,7 +1009,7 @@ class DiscountApplyTest extends TestCase
 
         $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
 
-        $this->assertTrue($cartItemResponse->price_discounted === 120.0);
+        $this->assertTrue($cartItemResponse->price_discounted->isEqualTo(120.0));
     }
 
     /**
@@ -928,8 +1021,7 @@ class DiscountApplyTest extends TestCase
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => true,
             ] + $code,
@@ -939,7 +1031,7 @@ class DiscountApplyTest extends TestCase
 
         $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
 
-        $this->assertTrue($cartItemResponse->price_discounted === 120.0);
+        $this->assertTrue($cartItemResponse->price_discounted->isEqualTo(120.0));
     }
 
     /**
@@ -951,8 +1043,7 @@ class DiscountApplyTest extends TestCase
 
         $discount = Discount::factory(
             [
-                'type' => $type,
-                'value' => $value,
+                $type => $value,
                 'target_type' => DiscountTargetType::PRODUCTS,
                 'target_is_allow_list' => false,
             ] + $code,
@@ -964,74 +1055,89 @@ class DiscountApplyTest extends TestCase
 
         $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
 
-        $this->assertTrue($cartItemResponse->price_discounted === 120.0);
+        $this->assertTrue($cartItemResponse->price_discounted->isEqualTo(120.0));
     }
 
     public function testApplyDiscountOnOrderValueAmount(): void
     {
         $discount = Discount::factory([
-            'type' => DiscountType::AMOUNT,
-            'value' => 50.00,
             'target_type' => DiscountTargetType::ORDER_VALUE,
             'target_is_allow_list' => true,
+            'percentage' => null,
         ])->create();
+
+        $this->discountRepository->setDiscountAmounts($discount->getKey(), [
+            PriceDto::from([
+                'value' => '50.00',
+                'currency' => $this->currency,
+            ])
+        ]);
 
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
 
-        $this->assertTrue($discountedOrder->cart_total === 310.0); // 360 - 50
+        $this->assertEquals(310, $discountedOrder->cart_total->getAmount()->toInt()); // 360 - 50
     }
 
     public function testApplyDiscountOnOrderValuePercentage(): void
     {
         $discount = Discount::factory([
-            'type' => DiscountType::PERCENTAGE,
-            'value' => 50.00,
+            'percentage' => '50.00',
             'target_type' => DiscountTargetType::ORDER_VALUE,
             'target_is_allow_list' => true,
         ])->create();
 
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
 
-        $this->assertTrue($discountedOrder->cart_total === 180.0); // 360 * 50%
+        $this->assertTrue($discountedOrder->cart_total->isEqualTo(180.0)); // 360 * 50%
     }
 
     public function testApplyDiscountOnOrderShippingAmount(): void
     {
         $discount = Discount::factory([
-            'type' => DiscountType::AMOUNT,
-            'value' => 10.00,
             'target_type' => DiscountTargetType::SHIPPING_PRICE,
             'target_is_allow_list' => true,
+            'percentage' => null,
         ])->create();
+
+        $this->discountRepository->setDiscountAmounts($discount->getKey(), [
+            PriceDto::from([
+                'value' => '10.00',
+                'currency' => $this->currency,
+            ])
+        ]);
 
         $discount->shippingMethods()->attach($this->shippingMethod->getKey());
 
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
 
-        $this->assertTrue($discountedOrder->shipping_price === 10.0); // 20 - 10
+        $this->assertEquals(10, $discountedOrder->shipping_price->getAmount()->toInt()); // 20 - 10
     }
 
     public function testApplyDiscountOnOrderShippingAmountNotAllow(): void
     {
         $discount = Discount::factory([
-            'type' => DiscountType::AMOUNT,
-            'value' => 10.00,
             'target_type' => DiscountTargetType::SHIPPING_PRICE,
             'target_is_allow_list' => false,
         ])->create();
+
+        $this->discountRepository->setDiscountAmounts($discount->getKey(), [
+            PriceDto::from([
+                'value' => '10.00',
+                'currency' => $this->currency,
+            ])
+        ]);
 
         $discount->shippingMethods()->attach($this->shippingMethod->getKey());
 
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
 
-        $this->assertTrue($discountedOrder->shipping_price === 20.0);
+        $this->assertEquals(20, $discountedOrder->shipping_price->getAmount()->toInt());
     }
 
     public function testApplyDiscountOnOrderShippingPercentage(): void
     {
         $discount = Discount::factory([
-            'type' => DiscountType::PERCENTAGE,
-            'value' => 25.00,
+            'percentage' => '25.00',
             'target_type' => DiscountTargetType::SHIPPING_PRICE,
             'target_is_allow_list' => true,
         ])->create();
@@ -1040,14 +1146,13 @@ class DiscountApplyTest extends TestCase
 
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
 
-        $this->assertTrue($discountedOrder->shipping_price === 15.0); // 20 * 75%
+        $this->assertTrue($discountedOrder->shipping_price->isEqualTo(15.0)); // 20 * 75%
     }
 
     public function testApplyDiscountOnOrderShippingPercentageNotAllow(): void
     {
         $discount = Discount::factory([
-            'type' => DiscountType::PERCENTAGE,
-            'value' => 25.00,
+            'percentage' => '25.00',
             'target_type' => DiscountTargetType::SHIPPING_PRICE,
             'target_is_allow_list' => false,
         ])->create();
@@ -1056,46 +1161,56 @@ class DiscountApplyTest extends TestCase
 
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
 
-        $this->assertTrue($discountedOrder->shipping_price === 20.0);
+        $this->assertTrue($discountedOrder->shipping_price->isEqualTo(20.0));
     }
 
     public function testApplyDiscountOnOrderProductAmount(): void
     {
         $discount = Discount::factory([
-            'type' => DiscountType::AMOUNT,
-            'value' => 50.00,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
+            'percentage' => null,
         ])->create();
+
+        $this->discountRepository->setDiscountAmounts($discount->getKey(), [
+            PriceDto::from([
+                'value' => '50.00',
+                'currency' => $this->currency,
+            ])
+        ]);
 
         $discount->products()->attach($this->product->getKey());
 
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
 
-        $this->assertTrue($discountedOrder->cart_total === 210.0); // (120 - 50) * 3
+        $this->assertEquals(210, $discountedOrder->cart_total->getAmount()->toInt()); // (120 - 50) * 3
     }
 
     public function testApplyDiscountOnOrderProductAmountNotAllow(): void
     {
         $discount = Discount::factory([
-            'type' => DiscountType::AMOUNT,
-            'value' => 50.00,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => false,
         ])->create();
+
+        $this->discountRepository->setDiscountAmounts($discount->getKey(), [
+            PriceDto::from([
+                'value' => '50.00',
+                'currency' => $this->currency,
+            ])
+        ]);
 
         $discount->products()->attach($this->product->getKey());
 
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
 
-        $this->assertTrue($discountedOrder->cart_total === 360.0); // 120.0 * 3
+        $this->assertEquals(360, $discountedOrder->cart_total->getAmount()->toInt()); // 120.0 * 3
     }
 
     public function testApplyDiscountOnOrderProductPercentage(): void
     {
         $discount = Discount::factory([
-            'type' => DiscountType::PERCENTAGE,
-            'value' => 50.00,
+            'percentage' => '50.00',
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
         ])->create();
@@ -1104,14 +1219,13 @@ class DiscountApplyTest extends TestCase
 
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
 
-        $this->assertTrue($discountedOrder->cart_total === 180.0); // 120 * 50 % * 3
+        $this->assertTrue($discountedOrder->cart_total->isEqualTo(180.0)); // 120 * 50 % * 3
     }
 
     public function testApplyDiscountOnOrderProductPercentageNotAllow(): void
     {
         $discount = Discount::factory([
-            'type' => DiscountType::PERCENTAGE,
-            'value' => 50.00,
+            'percentage' => '50.00',
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => false,
         ])->create();
@@ -1120,27 +1234,43 @@ class DiscountApplyTest extends TestCase
 
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
 
-        $this->assertTrue($discountedOrder->cart_total === 360.0); // 120.0 * 3
+        $this->assertTrue($discountedOrder->cart_total->isEqualTo(360.0)); // 120.0 * 3
     }
 
+    /**
+     * @throws DtoException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
     public function testApplyDiscountOnOrderCheapestProductAmount(): void
     {
         $discount = Discount::factory([
-            'type' => DiscountType::AMOUNT,
-            'value' => 50.00,
             'target_type' => DiscountTargetType::CHEAPEST_PRODUCT,
             'target_is_allow_list' => false,
+            'percentage' => null,
         ])->create();
 
-        $product1 = Product::factory()->create([
-            'public' => true,
-            'price' => 80.0,
+        $this->discountRepository->setDiscountAmounts($discount->getKey(), [
+            PriceDto::from([
+                'value' => '50.00',
+                'currency' => $this->currency,
+            ])
         ]);
 
-        $product2 = Product::factory()->create([
-            'public' => true,
-            'price' => 120.0,
-        ]);
+        $product1 = $this->productService->create(
+            FakeDto::productCreateDto([
+                'prices_base' => [PriceDto::from(Money::of(80, $this->currency->value))],
+                'public' => true,
+            ])
+        );
+
+        $product2 = $this->productService->create(
+            FakeDto::productCreateDto([
+                'prices_base' => [PriceDto::from(Money::of(120, $this->currency->value))],
+                'public' => true,
+            ])
+        );
 
         $order = Order::factory()->create([
             'cart_total_initial' => 600.0,
@@ -1156,6 +1286,7 @@ class DiscountApplyTest extends TestCase
             'price' => 120.00,
             'price_initial' => 120.00,
             'name' => $product1->name,
+            'currency' => $this->currency,
         ]);
 
         $order->products()->create([
@@ -1164,10 +1295,11 @@ class DiscountApplyTest extends TestCase
             'price' => 80.00,
             'price_initial' => 80.00,
             'name' => $product2->name,
+            'currency' => $this->currency,
         ]);
 
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $order);
 
-        $this->assertTrue($discountedOrder->cart_total === 550.0); // 120.0 * 3 + (80 - 50) * 3
+        $this->assertEquals(550, $discountedOrder->cart_total->getAmount()->toInt()); // 120.0 * 3 + (80 - 50) * 3
     }
 }

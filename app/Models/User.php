@@ -10,13 +10,16 @@ use App\Criteria\RolesSearch;
 use App\Criteria\UserSearch;
 use App\Criteria\WhereInIds;
 use App\Enums\SavedAddressType;
+use App\Enums\TFAType;
 use App\Models\Contracts\SortableContract;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasMetadata;
-use App\Traits\HasMetadataPersonal;
 use App\Traits\HasWebHooks;
 use App\Traits\HasWishlist;
 use App\Traits\Sortable;
+use Domain\Consent\Models\Consent;
+use Domain\Consent\Models\ConsentUser;
+use Domain\Metadata\Models\MetadataPersonal;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Auth\Authenticatable;
@@ -33,8 +36,6 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
-use OwenIt\Auditing\Auditable;
-use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use Propaganistas\LaravelPhone\PhoneNumber;
 use Spatie\Permission\Traits\HasRoles;
@@ -44,9 +45,8 @@ use Spatie\Permission\Traits\HasRoles;
  *
  * @mixin IdeHelperUser
  */
-class User extends Model implements AuditableContract, AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, JWTSubject, SortableContract
+class User extends Model implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, JWTSubject, SortableContract
 {
-    use Auditable;
     use Authenticatable;
     use Authorizable;
     use CanResetPassword;
@@ -54,7 +54,6 @@ class User extends Model implements AuditableContract, AuthenticatableContract, 
     use HasDiscountConditions;
     use HasFactory;
     use HasMetadata;
-    use HasMetadataPersonal;
     use HasRoles;
     use HasWebHooks;
     use HasWishlist;
@@ -65,7 +64,6 @@ class User extends Model implements AuditableContract, AuthenticatableContract, 
 
     // Bez tego nie działały testy, w których jako aplikacja tworzy się użytkownika z określoną rolą
     protected string $guard_name = 'api';
-
     protected $fillable = [
         'name',
         'email',
@@ -78,12 +76,10 @@ class User extends Model implements AuditableContract, AuthenticatableContract, 
         'phone_country',
         'phone_number',
     ];
-
     protected $hidden = [
         'password',
         'remember_token',
     ];
-
     protected array $criteria = [
         'name' => Like::class,
         'email' => Like::class,
@@ -95,15 +91,14 @@ class User extends Model implements AuditableContract, AuthenticatableContract, 
         'consent_id' => ConsentIdSearch::class,
         'roles' => RolesSearch::class,
     ];
-
     protected array $sortable = [
         'name',
         'created_at',
         'updated_at',
     ];
-
     protected $casts = [
         'is_tfa_active' => 'bool',
+        'tfa_type' => TFAType::class,
     ];
 
     /**
@@ -133,13 +128,13 @@ class User extends Model implements AuditableContract, AuthenticatableContract, 
     public function shippingAddresses(): HasMany
     {
         return $this->hasMany(SavedAddress::class)
-            ->where('type', '=', SavedAddressType::SHIPPING);
+            ->where('type', '=', SavedAddressType::SHIPPING->value);
     }
 
     public function billingAddresses(): HasMany
     {
         return $this->hasMany(SavedAddress::class)
-            ->where('type', '=', SavedAddressType::BILLING);
+            ->where('type', '=', SavedAddressType::BILLING->value);
     }
 
     public function orders(): MorphMany
@@ -177,5 +172,10 @@ class User extends Model implements AuditableContract, AuthenticatableContract, 
     public function providers(): HasMany
     {
         return $this->hasMany(UserProvider::class, 'user_id', 'id');
+    }
+
+    public function metadataPersonal(): MorphMany
+    {
+        return $this->morphMany(MetadataPersonal::class, 'model', 'model_type', 'model_id');
     }
 }

@@ -11,7 +11,7 @@ class SchemaShortResource extends Resource
     {
         return [
             'id' => $this->resource->getKey(),
-            'type' => Str::lower($this->resource->type->key),
+            'type' => Str::lower($this->resource->type->name),
             'name' => $this->resource->name,
             'price' => $this->resource->price,
             'hidden' => $this->resource->hidden,

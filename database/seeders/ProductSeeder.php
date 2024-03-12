@@ -2,69 +2,93 @@
 
 namespace Database\Seeders;
 
+use Domain\Price\Enums\ProductPriceType;
 use App\Enums\SchemaType;
 use App\Models\Deposit;
 use App\Models\Item;
 use App\Models\Media;
 use App\Models\Option;
+use App\Models\Price;
 use App\Models\Product;
-use App\Models\ProductSet;
 use App\Models\Schema;
-use App\Models\SeoMetadata;
+use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\AvailabilityServiceContract;
-use App\Services\Contracts\ProductServiceContract;
+use App\Services\ProductService;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Money\Money;
+use Domain\Currency\Currency;
+use Domain\Language\Language;
+use Domain\Price\Dtos\PriceDto;
+use Domain\Price\PriceRepository;
+use Domain\ProductSet\ProductSet;
+use Domain\Seo\Models\SeoMetadata;
+use Heseya\Dto\DtoException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
+use Tests\Utils\FakeDto;
 
 class ProductSeeder extends Seeder
 {
     /**
      * Run the database seeds.
+     *
+     * @throws DtoException
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
      */
     public function run(): void
     {
-        /** @var ProductServiceContract $productService */
-        $productService = App::make(ProductServiceContract::class);
+        /** @var ProductService $productService */
+        $productService = App::make(ProductService::class);
+        /** @var ProductRepositoryContract $productRepository */
+        $productRepository = App::make(ProductRepositoryContract::class);
+
+        $language = Language::query()->where('default', false)->firstOrFail()->getKey();
 
         $products = Product::factory()->count(100)
             ->state(fn ($sequence) => [
                 'shipping_digital' => mt_rand(0, 1),
             ])
+            ->has(Price::factory()->forAllCurrencies(), 'pricesBase')
             ->create();
 
-        $sets = ProductSet::all();
+            $sets = ProductSet::all();
 
         $brands = ProductSet::factory([
             'name' => 'Brands',
             'slug' => 'brands',
         ])->make();
-        $this->seo($brands);
+        $this->seo($brands, $language);
         $brands = ProductSet::factory([
             'parent_id' => $brands->getKey(),
         ])->count(4)->create();
 
-        $brands->each(fn ($set) => $this->seo($set));
+        $brands->each(fn ($set) => $this->seo($set, $language));
 
         $categories = ProductSet::factory([
             'name' => 'Categories',
             'slug' => 'categories',
         ])->create();
-        $this->seo($categories);
+        $this->seo($categories, $language);
         $categories = ProductSet::factory([
             'parent_id' => $categories->getKey(),
         ])->count(4)->create();
 
-        $categories->each(fn ($set) => $this->seo($set));
+        $categories->each(fn ($set) => $this->seo($set, $language));
 
-        $products->each(function ($product, $index) use ($sets, $brands, $categories, $productService): void {
+        $products->each(function ($product, $index) use ($productService, $productRepository, $sets, $brands, $categories, $language): void {
             if (mt_rand(0, 1)) {
-                $this->schemas($product);
+                $this->schemas($product, $language);
             }
 
             $this->media($product);
             $this->sets($product, $sets);
-            $this->seo($product);
+            $this->seo($product, $language);
 
             if ($index >= 75) {
                 $this->brands($product, $brands);
@@ -76,32 +100,68 @@ class ProductSeeder extends Seeder
             }
 
             $product->refresh();
+            $this->translations($product, $language);
             $product->save();
+
+            $prices = array_map(fn (Currency $currency) => PriceDto::from(
+                Money::of(round(mt_rand(500, 6000), -2), $currency->value),
+            ), Currency::cases());
+
+            $productRepository->setProductPrices($product->getKey(), [
+                ProductPriceType::PRICE_BASE->value => $prices,
+            ]);
+
             $productService->updateMinMaxPrices($product);
         });
 
         $this->setAvailability();
     }
 
-    private function seo(Product|ProductSet $product): void
+    private function seo(Product|ProductSet $product, string $language): void
     {
+        /** @var SeoMetadata $seo */
         $seo = SeoMetadata::factory()->create();
         $product->seo()->save($seo);
+        $seoTranslation = SeoMetadata::factory()->definition();
+        $seo->setLocale($language)->fill(Arr::only($seoTranslation, ['title', 'description', 'keywords', 'no_index']));
+        $seo->fill(['published' => array_merge($seo->published, [$language])]);
+        $seo->save();
     }
 
-    private function schemas(Product $product): void
+    private function schemas(Product $product, string $language): void
     {
         /** @var Schema $schema */
-        $schema = Schema::factory()->create([
-            'type' => mt_rand(0, 6), // all types except multiply_schemas
+        $schema = Schema::factory()
+            ->has(Price::factory()->forAllCurrencies())
+            ->create([
+                'type' => mt_rand(0, 6), // all types except multiply_schemas
+            ]);
+        $schemaTranslation = Schema::factory()->definition();
+        $schema->setLocale($language)->fill(Arr::only($schemaTranslation, ['name', 'description']));
+        $schema->fill(['published' => array_merge($schema->published ?? [], [$language])]);
+        $schema->save();
+
+        $priceRepository = App::make(PriceRepository::class);
+        $priceRepository->setModelPrices($schema, [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(),
         ]);
+
         $product->schemas()->attach($schema->getKey());
 
         if ($schema->type->is(SchemaType::SELECT)) {
             /** @var Item $item */
             $item = Item::factory()->create();
             $item->deposits()->saveMany(Deposit::factory()->count(mt_rand(0, 2))->make());
-            $schema->options()->saveMany(Option::factory()->count(mt_rand(0, 4))->make());
+
+
+            Option::factory([
+                'schema_id' => $schema->getKey(),
+            ])->has(Price::factory()->forAllCurrencies())
+                ->count(mt_rand(0, 4))->create()?->each(function (Option $option) use ($language): void {
+                    $optionTranslation = Option::factory()->definition();
+                    $option->setLocale($language)->fill(Arr::only($optionTranslation, ['name']));
+                    $option->save();
+                });
         }
     }
 
@@ -137,5 +197,12 @@ class ProductSeeder extends Seeder
         $products = Product::all();
 
         $products->each(fn (Product $product) => $availabilityService->calculateProductAvailability($product));
+    }
+
+    private function translations(Product $product, string $language): void
+    {
+        $translation = Product::factory()->definition();
+        $product->setLocale($language)->fill(Arr::only($translation, ['name', 'description_html', 'description_short']));
+        $product->fill(['published' => array_merge($product->published, [$language])]);
     }
 }

@@ -6,5 +6,5 @@ use App\Models\Schema;
 
 interface OptionServiceContract
 {
-    public function sync(Schema $schema, array $options = []): void;
+    public function sync(Schema $schema, array $options): void;
 }

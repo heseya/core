@@ -2,7 +2,7 @@
   <mj-body background-color="#F4F4F4">
     <mj-section background-color="#fff" background-repeat="repeat" text-align="center" padding-top="50px">
       <mj-column>
-        <mj-image height="50px" width="50px" src="{{ $settingsService->getSetting('store_logo')->value }}"></mj-image>
+        <mj-image height="30px" width="100px" src="{{ $settingsService->getSetting('store_logo')->value }}"></mj-image>
       </mj-column>
     </mj-section>
     <mj-section background-color="#fff" background-repeat="repeat" padding-bottom="0px" text-align="center">
@@ -14,14 +14,11 @@
       <mj-column>
         <mj-text align="left" color="#333" font-family="Arial, sans-serif" font-size="16px" line-height="22px" padding-bottom="10px" padding-top="10px" padding="10px 25px">
           <p>
-            Dear user,<br />
-            Your 2FA recovery codes have been changed!
+            @lang('mail.recovery-codes-hello')
           </p>
           <br/><br/>
           <p>
-            If you did't try to log in, that means someone has broken your password
-            and is trying to access your account.<br/>
-            Please change your password as soon as possible!
+            @lang('mail.recovery-codes-message')
           </p>
         </mj-text>
       </mj-column>

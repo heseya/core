@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Models\Attribute;
-use App\Models\AttributeOption;
-use App\Models\ProductSet;
-use App\Models\SeoMetadata;
+use Domain\Language\Enums\LangFallbackType;
+use Domain\Language\Language;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\ProductSet\ProductSet;
+use Domain\Seo\Models\SeoMetadata;
 use Tests\TestCase;
 
 class ProductSetShowTest extends TestCase
@@ -167,101 +169,6 @@ class ProductSetShowTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowTree($user): void
-    {
-        $this->{$user}->givePermissionTo('product_sets.show_details');
-
-        $response = $this->actingAs($this->{$user})
-            ->json('GET', '/product-sets/id:' . $this->set->getKey(), ['tree' => true]);
-        $response
-            ->assertOk()
-            ->assertJson(['data' => [
-                'id' => $this->set->getKey(),
-                'name' => $this->set->name,
-                'slug' => $this->set->slug,
-                'slug_override' => false,
-                'public' => $this->set->public,
-                'visible' => $this->set->public && $this->set->public_parent,
-                'parent' => $this->set->parent,
-                'seo' => [
-                    'title' => $this->set->seo->title,
-                    'description' => $this->set->seo->description,
-                ],
-                'children' => [
-                    [
-                        'id' => $this->childSet->getKey(),
-                        'name' => $this->childSet->name,
-                        'slug' => $this->childSet->slug,
-                        'slug_override' => true,
-                        'public' => $this->childSet->public,
-                        'visible' => $this->childSet->public && $this->childSet->public_parent,
-                        'parent_id' => $this->childSet->parent_id,
-                        'children' => null,
-                    ],
-                ],
-            ],
-            ])
-            ->assertJsonStructure([
-                'data' => $this->expected_structure,
-            ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testShowTreeHidden($user): void
-    {
-        $this->{$user}->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
-
-        $response = $this->actingAs($this->{$user})
-            ->json('GET', '/product-sets/id:' . $this->set->getKey(), ['tree' => true]);
-        $response
-            ->assertOk()
-            ->assertJson(['data' => [
-                'id' => $this->set->getKey(),
-                'name' => $this->set->name,
-                'slug' => $this->set->slug,
-                'slug_override' => false,
-                'public' => $this->set->public,
-                'visible' => $this->set->public && $this->set->public_parent,
-                'parent' => $this->set->parent,
-                'seo' => [
-                    'title' => $this->set->seo->title,
-                    'description' => $this->set->seo->description,
-                ],
-                'children' => [
-                    [
-                        'id' => $this->childSet->getKey(),
-                        'name' => $this->childSet->name,
-                        'slug' => $this->childSet->slug,
-                        'slug_override' => true,
-                        'public' => $this->childSet->public,
-                        'visible' => $this->childSet->public && $this->childSet->public_parent,
-                        'parent_id' => $this->childSet->parent_id,
-                        'children' => [
-                            [
-                                'id' => $this->subChildSet->getKey(),
-                                'name' => $this->subChildSet->name,
-                                'slug' => $this->subChildSet->slug,
-                                'slug_override' => true,
-                                'public' => $this->subChildSet->public,
-                                'visible' => $this->subChildSet->public && $this->subChildSet->public_parent,
-                                'parent_id' => $this->subChildSet->parent_id,
-                                'children' => [],
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-            ])
-            ->assertJsonStructure([
-                'data' => $this->expected_structure,
-            ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testShowSlugUnauthorized($user): void
     {
         $response = $this->actingAs($this->{$user})
@@ -354,101 +261,6 @@ class ProductSetShowTest extends TestCase
                 'seo' => [
                     'title' => $this->privateSet->seo->title,
                     'description' => $this->privateSet->seo->description,
-                ],
-            ],
-            ])
-            ->assertJsonStructure([
-                'data' => $this->expected_structure,
-            ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testShowSlugTree($user): void
-    {
-        $this->{$user}->givePermissionTo('product_sets.show_details');
-
-        $response = $this->actingAs($this->{$user})
-            ->json('GET', '/product-sets/' . $this->set->slug, ['tree' => true]);
-        $response
-            ->assertOk()
-            ->assertJson(['data' => [
-                'id' => $this->set->getKey(),
-                'name' => $this->set->name,
-                'slug' => $this->set->slug,
-                'slug_override' => false,
-                'public' => $this->set->public,
-                'visible' => $this->set->public && $this->set->public_parent,
-                'parent' => $this->set->parent,
-                'seo' => [
-                    'title' => $this->set->seo->title,
-                    'description' => $this->set->seo->description,
-                ],
-                'children' => [
-                    [
-                        'id' => $this->childSet->getKey(),
-                        'name' => $this->childSet->name,
-                        'slug' => $this->childSet->slug,
-                        'slug_override' => true,
-                        'public' => $this->childSet->public,
-                        'visible' => $this->childSet->public && $this->childSet->public_parent,
-                        'parent_id' => $this->childSet->parent_id,
-                        'children' => null,
-                    ],
-                ],
-            ],
-            ])
-            ->assertJsonStructure([
-                'data' => $this->expected_structure,
-            ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testShowSlugTreeHidden($user): void
-    {
-        $this->{$user}->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
-
-        $response = $this->actingAs($this->{$user})
-            ->json('GET', '/product-sets/' . $this->set->slug, ['tree' => true]);
-        $response
-            ->assertOk()
-            ->assertJson(['data' => [
-                'id' => $this->set->getKey(),
-                'name' => $this->set->name,
-                'slug' => $this->set->slug,
-                'slug_override' => false,
-                'public' => $this->set->public,
-                'visible' => $this->set->public && $this->set->public_parent,
-                'parent' => $this->set->parent,
-                'seo' => [
-                    'title' => $this->set->seo->title,
-                    'description' => $this->set->seo->description,
-                ],
-                'children' => [
-                    [
-                        'id' => $this->childSet->getKey(),
-                        'name' => $this->childSet->name,
-                        'slug' => $this->childSet->slug,
-                        'slug_override' => true,
-                        'public' => $this->childSet->public,
-                        'visible' => $this->childSet->public && $this->childSet->public_parent,
-                        'parent_id' => $this->childSet->parent_id,
-                        'children' => [
-                            [
-                                'id' => $this->subChildSet->getKey(),
-                                'name' => $this->subChildSet->name,
-                                'slug' => $this->subChildSet->slug,
-                                'slug_override' => true,
-                                'public' => $this->subChildSet->public,
-                                'visible' => $this->subChildSet->public && $this->subChildSet->public_parent,
-                                'parent_id' => $this->subChildSet->parent_id,
-                                'children' => [],
-                            ],
-                        ],
-                    ],
                 ],
             ],
             ])
@@ -579,6 +391,36 @@ class ProductSetShowTest extends TestCase
                         'attribute_id' => $attribute->getKey(),
                     ],
                 ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowUnpublishedTranslation($user): void
+    {
+        $this->{$user}->givePermissionTo('product_sets.show_details');
+
+        $es = Language::create([
+            'iso' => 'es',
+            'name' => 'Spain',
+            'default' => false,
+            'hidden' => false,
+        ]);
+
+        $this->set->setLocale($es->getKey())->fill([
+            'name' => 'Nombre',
+        ]);
+
+        $this->actingAs($this->{$user})
+            ->json('GET', '/product-sets/id:' . $this->set->getKey(), [
+                'lang_fallback' => LangFallbackType::NONE->value,
+            ], [
+                'Accept-Language' => $es->iso,
+            ])
+            ->assertStatus(406)
+            ->assertJsonFragment([
+                'message' => 'No content in selected language',
             ]);
     }
 }

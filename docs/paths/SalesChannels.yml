@@ -1,0 +1,131 @@
+SalesChannels:
+  get:
+    tags:
+      - Sales Channels
+    parameters:
+      - name: country
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: lang_fallback
+        in: query
+        description: "Determines what data will be returned if it does not occur in the selected language. The default option is 'none'. If 'none' then items that do not have the given translation will not be returned. If 'default', missing translations will be replaced in the default API language. 'Any' means that missing translations will be replaced with the first available translation for the item."
+        required: false
+        schema:
+          type: string
+          enum: [ 'none', 'any', 'default' ]
+      - name: with_translations
+        in: query
+        required: false
+        schema:
+          type: boolean
+    responses:
+      200:
+        description: Ok
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: ./../schemas/SalesChannel.yml#/SalesChannel
+  post:
+    tags:
+      - Sales Channels
+    security:
+      - BearerAuth: [ sales_channels.add ]
+    requestBody:
+      $ref: ./../requests/SalesChannelCreateDto.yml#/SalesChannelCreateDto
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: ./../schemas/SalesChannel.yml#/SalesChannel
+
+SalesChannelsId:
+  get:
+    tags:
+      - Sales Channels
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: lang_fallback
+        in: query
+        description: "Determines what data will be returned if it does not occur in the selected language. The default option is 'none'. If 'none' then items that do not have the given translation will not be returned. If 'default', missing translations will be replaced in the default API language. 'Any' means that missing translations will be replaced with the first available translation for the item."
+        required: false
+        schema:
+          type: string
+          enum: [ 'none', 'any', 'default' ]
+      - name: with_translations
+        in: query
+        required: false
+        schema:
+          type: boolean
+    responses:
+      200:
+        description: Ok
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: ./../schemas/SalesChannel.yml#/SalesChannel
+  patch:
+    tags:
+      - Sales Channels
+    security:
+      - BearerAuth: [ sales_channels.edit ]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      $ref: ./../requests/SalesChannelUpdateDto.yml#/SalesChannelUpdateDto
+    responses:
+      200:
+        description: Ok
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: ./../schemas/SalesChannel.yml#/SalesChannel
+
+  delete:
+    tags:
+      - Sales Channels
+    security:
+      - BearerAuth: [ sales_channels.remove ]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      204:
+        description: Deleted

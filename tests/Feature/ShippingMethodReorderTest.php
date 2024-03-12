@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\ShippingMethod;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Tests\TestCase;
 
 class ShippingMethodReorderTest extends TestCase
@@ -39,11 +39,12 @@ class ShippingMethodReorderTest extends TestCase
 
         $this
             ->actingAs($this->{$user})
-            ->json('POST', '/shipping-methods/reorder', ['shipping_methods' => [
-                $shippingMethod1->getKey(),
-                $shippingMethod3->getKey(),
-                $shippingMethod2->getKey(),
-            ],
+            ->json('POST', '/shipping-methods/reorder', [
+                'shipping_methods' => [
+                    $shippingMethod1->getKey(),
+                    $shippingMethod3->getKey(),
+                    $shippingMethod2->getKey(),
+                ],
             ])
             ->assertNoContent();
 

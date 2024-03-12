@@ -4,14 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Dtos\MediaAttachmentDto;
 use App\Dtos\MediaAttachmentUpdateDto;
-use App\Dtos\ProductCreateDto;
-use App\Dtos\ProductSearchDto;
-use App\Dtos\ProductUpdateDto;
 use App\Http\Requests\MediaAttachmentCreateRequest;
 use App\Http\Requests\MediaAttachmentUpdateRequest;
 use App\Http\Requests\ProductCreateRequest;
-use App\Http\Requests\ProductImportPricesRequest;
 use App\Http\Requests\ProductIndexRequest;
+use App\Http\Requests\ProductShowRequest;
 use App\Http\Requests\ProductUpdateRequest;
 use App\Http\Resources\MediaAttachmentResource;
 use App\Http\Resources\ProductResource;
@@ -20,26 +17,40 @@ use App\Models\MediaAttachment;
 use App\Models\Product;
 use App\Repositories\ProductRepository;
 use App\Services\Contracts\MediaAttachmentServiceContract;
-use App\Services\Contracts\ProductServiceContract;
-use Illuminate\Http\JsonResponse;
+use App\Services\ProductService;
+use Brick\Math\Exception\NumberFormatException;
+use Brick\Math\Exception\RoundingNecessaryException;
+use Brick\Money\Exception\UnknownCurrencyException;
+use Domain\Product\Dtos\ProductCreateDto;
+use Domain\Product\Dtos\ProductSearchDto;
+use Domain\Product\Dtos\ProductUpdateDto;
+use Heseya\Dto\DtoException;
+use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Http\UploadedFile;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class ProductController extends Controller
+final class ProductController extends Controller
 {
     public function __construct(
-        private readonly ProductRepository $productRepository,
-        private readonly ProductServiceContract $productService,
+        private readonly ProductService $productService,
         private readonly MediaAttachmentServiceContract $attachmentService,
+        private readonly ProductRepository $productRepository,
     ) {}
 
+    /**
+     * @throws DtoException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
+     * @throws NumberFormatException
+     */
     public function index(ProductIndexRequest $request): JsonResource
     {
         $products = $this->productRepository->search(
-            ProductSearchDto::instantiateFromRequest($request),
+            ProductSearchDto::from($request),
         );
 
         /** @var ResourceCollection $products */
@@ -48,11 +59,78 @@ class ProductController extends Controller
         return $products->full($request->boolean('full'));
     }
 
-    public function show(Product $product): JsonResource
+    public function show(ProductShowRequest $request, Product $product): JsonResource
     {
         if (Gate::denies('products.show_hidden') && !$product->public) {
             throw new NotFoundHttpException();
         }
+
+        $product->loadMissing([
+            'schemas',
+            'schemas.metadata',
+            'schemas.metadataPrivate',
+            'schemas.options',
+            'schemas.options.items',
+            'schemas.options.metadata',
+            'schemas.options.metadataPrivate',
+            'schemas.options.prices',
+            'schemas.options.schema',
+            'schemas.prices',
+            'schemas.usedSchemas',
+            'sales.amounts',
+            'sales.metadata',
+            'sales.metadataPrivate',
+            'attachments',
+            'attachments.media',
+            'attachments.media.metadata',
+            'attachments.media.metadataPrivate',
+            'items',
+            'media',
+            'media.metadata',
+            'media.metadataPrivate',
+            'metadata',
+            'metadataPrivate',
+            'pages',
+            'pages.metadata',
+            'pages.metadataPrivate',
+            'pricesBase',
+            'pricesMax',
+            'pricesMaxInitial',
+            'pricesMin',
+            'pricesMinInitial',
+            'productAttributes',
+            'productAttributes.attribute',
+            'productAttributes.attribute.metadata',
+            'productAttributes.attribute.metadataPrivate',
+            'productAttributes.options',
+            'productAttributes.options.metadata',
+            'productAttributes.options.metadataPrivate',
+            'publishedTags',
+            'relatedSets',
+            'relatedSets.childrenPublic',
+            'relatedSets.media',
+            'relatedSets.media.metadata',
+            'relatedSets.media.metadataPrivate',
+            'relatedSets.metadata',
+            'relatedSets.metadataPrivate',
+            'relatedSets.parent',
+            'seo',
+            'seo.media',
+            'seo.media.metadata',
+            'seo.media.metadataPrivate',
+            'sets',
+            'sets.childrenPublic',
+            'sets.media',
+            'sets.media.metadataPrivate',
+            'sets.media.metadata',
+            'sets.metadata',
+            'sets.metadataPrivate',
+            'sets.parent',
+            'banner.media',
+            'banner.media.metadata',
+            'banner.media.metadataPrivate',
+        ]);
+        $product->load(['sales' => fn (BelongsToMany|Builder $belongsToMany) => $belongsToMany->withOrdersCount()]); // @phpstan-ignore-line
 
         return ProductResource::make($product);
     }
@@ -60,7 +138,7 @@ class ProductController extends Controller
     public function store(ProductCreateRequest $request): JsonResource
     {
         $product = $this->productService->create(
-            ProductCreateDto::instantiateFromRequest($request),
+            ProductCreateDto::from($request),
         );
 
         return ProductResource::make($product);
@@ -70,17 +148,17 @@ class ProductController extends Controller
     {
         $product = $this->productService->update(
             $product,
-            ProductUpdateDto::instantiateFromRequest($request),
+            ProductUpdateDto::from($request),
         );
 
         return ProductResource::make($product);
     }
 
-    public function destroy(Product $product): JsonResponse
+    public function destroy(Product $product): HttpResponse
     {
         $this->productService->delete($product);
 
-        return Response::json(null, 204);
+        return Response::noContent();
     }
 
     public function addAttachment(MediaAttachmentCreateRequest $request, Product $product): JsonResource
@@ -93,8 +171,12 @@ class ProductController extends Controller
         return MediaAttachmentResource::make($attachment);
     }
 
-    public function editAttachment(MediaAttachmentUpdateRequest $request, Product $product, MediaAttachment $attachment): JsonResource
-    {
+    // TODO: add auth check
+    public function editAttachment(
+        MediaAttachmentUpdateRequest $request,
+        Product $product,
+        MediaAttachment $attachment,
+    ): JsonResource {
         $attachment = $this->attachmentService->editAttachment(
             $attachment,
             MediaAttachmentUpdateDto::instantiateFromRequest($request),
@@ -103,19 +185,11 @@ class ProductController extends Controller
         return MediaAttachmentResource::make($attachment);
     }
 
-    public function deleteAttachment(Product $product, MediaAttachment $attachment): JsonResponse
+    // TODO: add auth check
+    public function deleteAttachment(Product $product, MediaAttachment $attachment): HttpResponse
     {
         $this->attachmentService->removeAttachment($attachment);
 
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
-    }
-
-    public function importPrices(ProductImportPricesRequest $request): JsonResponse
-    {
-        /** @var UploadedFile $file */
-        $file = $request->file('file');
-        $this->productService->updateProductPrices($file);
-
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::noContent();
     }
 }

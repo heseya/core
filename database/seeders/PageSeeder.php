@@ -2,9 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\Page;
-use App\Models\SeoMetadata;
+use Domain\Language\Language;
+use Domain\Page\Page;
+use Domain\Seo\Models\SeoMetadata;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Arr;
 
 class PageSeeder extends Seeder
 {
@@ -36,14 +38,29 @@ class PageSeeder extends Seeder
             'content_html' => file_get_contents(__DIR__ . '/../pages/about.html'),
         ]));
 
-        $pages->each(function ($page): void {
-            $this->seo($page);
+        $language = Language::query()->where('default', false)->firstOrFail()->getKey();
+        $pages->each(function ($page) use ($language): void {
+            $this->seo($page, $language);
+            $this->translations($page, $language);
         });
     }
 
-    private function seo(Page $page): void
+    private function seo(Page $page, string $language): void
     {
+        /** @var SeoMetadata $seo */
         $seo = SeoMetadata::factory()->create();
         $page->seo()->save($seo);
+        $seoTranslation = SeoMetadata::factory()->definition();
+        $seo->setLocale($language)->fill(Arr::only($seoTranslation, ['title', 'description', 'keywords', 'no_index']));
+        $seo->fill(['published' => array_merge($seo->published, [$language])]);
+        $seo->save();
+    }
+
+    private function translations(Page $page, string $language): void
+    {
+        $translation = Page::factory()->definition();
+        $page->setLocale($language)->fill(Arr::only($translation, ['name', 'content_html']));
+        $page->fill(['published' => array_merge($page->published, [$language])]);
+        $page->save();
     }
 }

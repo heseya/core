@@ -2,10 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Enums\AttributeType;
-use App\Models\Attribute;
-use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Arr;
+use Domain\ProductAttribute\Enums\AttributeType;
+use Domain\ProductAttribute\Models\Attribute;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 
 class AttributeFactory extends Factory
@@ -13,7 +12,7 @@ class AttributeFactory extends Factory
     /**
      * The name of the factory's corresponding model.
      *
-     * @var string
+     * @var class-string<Attribute>
      */
     protected $model = Attribute::class;
 
@@ -28,9 +27,10 @@ class AttributeFactory extends Factory
             'name' => $name,
             'slug' => Str::slug($name),
             'description' => $this->faker->sentence,
-            'type' => Arr::random(AttributeType::cases()),
+            'type' => AttributeType::getRandomInstance(),
             'global' => $this->faker->boolean,
             'sortable' => $this->faker->boolean,
+            'published' => [App::getLocale()],
         ];
     }
 }

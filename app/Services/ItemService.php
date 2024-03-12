@@ -18,6 +18,7 @@ use App\Models\Schema;
 use App\Models\User;
 use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
+use Domain\Metadata\Models\Metadata;
 use Heseya\Dto\Missing;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -35,6 +36,22 @@ class ItemService implements ItemServiceContract
 
         foreach ($items2 as $id => $count) {
             $totalItems[$id] = ($totalItems[$id] ?? 0) + $count;
+        }
+
+        return $totalItems;
+    }
+
+    public function substractItemArrays(array $items1, array $items2): array
+    {
+        $totalItems = $items1;
+
+        foreach ($items2 as $id => $count) {
+            if ($totalItems[$id]) {
+                $totalItems[$id] -= $count;
+                if ($totalItems[$id] < 0) {
+                    unset($totalItems[$id]);
+                }
+            }
         }
 
         return $totalItems;
@@ -140,6 +157,7 @@ class ItemService implements ItemServiceContract
             }
             $selectedItems = $this->addItemArrays($selectedItems, $productItems);
 
+            $currentProductItems = $this->addItemArrays($selectedItems, $productItems);
             /** @var Schema $schema */
             foreach ($product->schemas as $schema) {
                 $value = $schemas[$schema->getKey()] ?? null;
@@ -152,10 +170,14 @@ class ItemService implements ItemServiceContract
 
                 $schemaItems = $schema->getItems($value, $item->getQuantity());
                 $selectedItems = $this->addItemArrays($selectedItems, $schemaItems);
+                $currentProductItems = $this->addItemArrays($currentProductItems, $schemaItems);
             }
 
             if ($this->validateCartItems($selectedItems)) {
                 $products->push($product);
+            } else {
+                $cartItemToRemove[] = $item->getCartItemId();
+                $selectedItems = $this->substractItemArrays($selectedItems, $currentProductItems);
             }
         }
 
@@ -220,6 +242,19 @@ class ItemService implements ItemServiceContract
     {
         if ($item->delete()) {
             ItemDeleted::dispatch($item);
+        }
+    }
+
+    public function syncProductItems(Product $product, string $metadata): void
+    {
+        /** @var Metadata $externalId */
+        $externalId = $product->metadata()->where('name', '=', $metadata)->first();
+
+        $item = Item::query()->firstOrCreate(['sku' => $externalId->value], ['name' => $product->name]);
+        $productItem = $product->items()->where('id', '=', $item->getKey())->first();
+
+        if (!$productItem) {
+            $product->items()->attach($item->getKey(), ['required_quantity' => 1]);
         }
     }
 

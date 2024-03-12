@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Products;
 
-use App\Enums\AttributeType;
-use App\Models\Attribute;
-use App\Models\AttributeOption;
 use App\Models\Product;
-use App\Models\ProductSet;
-use App\Models\Tag;
+use Domain\ProductAttribute\Enums\AttributeType;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\ProductSet\ProductSet;
+use Domain\Tag\Models\Tag;
 use Tests\TestCase;
 
 class ProductSearchValuesTest extends TestCase
@@ -37,8 +37,8 @@ class ProductSearchValuesTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
-            'name' => 'Searched product',
-            'description_html' => 'Lorem ipsum',
+            "name->{$this->lang}" => 'Searched product',
+            "description_html->{$this->lang}" => 'Lorem ipsum',
             'search_values' => 'Tag updated',
         ]);
     }
@@ -58,8 +58,8 @@ class ProductSearchValuesTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
-            'name' => 'Searched product',
-            'description_html' => 'Lorem ipsum',
+            "name->{$this->lang}" => 'Searched product',
+            "description_html->{$this->lang}" => 'Lorem ipsum',
             'search_values' => $tag->name,
         ]);
 
@@ -72,8 +72,8 @@ class ProductSearchValuesTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
-            'name' => 'Searched product',
-            'description_html' => 'Lorem ipsum',
+            "name->{$this->lang}" => 'Searched product',
+            "description_html->{$this->lang}" => 'Lorem ipsum',
             'search_values' => '',
         ]);
     }
@@ -90,8 +90,8 @@ class ProductSearchValuesTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
-            'name' => 'Searched product',
-            'description_html' => 'Lorem ipsum',
+            "name->{$this->lang}" => 'Searched product',
+            "description_html->{$this->lang}" => 'Lorem ipsum',
             'search_values' => 'set name',
         ]);
     }
@@ -113,8 +113,8 @@ class ProductSearchValuesTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
-            'name' => 'Searched product',
-            'description_html' => 'Lorem ipsum',
+            "name->{$this->lang}" => 'Searched product',
+            "description_html->{$this->lang}" => 'Lorem ipsum',
             'search_values' => $set->name,
         ]);
 
@@ -127,8 +127,8 @@ class ProductSearchValuesTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
-            'name' => 'Searched product',
-            'description_html' => 'Lorem ipsum',
+            "name->{$this->lang}" => 'Searched product',
+            "description_html->{$this->lang}" => 'Lorem ipsum',
             'search_values' => '',
         ]);
     }
@@ -145,8 +145,8 @@ class ProductSearchValuesTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
-            'name' => 'Searched product',
-            'description_html' => 'Lorem ipsum',
+            "name->{$this->lang}" => 'Searched product',
+            "description_html->{$this->lang}" => 'Lorem ipsum',
             'search_values' => 'updated attribute',
         ]);
     }
@@ -166,8 +166,8 @@ class ProductSearchValuesTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
-            'name' => 'Searched product',
-            'description_html' => 'Lorem ipsum',
+            "name->{$this->lang}" => 'Searched product',
+            "description_html->{$this->lang}" => 'Lorem ipsum',
             'search_values' => $attribute->name,
         ]);
 
@@ -180,8 +180,8 @@ class ProductSearchValuesTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
-            'name' => 'Searched product',
-            'description_html' => 'Lorem ipsum',
+            "name->{$this->lang}" => 'Searched product',
+            "description_html->{$this->lang}" => 'Lorem ipsum',
             'search_values' => '',
         ]);
     }
@@ -203,14 +203,14 @@ class ProductSearchValuesTest extends TestCase
         ]);
 
         $this->product->attributes()->attach($attribute->getKey());
-        $this->product->attributes->first()->pivot->options()->attach($option->getKey());
+        $this->product->attributes->first()->product_attribute_pivot->options()->attach($option->getKey());
 
         $this->artisan('products:update-index', ['id' => $this->product->getKey()]);
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
-            'name' => 'Searched product',
-            'description_html' => 'Lorem ipsum',
+            "name->{$this->lang}" => 'Searched product',
+            "description_html->{$this->lang}" => 'Lorem ipsum',
             'search_values' => 'Attribute option 1 10 2023-09-08',
         ]);
     }
@@ -234,7 +234,7 @@ class ProductSearchValuesTest extends TestCase
         ]);
 
         $this->product->attributes()->attach($attribute->getKey());
-        $this->product->attributes->first()->pivot->options()->attach($option->getKey());
+        $this->product->attributes->first()->product_attribute_pivot->options()->attach($option->getKey());
 
         $this->artisan('products:update-index', ['id' => $this->product->getKey()]);
 
@@ -247,8 +247,8 @@ class ProductSearchValuesTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
-            'name' => 'Searched product',
-            'description_html' => 'Lorem ipsum',
+            "name->{$this->lang}" => 'Searched product',
+            "description_html->{$this->lang}" => 'Lorem ipsum',
             'search_values' => 'Attribute',
         ]);
     }

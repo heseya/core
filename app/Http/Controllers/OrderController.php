@@ -21,7 +21,6 @@ use App\Http\Requests\OrderDocumentRequest;
 use App\Http\Requests\OrderIndexRequest;
 use App\Http\Requests\OrderProductSearchRequest;
 use App\Http\Requests\OrderProductUpdateRequest;
-use App\Http\Requests\OrderShippingListRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Http\Requests\SendDocumentRequest;
@@ -71,6 +70,7 @@ class OrderController extends Controller
                 'shippingAddress',
                 'metadata',
                 'documents',
+                'salesChannel',
             ]);
 
         return OrderResource::collection(
@@ -80,18 +80,66 @@ class OrderController extends Controller
 
     public function show(Order $order): JsonResource
     {
-        $order->loadMissing([
+        $order->load([
             'discounts',
             'discounts.metadata',
-            'products.discounts',
-            'products.discounts.metadata',
+            'discounts.amounts',
             'products',
+            'products.discounts',
+            'products.discounts.amounts',
+            'products.discounts.metadata',
+            'products.discounts.orderProducts',
+            'products.discounts.orders',
+            'products.urls',
             'products.schemas',
             'products.deposits',
+            'products.deposits.item',
             'products.product',
             'products.product.media',
+            'products.product.media.metadata',
             'products.product.tags',
+            'products.product.publishedTags',
             'products.product.metadata',
+            'products.product.productAttributes',
+            'products.product.productAttributes.options',
+            'products.product.productAttributes.options.metadata',
+            'products.product.sets',
+            'products.product.sets.metadata',
+            'products.product.sets.media',
+            'products.product.sets.media.metadata',
+            'products.product.sets.children',
+            'products.product.sets.childrenPublic',
+            'products.product.pricesBase',
+            'products.product.pricesMin',
+            'products.product.pricesMax',
+            'products.product.pricesMinInitial',
+            'products.product.pricesMaxInitial',
+            'products.product.items',
+            'products.product.schemas',
+            'products.product.schemas.options',
+            'products.product.schemas.prices',
+            'products.product.schemas.usedSchemas',
+            'products.product.schemas.options.items',
+            'products.product.schemas.options.items.deposits',
+            'products.product.schemas.options.metadata',
+            'products.product.schemas.options.prices',
+            'products.product.schemas.metadata',
+            'products.product.sales',
+            'products.product.sales.amounts',
+            'products.product.sales.metadata',
+            'products.product.sales.orderProducts',
+            'products.product.attachments',
+            'products.product.relatedSets',
+            'products.product.relatedSets.metadata',
+            'products.product.relatedSets.media',
+            'products.product.relatedSets.media.metadata',
+            'products.product.relatedSets.children',
+            'products.product.relatedSets.childrenPublic',
+            'products.product.banner',
+            'products.product.banner.media',
+            'products.product.seo',
+            'products.product.pages',
+            'products.product.pages.metadata',
         ]);
 
         return OrderResource::make($order);
@@ -104,7 +152,7 @@ class OrderController extends Controller
 
     public function store(OrderCreateRequest $request): JsonResource
     {
-        return OrderPublicResource::make(
+        return OrderResource::make(
             $this->orderService->store(OrderDto::instantiateFromRequest($request)),
         );
     }
@@ -170,13 +218,6 @@ class OrderController extends Controller
         Gate::inspect('showUserOrder', [Order::class, $order]);
 
         return OrderResource::make($order);
-    }
-
-    public function shippingLists(Order $order, OrderShippingListRequest $request): JsonResource
-    {
-        return OrderResource::make(
-            $this->orderService->shippingList($order, $request->package_template_id),
-        );
     }
 
     public function storeDocument(OrderDocumentRequest $request, Order $order): JsonResource

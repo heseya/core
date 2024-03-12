@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Brick\Money\Money;
 use Illuminate\Support\Collection;
 
 class CartResource
@@ -10,12 +11,12 @@ class CartResource
         public Collection $items,
         public Collection $coupons,
         public Collection $sales,
-        public float $cart_total_initial = 0,
-        public float $cart_total = 0,
-        public float $shipping_price_initial = 0,
-        public float $shipping_price = 0,
+        public Money $cart_total_initial,
+        public Money $cart_total,
+        public Money $shipping_price_initial,
+        public Money $shipping_price,
+        public Money $summary,
         public ?float $shipping_time = null,
         public ?string $shipping_date = null,
-        public float $summary = 0,
     ) {}
 }

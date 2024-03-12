@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -267,5 +268,9 @@ class CountriesSeeder extends Seeder
         ];
 
         DB::table('countries')->insert($countries);
+
+        /** @var SalesChannel $channel */
+        $channel = SalesChannel::query()->first();
+        $channel->countries()->sync(array_map(fn ($el) => $el['code'], $countries));
     }
 }

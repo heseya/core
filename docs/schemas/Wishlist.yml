@@ -9,3 +9,12 @@ WishlistProduct:
     created_at:
       type: string
       example: '2017-07-21T17:32:28Z'
+
+WishlistProductCheck:
+  type: object
+  properties:
+    products_in_wishlist:
+      type: array
+      items:
+        type: string
+        format: uuid

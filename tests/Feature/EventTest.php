@@ -44,7 +44,7 @@ class EventTest extends TestCase
                 'description' => __('enums.' . EventType::class . '.' . $event->value),
                 'required_permissions' => Config::get('events.permissions')[$event->value],
                 'required_hidden_permissions' => $hidden_permissions,
-                'encrypted' => in_array($event->value, EventType::$securedEvents),
+                'encrypted' => in_array($event, EventType::SECURED_EVENTS),
             ]);
     }
 }

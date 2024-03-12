@@ -7,13 +7,21 @@ OrderCreate:
           - email
           - items
           - billing_address
+          - sales_channel_id
+          - currency
         properties:
+          currency:
+            type: string
+            example: 'PLN'
           email:
             type: string
             example: admin@example.com
           comment:
             type: string
             example: 'asap plz'
+          sales_channel_id:
+            type: string
+            format: uuid
           shipping_method_id:
             type: string
             format: uuid

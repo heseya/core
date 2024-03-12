@@ -2,145 +2,109 @@
 
 namespace App\Services;
 
-use App\Dtos\ProductCreateDto;
-use App\Dtos\ProductUpdateDto;
 use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
-use App\Events\ProductPriceUpdated;
 use App\Events\ProductUpdated;
-use App\Models\Attribute;
-use App\Models\AttributeOption;
+use App\Exceptions\PublishingException;
 use App\Models\Option;
 use App\Models\Product;
+use App\Models\ProductAttribute;
 use App\Models\Schema;
-use App\Services\Contracts\AttributeServiceContract;
+use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
-use App\Services\Contracts\ProductServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
-use App\Services\Contracts\SeoMetadataServiceContract;
-use Heseya\Dto\Missing;
-use Illuminate\Http\UploadedFile;
+use App\Services\Contracts\TranslationServiceContract;
+use Brick\Math\Exception\MathException;
+use Brick\Money\Exception\MoneyMismatchException;
+use Brick\Money\Money;
+use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\ProductPriceType;
+use Domain\Product\Dtos\ProductCreateDto;
+use Domain\Product\Dtos\ProductUpdateDto;
+use Domain\Product\Models\ProductBannerMedia;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\ProductAttribute\Services\AttributeService;
+use Domain\ProductSet\ProductSetService;
+use Domain\Seo\SeoMetadataService;
+use Heseya\Dto\DtoException;
+use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use League\Csv\Exception;
-use League\Csv\Reader;
-use Orchestra\Parser\Xml\Facade as XmlParser;
+use Spatie\LaravelData\DataCollection;
+use Spatie\LaravelData\Optional;
 
-final readonly class ProductService implements ProductServiceContract
+final readonly class ProductService
 {
     public function __construct(
         private MediaServiceContract $mediaService,
         private SchemaServiceContract $schemaService,
-        private SeoMetadataServiceContract $seoMetadataService,
+        private SeoMetadataService $seoMetadataService,
         private AvailabilityServiceContract $availabilityService,
         private MetadataServiceContract $metadataService,
-        private AttributeServiceContract $attributeService,
+        private AttributeService $attributeService,
         private DiscountServiceContract $discountService,
+        private ProductRepositoryContract $productRepository,
+        private TranslationServiceContract $translationService,
+        private ProductSetService $productSetService,
     ) {}
 
-    private function setup(Product $product, ProductCreateDto|ProductUpdateDto $dto): Product
-    {
-        if (!($dto->schemas instanceof Missing)) {
-            $this->schemaService->sync($product, $dto->schemas);
-        }
-
-        if (!($dto->sets instanceof Missing)) {
-            $product->sets()->sync($dto->sets);
-        }
-
-        if (!($dto->items instanceof Missing)) {
-            $this->assignItems($product, $dto->items);
-        }
-
-        if (!($dto->media instanceof Missing)) {
-            $this->mediaService->sync($product, $dto->media);
-        }
-
-        if (!($dto->tags instanceof Missing)) {
-            $product->tags()->sync($dto->tags);
-        }
-
-        if (!($dto->getMetadata() instanceof Missing)) {
-            $this->metadataService->sync($product, $dto->getMetadata());
-        }
-
-        if (!($dto->attributes instanceof Missing)) {
-            $this->attributeService->sync($product, $dto->attributes);
-        }
-
-        if (!($dto->descriptions instanceof Missing)) {
-            $product->pages()->sync($dto->descriptions);
-        }
-
-        if (!($dto->seo instanceof Missing)) {
-            $this->seoMetadataService->createOrUpdateFor($product, $dto->seo);
-        }
-
-        if (!($dto->relatedSets instanceof Missing)) {
-            $product->relatedSets()->sync($dto->relatedSets);
-        }
-
-        [$priceMin, $priceMax] = $this->getMinMaxPrices($product);
-        $product->price_min_initial = $priceMin;
-        $product->price_max_initial = $priceMax;
-        $availability = $this->availabilityService->getCalculateProductAvailability($product);
-        $product->quantity = $availability['quantity'];
-        $product->available = $availability['available'];
-        $product->shipping_time = $availability['shipping_time'];
-        $product->shipping_date = $availability['shipping_date'];
-        $this->discountService->applyDiscountsOnProduct($product);
-
-        return $this->prepareProductSearchValues($product);
-    }
-
+    /**
+     * @throws DtoException
+     * @throws PublishingException
+     */
     public function create(ProductCreateDto $dto): Product
     {
         DB::beginTransaction();
 
-        /** @var Product $product */
-        $product = Product::query()->create($dto->toArray());
+        $product = new Product($dto->toArray());
+
+        foreach ($dto->translations as $lang => $translations) {
+            $product->setLocale($lang)->fill($translations);
+        }
+        $this->translationService->checkPublished($product, ['name']);
+
+        $product->save();
         $product = $this->setup($product, $dto);
         $product->save();
 
         DB::commit();
-        ProductPriceUpdated::dispatch(
-            $product->getKey(),
-            null,
-            null,
-            $product->price_min ?? 0,
-            $product->price_max ?? 0,
-        );
+
         ProductCreated::dispatch($product);
 
         return $product->refresh();
     }
 
+    /**
+     * @throws MathException
+     * @throws DtoException
+     * @throws MoneyMismatchException
+     * @throws PublishingException
+     */
     public function update(Product $product, ProductUpdateDto $dto): Product
     {
-        $oldMinPrice = $product->price_min;
-        $oldMaxPrice = $product->price_max;
-
         DB::beginTransaction();
 
         $product->fill($dto->toArray());
+        if (is_array($dto->translations)) {
+            foreach ($dto->translations as $lang => $translations) {
+                $product->setLocale($lang)->fill($translations);
+            }
+        }
+
+        $this->translationService->checkPublished($product, ['name']);
+
         $product = $this->setup($product, $dto);
         $product->save();
+        $product->refresh();
 
         DB::commit();
-
-        if ($oldMinPrice !== $product->price_min || $oldMaxPrice !== $product->price_max) {
-            ProductPriceUpdated::dispatch(
-                $product->getKey(),
-                $oldMinPrice,
-                $oldMaxPrice,
-                $product->price_min ?? 0,
-                $product->price_max ?? 0,
-            );
-        }
 
         ProductUpdated::dispatch($product);
 
@@ -167,26 +131,40 @@ final readonly class ProductService implements ProductServiceContract
         DB::commit();
     }
 
-    public function getMinMaxPrices(Product $product): array
+    /**
+     * @return array<int, PriceDto>
+     */
+    public function getMinMaxPrices(Product $product, Currency $currency = Currency::DEFAULT): array
     {
         [$schemaMin, $schemaMax] = $this->getSchemasPrices(
             clone $product->schemas,
             clone $product->schemas,
+            $currency,
         );
 
+        $price = $product->pricesBase->where('currency', $currency->value)->firstOrFail();
+
         return [
-            $product->price + $schemaMin,
-            $product->price + $schemaMax,
+            PriceDto::from($price->value->plus($schemaMin)),
+            PriceDto::from($price->value->plus($schemaMax)),
         ];
     }
 
     public function updateMinMaxPrices(Product $product): void
     {
-        $productMinMaxPrices = $this->getMinMaxPrices($product);
-        $product->update([
-            'price_min_initial' => $productMinMaxPrices[0],
-            'price_max_initial' => $productMinMaxPrices[1],
-        ]);
+        $pricesMinMax = [
+            ProductPriceType::PRICE_MIN_INITIAL->value => [],
+            ProductPriceType::PRICE_MAX_INITIAL->value => [],
+        ];
+        foreach (Currency::cases() as $currency) {
+            [$pricesMin, $pricesMax] = $this->getMinMaxPrices($product, $currency);
+
+            $pricesMinMax[ProductPriceType::PRICE_MIN_INITIAL->value][] = $pricesMin;
+            $pricesMinMax[ProductPriceType::PRICE_MAX_INITIAL->value][] = $pricesMax;
+        }
+
+        $this->productRepository->setProductPrices($product->getKey(), $pricesMinMax);
+
         $this->discountService->applyDiscountsOnProduct($product);
     }
 
@@ -194,6 +172,71 @@ final readonly class ProductService implements ProductServiceContract
     {
         $product = $this->prepareProductSearchValues($product);
         $product->save();
+    }
+
+    private function setup(Product $product, ProductCreateDto|ProductUpdateDto $dto): Product
+    {
+        if (!($dto->schemas instanceof Optional)) {
+            $this->schemaService->sync($product, $dto->schemas);
+        }
+
+        if (!($dto->sets instanceof Optional)) {
+            $new = array_diff($dto->sets, $product->sets->pluck('id')->toArray());
+            $product->sets()->sync($dto->sets);
+            $product->ancestorSets()->sync(array_merge($dto->sets, $this->productSetService->getAllAncestorsIds($dto->sets)));
+            $this->productSetService->fixOrderForSets($new, $product);
+        }
+
+        if (!($dto->items instanceof Optional)) {
+            $this->assignItems($product, $dto->items);
+        }
+
+        if (!($dto->media instanceof Optional)) {
+            $this->mediaService->sync($product, $dto->media);
+        }
+
+        if (!($dto->tags instanceof Optional)) {
+            $product->tags()->sync($dto->tags);
+        }
+
+        if (is_array($dto->metadata_computed)) {
+            $this->metadataService->sync($product, $dto->metadata_computed);
+        }
+
+        if (!($dto->attributes instanceof Optional)) {
+            $this->attributeService->sync($product, $dto->attributes);
+            $product->loadMissing(['productAttributes' => fn (Builder|HasMany $query) => $query->whereIn('attribute_id', array_keys($dto->attributes))]);
+        }
+
+        if (!($dto->descriptions instanceof Optional)) {
+            $product->pages()->sync($dto->descriptions);
+        }
+
+        if (!($dto->seo instanceof Optional)) {
+            $this->seoMetadataService->createOrUpdateFor($product, $dto->seo);
+        }
+
+        if (!($dto->related_sets instanceof Optional)) {
+            $product->relatedSets()->sync($dto->related_sets);
+        }
+
+        if ($dto->prices_base instanceof DataCollection) {
+            $this->productRepository->setProductPrices($product->getKey(), [
+                ProductPriceType::PRICE_BASE->value => $dto->prices_base->items(),
+            ]);
+        }
+
+        $this->setBannerMedia($product, $dto);
+
+        $this->updateMinMaxPrices($product);
+
+        $availability = $this->availabilityService->getCalculateProductAvailability($product);
+        $product->quantity = $availability['quantity'];
+        $product->available = $availability['available'];
+        $product->shipping_time = $availability['shipping_time'];
+        $product->shipping_date = $availability['shipping_date'];
+
+        return $product;
     }
 
     private function assignItems(Product $product, ?array $items): void
@@ -207,9 +250,16 @@ final readonly class ProductService implements ProductServiceContract
         $product->items()->sync($items);
     }
 
+    /**
+     * @return Money[]
+     *
+     * @throws MathException
+     * @throws MoneyMismatchException
+     */
     private function getSchemasPrices(
         Collection $allSchemas,
         Collection $remainingSchemas,
+        Currency $currency,
         array $values = [],
     ): array {
         if ($remainingSchemas->isNotEmpty()) {
@@ -222,6 +272,7 @@ final readonly class ProductService implements ProductServiceContract
                 $values,
                 $schema,
                 $newValues,
+                $currency,
             );
 
             $required = $schema->required;
@@ -230,7 +281,7 @@ final readonly class ProductService implements ProductServiceContract
             )->toArray();
             $valueMinMax = [$schema->min, $schema->max];
 
-            $minmax = match ($schema->type->value) {
+            $minmax = match ($schema->type) {
                 default => $getBestSchemasPrices(
                     $required ? ['filled'] : [null, 'filled'],
                 ),
@@ -244,11 +295,14 @@ final readonly class ProductService implements ProductServiceContract
             };
         } else {
             $price = $allSchemas->reduce(
-                fn (float $carry, Schema $current) => $carry + $current->getPrice(
-                    $values[$current->getKey()],
-                    $values,
+                fn (Money $carry, Schema $current) => $carry->plus(
+                    $current->getPrice(
+                        $values[$current->getKey()],
+                        $values,
+                        $currency,
+                    ),
                 ),
-                0,
+                Money::zero($currency->value),
             );
 
             $minmax = [
@@ -260,42 +314,58 @@ final readonly class ProductService implements ProductServiceContract
         return $minmax;
     }
 
+    /**
+     * @return Money[]
+     *
+     * @throws MoneyMismatchException
+     */
     private function getBestSchemasPrices(
         Collection $allSchemas,
         Collection $remainingSchemas,
         array $currentValues,
         Schema $schema,
         array $values,
+        Currency $currency,
     ): array {
-        return $this->bestMinMax(Collection::make($values)->map(
-            fn ($value) => $this->getSchemasPrices(
-                $allSchemas,
-                clone $remainingSchemas,
-                $currentValues + [
-                    $schema->getKey() => $value,
-                ],
+        return $this->bestMinMax(
+            Collection::make($values)->map(
+                fn ($value) => $this->getSchemasPrices(
+                    $allSchemas,
+                    clone $remainingSchemas,
+                    $currency,
+                    $currentValues + [
+                        $schema->getKey() => $value,
+                    ],
+                ),
             ),
-        ));
+            $currency,
+        );
     }
 
-    private function bestMinMax(Collection $minmaxCol): array
+    /**
+     * @return Money[]
+     *
+     * @throws MoneyMismatchException
+     */
+    private function bestMinMax(Collection $minmaxCol, Currency $currency): array
     {
-        return [
-            $minmaxCol->reduce(function (?float $carry, array $current) {
-                if ($carry === null) {
-                    return $current[0];
-                }
+        $bestMin = $minmaxCol->reduce(function (?Money $carry, array $current) {
+            if ($carry === null) {
+                return $current[0];
+            }
 
-                return min($current[0], $carry);
-            }),
-            $minmaxCol->reduce(function (?float $carry, array $current) {
-                if ($carry === null) {
-                    return $current[1];
-                }
+            return Money::min($current[0], $carry);
+        }) ?? Money::zero($currency->value);
 
-                return max($current[1], $carry);
-            }),
-        ];
+        $bestMax = $minmaxCol->reduce(function (?Money $carry, array $current) {
+            if ($carry === null) {
+                return $current[1];
+            }
+
+            return Money::max($current[1], $carry);
+        }) ?? $bestMin;
+
+        return [$bestMin, $bestMax];
     }
 
     private function prepareProductSearchValues(Product $product): Product
@@ -308,11 +378,13 @@ final readonly class ProductService implements ProductServiceContract
         /** @var Attribute $attribute */
         foreach ($product->attributes as $attribute) {
             $searchValues[] = $attribute->name;
-            /** @var AttributeOption $option */
-            foreach ($attribute->pivot->options as $option) {
-                $searchValues[] = $option->name;
-                $searchValues[] = $option->value_number;
-                $searchValues[] = $option->value_date;
+            if ($attribute->product_attribute_pivot instanceof ProductAttribute) {
+                /** @var AttributeOption $option */
+                foreach ($attribute->product_attribute_pivot->options as $option) {
+                    $searchValues[] = $option->name;
+                    $searchValues[] = $option->value_number;
+                    $searchValues[] = $option->value_date;
+                }
             }
         }
 
@@ -321,62 +393,36 @@ final readonly class ProductService implements ProductServiceContract
         return $product;
     }
 
-    /**
-     * @throws Exception
-     */
-    public function updateProductPrices(UploadedFile $file): void
+    private function setBannerMedia(Product $product, ProductCreateDto|ProductUpdateDto $dto): void
     {
-        $items = $file->extension() === 'csv'
-            ? $this->mapPricesFromCsv($file)
-            : $this->mapPricesFromXml($file);
+        if (!($dto->banner instanceof Optional)) {
+            if ($dto->banner) {
+                /** @var ProductBannerMedia|null $bannerMedia */
+                $bannerMedia = $product->banner;
+                if (!$bannerMedia) {
+                    /** @var ProductBannerMedia $bannerMedia */
+                    $bannerMedia = ProductBannerMedia::create($dto->banner->toArray());
+                } else {
+                    $bannerMedia->fill($dto->banner->toArray());
+                }
+                if (!($dto->banner->translations instanceof Optional)) {
+                    foreach ($dto->banner->translations as $lang => $translation) {
+                        $bannerMedia->setLocale($lang)->fill($translation);
+                    }
+                }
+                $bannerMedia->save();
 
-        foreach ($items as $item) {
-            $search = isset($item['ean'])
-                ? ['ean' => ['name_eq' => $item['ean']]]
-                : ['sku' => ['name_eq' => $item['sku']]];
-
-            /** @var ?Product $product */
-            $product = Product::searchByCriteria(['attribute' => $search])->first();
-
-            if ($product && $product->vat_rate && $item['price']) {
-                $this->update(
-                    $product,
-                    ProductUpdateDto::fromArray([
-                        'price' => round($item['price'] + ($item['price'] * $product->vat_rate / 100), 2),
-                    ]),
-                );
+                if (!($dto->banner->media instanceof Optional)) {
+                    $medias = [];
+                    foreach ($dto->banner->media as $media) {
+                        $medias[$media->media] = ['min_screen_width' => $media->min_screen_width];
+                    }
+                    $bannerMedia->media()->sync($medias);
+                }
+                $product->banner_media_id = $bannerMedia->getKey();
+            } else {
+                $product->banner()->delete();
             }
         }
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function mapPricesFromCsv(UploadedFile $file): array
-    {
-        $priceKey = 'Cena netto za   1 rolkę';
-        $skuKey = 'Indeks';
-        $reader = Reader::createFromPath($file);
-        $reader->setHeaderOffset(1);
-
-        $results = [];
-        foreach ($reader->getRecords() as $offset => $record) {
-            if (isset($record[$skuKey], $record[$priceKey])) {
-                /** @var string $stringPrice */
-                $stringPrice = preg_replace('/[^\d,]/', '', $record[$priceKey]);
-                $results[] = [
-                    'sku' => $record[$skuKey],
-                    'price' => (float) str_replace(',', '.', $stringPrice),
-                ];
-            }
-        }
-
-        return $results;
-    }
-
-    private function mapPricesFromXml(UploadedFile $file): array
-    {
-        return XmlParser::load($file)
-            ->parse(['products' => ['uses' => 'Produkt[EAN>ean,cena_sugerowana_netto>price]']])['products'];
     }
 }

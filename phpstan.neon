@@ -1,27 +1,20 @@
 includes:
-    - ./vendor/nunomaduro/larastan/extension.neon
+    - ./vendor/larastan/larastan/extension.neon
 
 parameters:
 
     paths:
-        - app
+        - src
 
     # The level 9 is the highest level
     level: 8
 
-    checkMissingIterableValueType: false
-    checkGenericClassInNonGenericObjectType: false
-
     ignoreErrors:
-        - '#PHPDoc tag @mixin contains unknown class .*IdeHelper.*#'
-        - message: '#Property [a-zA-Z0-9\\_]+::\$[a-zA-Z0-9\\_]+ is never written, only read\.#'
-          path: ./app/Dtos/*
-        - message: '#Property [a-zA-Z0-9\\_]+::\$[a-zA-Z0-9\\_]+ is unused\.#'
-          path: ./app/Dtos/*
-        - message: '#::flatMap\(\)#'
-          path: ./app/Services/UserService
+      - '#PHPDoc tag @mixin contains unknown class .*IdeHelper.*#'
 
     excludePaths:
-        - ./app/Payments/*
-        - ./app/Http/Middleware/Authenticate.php
-        - ./app/Services/AuditService.php
+      - ./src/Support/LaravelData/*
+
+      # temp
+      - ./src/Domain/ProductSet/ProductSet.php
+      - ./src/Domain/ProductSet/ProductSetService.php

@@ -2,8 +2,8 @@
 
 namespace App\Services\Contracts;
 
-use App\Dtos\SchemaDto;
 use App\Models\Schema;
+use Domain\ProductSchema\Dtos\SchemaDto;
 
 interface SchemaCrudServiceContract
 {

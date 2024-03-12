@@ -1,0 +1,24 @@
+includes:
+    - ./vendor/larastan/larastan/extension.neon
+
+parameters:
+
+    paths:
+        - app
+
+    # The level 9 is the highest level
+    level: 8
+
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false
+
+    ignoreErrors:
+        - '#PHPDoc tag @mixin contains unknown class .*IdeHelper.*#'
+        - message: '#Property [a-zA-Z0-9\\_]+::\$[a-zA-Z0-9\\_]+ is never written, only read\.#'
+          path: ./app/Dtos/*
+        - message: '#Property [a-zA-Z0-9\\_]+::\$[a-zA-Z0-9\\_]+ is unused\.#'
+          path: ./app/Dtos/*
+
+    excludePaths:
+        - ./app/Payments/*
+        - ./app/Http/Middleware/Authenticate.php

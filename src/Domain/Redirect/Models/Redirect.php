@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\Redirect\Models;
 
 use App\Models\IdeHelperRedirect;
@@ -12,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @mixin IdeHelperRedirect
  */
-class Redirect extends Model
+final class Redirect extends Model
 {
     use HasCriteria;
     use HasFactory;
@@ -29,6 +31,7 @@ class Redirect extends Model
         'type' => RedirectType::class,
         'enabled' => 'boolean',
     ];
+    /** @var string[] */
     protected array $criteria = [
         'enabled',
     ];

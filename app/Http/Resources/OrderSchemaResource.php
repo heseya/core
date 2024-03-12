@@ -12,8 +12,8 @@ class OrderSchemaResource extends Resource
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
             'value' => $this->resource->value,
-            'price' => $this->resource->price,
-            'price_initial' => $this->resource->price_initial,
+            'price' => PriceResource::make($this->resource->price),
+            'price_initial' => PriceResource::make($this->resource->price_initial),
         ];
     }
 }

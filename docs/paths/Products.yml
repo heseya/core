@@ -72,6 +72,12 @@ Products:
         in: query
         schema:
           type: number
+      - name: price.currency
+        in: query
+        description: 'Currency code, required with price.min and price.max'
+        schema:
+          type: string
+        example: "PLN"
       - name: has_cover
         in: query
         description: 'Product has cover'
@@ -152,6 +158,24 @@ Products:
           items:
             type: string
             format: uuid
+      - name: lang_fallback
+        in: query
+        description: "Determines what data will be returned if it does not occur in the selected language. The default option is 'none'. If 'none' then items that do not have the given translation will not be returned. If 'default', missing translations will be replaced in the default API language. 'Any' means that missing translations will be replaced with the first available translation for the item."
+        required: false
+        schema:
+          type: string
+          enum: [ 'none', 'any', 'default' ]
+      - name: with_translations
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: attribute_slug
+        in: query
+        required: false
+        schema:
+          type: string
+        description: "Returns only attribute and attribute options with given slug; if empty, all product attributes will be returned"
     responses:
       200:
         description: Success
@@ -197,6 +221,24 @@ ProductsSlug:
         required: true
         schema:
           type: string
+      - name: lang_fallback
+        in: query
+        description: "Determines what data will be returned if it does not occur in the selected language. The default option is 'none'. If 'none' then items that do not have the given translation will not be returned. If 'default', missing translations will be replaced in the default API language. 'Any' means that missing translations will be replaced with the first available translation for the item."
+        required: false
+        schema:
+          type: string
+          enum: [ 'none', 'any', 'default' ]
+      - name: with_translations
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: attribute_slug
+        in: query
+        required: false
+        schema:
+          type: string
+        description: "Returns only attribute and attribute options with given slug; if empty, all product attributes will be returned"
     responses:
       200:
         description: Success
@@ -219,6 +261,18 @@ ProductsParams:
         required: true
         schema:
           type: string
+      - name: lang_fallback
+        in: query
+        description: "Determines what data will be returned if it does not occur in the selected language. The default option is 'none'. If 'none' then items that do not have the given translation will not be returned. If 'default', missing translations will be replaced in the default API language. 'Any' means that missing translations will be replaced with the first available translation for the item."
+        required: false
+        schema:
+          type: string
+          enum: [ 'none', 'any', 'default' ]
+      - name: with_translations
+        in: query
+        required: false
+        schema:
+          type: boolean
     responses:
       200:
         description: Success
@@ -332,26 +386,5 @@ ProductsAttachmentsParams:
                 data:
                   $ref: './../schemas/MediaAttachments.yml#/MediaAttachment'
               type: object
-    security:
-      - BearerAuth: [ ]
-
-ProductImportPrices:
-  post:
-    tags:
-      - Products
-    summary: 'import prices from csv or xml file'
-    requestBody:
-      content:
-        multipart/form-data:
-          schema:
-            type: object
-            properties:
-              file:
-                description: 'File. Accepted extensions: csv, xml'
-                type: string
-                format: binary
-    responses:
-      204:
-        description: Success
     security:
       - BearerAuth: [ ]

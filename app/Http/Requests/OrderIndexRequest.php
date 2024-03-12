@@ -15,6 +15,8 @@ class OrderIndexRequest extends FormRequest
             'status_id' => ['nullable', 'uuid'],
             'shipping_method_id' => ['nullable', 'uuid'],
             'digital_shipping_method_id' => ['nullable', 'uuid'],
+            'sales_channel_id' => ['nullable', 'uuid'],
+
             'paid' => ['sometimes', 'boolean'],
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
@@ -22,6 +24,7 @@ class OrderIndexRequest extends FormRequest
             'metadata_private' => ['nullable', 'array'],
             'ids' => ['array'],
             'ids.*' => ['uuid'],
+            'payment_method_id' => ['uuid', 'max:255'],
         ];
     }
 }

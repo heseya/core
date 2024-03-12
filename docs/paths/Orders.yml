@@ -71,6 +71,11 @@ Orders:
           items:
             type: string
             format: uuid
+      - name: payment_method_id
+        in: query
+        description: 'Payment method id'
+        schema:
+          type: string
     responses:
       200:
         description: Success
@@ -88,7 +93,8 @@ Orders:
   post:
     tags:
       - Orders
-    summary: 'add new order'
+    security:
+      - BearerAuth: [ orders.add ]
     requestBody:
       $ref: './../requests/Orders.yml#/OrderCreate'
     responses:
@@ -99,7 +105,7 @@ Orders:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Orders.yml#/OrderSummary'
+                  $ref: './../schemas/Orders.yml#/OrderView'
               type: object
 
 OrdersParams:
@@ -495,7 +501,8 @@ CartProcess:
   post:
     tags:
       - Orders
-    summary: 'validate cart items and coupons'
+    security:
+      - BearerAuth: [ cart.verify ]
     requestBody:
       $ref: './../requests/Cart.yml#/CartProcess'
     responses:
@@ -570,7 +577,7 @@ OrdersSendUrls:
         schema:
           type: string
           format: uuid
-    summary:  'Send email with order products urls'
+    summary: 'Send email with order products urls'
     responses:
       200:
         description: Success

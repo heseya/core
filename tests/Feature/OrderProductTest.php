@@ -3,12 +3,14 @@
 namespace Tests\Feature;
 
 use App\Events\SendOrderUrls;
+use App\Mail\OrderUrls;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
-use App\Models\ShippingMethod;
 use App\Models\Status;
-use App\Notifications\SendUrls;
+use Brick\Money\Money;
+use Domain\Currency\Currency;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
@@ -21,6 +23,7 @@ class OrderProductTest extends TestCase
     private Order $order;
     private OrderProduct $digitalProduct;
     private OrderProduct $product;
+    private Currency $currency;
 
     public function setUp(): void
     {
@@ -46,11 +49,15 @@ class OrderProductTest extends TestCase
 
         $this->user->orders()->save($this->order);
 
+        $this->currency = Currency::DEFAULT;
+
         $this->digitalProduct = $this->order->products()->create([
             'product_id' => $digitalProduct->getKey(),
             'quantity' => 1,
-            'price' => 247.47,
-            'price_initial' => 247.47,
+            'price' => Money::of(247.47, $this->currency->value),
+            'price_initial' => Money::of(247.47, $this->currency->value),
+            'base_price' => Money::of(247.47, $this->currency->value),
+            'base_price_initial' => Money::of(247.47, $this->currency->value),
             'name' => $digitalProduct->name,
             'shipping_digital' => true,
         ]);
@@ -58,8 +65,10 @@ class OrderProductTest extends TestCase
         $this->product = $this->order->products()->create([
             'product_id' => $product->getKey(),
             'quantity' => 1,
-            'price' => 300,
-            'price_initial' => 300,
+            'price' => Money::of(300, $this->currency->value),
+            'price_initial' => Money::of(300, $this->currency->value),
+            'base_price' => Money::of(300, $this->currency->value),
+            'base_price_initial' => Money::of(300, $this->currency->value),
             'name' => $product->name,
             'shipping_digital' => false,
         ]);
@@ -148,8 +157,8 @@ class OrderProductTest extends TestCase
         $productPaid = $orderPaid->products()->create([
             'product_id' => $digitalProduct->getKey(),
             'quantity' => 1,
-            'price' => 247.47,
-            'price_initial' => 247.47,
+            'price' => Money::of(247.47, $this->currency->value),
+            'price_initial' => Money::of(247.47, $this->currency->value),
             'name' => $digitalProduct->name,
             'shipping_digital' => true,
         ]);
@@ -157,8 +166,8 @@ class OrderProductTest extends TestCase
         $productNoPaid = $orderNoPaid->products()->create([
             'product_id' => $product->getKey(),
             'quantity' => 1,
-            'price' => 300,
-            'price_initial' => 300,
+            'price' => Money::of(300, $this->currency->value),
+            'price_initial' => Money::of(300, $this->currency->value),
             'name' => $product->name,
             'shipping_digital' => false,
         ]);
@@ -170,11 +179,12 @@ class OrderProductTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment([
                 'id' => $productPaid->getKey(),
-                'price' => 247.47,
+                'price' => '247.47',
+                'currency' => $this->currency,
             ])
             ->assertJsonMissing([
                 'id' => $productNoPaid->getKey(),
-                'price' => 300,
+                'price' => '300.00',
             ]);
     }
 
@@ -208,7 +218,7 @@ class OrderProductTest extends TestCase
         ]);
 
         Event::assertNotDispatched(SendOrderUrls::class);
-        Mail::assertNotSent(SendUrls::class);
+        Mail::assertNotSent(OrderUrls::class);
     }
 
     /**

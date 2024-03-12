@@ -2,22 +2,27 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class SchemaResource extends Resource
 {
+    use GetAllTranslations;
     use MetadataResource;
 
+    /**
+     * @return array<string, mixed>
+     */
     public function base(Request $request): array
     {
-        return array_merge([
+        return [
             'id' => $this->resource->getKey(),
-            'type' => Str::lower($this->resource->type->key),
+            'type' => Str::lower($this->resource->type->name),
             'name' => $this->resource->name,
             'description' => $this->resource->description,
-            'price' => $this->resource->price,
+            'prices' => PriceResource::collection($this->resource->prices),
             'hidden' => $this->resource->hidden,
             'required' => $this->resource->required,
             'available' => $this->resource->available,
@@ -31,9 +36,15 @@ class SchemaResource extends Resource
             'shipping_date' => $this->resource->shipping_date,
             'options' => OptionResource::collection($this->resource->options),
             'used_schemas' => $this->resource->usedSchemas->map(fn ($schema) => $schema->getKey()),
-        ], $this->metadataResource('schemas.show_metadata_private'));
+            ...$this->metadataResource('schemas.show_metadata_private'),
+            'published' => $this->resource->published,
+            ...$request->boolean('with_translations') ? $this->getAllTranslations('schemas.show_hidden') : [],
+        ];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function view(Request $request): array
     {
         return [

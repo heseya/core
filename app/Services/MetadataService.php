@@ -2,20 +2,28 @@
 
 namespace App\Services;
 
-use App\Dtos\MetadataDto;
-use App\Dtos\MetadataPersonalDto;
 use App\Dtos\MetadataPersonalListDto;
-use App\Models\Model;
+use App\Models\Discount;
+use App\Models\Media;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\MetadataServiceContract;
+use Domain\Banner\Models\Banner;
+use Domain\Metadata\Dtos\MetadataPersonalDto;
+use Domain\Metadata\Dtos\MetadataUpdateDto;
+use Domain\Page\Page;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\ProductSet\ProductSet;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class MetadataService implements MetadataServiceContract
 {
-    public function sync(Model|Role $model, array $metadata): void
+    public function sync(Model $model, array $metadata): void
     {
         foreach ($metadata as $meta) {
             if ($meta instanceof MetadataPersonalDto) {
@@ -26,33 +34,27 @@ class MetadataService implements MetadataServiceContract
         }
     }
 
-    public function updateOrCreate(Model|Role $model, MetadataDto $dto): void
+    public function updateOrCreate(Model $model, MetadataUpdateDto $dto): void
     {
-        $this->processMetadata($model, $dto, $dto->isPublic() ? 'metadata' : 'metadataPrivate');
+        $this->processMetadata($model, $dto, $dto->public ? 'metadata' : 'metadataPrivate');
     }
 
-    public function returnModel(array $routeSegments): Model|Role|null
+    /**
+     * @param string[] $routeSegments
+     */
+    public function returnModel(array $routeSegments): Model|null
     {
-        $segments = Collection::make($routeSegments);
-
-        $segment = $segments->first();
-
-        $class = match ($segment) {
-            'sales', 'coupons' => 'discounts',
-            'attributes' => $this->isAttributeOption($segments->toArray()) ? 'attribute_options' : 'attributes',
-            default => $segment,
+        $className = match ($routeSegments[0]) {
+            'pages' => Page::class,
+            'product-sets' => ProductSet::class,
+            'sales', 'coupons' => Discount::class,
+            'attributes' => $routeSegments[2] === 'options' ? AttributeOption::class : Attribute::class,
+            'banners' => Banner::class,
+            'media' => Media::class,
+            default => $this->getClassFromSegment($routeSegments[0]),
         };
-        $className = 'App\\Models\\' . Str::studly(Str::singular($class));
 
-        if (class_exists($className)) {
-            // @phpstan-ignore-next-line
-            return new $className();
-        }
-
-        $className = 'App\\Models\\' . Str::studly($class);
-
-        if (class_exists($className)) {
-            // @phpstan-ignore-next-line
+        if (is_subclass_of($className, Model::class)) {
             return new $className();
         }
 
@@ -62,8 +64,9 @@ class MetadataService implements MetadataServiceContract
     public function updateOrCreateMyPersonal(MetadataPersonalListDto $dto): Collection
     {
         $user = Auth::user();
-        if ($user !== null) {
-            foreach ($dto->getMetadata() as $metadata) {
+
+        if ($user instanceof User) {
+            foreach ($dto->metadata as $metadata) {
                 $this->processMetadata($user, $metadata, 'metadataPersonal');
             }
 
@@ -75,32 +78,57 @@ class MetadataService implements MetadataServiceContract
 
     public function updateOrCreateUserPersonal(MetadataPersonalListDto $dto, string $userId): Collection
     {
-        $user = User::findOrFail($userId);
-        foreach ($dto->getMetadata() as $metadata) {
+        /** @var User $user */
+        $user = User::query()->findOrFail($userId);
+
+        foreach ($dto->metadata as $metadata) {
             $this->processMetadata($user, $metadata, 'metadataPersonal');
         }
 
         return $user->metadataPersonal;
     }
 
-    private function isAttributeOption(array $segments): bool
-    {
-        return $segments[2] === 'options';
-    }
-
-    private function processMetadata(Model|Role $model, MetadataDto|MetadataPersonalDto $dto, string $relation): void
-    {
+    private function processMetadata(
+        Model|Role $model,
+        MetadataPersonalDto|MetadataUpdateDto $dto,
+        string $relation,
+    ): void {
+        /** @var Builder $query */
         $query = $model->{$relation}();
 
-        if ($dto->getValue() === null) {
-            $query->where('name', $dto->getName())->delete();
+        if ($dto->value === null) {
+            $query->where('name', $dto->name)->delete();
 
             return;
         }
 
         $query->updateOrCreate(
-            ['name' => $dto->getName()],
-            $dto->toArray(),
+            ['name' => $dto->name],
+            [
+                'value' => $dto->value,
+                'value_type' => $dto->value_type,
+                'public' => $dto->public ?? true,
+            ],
         );
+    }
+
+    private function getClassFromSegment(string $segment): string
+    {
+        $className = 'App\\Models\\' . Str::studly(Str::singular($segment));
+
+        if (class_exists($className)) {
+            return $className;
+        }
+
+        // DDD structure
+        $className = 'Domain\\' . Str::studly(Str::singular($segment)) . '\\Models\\' . Str::studly(
+            Str::singular($segment),
+        );
+
+        if (class_exists($className)) {
+            return $className;
+        }
+
+        return '';
     }
 }

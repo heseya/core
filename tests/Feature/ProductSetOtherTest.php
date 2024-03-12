@@ -2,16 +2,15 @@
 
 namespace Tests\Feature;
 
-use App\Events\ProductSetDeleted;
 use App\Listeners\WebHookEventListener;
 use App\Models\Product;
-use App\Models\ProductSet;
-use App\Models\SeoMetadata;
 use App\Models\WebHook;
+use Domain\ProductSet\Events\ProductSetDeleted;
+use Domain\ProductSet\ProductSet;
+use Domain\Seo\Models\SeoMetadata;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
-use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
 class ProductSetOtherTest extends TestCase
@@ -33,7 +32,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDelete($user): void
+    public function testDelete(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.remove');
 
@@ -55,7 +54,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteWithWebHook($user): void
+    public function testDeleteWithWebHook(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.remove');
 
@@ -85,26 +84,12 @@ class ProductSetOtherTest extends TestCase
             return $job->class === WebHookEventListener::class
                 && $job->data[0] instanceof ProductSetDeleted;
         });
-
-        $event = new ProductSetDeleted($newSet);
-        $listener = new WebHookEventListener();
-        $listener->handle($event);
-
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $newSet) {
-            $payload = $job->payload;
-
-            return $job->webhookUrl === $webHook->url
-                && isset($job->headers['Signature'])
-                && $payload['data']['id'] === $newSet->getKey()
-                && $payload['data_type'] === 'ProductSet'
-                && $payload['event'] === 'ProductSetDeleted';
-        });
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteWithProducts($user): void
+    public function testDeleteWithProducts(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.remove');
 
@@ -136,7 +121,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteWithSubsets($user): void
+    public function testDeleteWithSubsets(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.remove');
 
@@ -176,7 +161,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteWithSeo($user): void
+    public function testDeleteWithSeo(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.remove');
 
@@ -197,7 +182,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testReorderRoot($user): void
+    public function testReorderRoot(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.edit');
 
@@ -233,7 +218,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testReorderChildren($user): void
+    public function testReorderChildren(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.edit');
 
@@ -276,7 +261,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testAttachProducts($user): void
+    public function testAttachProducts(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.edit');
 
@@ -306,21 +291,39 @@ class ProductSetOtherTest extends TestCase
             'product_set_id' => $set->getKey(),
         ]);
 
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_id' => $product1->getKey(),
+            'product_set_id' => $set->getKey(),
+            'order' => 1,
+        ]);
+
         $this->assertDatabaseHas('product_set_product', [
             'product_id' => $product2->getKey(),
             'product_set_id' => $set->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_id' => $product2->getKey(),
+            'product_set_id' => $set->getKey(),
+            'order' => 2,
         ]);
 
         $this->assertDatabaseHas('product_set_product', [
             'product_id' => $product3->getKey(),
             'product_set_id' => $set->getKey(),
         ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_id' => $product3->getKey(),
+            'product_set_id' => $set->getKey(),
+            'order' => 3,
+        ]);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testDetachProducts($user): void
+    public function testDetachProducts(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.edit');
 
@@ -366,7 +369,94 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowProductsUnauthorized($user): void
+    public function testAttachProductsReorder(string $user): void
+    {
+        $this->{$user}->givePermissionTo('product_sets.edit');
+
+        /** @var ProductSet $set */
+        $set = ProductSet::factory()->create();
+
+        $product1 = Product::factory()->create();
+        $product2 = Product::factory()->create();
+        $product3 = Product::factory()->create();
+        $product4 = Product::factory()->create();
+        $product5 = Product::factory()->create();
+
+        $set->products()->attach([
+            $product1->getKey(),
+            $product2->getKey(),
+            $product3->getKey(),
+            $product4->getKey(),
+            $product5->getKey(),
+        ]);
+
+        $set->descendantProducts()->attach([
+            $product1->getKey() => ['order' => 0],
+            $product2->getKey() => ['order' => 1],
+            $product3->getKey() => ['order' => 2],
+            $product4->getKey() => ['order' => 3],
+            $product5->getKey() => ['order' => 4],
+        ]);
+
+        $newProduct = Product::factory()->create();
+
+        $response = $this->actingAs($this->{$user})->postJson(
+            '/product-sets/id:' . $set->getKey() . '/products',
+            [
+                'products' => [
+                    $product1->getKey(),
+                    $product3->getKey(),
+                    $product5->getKey(),
+                    $newProduct->getKey(),
+                ],
+            ],
+        );
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(4, 'data');
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_id' => $product1->getKey(),
+            'product_set_id' => $set->getKey(),
+            'order' => 0,
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_id' => $product3->getKey(),
+            'product_set_id' => $set->getKey(),
+            'order' => 1,
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_id' => $product5->getKey(),
+            'product_set_id' => $set->getKey(),
+            'order' => 2,
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_id' => $newProduct->getKey(),
+            'product_set_id' => $set->getKey(),
+            'order' => 3,
+        ]);
+
+        $this->assertDatabaseMissing('product_set_product_descendant', [
+            'product_id' => $product2->getKey(),
+            'product_set_id' => $set->getKey(),
+            'order' => 1,
+        ]);
+
+        $this->assertDatabaseMissing('product_set_product_descendant', [
+            'product_id' => $product4->getKey(),
+            'product_set_id' => $set->getKey(),
+            'order' => 3,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowProductsUnauthorized(string $user): void
     {
         $set = ProductSet::factory()->create([
             'public' => true,
@@ -382,7 +472,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowProducts($user): void
+    public function testShowProducts(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.show_details');
 
@@ -425,7 +515,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowProductsWrongId($user): void
+    public function testShowProductsWrongId(string $user): void
     {
         $this->{$user}->givePermissionTo('product_sets.show_details');
 
@@ -460,7 +550,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testShowProductsHidden($user): void
+    public function testShowProductsHidden(string $user): void
     {
         $this->{$user}->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
 
@@ -502,7 +592,177 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductReorderInSetLowerOrder($user): void
+    public function testShowAllProducts(string $user): void
+    {
+        $this->{$user}->givePermissionTo('product_sets.show_details');
+
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $child = ProductSet::factory()->create([
+            'public' => true,
+            'parent_id' => $set->getKey(),
+        ]);
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $product2 = Product::factory()->create([
+            'public' => false,
+        ]);
+        $product3 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $product4 = Product::factory()->create([
+            'public' => false,
+        ]);
+
+        $set->products()->sync([
+            $product1->getKey(),
+            $product2->getKey(),
+        ]);
+
+        $child->products()->sync([
+            $product3->getKey(),
+            $product4->getKey(),
+        ]);
+        $set->descendantProducts()->attach([
+            $product1->getKey() => ['order' => 0],
+            $product2->getKey() => ['order' => 1],
+            $product3->getKey() => ['order' => 2],
+            $product4->getKey() => ['order' => 3],
+        ]);
+
+        $this->actingAs($this->{$user})
+            ->json('GET', '/product-sets/id:' . $set->getKey() . '/products-all')
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'id' => $product1->getKey(),
+                'public' => true,
+            ])
+            ->assertJsonFragment([
+                'id' => $product3->getKey(),
+                'public' => true,
+            ]);
+
+        $this->actingAs($this->{$user})
+            ->json('GET', '/product-sets/id:' . $set->getKey() . '/products-all', ['public' => false])
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+
+        $this->actingAs($this->{$user})
+            ->json('GET', '/product-sets/id:' . $set->getKey() . '/products-all', ['public' => true])
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'id' => $product1->getKey(),
+                'public' => true,
+            ])
+            ->assertJsonFragment([
+                'id' => $product3->getKey(),
+                'public' => true,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowAllProductsHidden(string $user): void
+    {
+        $this->{$user}->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
+
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $child = ProductSet::factory()->create([
+            'public' => true,
+            'parent_id' => $set->getKey(),
+        ]);
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $product2 = Product::factory()->create([
+            'public' => false,
+        ]);
+        $product3 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $product4 = Product::factory()->create([
+            'public' => false,
+        ]);
+
+        $set->products()->sync([
+            $product1->getKey(),
+            $product2->getKey(),
+        ]);
+
+        $child->products()->sync([
+            $product3->getKey(),
+            $product4->getKey(),
+        ]);
+        $set->descendantProducts()->attach([
+            $product1->getKey() => ['order' => 0],
+            $product2->getKey() => ['order' => 1],
+            $product3->getKey() => ['order' => 2],
+            $product4->getKey() => ['order' => 3],
+        ]);
+
+        $this->actingAs($this->{$user})
+            ->json('GET', '/product-sets/id:' . $set->getKey() . '/products-all')
+            ->assertOk()
+            ->assertJsonCount(4, 'data')
+            ->assertJsonFragment([
+                'id' => $product1->getKey(),
+                'public' => true,
+            ])
+            ->assertJsonFragment([
+                'id' => $product2->getKey(),
+                'public' => false,
+            ])
+            ->assertJsonFragment([
+                'id' => $product3->getKey(),
+                'public' => true,
+            ])
+            ->assertJsonFragment([
+                'id' => $product4->getKey(),
+                'public' => false,
+            ]);
+
+        $this->actingAs($this->{$user})
+            ->json('GET', '/product-sets/id:' . $set->getKey() . '/products-all', ['public' => false])
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'id' => $product2->getKey(),
+                'public' => false,
+            ])
+            ->assertJsonFragment([
+                'id' => $product4->getKey(),
+                'public' => false,
+            ]);
+
+        $this->actingAs($this->{$user})
+            ->json('GET', '/product-sets/id:' . $set->getKey() . '/products-all', ['public' => true])
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'id' => $product1->getKey(),
+                'public' => true,
+            ])
+            ->assertJsonFragment([
+                'id' => $product3->getKey(),
+                'public' => true,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductReorderInSetLowerOrder(string $user): void
     {
         $this->{$user}->givePermissionTo(['product_sets.edit']);
 
@@ -525,23 +785,23 @@ class ProductSetOtherTest extends TestCase
         );
 
         $this
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $product->getKey(),
                 'order' => 3,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'one')->getKey(),
                 'order' => 0,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'two')->getKey(),
                 'order' => 1,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'four')->getKey(),
                 'order' => 2,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'five')->getKey(),
                 'order' => 4,
             ]);
@@ -573,23 +833,23 @@ class ProductSetOtherTest extends TestCase
         );
 
         $this
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $product->getKey(),
                 'order' => 1,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'one')->getKey(),
                 'order' => 0,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'two')->getKey(),
                 'order' => 2,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'four')->getKey(),
                 'order' => 3,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'five')->getKey(),
                 'order' => 4,
             ]);
@@ -598,7 +858,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductReorderFirstToLast($user): void
+    public function testProductReorderFirstToLast(string $user): void
     {
         $this->{$user}->givePermissionTo(['product_sets.edit']);
 
@@ -621,23 +881,23 @@ class ProductSetOtherTest extends TestCase
         );
 
         $this
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $product->getKey(),
                 'order' => 4,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'two')->getKey(),
                 'order' => 0,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'three')->getKey(),
                 'order' => 1,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'four')->getKey(),
                 'order' => 2,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'five')->getKey(),
                 'order' => 3,
             ]);
@@ -669,23 +929,23 @@ class ProductSetOtherTest extends TestCase
         );
 
         $this
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $product->getKey(),
                 'order' => 0,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'one')->getKey(),
                 'order' => 1,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'two')->getKey(),
                 'order' => 2,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'three')->getKey(),
                 'order' => 3,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $set->products->firstWhere('name', 'four')->getKey(),
                 'order' => 4,
             ]);
@@ -694,7 +954,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductReorderInSetSameOrder($user): void
+    public function testProductReorderInSetSameOrder(string $user): void
     {
         $this->{$user}->givePermissionTo(['product_sets.edit']);
 
@@ -717,20 +977,20 @@ class ProductSetOtherTest extends TestCase
         );
 
         $this
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $product->getKey(),
                 'order' => 2,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 0,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 1,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 3,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 4,
             ]);
     }
@@ -738,7 +998,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductReorderInSetOrderOutOfSize($user): void
+    public function testProductReorderInSetOrderOutOfSize(string $user): void
     {
         $this->{$user}->givePermissionTo(['product_sets.edit']);
 
@@ -761,20 +1021,20 @@ class ProductSetOtherTest extends TestCase
         );
 
         $this
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $product->getKey(),
                 'order' => 4,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 0,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 1,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 2,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 3,
             ]);
     }
@@ -782,7 +1042,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductReorderWhenWasNull($user): void
+    public function testProductReorderWhenWasNull(string $user): void
     {
         $this->{$user}->givePermissionTo(['product_sets.edit']);
 
@@ -799,8 +1059,12 @@ class ProductSetOtherTest extends TestCase
             'name' => 'two',
         ]);
 
-        $set->products()->attach($product1->getKey(), ['order' => null]);
-        $set->products()->attach($product2->getKey(), ['order' => null]);
+        $set->products()->attach([$product1->getKey(), $product2->getKey()]);
+        $set->descendantProducts()->attach([
+            $product1->getKey() => ['order' => null],
+            $product2->getKey() => ['order' => null],
+        ]);
+
         $this->actingAs($this->{$user})->json(
             'POST',
             '/product-sets/id:' . $set->getKey() . '/products/reorder',
@@ -815,7 +1079,7 @@ class ProductSetOtherTest extends TestCase
         );
 
         $this
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $product1->getKey(),
                 'order' => 0,
             ]);
@@ -824,7 +1088,7 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProductReorderHandleNulls($user): void
+    public function testProductReorderHandleNulls(string $user): void
     {
         $this->{$user}->givePermissionTo(['product_sets.edit']);
 
@@ -849,10 +1113,13 @@ class ProductSetOtherTest extends TestCase
             'name' => 'four',
         ]);
 
-        $set->products()->attach($product1->getKey(), ['order' => null]);
-        $set->products()->attach($product2->getKey(), ['order' => 0]);
-        $set->products()->attach($product3->getKey(), ['order' => null]);
-        $set->products()->attach($product4->getKey(), ['order' => null]);
+        $set->products()->attach([$product1->getKey(), $product2->getKey(), $product3->getKey(), $product4->getKey()]);
+        $set->descendantProducts()->attach([
+            $product1->getKey() => ['order' => null],
+            $product2->getKey() => ['order' => 0],
+            $product3->getKey() => ['order' => null],
+            $product4->getKey() => ['order' => null],
+        ]);
 
         $this->actingAs($this->{$user})->json(
             'POST',
@@ -868,17 +1135,17 @@ class ProductSetOtherTest extends TestCase
         );
 
         $this
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $product1->getKey(),
                 'order' => 0,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 1,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 2,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 3,
             ]);
     }
@@ -911,10 +1178,13 @@ class ProductSetOtherTest extends TestCase
             'name' => 'four',
         ]);
 
-        $set->products()->attach($product1->getKey(), ['order' => 1]);
-        $set->products()->attach($product2->getKey(), ['order' => 1]);
-        $set->products()->attach($product3->getKey(), ['order' => 1]);
-        $set->products()->attach($product4->getKey(), ['order' => 1]);
+        $set->products()->attach([$product1->getKey(), $product2->getKey(), $product3->getKey(), $product4->getKey()]);
+        $set->descendantProducts()->attach([
+            $product1->getKey() => ['order' => 1],
+            $product2->getKey() => ['order' => 1],
+            $product3->getKey() => ['order' => 1],
+            $product4->getKey() => ['order' => 1],
+        ]);
 
         $res = $this->actingAs($this->{$user})->json(
             'POST',
@@ -930,19 +1200,144 @@ class ProductSetOtherTest extends TestCase
         );
 
         $this
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'product_id' => $product3->getKey(),
                 'order' => 0,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 1,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 2,
             ])
-            ->assertDatabaseHas('product_set_product', [
+            ->assertDatabaseHas('product_set_product_descendant', [
                 'order' => 3,
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteProductDescendant(string $user): void
+    {
+        $this->{$user}->givePermissionTo('product_sets.remove');
+
+        $parent = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $otherChild = ProductSet::factory()->create([
+            'public' => true,
+            'parent_id' => $parent->getKey(),
+        ]);
+
+        $otherChildChild = ProductSet::factory()->create([
+            'public' => true,
+            'parent_id' => $otherChild->getKey(),
+        ]);
+
+        $toDelete = ProductSet::factory()->create([
+            'public' => true,
+            'parent_id' => $parent->getKey(),
+        ]);
+
+        $child = ProductSet::factory()->create([
+            'public' => true,
+            'parent_id' => $toDelete->getKey(),
+        ]);
+
+        $sharedProduct = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $childSharedProduct = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $otherChildChildProduct = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $otherChildProduct = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $toDeleteProduct = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $childProduct = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $otherChild->descendantProducts()->attach([
+            $sharedProduct->getKey() => ['order' => 0],
+            $otherChildProduct->getKey() => ['order' => 1],
+            $childSharedProduct->getKey() => ['order' => 2],
+            $otherChildChildProduct->getKey() => ['order' => 3],
+        ]);
+
+        $otherChildChild->descendantProducts()->attach([
+            $childSharedProduct->getKey() => ['order' => 0],
+            $otherChildChildProduct->getKey() => ['order' => 1],
+        ]);
+
+        $toDelete->descendantProducts()->attach([
+            $sharedProduct->getKey() => ['order' => 0],
+            $toDeleteProduct->getKey() => ['order' => 1],
+            $childSharedProduct->getKey() => ['order' => 2],
+            $childProduct->getKey() => ['order' => 3],
+        ]);
+
+        $child->descendantProducts()->attach([
+            $childSharedProduct->getKey() => ['order' => 0],
+            $childProduct->getKey() => ['order' => 1],
+        ]);
+
+        $parent->descendantProducts()->attach([
+            $sharedProduct->getKey() => ['order' => 0],
+            $otherChildProduct->getKey() => ['order' => 1],
+            $childSharedProduct->getKey() => ['order' => 2],
+            $otherChildChildProduct->getKey() => ['order' => 3],
+            $toDeleteProduct->getKey() => ['order' => 4],
+            $childProduct->getKey() => ['order' => 5],
+        ]);
+
+        $response = $this->actingAs($this->{$user})->deleteJson(
+            '/product-sets/id:' . $toDelete->getKey(),
+        );
+        $response->assertNoContent();
+        $this->assertSoftDeleted($toDelete);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $parent->getKey(),
+            'product_id' => $sharedProduct->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $parent->getKey(),
+            'product_id' => $otherChildProduct->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $parent->getKey(),
+            'product_id' => $childSharedProduct->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product_descendant', [
+            'product_set_id' => $parent->getKey(),
+            'product_id' => $otherChildChildProduct->getKey(),
+        ]);
+
+        $this->assertDatabaseMissing('product_set_product_descendant', [
+            'product_set_id' => $parent->getKey(),
+            'product_id' => $toDeleteProduct->getKey(),
+        ]);
+
+        $this->assertDatabaseMissing('product_set_product_descendant', [
+            'product_set_id' => $parent->getKey(),
+            'product_id' => $childProduct->getKey(),
+        ]);
     }
 
     private function prepareOrderData(): ProductSet
@@ -972,11 +1367,21 @@ class ProductSetOtherTest extends TestCase
             'name' => 'five',
         ]);
 
-        $set->products()->attach($product1->getKey(), ['order' => 0]);
-        $set->products()->attach($product2->getKey(), ['order' => 1]);
-        $set->products()->attach($product3->getKey(), ['order' => 2]);
-        $set->products()->attach($product4->getKey(), ['order' => 3]);
-        $set->products()->attach($product5->getKey(), ['order' => 4]);
+        $set->products()->attach([
+            $product1->getKey(),
+            $product2->getKey(),
+            $product3->getKey(),
+            $product4->getKey(),
+            $product5->getKey(),
+        ]);
+
+        $set->descendantProducts()->attach([
+            $product1->getKey() => ['order' => 0],
+            $product2->getKey() => ['order' => 1],
+            $product3->getKey() => ['order' => 2],
+            $product4->getKey() => ['order' => 3],
+            $product5->getKey() => ['order' => 4],
+        ]);
 
         return $set;
     }

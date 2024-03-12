@@ -2,42 +2,71 @@
 
 namespace App\Services;
 
-use App\Dtos\StatusDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
+use App\Exceptions\PublishingException;
 use App\Models\Status;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\StatusServiceContract;
-use Heseya\Dto\Missing;
+use App\Services\Contracts\TranslationServiceContract;
+use Domain\Order\Dtos\OrderStatusCreateDto;
+use Domain\Order\Dtos\OrderStatusUpdateDto;
+use Spatie\LaravelData\Optional;
 
-class StatusService implements StatusServiceContract
+readonly class StatusService implements StatusServiceContract
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
+        private TranslationServiceContract $translationService,
     ) {}
 
-    public function store(StatusDto $dto): Status
+    /**
+     * @throws PublishingException
+     */
+    public function store(OrderStatusCreateDto $dto): Status
     {
-        $status = Status::create($dto->toArray());
+        $status = new Status($dto->toArray());
 
-        if (!($dto->getMetadata() instanceof Missing)) {
-            $this->metadataService->sync($status, $dto->getMetadata());
+        foreach ($dto->translations as $lang => $translations) {
+            $status->setLocale($lang)->fill($translations);
+        }
+
+        $this->translationService->checkPublished($status, ['name']);
+
+        $status->save();
+
+        if (!($dto->metadata_computed instanceof Optional)) {
+            $this->metadataService->sync($status, $dto->metadata_computed);
         }
 
         return $status;
     }
 
-    public function update(Status $status, StatusDto $dto): Status
+    /**
+     * @throws ClientException
+     * @throws PublishingException
+     */
+    public function update(Status $status, OrderStatusUpdateDto $dto): Status
     {
-        if (
-            $status->orders()->count() > 0
-            && !$dto->getCancel() instanceof Missing
-            && $dto->getCancel() !== $status->cancel
-        ) {
+        if (!($dto->cancel instanceof Optional) && $dto->cancel !== $status->cancel && $status->orders()->count() > 0) {
+            // cannot unset cancel when any order with this status exists
             throw new ClientException(Exceptions::CLIENT_STATUS_USED);
         }
 
-        $status->update($dto->toArray());
+        $status->fill($dto->toArray());
+
+        if (!($dto->translations instanceof Optional)) {
+            foreach ($dto->translations as $lang => $translations) {
+                $status->setLocale($lang)->fill($translations);
+            }
+            $this->translationService->checkPublished($status, ['name']);
+        }
+
+        $status->save();
+
+        if (!($dto->metadata_computed instanceof Optional)) {
+            $this->metadataService->sync($status, $dto->metadata_computed);
+        }
 
         return $status;
     }

@@ -2,7 +2,7 @@
   <mj-body background-color="#F4F4F4">
     <mj-section background-color="#fff" background-repeat="repeat" text-align="center" padding-top="50px">
       <mj-column>
-        <mj-image height="50px" width="50px"
+        <mj-image height="30px" width="100px"
                   src="{{ $settingsService->getSetting('store_logo')->value }}"></mj-image>
       </mj-column>
     </mj-section>
@@ -20,9 +20,7 @@
         <mj-text align="left" color="#333" font-family="Arial, sans-serif" font-size="16px" line-height="22px"
                  padding-bottom="10px" padding-top="10px" padding="10px 25px">
           <p>
-            Dear user,
-            <br/>
-            Here's your one-time security code:
+            @lang('mail.tfa-initialization-hello')
           </p>
 
           <p style="line-height: 30px; margin: 10px 0; text-align: center; color:#151e23; font-size:30p; font-family:Arial,sans-serif">
@@ -30,10 +28,7 @@
           </p>
 
           <p>
-            Use it to finish your Two-Factor Authentication setup process.
-            <br/>
-            <br/>
-            If this message is not for you, please ignore it.
+            @lang('mail.tfa-initialization-message')
           </p>
         </mj-text>
       </mj-column>

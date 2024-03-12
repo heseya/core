@@ -2,8 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Consent;
-use Illuminate\Database\Eloquent\Factories\Factory;
+use Domain\Consent\Models\Consent;
 
 class ConsentFactory extends Factory
 {

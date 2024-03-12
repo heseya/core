@@ -1,0 +1,15 @@
+Language:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    iso:
+      type: string
+      example: pl
+    name:
+      type: string
+    default:
+      type: boolean
+    hidden:
+      type: boolean

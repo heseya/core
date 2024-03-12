@@ -9,6 +9,6 @@ class WhereInIds extends Criterion
 {
     public function query(Builder $query): Builder
     {
-        return $query->whereIn('id', $this->value);
+        return $query->whereIn($query->getModel()->getTable() . '.id', $this->value);
     }
 }

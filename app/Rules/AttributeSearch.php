@@ -2,12 +2,13 @@
 
 namespace App\Rules;
 
-use App\Enums\AttributeType;
-use App\Models\Attribute;
-use App\Models\AttributeOption;
+use Domain\ProductAttribute\Enums\AttributeType;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Ramsey\Uuid\Uuid;
 
 class AttributeSearch implements Rule
 {
@@ -41,8 +42,21 @@ class AttributeSearch implements Rule
 
     private function validateMinMax(mixed $value): bool
     {
-        if (is_array($value) && Arr::hasAny($value, ['min', 'max'])) {
-            return true;
+        if (is_array($value)) {
+            if (Arr::hasAny($value, ['min', 'max'])) {
+                return true;
+            }
+            if (!empty($value)) {
+                foreach ($value as $option) {
+                    if (!Uuid::isValid($option)) {
+                        $this->message = "Option `{$option}` for attribute `{$this->attributeName}` must be a valid UUID.";
+
+                        return false;
+                    }
+                }
+
+                return true;
+            }
         }
 
         $this->message = "Min or max value for attribute `{$this->attributeName}` must be provided.";
@@ -88,6 +102,7 @@ class AttributeSearch implements Rule
     private function validateOptions(mixed $value): bool
     {
         if (!is_array($value)) {
+            /** @var string $value */
             $value = Str::replace('%2C', ',', $value);
             $value = explode(',', $value);
         }

@@ -3,11 +3,19 @@ CartProcess:
     application/json:
       schema:
         required:
+          - sales_channel_id
           - items
+          - currency
         type: object
         properties:
+          currency:
+            type: string
+            example: 'PLN'
+          sales_channel_id:
+            type: string
+            format: uuid
           items:
-            description: 'List of products'
+            description: 'List of products in cart'
             type: array
             items:
               $ref: '#/CartItem'
@@ -25,10 +33,15 @@ CartProcess:
 
 CartItem:
   type: object
+  required:
+    - cartitem_id
+    - product_id
+    - quantity
   properties:
     cartitem_id:
+      description: Id for product identification on the front-end, any string
       type: string
-      example: 1
+      example: '1'
     product_id:
       type: string
       format: uuid
@@ -36,6 +49,7 @@ CartItem:
       type: number
       example: 1.5
     schemas:
+      type: object
       properties:
         119c0a63-1ea1-4769-8d5f-169f68de5598:
           type: string
@@ -43,4 +57,3 @@ CartItem:
         02b97693-857c-4fb9-9999-47400ac5fbef:
           type: string
           example: 'HE + YA'
-      type: object

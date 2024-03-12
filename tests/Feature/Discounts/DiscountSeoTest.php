@@ -3,8 +3,8 @@
 namespace Tests\Feature\Discounts;
 
 use App\Enums\DiscountTargetType;
-use App\Enums\DiscountType;
 use App\Models\Discount;
+use Domain\Seo\Models\SeoMetadata;
 use Tests\TestCase;
 
 class DiscountSeoTest extends TestCase
@@ -18,25 +18,63 @@ class DiscountSeoTest extends TestCase
         $response = $this
             ->actingAs($this->{$user})
             ->json('POST', '/sales', [
-                'name' => 'Sale',
-                'type' => DiscountType::PERCENTAGE,
-                'value' => 10,
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Sale',
+                    ],
+                ],
+                'percentage' => '10',
                 'priority' => 1,
                 'target_type' => DiscountTargetType::ORDER_VALUE,
                 'target_is_allow_list' => true,
                 'seo' => [
-                    'title' => 'Great Sale!',
-                    'description' => 'Really Great',
+                    'translations' => [
+                        $this->lang => [
+                            'title' => 'Great Sale!',
+                            'description' => 'Really Great',
+                        ],
+                    ],
                 ],
             ])
-            ->assertCreated();
+            ->assertCreated()
+            ->assertJsonFragment([
+                'title' => 'Great Sale!',
+                'description' => 'Really Great',
+            ]);
 
+        $discount = Discount::query()->find($response->json('data.id'))->first();
         $this->assertDatabaseHas('seo_metadata', [
             'model_id' => $response->json('data.id'),
-            'model_type' => Discount::class,
-            'title' => 'Great Sale!',
-            'description' => 'Really Great',
+            'model_type' => $discount->getMorphClass(),
+            "title->{$this->lang}" => 'Great Sale!',
+            "description->{$this->lang}" => 'Really Great',
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateSeoNull(string $user): void
+    {
+        $this->{$user}->givePermissionTo('sales.add');
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/sales', [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Sale',
+                    ],
+                ],
+                'percentage' => '10',
+                'priority' => 1,
+                'target_type' => DiscountTargetType::ORDER_VALUE,
+                'target_is_allow_list' => true,
+                'seo' => null,
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'seo' => null,
+            ]);
     }
 
     /**
@@ -51,17 +89,48 @@ class DiscountSeoTest extends TestCase
             ->actingAs($this->{$user})
             ->json('PATCH', "/coupons/id:{$sale->getKey()}", [
                 'seo' => [
-                    'title' => 'Sale',
-                    'description' => 'Interesting business proposition',
+                    'translations' => [
+                        $this->lang => [
+                            'title' => 'Sale',
+                            'description' => 'Interesting business proposition',
+                        ],
+                    ],
                 ],
             ])
-            ->assertOk();
+            ->assertOk()
+            ->assertJsonFragment([
+                'title' => 'Sale',
+                'description' => 'Interesting business proposition',
+            ]);
 
         $this->assertDatabaseHas('seo_metadata', [
             'model_id' => $sale->getKey(),
-            'model_type' => Discount::class,
-            'title' => 'Sale',
-            'description' => 'Interesting business proposition',
+            'model_type' => $sale->getMorphClass(),
+            "title->{$this->lang}" => 'Sale',
+            "description->{$this->lang}" => 'Interesting business proposition',
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateSeoNull(string $user): void
+    {
+        /** @var Discount $sale */
+        $sale = Discount::factory()->create();
+
+        $seo = SeoMetadata::factory()->create();
+        $sale->seo()->save($seo);
+
+        $this->{$user}->givePermissionTo('coupons.edit');
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', "/coupons/id:{$sale->getKey()}", [
+                'seo' => null,
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'seo' => null,
+            ]);
     }
 }

@@ -7,8 +7,11 @@ use App\Models\Item;
 use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
+use App\Services\SchemaCrudService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\App;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class ProductAvailabilityTest extends TestCase
 {
@@ -16,6 +19,7 @@ class ProductAvailabilityTest extends TestCase
 
     private Item $item;
     private Product $product;
+    private SchemaCrudService $schemaCrudService;
 
     public function setUp(): void
     {
@@ -37,6 +41,8 @@ class ProductAvailabilityTest extends TestCase
             'quantity' => 10,
             'shipping_time' => 2,
         ]);
+
+        $this->schemaCrudService = App::make(SchemaCrudService::class);
     }
 
     /**
@@ -302,10 +308,10 @@ class ProductAvailabilityTest extends TestCase
     {
         $this->{$user}->givePermissionTo('deposits.add');
 
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'required' => true,
             'type' => SchemaType::SELECT,
-        ]);
+        ]));
         $option = Option::factory()->create([
             'schema_id' => $schema->getKey(),
         ]);
@@ -338,11 +344,11 @@ class ProductAvailabilityTest extends TestCase
     {
         $this->{$user}->givePermissionTo('deposits.add');
 
-        $schema = Schema::factory()->create([
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'required' => true,
             'type' => SchemaType::SELECT,
             'available' => false,
-        ]);
+        ]));
 
         $this->product->items()->sync([
             $this->item->getKey() => [

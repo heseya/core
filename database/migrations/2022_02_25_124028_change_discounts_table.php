@@ -98,13 +98,13 @@ class ChangeDiscountsTable extends Migration
             function (Discount $discount): void {
                 $conditionGroups = $discount->conditionGroups()->first();
 
-                $maxUsesCondition = $conditionGroups->conditions()->where('type', ConditionType::MAX_USES)->first();
+                $maxUsesCondition = $conditionGroups->conditions()->where('type', ConditionType::MAX_USES->value)->first();
                 $maxUses = 1;
                 if ($maxUsesCondition !== null) {
                     $maxUses = $maxUsesCondition->value['max_uses'];
                 }
 
-                $dateBetween = $conditionGroups->conditions()->where('type', ConditionType::DATE_BETWEEN)->first();
+                $dateBetween = $conditionGroups->conditions()->where('type', ConditionType::DATE_BETWEEN->value)->first();
                 $startAt = null;
                 $expiresAt = null;
                 if ($dateBetween !== null) {

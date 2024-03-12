@@ -16,7 +16,7 @@ return new class extends Migration {
         Permission::create(['name' => 'payments.show', 'display_name' => 'Dostęp do listy transakcji']);
         Permission::create(['name' => 'payments.show_details', 'display_name' => 'Dostęp do szczegółów transakcji']);
 
-        $owner = Role::where('type', RoleType::OWNER)->first();
+        $owner = Role::where('type', RoleType::OWNER->value)->first();
 
         $owner->givePermissionTo([
             'payments.show',
@@ -36,7 +36,7 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        $owner = Role::where('type', RoleType::OWNER)->first();
+        $owner = Role::where('type', RoleType::OWNER->value)->first();
         $owner->revokePermissionTo([
             'payments.show',
             'payments.show_details',

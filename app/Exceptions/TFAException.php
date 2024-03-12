@@ -8,12 +8,11 @@ class TFAException extends StoreException
 {
     public function __construct(
         string $message = '',
-        int $code = 0,
         ?Throwable $previous = null,
         bool $simpleLogs = false,
         protected ?string $type = '',
     ) {
-        parent::__construct($message, $code, $previous);
+        parent::__construct($message, $previous);
         $this->simpleLogs = $simpleLogs;
     }
 

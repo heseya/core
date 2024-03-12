@@ -3,11 +3,16 @@
 namespace App\Models;
 
 use App\Enums\ConditionType;
+use Carbon\Carbon;
+use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\DiscountConditionPriceType;
+use Domain\ProductSet\ProductSet;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 /**
- * @property ConditionType $type;
+ * @property ConditionType $type
  *
  * @mixin IdeHelperDiscountCondition
  */
@@ -33,6 +38,20 @@ class DiscountCondition extends Model
                 fn (string $key) => (bool) $key,
                 mb_str_split(sprintf('%07d', decbin($value['weekday']))),
             );
+        }
+
+        if ($this->type->is(ConditionType::DATE_BETWEEN)) {
+            if (array_key_exists('start_at', $value)) {
+                $value['start_at'] = Carbon::parse($value['start_at'])->toISOString();
+            }
+            if (array_key_exists('end_at', $value)) {
+                $value['end_at'] = Carbon::parse($value['end_at'])->toISOString();
+            }
+        }
+
+        if ($this->type->is(ConditionType::ORDER_VALUE)) {
+            $value['min_values'] = $this->pricesMin->map(fn (Price $price) => PriceDto::from($price))->all();
+            $value['max_values'] = $this->pricesMax->map(fn (Price $price) => PriceDto::from($price))->all();
         }
 
         return $value;
@@ -91,5 +110,17 @@ class DiscountCondition extends Model
     public function conditionGroup(): BelongsTo
     {
         return $this->belongsTo(ConditionGroup::class);
+    }
+
+    public function pricesMin(): MorphMany
+    {
+        return $this->morphMany(Price::class, 'model')
+            ->where('price_type', DiscountConditionPriceType::PRICE_MIN->value);
+    }
+
+    public function pricesMax(): MorphMany
+    {
+        return $this->morphMany(Price::class, 'model')
+            ->where('price_type', DiscountConditionPriceType::PRICE_MAX->value);
     }
 }

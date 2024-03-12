@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\Deposit;
-use Illuminate\Database\Eloquent\Factories\Factory;
 
 class DepositFactory extends Factory
 {
@@ -21,6 +20,7 @@ class DepositFactory extends Factory
     {
         return [
             'quantity' => mt_rand(1, 20),
+            'shipping_time' => $this->faker->numberBetween(1, 7),
         ];
     }
 }

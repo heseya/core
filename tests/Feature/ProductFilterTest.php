@@ -4,13 +4,28 @@ namespace Tests\Feature;
 
 use App\Models\Item;
 use App\Models\Product;
-use App\Models\Schema;
+use App\Services\ProductService;
+use App\Services\SchemaCrudService;
+use Domain\Currency\Currency;
+use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\App;
+use Support\Enum\Status;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class ProductFilterTest extends TestCase
 {
     use RefreshDatabase;
+
+    private SchemaCrudService $schemaCrudService;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->schemaCrudService = App::make(SchemaCrudService::class);
+    }
 
     /**
      * @dataProvider authProvider
@@ -43,7 +58,7 @@ class ProductFilterTest extends TestCase
         $this->{$user}->givePermissionTo(['products.show', 'products.show_hidden']);
 
         $productWithoutSchemas = Product::factory()->create();
-        $schema = Schema::factory()->create();
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto());
 
         /** @var Product $productWithSchemas */
         $productWithSchemas = Product::factory()->create();
@@ -75,5 +90,277 @@ class ProductFilterTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $productDigital->getKey()])
             ->assertJsonMissing(['id' => $productPhysical->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductMaxPrice(string $user): void
+    {
+        $this->{$user}->givePermissionTo(['products.show']);
+
+        $saleChannel = SalesChannel::factory()->create([
+            'vat_rate' => '0.0',
+            'status' => Status::ACTIVE->value,
+        ]);
+
+        $product1 = $this->prepareProduct('10.00');
+        $product2 = $this->prepareProduct('8.00');
+
+        $this
+            ->actingAs($this->{$user})
+            ->json(
+                'GET',
+                '/products?price.currency=' . Currency::DEFAULT->value . '&price.max=10',
+                headers: ['X-Sales-Channel' => $saleChannel->getKey()],
+            )
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'id' => $product2->getKey(),
+            ])
+            ->assertJsonFragment([
+                'net' => '8.00',
+                'gross' => '8.00',
+            ])
+            ->assertJsonFragment([
+                'id' => $product1->getKey(),
+            ])
+            ->assertJsonFragment([
+                'net' => '10.00',
+                'gross' => '10.00',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductMaxPriceWithVat(string $user): void
+    {
+        $this->{$user}->givePermissionTo(['products.show']);
+
+        $saleChannel = SalesChannel::factory()->create([
+            'vat_rate' => '25.0',
+            'status' => Status::ACTIVE->value,
+        ]);
+
+        $product1 = $this->prepareProduct('10.00');
+        $product2 = $this->prepareProduct('8.00');
+
+        $this
+            ->actingAs($this->{$user})
+            ->json(
+                'GET',
+                '/products?price.currency=' . Currency::DEFAULT->value . '&price.max=10',
+                headers: ['X-Sales-Channel' => $saleChannel->getKey()],
+            )
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $product2->getKey(),
+            ])
+            ->assertJsonFragment([
+                'net' => '8.00',
+                'gross' => '8.00',
+            ])
+            ->assertJsonMissing([
+                'id' => $product1->getKey(),
+            ])
+            ->assertJsonMissing([
+                'net' => '10.00',
+                'gross' => '10.00',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductMaxPriceWithVatRoundingCheck(string $user): void
+    {
+        $this->{$user}->givePermissionTo(['products.show']);
+
+        $saleChannel = SalesChannel::factory()->create([
+            'vat_rate' => '12',
+            'status' => Status::ACTIVE->value,
+        ]);
+
+        $product1 = $this->prepareProduct('10.00');
+        $product2 = $this->prepareProduct('8.00');
+        $product3 = $this->prepareProduct('7.09');
+
+        $this
+            ->actingAs($this->{$user})
+            ->json(
+                'GET',
+                '/products?price.currency=' . Currency::DEFAULT->value . '&price.max=10',
+                headers: ['X-Sales-Channel' => $saleChannel->getKey()],
+            )
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'id' => $product2->getKey(),
+            ])
+            ->assertJsonFragment([
+                'net' => '8.00',
+                'gross' => '8.00',
+            ])
+            ->assertJsonFragment([
+                'id' => $product3->getKey(),
+            ])
+            ->assertJsonFragment([
+                'net' => '7.09',
+                'gross' => '7.09',
+            ])
+            ->assertJsonMissing([
+                'id' => $product1->getKey(),
+            ])
+            ->assertJsonMissing([
+                'net' => '10.00',
+                'gross' => '10.00',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductMinPrice(string $user): void
+    {
+        $this->{$user}->givePermissionTo(['products.show']);
+
+        $saleChannel = SalesChannel::factory()->create([
+            'vat_rate' => '0.0',
+            'status' => Status::ACTIVE->value,
+        ]);
+
+        $product1 = $this->prepareProduct('10.00');
+        $product2 = $this->prepareProduct('8.00');
+
+        $this
+            ->actingAs($this->{$user})
+            ->json(
+                'GET',
+                '/products?price.currency=' . Currency::DEFAULT->value . '&price.min=10',
+                headers: ['X-Sales-Channel' => $saleChannel->getKey()],
+            )
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonMissing([
+                'id' => $product2->getKey(),
+            ])
+            ->assertJsonMissing([
+                'net' => '8.00',
+                'gross' => '8.00',
+            ])
+            ->assertJsonFragment([
+                'id' => $product1->getKey(),
+            ])
+            ->assertJsonFragment([
+                'net' => '10.00',
+                'gross' => '10.00',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductMinPriceWithVat(string $user): void
+    {
+        $this->{$user}->givePermissionTo(['products.show']);
+
+        $saleChannel = SalesChannel::factory()->create([
+            'vat_rate' => '25.0',
+            'status' => Status::ACTIVE->value,
+        ]);
+
+        $product1 = $this->prepareProduct('10.00');
+        $product2 = $this->prepareProduct('8.00');
+
+        $this
+            ->actingAs($this->{$user})
+            ->json(
+                'GET',
+                '/products?price.currency=' . Currency::DEFAULT->value . '&price.min=10',
+                headers: ['X-Sales-Channel' => $saleChannel->getKey()],
+            )
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'id' => $product2->getKey(),
+            ])
+            ->assertJsonFragment([
+                'net' => '8.00',
+                'gross' => '8.00',
+            ])
+            ->assertJsonFragment([
+                'id' => $product1->getKey(),
+            ])
+            ->assertJsonFragment([
+                'net' => '10.00',
+                'gross' => '10.00',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductMinPriceWithVatRoundingCheck(string $user): void
+    {
+        $this->{$user}->givePermissionTo(['products.show']);
+
+        $saleChannel = SalesChannel::factory()->create([
+            'vat_rate' => '12',
+            'status' => Status::ACTIVE->value,
+        ]);
+
+        $product1 = $this->prepareProduct('10.00');
+        $product2 = $this->prepareProduct('8.00');
+        $product3 = $this->prepareProduct('7.09');
+
+        $this
+            ->actingAs($this->{$user})
+            ->json(
+                'GET',
+                '/products?price.currency=' . Currency::DEFAULT->value . '&price.min=10',
+                headers: ['X-Sales-Channel' => $saleChannel->getKey()],
+            )
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonMissing([
+                'id' => $product2->getKey(),
+            ])
+            ->assertJsonMissing([
+                'net' => '8.00',
+                'gross' => '8.00',
+            ])
+            ->assertJsonFragment([
+                'id' => $product1->getKey(),
+            ])
+            ->assertJsonFragment([
+                'net' => '10.00',
+                'gross' => '10.00',
+            ])
+            ->assertJsonMissing([
+                'id' => $product3->getKey(),
+            ])
+            ->assertJsonMissing([
+                'net' => '7.09',
+                'gross' => '7.09',
+            ]);
+    }
+
+    private function prepareProduct(string $price): Product
+    {
+        $productPrices = array_map(fn (Currency $currency) => [
+            'value' => $price,
+            'currency' => $currency->value,
+        ], Currency::cases());
+
+        return app(ProductService::class)->create(
+            FakeDto::productCreateDto([
+                'shipping_digital' => false,
+                'public' => true,
+                'prices_base' => $productPrices,
+            ])
+        );
     }
 }
