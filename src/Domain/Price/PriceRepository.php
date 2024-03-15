@@ -54,7 +54,7 @@ final class PriceRepository
     }
 
     /**
-     * @param array<integer,ProductPriceType|SchemaPriceType|OptionPriceType|DiscountConditionPriceType|string> $priceTypes
+     * @param array<int,ProductPriceType|SchemaPriceType|OptionPriceType|DiscountConditionPriceType|string> $priceTypes
      *
      * @return Collection<int, Price>
      */
