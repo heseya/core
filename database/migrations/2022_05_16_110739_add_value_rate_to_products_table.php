@@ -11,11 +11,11 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('products', function (Blueprint $table): void {
-            $table->unsignedDecimal('vat_rate', 8, 4)->default(0);
+            $table->decimal('vat_rate', 8, 4)->unsigned()->default(0);
         });
 
         Schema::table('order_products', function (Blueprint $table): void {
-            $table->unsignedDecimal('vat_rate', 8, 4)->default(0);
+            $table->decimal('vat_rate', 8, 4)->unsigned()->default(0);
         });
     }
 
