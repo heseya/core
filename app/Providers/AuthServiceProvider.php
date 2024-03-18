@@ -37,9 +37,6 @@ class AuthServiceProvider extends ServiceProvider
     {
         Gate::define('authenticated', [AuthenticatedPolicy::class, 'authenticated']);
 
-        Password::defaults(function () {
-            return Password::min(Config::get('validation.password_min_length'))
-                ->uncompromised();
-        });
+        Password::defaults(fn () => Password::min(Config::get('validation.password_min_length')));
     }
 }
