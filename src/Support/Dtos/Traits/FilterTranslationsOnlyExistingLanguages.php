@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Support\Dtos\Traits;
 
 use Domain\Language\Language;
-use Illuminate\Support\Collection;
 
 trait FilterTranslationsOnlyExistingLanguages
 {
@@ -28,16 +27,16 @@ trait FilterTranslationsOnlyExistingLanguages
     }
 
     /**
-     * @param Collection<string,mixed> $properties
+     * @param array<string,mixed> $properties
      *
-     * @return Collection<string,mixed>
+     * @return array<string,mixed>
      */
-    public static function prepareForPipeline(Collection $properties): Collection
+    public static function prepareForPipeline(array $properties): array
     {
-        $translations = $properties->get('translations');
+        $translations = $properties['translations'] ?? null;
 
         if (is_array($translations)) {
-            $properties->put('translations', self::filterTranslationsOnlyExistingLanguages($translations));
+            $properties['translations'] = self::filterTranslationsOnlyExistingLanguages($translations);
         }
 
         return $properties;
