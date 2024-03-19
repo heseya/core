@@ -24,7 +24,7 @@ final class GoogleRecaptchaV3CaptchaProvider implements CaptchaProvider
         $url = Config::get('captcha.google_recaptcha_url');
         $secret = Config::get('captcha.google_recaptcha_secret');
 
-        $response = Http::post($url, [
+        $response = Http::asForm()->post($url, [
             'secret' => $secret,
             'response' => $captcha_token,
         ]);
