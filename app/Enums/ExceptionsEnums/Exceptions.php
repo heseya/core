@@ -107,6 +107,8 @@ enum Exceptions: string
 
     case CLIENT_SALES_CHANNEL_NOT_FOUND = 'Sales channel not defined or found';
 
+    case CLIENT_CAPTCHA_FAILED = 'Failed captcha verification';
+
     case SERVER_CDN_ERROR = 'CDN responded with an error';
     case SERVER_ERROR = 'Server responded with an error';
     case SERVER_ORDER_STATUSES_NOT_CONFIGURED = 'Order statuses are not configured';
@@ -115,6 +117,8 @@ enum Exceptions: string
     case SERVER_SHIPPING_TYPE_NO_VALIDATION = 'Validation is not implemented for selected shipping type';
     case SERVER_NO_PRICE_MATCHING_CRITERIA = 'No price exists matching the given criteria';
     case SERVER_PRICE_UNKNOWN_CURRENCY = 'Found price with unknown currency';
+
+    case SERVER_CAPTCHA_ERROR = 'Failed processing captcha token';
 
     case ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE = 'Not every item is available';
     case ORDER_SHIPPING_METHOD_TYPE_MISMATCH = 'Selected shipping methods don\'t match selected product types';
