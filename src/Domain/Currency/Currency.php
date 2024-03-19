@@ -16,6 +16,9 @@ enum Currency: string
 
     case PLN = 'PLN';
     case GBP = 'GBP';
+    case EUR = 'EUR';
+    case CZK = 'CZK';
+    case BGN = 'BGN';
 
     /**
      * @throws UnknownCurrencyException
