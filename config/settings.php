@@ -112,7 +112,7 @@ return [
     ],
 
     'enable_captcha' => [
-        'value' => false,
+        'value' => 0,
         'public' => false,
     ],
 
