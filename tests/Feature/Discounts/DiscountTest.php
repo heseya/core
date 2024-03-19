@@ -51,6 +51,8 @@ class DiscountTest extends TestCase
     use WithFaker;
 
     private array $conditions;
+    private array $minValues;
+    private array $maxValues;
     private Role $role;
     private User $conditionUser;
     private Product $conditionProduct;
@@ -135,29 +137,32 @@ class DiscountTest extends TestCase
         $this->conditionProduct = Product::factory()->create();
         $this->conditionProductSet = ProductSet::factory()->create();
 
+        $this->minValues = [];
+        $this->maxValues = [];
+        foreach (Currency::cases() as $currency) {
+            $this->minValues []= [
+                'currency' => $currency->value,
+                'value' => match ($currency->value) {
+                    Currency::PLN->value => '100.00',
+                    Currency::GBP->value => '25.00',
+                    default => '50.00',
+                },
+            ];
+            $this->maxValues []= [
+                'currency' => $currency->value,
+                'value' => match ($currency->value) {
+                    Currency::PLN->value => '500.00',
+                    Currency::GBP->value => '125.00',
+                    default => '250.00',
+                },
+            ];
+        }
+
         $this->conditions = [
             [
                 'type' => ConditionType::ORDER_VALUE,
-                'min_values' => [
-                    [
-                        'currency' => Currency::PLN->value,
-                        'value' => "100.00",
-                    ],
-                    [
-                        'currency' => Currency::GBP->value,
-                        'value' => "25.00",
-                    ],
-                ],
-                'max_values' => [
-                    [
-                        'currency' => Currency::PLN->value,
-                        'value' => "500.00",
-                    ],
-                    [
-                        'currency' => Currency::GBP->value,
-                        'value' => "125.00",
-                    ],
-                ],
+                'min_values' => $this->minValues,
+                'max_values' => $this->maxValues,
                 'include_taxes' => false,
                 'is_in_range' => true,
             ],
@@ -1545,30 +1550,16 @@ class DiscountTest extends TestCase
                 'type' => ConditionType::ORDER_VALUE,
                 'include_taxes' => false,
                 'is_in_range' => true,
-                'min_values' => [
-                    [
-                        'currency' => 'PLN',
-                        'gross' => '100.00',
-                        'net' => '100.00',
-                    ],
-                    [
-                        'currency' => 'GBP',
-                        'gross' => '25.00',
-                        'net' => '25.00',
-                    ],
-                ],
-                'max_values' => [
-                    [
-                        'currency' => 'PLN',
-                        'gross' => '500.00',
-                        'net' => '500.00',
-                    ],
-                    [
-                        'currency' => 'GBP',
-                        'gross' => '125.00',
-                        'net' => '125.00',
-                    ],
-                ],
+                'min_values' => array_map(fn ($value) => [
+                    'currency' => $value['currency'],
+                    'net' => $value['value'],
+                    'gross' => $value['value'],
+                ], $this->minValues),
+                'max_values' => array_map(fn ($value) => [
+                    'currency' => $value['currency'],
+                    'net' => $value['value'],
+                    'gross' => $value['value'],
+                ], $this->maxValues),
             ]);
 
         $discountId = $response->getData()->data->id;
@@ -2228,30 +2219,16 @@ class DiscountTest extends TestCase
                 'type' => ConditionType::ORDER_VALUE,
                 'include_taxes' => false,
                 'is_in_range' => true,
-                'min_values' => [
-                    [
-                        'currency' => 'PLN',
-                        'gross' => '100.00',
-                        'net' => '100.00',
-                    ],
-                    [
-                        'currency' => 'GBP',
-                        'gross' => '25.00',
-                        'net' => '25.00',
-                    ],
-                ],
-                'max_values' => [
-                    [
-                        'currency' => 'PLN',
-                        'gross' => '500.00',
-                        'net' => '500.00',
-                    ],
-                    [
-                        'currency' => 'GBP',
-                        'gross' => '125.00',
-                        'net' => '125.00',
-                    ],
-                ],
+                'min_values' => array_map(fn ($value) => [
+                    'currency' => $value['currency'],
+                    'net' => $value['value'],
+                    'gross' => $value['value'],
+                ], $this->minValues),
+                'max_values' => array_map(fn ($value) => [
+                    'currency' => $value['currency'],
+                    'net' => $value['value'],
+                    'gross' => $value['value'],
+                ], $this->maxValues),
             ]);
 
         $this->assertDatabaseHas('discounts', $discountNew + ['id' => $discount->getKey()]);
@@ -2324,26 +2301,8 @@ class DiscountTest extends TestCase
         $conditionGroup = ConditionGroup::create();
 
         $discountValue = [
-            'min_values' => [
-                [
-                    'currency' => Currency::PLN->value,
-                    'value' => "100.00",
-                ],
-                [
-                    'currency' => Currency::GBP->value,
-                    'value' => "25.00",
-                ],
-            ],
-            'max_values' => [
-                [
-                    'currency' => Currency::PLN->value,
-                    'value' => "500.00",
-                ],
-                [
-                    'currency' => Currency::GBP->value,
-                    'value' => "125.00",
-                ],
-            ],
+            'min_values' => $this->minValues,
+            'max_values' => $this->maxValues,
             'include_taxes' => false,
             'is_in_range' => true,
         ];
@@ -2386,16 +2345,7 @@ class DiscountTest extends TestCase
                             'id' => $condition->getKey(),
                             'type' => ConditionType::ORDER_VALUE,
                             'min_values' => null,
-                            'max_values' => [
-                                [
-                                    'currency' => Currency::PLN->value,
-                                    'value' => "500.00",
-                                ],
-                                [
-                                    'currency' => Currency::GBP->value,
-                                    'value' => "125.00",
-                                ],
-                            ],
+                            'max_values' => $this->maxValues,
                             'include_taxes' => false,
                             'is_in_range' => true,
                         ],
@@ -2418,18 +2368,11 @@ class DiscountTest extends TestCase
             'include_taxes' => false,
             'is_in_range' => true,
             'min_values' => null,
-            'max_values' => [
-                [
-                    'currency' => 'PLN',
-                    'gross' => '500.00',
-                    'net' => '500.00',
-                ],
-                [
-                    'currency' => 'GBP',
-                    'gross' => '125.00',
-                    'net' => '125.00',
-                ],
-            ],
+            'max_values' => array_map(fn ($value) => [
+                'currency' => $value['currency'],
+                'net' => $value['value'],
+                'gross' => $value['value'],
+            ], $this->maxValues),
         ]);
 
         $this->assertDatabaseHas('discounts', ['id' => $discount->getKey()]);
@@ -2462,10 +2405,10 @@ class DiscountTest extends TestCase
 
         $response = $this->actingAs($this->{$user})
             ->json('PATCH', "/{$discountKind}/id:" . $discount->getKey(), [
-                'amounts' => Arr::map(Currency::values(), fn (string $currency) => [
+                'amounts' => array_map(fn (string $currency) => [
                     'value' => '50.00',
                     'currency' => $currency,
-                ]),
+                ], Currency::values()),
             ]);
 
         $code = $discountKind === 'coupons' ? ['code' => $discount->code] : [];
@@ -2475,18 +2418,11 @@ class DiscountTest extends TestCase
             ->assertJsonFragment(
                 [
                     'id' => $discount->getKey(),
-                    'amounts' => [
-                        [
-                            'currency' => Currency::GBP->value,
-                            'net' => '50.00',
-                            'gross' => '50.00',
-                        ],
-                        [
-                            'currency' => $this->currency->value,
-                            'net' => '50.00',
-                            'gross' => '50.00',
-                        ]
-                    ],
+                    'amounts' => array_map(fn (string $currency) => [
+                        'currency' => $currency,
+                        'net' => '50.00',
+                        'gross' => '50.00',
+                    ], Currency::values()),
                     'metadata' => [],
                 ] + $code
             );
@@ -2676,16 +2612,10 @@ class DiscountTest extends TestCase
                     'description' => 'Testowy kupon',
                 ],
             ],
-            'amounts' => [
-                [
-                    'currency' => Currency::GBP->value,
-                    'value' => '10.00',
-                ],
-                [
-                    'currency' => $this->currency->value,
-                    'value' => '10.00',
-                ],
-            ],
+            'amounts' => array_map(fn (string $currency) => [
+                'value' => '10.00',
+                'currency' => $currency,
+            ], Currency::values()),
             'priority' => 1,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
@@ -2707,18 +2637,11 @@ class DiscountTest extends TestCase
         $response
             ->assertJsonFragment($discountNew + [
                 'id' => $discount->getKey(),
-                'amounts' => [
-                    [
-                        'currency' => Currency::GBP->value,
-                        'gross' => '10.00',
-                        'net' => '10.00',
-                    ],
-                    [
-                        'currency' => $this->currency->value,
-                        'gross' => '10.00',
-                        'net' => '10.00',
-                    ],
-                ],
+                'amounts' => array_map(fn (string $currency) => [
+                    'net' => '10.00',
+                    'gross' => '10.00',
+                    'currency' => $currency,
+                ], Currency::values()),
             ])
             ->assertJsonFragment([
                 'id' => $product2->getKey(),

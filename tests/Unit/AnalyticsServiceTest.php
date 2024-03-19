@@ -73,19 +73,17 @@ class AnalyticsServiceTest extends TestCase
 
         $amount = $onStart->amount->plus($during->amount)->plus($onEnd->amount);
 
+        $totals = [];
+        foreach (Currency::cases() as $currency) {
+            $totals []= [
+                'amount' => $currency->value == 'PLN' ? $amount->getAmount() : 0,
+                'count' => $currency->value == 'PLN' ? 3 : 0,
+                'currency' => $currency->value,
+            ];
+        }
+
         $this->assertEquals([
-            'total' => [
-                [
-                    'amount' => $amount->getAmount(),
-                    'count' => 3,
-                    'currency' => Currency::PLN->value,
-                ],
-                [
-                    'amount' => 0,
-                    'count' => 0,
-                    'currency' => Currency::GBP->value,
-                ]
-            ],
+            'total' => $totals,
         ], $this->analyticsService->getPaymentsOverPeriod($from, $to, 'total'));
     }
 
@@ -198,31 +196,25 @@ class AnalyticsServiceTest extends TestCase
         $amountG0 = $oneG0->amount->plus($twoG0->amount);
         $amountG1 = $oneG1->amount->plus($twoG1->amount);
 
+        $labelOneValue = [];
+        $labelTwoValue = [];
+        foreach (Currency::cases() as $currency) {
+            $labelOneValue []= [
+                'amount' => $currency->value == 'PLN' ? $amountG0->getAmount() : 0,
+                'count' => $currency->value == 'PLN' ? 2 : 0,
+                'currency' => $currency->value,
+            ];
+
+            $labelTwoValue []= [
+                'amount' => $currency->value == 'PLN' ? $amountG1->getAmount() : 0,
+                'count' => $currency->value == 'PLN' ? 2 : 0,
+                'currency' => $currency->value,
+            ];
+        }
+
         $this->assertEquals([
-            $labelOne => [
-                [
-                    'amount' => $amountG0->getAmount(),
-                    'count' => 2,
-                    'currency' => Currency::PLN->value,
-                ],
-                [
-                    'amount' => 0,
-                    'count' => 0,
-                    'currency' => Currency::GBP->value,
-                ]
-            ],
-            $labelTwo => [
-                [
-                    'amount' => $amountG1->getAmount(),
-                    'count' => 2,
-                    'currency' => Currency::PLN->value,
-                ],
-                [
-                    'amount' => 0,
-                    'count' => 0,
-                    'currency' => Currency::GBP->value,
-                ]
-            ],
+            $labelOne => $labelOneValue,
+            $labelTwo => $labelTwoValue,
         ], $this->analyticsService->getPaymentsOverPeriod($groupOne0, $groupTwo1, $group));
     }
 }
