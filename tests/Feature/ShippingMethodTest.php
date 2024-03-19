@@ -482,18 +482,11 @@ class ShippingMethodTest extends TestCase
         $response = $this->actingAs($this->{$user})->postJson(
             '/shipping-methods',
             $shipping_method + [
-                'price_ranges' => [
-                    [
-                        'currency' => Currency::GBP->value,
-                        'start' => '0',
-                        'value' => '0',
-                    ],
-                    [
-                        'currency' => Currency::PLN->value,
-                        'start' => '0.00',
-                        'value' => '16.61',
-                    ],
-                ],
+                'price_ranges' => array_map(fn (string $currency) => [
+                    'currency' => $currency,
+                    'start' => '0.00',
+                    'value' => $currency == Currency::PLN->value ? '16.61' : '0.00',
+                ], Currency::values()),
             ],
         );
 
@@ -1184,18 +1177,11 @@ class ShippingMethodTest extends TestCase
         $response = $this->actingAs($this->{$user})->patchJson(
             '/shipping-methods/id:' . $this->shipping_method->getKey(),
             $shipping_method + [
-                'price_ranges' => [
-                    [
-                        'currency' => Currency::GBP->value,
-                        'start' => '0',
-                        'value' => '0',
-                    ],
-                    [
-                        'currency' => Currency::PLN->value,
-                        'start' => '0.00',
-                        'value' => '16.61',
-                    ],
-                ],
+                'price_ranges' => array_map(fn (string $currency) => [
+                    'currency' => $currency,
+                    'start' => '0.00',
+                    'value' => $currency == Currency::PLN->value ? '16.61' : '0.00',
+                ], Currency::values()),
             ],
         );
 
