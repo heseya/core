@@ -66,6 +66,8 @@ use App\Services\TokenService;
 use App\Services\TranslationService;
 use App\Services\UrlService;
 use App\Services\WebHookService;
+use Domain\Captcha\CaptchaProvider;
+use Domain\Captcha\GoogleRecaptchaV3CaptchaProvider;
 use Domain\GoogleCategory\Services\Contracts\GoogleCategoryServiceContract;
 use Domain\GoogleCategory\Services\GoogleCategoryService;
 use Domain\Setting\Services\Contracts\SettingsServiceContract;
@@ -118,6 +120,9 @@ class AppServiceProvider extends ServiceProvider
         // Repositories
         ProductRepositoryContract::class => ProductRepository::class,
         DiscountRepository::class => DiscountRepository::class,
+
+        // Providers
+        CaptchaProvider::class => GoogleRecaptchaV3CaptchaProvider::class,
     ];
 
     /**

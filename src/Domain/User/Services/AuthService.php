@@ -28,6 +28,7 @@ use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Traits\GetLocale;
 use App\Traits\UserRegisterMail;
+use Domain\Captcha\CaptchaService;
 use Domain\Consent\Services\ConsentService;
 use Domain\User\Dtos\ChangePasswordDto;
 use Domain\User\Dtos\LoginDto;
@@ -66,6 +67,7 @@ final class AuthService
         protected UserLoginAttemptService $userLoginAttemptService,
         protected UserService $userService,
         protected MetadataServiceContract $metadataService,
+        protected CaptchaService $captchaService,
     ) {}
 
     /**
@@ -382,6 +384,8 @@ final class AuthService
         if ($nonRegistrationRoles->isNotEmpty()) {
             throw new ClientException(Exceptions::CLIENT_REGISTER_WITH_NON_REGISTRATION_ROLE);
         }
+
+        $this->captchaService->validate_registration_captcha($dto);
 
         /** @var User $user */
         $user = User::query()->create($fields);

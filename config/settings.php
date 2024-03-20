@@ -110,4 +110,14 @@ return [
         'value' => '',
         'public' => false,
     ],
+
+    'enable_captcha' => [
+        'value' => 0,
+        'public' => false,
+    ],
+
+    'google_recaptcha_min_score' => [
+        'value' => 0.7,
+        'public' => false,
+    ],
 ];
