@@ -23,15 +23,15 @@ class Kernel extends ConsoleKernel
     {
         $schedule->job(new CheckActiveSales())
             ->everyThirtyMinutes()
-            ->sentryMonitor();
+            ->sentryMonitor('check-active-sales');
 
         // every hour at minute 43.
         $schedule->job(new StopShippingUnlimitedStockDateJob())
             ->cron('43 * * * *')
-            ->sentryMonitor();
+            ->sentryMonitor('stop-shipping-unlimited-stock-date');
 
         $schedule->job(new GoogleCategoryJob())
             ->weekly()
-            ->sentryMonitor();
+            ->sentryMonitor('google-category');
     }
 }
