@@ -188,22 +188,27 @@ class ProductSearchDatabaseTest extends TestCase
         $set = ProductSet::factory()->create([
             'public' => true,
         ]);
+        $otherSet = ProductSet::factory()->create([
+            'public' => true,
+        ]);
 
         $product = Product::factory()->create([
             'public' => true,
         ]);
 
         // Product not in set
-        Product::factory()->create([
+        $productNotIn = Product::factory()->create([
             'public' => true,
         ]);
 
         $set->products()->attach($product);
+        $otherSet->products()->attach([$product->getKey(), $productNotIn->getKey()]);
 
         $this
             ->actingAs($this->{$user})
             ->json('GET', '/products', ['sets_not' => [$set->slug]])
             ->assertOk()
+            ->assertJsonCount(1, 'data')
             ->assertJsonMissing(['id' => $product->getKey()]);
     }
 
@@ -264,6 +269,10 @@ class ProductSearchDatabaseTest extends TestCase
             'public' => true,
         ]);
 
+        $otherSet = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
         $product = Product::factory()->create([
             'public' => true,
         ]);
@@ -273,12 +282,13 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         // Product not in set
-        Product::factory()->create([
+        $productNotIn = Product::factory()->create([
             'public' => true,
         ]);
 
         $set->products()->attach($product);
         $set2->products()->attach($product2);
+        $otherSet->products()->attach([$product->getKey(), $product2->getKey(), $productNotIn->getKey()]);
 
         $this
             ->actingAs($this->{$user})
@@ -286,6 +296,7 @@ class ProductSearchDatabaseTest extends TestCase
                 'sets_not' => [$set->slug, $set2->slug],
             ])
             ->assertOk()
+            ->assertJsonCount(1, 'data')
             ->assertJsonMissing(['id' => $product->getKey()])
             ->assertJsonMissing(['id' => $product2->getKey()]);
     }

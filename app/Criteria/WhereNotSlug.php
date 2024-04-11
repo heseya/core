@@ -10,12 +10,12 @@ class WhereNotSlug extends Criterion
 {
     public function query(Builder $query): Builder
     {
-        return $query->whereHas(Str::remove('_not', $this->key), function (Builder $query) {
+        return $query->whereDoesntHave(Str::remove('_not', $this->key), function (Builder $query) {
             if (is_array($this->value)) {
-                return $query->whereNotIn('slug', $this->value);
+                return $query->whereIn('slug', $this->value);
             }
 
-            return $query->whereNot('slug', $this->value);
+            return $query->where('slug', $this->value);
         });
     }
 }
