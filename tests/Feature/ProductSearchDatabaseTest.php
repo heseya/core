@@ -188,6 +188,7 @@ class ProductSearchDatabaseTest extends TestCase
         $set = ProductSet::factory()->create([
             'public' => true,
         ]);
+
         $otherSet = ProductSet::factory()->create([
             'public' => true,
         ]);
