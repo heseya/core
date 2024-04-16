@@ -6,6 +6,7 @@ use App\Enums\ShippingType;
 use App\Enums\ValidationError;
 use App\Models\Address;
 use App\Models\App;
+use App\Models\Media;
 use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\PriceRange;
@@ -961,6 +962,45 @@ class ShippingMethodTest extends TestCase
     }
 
     /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithLogo($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.add');
+
+        ShippingMethod::query()->delete();
+
+        $media = Media::factory()->create();
+
+        $shipping_method = [
+            'name' => 'Test',
+            'public' => true,
+            'is_block_list_countries' => false,
+            'shipping_time_min' => 2,
+            'shipping_time_max' => 3,
+            'shipping_type' => ShippingType::ADDRESS->value,
+            'payment_on_delivery' => true,
+            'logo_id' => $media->getKey(),
+        ];
+
+        $this->actingAs($this->{$user})
+            ->json(
+                'POST',
+                '/shipping-methods',
+                $shipping_method + [
+                    'price_ranges' => $this->priceRanges,
+                ]
+            )
+            ->assertCreated()
+            ->assertJsonFragment([
+                'id' => $media->getKey(),
+                'slug' => $media->slug,
+            ]);
+
+        $this->assertDatabaseHas('shipping_methods', $shipping_method);
+    }
+
+    /**
      * Price range testing with no initial 'start' value of zero.
      *
      * @dataProvider authProvider
@@ -1343,6 +1383,68 @@ class ShippingMethodTest extends TestCase
             'payment_method_id' => $paymentMethod->getKey(),
             'shipping_method_id' => $this->shipping_method->getKey(),
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateLogo($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.edit');
+
+        $media = Media::factory()->create();
+
+        $this->actingAs($this->{$user})->json(
+            'PATCH',
+            '/shipping-methods/id:' . $this->shipping_method->getKey(),
+            [
+                'logo_id' => $media->getKey(),
+            ],
+        )
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $media->getKey(),
+                'slug' => $media->slug,
+            ]);
+
+        $this->assertDatabaseHas(
+            'shipping_methods',
+            [
+                'id' => $this->shipping_method->getKey(),
+                'logo_id' => $media->getKey(),
+            ],
+        );
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateDeleteLogo($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.edit');
+
+        $media = Media::factory()->create();
+        $this->shipping_method->logo()->associate($media);
+
+        $this->actingAs($this->{$user})->json(
+            'PATCH',
+            '/shipping-methods/id:' . $this->shipping_method->getKey(),
+            [
+                'logo_id' => null,
+            ],
+        )
+            ->assertOk()
+            ->assertJsonFragment([
+                'logo' => null,
+            ]);
+
+        $this->assertDatabaseHas(
+            'shipping_methods',
+            [
+                'id' => $this->shipping_method->getKey(),
+                'logo_id' => null,
+            ],
+        );
     }
 
     public function testDeleteUnauthorized(): void

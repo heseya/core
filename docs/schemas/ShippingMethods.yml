@@ -66,3 +66,5 @@ ShippingMethod:
       $ref: './../schemas/Metadata.yml#/Metadata'
     payment_on_delivery:
       type: boolean
+    logo:
+      $ref: './../schemas/Media.yml#/Media'
