@@ -20,6 +20,7 @@ use Spatie\LaravelData\Attributes\MapOutputName;
 use Spatie\LaravelData\Attributes\Validation\ArrayType;
 use Spatie\LaravelData\Attributes\Validation\BooleanType;
 use Spatie\LaravelData\Attributes\Validation\Enum;
+use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\GreaterThanOrEqualTo;
 use Spatie\LaravelData\Attributes\Validation\IntegerType;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -27,6 +28,7 @@ use Spatie\LaravelData\Attributes\Validation\Min;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
 use Spatie\LaravelData\Attributes\Validation\Required;
 use Spatie\LaravelData\Attributes\Validation\StringType;
+use Spatie\LaravelData\Attributes\Validation\Uuid;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
@@ -105,6 +107,9 @@ final class ShippingMethodCreateDto extends Data
 
         #[ArrayType]
         public readonly array|Optional $product_set_ids,
+
+        #[Uuid, Exists('media', 'id')]
+        public readonly Optional|string $logo_id,
 
         #[BooleanType]
         public readonly bool $is_block_list_products = true,

@@ -19,11 +19,13 @@ use Spatie\LaravelData\Attributes\MapOutputName;
 use Spatie\LaravelData\Attributes\Validation\ArrayType;
 use Spatie\LaravelData\Attributes\Validation\BooleanType;
 use Spatie\LaravelData\Attributes\Validation\Enum;
+use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\GreaterThanOrEqualTo;
 use Spatie\LaravelData\Attributes\Validation\IntegerType;
 use Spatie\LaravelData\Attributes\Validation\Min;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
 use Spatie\LaravelData\Attributes\Validation\StringType;
+use Spatie\LaravelData\Attributes\Validation\Uuid;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
@@ -106,6 +108,9 @@ final class ShippingMethodUpdateDto extends Data
         #[MapInputName('metadata')]
         public readonly array|Optional $metadata_public,
         public readonly array|Optional $metadata_private,
+
+        #[Uuid, Exists('media', 'id')]
+        public readonly Optional|string|null $logo_id,
 
         #[StringType]
         public readonly string|null $integration_key = null,

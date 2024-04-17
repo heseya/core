@@ -6,6 +6,7 @@ namespace Domain\ShippingMethod\Resources;
 
 use App\Http\Resources\AddressResource;
 use App\Http\Resources\CountryResource;
+use App\Http\Resources\MediaResource;
 use App\Http\Resources\PaymentMethodResource;
 use App\Http\Resources\PriceRangeResource;
 use App\Http\Resources\Resource;
@@ -53,6 +54,7 @@ final class ShippingMethodResource extends Resource
             'shipping_points' => AddressResource::collection($this->resource->shippingPoints),
             'product_ids' => $this->resource->products->pluck('id'),
             'product_set_ids' => $this->resource->productSets->pluck('id'),
+            'logo' => MediaResource::make($this->resource->logo),
         ], $this->metadataResource('shipping_methods.show_metadata_private'));
     }
 }

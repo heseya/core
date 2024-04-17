@@ -13,6 +13,7 @@ use App\Models\Address;
 use App\Models\App;
 use App\Models\Country;
 use App\Models\IdeHelperShippingMethod;
+use App\Models\Media;
 use App\Models\Model;
 use App\Models\Order;
 use App\Models\PaymentMethod;
@@ -63,6 +64,7 @@ final class ShippingMethod extends Model
         'app_id',
         'shipping_type',
         'payment_on_delivery',
+        'logo_id',
     ];
     /**
      * The attributes that should be cast to native types.
@@ -210,5 +212,13 @@ final class ShippingMethod extends Model
     public function getDeletableAttribute(): bool
     {
         return $this->app_id === null || $this->app_id === Auth::id();
+    }
+
+    /**
+     * @return BelongsTo<Media, self>
+     */
+    public function logo(): BelongsTo
+    {
+        return $this->belongsTo(Media::class, 'logo_id');
     }
 }
