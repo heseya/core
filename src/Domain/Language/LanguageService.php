@@ -120,8 +120,10 @@ final class LanguageService
                     $model->forgetAllTranslations($language->getKey());
                     if ($model->hasPublishedColumn()) {
                         $published = $model->published ?? [];
-                        if (($key = array_search($language->getKey(), $published, true)) !== false) {
-                            unset($published[$key]);
+                        /** @var int|false $key */
+                        $key = array_search($language->getKey(), $published, true);
+                        if ($key !== false) {
+                            array_splice($published, $key, 1);
                         }
                         $model->published = $published;
                     }
