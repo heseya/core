@@ -1189,8 +1189,8 @@ class OrderCreateTest extends TestCase
                 'cart_total_initial' => '150.00',
                 'cart_total' => '0.01',
                 'shipping_price_initial' => '10.00',
-                'shipping_price' => '0.01',
-                'summary' => '0.02',
+                'shipping_price' => '0.00',
+                'summary' => '0.01',
             ]);
         $order = Order::find($response->getData()->data->id);
 
@@ -1217,7 +1217,7 @@ class OrderCreateTest extends TestCase
         $this->assertDatabaseHas('order_discounts', [
             'model_id' => $order->getKey(),
             'discount_id' => $couponShipping->getKey(),
-            'applied' => '999', // discount -15, but shipping_price_initial is 9.99
+            'applied' => '1000', // discount -15, but shipping_price_initial is 10
             'currency' => $this->currency,
         ]);
 
