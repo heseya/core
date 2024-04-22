@@ -109,7 +109,7 @@ final class ShippingMethodCreateDto extends Data
         public readonly array|Optional $product_set_ids,
 
         #[Uuid, Exists('media', 'id')]
-        public readonly Optional|string $logo_id,
+        public readonly Optional|string|null $logo_id,
 
         #[BooleanType]
         public readonly bool $is_block_list_products = true,
