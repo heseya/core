@@ -16,6 +16,7 @@ RUN docker-php-ext-install soap pdo_mysql imap opcache
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 COPY ./docker/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 COPY ./docker/file-upload.ini /usr/local/etc/php/conf.d/file-upload.ini
+COPY ./docker/memory-limit.ini /usr/local/etc/php/conf.d/memory-limit.ini
 
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 
