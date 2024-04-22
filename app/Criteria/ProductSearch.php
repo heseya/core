@@ -71,14 +71,26 @@ class ProductSearch extends Criterion
     protected function findAttributeOptions(): Collection
     {
         return AttributeOption::query()
-            ->whereHas('attribute', fn (Builder $attributeQuery) => $attributeQuery->textSearchable()) // @phpstan-ignore-line
-            ->where(
-                function (Builder $subquery): void {
-                    $subquery->where($this->likeAllWords('attribute_options.searchable_name'))
-                        ->orWhere('attribute_options.id', 'LIKE', $this->value . '%')
-                        ->orWhere('attribute_options.value_date', 'LIKE', $this->value . '%');
-                },
-            )->get();
+            ->where(function (Builder $matchAllQuery): void {
+                $matchAllQuery->whereHas('attribute', fn (Builder $attributeQuery): Builder => $attributeQuery->textSearchable()->matchAll()) // @phpstan-ignore-line\
+                    ->where(
+                        function (Builder $subquery): void {
+                            $subquery->where($this->likeAllWords('attribute_options.searchable_name'))
+                                ->orWhere('attribute_options.id', 'LIKE', $this->value . '%')
+                                ->orWhere('attribute_options.value_date', 'LIKE', $this->value . '%');
+                        },
+                    );
+            })
+            ->orWhere(function (Builder $matchAnyQuery): void {
+                $matchAnyQuery->whereHas('attribute', fn (Builder $attributeQuery): Builder => $attributeQuery->textSearchable()->matchAny()) // @phpstan-ignore-line
+                    ->where(
+                        function (Builder $subquery): void {
+                            $subquery->where($this->likeAnyWord('attribute_options.searchable_name'))
+                                ->orWhere($this->likeAnyWord('attribute_options.id'))
+                                ->orWhere($this->likeAnyWord('attribute_options.value_date'));
+                        },
+                    );
+            })->get();
     }
 
     /**
@@ -87,17 +99,29 @@ class ProductSearch extends Criterion
     protected function findAttributeOptionsFulltext(): Collection
     {
         return AttributeOption::query()
-            ->whereHas('attribute', fn (Builder $attributeQuery): Builder => $attributeQuery->textSearchable()) // @phpstan-ignore-line
-            ->where(
-                function (Builder $subquery): void {
-                    $subquery->whereFullText([
-                        'attribute_options.searchable_name',
-                    ], $this->contentSearch, ['mode' => 'boolean'])
-                        ->orWhere('attribute_options.searchable_name', 'LIKE', '%' . $this->value . '%')
-                        ->orWhere('attribute_options.id', 'LIKE', $this->value . '%')
-                        ->orWhere('attribute_options.value_date', 'LIKE', $this->value . '%');
-                },
-            )->get();
+            ->where(function (Builder $matchAllQuery): void {
+                $matchAllQuery->whereHas('attribute', fn (Builder $attributeQuery): Builder => $attributeQuery->textSearchable()->matchAll()) // @phpstan-ignore-line\
+                    ->where(
+                        function (Builder $subquery): void {
+                            $subquery->whereFullText([
+                                'attribute_options.searchable_name',
+                            ], $this->contentSearch, ['mode' => 'boolean'])
+                                ->orWhere('attribute_options.searchable_name', 'LIKE', '%' . $this->value . '%')
+                                ->orWhere('attribute_options.id', 'LIKE', $this->value . '%')
+                                ->orWhere('attribute_options.value_date', 'LIKE', $this->value . '%');
+                        },
+                    );
+            })
+            ->orWhere(function (Builder $matchAnyQuery): void {
+                $matchAnyQuery->whereHas('attribute', fn (Builder $attributeQuery): Builder => $attributeQuery->textSearchable()->matchAny()) // @phpstan-ignore-line
+                    ->where(
+                        function (Builder $subquery): void {
+                            $subquery->where($this->likeAnyWord('attribute_options.searchable_name'))
+                                ->orWhere($this->likeAnyWord('attribute_options.id'))
+                                ->orWhere($this->likeAnyWord('attribute_options.value_date'));
+                        },
+                    );
+            })->get();
     }
 
     protected function useBooleanSearch(Builder $query): Builder
@@ -208,6 +232,21 @@ class ProductSearch extends Criterion
                     $subquery = $subquery->where($column, 'LIKE', '% ' . $word . '%');
                 } else {
                     $subquery = $subquery->where($column, 'LIKE', '%' . $word . '%');
+                }
+            }
+
+            return $subquery;
+        };
+    }
+
+    private function likeAnyWord(string $column): Closure
+    {
+        return function (Builder $subquery) use ($column): Builder {
+            foreach ($this->words as $word) {
+                if (mb_strlen($word) >= 3) {
+                    $subquery = $subquery->orWhere($column, 'LIKE', '%' . $word . '%');
+                } else {
+                    $subquery = $subquery->orWhere($column, 'LIKE', $word . '%');
                 }
             }
 

@@ -47,6 +47,7 @@ final class AttributeCreateDto extends Data
         public readonly bool $global,
         public readonly bool $sortable,
         public readonly bool|Optional $include_in_text_search,
+        public readonly bool|Optional $match_any,
         public readonly array $published,
 
         #[MapInputName('metadata')]

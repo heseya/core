@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('attributes', function (Blueprint $table) {
-            $table->boolean('include_in_text_search')->default(false);
+            $table->boolean('match_any')->default(false);
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('attributes', function (Blueprint $table) {
-            $table->dropColumn('include_in_text_search');
+            $table->dropColumn('match_any');
         });
     }
 };
