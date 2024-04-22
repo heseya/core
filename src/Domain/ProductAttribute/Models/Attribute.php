@@ -31,6 +31,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $name
  * @property string $description
  * @property AttributeType $type
+ * @property bool $include_in_text_search
+ * @property bool $match_any
  *
  * @mixin IdeHelperAttribute
  */
@@ -59,6 +61,7 @@ final class Attribute extends Model implements Translatable
         'order',
         'published',
         'include_in_text_search',
+        'match_any',
     ];
 
     /** @var string[] */
@@ -75,6 +78,7 @@ final class Attribute extends Model implements Translatable
         'updated_at' => 'datetime',
         'published' => 'array',
         'include_in_text_search' => 'boolean',
+        'match_any' => 'boolean',
     ];
 
     /** @var string[] */
@@ -127,5 +131,21 @@ final class Attribute extends Model implements Translatable
     public function scopeTextSearchable(Builder $query): void
     {
         $query->where('include_in_text_search', '=', true);
+    }
+
+    /**
+     * @param Builder<self> $query
+     */
+    public function scopeMatchAny(Builder $query): void
+    {
+        $query->where('match_any', '=', true);
+    }
+
+    /**
+     * @param Builder<self> $query
+     */
+    public function scopeMatchAll(Builder $query): void
+    {
+        $query->where('match_any', '=', false);
     }
 }
