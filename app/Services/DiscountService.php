@@ -77,6 +77,7 @@ use Domain\Price\PriceRepository;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\SalesChannelService;
 use Domain\Seo\SeoMetadataService;
+use Domain\Setting\Services\Contracts\SettingsServiceContract;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
@@ -103,6 +104,7 @@ readonly class DiscountService implements DiscountServiceContract
         private DiscountRepository $discountRepository,
         private SalesChannelService $salesChannelService,
         private PriceRepository $priceRepository,
+        private SettingsServiceContract $settingsService,
     ) {}
 
     public function index(CouponIndexDto|SaleIndexDto $dto): LengthAwarePaginator
@@ -515,7 +517,11 @@ readonly class DiscountService implements DiscountServiceContract
      */
     public function calcAppliedDiscount(Money $price, Money $appliedDiscount, string $setting): Money
     {
-        $minimalPrice = Money::ofMinor(1, $price->getCurrency());
+        $minimal = $this->settingsService->getMinimalPrice($setting);
+        if (in_array($setting, ['minimal_product_price', 'minimal_order_price']) && $minimal <= 0) {
+            $minimal = 0.01;
+        }
+        $minimalPrice = Money::of($minimal, $price->getCurrency());
 
         $maximumDiscount = $price->minus($minimalPrice);
 

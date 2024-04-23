@@ -92,12 +92,12 @@ return [
     ],
 
     'minimal_product_price' => [
-        'value' => 0,
+        'value' => 0.01,
         'public' => false,
     ],
 
     'minimal_order_price' => [
-        'value' => 0,
+        'value' => 0.01,
         'public' => false,
     ],
 
