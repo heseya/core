@@ -327,23 +327,10 @@ final readonly class ProductSetService
         return $set->products;
     }
 
-    private function syncDescendantProducts(ProductSet $set, array $toAttach, array $toDetach): void
+    private function syncDescendantProducts(ProductSet $set, array &$toAttach, array &$toDetach): void
     {
-        $directIds = $set->products->pluck('id')->toArray();
-        $descendantIds = $set->descendantProducts->pluck('id')->toArray();
-
-        $allChildIds = [];
-
-        foreach ($set->children as $child) {
-            $childIds = $child->descendantProducts->pluck('id')->toArray();
-
-            $allChildIds = array_merge($allChildIds, $childIds);
-        }
-
-        $allChildIds = array_unique($allChildIds);
-
-        $toAttach = array_diff($toAttach, $descendantIds);
-        $toDetach = array_diff($toDetach, $directIds, $allChildIds);
+        $toAttach = array_diff($toAttach, $set->descendantProducts()->pluck('id')->toArray());
+        $toDetach = array_diff($toDetach, $set->products()->pluck('id')->toArray(), $set->getChildrenDescendantProductsIds());
 
         $set->descendantProducts()->detach($toDetach);
 
@@ -387,7 +374,7 @@ final readonly class ProductSetService
         }
 
         if ($set->parent) {
-            $this->syncDescendantProducts($set->parent, [], $set->descendantProducts->pluck('id')->toArray());
+            $this->syncDescendantProducts($set->parent, [], $set->descendantProducts()->pluck('id')->toArray());
         }
     }
 
