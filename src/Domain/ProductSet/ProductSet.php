@@ -153,6 +153,11 @@ final class ProductSet extends Model implements SeoContract, Translatable
         return $this->hasMany(self::class, 'parent_id');
     }
 
+    public function getChildrenDescendantProductsIds(): array
+    {
+        return $this->children->reduce(fn (array $ids, ProductSet $child) => array_merge($ids, $child->descendantProducts()->pluck('id')->toArray()), []);
+    }
+
     /**
      * @return BelongsToMany<Attribute>
      */
