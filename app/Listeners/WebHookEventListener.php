@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Notification;
 
 class WebHookEventListener implements ShouldQueue
 {
+    public $queue = 'webhooks';
+
     public function handle(WebHookEvent $event): void
     {
         $query = WebHook::query()->whereJsonContains('events', $event->getEvent());
