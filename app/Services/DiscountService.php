@@ -726,7 +726,8 @@ readonly class DiscountService implements DiscountServiceContract
         $product->sales()->detach();
         $product->sales()->attach($productSales->pluck('id'));
 
-        ProductPriceUpdated::dispatch(
+        ProductPriceUpdated::dispatchIf(
+            $this->pricesChanged($oldPricesMin, $newPricesMin) || $this->pricesChanged($oldPricesMax, $newPricesMax),
             $product->getKey(),
             $oldPricesMin ? $oldPricesMin->toArray() : null,
             $oldPricesMax ? $oldPricesMax->toArray() : null,
@@ -2062,5 +2063,22 @@ readonly class DiscountService implements DiscountServiceContract
         }
 
         return $cartResource;
+    }
+
+    private function pricesChanged(Collection|null $oldPrices, Collection $newPrices): bool
+    {
+        if (!$oldPrices) {
+            return true;
+        }
+
+        /** @var PriceDto $oldPrice */
+        foreach ($oldPrices as $oldPrice) {
+            $newPrice = $newPrices->first(fn (PriceDto $dto) => $dto->currency === $oldPrice->currency);
+            if (!$newPrice || $oldPrice->value->getAmount()->compareTo($newPrice->value->getAmount()) !== 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

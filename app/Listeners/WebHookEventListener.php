@@ -7,6 +7,7 @@ use App\Models\WebHook;
 use App\Notifications\WebHookNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
 class WebHookEventListener implements ShouldQueue
@@ -54,5 +55,10 @@ class WebHookEventListener implements ShouldQueue
             OPENSSL_RAW_DATA,
             $iv,
         ));
+    }
+
+    public function viaQueue(): string
+    {
+        return config('webhook-server.queue');
     }
 }
