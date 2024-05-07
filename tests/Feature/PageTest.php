@@ -195,6 +195,34 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexSearchSpecialCharacters(string $user): void
+    {
+        $this->{$user}->givePermissionTo('pages.show');
+
+        Page::factory()->count(10)->create();
+
+        $this->page->update([
+            'name' => 'Strona główna',
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/pages', [
+                'search' => 'główna',
+            ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $this->page->getKey(),
+                'name' => 'Strona główna',
+            ]);
+
+        $this->assertQueryCountLessThan(11);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexSearchSlug(string $user): void
     {
         $this->{$user}->givePermissionTo('pages.show');
