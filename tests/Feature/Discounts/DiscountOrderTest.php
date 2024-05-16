@@ -435,7 +435,7 @@ class DiscountOrderTest extends TestCase
             ],
         ])
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '542.01']);
+            ->assertJsonFragment(['summary' => '542.00']);
 
         $orderId = $response->getData()->data->id;
 

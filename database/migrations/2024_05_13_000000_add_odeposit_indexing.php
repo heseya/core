@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('attributes', function (Blueprint $table) {
-            $table->boolean('include_in_text_search')->default(false);
+        Schema::table('deposits', function (Blueprint $table) {
+            $table->index('order_product_id');
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('attributes', function (Blueprint $table) {
-            $table->dropColumn('include_in_text_search');
+        Schema::table('deposits', function (Blueprint $table) {
+            $table->dropIndex('deposits_order_product_id_index');
         });
     }
 };

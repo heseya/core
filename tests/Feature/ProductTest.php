@@ -3533,6 +3533,45 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdatePrice(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.edit');
+
+        Event::fake(ProductPriceUpdated::class);
+
+        $prices = array_map(fn (Currency $currency) => [
+            'value' => "5000.00",
+            'currency' => $currency->value,
+        ], Currency::cases());
+
+        $this->actingAs($this->{$user})->json('PATCH', '/products/id:' . $this->product->getKey(), [
+            'prices_base' => $prices
+        ])
+            ->assertOk();
+
+        Event::assertDispatched(ProductPriceUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateNoProductPriceUpdated(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.edit');
+
+        Event::fake(ProductPriceUpdated::class);
+
+        $this->actingAs($this->{$user})->json('PATCH', '/products/id:' . $this->product->getKey(), [
+            'prices_base' => $this->productPrices,
+        ])
+            ->assertOk();
+
+        Event::assertNotDispatched(ProductPriceUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testDeleteSchemaMinMaxPrice(string $user): void
     {
         $this->{$user}->givePermissionTo('schemas.remove');

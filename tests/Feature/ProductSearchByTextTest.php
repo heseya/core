@@ -20,6 +20,7 @@ use function PHPUnit\Framework\assertContains;
 use function PHPUnit\Framework\assertCount;
 use function PHPUnit\Framework\assertEmpty;
 use function PHPUnit\Framework\assertEquals;
+use function PHPUnit\Framework\assertGreaterThanOrEqual;
 use function PHPUnit\Framework\assertStringContainsString;
 use function PHPUnit\Framework\assertStringStartsWith;
 
@@ -629,6 +630,7 @@ class ProductSearchByTextTest extends TestCase
         $this->user->givePermissionTo('products.show');
 
         $sku = '1001SKU';
+        $skus = '1001SKU 1002SKU';
 
         $response = $this->actingAs($this->user)
             ->json('GET', '/products', [
@@ -647,6 +649,17 @@ class ProductSearchByTextTest extends TestCase
         $data = $response->json('data');
         assertEquals($this->problematicProduct->getKey(), $data[0]['id']);
         assertCount(1, $data);
+
+        $this->attribute->match_any = true;
+        $this->attribute->save();
+
+        $response = $this->actingAs($this->user)
+            ->json('GET', '/products', [
+                'search' => $skus,
+            ]);
+        $response->assertOk();
+        $data = $response->json('data');
+        assertCount(2, $data);
     }
 
     public function testFulltextSearchBySkuUsingScoutEngineTnt(): void
@@ -661,6 +674,7 @@ class ProductSearchByTextTest extends TestCase
         $this->user->givePermissionTo('products.show');
 
         $sku = '1001SKU';
+        $skus = '1001SKU 1002SKU';
 
         $response = $this->actingAs($this->user)
             ->json('GET', '/products', [
@@ -678,5 +692,16 @@ class ProductSearchByTextTest extends TestCase
         $data = $response->json('data');
         assertEquals($this->problematicProduct->getKey(), $data[0]['id']);
         assertCount(1, $data);
+
+        $this->attribute->match_any = true;
+        $this->attribute->save();
+
+        $response = $this->actingAs($this->user)
+            ->json('GET', '/products', [
+                'search' => $skus,
+            ]);
+        $response->assertOk();
+        $data = $response->json('data');
+        assertGreaterThanOrEqual(2, count($data));
     }
 }
