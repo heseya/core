@@ -936,6 +936,7 @@ class OrderTest extends TestCase
             ->getJson('/orders/id:' . $order->getKey())
             ->assertOk()
             ->assertJsonFragment([
+                'id' => $attribute->getKey(),
                 'name' => $attribute->name,
                 'slug' => $attribute->slug,
             ])
@@ -944,7 +945,6 @@ class OrderTest extends TestCase
                 'name' => $option->name,
                 'value_number' => $option->value_number,
                 'value_date' => $option->value_date,
-                'attribute_id' => $attribute->getKey(),
             ]);
 
         $this->assertQueryCountLessThan(49);

@@ -25,17 +25,17 @@ use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Http\Requests\SendDocumentRequest;
 use App\Http\Resources\CartResource;
-use App\Http\Resources\OrderDocumentResource;
-use App\Http\Resources\OrderProductResource;
 use App\Http\Resources\OrderProductResourcePublic;
-use App\Http\Resources\OrderPublicResource;
-use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Models\OrderDocument;
 use App\Models\OrderProduct;
 use App\Models\Status;
 use App\Services\Contracts\DocumentServiceContract;
 use App\Services\Contracts\OrderServiceContract;
+use Domain\Order\Resources\OrderDocumentResource;
+use Domain\Order\Resources\OrderProductResource;
+use Domain\Order\Resources\OrderPublicResource;
+use Domain\Order\Resources\OrderResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\UploadedFile;
@@ -59,18 +59,16 @@ class OrderController extends Controller
         $query = Order::searchByCriteria($search_data)
             ->sort($request->input('sort', 'created_at:desc'))
             ->with([
-                'products',
-                'discounts',
-                'payments',
                 'status',
                 'shippingMethod',
-                'shippingMethod.paymentMethods',
                 'digitalShippingMethod',
-                'digitalShippingMethod.paymentMethods',
                 'shippingAddress',
-                'metadata',
+                'invoiceAddress',
                 'documents',
                 'salesChannel',
+                'metadata',
+                'metadataPrivate',
+                'payments',
             ]);
 
         return OrderResource::collection(
@@ -80,69 +78,22 @@ class OrderController extends Controller
 
     public function show(Order $order): JsonResource
     {
-        if (Config::get('flags.eager_load_orders')) {
-            $order->load([
-                'discounts',
-                'discounts.metadata',
-                'discounts.amounts',
-                'products',
-                'products.discounts',
-                'products.discounts.amounts',
-                'products.discounts.metadata',
-                'products.discounts.orderProducts',
-                'products.discounts.orders',
-                'products.urls',
-                'products.schemas',
-                'products.deposits',
-                'products.deposits.item',
-                'products.product',
-                'products.product.media',
-                'products.product.media.metadata',
-                'products.product.tags',
-                'products.product.publishedTags',
-                'products.product.metadata',
-                'products.product.productAttributes',
-                'products.product.productAttributes.options',
-                'products.product.productAttributes.options.metadata',
-                'products.product.sets',
-                'products.product.sets.metadata',
-                'products.product.sets.media',
-                'products.product.sets.media.metadata',
-                'products.product.sets.children',
-                'products.product.sets.childrenPublic',
-                'products.product.pricesBase',
-                'products.product.pricesMin',
-                'products.product.pricesMax',
-                'products.product.pricesMinInitial',
-                'products.product.pricesMaxInitial',
-                'products.product.items',
-                'products.product.schemas',
-                'products.product.schemas.options',
-                'products.product.schemas.prices',
-                'products.product.schemas.usedSchemas',
-                'products.product.schemas.options.items',
-                'products.product.schemas.options.items.deposits',
-                'products.product.schemas.options.metadata',
-                'products.product.schemas.options.prices',
-                'products.product.schemas.metadata',
-                'products.product.sales',
-                'products.product.sales.amounts',
-                'products.product.sales.metadata',
-                'products.product.sales.orderProducts',
-                'products.product.attachments',
-                'products.product.relatedSets',
-                'products.product.relatedSets.metadata',
-                'products.product.relatedSets.media',
-                'products.product.relatedSets.media.metadata',
-                'products.product.relatedSets.children',
-                'products.product.relatedSets.childrenPublic',
-                'products.product.banner',
-                'products.product.banner.media',
-                'products.product.seo',
-                'products.product.pages',
-                'products.product.pages.metadata',
-            ]);
-        }
+        $order->load([
+            'products.urls',
+            'products.schemas',
+            'products.discounts',
+            'products.deposits.item',
+            'products.product.items',
+            'products.product.attributes',
+            'products.product.metadata',
+            'products.product.metadataPrivate',
+            'products.product.sets.metadata',
+            'products.product.sets.metadataPrivate',
+            'products.product.media.metadata',
+            'products.product.media.metadataPrivate',
+            'products.product.productAttributes.options',
+            'products.product.productAttributes.attribute',
+        ]);
 
         return OrderResource::make($order);
     }

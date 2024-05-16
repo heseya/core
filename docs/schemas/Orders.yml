@@ -42,9 +42,9 @@ Order:
     status:
       $ref: './Statuses.yml#/Status'
     shipping_method:
-      $ref: './ShippingMethods.yml#/ShippingMethod'
+      $ref: '#/OrderShippingMethod'
     digital_shipping_method:
-      $ref: './ShippingMethods.yml#/ShippingMethod'
+      $ref: '#/OrderShippingMethod'
     documents:
       $ref: './Documents.yml#/Document'
     shipping_type:
@@ -66,7 +66,7 @@ Order:
     metadata_private:
       $ref: './../schemas/Metadata.yml#/Metadata'
     sales_channel:
-      $ref: './SalesChannel.yml#/SalesChannel'
+      $ref: '#/OrderSalesChannel'
     language:
       type: string
       example: pl
@@ -110,15 +110,14 @@ OrderProduct:
       items:
         $ref: '#/OrderProductUrl'
     product:
-      $ref: './Products.yml#/ProductView'
+      $ref: '#/OrderProductDetails'
 
 OrderDiscount:
   type: object
   properties:
-    discount:
-      oneOf:
-        - $ref: './Sales.yml#/SaleShow'
-        - $ref: './Coupons.yml#/CouponShow'
+    discount_id:
+      type: string
+      format: uuid
     name:
       type: string
       example: 'Black Week'
@@ -212,9 +211,9 @@ OrderSummary:
       type: string
       example: '18.7'
     shipping_method:
-      $ref: './ShippingMethods.yml#/ShippingMethod'
+      $ref: '#/OrderShippingMethod'
     digital_shipping_method:
-      $ref: './ShippingMethods.yml#/ShippingMethod'
+      $ref: '#/OrderShippingMethod'
     created_at:
       type: string
       format: date-time
@@ -224,7 +223,7 @@ OrderSummary:
     metadata_private:
       $ref: './../schemas/Metadata.yml#/Metadata'
     sales_channel:
-      $ref: './SalesChannel.yml#/SalesChannel'
+      $ref: '#/OrderSalesChannel'
     language:
       type: string
       example: pl
@@ -282,3 +281,135 @@ OrderProductPublic:
       type: array
       items:
         $ref: '#/OrderProductUrl'
+
+OrderSalesChannel:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string
+    slug:
+      type: string
+
+OrderShippingMethod:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string
+      example: 'Next Day Courier'
+    integration_key:
+      type: string
+      format: uuid
+    shipping_type:
+      type: string
+      enum:
+        - digital
+        - address
+        - point
+        - point-external
+    payment_on_delivery:
+      type: boolean
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+
+OrderProductDetails:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    slug:
+      description: 'Name used in the URL path'
+      type: string
+      example: white-socks
+    name:
+      description: 'Displayed product name'
+      type: string
+      example: 'White socks'
+    cover:
+      $ref: './Media.yml#/Media'
+    sets:
+      description: 'Assigned product sets'
+      type: array
+      items:
+        $ref: '#/OrderProductSet'
+    attributes:
+      description: 'Array of assigned attributes'
+      type: array
+      items:
+        $ref: '#/OrderAttributeProduct'
+    gallery:
+      description: 'Ids of assigned subsets'
+      type: array
+      items:
+        $ref: './Media.yml#/Media'
+    items:
+      $ref: './Items.yml#/ItemWithRequiredQuantity'
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+
+OrderProductSet:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      description: 'Name displayed to the user'
+      type: string
+      example: AGD
+    slug:
+      description: 'Name used in the URL path'
+      type: string
+      example: agd
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+
+OrderAttributeProduct:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      description: 'Name of attribute'
+      type: string
+      example: 'Screen size'
+    slug:
+      description: 'Slug of name attribute'
+      type: string
+      example: 'screen-size'
+    selected_options:
+      description: 'Array options of attribute'
+      $ref: '#/OrderAttributeOption'
+
+OrderAttributeOption:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      description: 'Name of attribute option'
+      type: string
+      example: 'Screen size'
+    value_number:
+      description: 'Number value attribute option'
+      type: number
+      example: '27'
+    value_date:
+      description: 'Date value attribute option'
+      type: string
+      format: date
+      example: '2022-02-22'

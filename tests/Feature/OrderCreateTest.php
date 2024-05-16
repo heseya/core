@@ -1046,25 +1046,7 @@ class OrderCreateTest extends TestCase
             ->assertJsonFragment([
                 'discounts' => [
                     [
-                        'discount' => [
-                            'id' => $discount->getKey(),
-                            'name' => $discount->name,
-                            'slug' => $discount->slug,
-                            'description' => $discount->description,
-                            'amounts' => null,
-                            'target_type' => DiscountTargetType::ORDER_VALUE,
-                            'percentage' => '10.0000',
-                            'priority' => $discount->priority,
-                            'uses' => 1,
-                            'target_is_allow_list' => true,
-                            'active' => true,
-                            'description_html' => '',
-                            'published' => [
-                                $this->lang,
-                            ],
-                            'metadata' => [],
-                            'code' => $discount->code,
-                        ],
+                        'discount_id' => $discount->getKey(),
                         'code' => $discount->code,
                         'name' => $discount->name,
                         'amount' => null,

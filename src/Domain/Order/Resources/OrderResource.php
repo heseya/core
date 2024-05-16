@@ -2,17 +2,21 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Resources;
+namespace Domain\Order\Resources;
 
+use App\Http\Resources\AddressResource;
+use App\Http\Resources\AppResource;
+use App\Http\Resources\PaymentResource;
+use App\Http\Resources\Resource;
+use App\Http\Resources\UserResource;
 use App\Models\Discount;
 use App\Models\Order;
 use App\Models\OrderDiscount;
 use App\Models\OrderProduct;
 use App\Models\User;
 use App\Traits\MetadataResource;
-use Domain\Order\Resources\OrderSalesChannelResource;
-use Domain\Order\Resources\OrderShippingMethodResource;
-use Domain\Order\Resources\OrderStatusResource;
+use Brick\Math\Exception\MathException;
+use Brick\Money\Exception\MoneyMismatchException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -23,6 +27,9 @@ final class OrderResource extends Resource
 {
     use MetadataResource;
 
+    /**
+     * @return array<string, mixed>
+     */
     public function base(Request $request): array
     {
         return array_merge([
@@ -57,6 +64,12 @@ final class OrderResource extends Resource
         ], $this->metadataResource('orders.show_metadata_private'));
     }
 
+    /**
+     * @return array<string, mixed>
+     *
+     * @throws MathException
+     * @throws MoneyMismatchException
+     */
     public function view(Request $request): array
     {
         $discounts = $this->resource->discounts;

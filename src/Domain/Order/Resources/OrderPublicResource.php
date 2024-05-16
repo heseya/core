@@ -1,21 +1,24 @@
 <?php
 
-namespace App\Http\Resources;
+declare(strict_types=1);
 
+namespace Domain\Order\Resources;
+
+use App\Http\Resources\Resource;
 use App\Models\Order;
 use App\Traits\MetadataResource;
-use Domain\Order\Resources\OrderStatusResource;
-use Domain\SalesChannel\Resources\SalesChannelResource;
-use Domain\ShippingMethod\Resources\ShippingMethodResource;
 use Illuminate\Http\Request;
 
 /**
  * @property Order $resource
  */
-class OrderPublicResource extends Resource
+final class OrderPublicResource extends Resource
 {
     use MetadataResource;
 
+    /**
+     * @return array<string, mixed>
+     */
     public function base(Request $request): array
     {
         return array_merge([
@@ -30,10 +33,10 @@ class OrderPublicResource extends Resource
             'shipping_price' => $this->resource->shipping_price->getAmount(),
             'summary' => $this->resource->summary->getAmount(),
             'currency' => $this->resource->currency,
-            'shipping_method' => ShippingMethodResource::make($this->resource->shippingMethod),
-            'digital_shipping_method' => ShippingMethodResource::make($this->resource->digitalShippingMethod),
+            'shipping_method' => OrderShippingMethodResource::make($this->resource->shippingMethod),
+            'digital_shipping_method' => OrderShippingMethodResource::make($this->resource->digitalShippingMethod),
             'created_at' => $this->resource->created_at,
-            'sales_channel' => SalesChannelResource::make($this->resource->salesChannel),
+            'sales_channel' => OrderSalesChannelResource::make($this->resource->salesChannel),
             'language' => $this->resource->language,
         ], $this->metadataResource('orders.show_metadata_private'));
     }
