@@ -12,7 +12,8 @@ class PageSearch extends Criterion
         return $query->where(function (Builder $query): void {
             $query
                 ->where('name', 'LIKE', '%' . $this->value . '%')
-                ->orWhere('slug', 'LIKE', '%' . $this->value . '%');
+                ->orWhere('slug', 'LIKE', '%' . $this->value . '%')
+                ->orWhereRaw("JSON_SEARCH(name, 'one', ?) is not null", ['%' . $this->value . '%']);
         });
     }
 }
