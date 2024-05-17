@@ -25,6 +25,7 @@ class RegisterDto extends Data
         #[Rule('phone:AUTO')]
         public readonly Optional|string $phone,
         public array|Optional $metadata_personal,
+        public readonly Optional|string $captcha_token,
 
         public readonly array $consents = [],
         public readonly array $roles = [],
