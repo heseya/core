@@ -16,21 +16,22 @@ class Kernel extends ConsoleKernel
     protected function commands(): void
     {
         $this->load(__DIR__ . '/Commands');
+        $this->load(__DIR__ . '/../Utils/Commands');
     }
 
     protected function schedule(Schedule $schedule): void
     {
         $schedule->job(new CheckActiveSales())
             ->everyThirtyMinutes()
-            ->sentryMonitor();
+            ->sentryMonitor('check-active-sales');
 
         // every hour at minute 43.
         $schedule->job(new StopShippingUnlimitedStockDateJob())
             ->cron('43 * * * *')
-            ->sentryMonitor();
+            ->sentryMonitor('stop-shipping-unlimited-stock-date');
 
         $schedule->job(new GoogleCategoryJob())
             ->weekly()
-            ->sentryMonitor();
+            ->sentryMonitor('google-category');
     }
 }

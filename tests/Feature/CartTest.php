@@ -19,6 +19,7 @@ use App\Models\Product;
 use App\Models\Role;
 use App\Models\Schema;
 use App\Models\Status;
+use App\Repositories\DiscountRepository;
 use App\Services\ProductService;
 use App\Services\SchemaCrudService;
 use Brick\Math\Exception\NumberFormatException;
@@ -29,6 +30,7 @@ use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\Setting\Models\Setting;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -58,6 +60,8 @@ class CartTest extends TestCase
     private ProductService $productService;
     private Currency $currency;
     private SchemaCrudService $schemaCrudService;
+
+    private DiscountRepository $discountRepository;
 
     /**
      * @throws UnknownCurrencyException
@@ -146,6 +150,8 @@ class CartTest extends TestCase
         $this->digitalShippingMethod = ShippingMethod::factory()->create([
             'shipping_type' => ShippingType::DIGITAL,
         ]);
+
+        $this->discountRepository = App::make(DiscountRepository::class);
     }
 
     public function testCartProcessUnauthorized(): void
@@ -317,8 +323,6 @@ class CartTest extends TestCase
      */
     public function testCartProcess(string $user, bool $coupon): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('cart.verify');
 
         $code = $coupon ? [] : ['code' => null];
@@ -327,7 +331,7 @@ class CartTest extends TestCase
             [
                 'description' => 'Testowy kupon obowiązujący',
                 'name' => 'Testowy kupon obowiązujący',
-                'percentage' => '10',
+                'percentage' => '10.0',
                 'target_type' => DiscountTargetType::ORDER_VALUE,
                 'target_is_allow_list' => true,
             ] + $code
@@ -337,12 +341,18 @@ class CartTest extends TestCase
             [
                 'description' => 'Testowy kupon',
                 'name' => 'Testowy kupon',
-                'value' => 100,
-                'type' => DiscountType::AMOUNT,
                 'target_type' => DiscountTargetType::ORDER_VALUE,
                 'target_is_allow_list' => true,
+                'percentage' => null,
             ] + $code
         );
+
+        $this->discountRepository->setDiscountAmounts($discount->getKey(), [
+            PriceDto::from([
+                'value' => '100.00',
+                'currency' => $this->currency,
+            ])
+        ]);
 
         $conditionGroup = ConditionGroup::create();
 
@@ -388,30 +398,30 @@ class CartTest extends TestCase
             ->assertValid()->assertOk()
             ->assertJsonFragment(
                 [
-                    'cart_total_initial' => 9200,
-                    'cart_total' => 8280,
-                    'shipping_price_initial' => 0,
-                    'shipping_price' => 0,
-                    'summary' => 8280,
+                    'cart_total_initial' => '9200.00',
+                    'cart_total' => '8280.00',
+                    'shipping_price_initial' => '0.00',
+                    'shipping_price' => '0.00',
+                    'summary' => '8280.00',
                 ] + $result
             )
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 4600,
-                'price_discounted' => 4600,
+                'price' => '4600.00',
+                'price_discounted' => '4600.00',
             ])
             ->assertJsonFragment(
                 [
                     'id' => $discountApplied->getKey(),
                     'name' => $discountApplied->name,
-                    'value' => 920,
+                    'value' => '920.00',
                 ] + $discountCode1
             )
             ->assertJsonMissing(
                 [
                     'id' => $discount->getKey(),
                     'name' => $discount->name,
-                    'value' => 100,
+                    'value' => '100.00',
                 ] + $discountCode2
             );
     }
@@ -468,6 +478,57 @@ class CartTest extends TestCase
                 'cartitem_id' => '2',
                 'price' => '100.00',
                 'price_discounted' => '100.00',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessSameProductNotAvailableWithSchema($user): void
+    {
+        $this->{$user}->givePermissionTo('cart.verify');
+
+        $this->product->schemas()->sync([$this->schema->getKey()]);
+
+        $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [],
+                ],
+                [
+                    'cartitem_id' => '2',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [
+                        $this->schema->getKey() => $this->option->getKey(),
+                    ],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertValid()->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => '9200.00',
+                'cart_total' => '9200.00',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '9200.00',
+                'coupons' => [],
+                'sales' => [],
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => '4600.00',
+                'price_discounted' => '4600.00',
+            ])->assertJsonMissing([
+                'cartitem_id' => '2',
             ]);
     }
 
@@ -539,8 +600,6 @@ class CartTest extends TestCase
      */
     public function testCartProcessFull($user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('cart.verify');
 
         $saleApplied = Discount::factory()->create(
@@ -560,13 +619,19 @@ class CartTest extends TestCase
             [
                 'description' => 'Testowa promocja',
                 'name' => 'Testowa promocja',
-                'value' => 100,
-                'type' => DiscountType::AMOUNT,
                 'target_type' => DiscountTargetType::ORDER_VALUE,
                 'target_is_allow_list' => true,
                 'code' => null,
+                'percentage' => null,
             ],
         );
+
+        $this->discountRepository->setDiscountAmounts($sale->getKey(), [
+            PriceDto::from([
+                'value' => '100.00',
+                'currency' => $this->currency,
+            ])
+        ]);
 
         $conditionGroup = ConditionGroup::create();
 
@@ -583,17 +648,22 @@ class CartTest extends TestCase
         $couponApplied = Discount::factory()->create([
             'description' => 'Testowy kupon',
             'name' => 'Testowy kupon obowiązujący',
-            'value' => 500,
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::ORDER_VALUE,
             'target_is_allow_list' => true,
+            'percentage' => null,
+        ]);
+
+        $this->discountRepository->setDiscountAmounts($couponApplied->getKey(), [
+            PriceDto::from([
+                'value' => '500.00',
+                'currency' => $this->currency,
+            ])
         ]);
 
         $coupon = Discount::factory()->create([
             'description' => 'Testowy kupon',
             'name' => 'Testowy kupon',
-            'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'percentage' => '10.0',
             'target_type' => DiscountTargetType::ORDER_VALUE,
             'target_is_allow_list' => true,
         ]);
@@ -637,36 +707,37 @@ class CartTest extends TestCase
                 $coupon->code,
                 $couponApplied->code,
             ],
+            'currency' => $this->currency,
         ]);
 
         $response
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 9200,
-                'cart_total' => 7780,
-                'shipping_price_initial' => 0,
-                'shipping_price' => 0,
-                'summary' => 7780,
+                'cart_total_initial' => '9200.00',
+                'cart_total' => '7780.00',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '7780.00',
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 4600,
-                'price_discounted' => 4140,
+                'price' => '4600.00',
+                'price_discounted' => '4140.00',
             ])->assertJsonMissing([
                 'cartitem_id' => '2',
-                'price' => 100,
-                'price_discounted' => 100,
+                'price' => '100.00',
+                'price_discounted' => '100.00',
             ])
             ->assertJsonFragment([
                 'id' => $saleApplied->getKey(),
                 'name' => $saleApplied->name,
-                'value' => 920,
+                'value' => '920.00',
             ])
             ->assertJsonFragment([
                 'id' => $couponApplied->getKey(),
                 'name' => $couponApplied->name,
                 'code' => $couponApplied->code,
-                'value' => 500,
+                'value' => '500.00',
             ])
             ->assertJsonMissing([
                 'id' => $sale->getKey(),
@@ -684,8 +755,6 @@ class CartTest extends TestCase
      */
     public function testCartProcessLessThanMinimal($user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('cart.verify');
 
         $shippingMethod = ShippingMethod::factory()->create([
@@ -702,8 +771,7 @@ class CartTest extends TestCase
         $saleApplied = Discount::factory()->create([
             'description' => 'Testowa promocja',
             'name' => 'Testowa promocja obowiązująca',
-            'value' => 99,
-            'type' => DiscountType::PERCENTAGE,
+            'percentage' => '99.00',
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
             'code' => null,
@@ -712,19 +780,31 @@ class CartTest extends TestCase
         $couponOrder = Discount::factory()->create([
             'description' => 'Testowy kupon',
             'name' => 'Kupon order',
-            'value' => 50,
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::ORDER_VALUE,
             'target_is_allow_list' => true,
+            'percentage' => null,
+        ]);
+
+        $this->discountRepository->setDiscountAmounts($couponOrder->getKey(), [
+            PriceDto::from([
+                'value' => '50.00',
+                'currency' => $this->currency,
+            ])
         ]);
 
         $couponShipping = Discount::factory()->create([
             'description' => 'Testowy kupon',
             'name' => 'Kupon shipping',
-            'value' => 15,
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::SHIPPING_PRICE,
             'target_is_allow_list' => false,
+            'percentage' => null,
+        ]);
+
+        $this->discountRepository->setDiscountAmounts($couponShipping->getKey(), [
+            PriceDto::from([
+                'value' => '15.00',
+                'currency' => $this->currency,
+            ])
         ]);
 
         $saleApplied->products()->attach($this->product->getKey());
@@ -746,36 +826,144 @@ class CartTest extends TestCase
                     $couponOrder->code,
                     $couponShipping->code,
                 ],
+                'currency' => $this->currency,
             ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 4600,
-                'cart_total' => 0,
-                'shipping_price_initial' => 10,
-                'shipping_price' => 0,
-                'summary' => 0,
+                'cart_total_initial' => '4600.00',
+                'cart_total' => '0.01',
+                'shipping_price_initial' => '10.00',
+                'shipping_price' => '0.00',
+                'summary' => '0.01',
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 4600,
-                'price_discounted' => 46,
+                'price' => '4600.00',
+                'price_discounted' => '46.00',
             ])
             ->assertJsonFragment([
                 'id' => $saleApplied->getKey(),
                 'name' => $saleApplied->name,
-                'value' => 4554,
+                'value' => '4554.00',
             ])
             ->assertJsonFragment([
                 'id' => $couponOrder->getKey(),
                 'name' => $couponOrder->name,
                 'code' => $couponOrder->code,
-                'value' => 46, // discount -50, but cart_total should be 46 when discount is applied
+                'value' => '45.99', // discount -50, but cart_total should be 46 when discount is applied
             ])
             ->assertJsonFragment([
                 'id' => $couponShipping->getKey(),
                 'name' => $couponShipping->name,
                 'code' => $couponShipping->code,
-                'value' => 10, // discount -15, but shipping_price_initial is 10
+                'value' => '10.00', // discount -15, but shipping_price_initial is 10
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessLessThanMinimalCustom($user): void
+    {
+        $this->{$user}->givePermissionTo('cart.verify');
+
+        $shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
+        $lowRange = PriceRange::create([
+            'start' => Money::zero($this->currency->value),
+            'value' => Money::of(10, $this->currency->value),
+        ]);
+
+        Setting::create([
+            'name' => 'minimal_shipping_price',
+            'value' => '0.01',
+            'public' => false,
+        ]);
+
+        // This is set as 0.00 on purpose, 0.01 should be used
+        Setting::create([
+            'name' => 'minimal_product_price',
+            'value' => '0.00',
+            'public' => false,
+        ]);
+
+        $shippingMethod->priceRanges()->saveMany([$lowRange]);
+
+        $couponProduct = Discount::factory()->create([
+            'description' => 'Testowy kupon',
+            'name' => 'Kupon order',
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => false,
+            'percentage' => null,
+        ]);
+
+        $this->discountRepository->setDiscountAmounts($couponProduct->getKey(), [
+            PriceDto::from([
+                'value' => '5000.00',
+                'currency' => $this->currency,
+            ])
+        ]);
+
+        $couponShipping = Discount::factory()->create([
+            'description' => 'Testowy kupon',
+            'name' => 'Kupon shipping',
+            'target_type' => DiscountTargetType::SHIPPING_PRICE,
+            'target_is_allow_list' => false,
+            'percentage' => null,
+        ]);
+
+        $this->discountRepository->setDiscountAmounts($couponShipping->getKey(), [
+            PriceDto::from([
+                'value' => '15.00',
+                'currency' => $this->currency,
+            ])
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->postJson('/cart/process', [
+                'sales_channel_id' => SalesChannel::query()->value('id'),
+                'shipping_method_id' => $shippingMethod->getKey(),
+                'items' => [
+                    [
+                        'cartitem_id' => '1',
+                        'product_id' => $this->product->getKey(),
+                        'quantity' => 1,
+                        'schemas' => [],
+                    ],
+                ],
+                'coupons' => [
+                    $couponProduct->code,
+                    $couponShipping->code,
+                ],
+                'currency' => $this->currency,
+            ])
+            ->assertValid()->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => '4600.00',
+                'cart_total' => '0.01',
+                'shipping_price_initial' => '10.00',
+                'shipping_price' => '0.01',
+                'summary' => '0.02',
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => '4600.00',
+                'price_discounted' => '0.01',
+            ])
+            ->assertJsonFragment([
+                'id' => $couponProduct->getKey(),
+                'name' => $couponProduct->name,
+                'code' => $couponProduct->code,
+                'value' => '4599.99', // discount -5000, but product price is 4600 and minimal price is 0.01
+            ])
+            ->assertJsonFragment([
+                'id' => $couponShipping->getKey(),
+                'name' => $couponShipping->name,
+                'code' => $couponShipping->code,
+                'value' => '9.99', // discount -15, but shipping_price_initial is 10 and minimal price is 0.01
             ]);
     }
 
@@ -984,7 +1172,6 @@ class CartTest extends TestCase
             ->postJson(
                 '/cart/process',
                 [
-                    'currency' => $this->currency,
                     'sales_channel_id' => SalesChannel::query()->value('id'),
                     'shipping_method_id' => $this->shippingMethod->getKey(),
                     'items' => [
@@ -995,6 +1182,7 @@ class CartTest extends TestCase
                             'schemas' => [],
                         ],
                     ],
+                    'currency' => $this->currency,
                 ] + $coupons,
             );
 
@@ -1007,31 +1195,31 @@ class CartTest extends TestCase
             ->assertOk()
             ->assertJsonFragment(
                 [
-                    'cart_total_initial' => "9200.00",
-                    'cart_total' => "0.02",
-                    'shipping_price_initial' => "0.00",
-                    'shipping_price' => "0.00",
-                    'summary' => "0.02",
+                    'cart_total_initial' => '9200.00',
+                    'cart_total' => '0.02',
+                    'shipping_price_initial' => '8.11',
+                    'shipping_price' => '8.11',
+                    'summary' => '8.13',
                 ] + $result
             )
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => "4600.00",
-                'price_discounted' => "0.01",
+                'price' => '4600.00',
+                'price_discounted' => '0.01',
                 'quantity' => 2,
             ])
             ->assertJsonFragment(
                 [
                     'id' => $productDiscount->getKey(),
                     'name' => $productDiscount->name,
-                    'value' => "9199.98",
+                    'value' => '9199.98',
                 ] + $discountCode1
             )
             ->assertJsonFragment(
                 [
                     'id' => $discount->getKey(),
                     'name' => $discount->name,
-                    'value' => "0.00",
+                    'value' => '0.00',
                 ] + $discountCode2
             );
     }
@@ -1046,8 +1234,6 @@ class CartTest extends TestCase
      */
     public function testCartProcessWithDiscountValueAmountExtendPrice($user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('cart.verify');
 
         $product = $this->productService->create(
@@ -1071,12 +1257,19 @@ class CartTest extends TestCase
             ])
         );
         $sale = Discount::factory()->create([
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::PRODUCTS,
-            'value' => 500,
             'target_is_allow_list' => true,
             'code' => null,
+            'percentage' => null,
         ]);
+
+        $this->discountRepository->setDiscountAmounts($sale->getKey(), [
+            PriceDto::from([
+                'value' => '500.00',
+                'currency' => $this->currency,
+            ])
+        ]);
+
         $sale->products()->attach($product->getKey());
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
@@ -1097,12 +1290,13 @@ class CartTest extends TestCase
                     'quantity' => 1,
                 ],
             ],
+            'currency' => $this->currency,
         ]);
 
         $response
             ->assertValid()
             ->assertValid()->assertOk()
-            ->assertJsonFragment(['summary' => 108.11]); // (10 (price) - 20 (discount)) + 100 + 8.11 (shipping)
+            ->assertJsonFragment(['summary' => '108.12']); // (10 (price) - 20 (discount)) + 100 + 8.11 (shipping)
     }
 
     /**
@@ -1112,8 +1306,6 @@ class CartTest extends TestCase
      */
     public function testCartProcessWithPromotionOnMultiProductWithSchema($user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('cart.verify');
 
         $productDto = FakeDto::productCreateDto([
@@ -1132,12 +1324,19 @@ class CartTest extends TestCase
         $product->schemas()->save($schema);
 
         $sale = Discount::factory()->create([
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::PRODUCTS,
-            'value' => 25,
             'target_is_allow_list' => true,
             'code' => null,
+            'percentage' => null,
         ]);
+
+        $this->discountRepository->setDiscountAmounts($sale->getKey(), [
+            PriceDto::from([
+                'value' => '25.00',
+                'currency' => $this->currency,
+            ])
+        ]);
+
         $sale->products()->attach($product->getKey());
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
@@ -1153,11 +1352,12 @@ class CartTest extends TestCase
                     ],
                 ],
             ],
+            'currency' => $this->currency,
         ]);
 
         $response->assertValid()
             ->assertValid()->assertOk()
-            ->assertJsonFragment(['summary' => 23.11]); // 3*((10(price) +20(schema)) -25(discount)) +8.11(shipping)
+            ->assertJsonFragment(['summary' => '23.11']); // 3*((10(price) +20(schema)) -25(discount)) +8.11(shipping)
     }
 
     /**
@@ -1829,9 +2029,9 @@ class CartTest extends TestCase
             ->assertJsonFragment([
                 'cart_total_initial' => '0.00',
                 'cart_total' => '0.00',
-                'shipping_price_initial' => '8.11',
-                'shipping_price' => '8.11',
-                'summary' => '8.11',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '0.00',
                 'coupons' => [],
                 'sales' => [],
             ])
@@ -1874,9 +2074,9 @@ class CartTest extends TestCase
             ->assertJsonFragment([
                 'cart_total_initial' => '0.00',
                 'cart_total' => '0.00',
-                'shipping_price_initial' => '8.11',
-                'shipping_price' => '8.11',
-                'summary' => '8.11',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '0.00',
                 'coupons' => [],
                 'sales' => [],
             ])
@@ -1963,6 +2163,11 @@ class CartTest extends TestCase
         ]);
 
         $this->product->sets()->sync([$subChildrenSet->getKey()]);
+        $this->product->ancestorSets()->sync([
+            $parentSet->getKey(),
+            $childrenSet->getKey(),
+            $subChildrenSet->getKey(),
+        ]);
 
         $discountApplied = Discount::factory()->create(
             [
@@ -2053,8 +2258,6 @@ class CartTest extends TestCase
      */
     public function testCartProcessSaleWithTargetProduct($user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('cart.verify');
 
         $productWithSale = $this->productService->create(
@@ -2067,10 +2270,16 @@ class CartTest extends TestCase
             'code' => null,
             'description' => 'Promocja',
             'name' => 'Promocja na produkt',
-            'value' => 100,
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
+            'percentage' => null,
+        ]);
+
+        $this->discountRepository->setDiscountAmounts($sale->getKey(), [
+            PriceDto::from([
+                'value' => '100.00',
+                'currency' => $this->currency,
+            ])
         ]);
 
         $sale->products()->attach($productWithSale->getKey());
@@ -2079,10 +2288,16 @@ class CartTest extends TestCase
             'code' => null,
             'description' => 'Promocja dostawa',
             'name' => 'Promocja na dostawę',
-            'value' => 100,
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::SHIPPING_PRICE,
             'target_is_allow_list' => true,
+            'percentage' => null,
+        ]);
+
+        $this->discountRepository->setDiscountAmounts($saleShippingMethod->getKey(), [
+            PriceDto::from([
+                'value' => '100.00',
+                'currency' => $this->currency,
+            ])
         ]);
 
         $saleShippingMethod->shippingMethods()->attach($saleShippingMethod->getKey());
@@ -2098,22 +2313,23 @@ class CartTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+            'currency' => $this->currency,
         ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 9200,
-                'cart_total' => 9200,
-                'shipping_price_initial' => 0,
-                'shipping_price' => 0,
-                'summary' => 9200,
+                'cart_total_initial' => '9200.00',
+                'cart_total' => '9200.00',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '9200.00',
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonCount(0, 'data.sales')
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => 4600,
-                'price_discounted' => 4600,
+                'price' => '4600.00',
+                'price_discounted' => '4600.00',
             ])
             ->assertJsonMissing(
                 [
@@ -2303,17 +2519,21 @@ class CartTest extends TestCase
      */
     public function testCartProcessPurchaseLimitWithSale($user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('cart.verify');
 
         $sale = Discount::factory()->create([
             'code' => null,
             'target_type' => DiscountTargetType::ORDER_VALUE,
             'name' => 'Sale for limited product',
-            'type' => DiscountType::AMOUNT,
-            'value' => 300,
             'target_is_allow_list' => true,
+            'percentage' => null,
+        ]);
+
+        $this->discountRepository->setDiscountAmounts($sale->getKey(), [
+            PriceDto::from([
+                'value' => '300.00',
+                'currency' => $this->currency,
+            ])
         ]);
 
         $conditionGroup = ConditionGroup::create();
@@ -2427,9 +2647,9 @@ class CartTest extends TestCase
             ->assertJsonFragment([
                 'cart_total_initial' => '0.00',
                 'cart_total' => '0.00',
-                'shipping_price_initial' => '8.11',
-                'shipping_price' => '8.11',
-                'summary' => '8.11',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '0.00',
                 'coupons' => [],
                 'sales' => [],
                 'items' => [],
@@ -2524,9 +2744,9 @@ class CartTest extends TestCase
             ->assertJsonFragment([
                 'cart_total_initial' => '0.00',
                 'cart_total' => '0.00',
-                'shipping_price_initial' => '8.11',
-                'shipping_price' => '8.11',
-                'summary' => '8.11',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '0.00',
                 'coupons' => [],
                 'sales' => [],
                 'items' => [],
@@ -2730,18 +2950,347 @@ class CartTest extends TestCase
             ]);
     }
 
+    public static function itemAvailableProvider(): array
+    {
+        return [
+            'first as user' => ['user', 1, 0, 2],
+            'second as user' => ['user', 0, 1, 2],
+            'last as user' => ['user', 0, 2, 1],
+            'first as app' => ['application', 1, 0, 2],
+            'second as app' => ['application', 0, 1, 2],
+            'last as app' => ['application', 0, 2, 1],
+        ];
+    }
+
+    /**
+     * @dataProvider itemAvailableProvider
+     */
+    public function testCartProcessWithNotAvailable(string $user, int $first, int $second, int $third): void
+    {
+        $this->{$user}->givePermissionTo('cart.verify');
+
+        /** @var Product $notAvailable */
+        $notAvailable = $this->productService->create(
+            FakeDto::productCreateDto([
+                'public' => true,
+                'prices_base' => [PriceDto::from(Money::of(2000.0, $this->currency->value))],
+            ])
+        );
+        $item = Item::factory()->create();
+        $notAvailable->items()->attach([$item->getKey() => ['required_quantity' => 1]]);
+
+        $anotherProduct = $this->productService->create(
+            FakeDto::productCreateDto([
+                'public' => true,
+                'prices_base' => [PriceDto::from(Money::of(500.0, $this->currency->value))],
+            ])
+        );
+
+        $cartItems = [
+            [
+                'cartitem_id' => '1',
+                'product_id' => $this->product->getKey(),
+                'quantity' => 2,
+                'schemas' => [],
+            ],
+            [
+                'cartitem_id' => '2',
+                'product_id' => $notAvailable->getKey(),
+                'quantity' => 2,
+                'schemas' => [],
+            ],
+            [
+                'cartitem_id' => '3',
+                'product_id' => $anotherProduct->getKey(),
+                'quantity' => 1,
+                'schemas' => [],
+            ],
+        ];
+
+        $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                $cartItems[$first],
+                $cartItems[$second],
+                $cartItems[$third],
+            ],
+        ])
+            ->assertValid()
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => '9700.00',
+                'cart_total' => '9700.00',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '9700.00',
+                'coupons' => [],
+                'sales' => [],
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => '4600.00',
+                'price_discounted' => '4600.00',
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '3',
+                'price' => '500.00',
+            ])
+            ->assertJsonMissing([
+                'cartitem_id' => '2',
+                'price' => '2000.00',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessWithRequiredSchema(string $user): void
+    {
+        $this->{$user}->givePermissionTo('cart.verify');
+
+        $schema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => 'select',
+                'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
+                'hidden' => false,
+                'required' => true,
+                'options' => [
+                    [
+                        'name' => 'XL',
+                        'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
+                    ],
+                    [
+                        'name' => 'L',
+                        'prices' => [PriceDto::from(Money::of(100, $this->currency->value))],
+                    ],
+                ],
+            ])
+        );
+
+        $option = $schema->options->where('name', 'XL')->first();
+
+        $item = Item::factory()->create();
+        $item->deposits()->create([
+            'quantity' => 10,
+        ]);
+        $option->items()->sync([$item->getKey() => ['required_quantity' => 1]]);
+
+        $option2 = $schema->options->where('name', 'L')->first();
+        $item2 = Item::factory()->create();
+        $option2->items()->sync([$item2->getKey() => ['required_quantity' => 1]]);
+
+        $optionalSchema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => 'select',
+                'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
+                'hidden' => false,
+                'required' => false,
+                'options' => [
+                    [
+                        'name' => 'Tak',
+                        'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
+                    ],
+                ],
+            ])
+        );
+
+        $optionalOption = $optionalSchema->options->where('name', 'Tak')->first();
+
+        $optionalItem = Item::factory()->create();
+        $optionalOption->items()->sync([$optionalItem->getKey() => ['required_quantity' => 1]]);
+
+        $noItemSchema = $this->schemaCrudService->store(
+            FakeDto::schemaDto([
+                'type' => 'select',
+                'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
+                'hidden' => false,
+                'required' => true,
+                'options' => [
+                    [
+                        'name' => 'Tak',
+                        'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
+                    ],
+                ],
+            ])
+        );
+
+        $noItemOption = $noItemSchema->options->where('name', 'Tak')->first();
+
+        $this->product->schemas()->sync([$schema->getKey(), $optionalSchema->getKey(), $noItemSchema->getKey()]);
+
+        $this->actingAs($this->{$user})->postJson('/cart/process', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [
+                        $schema->getKey() => $option->getKey(),
+                        $optionalSchema->getKey() => $optionalOption->getKey(),
+                        $noItemSchema->getKey() => $noItemOption->getKey(),
+                    ],
+                ]
+            ],
+        ])
+            ->assertValid()
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => '0.00',
+                'cart_total' => '0.00',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '0.00',
+                'coupons' => [],
+                'sales' => [],
+                'items' => [],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessShippingMethodPriceRanges($user): void
+    {
+        $this->{$user}->givePermissionTo('cart.verify');
+
+        $shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
+        $lowRange = PriceRange::create([
+            'start' => Money::zero($this->currency->value),
+            'value' => Money::of(10, $this->currency->value),
+        ]);
+        $free = PriceRange::create([
+            'start' => Money::of(50.0, $this->currency->value),
+            'value' => Money::of(0, $this->currency->value),
+        ]);
+
+        $shippingMethod->priceRanges()->saveMany([$lowRange, $free]);
+
+        $saleApplied = Discount::factory()->create([
+            'description' => 'Testowa promocja',
+            'name' => 'Testowa promocja obowiązująca',
+            'percentage' => '50.00',
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+
+        $product = $this->productService->create(
+            FakeDto::productCreateDto([
+                'public' => true,
+                'prices_base' => [PriceDto::from(Money::of(49.0, $this->currency->value))],
+            ])
+        );
+
+        $saleApplied->products()->attach($product->getKey());
+
+        $this
+            ->actingAs($this->{$user})
+            ->postJson('/cart/process', [
+                'sales_channel_id' => SalesChannel::query()->value('id'),
+                'shipping_method_id' => $shippingMethod->getKey(),
+                'items' => [
+                    [
+                        'cartitem_id' => '1',
+                        'product_id' => $product->getKey(),
+                        'quantity' => 1,
+                        'schemas' => [],
+                    ],
+                ],
+                'currency' => $this->currency,
+            ])
+            ->assertValid()
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => '49.00',
+                'cart_total' => '24.50',
+                'shipping_price_initial' => '10.00',
+                'shipping_price' => '10.00',
+                'summary' => '34.50',
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => '49.00',
+                'price_discounted' => '24.50',
+            ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->postJson('/cart/process', [
+                'sales_channel_id' => SalesChannel::query()->value('id'),
+                'shipping_method_id' => $shippingMethod->getKey(),
+                'items' => [
+                    [
+                        'cartitem_id' => '1',
+                        'product_id' => $product->getKey(),
+                        'quantity' => 2,
+                        'schemas' => [],
+                    ],
+                ],
+                'currency' => $this->currency,
+            ])
+            ->assertValid()
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => '98.00',
+                'cart_total' => '49.00',
+                'shipping_price_initial' => '10.00',
+                'shipping_price' => '10.00',
+                'summary' => '59.00',
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => '49.00',
+                'price_discounted' => '24.50',
+            ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->postJson('/cart/process', [
+                'sales_channel_id' => SalesChannel::query()->value('id'),
+                'shipping_method_id' => $shippingMethod->getKey(),
+                'items' => [
+                    [
+                        'cartitem_id' => '1',
+                        'product_id' => $product->getKey(),
+                        'quantity' => 3,
+                        'schemas' => [],
+                    ],
+                ],
+                'currency' => $this->currency,
+            ])
+            ->assertValid()
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => '147.00',
+                'cart_total' => '73.50',
+                'shipping_price_initial' => '0.00',
+                'shipping_price' => '0.00',
+                'summary' => '73.50',
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => '49.00',
+                'price_discounted' => '24.50',
+            ]);
+    }
+
     private function prepareDataForCouponTest($coupon): array
     {
-        $this->markTestSkipped();
-
         $code = $coupon ? [] : ['code' => null];
 
         $discountApplied = Discount::factory()->create(
             [
                 'description' => 'Testowy kupon obowiązujący',
                 'name' => 'Testowy kupon obowiązujący',
-                'value' => 10,
-                'type' => DiscountType::PERCENTAGE,
+                'percentage' => '10.00',
                 'target_type' => DiscountTargetType::ORDER_VALUE,
                 'target_is_allow_list' => true,
             ] + $code
@@ -2751,12 +3300,18 @@ class CartTest extends TestCase
             [
                 'description' => 'Testowy kupon',
                 'name' => 'Testowy kupon',
-                'value' => 100,
-                'type' => DiscountType::AMOUNT,
                 'target_type' => DiscountTargetType::ORDER_VALUE,
                 'target_is_allow_list' => true,
+                'percentage' => null,
             ] + $code
         );
+
+        $this->discountRepository->setDiscountAmounts($discount->getKey(), [
+            PriceDto::from([
+                'value' => '100.00',
+                'currency' => $this->currency,
+            ])
+        ]);
 
         $conditionGroup = ConditionGroup::create();
 

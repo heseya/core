@@ -43,7 +43,7 @@ final class ProductSetCreateDto extends Data
         public readonly array $translations,
         public readonly array $published,
         #[AlphaDash, Max(255)]
-        public readonly string|null $slug_suffix,
+        public readonly string $slug_suffix,
         public readonly bool $slug_override,
         public readonly bool $public,
 

@@ -42,6 +42,14 @@ class ProductRepository implements ProductRepositoryContract
 
     public function search(ProductSearchDto $dto): LengthAwarePaginator
     {
+        if (Config::get('search.use_scout') && is_string($dto->search) && !empty($dto->search)) {
+            $scoutResults = Product::search($dto->search)->keys()->toArray();
+            $dto->search = new Optional();
+            $dto->ids = is_array($dto->ids) && !empty($dto->ids)
+                ? array_intersect($scoutResults, $dto->ids)
+                : $scoutResults;
+        }
+
         /** @var Builder<Product> $query */
         $query = Product::searchByCriteria($dto->except('sort')->toArray() + $this->getPublishedLanguageFilter('products'))
             ->with([
@@ -110,15 +118,16 @@ class ProductRepository implements ProductRepositoryContract
             $query->where('products.public', true);
         }
 
-        $loadAttributes = collect();
-        if (is_array($dto->attribute)) {
-            $loadAttributes->push(...array_keys($dto->attribute));
-        }
         if (request()->filled('attribute_slug')) {
-            $loadAttributes->push(request()->string('attribute_slug'));
-        }
-        if ($loadAttributes->isNotEmpty()) {
-            $query->with(['productAttributes' => fn (Builder|HasMany $subquery) => $subquery->slug($loadAttributes->toArray())]); // @phpstan-ignore-line
+            $query->with([
+                'productAttributes' => fn (Builder|HasMany $subquery) => $subquery->slug(explode(';', request()->input('attribute_slug'))), // @phpstan-ignore-line
+                'productAttributes.attribute',
+                'productAttributes.attribute.metadata',
+                'productAttributes.attribute.metadataPrivate',
+                'productAttributes.options',
+                'productAttributes.options.metadata',
+                'productAttributes.options.metadataPrivate',
+            ]);
         }
 
         if (is_string($dto->price_sort_direction)) {
@@ -140,7 +149,12 @@ class ProductRepository implements ProductRepositoryContract
             }
         }
 
-        if (!$dto->sort instanceof Optional) {
+        if (Config::get('search.use_scout') && !empty($scoutResults)) {
+            $query->orderByRaw('FIELD(products.id,"' . implode('","', $scoutResults) . '")');
+        }
+
+        if (is_string($dto->sort)) {
+            $query->reorder();
             $query->sort($dto->sort);
         }
 

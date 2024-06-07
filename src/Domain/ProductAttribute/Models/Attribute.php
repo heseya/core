@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\ProductAttribute\Models;
 
+use App\Criteria\AttributeProductSetsCriteria;
 use App\Criteria\AttributeSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
@@ -14,10 +15,12 @@ use App\Models\Product;
 use App\Models\ProductAttribute;
 use App\Traits\CustomHasTranslations;
 use App\Traits\HasMetadata;
+use App\Traits\IsReorderable;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductSet\ProductSet;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -28,6 +31,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $name
  * @property string $description
  * @property AttributeType $type
+ * @property bool $include_in_text_search
+ * @property bool $match_any
  *
  * @mixin IdeHelperAttribute
  */
@@ -37,6 +42,7 @@ final class Attribute extends Model implements Translatable
     use HasCriteria;
     use HasFactory;
     use HasMetadata;
+    use IsReorderable;
 
     public const HIDDEN_PERMISSION = 'attributes.show_hidden';
 
@@ -54,6 +60,8 @@ final class Attribute extends Model implements Translatable
         'sortable',
         'order',
         'published',
+        'include_in_text_search',
+        'match_any',
     ];
 
     /** @var string[] */
@@ -69,6 +77,8 @@ final class Attribute extends Model implements Translatable
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'published' => 'array',
+        'include_in_text_search' => 'boolean',
+        'match_any' => 'boolean',
     ];
 
     /** @var string[] */
@@ -79,7 +89,9 @@ final class Attribute extends Model implements Translatable
         'search' => AttributeSearch::class,
         'ids' => WhereInIds::class,
         'published' => Like::class,
-        'attribute.published' => Like::class,
+        'attributes.published' => Like::class,
+        'sortable',
+        'sets' => AttributeProductSetsCriteria::class,
     ];
 
     /**
@@ -89,7 +101,7 @@ final class Attribute extends Model implements Translatable
     {
         return $this
             ->hasMany(AttributeOption::class)
-            ->orderBy('order')
+            ->orderBy('order', 'asc')
             ->with('metadata', 'metadataPrivate');
     }
 
@@ -110,6 +122,30 @@ final class Attribute extends Model implements Translatable
      */
     public function productSets(): BelongsToMany
     {
-        return $this->belongsToMany(ProductSet::class);
+        return $this->belongsToMany(ProductSet::class)->withPivot('order');
+    }
+
+    /**
+     * @param Builder<self> $query
+     */
+    public function scopeTextSearchable(Builder $query): void
+    {
+        $query->where('include_in_text_search', '=', true);
+    }
+
+    /**
+     * @param Builder<self> $query
+     */
+    public function scopeMatchAny(Builder $query): void
+    {
+        $query->where('match_any', '=', true);
+    }
+
+    /**
+     * @param Builder<self> $query
+     */
+    public function scopeMatchAll(Builder $query): void
+    {
+        $query->where('match_any', '=', false);
     }
 }

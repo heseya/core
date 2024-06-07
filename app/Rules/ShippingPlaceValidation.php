@@ -10,9 +10,11 @@ use Closure;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Contracts\Validation\ValidatorAwareRule;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Validator as AwareValidator;
 
-final class ShippingPlaceValidation implements DataAwareRule, ValidationRule
+final class ShippingPlaceValidation implements DataAwareRule, ValidationRule, ValidatorAwareRule
 {
     /**
      * All the data under validation.
@@ -20,6 +22,7 @@ final class ShippingPlaceValidation implements DataAwareRule, ValidationRule
      * @var array<string, mixed>
      */
     private array $data = [];
+    protected AwareValidator $validator;
 
     /**
      * Set the data under validation.
@@ -29,6 +32,13 @@ final class ShippingPlaceValidation implements DataAwareRule, ValidationRule
     public function setData(array $data): self
     {
         $this->data = $data;
+
+        return $this;
+    }
+
+    public function setValidator(AwareValidator $validator)
+    {
+        $this->validator = $validator;
 
         return $this;
     }
@@ -59,30 +69,42 @@ final class ShippingPlaceValidation implements DataAwareRule, ValidationRule
     private function point(mixed $value, Closure $fail): void
     {
         if (Address::query()->where('id', $value)->doesntExist()) {
-            $fail(Exceptions::CLIENT_SHIPPING_POINT_NOT_EXISTS);
+            $fail(Exceptions::CLIENT_SHIPPING_POINT_NOT_EXISTS->value);
         }
     }
 
     private function pointExternal(mixed $value, Closure $fail): void
     {
         if (!is_string($value)) {
-            $fail(Exceptions::CLIENT_SHIPPING_POINT_STRING);
+            $fail(Exceptions::CLIENT_SHIPPING_POINT_STRING->value);
         }
     }
 
     private function address(Closure $fail): void
     {
-        if (Validator::make($this->data, [
+        $validator = Validator::make($this->data, [
             'shipping_place' => ['nullable', 'array', new ShippingAddressRequired()],
-            'shipping_place.name' => ['string', 'max:255'],
+            'shipping_place.name' => ['string', 'max:255', new FullName()],
             'shipping_place.phone' => ['string', 'max:20'],
             'shipping_place.address' => ['string', 'max:255'],
             'shipping_place.zip' => ['string', 'max:16'],
             'shipping_place.city' => ['string', 'max:255'],
             'shipping_place.country' => ['string', 'size:2'],
             'shipping_place.vat' => ['nullable', 'string', 'max:15'],
-        ])->fails()) {
-            $fail(Exceptions::CLIENT_SHIPPING_ADDRESS_INVALID);
+        ]);
+
+        if ($validator->fails()) {
+            foreach ($validator->errors()->messages() as $attribute => $messages) {
+                foreach ($messages as $message) {
+                    $this->validator->getMessageBag()->add($attribute, $message);
+                }
+            }
+            foreach ($validator->failed() as $field => $value) {
+                foreach ($value as $rule => $message) {
+                    $this->validator->addFailure($field, $rule);
+                }
+            }
+            $fail(Exceptions::CLIENT_SHIPPING_ADDRESS_INVALID->value);
         }
     }
 }

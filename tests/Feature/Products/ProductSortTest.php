@@ -201,43 +201,67 @@ class ProductSortTest extends TestCase
             'id' => 'bbbbbbbb-56d6-4174-9840-39231e0c3f2f',
             'public' => true,
             'slug' => 'set-1',
+            'order' => 1,
         ]);
 
         $product1ForSet1 = Product::factory()->create(['name' => 'Product 1 For Set 1 Order 2', 'public' => true]);
         $product2ForSet1 = Product::factory()->create(['name' => 'Product 2 For Set 1 Order 1', 'public' => true]);
         $product3ForSet1 = Product::factory()->create(['name' => 'Product 3 For Set 1 Order 0', 'public' => true]);
 
-        $set1->products()->attach($product1ForSet1->getKey(), ['order' => 2]);
-        $set1->products()->attach($product2ForSet1->getKey(), ['order' => 1]);
-        $set1->products()->attach($product3ForSet1->getKey(), ['order' => 0]);
+        $set1->products()->attach([
+            $product1ForSet1->getKey(),
+            $product2ForSet1->getKey(),
+            $product3ForSet1->getKey(),
+        ]);
+        $set1->descendantProducts()->attach([
+            $product1ForSet1->getKey() => ['order' => 2],
+            $product2ForSet1->getKey() => ['order' => 1],
+            $product3ForSet1->getKey() => ['order' => 0],
+        ]);
 
         $set2 = ProductSet::factory()->create([
             'id' => 'aaaaaaaa-56d6-4174-9840-39231e0c3f2f',
             'public' => true,
             'slug' => 'set-2',
+            'order' => 3,
         ]);
 
         $product1ForSet2 = Product::factory()->create(['name' => 'Product 1 For Set 2 Order 1', 'public' => true]);
         $product2ForSet2 = Product::factory()->create(['name' => 'Product 2 For Set 2 Order 2', 'public' => true]);
         $product3ForSet2 = Product::factory()->create(['name' => 'Product 3 For Set 2 Order 0', 'public' => true]);
 
-        $set2->products()->attach($product1ForSet2->getKey(), ['order' => 1]);
-        $set2->products()->attach($product2ForSet2->getKey(), ['order' => 2]);
-        $set2->products()->attach($product3ForSet2->getKey(), ['order' => 0]);
+        $set2->products()->attach([
+            $product1ForSet2->getKey(),
+            $product2ForSet2->getKey(),
+            $product3ForSet2->getKey(),
+        ]);
+        $set2->descendantProducts()->attach([
+            $product1ForSet2->getKey() => ['order' => 1],
+            $product2ForSet2->getKey() => ['order' => 2],
+            $product3ForSet2->getKey() => ['order' => 0],
+        ]);
 
         $set3 = ProductSet::factory()->create([
             'id' => 'cccccccc-56d6-4174-9840-39231e0c3f2f',
             'public' => true,
             'slug' => 'set-3',
+            'order' => 2,
         ]);
 
         $product1ForSet3 = Product::factory()->create(['name' => 'Product 1 For Set 3 Order 1', 'public' => true]);
         $product2ForSet3 = Product::factory()->create(['name' => 'Product 2 For Set 3 Order 0', 'public' => true]);
         $product3ForSet3 = Product::factory()->create(['name' => 'Product 3 For Set 3 Order 2', 'public' => true]);
 
-        $set3->products()->attach($product1ForSet3->getKey(), ['order' => 1]);
-        $set3->products()->attach($product2ForSet3->getKey(), ['order' => 0]);
-        $set3->products()->attach($product3ForSet3->getKey(), ['order' => 2]);
+        $set3->products()->attach([
+            $product1ForSet3->getKey(),
+            $product2ForSet3->getKey(),
+            $product3ForSet3->getKey(),
+        ]);
+        $set3->descendantProducts()->attach([
+            $product1ForSet3->getKey() => ['order' => 1],
+            $product2ForSet3->getKey() => ['order' => 0],
+            $product3ForSet3->getKey() => ['order' => 2],
+        ]);
 
         $set1->children()->save($set2);
         $set2->children()->save($set3);
@@ -253,12 +277,77 @@ class ProductSortTest extends TestCase
             ->assertJsonPath('data.0.id', $product3ForSet1->getKey())
             ->assertJsonPath('data.1.id', $product2ForSet1->getKey())
             ->assertJsonPath('data.2.id', $product1ForSet1->getKey())
-            ->assertJsonPath('data.3.id', $product3ForSet2->getKey())
+            ->assertJsonPath('data.3.id', $product2ForSet3->getKey())
+            ->assertJsonPath('data.4.id', $product1ForSet3->getKey())
+            ->assertJsonPath('data.5.id', $product3ForSet3->getKey())
+            ->assertJsonPath('data.6.id', $product3ForSet2->getKey())
+            ->assertJsonPath('data.7.id', $product1ForSet2->getKey())
+            ->assertJsonPath('data.8.id', $product2ForSet2->getKey());
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products', [
+                'sets' => [
+                    'set-1',
+                ],
+                'sort' => 'set.set-1:desc',
+            ])
+            ->assertJsonPath('data.0.id', $product1ForSet1->getKey())
+            ->assertJsonPath('data.1.id', $product2ForSet1->getKey())
+            ->assertJsonPath('data.2.id', $product3ForSet1->getKey())
+            ->assertJsonPath('data.3.id', $product2ForSet2->getKey())
             ->assertJsonPath('data.4.id', $product1ForSet2->getKey())
-            ->assertJsonPath('data.5.id', $product2ForSet2->getKey())
-            ->assertJsonPath('data.6.id', $product2ForSet3->getKey())
+            ->assertJsonPath('data.5.id', $product3ForSet2->getKey())
+            ->assertJsonPath('data.6.id', $product3ForSet3->getKey())
             ->assertJsonPath('data.7.id', $product1ForSet3->getKey())
-            ->assertJsonPath('data.8.id', $product3ForSet3->getKey());
+            ->assertJsonPath('data.8.id', $product2ForSet3->getKey());
+    }
+
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSortProductBySetsNoDuplicatedProducts(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.show');
+
+        $parentSet = ProductSet::factory()->create([
+            'id' => 'aaaaaaaa-56d6-4174-9840-39231e0c3f2f',
+            'public' => true,
+            'slug' => 'parent',
+        ]);
+
+        $childSet1 = ProductSet::factory()->create([
+            'id' => 'bbbbbbbb-56d6-4174-9840-39231e0c3f2f',
+            'public' => true,
+            'slug' => 'child-set-1',
+            'parent_id' => $parentSet->getKey(),
+        ]);
+
+        $childSet2 = ProductSet::factory()->create([
+            'id' => 'cccccccc-56d6-4174-9840-39231e0c3f2f',
+            'public' => true,
+            'slug' => 'child-set-2',
+            'parent_id' => $parentSet->getKey(),
+        ]);
+
+        $product1 = Product::factory()->create(['name' => 'Product 1', 'public' => true]);
+        $product2 = Product::factory()->create(['name' => 'Product 2', 'public' => true]);
+
+        $parentSet->products()->attach($product1->getKey(), ['order' => 0]);
+        $parentSet->products()->attach($product2->getKey(), ['order' => 1]);
+        $childSet1->products()->attach($product2->getKey(), ['order' => 0]);
+        $childSet2->products()->attach($product1->getKey(), ['order' => 0]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products', [
+                'sort' => 'set.parent',
+            ])
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonPath('data.0.id', $product1->getKey())
+            ->assertJsonPath('data.1.id', $product2->getKey());
     }
 
     private function createProductWithAttribute(

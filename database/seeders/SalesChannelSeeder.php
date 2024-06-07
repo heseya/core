@@ -23,11 +23,14 @@ class SalesChannelSeeder extends Seeder
             'default_language_id' => Language::default()?->getKey(),
             'vat_rate' => '0',
         ]);
+        $published = [];
         foreach (Language::query()->get() as $language) {
             $channel->setLocale($language->getKey())->fill([
                 'name' => 'Another',
             ]);
+            $published[] = $language->getKey();
         }
+        $channel->published = $published;
         $channel->save();
     }
 }

@@ -39,7 +39,6 @@ use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
 use App\Services\Contracts\UrlServiceContract;
 use App\Services\Contracts\WebHookServiceContract;
-use App\Services\Contracts\WishlistServiceContract;
 use App\Services\DepositService;
 use App\Services\DiscountService;
 use App\Services\DocumentService;
@@ -50,7 +49,6 @@ use App\Services\MediaAttachmentService;
 use App\Services\MediaService;
 use App\Services\MetadataService;
 use App\Services\NameService;
-use App\Services\OneTimeSecurityCodeService;
 use App\Services\OptionService;
 use App\Services\OrderService;
 use App\Services\PaymentMethodService;
@@ -68,15 +66,18 @@ use App\Services\TokenService;
 use App\Services\TranslationService;
 use App\Services\UrlService;
 use App\Services\WebHookService;
-use App\Services\WishlistService;
+use Domain\Captcha\CaptchaProvider;
+use Domain\Captcha\GoogleRecaptchaV3CaptchaProvider;
 use Domain\GoogleCategory\Services\Contracts\GoogleCategoryServiceContract;
 use Domain\GoogleCategory\Services\GoogleCategoryService;
 use Domain\Setting\Services\Contracts\SettingsServiceContract;
 use Domain\Setting\Services\SettingsService;
 use Domain\ShippingMethod\Services\Contracts\ShippingMethodServiceContract;
 use Domain\ShippingMethod\Services\ShippingMethodService;
+use Domain\User\Services\OneTimeSecurityCodeService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -112,7 +113,6 @@ class AppServiceProvider extends ServiceProvider
         ShippingTimeDateServiceContract::class => ShippingTimeDateService::class,
         ProviderServiceContract::class => ProviderService::class,
         GoogleCategoryServiceContract::class => GoogleCategoryService::class,
-        WishlistServiceContract::class => WishlistService::class,
         FavouriteServiceContract::class => FavouriteService::class,
         PaymentMethodServiceContract::class => PaymentMethodService::class,
         MediaAttachmentServiceContract::class => MediaAttachmentService::class,
@@ -121,6 +121,9 @@ class AppServiceProvider extends ServiceProvider
         // Repositories
         ProductRepositoryContract::class => ProductRepository::class,
         DiscountRepository::class => DiscountRepository::class,
+
+        // Providers
+        CaptchaProvider::class => GoogleRecaptchaV3CaptchaProvider::class,
     ];
 
     /**
@@ -155,5 +158,12 @@ class AppServiceProvider extends ServiceProvider
                 }
             }
         }
+    }
+
+    public function boot(): void
+    {
+        //                DB::listen(function ($query) {
+        //                    echo(json_encode($query, JSON_PRETTY_PRINT) . ",\n");
+        //                });
     }
 }

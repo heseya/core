@@ -131,7 +131,7 @@ final class SalesChannelsTest extends TestCase
                 'shipping_method_id' => $shipping_method->getKey(),
                 'shipping_place' => 'GDA12',
                 'billing_address' => [
-                    'name' => 'Test',
+                    'name' => 'Jan Nowak',
                     'phone' => '516516516',
                     'address' => 'Gdańska 12',
                     'zip' => '80-111',

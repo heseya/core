@@ -120,8 +120,10 @@ final class LanguageService
                     $model->forgetAllTranslations($language->getKey());
                     if ($model->hasPublishedColumn()) {
                         $published = $model->published ?? [];
-                        if (($key = array_search($language->getKey(), $published, true)) !== false) {
-                            unset($published[$key]);
+                        /** @var int|false $key */
+                        $key = array_search($language->getKey(), $published, true);
+                        if ($key !== false) {
+                            array_splice($published, $key, 1);
                         }
                         $model->published = $published;
                     }
@@ -146,6 +148,17 @@ final class LanguageService
     {
         /** @var Language|null $language */
         $language = Language::query()->where('iso', '=', $iso)->first();
+        if ($language) {
+            return $language;
+        }
+
+        return $this->defaultLanguage();
+    }
+
+    public function firstByIdOrDefault(string $id): Language
+    {
+        /** @var Language|null $language */
+        $language = Language::query()->where('id', '=', $id)->first();
         if ($language) {
             return $language;
         }

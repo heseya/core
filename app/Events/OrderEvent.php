@@ -2,8 +2,8 @@
 
 namespace App\Events;
 
-use App\Http\Resources\OrderResource;
 use App\Models\Order;
+use Domain\Order\Resources\OrderResource;
 
 abstract class OrderEvent extends WebHookEvent
 {

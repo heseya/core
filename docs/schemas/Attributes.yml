@@ -26,13 +26,16 @@ Attribute:
       example: '27'
     type:
       description: 'Type of attribute'
-      type: integer
-      example: 1
+      type: string
+      enum: [ 'single-option', 'multi-choice-option', 'number', 'date' ]
     global:
       description: 'Possibility to use attribute in search'
       type: boolean
     sortable:
       description: 'Parameter for storefront'
+      type: boolean
+    include_in_text_search:
+      description: 'Include attribute values in text search, works only for single/multiselect attribute types'
       type: boolean
     translations:
       type: array

@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Traits\GetPublishedLanguageFilter;
 use Domain\ProductSet\Dtos\ProductSetCreateDto;
+use Domain\ProductSet\Dtos\ProductSetProductsIndexDto;
 use Domain\ProductSet\Dtos\ProductSetUpdateDto;
 use Domain\ProductSet\Events\ProductSetCreated;
 use Domain\ProductSet\Events\ProductSetDeleted;
@@ -87,7 +88,7 @@ final readonly class ProductSetService
         }
 
         Validator::make(['slug' => $slug], [
-            'slug' => 'unique:product_sets,slug',
+            'slug' => Rule::unique('product_sets', 'slug')->whereNull('deleted_at'),
         ])->validate();
 
         $set = new ProductSet(
@@ -104,11 +105,20 @@ final readonly class ProductSetService
 
         $set->save();
         $set->attributes()->sync($dto->attributes);
+        $this->reorderAttributes($set, $dto->attributes);
 
         $children = Collection::make($dto->children_ids);
         if ($children->isNotEmpty()) {
-            $children = $children->map(fn ($id) => ProductSet::query()->findOrFail($id));
+            $toAttach = [];
+            $children = $children->map(fn ($id) => ProductSet::query()->with('descendantProducts')->findOrFail($id));
             $this->updateChildren($children, $set->getKey(), $slug, $publicParent && $dto->public);
+            /** @var ProductSet $child */
+            foreach ($children as $child) {
+                $toAttach = array_merge($toAttach, $child->descendantProducts()->pluck('id')->toArray());
+            }
+
+            $toAttach = array_unique($toAttach);
+            $this->syncDescendantProducts(set: $set, toAttach: $toAttach);
         }
 
         if (!($dto->seo instanceof Optional)) {
@@ -160,6 +170,7 @@ final readonly class ProductSetService
 
     public function update(ProductSet $set, ProductSetUpdateDto $dto): ProductSet
     {
+        $oldParent = $set->parent_id;
         if (!($dto->parent_id instanceof Optional) && $dto->parent_id !== null) {
             /** @var ProductSet $parent */
             $parent = ProductSet::query()->findOrFail($dto->parent_id);
@@ -172,7 +183,9 @@ final readonly class ProductSetService
             }
 
             $publicParent = $parent->public && $parent->public_parent;
-            $slug = $this->prepareSlug($dto->slug_override, $dto->slug_suffix, $parent->slug);
+            $override = $dto->slug_override instanceof Optional ? $set->slug_override : $dto->slug_override;
+            $suffix = $dto->slug_suffix instanceof Optional ? $set->slug_suffix : $dto->slug_suffix;
+            $slug = $this->prepareSlug($override, $suffix, $parent->slug);
         } else {
             if ($set->parent_id !== null) {
                 $last = ProductSet::reversed()->first();
@@ -186,16 +199,39 @@ final readonly class ProductSetService
         }
 
         Validator::make(['slug' => $slug], [
-            'slug' => Rule::unique('product_sets', 'slug')->ignoreModel($set),
+            'slug' => Rule::unique('product_sets', 'slug')->whereNull('deleted_at')->ignoreModel($set),
         ])->validate();
 
+        $toAttach = [];
+        $toDetach = [];
+        $oldDescendantProducts = $set->descendantProducts()->pluck('id')->toArray();
         if (!($dto->children_ids instanceof Optional)) {
-            $children = ProductSet::query()->whereIn('id', $dto->children_ids)->get();
+            $setChildrenIds = $set->children()->pluck('id')->toArray();
+            $toAttachChildrenProducts = array_diff($dto->children_ids, $setChildrenIds);
+            $toDetachChildrenProducts = array_diff($setChildrenIds, $dto->children_ids);
+
+            $children = ProductSet::query()->with('descendantProducts')->whereIn('id', $dto->children_ids)->get();
             $this->updateChildren($children, $set->getKey(), $slug, $publicParent && $dto->public);
+
+            /** @var ProductSet $child */
+            foreach ($children as $child) {
+                if (in_array($child->getKey(), $toAttachChildrenProducts, true)) {
+                    $toAttach = array_merge($toAttach, $child->descendantProducts()->pluck('id')->toArray());
+                }
+            }
+            $toAttach = array_unique($toAttach);
 
             $rootOrder = ProductSet::reversed()->first()?->order + 1;
 
-            $productIds = $set->allProductsIds()->merge($set->relatedProducts->pluck('id'));
+            $oldChildren = $set->children()->whereNotIn('id', $dto->children_ids)->get();
+            /** @var ProductSet $child */
+            foreach ($oldChildren as $child) {
+                if (in_array($child->getKey(), $toDetachChildrenProducts, true)) {
+                    $toDetach = array_merge($toDetach, $child->descendantProducts()->pluck('id')->toArray());
+                }
+            }
+            $toDetach = array_unique($toDetach);
+
             $set->children()
                 ->whereNotIn('id', $dto->children_ids)
                 ->update([
@@ -217,9 +253,26 @@ final readonly class ProductSetService
         }
 
         $set->save();
+        $set->refresh();
+
+        $this->syncDescendantProducts(set: $set, toAttach: $toAttach, toDetach: $toDetach);
+        if ($set->parent_id !== $oldParent) {
+            if ($set->parent_id !== null) {
+                $newDescendantProducts = $set->descendantProducts()->pluck('id')->toArray();
+                $this->syncDescendantProducts(set: $set->parent, toAttach: $newDescendantProducts);
+            }
+            if ($oldParent !== null) {
+                /** @var ProductSet|null $parent */
+                $parent = ProductSet::query()->find($oldParent);
+                if ($parent) {
+                    $this->syncDescendantProducts(set: $parent, toDetach: $oldDescendantProducts);
+                }
+            }
+        }
 
         if (!($dto->attributes instanceof Optional)) {
             $set->attributes()->sync($dto->attributes);
+            $this->reorderAttributes($set, $dto->attributes);
         }
 
         if (!($dto->seo instanceof Optional)) {
@@ -244,9 +297,68 @@ final readonly class ProductSetService
 
     public function attach(ProductSet $set, array $productsIds): Collection
     {
-        $set->products()->sync($productsIds);
+        $currentIds = $set->products()->pluck('id')->toArray();
+        $toDetach = array_diff($currentIds, $productsIds);
+        $toAttach = array_diff($productsIds, $currentIds);
+
+        $set->products()->detach($toDetach);
+
+        /**
+         * @var int $index
+         * @var Product $product
+         */
+        foreach ($set->products()->cursor() as $index => $product) {
+            $product->pivot->update(['order' => $index]);
+        }
+
+        $set->products()->attach($toAttach);
+        $set->refresh();
+
+        $productsWithoutOrder = $set->products->filter(fn (Product $product) => $product->pivot->order === null);
+
+        if ($productsWithoutOrder->isNotEmpty()) {
+            $this->fixNullOrders(
+                $set,
+                $productsWithoutOrder,
+            );
+        }
+
+        $this->syncDescendantProducts(set: $set, toAttach: $toAttach, toDetach: $toDetach);
 
         return $set->products;
+    }
+
+    private function syncDescendantProducts(ProductSet $set, array &$toAttach = [], array &$toDetach = []): void
+    {
+        $toAttach = array_diff($toAttach, $set->descendantProducts()->pluck('id')->toArray());
+        $toDetach = array_diff($toDetach, $set->products()->pluck('id')->toArray(), $set->getChildrenDescendantProductsIds());
+
+        $set->descendantProducts()->detach($toDetach);
+
+        $last = 0;
+
+        /**
+         * @var int $index
+         * @var Product $product
+         */
+        foreach ($set->descendantProducts()->cursor() as $index => $product) {
+            $product->pivot->update(['order' => $index]);
+            $last = $index;
+        }
+
+        $set->descendantProducts()->attach($toAttach);
+
+        /**
+         * @var int $index
+         * @var Product $product
+         */
+        foreach ($set->descendantProducts()->wherePivotNull('order')->cursor() as $index => $product) {
+            $product->pivot->update(['order' => $index + $last + 1]);
+        }
+
+        if ($set->parent) {
+            $this->syncDescendantProducts(set: $set->parent, toAttach: $toAttach, toDetach: $toDetach);
+        }
     }
 
     public function delete(ProductSet $set): void
@@ -261,12 +373,29 @@ final readonly class ProductSetService
                 $this->seoMetadataService->delete($set->seo);
             }
         }
+
+        if ($set->parent) {
+            $toDetach = $set->descendantProducts()->pluck('id')->toArray();
+            $this->syncDescendantProducts(set: $set->parent, toDetach: $toDetach);
+        }
     }
 
     public function products(ProductSet $set): LengthAwarePaginator
     {
         $query = $set->products();
 
+        if (Gate::denies('product_sets.show_hidden')) {
+            $query->public();
+        }
+
+        return $query->paginate(Config::get('pagination.per_page'));
+    }
+
+    public function descendantProducts(ProductSet $set, ProductSetProductsIndexDto $dto): LengthAwarePaginator
+    {
+        $query = $set->descendantProducts();
+
+        $query->searchByCriteria($dto->toArray());
         if (Gate::denies('product_sets.show_hidden')) {
             $query->public();
         }
@@ -299,7 +428,7 @@ final readonly class ProductSetService
 
     public function reorderProducts(ProductSet $set, ProductsReorderDto $dto): void
     {
-        $productsWithoutOrder = $set->products->filter(fn (Product $product) => $product->pivot->order === null);
+        $productsWithoutOrder = $set->descendantProducts->filter(fn (Product $product) => $product->pivot->order === null);
 
         if ($productsWithoutOrder->isNotEmpty()) {
             $this->fixNullOrders(
@@ -312,15 +441,15 @@ final readonly class ProductSetService
             $this->fixSameOrder($set);
         }
 
-        $maxOrder = $set->products->count() - 1;
+        $maxOrder = $set->descendantProducts->count() - 1;
 
         $dto->products->each(function (ProductReorderDto $product) use ($set, $maxOrder): void {
-            $oldOrder = array_search($product->id, $set->products->pluck('id', 'pivot.order')->all(), true);
+            $oldOrder = array_search($product->id, $set->descendantProducts->pluck('id', 'pivot.order')->all(), true);
             $newOrder = min($product->order, $maxOrder);
 
-            $set->products()->updateExistingPivot($product->id, ['order' => $newOrder]);
+            $set->descendantProducts()->updateExistingPivot($product->id, ['order' => $newOrder]);
 
-            $query = $set->products()->newPivotStatement()
+            $query = $set->descendantProducts()->newPivotStatement()
                 ->where('product_set_id', $set->id)
                 ->where('product_id', '!=', $product->id);
 
@@ -340,10 +469,51 @@ final readonly class ProductSetService
         });
     }
 
+    public function fixOrderForSets(array $setIds, Product $product): void
+    {
+        $sets = ProductSet::query()->whereIn('id', $setIds)->with('descendantProducts');
+        foreach ($sets->cursor() as $set) {
+            $set->descendantProducts()->updateExistingPivot($product->getKey(), ['order' => $set->products->count() - 1]);
+        }
+    }
+
+    public function attachAllProductsToAncestorSets(): void
+    {
+        Product::query()->whereHas('sets')->with('sets')->eachById(function (Product $product): void {
+            $sets = $product->sets->flatMap(
+                fn ($set) => $this->getAllSetAncestors($set),
+            );
+
+            $product->ancestorSets()->sync($sets);
+        });
+    }
+
+    public function getAllAncestorsIds(array $setsIds): array
+    {
+        $result = [];
+        $sets = ProductSet::query()->whereIn('id', $setsIds)->get();
+        foreach ($sets as $set) {
+            $result = array_merge($result, $this->getAllSetAncestors($set));
+        }
+
+        return array_keys($result);
+    }
+
+    private function getAllSetAncestors(ProductSet $set): array
+    {
+        $ancestors = $set->parent !== null
+            ? $this->getAllSetAncestors($set->parent)
+            : [];
+
+        $ancestors[$set->getKey()] = ['order' => $set->pivot?->order];
+
+        return $ancestors;
+    }
+
     private function fixNullOrders(ProductSet $set, Collection $productsWithoutOrder): void
     {
-        $existingOrder = $set->products->pluck('pivot.order')->filter(fn (?int $order) => $order !== null);
-        $missingOrders = array_diff(range(0, $set->products->count() - 1), $existingOrder->toArray());
+        $existingOrder = $set->descendantProducts->pluck('pivot.order')->filter(fn (?int $order) => $order !== null);
+        $missingOrders = array_diff(range(0, max($set->descendantProducts->count() - 1, $set->products->count() - 1, 0)), $existingOrder->toArray());
 
         $productsWithoutOrder->each(function (Product $product) use (&$missingOrders): void {
             $product->pivot->update(['order' => array_shift($missingOrders)]);
@@ -354,14 +524,14 @@ final readonly class ProductSetService
 
     private function hasSameOrderProducts(ProductSet $set): bool
     {
-        $groupedProducts = $set->products->groupBy('pivot.order');
+        $groupedProducts = $set->descendantProducts->groupBy('pivot.order');
 
         return $groupedProducts->contains(fn (Collection $products): bool => $products->count() > 1);
     }
 
     private function fixSameOrder(ProductSet $set): void
     {
-        $set->products->each(function (Product $product, int $index): void {
+        $set->descendantProducts->each(function (Product $product, int $index): void {
             $product->pivot->update(['order' => $index]);
         });
 
@@ -379,5 +549,12 @@ final readonly class ProductSetService
         }
 
         return $slug;
+    }
+
+    private function reorderAttributes(ProductSet $set, array $attributesIds): void
+    {
+        foreach ($attributesIds as $index => $attributeID) {
+            $set->attributes()->updateExistingPivot($attributeID, ['order' => $index]);
+        }
     }
 }

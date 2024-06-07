@@ -23,6 +23,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
+use function Symfony\Component\String\s;
 
 class ProductSearchDatabaseTest extends TestCase
 {
@@ -118,13 +119,14 @@ class ProductSearchDatabaseTest extends TestCase
         $product2->attributes()->attach($attribute->getKey());
 
         // This test check if there is no SQL error that 'name' is ambiguous
-        $this
+        $response = $this
             ->actingAs($this->{$user})
             ->json('GET', '/products', [
                 'search' => 'First',
                 'sort' => 'attribute.data-wydania:desc',
-            ])
-            ->assertOk();
+            ]);
+
+        $response->assertOk();
     }
 
     /**
@@ -187,21 +189,27 @@ class ProductSearchDatabaseTest extends TestCase
             'public' => true,
         ]);
 
+        $otherSet = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
         $product = Product::factory()->create([
             'public' => true,
         ]);
 
         // Product not in set
-        Product::factory()->create([
+        $productNotIn = Product::factory()->create([
             'public' => true,
         ]);
 
         $set->products()->attach($product);
+        $otherSet->products()->attach([$product->getKey(), $productNotIn->getKey()]);
 
         $this
             ->actingAs($this->{$user})
             ->json('GET', '/products', ['sets_not' => [$set->slug]])
             ->assertOk()
+            ->assertJsonCount(1, 'data')
             ->assertJsonMissing(['id' => $product->getKey()]);
     }
 
@@ -262,6 +270,10 @@ class ProductSearchDatabaseTest extends TestCase
             'public' => true,
         ]);
 
+        $otherSet = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
         $product = Product::factory()->create([
             'public' => true,
         ]);
@@ -271,12 +283,13 @@ class ProductSearchDatabaseTest extends TestCase
         ]);
 
         // Product not in set
-        Product::factory()->create([
+        $productNotIn = Product::factory()->create([
             'public' => true,
         ]);
 
         $set->products()->attach($product);
         $set2->products()->attach($product2);
+        $otherSet->products()->attach([$product->getKey(), $product2->getKey(), $productNotIn->getKey()]);
 
         $this
             ->actingAs($this->{$user})
@@ -284,6 +297,7 @@ class ProductSearchDatabaseTest extends TestCase
                 'sets_not' => [$set->slug, $set2->slug],
             ])
             ->assertOk()
+            ->assertJsonCount(1, 'data')
             ->assertJsonMissing(['id' => $product->getKey()])
             ->assertJsonMissing(['id' => $product2->getKey()]);
     }
@@ -750,16 +764,16 @@ class ProductSearchDatabaseTest extends TestCase
             )
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonFragment([
+            ->assertJsonMissing([
                 'name' => $attribute->name,
             ])
             ->assertJsonFragment([
-                'id' => $options[0]->getKey(),
-                'name' => $options[0]->name,
+                'id' => $products[0]->getKey(),
+                'name' => $products[0]->name,
             ])
             ->assertJsonMissing([
-                'id' => $options[1]->getKey(),
-                'name' => $options[1]->name,
+                'id' => $products[1]->getKey(),
+                'name' => $products[1]->name,
             ]);
     }
 
@@ -816,16 +830,16 @@ class ProductSearchDatabaseTest extends TestCase
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
-            ->assertJsonFragment([
+            ->assertJsonMissing([
                 'name' => $attribute->name,
             ])
             ->assertJsonFragment([
-                'id' => $option1->getKey(),
-                'name' => $option1->name,
+                'id' => $products[0]->getKey(),
+                'name' => $products[0]->name,
             ])
             ->assertJsonFragment([
-                'id' => $option2->getKey(),
-                'name' => $option2->name,
+                'id' => $products[1]->getKey(),
+                'name' => $products[1]->name,
             ]);
     }
 
@@ -881,16 +895,14 @@ class ProductSearchDatabaseTest extends TestCase
             )
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonFragment([
+            ->assertJsonMissing([
                 'name' => $attribute->name,
             ])
             ->assertJsonFragment([
-                'id' => $option1->getKey(),
-                'value_number' => $option1->value_number,
+                'id' => $products[0]->getKey(),
             ])
             ->assertJsonMissing([
-                'id' => $option2->getKey(),
-                'value_number' => $option2->value_number,
+                'id' => $products[1]->getKey(),
             ]);
 
         $this
@@ -908,16 +920,14 @@ class ProductSearchDatabaseTest extends TestCase
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
-            ->assertJsonFragment([
+            ->assertJsonMissing([
                 'name' => $attribute->name,
             ])
             ->assertJsonFragment([
-                'id' => $option1->getKey(),
-                'value_number' => $option1->value_number,
+                'id' => $products[0]->getKey(),
             ])
             ->assertJsonFragment([
-                'id' => $option2->getKey(),
-                'value_number' => $option2->value_number,
+                'id' => $products[1]->getKey(),
             ]);
 
         $this
@@ -951,6 +961,71 @@ class ProductSearchDatabaseTest extends TestCase
             )
             ->assertOk()
             ->assertJsonCount(0, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByAttributeNumberUsingOptionId($user): void
+    {
+        $this->{$user}->givePermissionTo('products.show');
+
+        $products = Product::factory()->count(2)->create([
+            'public' => true,
+        ]);
+
+        $attribute = Attribute::factory()->create([
+            'name' => 'Ilość stron',
+            'slug' => 'ilosc-stron',
+            'sortable' => 1,
+            'type' => 'number',
+        ]);
+
+        $option1 = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+            'value_number' => 1437,
+        ]);
+
+        $option2 = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+            'value_number' => 2237,
+        ]);
+
+        $products[0]->attributes()->attach($attribute->getKey());
+        $products[0]->attributes->first()->product_attribute_pivot->options()->attach($option1->getKey());
+
+        $products[1]->attributes()->attach($attribute->getKey());
+        $products[1]->attributes->first()->product_attribute_pivot->options()->attach($option2->getKey());
+
+        $response = $this->actingAs($this->{$user})
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute' => [
+                        $attribute->slug => [
+                            $option1->getKey(),
+                            $option2->getKey(),
+                        ],
+                    ],
+                ],
+            );
+
+        $response->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonMissing([
+                'name' => $attribute->name,
+            ])
+            ->assertJsonFragment([
+                'id' => $products[0]->getKey(),
+                'name' => $products[0]->name,
+            ])
+            ->assertJsonFragment([
+                'id' => $products[1]->getKey(),
+                'name' => $products[1]->name,
+            ]);
     }
 
     /**
@@ -1005,16 +1080,14 @@ class ProductSearchDatabaseTest extends TestCase
             )
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonFragment([
+            ->assertJsonMissing([
                 'name' => $attribute->name,
             ])
             ->assertJsonFragment([
-                'id' => $option1->getKey(),
-                'value_date' => $option1->value_date,
+                'id' => $products[0]->getKey(),
             ])
             ->assertJsonMissing([
-                'id' => $option2->getKey(),
-                'value_date' => $option2->value_date,
+                'id' => $products[1]->getKey(),
             ]);
 
         $this
@@ -1033,16 +1106,14 @@ class ProductSearchDatabaseTest extends TestCase
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
-            ->assertJsonFragment([
+            ->assertJsonMissing([
                 'name' => $attribute->name,
             ])
             ->assertJsonFragment([
-                'id' => $option1->getKey(),
-                'value_date' => $option1->value_date,
+                'id' => $products[0]->getKey(),
             ])
             ->assertJsonFragment([
-                'id' => $option2->getKey(),
-                'value_date' => $option2->value_date,
+                'id' => $products[1]->getKey(),
             ]);
 
         $this
@@ -1389,7 +1460,7 @@ class ProductSearchDatabaseTest extends TestCase
             'slug' => 'test',
             'public' => true,
         ]);
-        $set->products()->sync([
+        $set->descendantProducts()->sync([
             $product1->getKey() => ['order' => 1],
             $product2->getKey() => ['order' => 2],
             $product3->getKey() => ['order' => 3],

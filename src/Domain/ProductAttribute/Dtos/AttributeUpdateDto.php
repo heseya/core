@@ -29,6 +29,8 @@ final class AttributeUpdateDto extends Data
         public readonly bool|Optional $global,
         public readonly bool|Optional $sortable,
         public readonly array|Optional $published,
+        public readonly bool|Optional $include_in_text_search,
+        public readonly bool|Optional $match_any,
     ) {}
 
     /**

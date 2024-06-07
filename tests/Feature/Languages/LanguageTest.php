@@ -10,6 +10,7 @@ use Domain\Language\Events\LanguageUpdated;
 use Domain\Language\Language;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\Seo\Models\SeoMetadata;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
@@ -383,6 +384,7 @@ class LanguageTest extends TestCase
     {
         $this->{$user}->givePermissionTo('languages.remove');
 
+        /** @var Language $language */
         $language = Language::create([
             'iso' => 'nl',
             'name' => 'Netherland',
@@ -405,6 +407,21 @@ class LanguageTest extends TestCase
 
         $product->save();
 
+        /** @var SeoMetadata $seo */
+        $seo = SeoMetadata::factory()->create();
+
+        $seo->setLocale($language->getKey())->fill([
+            'title' => 'Netherland title',
+            'description' => 'Netherland description',
+            'keywords' => ['test'],
+        ]);
+        $seo->fill([
+            'published' => [$this->language->getKey(), $language->getKey()],
+        ]);
+        $seo->save();
+
+        $product->seo()->save($seo);
+
         $this
             ->actingAs($this->{$user})
             ->json('DELETE', "/languages/id:{$language->getKey()}")
@@ -414,6 +431,14 @@ class LanguageTest extends TestCase
             'id' => $product->getKey(),
             "name->{$language->getKey()}" => null,
             "description_short->{$language->getKey()}" => null,
+            'published' => json_encode([$this->language->getKey()]),
+        ]);
+
+        $this->assertDatabaseHas('seo_metadata', [
+            'id' => $seo->getKey(),
+            "title->{$language->getKey()}" => null,
+            "description->{$language->getKey()}" => null,
+            "keywords->{$language->getKey()}" => null,
             'published' => json_encode([$this->language->getKey()]),
         ]);
     }

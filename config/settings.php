@@ -92,12 +92,12 @@ return [
     ],
 
     'minimal_product_price' => [
-        'value' => 0,
+        'value' => 0.01,
         'public' => false,
     ],
 
     'minimal_order_price' => [
-        'value' => 0,
+        'value' => 0.01,
         'public' => false,
     ],
 
@@ -108,6 +108,16 @@ return [
 
     'admin_mails' => [
         'value' => '',
+        'public' => false,
+    ],
+
+    'enable_captcha' => [
+        'value' => 0,
+        'public' => false,
+    ],
+
+    'google_recaptcha_min_score' => [
+        'value' => 0.7,
         'public' => false,
     ],
 ];

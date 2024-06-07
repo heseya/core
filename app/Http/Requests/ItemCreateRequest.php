@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Traits\MetadataRules;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ItemCreateRequest extends FormRequest
 {
@@ -17,7 +18,7 @@ class ItemCreateRequest extends FormRequest
                 'id' => ['uuid'],
 
                 'name' => ['required', 'string', 'max:255'],
-                'sku' => ['required', 'string', 'unique:items', 'max:255'],
+                'sku' => ['required', 'string', 'max:255', Rule::unique('items', 'sku')->whereNull('deleted_at')],
                 'unlimited_stock_shipping_time' => [
                     'nullable',
                     'integer',

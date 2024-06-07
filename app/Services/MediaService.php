@@ -36,7 +36,7 @@ final readonly class MediaService implements MediaServiceContract
 
     public function destroy(Media $media): void
     {
-        $this->silverboxService->delete($media);
+        $this->silverboxService->delete($media->url);
         $media->forceDelete();
     }
 
@@ -103,7 +103,7 @@ final readonly class MediaService implements MediaServiceContract
     {
         return match ($extension) {
             'jpeg', 'jpg', 'png', 'gif', 'bmp', 'svg', 'webp' => MediaType::PHOTO,
-            'mp4', 'webm', 'ogg', 'ogv', 'mov', 'wmv' => MediaType::VIDEO,
+            'mp4', 'webm', 'ogg', 'ogv', 'mov', 'wmv', 'avi' => MediaType::VIDEO,
             'pdf', 'doc', 'docx', 'odt', 'xls', 'xlsx' => MediaType::DOCUMENT,
             default => MediaType::OTHER,
         };

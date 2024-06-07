@@ -257,6 +257,7 @@ class AppInstallTest extends TestCase
             'microfrontend_url' => 'https://front.example.com',
             'icon' => 'https://picsum.photos/200',
             'uninstall_token' => $uninstallToken,
+            'url' => $this->url,
         ]);
 
         $this->assertDatabaseHas('permissions', [
@@ -312,6 +313,82 @@ class AppInstallTest extends TestCase
 
         $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
         $this->assertTrue($owner->hasAllPermissions(Permission::all()));
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testInstallUrl($user): void
+    {
+        $this->{$user}->givePermissionTo([
+            'apps.install',
+            'products.show',
+        ]);
+
+        $uninstallToken = Str::random(128);
+
+        $url = 'https://example-url.com/';
+        Http::fake([
+            $url => Http::response([
+                'name' => 'App name',
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
+                'description' => 'Cool description',
+                'microfrontend_url' => 'https://front.example.com',
+                'icon' => 'https://picsum.photos/200',
+                'licence_required' => false,
+                'required_permissions' => [
+                    'products.show',
+                ],
+                'internal_permissions' => [],
+            ]),
+            $url . 'install' => Http::response([
+                'uninstall_token' => $uninstallToken,
+            ]),
+        ]);
+
+        $response = $this->actingAs($this->{$user})->postJson('/apps', [
+            'url' => $url,
+            'allowed_permissions' => [
+                'products.show',
+            ],
+            'public_app_permissions' => [],
+        ]);
+
+        $name = 'App name';
+
+        $response->assertCreated()
+            ->assertJsonFragment([
+                'url' => 'https://example-url.com',
+                'microfrontend_url' => 'https://front.example.com',
+                'name' => $name,
+                'slug' => Str::slug('App name'),
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'description' => 'Cool description',
+                'icon' => 'https://picsum.photos/200',
+                'metadata' => [],
+            ]);
+
+        $this->assertDatabaseHas('apps', [
+            'name' => $name,
+            'author' => 'Mr. Author',
+            'version' => '1.0.0',
+            'api_version' => '^1.4.0',
+            'description' => 'Cool description',
+            'microfrontend_url' => 'https://front.example.com',
+            'icon' => 'https://picsum.photos/200',
+            'uninstall_token' => $uninstallToken,
+            'url' => 'https://example-url.com',
+        ]);
+
+        $app = App::where('name', $name)->firstOrFail();
+
+        $this->assertTrue($app->hasAllPermissions([
+            'auth.check_identity',
+            'products.show',
+        ]));
     }
 
     /**

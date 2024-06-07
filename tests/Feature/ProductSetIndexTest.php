@@ -400,6 +400,59 @@ class ProductSetIndexTest extends TestCase
             ->assertJsonPath('data.1.id', $this->subChildSet->getKey());
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchBySlugSuffix(string $user): void
+    {
+        $this->{$user}->givePermissionTo('product_sets.show');
+
+        $parent = ProductSet::factory()->create([
+            'public' => true,
+            'slug' => 'parent',
+        ]);
+
+        $set = ProductSet::factory()->create([
+            'public' => true,
+            'parent_id' => $parent->getKey(),
+            'slug' => 'parent-child',
+        ]);
+
+        $subChild = ProductSet::factory()->create([
+            'public' => true,
+            'parent_id' => $set->getKey(),
+            'slug' => 'parent-child-sub-child',
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/product-sets', ['slug_suffix' => 'child'])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $set->getKey(),
+                'slug_suffix' => 'child',
+            ])
+            ->assertJsonMissing([
+                'id' => $parent->getKey(),
+                'slug_suffix' => 'parent',
+            ])
+            ->assertJsonMissing([
+                'id' => $subChild->getKey(),
+                'slug_suffix' => 'sub-child',
+            ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/product-sets', ['slug_suffix' => 'parent'])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $parent->getKey(),
+                'slug_suffix' => 'parent',
+            ]);
+    }
+
     private function prepareProductSets(): Collection
     {
         ProductSet::query()->delete();

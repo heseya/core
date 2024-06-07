@@ -21,7 +21,7 @@ return [
     |
      */
 
-    'ver' => '4.0.0',
+    'ver' => '7.0.0',
 
     /*
     |--------------------------------------------------------------------------
@@ -90,7 +90,7 @@ return [
     |
      */
 
-    'locale' => env('APP_LOCATE', 'en'),
+    'locale' => env('APP_LOCALE', 'en'),
 
     /*
     |--------------------------------------------------------------------------
@@ -166,10 +166,12 @@ return [
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
+        Laravel\Scout\ScoutServiceProvider::class,
 
         // PackageTemplate Service Providers...
         SocialiteProviders\Manager\ServiceProvider::class,
         Spatie\Permission\PermissionServiceProvider::class,
+        TeamTNT\Scout\TNTSearchScoutServiceProvider::class,
 
         // Application Service Providers...
         App\Providers\AppServiceProvider::class,

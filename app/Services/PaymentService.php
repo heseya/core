@@ -126,6 +126,7 @@ final class PaymentService
          */
         $payment = $order->payments()->create([
             'method' => $method->alias,
+            'method_id' => $method->getKey(),
             'amount' => $order->summary->minus($order->paid_amount),
             'currency' => $order->currency,
             'status' => PaymentStatus::PENDING,

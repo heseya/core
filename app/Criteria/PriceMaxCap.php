@@ -3,6 +3,7 @@
 namespace App\Criteria;
 
 use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\SalesChannel\SalesChannelRepository;
@@ -24,7 +25,7 @@ class PriceMaxCap extends Criterion
             ? app(SalesChannelRepository::class)->getOne(request()->header('X-Sales-Channel'))
             : app(SalesChannelRepository::class)->getDefault();
 
-        $value = $value->dividedBy(BigDecimal::of($salesChannel->vat_rate)->multipliedBy(0.01)->plus(1));
+        $value = $value->dividedBy(BigDecimal::of($salesChannel->vat_rate)->multipliedBy(0.01)->plus(1), roundingMode: RoundingMode::HALF_DOWN);
 
         return $query->whereHas('pricesMax',
             fn (Builder $query) => $query

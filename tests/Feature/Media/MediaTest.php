@@ -40,21 +40,21 @@ class MediaTest extends TestCase
             'as user ogg' => ['user', '.ogg', 'video/ogg'],
             'as user mov' => ['user', '.mov', 'video/quicktime'],
             'as user wmv' => ['user', '.wmv', 'video/x-ms-wmv'],
+            'as user avi' => ['user', '.avi', 'video/x-msvideo'],
             'as app mp4' => ['application', '.mp4', 'video/mp4'],
             'as app webm' => ['application', '.webm', 'video/webm'],
             'as app ogv' => ['application', '.ogv', 'video/ogg'],
             'as app ogg' => ['application', '.ogg', 'video/ogg'],
             'as app mov' => ['application', '.mov', 'video/quicktime'],
             'as app wmv' => ['application', '.wmv', 'video/x-ms-wmv'],
+            'as app avi' => ['application', '.avi', 'video/x-msvideo'],
         ];
     }
 
     public static function invalidVideoProvider(): array
     {
         return [
-            'as user avi' => ['user', '.avi', 'video/x-msvideo'],
             'as user ogg audio' => ['user', '.ogg', 'audio/ogg'],
-            'as app avi' => ['application', '.avi', 'video/x-msvideo'],
             'as app ogg audio' => ['application', '.ogg', 'audio/ogg'],
         ];
     }

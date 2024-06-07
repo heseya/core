@@ -8,6 +8,7 @@ use App\Services\Contracts\TranslationServiceContract;
 use App\Traits\GetPublishedLanguageFilter;
 use Domain\Metadata\MetadataService;
 use Domain\Page\Dtos\PageCreateDto;
+use Domain\Page\Dtos\PageIndexDto;
 use Domain\Page\Dtos\PageUpdateDto;
 use Domain\Page\Events\PageCreated;
 use Domain\Page\Events\PageDeleted;
@@ -37,17 +38,15 @@ final readonly class PageService
     }
 
     /**
-     * @param array<string, string>|null $search
-     *
      * @return LengthAwarePaginator<Page>
      */
-    public function getPaginated(?array $search): LengthAwarePaginator
+    public function getPaginated(PageIndexDto $dto): LengthAwarePaginator
     {
         $query = Page::query()
             ->whereDoesntHave('products')
             ->with(['seo', 'metadata'])
             ->orderBy('order')
-            ->searchByCriteria($search ?? [] + $this->getPublishedLanguageFilter('pages'));
+            ->searchByCriteria($dto->toArray() + $this->getPublishedLanguageFilter('pages'));
 
         if (!Auth::user()?->can('pages.show_hidden')) {
             $query->where('public', true);
@@ -60,9 +59,7 @@ final readonly class PageService
     {
         $attributes = $dto->toArray();
         $pageCurrentOrder = Page::query()->orderByDesc('order')->value('order');
-        if ($pageCurrentOrder !== null) {
-            $attributes = array_merge($attributes, ['order' => $pageCurrentOrder + 1]);
-        }
+        $attributes['order'] = $pageCurrentOrder === null ? 0 : $pageCurrentOrder + 1;
 
         $page = new Page($attributes);
 

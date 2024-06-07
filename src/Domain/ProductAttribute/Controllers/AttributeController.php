@@ -17,6 +17,7 @@ use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Resources\AttributeResource;
 use Domain\ProductAttribute\Services\AttributeService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response as HttpResponse;
@@ -37,7 +38,8 @@ final class AttributeController extends Controller
         return AttributeResource::collection(
             Attribute::searchByCriteria($dto->toArray() + $this->getPublishedLanguageFilter('attributes'))
                 ->with(['metadata', 'metadataPrivate'])
-                ->orderBy('order')
+                ->orderBy('order', 'asc')
+                ->orderBy('id', 'asc')
                 ->paginate(Config::get('pagination.per_page')),
         );
     }
@@ -45,14 +47,18 @@ final class AttributeController extends Controller
     public function filters(FiltersDto $dto): JsonResource
     {
         return AttributeResource::collection(
-            Attribute::query()
-                ->whereHas(
-                    'productSets',
-                    fn ($query) => $query->whereIn('product_set_id', $dto->sets),
-                )
-                ->orWhere('global', '=', true)
+            Attribute::searchByCriteria($dto->toArray() + $this->getPublishedLanguageFilter('attributes'))
+                ->leftJoin('attribute_product_set', function (JoinClause $join) use ($dto): void {
+                    $join
+                        ->on('attribute_product_set.attribute_id', 'attributes.id')
+                        ->whereIn('attribute_product_set.product_set_id', $dto->sets);
+                })
                 ->with(['metadata', 'metadataPrivate'])
-                ->orderBy('order')
+                ->addSelect('attributes.*')
+                ->selectRaw('MIN(attribute_product_set.order) as attribute_order')
+                ->groupBy('attributes.id')
+                ->orderBy('attribute_order', 'asc')
+                ->orderBy('attributes.id', 'asc')
                 ->get(),
         );
     }

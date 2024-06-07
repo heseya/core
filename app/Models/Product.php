@@ -23,7 +23,7 @@ use App\Models\Contracts\SeoContract;
 use App\Models\Contracts\SortableContract;
 use App\Models\Interfaces\Translatable;
 use App\SortColumnTypes\PriceColumn;
-use App\SortColumnTypes\TranslatedColumn;
+use App\SortColumnTypes\TranslatedRawColumn;
 use App\Traits\CustomHasTranslations;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasDiscounts;
@@ -33,7 +33,10 @@ use App\Traits\HasSeoMetadata;
 use App\Traits\Sortable;
 use Domain\Page\Page;
 use Domain\Price\Enums\ProductPriceType;
+use Domain\Product\Models\ProductBannerMedia;
+use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductSet\ProductSet;
 use Domain\Tag\Models\Tag;
 use Heseya\Searchable\Criteria\Equals;
@@ -41,12 +44,14 @@ use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
+use Laravel\Scout\Searchable;
 
 /**
  * @property string $name
@@ -68,6 +73,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     use HasMediaAttachments;
     use HasMetadata;
     use HasSeoMetadata;
+    use Searchable;
     use SoftDeletes;
     use Sortable;
 
@@ -75,6 +81,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     protected $fillable = [
         'id',
         'name',
+        'searchable_name',
         'slug',
         'description_html',
         'description_short',
@@ -111,7 +118,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     ];
     protected array $sortable = [
         'id',
-        'name' => TranslatedColumn::class,
+        'name' => TranslatedRawColumn::class,
         'created_at',
         'updated_at',
         'public',
@@ -151,6 +158,13 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     {
         return $this
             ->belongsToMany(ProductSet::class, 'product_set_product')
+            ->withPivot('order');
+    }
+
+    public function ancestorSets(): BelongsToMany
+    {
+        return $this
+            ->belongsToMany(ProductSet::class, 'product_set_product_descendant')
             ->withPivot('order');
     }
 
@@ -217,23 +231,15 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
             ->withPivot(['pivot_id'])
             ->using(ProductAttribute::class)
             ->as('product_attribute_pivot')
-            ->orderBy('order');
+            ->orderBy('order', 'asc')
+            ->orderBy('id', 'asc');
     }
 
     public function productAttributes(): HasMany
     {
         return $this->hasMany(ProductAttribute::class)
-            ->with([
-                'options',
-                'options.metadata',
-                'options.metadataPrivate',
-                'attribute',
-                'attribute.metadata',
-                'attribute.metadataPrivate',
-                'attribute.options',
-                'attribute.options.metadata',
-                'attribute.options.metadataPrivate',
-            ]);
+            ->leftJoin('attributes', 'attribute_id', '=', 'attributes.id')
+            ->orderBy('attributes.order', 'asc');
     }
 
     public function sales(): BelongsToMany
@@ -327,5 +333,65 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     private function prices(): MorphMany
     {
         return $this->morphMany(Price::class, 'model');
+    }
+
+    protected function makeAllSearchableUsing(Builder $query): Builder
+    {
+        return $query->with('productAttributes');
+    }
+
+    public function toSearchableArray(): array
+    {
+        $attributes = [];
+        /** @var ProductAttribute $productAttribute */
+        foreach ($this->productAttributes as $productAttribute) {
+            /** @var Attribute|null $attribute */
+            $attribute = $productAttribute->attribute;
+            if (!$attribute || !$attribute->include_in_text_search) {
+                continue;
+            }
+
+            $values = [];
+            /** @var AttributeOption $option */
+            foreach ($productAttribute->options as $option) {
+                $values[] = match ($attribute->type) {
+                    // AttributeType::NUMBER => $option->value_number,
+                    AttributeType::DATE => $option->value_date,
+                    default => $option->name,
+                };
+            }
+
+            $attributes['attribute_' . $attribute->slug] = implode(', ', $values);
+        }
+
+        return array_merge(
+            [
+                'id' => $this->id,
+                'name' => $this->searchable_name,
+            ],
+            Config::get('search.search_in_descriptions')
+                ? [
+                    'description_html' => $this->description_html,
+                    'description_short' => $this->description_short,
+                    'search_values' => $this->search_values,
+                ]
+                : [],
+            $attributes,
+        );
+    }
+
+    /**
+     * @return BelongsTo<ProductBannerMedia, self>
+     */
+    public function banner(): BelongsTo
+    {
+        return $this->belongsTo(ProductBannerMedia::class, 'banner_media_id');
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (Product $product): void {
+            $product->searchable_name = collect($product->getTranslations('name'))->values()->map(fn (string $translation) => trim($translation))->unique()->implode(' ');
+        });
     }
 }

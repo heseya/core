@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     // new order
     'subject-new-order' => 'Meldujemy potwierdzenie zamówienia :number',
@@ -65,16 +67,16 @@ return [
 
     // 2FA initialization
     'subject-tfa-initialization' => 'Potwierdzenie 2FA',
-    'tfa-initialization-hello' => "Drogi użytkowniku,<br/>Oto Twój jednorazowy kod bezpieczeństwa:",
+    'tfa-initialization-hello' => 'Drogi użytkowniku,<br/>Oto Twój jednorazowy kod bezpieczeństwa:',
     'tfa-initialization-message' => 'Użyj go, aby zakończyć proces konfiguracji uwierzytelniania dwuskładnikowego.<br/><br/>Jeśli ta wiadomość nie jest do Ciebie, zignoruj ją.',
 
     // 2FA recovery codes
     'subject-recovery-codes' => 'Kody odzyskiwania 2FA',
     'recovery-codes-hello' => 'Drogi użytkowniku,<br />Twoje kody 2FA zostały zmienione!',
-    'recovery-codes-message' => "Jeśli nie próbowałeś się zalogować, oznacza to, że ktoś złamał twoje hasło i próbuje uzyskać dostęp do Twojego konta.<br/>Prosimy o jak najszybszą zmianę hasła!",
+    'recovery-codes-message' => 'Jeśli nie próbowałeś się zalogować, oznacza to, że ktoś złamał twoje hasło i próbuje uzyskać dostęp do Twojego konta.<br/>Prosimy o jak najszybszą zmianę hasła!',
 
     // 2FA security code
     'subject-security-code' => 'Kod bezpieczeństwa 2FA',
-    'security-code-hello' => "Drogi użytkowniku,<br />Oto Twój jednorazowy kod bezpieczeństwa:",
-    'security-code-message' => "Użyj go do uwierzytelnienia operacji.<br/><br/>Jeśli nie próbowałeś się zalogować, oznacza to, że ktoś złamał twoje hasło i próbuje uzyskać dostęp do Twojego konta.<br/>Prosimy o jak najszybszą zmianę hasła!"
+    'security-code-hello' => 'Drogi użytkowniku,<br />Oto Twój jednorazowy kod bezpieczeństwa:',
+    'security-code-message' => 'Użyj go do uwierzytelnienia operacji.<br/><br/>Jeśli nie próbowałeś się zalogować, oznacza to, że ktoś złamał twoje hasło i próbuje uzyskać dostęp do Twojego konta.<br/>Prosimy o jak najszybszą zmianę hasła!',
 ];

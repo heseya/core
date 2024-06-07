@@ -6,6 +6,7 @@ namespace Domain\Page;
 
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\PageSearch;
 use App\Criteria\WhereInIds;
 use App\Models\Contracts\SeoContract;
 use App\Models\Contracts\SortableContract;
@@ -66,6 +67,7 @@ final class Page extends Model implements SeoContract, SortableContract, Transla
 
     /** @var array<string, class-string> */
     protected array $criteria = [
+        'search' => PageSearch::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,

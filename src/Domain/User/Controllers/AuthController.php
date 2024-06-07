@@ -32,7 +32,6 @@ use Domain\User\Dtos\TFAConfirmDto;
 use Domain\User\Dtos\TFAPasswordDto;
 use Domain\User\Dtos\TFASetupDto;
 use Domain\User\Dtos\TokenRefreshDto;
-use Domain\User\Dtos\VerifyEmailDto;
 use Domain\User\Services\AuthService;
 use Domain\User\Services\SavedAddressService;
 use Illuminate\Http\JsonResponse;
@@ -216,16 +215,9 @@ final class AuthController extends Controller
 
     public function updateProfile(ProfileUpdateDto $dto): JsonResource
     {
-        return UserResource::make(
+        return UserWithSavedAddressesResource::make(
             $this->authService->updateProfile($dto),
         );
-    }
-
-    public function verifyEmail(VerifyEmailDto $dto): HttpResponse
-    {
-        $this->authService->verifyEmail(${$dto});
-
-        return Response::noContent();
     }
 
     public function selfUpdateRoles(SelfUpdateRoles $dto): JsonResource

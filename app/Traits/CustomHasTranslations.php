@@ -4,7 +4,9 @@ namespace App\Traits;
 
 use App\Models\Discount;
 use App\Models\Option;
+use Domain\Language\Language;
 use Domain\Language\LanguageService;
+use Domain\Product\Models\ProductBannerMedia;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\Seo\Models\SeoMetadata;
 use Illuminate\Support\Arr;
@@ -70,6 +72,10 @@ trait CustomHasTranslations
                 /** @var array<int, string> $translations */
                 $translations = $this->schema->published ?? [];
             }
+            if ($this instanceof ProductBannerMedia) {
+                /** @var array<int, string> $translations */
+                $translations = $this->product->published ?? [];
+            }
         }
 
         // check if they can be hidden
@@ -82,5 +88,20 @@ trait CustomHasTranslations
         }
 
         return $translations instanceof Collection ? $translations->toArray() : $translations;
+    }
+
+    public function forgetAllTranslationsForNonexistingLanguages(): self
+    {
+        $languages = Language::all();
+
+        foreach ($this->getTranslations() as $key => $translations) {
+            foreach ($translations as $locale => $translation) {
+                if (!$languages->contains('id', '=', $locale)) {
+                    $this->forgetTranslation($key, $locale);
+                }
+            }
+        }
+
+        return $this;
     }
 }

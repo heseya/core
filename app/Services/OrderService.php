@@ -24,7 +24,7 @@ use App\Exceptions\ClientException;
 use App\Exceptions\OrderException;
 use App\Exceptions\ServerException;
 use App\Exceptions\StoreException;
-use App\Http\Resources\OrderResource;
+use App\Mail\OrderUrls;
 use App\Models\Address;
 use App\Models\App;
 use App\Models\CartItemResponse;
@@ -39,7 +39,6 @@ use App\Models\SalesShortResource;
 use App\Models\Schema;
 use App\Models\Status;
 use App\Models\User;
-use App\Notifications\SendUrls;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
@@ -48,10 +47,12 @@ use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Brick\Math\BigDecimal;
+use App\Traits\ModifyLangFallback;
 use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Order\Resources\OrderResource;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\SalesChannel\SalesChannelService;
 use Domain\ShippingMethod\Models\ShippingMethod;
@@ -60,15 +61,19 @@ use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App as AppSupport;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ItemNotFoundException;
+use Illuminate\Support\Facades\Mail;
 use Throwable;
 
 final readonly class OrderService implements OrderServiceContract
 {
+    use ModifyLangFallback;
+
     public function __construct(
         private DiscountServiceContract $discountService,
         private ItemServiceContract $itemService,
@@ -192,7 +197,7 @@ final readonly class OrderService implements OrderServiceContract
                     'shipping_address_id' => $shippingAddressId,
                     'billing_address_id' => isset($billingAddress) ? $billingAddress->getKey() : null,
                     'buyer_id' => $buyer->getKey(),
-                    'buyer_type' => $buyer::class,
+                    'buyer_type' => $buyer->getMorphClass(),
                     'invoice_requested' => $getInvoiceRequested,
                     'shipping_place' => $shippingPlace,
                     'shipping_type' => $shippingMethod->shipping_type ?? $digitalShippingMethod->shipping_type ?? null,
@@ -211,6 +216,9 @@ final readonly class OrderService implements OrderServiceContract
             $productIds = [];
 
             try {
+                $previousSettings = $this->getCurrentLangFallbackSettings();
+                $this->setAnyLangFallback();
+                $language = AppSupport::getLocale();
                 foreach ($items as $item) {
                     /** @var Product $product */
                     $product = $products->firstWhere('id', $item->getProductId());
@@ -232,7 +240,7 @@ final readonly class OrderService implements OrderServiceContract
                         'price' => $price,
                         'base_price_initial' => $price,
                         'base_price' => $price,
-                        'name' => $product->name,
+                        'name' => $product->getTranslation('name', $language),
                         'vat_rate' => $vat_rate->multipliedBy(100)->toFloat(),
                         'shipping_digital' => $product->shipping_digital,
                     ]);
@@ -254,7 +262,7 @@ final readonly class OrderService implements OrderServiceContract
                         }
 
                         $orderProduct->schemas()->create([
-                            'name' => $schema->name,
+                            'name' => $schema->getTranslation('name', $language),
                             'value' => $value,
                             'price_initial' => $price,
                             'price' => $price,
@@ -274,6 +282,7 @@ final readonly class OrderService implements OrderServiceContract
                         'price' => [PriceDto::fromMoney($orderProduct->price)],
                     ];
                 }
+                $this->setLangFallbackSettings(...$previousSettings);
 
                 $productDiscounts = $this->discountService->getAllDiscountsForProducts($productIds, $dto->getCoupons());
 
@@ -865,7 +874,9 @@ final readonly class OrderService implements OrderServiceContract
     {
         $products = $order->products()->has('urls')->get();
         if (!$products->isEmpty()) {
-            $order->notify(new SendUrls($order, $products));
+            Mail::to($order->email)
+                ->locale($order->locale)
+                ->send(new OrderUrls($order, $products));
 
             $products->toQuery()->update([
                 'is_delivered' => true,

@@ -107,6 +107,9 @@ ShippingMethodStore:
                 items:
                   type: string
                   format: uuid
+              logo_id:
+                type: string
+                format: uuid
 
 ShippingMethodUpdate:
   content:
@@ -139,3 +142,6 @@ ShippingMethodUpdate:
             items:
               type: string
               format: uuid
+          logo_id:
+            type: string
+            format: uuid

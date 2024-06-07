@@ -17,4 +17,9 @@ final class TranslatedColumn implements SortableColumn
     {
         return [];
     }
+
+    public static function useRawOrderBy(): bool
+    {
+        return false;
+    }
 }

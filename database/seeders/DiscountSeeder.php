@@ -18,8 +18,6 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
-use Domain\Currency\Currency;
-use Domain\Price\Dtos\PriceDto;
 use Domain\Language\Language;
 use Heseya\Dto\DtoException;
 use Illuminate\Database\Seeder;
@@ -97,7 +95,7 @@ class DiscountSeeder extends Seeder
             $order->discounts()->attach($discount, [
                 'name' => $discount->name,
                 'amount' => $discountAmount?->value->getMinorAmount(),
-                'currency' => $discountAmount?->value->getCurrency()->getCurrencyCode(),
+                'currency' => $discountAmount?->value->getCurrency()->getCurrencyCode() ?? $order->currency,
                 'percentage' => $discount->percentage,
                 'target_type' => $discount->target_type,
                 'applied' => $appliedDiscount->getMinorAmount(),

@@ -31,21 +31,26 @@ readonly class SortService implements SortServiceContract
             $option = explode(':', $option);
             $this->validate($option, $sortable);
 
-            if (isset($sortable[$option[0]]) && $sortable[$option[0]] === TranslatedColumn::class) {
-                $option[0] = TranslatedColumn::getColumnName($option[0]);
-            }
-
-            if (count($option) === 3) {
+            if (isset($sortable[$option[0]]) && is_a($sortable[$option[0]], SortableColumn::class, true)) {
                 $this->addOrder(
                     $query,
-                    $option[0],
-                    $option[2],
+                    $sortable[$option[0]]::getColumnName($option[0]),
+                    match (count($option)) {
+                        3 => $option[2],
+                        2 => $option[1],
+                        default => 'asc',
+                    },
+                    $sortable[$option[0]]::useRawOrderBy(),
                 );
             } else {
                 $this->addOrder(
                     $query,
                     $option[0],
-                    count($option) > 1 ? $option[1] : 'asc',
+                    match (count($option)) {
+                        3 => $option[2],
+                        2 => $option[1],
+                        default => 'asc',
+                    },
                 );
             }
         }
@@ -103,7 +108,7 @@ readonly class SortService implements SortServiceContract
         )->validate();
     }
 
-    private function addOrder(Builder $query, string $field, string $order): void
+    private function addOrder(Builder $query, string $field, string $order, bool $raw = false): void
     {
         if (Str::startsWith($field, 'set.')) {
             $this->addSetOrder($query, $field, $order);
@@ -115,7 +120,11 @@ readonly class SortService implements SortServiceContract
             return;
         }
 
-        $query->orderBy($field, $order);
+        if ($raw) {
+            $query->orderByRaw($field . ' ' . $order);
+        } else {
+            $query->orderBy($field, $order);
+        }
     }
 
     private function addSetOrder(Builder $query, string $field, string $order): void
@@ -124,16 +133,24 @@ readonly class SortService implements SortServiceContract
         $set = ProductSet::query()->where('slug', '=', Str::after($field, 'set.'))->select('id')->first();
         $searchedProductSetsIds = $set->allChildrenIds('children')->push($set->getKey());
 
-        $query->leftJoin('product_set_product', function (JoinClause $join) use ($searchedProductSetsIds): void {
-            $join->on('product_set_product.product_id', 'products.id')
-                ->whereIn('product_set_product.product_set_id', $searchedProductSetsIds);
+        $query->leftJoin('product_set_product_descendant', function (JoinClause $join) use ($searchedProductSetsIds): void {
+            $join->on('product_set_product_descendant.product_id', 'products.id')
+                ->whereIn('product_set_product_descendant.product_set_id', $searchedProductSetsIds)
+                ->leftJoin('product_sets', function (JoinClause $join): void {
+                    $join->on('product_set_product_descendant.product_set_id', '=', 'product_sets.id');
+                });
         })
             ->addSelect('products.*')
-            ->addSelect('product_set_product.order AS set_order')
-            ->selectRaw('(product_set_product.product_set_id = ?) AS is_main_set', [$set->getKey()])
+            ->selectRaw('MIN(product_set_product_descendant.order) AS product_order')
+            ->selectRaw('MAX(product_set_product_descendant.product_set_id = ?) AS is_main_set', [$set->getKey()])
+            ->selectRaw('MIN(product_sets.order) as set_order')
+            ->selectRaw('MIN(IF(product_set_product_descendant.product_set_id = ?, product_set_product_descendant.`order`, NULL)) AS main_set_order', [$set->getKey()])
+            ->groupBy('products.id')
             ->orderBy('is_main_set', 'desc')
-            ->orderBy('product_set_product.product_set_id', $order)
-            ->orderBy('set_order', $order);
+            ->orderByRaw('main_set_order IS NULL ' . $order)
+            ->orderBy('main_set_order', $order)
+            ->orderBy('set_order', $order)
+            ->orderBy('product_order', $order);
     }
 
     private function addAttributeOrder(Builder $query, string $field, string $order): void
@@ -144,9 +161,12 @@ readonly class SortService implements SortServiceContract
 
         $sortField = $attribute->type->getOptionFieldByType();
 
-        if (array_key_exists($sortField, (new AttributeOption())->getSortable())
+        $collate = false;
+        if (
+            array_key_exists($sortField, (new AttributeOption())->getSortable())
             && (new AttributeOption())->getSortable()[$sortField] === TranslatedColumn::class
         ) {
+            $collate = true;
             $sortField = TranslatedColumn::getColumnName($sortField);
         }
 
@@ -164,9 +184,12 @@ readonly class SortService implements SortServiceContract
                             );
                         });
                 });
-        })
-            ->addSelect('products.*')
+        })->addSelect('products.*')
             ->addSelect("attribute_options.{$sortField} AS attribute_order")
-            ->orderBy('attribute_order', $order);
+            ->when(
+                $collate,
+                fn (Builder $subquery) => $subquery->orderByRaw('(attribute_order COLLATE utf8mb4_0900_ai_ci) ' . $order),
+                fn (Builder $subquery) => $subquery->orderBy('attribute_order', $order),
+            );
     }
 }

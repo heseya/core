@@ -27,6 +27,7 @@ final class OrderStatusResource extends Resource
             'description' => $this->resource->description,
             'hidden' => $this->resource->hidden,
             'no_notifications' => $this->resource->no_notifications,
+            'published' => $this->resource->published,
             ...$this->metadataResource('statuses.show_metadata_private'),
             ...$request->boolean('with_translations') ? $this->getAllTranslations() : [],
         ];

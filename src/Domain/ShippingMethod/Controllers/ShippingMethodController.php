@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\ShippingMethod\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\ShippingMethodResource;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
@@ -15,6 +14,7 @@ use Domain\ShippingMethod\Dtos\ShippingMethodIndexDto;
 use Domain\ShippingMethod\Dtos\ShippingMethodReorderDto;
 use Domain\ShippingMethod\Dtos\ShippingMethodUpdateDto;
 use Domain\ShippingMethod\Models\ShippingMethod;
+use Domain\ShippingMethod\Resources\ShippingMethodResource;
 use Domain\ShippingMethod\Services\Contracts\ShippingMethodServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\SavedAddressType;
 use App\Models\Address;
 use App\Models\SavedAddress;
@@ -44,9 +45,9 @@ class SavedAddressTest extends TestCase
             'name' => 'test',
             'default' => false,
             'address' => [
-                'name' => 'test',
+                'name' => 'Jan Nowak',
                 'phone' => '123456789',
-                'address' => 'testest',
+                'address' => 'Testowa 12',
                 'zip' => '123',
                 'city' => 'testcity',
                 'country' => 'ts',
@@ -65,13 +66,55 @@ class SavedAddressTest extends TestCase
             'address_id' => $savedAddress->address->getKey(),
         ])
             ->assertDatabaseHas('addresses', [
-                'name' => 'test',
+                'name' => 'Jan Nowak',
                 'phone' => '123456789',
-                'address' => 'testest',
+                'address' => 'Testowa 12',
                 'zip' => '123',
                 'city' => 'testcity',
                 'country' => 'ts',
                 'vat' => '10',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateNonLatinDefaultWithEmptyVat(string $user): void
+    {
+        $this->{$user}->givePermissionTo('profile.addresses_manage');
+
+
+        $response = $this->actingAs($this->{$user})->postJson('/auth/profile/shipping-addresses', [
+            'name' => 'default',
+            'default' => true,
+            'address' => [
+                'name' => 'Коваленко Коваленко',
+                'phone' => '123123123',
+                'address' => 'Коваленко 22',
+                'zip' => '22-333',
+                'city' => 'Коваленко',
+                'country' => 'PL',
+                'country_name' => 'Polska',
+                'vat' => '',
+            ],
+        ]);
+        $response->assertOk();
+
+        $savedAddress = SavedAddress::where('name', 'default')->with('address')->first();
+        $this->assertDatabaseHas('saved_addresses', [
+            'name' => 'default',
+            'default' => 1,
+            'type' => SavedAddressType::SHIPPING,
+            'address_id' => $savedAddress->address->getKey(),
+        ])
+            ->assertDatabaseHas('addresses', [
+                'name' => 'Коваленко Коваленко',
+                'phone' => '123123123',
+                'address' => 'Коваленко 22',
+                'zip' => '22-333',
+                'city' => 'Коваленко',
+                'country' => 'PL',
+                'vat' => null,
             ]);
     }
 
@@ -94,9 +137,9 @@ class SavedAddressTest extends TestCase
             'name' => 'test2',
             'default' => true,
             'address' => [
-                'name' => 'test',
+                'name' => 'Jan Nowak',
                 'phone' => '123456789',
-                'address' => 'testest',
+                'address' => 'Testowa 12',
                 'zip' => '123',
                 'city' => 'testcity',
                 'country' => 'ts',
@@ -120,9 +163,9 @@ class SavedAddressTest extends TestCase
                 'address_id' => $savedAddress->address->getKey(),
             ])
             ->assertDatabaseHas('addresses', [
-                'name' => 'test',
+                'name' => 'Jan Nowak',
                 'phone' => '123456789',
-                'address' => 'testest',
+                'address' => 'Testowa 12',
                 'zip' => '123',
                 'city' => 'testcity',
                 'country' => 'ts',
@@ -159,9 +202,9 @@ class SavedAddressTest extends TestCase
                 'name' => 'test2',
                 'default' => true,
                 'address' => [
-                    'name' => 'test',
+                    'name' => 'Jan Nowak',
                     'phone' => '123456789',
-                    'address' => 'testest',
+                    'address' => 'Testowa 12',
                     'zip' => '123',
                     'city' => 'testcity',
                     'country' => 'ts',
@@ -183,9 +226,9 @@ class SavedAddressTest extends TestCase
                 'type' => SavedAddressType::SHIPPING,
             ])
             ->assertDatabaseHas('addresses', [
-                'name' => 'test',
+                'name' => 'Jan Nowak',
                 'phone' => '123456789',
-                'address' => 'testest',
+                'address' => 'Testowa 12',
                 'zip' => '123',
                 'city' => 'testcity',
                 'country' => 'ts',
@@ -212,9 +255,9 @@ class SavedAddressTest extends TestCase
             'name' => 'test2',
             'default' => false,
             'address' => [
-                'name' => 'test',
+                'name' => 'Jan Nowak',
                 'phone' => '123456789',
-                'address' => 'testest',
+                'address' => 'Testowa 12',
                 'zip' => '123',
                 'city' => 'testcity',
                 'country' => 'ts',
@@ -233,9 +276,9 @@ class SavedAddressTest extends TestCase
                 'name' => 'test2',
                 'default' => true,
                 'address' => [
-                    'name' => 'test2',
+                    'name' => 'Jan Nowak',
                     'phone' => '987654321',
-                    'address' => 'tsettset',
+                    'address' => 'Testowa 12',
                     'zip' => '321',
                     'city' => 'citytest',
                     'country' => 'st',
@@ -255,18 +298,18 @@ class SavedAddressTest extends TestCase
                 'type' => SavedAddressType::SHIPPING,
             ])
             ->assertDatabaseHas('addresses', [
-                'name' => 'test2',
+                'name' => 'Jan Nowak',
                 'phone' => '987654321',
-                'address' => 'tsettset',
+                'address' => 'Testowa 12',
                 'zip' => '321',
                 'city' => 'citytest',
                 'country' => 'st',
                 'vat' => '15',
             ])
             ->assertDatabaseMissing('addresses', [
-                'name' => 'test',
+                'name' => 'Jan Nowak',
                 'phone' => '123456789',
-                'address' => 'testest',
+                'address' => 'Testowa 12',
                 'zip' => '123',
                 'city' => 'testcity',
                 'country' => 'ts',
@@ -293,9 +336,9 @@ class SavedAddressTest extends TestCase
             'name' => 'test2',
             'default' => false,
             'address' => [
-                'name' => 'test',
+                'name' => 'Jan Nowak',
                 'phone' => '123456789',
-                'address' => 'testest',
+                'address' => 'Testowa 12',
                 'zip' => '123',
                 'city' => 'testcity',
                 'country' => 'ts',
@@ -325,9 +368,9 @@ class SavedAddressTest extends TestCase
                 'name' => 'test2',
                 'default' => true,
                 'address' => [
-                    'name' => 'test',
+                    'name' => 'Jan Nowak',
                     'phone' => '123456789',
-                    'address' => 'testest',
+                    'address' => 'Testowa 12',
                     'zip' => '123',
                     'city' => 'testcity',
                     'country' => 'ts',
@@ -338,9 +381,9 @@ class SavedAddressTest extends TestCase
 
         $this
             ->assertDatabaseHas('addresses', [
-                'name' => 'test',
+                'name' => 'Jan Nowak',
                 'phone' => '123456789',
-                'address' => 'testest',
+                'address' => 'Testowa 12',
                 'zip' => '123',
                 'city' => 'testcity',
                 'country' => 'ts',
@@ -416,9 +459,9 @@ class SavedAddressTest extends TestCase
             'name' => 'test',
             'default' => true,
             'address' => [
-                'name' => 'test',
+                'name' => 'Jan Nowak',
                 'phone' => '123456789',
-                'address' => 'testest',
+                'address' => 'Testowa 12',
                 'zip' => '123',
                 'city' => 'testcity',
                 'country' => 'ts',
@@ -430,9 +473,9 @@ class SavedAddressTest extends TestCase
             'name' => 'test2',
             'default' => true,
             'address' => [
-                'name' => 'test',
+                'name' => 'Jan Nowak',
                 'phone' => '123456789',
-                'address' => 'testest',
+                'address' => 'Testowa 12',
                 'zip' => '123',
                 'city' => 'testcity',
                 'country' => 'ts',
@@ -462,5 +505,175 @@ class SavedAddressTest extends TestCase
                 'default' => 1,
                 'type' => SavedAddressType::BILLING,
             ]);
+    }
+
+    public static function addressesProvider(): array
+    {
+        return [
+            'simple' => ['Krótka 12'],
+            'with number' => ['3 Maja 12/12'],
+            'with dash' => ['plac Agackiej-Indeckiej 6A'],
+            'with apostrophe' => ["Aldridge'a Iry 5"],
+            'with dot' => ['al. Wolności 20A/30'],
+        ];
+    }
+
+    /**
+     * @dataProvider addressesProvider
+     */
+    public function testCreateValidateAddresses(string $address): void
+    {
+        $this->user->givePermissionTo('profile.addresses_manage');
+
+        $this->actingAs($this->user)->postJson('/auth/profile/shipping-addresses', [
+            'name' => 'test',
+            'default' => false,
+            'address' => [
+                'name' => 'Jan Nowak',
+                'phone' => '123456789',
+                'address' => $address,
+                'zip' => '123',
+                'city' => 'testcity',
+                'country' => 'ts',
+                'vat' => '10',
+            ],
+        ])->assertOk();
+
+        $this
+            ->assertDatabaseHas('addresses', [
+                'name' => 'Jan Nowak',
+                'phone' => '123456789',
+                'address' => $address,
+                'zip' => '123',
+                'city' => 'testcity',
+                'country' => 'ts',
+                'vat' => '10',
+            ]);
+    }
+
+    public static function namesProvider(): array
+    {
+        return [
+            'simple' => ['Jan Nowak'],
+            'with dash' => ['Anna Nowak-Kowalska'],
+            'with apostrophe' => ["Shas'O Kais"],
+            'with more word' => ['Isabella von Carstein'],
+        ];
+    }
+
+    /**
+     * @dataProvider namesProvider
+     */
+    public function testCreateValidateNames(string $name): void
+    {
+        $this->user->givePermissionTo('profile.addresses_manage');
+
+        $this->actingAs($this->user)->postJson('/auth/profile/shipping-addresses', [
+            'name' => 'test',
+            'default' => false,
+            'address' => [
+                'name' => $name,
+                'phone' => '123456789',
+                'address' => 'Testowa 12',
+                'zip' => '123',
+                'city' => 'testcity',
+                'country' => 'ts',
+                'vat' => '10',
+            ],
+        ])->assertOk();
+
+        $this
+            ->assertDatabaseHas('addresses', [
+                'name' => $name,
+                'phone' => '123456789',
+                'address' => 'Testowa 12',
+                'zip' => '123',
+                'city' => 'testcity',
+                'country' => 'ts',
+                'vat' => '10',
+            ]);
+    }
+
+    public static function invalidNamesProvider(): array
+    {
+        return [
+            'first name' => ['Jan'],
+            'last name' => ['Nowak'],
+            'with dash' => ['Nowak-Kowalska'],
+            'with apostrophe' => ["Shas'O"],
+            'short' => ['j j'],
+        ];
+    }
+
+    /**
+     * @dataProvider invalidNamesProvider
+     */
+    public function testCreateInvalidNames(string $name): void
+    {
+        $this->user->givePermissionTo('profile.addresses_manage');
+
+        $this->actingAs($this->user)->postJson('/auth/profile/shipping-addresses', [
+            'name' => 'test',
+            'default' => false,
+            'address' => [
+                'name' => $name,
+                'phone' => '123456789',
+                'address' => 'Testowa 12',
+                'zip' => '123',
+                'city' => 'testcity',
+                'country' => 'ts',
+                'vat' => '10',
+            ],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'message' => Exceptions::CLIENT_FULL_NAME->value,
+            ]);
+    }
+
+    /**
+     * @dataProvider namesProvider
+     */
+    public function testCreateBillingAddressesName(string $name): void
+    {
+        $this->user->givePermissionTo('profile.addresses_manage');
+
+        $this->actingAs($this->user)->postJson('/auth/profile/billing-addresses', [
+            'name' => 'test',
+            'default' => false,
+            'address' => [
+                'name' => $name,
+                'phone' => '123456789',
+                'address' => 'Testowa 12',
+                'zip' => '123',
+                'city' => 'testcity',
+                'country' => 'ts',
+                'vat' => '10',
+            ],
+        ])
+            ->assertOk();
+    }
+
+    /**
+     * @dataProvider invalidNamesProvider
+     */
+    public function testCreateBillingAddressesShortName(string $name): void
+    {
+        $this->user->givePermissionTo('profile.addresses_manage');
+
+        $this->actingAs($this->user)->postJson('/auth/profile/billing-addresses', [
+            'name' => 'test',
+            'default' => false,
+            'address' => [
+                'name' => $name,
+                'phone' => '123456789',
+                'address' => 'Testowa 12',
+                'zip' => '123',
+                'city' => 'testcity',
+                'country' => 'ts',
+                'vat' => '10',
+            ],
+        ])
+            ->assertOk();
     }
 }

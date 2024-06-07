@@ -55,4 +55,9 @@ class WebHookEventListener implements ShouldQueue
             $iv,
         ));
     }
+
+    public function viaQueue(): string
+    {
+        return config('webhook-server.queue');
+    }
 }

@@ -20,6 +20,7 @@ use App\Models\ProductAttribute;
 use App\Models\Schema;
 use App\Models\Status;
 use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\DiscountRepository;
 use App\Services\ProductService;
 use App\Services\SchemaCrudService;
 use Brick\Math\Exception\NumberFormatException;
@@ -50,6 +51,15 @@ use Tests\Utils\FakeDto;
 class PerformanceTest extends TestCase
 {
     use RefreshDatabase;
+
+    private DiscountRepository $discountRepository;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->discountRepository = App::make(DiscountRepository::class);
+    }
 
     public function testIndexPerformanceProducts100(): void
     {
@@ -145,14 +155,8 @@ class PerformanceTest extends TestCase
         $response = $this->actingAs($this->user)
             ->json('GET', '/products/id:' . $product->getKey());
         $response->assertOk();
-        $response->assertJsonCount(0, 'data.attributes');
-        $this->assertQueryCountLessThan(55);
-
-        $response =  $this->actingAs($this->user)
-            ->json('GET', '/products/id:' . $product->getKey() . '?' . Arr::query(['attribute_slug' => $attribute1->slug]));
-        $response->assertOk();
-        $response->assertJsonCount(1, 'data.attributes');
-        $this->assertQueryCountLessThan(58);
+        $response->assertJsonCount(3, 'data.attributes');
+        $this->assertQueryCountLessThan(67);
 
         $this->actingAs($this->user)
             ->json('GET', '/products/?' . Arr::query(['name' => $product->name]))
@@ -368,7 +372,7 @@ class PerformanceTest extends TestCase
             ->getJson('/orders')
             ->assertOk();
 
-        $this->assertQueryCountLessThan(26);
+        $this->assertQueryCountLessThan(23);
     }
 
     public function testIndexPerformanceShippingMethode(): void
@@ -384,7 +388,7 @@ class PerformanceTest extends TestCase
             ->assertOk();
 
         // TODO: this should be improved
-        $this->assertQueryCountLessThan(17);
+        $this->assertQueryCountLessThan(16);
     }
 
     public function testShowPerformanceSale(): void
@@ -409,9 +413,9 @@ class PerformanceTest extends TestCase
 
     public function testCreateSalePerformance1000Products(): void
     {
-        $this->markTestSkipped();
-
         $this->user->givePermissionTo('sales.add');
+
+        $currency = Currency::DEFAULT;
 
         $set = ProductSet::factory()->create([
             'public' => true,
@@ -424,16 +428,37 @@ class PerformanceTest extends TestCase
                 'public' => true,
             ]);
 
+        /** @var ProductRepositoryContract $productRepository */
+        $productRepository = App::make(ProductRepositoryContract::class);
+
+        $products->each(function (Product $product) use ($productRepository) {
+            $prices = array_map(fn (Currency $currency) => PriceDto::from(
+                Money::of(round(mt_rand(500, 6000), -2), $currency->value),
+            ), Currency::cases());
+
+            $productRepository->setProductPrices($product->getKey(), [
+                ProductPriceType::PRICE_BASE->value => $prices,
+                ProductPriceType::PRICE_MIN->value => $prices,
+                ProductPriceType::PRICE_MAX->value => $prices,
+            ]);
+        });
+
         $set->products()->sync($products);
 
         $sale = Discount::factory()->create([
             'name' => 'promocja -10',
-            'type' => DiscountType::AMOUNT,
-            'value' => 10,
             'priority' => 0,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
             'code' => null,
+            'percentage' => null,
+        ]);
+
+        $this->discountRepository->setDiscountAmounts($sale->getKey(), [
+            PriceDto::from([
+                'value' => '10.00',
+                'currency' => $currency->value,
+            ])
         ]);
 
         $sale->productSets()->attach($set->getKey());
@@ -444,8 +469,7 @@ class PerformanceTest extends TestCase
                     'name' => 'promocja -10% priority 0',
                 ],
             ],
-            'type' => DiscountType::PERCENTAGE,
-            'value' => 10,
+            'percentage' => '10.0',
             'priority' => 0,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => false,
@@ -455,7 +479,8 @@ class PerformanceTest extends TestCase
         // Every product with discount +3 query to database (update, detach(sales), attach(sales))
         // 1000 products = +- 3137 queries, for 10000 +- 31130
         // This is even worse now since prices live in a separate table, now there is a +1 query for every product
-        $this->assertQueryCountLessThan(6130);
+        // To dispatch ProductPriceUpdated +3 for each product, but it require prices so another +2 (old + new) for each product
+        $this->assertQueryCountLessThan(11131);
     }
 
     /**
@@ -465,8 +490,6 @@ class PerformanceTest extends TestCase
      */
     public function testViewOrderPerformanceWithDiscounts(): void
     {
-        $this->markTestSkipped();
-
         $this->user->givePermissionTo('orders.show_details');
 
         $shippingMethod = ShippingMethod::factory()->create();
@@ -587,15 +610,15 @@ class PerformanceTest extends TestCase
             ],
         ]);
 
-        $currency = Currency::DEFAULT->value;
+        $currency = Currency::DEFAULT;
         $lowRange = PriceRange::create([
-            'start' => Money::zero($currency),
-            'value' => Money::of(mt_rand(8, 15) + (mt_rand(0, 99) / 100), $currency),
+            'start' => Money::zero($currency->value),
+            'value' => Money::of(mt_rand(8, 15) + (mt_rand(0, 99) / 100), $currency->value),
         ]);
 
         $highRange = PriceRange::create([
-            'start' => Money::of(210, $currency),
-            'value' => Money::zero($currency),
+            'start' => Money::of(210, $currency->value),
+            'value' => Money::zero($currency->value),
         ]);
 
         $shippingMethod->priceRanges()->saveMany([$lowRange, $highRange]);
@@ -626,8 +649,7 @@ class PerformanceTest extends TestCase
         $discountShipping = Discount::factory()->create([
             'description' => 'Testowy kupon',
             'code' => 'S43SA2',
-            'value' => 100,
-            'type' => DiscountType::PERCENTAGE,
+            'percentage' => '100.00',
             'target_type' => DiscountTargetType::SHIPPING_PRICE,
             'target_is_allow_list' => true,
         ]);
@@ -637,40 +659,48 @@ class PerformanceTest extends TestCase
         $discountOrder = Discount::factory()->create([
             'description' => 'Promocja na zamówienie',
             'code' => null,
-            'value' => 100,
-            'type' => DiscountType::AMOUNT,
+            'percentage' => null,
             'target_type' => DiscountTargetType::ORDER_VALUE,
             'target_is_allow_list' => true,
+        ]);
+        $this->discountRepository->setDiscountAmounts($discountOrder->getKey(), [
+            PriceDto::from([
+                'value' => '100.00',
+                'currency' => $currency,
+            ])
         ]);
 
         $order->discounts()->attach(
             $discountShipping->getKey(),
             [
                 'name' => $discountShipping->name,
-                'type' => $discountShipping->type,
-                'value' => $discountShipping->value,
                 'target_type' => $discountShipping->target_type,
-                'applied' => $order->shipping_price_initial,
+                'applied' => $order->shipping_price_initial->getAmount(),
                 'code' => $discountShipping->code,
+                'currency' => $currency,
             ],
             $discountOrder->getKey(),
             [
                 'name' => $discountOrder->name,
-                'type' => $discountOrder->type,
-                'value' => $discountOrder->value,
                 'target_type' => $discountOrder->target_type,
-                'applied' => $order->shipping_price_initial,
+                'applied' => $order->shipping_price_initial->getAmount(),
                 'code' => $discountOrder->code,
+                'currency' => $currency,
             ],
         );
 
         $discountProduct = Discount::factory()->create([
             'description' => 'Testowy kupon',
             'code' => null,
-            'value' => 47.47,
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
+            'percentage' => null,
+        ]);
+        $this->discountRepository->setDiscountAmounts($discountProduct->getKey(), [
+            PriceDto::from([
+                'value' => '47.47',
+                'currency' => $currency,
+            ])
         ]);
 
         $discountProduct->products()->attach($product);
@@ -679,10 +709,15 @@ class PerformanceTest extends TestCase
         $discountProduct2 = Discount::factory()->create([
             'description' => 'Testowy kupon 2',
             'code' => 'O213D12',
-            'value' => 10.00,
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
+            'percentage' => null,
+        ]);
+        $this->discountRepository->setDiscountAmounts($discountProduct2->getKey(), [
+            PriceDto::from([
+                'value' => '10.00',
+                'currency' => $currency,
+            ])
         ]);
 
         $discountProduct2->products()->attach($product);
@@ -691,10 +726,15 @@ class PerformanceTest extends TestCase
         $sale = Discount::factory()->create([
             'description' => 'Promocja na wszystko',
             'code' => null,
-            'value' => 10.00,
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
+            'percentage' => null,
+        ]);
+        $this->discountRepository->setDiscountAmounts($sale->getKey(), [
+            PriceDto::from([
+                'value' => '10.00',
+                'currency' => $currency,
+            ])
         ]);
 
         $sale->productSets()->attach($set);
@@ -712,24 +752,23 @@ class PerformanceTest extends TestCase
             'price' => 200.00,
             'price_initial' => 247.47,
             'name' => $product->name,
+            'currency' => $currency,
         ]);
 
         $item_product->discounts()->attach([
             $discountProduct->getKey() => [
                 'name' => $discountProduct->name,
-                'type' => $discountProduct->type,
-                'value' => $discountProduct->value,
                 'target_type' => $discountProduct->target_type,
-                'applied' => $discountProduct->value,
+                'applied' => '4747',
                 'code' => $discountProduct->code,
+                'currency' => $currency,
             ],
             $discountProduct2->getKey() => [
                 'name' => $discountProduct2->name,
-                'type' => $discountProduct2->type,
-                'value' => $discountProduct2->value,
                 'target_type' => $discountProduct2->target_type,
-                'applied' => $discountProduct2->value,
+                'applied' => '1000',
                 'code' => $discountProduct2->code,
+                'currency' => $currency,
             ],
         ]);
 
@@ -739,24 +778,23 @@ class PerformanceTest extends TestCase
             'price' => 100.00,
             'price_initial' => 147.47,
             'name' => $product2->name,
+            'currency' => $currency,
         ]);
 
         $item_product2->discounts()->attach([
             $discountProduct->getKey() => [
                 'name' => $discountProduct->name,
-                'type' => $discountProduct->type,
-                'value' => $discountProduct->value,
                 'target_type' => $discountProduct->target_type,
-                'applied' => $discountProduct->value,
+                'applied' => '4747',
                 'code' => $discountProduct->code,
+                'currency' => $currency,
             ],
             $discountProduct2->getKey() => [
                 'name' => $discountProduct2->name,
-                'type' => $discountProduct2->type,
-                'value' => $discountProduct2->value,
                 'target_type' => $discountProduct2->target_type,
-                'applied' => $discountProduct2->value,
+                'applied' => '1000',
                 'code' => $discountProduct2->code,
+                'currency' => $currency,
             ],
         ]);
 
@@ -766,24 +804,23 @@ class PerformanceTest extends TestCase
             'price' => 100.00,
             'price_initial' => 147.47,
             'name' => $product3->name,
+            'currency' => $currency,
         ]);
 
         $item_product3->discounts()->attach([
             $discountProduct->getKey() => [
                 'name' => $discountProduct->name,
-                'type' => $discountProduct->type,
-                'value' => $discountProduct->value,
                 'target_type' => $discountProduct->target_type,
-                'applied' => $discountProduct->value,
+                'applied' => '4747',
                 'code' => $discountProduct->code,
+                'currency' => $currency,
             ],
             $discountProduct2->getKey() => [
                 'name' => $discountProduct2->name,
-                'type' => $discountProduct2->type,
-                'value' => $discountProduct2->value,
                 'target_type' => $discountProduct2->target_type,
-                'applied' => $discountProduct2->value,
+                'applied' => '1000',
                 'code' => $discountProduct2->code,
+                'currency' => $currency,
             ],
         ]);
 
@@ -791,7 +828,7 @@ class PerformanceTest extends TestCase
             ->json('GET', '/orders/id:' . $order->getKey())->assertOk();
 
         // For 3 product, 2 discount on order and 2 discounts on products without load was 239 queries
-        $this->assertQueryCountLessThan(103);
+        $this->assertQueryCountLessThan(69);
     }
 
     public function testViewItemPerformance(): void
@@ -1003,6 +1040,8 @@ class PerformanceTest extends TestCase
 
             $productRepository->setProductPrices($product->getKey(), [
                 ProductPriceType::PRICE_BASE->value => $prices,
+                ProductPriceType::PRICE_MIN->value => $prices,
+                ProductPriceType::PRICE_MAX->value => $prices,
             ]);
 
             $productService->updateMinMaxPrices($product);

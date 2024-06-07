@@ -1,19 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Unit;
 
+use App\Mail\OrderStatusUpdated;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Status;
-use App\Notifications\OrderStatusUpdated;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Language\Language;
 use Tests\TestCase;
 use Tests\Traits\CreateShippingMethod;
 
-class OrderUpdateStatusMailTest extends TestCase
+final class OrderUpdateStatusMailTest extends TestCase
 {
     use CreateShippingMethod;
 
@@ -47,35 +49,29 @@ class OrderUpdateStatusMailTest extends TestCase
             'status_id' => $this->status->getKey(),
             'currency' => 'PLN',
             'shipping_address_id' => $address->getKey(),
+            'language' => 'en',
         ]);
     }
 
     public function testMailContentDefaultFallback(): void
     {
-        $notification = new OrderStatusUpdated($this->order);
-        $rendered = $notification->toMail($this->order)->render();
-
-        $this->assertStringContainsString("Nowy status", $rendered);
+        (new OrderStatusUpdated($this->order))->assertSeeInHtml('Nowy status');
     }
 
-    public function testMailContentEn(): void
+    public function testMailContentDifferentLanguage(): void
     {
+        /** @var Language $en */
         $en = Language::firstOrCreate([
             'iso' => 'en',
         ], [
             'name' => 'English',
             'default' => false,
         ]);
-
-        $this->status->setLocale($en->getKey())->fill(['name' => 'New status']);
-        $this->status->update([
-            'published' => [$this->lang, $en->getKey()],
+        $this->status->setLocale($en->getKey())->fill([
+            'name' => 'New status',
         ]);
+        $this->status->published = [$this->lang, $en->getKey()];
         $this->status->save();
-
-        $notification = new OrderStatusUpdated($this->order);
-        $rendered = $notification->toMail($this->order)->render();
-
-        $this->assertStringContainsString("New status", $rendered);
+        (new OrderStatusUpdated($this->order))->assertSeeInHtml('New status');
     }
 }

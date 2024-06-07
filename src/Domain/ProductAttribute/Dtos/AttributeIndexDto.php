@@ -22,5 +22,6 @@ final class AttributeIndexDto extends Data
         public readonly array|Optional $ids,
         public readonly array|Optional $metadata,
         public readonly array|Optional $metadata_private,
+        public readonly bool|Optional $sortable,
     ) {}
 }

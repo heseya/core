@@ -30,7 +30,7 @@ final class ProfileUpdateDto extends Data
     /**
      * @param Optional|string $name
      * @param string|Optional $birthday_date
-     * @param Optional|string $phone
+     * @param Optional|string|null $phone
      * @param array<string, bool>|Optional $consents
      */
     public function __construct(
@@ -41,7 +41,7 @@ final class ProfileUpdateDto extends Data
         public Optional|string $birthday_date,
 
         #[StringType]
-        public Optional|string $phone,
+        public Optional|string|null $phone,
 
         public Optional|PreferencesDto $preferences,
 
@@ -57,7 +57,7 @@ final class ProfileUpdateDto extends Data
     public static function rules(ValidationContext $context): array
     {
         return [
-            'phone' => ['phone:AUTO'],
+            'phone' => ['nullable', 'phone:AUTO'],
             'consents' => [new RequiredConsents()],
             'consents.*' => ['boolean', new ConsentsExists()],
         ];

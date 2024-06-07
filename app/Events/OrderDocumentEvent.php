@@ -2,10 +2,10 @@
 
 namespace App\Events;
 
-use App\Http\Resources\OrderDocumentResource;
-use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Models\OrderDocument;
+use Domain\Order\Resources\OrderDocumentResource;
+use Domain\Order\Resources\OrderResource;
 use Illuminate\Support\Str;
 
 class OrderDocumentEvent extends WebHookEvent

@@ -14,6 +14,7 @@ use App\Traits\MetadataRules;
 use App\Traits\SeoRules;
 use Brick\Math\BigDecimal;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ProductCreateRequest extends FormRequest implements MetadataRequestContract, SeoRequestContract
 {
@@ -32,12 +33,12 @@ class ProductCreateRequest extends FormRequest implements MetadataRequestContrac
                 ],
                 'translations.*.name' => ['required', 'string', 'max:255'],
                 'translations.*.description_html' => ['nullable', 'string'],
-                'translations.*.description_short' => ['nullable', 'string', 'max:5000'],
+                'translations.*.description_short' => ['nullable', 'string'],
 
                 'published' => ['required', 'array', 'min:1'],
                 'published.*' => ['uuid', 'exists:languages,id'],
 
-                'slug' => ['required', 'string', 'max:255', 'unique:products', 'alpha_dash'],
+                'slug' => ['required', 'string', 'max:255', 'alpha_dash', Rule::unique('products', 'slug')->whereNull('deleted_at')],
 
                 'prices_base' => ['required', new PricesEveryCurrency()],
                 'prices_base.*' => [new Price(['value'], min: BigDecimal::zero())],
@@ -76,6 +77,14 @@ class ProductCreateRequest extends FormRequest implements MetadataRequestContrac
 
                 'related_sets' => ['array'],
                 'related_sets.*' => ['uuid', 'exists:product_sets,id'],
+                'banner' => ['nullable', 'array'],
+                'banner.url' => ['string', 'nullable'],
+                'banner.translations' => ['array'],
+                'banner.translations.*.title' => ['nullable', 'string'],
+                'banner.translations.*.subtitle' => ['nullable', 'string'],
+                'banner.media' => ['array'],
+                'banner.media.*.min_screen_width' => ['required', 'int'],
+                'banner.media.*.media' => ['required', 'uuid', 'exists:media,id'],
             ],
         );
     }

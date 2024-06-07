@@ -3,11 +3,11 @@
 namespace Tests\Feature;
 
 use App\Events\SendOrderUrls;
+use App\Mail\OrderUrls;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
 use App\Models\Status;
-use App\Notifications\SendUrls;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\ShippingMethod\Models\ShippingMethod;
@@ -218,7 +218,7 @@ class OrderProductTest extends TestCase
         ]);
 
         Event::assertNotDispatched(SendOrderUrls::class);
-        Mail::assertNotSent(SendUrls::class);
+        Mail::assertNotSent(OrderUrls::class);
     }
 
     /**

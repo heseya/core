@@ -7,6 +7,7 @@ use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
 use Domain\ProductSet\Resources\ProductSetResource;
 use Domain\Seo\Resources\SeoMetadataResource;
+use Domain\ShippingMethod\Resources\ShippingMethodResource;
 use Illuminate\Http\Request;
 
 /**

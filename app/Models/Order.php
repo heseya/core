@@ -32,9 +32,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Str;
 
 /**
  * @property Money $summary
@@ -42,13 +39,12 @@ use Illuminate\Support\Str;
  *
  * @mixin IdeHelperOrder
  */
-class Order extends Model implements SortableContract
+final class Order extends Model implements SortableContract
 {
     use HasCriteria;
     use HasFactory;
     use HasMetadata;
     use HasOrderDiscount;
-    use Notifiable;
     use Sortable;
 
     protected $fillable = [
@@ -69,14 +65,15 @@ class Order extends Model implements SortableContract
         'invoice_requested',
         'shipping_type',
         'sales_channel_id',
-
         'currency',
         'cart_total_initial',
         'cart_total',
         'shipping_price_initial',
         'shipping_price',
         'summary',
+        'language',
     ];
+
     protected array $criteria = [
         'search' => OrderSearch::class,
         'status_id',
@@ -95,6 +92,7 @@ class Order extends Model implements SortableContract
         'ids' => WhereInIds::class,
         'payment_method_id' => OrderPayments::class,
     ];
+
     protected array $sortable = [
         'id',
         'code',
@@ -116,9 +114,6 @@ class Order extends Model implements SortableContract
 
     /**
      * Summary amount of paid.
-     *
-     * @throws MathException
-     * @throws MoneyMismatchException
      */
     public function getPaidAmountAttribute(): Money
     {
@@ -160,6 +155,10 @@ class Order extends Model implements SortableContract
             : ($this->digitalShippingMethod ? $this->digitalShippingMethod->shipping_type : null);
     }
 
+    /**
+     * @throws MathException
+     * @throws MoneyMismatchException
+     */
     public function isPaid(): bool
     {
         return $this->paid_amount->isGreaterThanOrEqualTo($this->summary);
@@ -213,21 +212,13 @@ class Order extends Model implements SortableContract
         return $this->morphTo('order', 'buyer_type', 'buyer_id', 'id');
     }
 
-    public function preferredLocale(): string
-    {
-        $country = Str::of($this->shippingAddress?->country ?? '')
-            ->limit(2, '')
-            ->lower()
-            ->toString();
-
-        return match ($country) {
-            'pl', 'en' => $country,
-            default => Config::get('app.locale'),
-        };
-    }
-
     public function salesChannel(): HasOne
     {
         return $this->hasOne(SalesChannel::class, 'id', 'sales_channel_id');
+    }
+
+    public function getLocaleAttribute(): string
+    {
+        return explode('-', $this->language)[0];
     }
 }

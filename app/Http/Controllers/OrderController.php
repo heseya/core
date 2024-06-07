@@ -25,17 +25,17 @@ use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Http\Requests\SendDocumentRequest;
 use App\Http\Resources\CartResource;
-use App\Http\Resources\OrderDocumentResource;
-use App\Http\Resources\OrderProductResource;
 use App\Http\Resources\OrderProductResourcePublic;
-use App\Http\Resources\OrderPublicResource;
-use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Models\OrderDocument;
 use App\Models\OrderProduct;
 use App\Models\Status;
 use App\Services\Contracts\DocumentServiceContract;
 use App\Services\Contracts\OrderServiceContract;
+use Domain\Order\Resources\OrderDocumentResource;
+use Domain\Order\Resources\OrderProductResource;
+use Domain\Order\Resources\OrderPublicResource;
+use Domain\Order\Resources\OrderResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\UploadedFile;
@@ -59,19 +59,16 @@ class OrderController extends Controller
         $query = Order::searchByCriteria($search_data)
             ->sort($request->input('sort', 'created_at:desc'))
             ->with([
-                'products',
-                'discounts',
-                'payments',
                 'status',
                 'shippingMethod',
-                'shippingMethod.paymentMethods',
-                'shippingMethod.salesChannels',
                 'digitalShippingMethod',
-                'digitalShippingMethod.paymentMethods',
                 'shippingAddress',
-                'metadata',
+                'invoiceAddress',
                 'documents',
                 'salesChannel',
+                'metadata',
+                'metadataPrivate',
+                'payments',
             ]);
 
         return OrderResource::collection(
@@ -81,18 +78,21 @@ class OrderController extends Controller
 
     public function show(Order $order): JsonResource
     {
-        $order->loadMissing([
-            'discounts',
-            'discounts.metadata',
-            'products.discounts',
-            'products.discounts.metadata',
-            'products',
+        $order->load([
+            'products.urls',
             'products.schemas',
-            'products.deposits',
-            'products.product',
-            'products.product.media',
-            'products.product.tags',
+            'products.discounts',
+            'products.deposits.item',
+            'products.product.items',
+            'products.product.attributes',
             'products.product.metadata',
+            'products.product.metadataPrivate',
+            'products.product.sets.metadata',
+            'products.product.sets.metadataPrivate',
+            'products.product.media.metadata',
+            'products.product.media.metadataPrivate',
+            'products.product.productAttributes.options',
+            'products.product.productAttributes.attribute',
         ]);
 
         return OrderResource::make($order);
@@ -221,12 +221,10 @@ class OrderController extends Controller
         Order $order,
         OrderProduct $product,
     ): JsonResource {
-        return OrderProductResource::make(
-            $this->orderService->processOrderProductUrls(
-                OrderProductUpdateDto::instantiateFromRequest($request),
-                $product,
-            ),
-        );
+        return OrderProductResource::make($this->orderService->processOrderProductUrls(
+            OrderProductUpdateDto::instantiateFromRequest($request),
+            $product,
+        ));
     }
 
     public function myOrderProducts(OrderProductSearchRequest $request): JsonResource

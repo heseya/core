@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
-use App\Events\ProductPriceUpdated;
 use App\Events\ProductUpdated;
 use App\Exceptions\PublishingException;
 use App\Models\Option;
@@ -28,9 +27,11 @@ use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\Product\Dtos\ProductCreateDto;
 use Domain\Product\Dtos\ProductUpdateDto;
+use Domain\Product\Models\ProductBannerMedia;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductAttribute\Services\AttributeService;
+use Domain\ProductSet\ProductSetService;
 use Domain\Seo\SeoMetadataService;
 use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Database\Eloquent\Builder;
@@ -52,6 +53,7 @@ final readonly class ProductService
         private DiscountServiceContract $discountService,
         private ProductRepositoryContract $productRepository,
         private TranslationServiceContract $translationService,
+        private ProductSetService $productSetService,
     ) {}
 
     /**
@@ -75,22 +77,6 @@ final readonly class ProductService
 
         DB::commit();
 
-        $productPrices = $this->productRepository->getProductPrices($product->getKey(), [
-            ProductPriceType::PRICE_MIN,
-            ProductPriceType::PRICE_MAX,
-        ]);
-
-        $productPricesMin = $productPrices->get(ProductPriceType::PRICE_MIN->value);
-        $productPricesMax = $productPrices->get(ProductPriceType::PRICE_MAX->value);
-
-        ProductPriceUpdated::dispatch(
-            $product->getKey(),
-            null,
-            null,
-            $productPricesMin->toArray(),
-            $productPricesMax->toArray(),
-        );
-
         ProductCreated::dispatch($product);
 
         return $product->refresh();
@@ -104,13 +90,6 @@ final readonly class ProductService
      */
     public function update(Product $product, ProductUpdateDto $dto): Product
     {
-        $oldPrices = $this->productRepository->getProductPrices($product->getKey(), [
-            ProductPriceType::PRICE_MIN,
-            ProductPriceType::PRICE_MAX,
-        ]);
-        $oldPricesMin = $oldPrices->get(ProductPriceType::PRICE_MIN->value);
-        $oldPricesMax = $oldPrices->get(ProductPriceType::PRICE_MAX->value);
-
         DB::beginTransaction();
 
         $product->fill($dto->toArray());
@@ -127,21 +106,6 @@ final readonly class ProductService
         $product->refresh();
 
         DB::commit();
-
-        $newPrices = $this->productRepository->getProductPrices($product->getKey(), [
-            ProductPriceType::PRICE_MIN,
-            ProductPriceType::PRICE_MAX,
-        ]);
-        $newPricesMin = $newPrices->get(ProductPriceType::PRICE_MIN->value);
-        $newPricesMax = $newPrices->get(ProductPriceType::PRICE_MAX->value);
-
-        ProductPriceUpdated::dispatch(
-            $product->getKey(),
-            $oldPricesMin->toArray(),
-            $oldPricesMax->toArray(),
-            $newPricesMin->toArray(),
-            $newPricesMax->toArray(),
-        );
 
         ProductUpdated::dispatch($product);
 
@@ -259,7 +223,10 @@ final readonly class ProductService
         }
 
         if (!($dto->sets instanceof Optional)) {
+            $new = array_diff($dto->sets, $product->sets->pluck('id')->toArray());
             $product->sets()->sync($dto->sets);
+            $product->ancestorSets()->sync(array_merge($dto->sets, $this->productSetService->getAllAncestorsIds($dto->sets)));
+            $this->productSetService->fixOrderForSets($new, $product);
         }
 
         if (!($dto->items instanceof Optional)) {
@@ -300,6 +267,8 @@ final readonly class ProductService
                 ProductPriceType::PRICE_BASE->value => $dto->prices_base->items(),
             ]);
         }
+
+        $this->setBannerMedia($product, $dto);
 
         $this->updateMinMaxPrices($product);
 
@@ -464,5 +433,38 @@ final readonly class ProductService
         $product->search_values = implode(' ', $searchValues);
 
         return $product;
+    }
+
+    private function setBannerMedia(Product $product, ProductCreateDto|ProductUpdateDto $dto): void
+    {
+        if (!($dto->banner instanceof Optional)) {
+            if ($dto->banner) {
+                /** @var ProductBannerMedia|null $bannerMedia */
+                $bannerMedia = $product->banner;
+                if (!$bannerMedia) {
+                    /** @var ProductBannerMedia $bannerMedia */
+                    $bannerMedia = ProductBannerMedia::create($dto->banner->toArray());
+                } else {
+                    $bannerMedia->fill($dto->banner->toArray());
+                }
+                if (!($dto->banner->translations instanceof Optional)) {
+                    foreach ($dto->banner->translations as $lang => $translation) {
+                        $bannerMedia->setLocale($lang)->fill($translation);
+                    }
+                }
+                $bannerMedia->save();
+
+                if (!($dto->banner->media instanceof Optional)) {
+                    $medias = [];
+                    foreach ($dto->banner->media as $media) {
+                        $medias[$media->media] = ['min_screen_width' => $media->min_screen_width];
+                    }
+                    $bannerMedia->media()->sync($medias);
+                }
+                $product->banner_media_id = $bannerMedia->getKey();
+            } else {
+                $product->banner()->delete();
+            }
+        }
     }
 }

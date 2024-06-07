@@ -6,6 +6,7 @@ use App\Enums\ShippingType;
 use App\Enums\ValidationError;
 use App\Models\Address;
 use App\Models\App;
+use App\Models\Media;
 use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\PriceRange;
@@ -16,7 +17,6 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\ProductSet\ProductSet;
-use Domain\SalesChannel\Models\SalesChannel;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -268,60 +268,6 @@ class ShippingMethodTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexBySalesChannels($user): void
-    {
-        $this->{$user}->givePermissionTo('shipping_methods.show');
-
-        ShippingMethod::query()->delete();
-
-        $shippingMethod1 = ShippingMethod::factory()->create([
-            'public' => true,
-        ]);
-
-        $shippingMethod2 = ShippingMethod::factory()->create([
-            'public' => true,
-        ]);
-
-        $salesChannel1 = SalesChannel::factory()->create();
-        $salesChannel2 = SalesChannel::factory()->create();
-
-        $shippingMethod1->salesChannels()->sync([$salesChannel1->getKey()]);
-        $shippingMethod2->salesChannels()->sync([$salesChannel1->getKey(), $salesChannel2->getKey()]);
-
-        $response = $this->actingAs($this->{$user})->getJson(
-            '/shipping-methods?sales_channel_id=' . $salesChannel1->getKey()
-        );
-
-        $response
-            ->assertOk()
-            ->assertJsonCount(2, 'data')
-            ->assertJsonFragment([
-                'id' => $shippingMethod1->getKey(),
-            ])
-            ->assertJsonFragment([
-                'id' => $shippingMethod2->getKey(),
-            ]);
-
-        $response = $this->actingAs($this->{$user})->getJson(
-            '/shipping-methods?sales_channel_id=' . $salesChannel2->getKey()
-        );
-
-        $response
-            ->assertOk()
-            ->assertJsonCount(1, 'data')
-            ->assertJsonCount(2, 'data.0.sales_channels')
-            ->assertJson([
-                'data' => [
-                    0 => [
-                        'id' => $shippingMethod2->getKey(),
-                    ],
-                ],
-            ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testIndexByIds($user): void
     {
         $this->{$user}->givePermissionTo('shipping_methods.show');
@@ -537,18 +483,11 @@ class ShippingMethodTest extends TestCase
         $response = $this->actingAs($this->{$user})->postJson(
             '/shipping-methods',
             $shipping_method + [
-                'price_ranges' => [
-                    [
-                        'currency' => Currency::GBP->value,
-                        'start' => '0',
-                        'value' => '0',
-                    ],
-                    [
-                        'currency' => Currency::PLN->value,
-                        'start' => '0.00',
-                        'value' => '16.61',
-                    ],
-                ],
+                'price_ranges' => array_map(fn (string $currency) => [
+                    'currency' => $currency,
+                    'start' => '0.00',
+                    'value' => $currency == Currency::PLN->value ? '16.61' : '0.00',
+                ], Currency::values()),
             ],
         );
 
@@ -718,79 +657,6 @@ class ShippingMethodTest extends TestCase
             ]);
 
         $this->assertDatabaseHas('shipping_methods', $shipping_method);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateWithSalesChannels($user): void
-    {
-        $this->{$user}->givePermissionTo('shipping_methods.add');
-
-        ShippingMethod::query()->delete();
-
-        $shipping_method = [
-            'name' => 'Test',
-            'public' => true,
-            'is_block_list_countries' => false,
-            'shipping_time_min' => 2,
-            'shipping_time_max' => 3,
-            'shipping_type' => ShippingType::ADDRESS->value,
-            'payment_on_delivery' => true,
-        ];
-
-        $salesChannel1 = SalesChannel::factory()->create();
-        $salesChannel2 = SalesChannel::factory()->create();
-
-        $response = $this->actingAs($this->{$user})
-            ->postJson(
-                '/shipping-methods',
-                $shipping_method + [
-                    'price_ranges' => $this->priceRanges,
-                    'sales_channels' => [
-                        $salesChannel1->getKey(),
-                        $salesChannel2->getKey(),
-                    ],
-                ]
-            );
-
-        $response
-            ->assertCreated()
-            ->assertJson(['data' => $shipping_method])
-            ->assertJsonFragment([
-                'start' => [
-                    'gross' => '0.00',
-                    'currency' => Currency::DEFAULT->value,
-                ],
-            ])
-            ->assertJsonFragment([
-                'value' => [
-                    'gross' => '10.37',
-                    'currency' => Currency::DEFAULT->value,
-                ],
-            ])
-            ->assertJsonFragment([
-                'start' => [
-                    'gross' => '200.00',
-                    'currency' => Currency::DEFAULT->value,
-                ],
-            ])
-            ->assertJsonFragment([
-                'value' => [
-                    'gross' => '0.00',
-                    'currency' => Currency::DEFAULT->value,
-                ],
-            ]);
-
-        $this->assertDatabaseHas('shipping_methods', $shipping_method);
-        $this->assertDatabaseHas('sales_channel_shipping_method', [
-            'shipping_method_id' => $response->json('data.id'),
-            'sales_channel_id' => $salesChannel1->getKey(),
-        ]);
-        $this->assertDatabaseHas('sales_channel_shipping_method', [
-            'shipping_method_id' => $response->json('data.id'),
-            'sales_channel_id' => $salesChannel2->getKey(),
-        ]);
     }
 
     /**
@@ -1096,6 +962,45 @@ class ShippingMethodTest extends TestCase
     }
 
     /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithLogo($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.add');
+
+        ShippingMethod::query()->delete();
+
+        $media = Media::factory()->create();
+
+        $shipping_method = [
+            'name' => 'Test',
+            'public' => true,
+            'is_block_list_countries' => false,
+            'shipping_time_min' => 2,
+            'shipping_time_max' => 3,
+            'shipping_type' => ShippingType::ADDRESS->value,
+            'payment_on_delivery' => true,
+            'logo_id' => $media->getKey(),
+        ];
+
+        $this->actingAs($this->{$user})
+            ->json(
+                'POST',
+                '/shipping-methods',
+                $shipping_method + [
+                    'price_ranges' => $this->priceRanges,
+                ]
+            )
+            ->assertCreated()
+            ->assertJsonFragment([
+                'id' => $media->getKey(),
+                'slug' => $media->slug,
+            ]);
+
+        $this->assertDatabaseHas('shipping_methods', $shipping_method);
+    }
+
+    /**
      * Price range testing with no initial 'start' value of zero.
      *
      * @dataProvider authProvider
@@ -1165,48 +1070,6 @@ class ShippingMethodTest extends TestCase
                 'address_id' => $addressSaved->getKey(),
                 'shipping_method_id' => $response->getData()->data->id,
             ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdateWithSalesChannels($user): void
-    {
-        $this->{$user}->givePermissionTo('shipping_methods.edit');
-
-        $shippingMethod = ShippingMethod::factory()->create();
-
-        $salesChannel1 = SalesChannel::factory()->create();
-        $salesChannel2 = SalesChannel::factory()->create();
-
-        $shippingMethod->salesChannels()->sync([
-            $salesChannel1->getKey(),
-            $salesChannel2->getKey(),
-        ]);
-
-        $newSalesChannel = SalesChannel::factory()->create();
-
-        $response = $this->actingAs($this->{$user})
-            ->patchJson('/shipping-methods/id:' . $shippingMethod->getKey(), [
-                'sales_channels' => [
-                    $newSalesChannel->getKey(),
-                ],
-            ]);
-
-        $response->assertOk();
-
-        $this->assertDatabaseHas('sales_channel_shipping_method', [
-            'shipping_method_id' => $response->json('data.id'),
-            'sales_channel_id' => $newSalesChannel->getKey(),
-        ]);
-        $this->assertDatabaseMissing('sales_channel_shipping_method', [
-            'shipping_method_id' => $response->json('data.id'),
-            'sales_channel_id' => $salesChannel1->getKey(),
-        ]);
-        $this->assertDatabaseMissing('sales_channel_shipping_method', [
-            'shipping_method_id' => $response->json('data.id'),
-            'sales_channel_id' => $salesChannel2->getKey(),
-        ]);
     }
 
     /**
@@ -1354,18 +1217,11 @@ class ShippingMethodTest extends TestCase
         $response = $this->actingAs($this->{$user})->patchJson(
             '/shipping-methods/id:' . $this->shipping_method->getKey(),
             $shipping_method + [
-                'price_ranges' => [
-                    [
-                        'currency' => Currency::GBP->value,
-                        'start' => '0',
-                        'value' => '0',
-                    ],
-                    [
-                        'currency' => Currency::PLN->value,
-                        'start' => '0.00',
-                        'value' => '16.61',
-                    ],
-                ],
+                'price_ranges' => array_map(fn (string $currency) => [
+                    'currency' => $currency,
+                    'start' => '0.00',
+                    'value' => $currency == Currency::PLN->value ? '16.61' : '0.00',
+                ], Currency::values()),
             ],
         );
 
@@ -1527,6 +1383,68 @@ class ShippingMethodTest extends TestCase
             'payment_method_id' => $paymentMethod->getKey(),
             'shipping_method_id' => $this->shipping_method->getKey(),
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateLogo($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.edit');
+
+        $media = Media::factory()->create();
+
+        $this->actingAs($this->{$user})->json(
+            'PATCH',
+            '/shipping-methods/id:' . $this->shipping_method->getKey(),
+            [
+                'logo_id' => $media->getKey(),
+            ],
+        )
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $media->getKey(),
+                'slug' => $media->slug,
+            ]);
+
+        $this->assertDatabaseHas(
+            'shipping_methods',
+            [
+                'id' => $this->shipping_method->getKey(),
+                'logo_id' => $media->getKey(),
+            ],
+        );
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateDeleteLogo($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.edit');
+
+        $media = Media::factory()->create();
+        $this->shipping_method->logo()->associate($media);
+
+        $this->actingAs($this->{$user})->json(
+            'PATCH',
+            '/shipping-methods/id:' . $this->shipping_method->getKey(),
+            [
+                'logo_id' => null,
+            ],
+        )
+            ->assertOk()
+            ->assertJsonFragment([
+                'logo' => null,
+            ]);
+
+        $this->assertDatabaseHas(
+            'shipping_methods',
+            [
+                'id' => $this->shipping_method->getKey(),
+                'logo_id' => null,
+            ],
+        );
     }
 
     public function testDeleteUnauthorized(): void

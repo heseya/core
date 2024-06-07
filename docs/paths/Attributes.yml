@@ -55,6 +55,12 @@ Attributes:
         required: false
         schema:
           type: boolean
+      - name: sortable
+        in: query
+        required: false
+        description: search by global flag
+        schema:
+          type: boolean
     summary: 'list attributes'
     responses:
       200:
@@ -76,7 +82,7 @@ Attributes:
       - Attributes
     summary: 'add new attribute'
     requestBody:
-      $ref: './../requests/Attributes.yml#/Attribute'
+      $ref: './../requests/Attributes.yml#/AttributeCreate'
     responses:
       201:
         description: Created
@@ -152,10 +158,7 @@ AttributesParams:
         schema:
           type: integer
     requestBody:
-      content:
-        application/json:
-          schema:
-            $ref: './../schemas/Attributes.yml#/Attribute'
+      $ref: './../requests/Attributes.yml#/AttributeUpdate'
     responses:
       200:
         description: Success
@@ -213,6 +216,18 @@ AttributeOption:
         required: false
         schema:
           type: boolean
+      - name: product_set_slug
+        in: query
+        required: false
+        schema:
+          type: string
+          example: 'parent-set'
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [ 'asc', 'desc' ]
     responses:
       200:
         description: Success
@@ -270,10 +285,7 @@ AttributeOptionParams:
         schema:
           type: string
     requestBody:
-      content:
-        application/json:
-          schema:
-            $ref: './../schemas/Attributes.yml#/AttributeOption'
+      $ref: './../requests/Attributes.yml#/AttributeOption'
     responses:
       200:
         description: Success

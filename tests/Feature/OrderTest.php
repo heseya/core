@@ -18,15 +18,20 @@ use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\PriceRange;
 use App\Models\Product;
+use App\Models\ProductAttribute;
 use App\Models\Status;
 use App\Models\User;
 use App\Models\WebHook;
+use App\Repositories\DiscountRepository;
 use App\Services\Contracts\OrderServiceContract;
 use App\Services\OrderService;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Metadata\Enums\MetadataType;
+use Domain\Price\Dtos\PriceDto;
+use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Support\Carbon;
@@ -53,6 +58,8 @@ class OrderTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
+
+        Carbon::setTestNow(null);
 
         Product::factory()->create();
 
@@ -190,7 +197,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(26);
+        $this->assertQueryCountLessThan(23);
     }
 
     /**
@@ -222,7 +229,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(26);
+        $this->assertQueryCountLessThan(23);
     }
 
     /**
@@ -244,7 +251,7 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(27);
+        $this->assertQueryCountLessThan(24);
     }
 
     /**
@@ -339,7 +346,7 @@ class OrderTest extends TestCase
                 'id' => $order_no_user->getKey(),
             ]);
 
-        $this->assertQueryCountLessThan(25);
+        $this->assertQueryCountLessThan(22);
     }
 
     /**
@@ -364,7 +371,7 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(25);
+        $this->assertQueryCountLessThan(22);
     }
 
     /**
@@ -398,7 +405,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(26);
+        $this->assertQueryCountLessThan(23);
     }
 
     /**
@@ -443,7 +450,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(26);
+        $this->assertQueryCountLessThan(23);
     }
 
     public function testIndexUserUnauthenticated(): void
@@ -875,9 +882,72 @@ class OrderTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonFragment(['code' => $this->order->code])
-            ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
+            ->assertJsonStructure(['data' => $this->expected_full_view_structure])
+            ->assertJsonFragment([
+                'items' => [],
+                'discounts' => [],
+                'attributes' => [],
+            ]);
 
-        $this->assertQueryCountLessThan(38);
+        $this->assertQueryCountLessThan(40);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewAttribute($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.show_details');
+
+        $status = Status::factory()->create();
+
+        $order = Order::factory()->create([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+            'invoice_requested' => false,
+        ]);
+
+        $product = Product::factory()->create();
+
+        $attribute = Attribute::factory()->create();
+
+        $productAttribute = ProductAttribute::create([
+            'product_id' => $product->getKey(),
+            'attribute_id' => $attribute->getKey(),
+        ]);
+
+        $option = AttributeOption::factory()->create([
+            'index' => 1,
+            'attribute_id' => $attribute->getKey(),
+        ]);
+
+        $productAttribute->options()->attach($option);
+
+        $order->products()->create([
+            'product_id' => $product->getKey(),
+            'quantity' => 10,
+            'price' => Money::of(247.47, $this->currency->value),
+            'price_initial' => Money::of(247.47, $this->currency->value),
+            'name' => $product->name,
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->getJson('/orders/id:' . $order->getKey())
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $attribute->getKey(),
+                'name' => $attribute->name,
+                'slug' => $attribute->slug,
+            ])
+            ->assertJsonFragment([
+                'id' => $option->getKey(),
+                'name' => $option->name,
+                'value_number' => $option->value_number,
+                'value_date' => $option->value_date,
+            ]);
+
+        $this->assertQueryCountLessThan(49);
     }
 
     /**
@@ -933,7 +1003,7 @@ class OrderTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(39);
+        $this->assertQueryCountLessThan(41);
     }
 
     public function testViewSummaryUnauthorized(): void
@@ -1003,7 +1073,7 @@ class OrderTest extends TestCase
                 'summary_paid' => $summaryPaid->getAmount(),
             ]);
 
-        $this->assertQueryCountLessThan(38);
+        $this->assertQueryCountLessThan(40);
     }
 
     /**
@@ -1131,9 +1201,9 @@ class OrderTest extends TestCase
      */
     public function testViewOrderDiscounts($user): void
     {
-        $this->markTestSkipped();
-
         $this->{$user}->givePermissionTo('orders.show_details');
+        /** @var DiscountRepository $discountRepository */
+        $discountRepository = App::make(DiscountRepository::class);
 
         $status = Status::factory()->create();
         $product = Product::factory()->create();
@@ -1154,6 +1224,7 @@ class OrderTest extends TestCase
             'price' => 200.00,
             'price_initial' => 247.47,
             'name' => $product->name,
+            'currency' => $this->currency->value,
         ]);
 
         $item_product2 = $order->products()->create([
@@ -1162,12 +1233,13 @@ class OrderTest extends TestCase
             'price' => 100.00,
             'price_initial' => 147.47,
             'name' => $product2->name,
+            'currency' => $this->currency->value,
         ]);
 
         $discountShipping = Discount::factory()->create([
             'description' => 'Testowy kupon',
             'code' => 'S43SA2',
-            'percentage' => '100',
+            'percentage' => '100.00',
             'target_type' => DiscountTargetType::SHIPPING_PRICE,
             'target_is_allow_list' => true,
         ]);
@@ -1176,21 +1248,25 @@ class OrderTest extends TestCase
             $discountShipping->getKey(),
             [
                 'name' => $discountShipping->name,
-                'type' => $discountShipping->type,
-                'value' => $discountShipping->value,
                 'target_type' => $discountShipping->target_type,
                 'applied' => $order->shipping_price_initial,
                 'code' => $discountShipping->code,
+                'currency' => $this->currency,
             ],
         );
 
         $discountProduct = Discount::factory()->create([
             'description' => 'Testowy kupon',
             'code' => '2AS34S',
-            'value' => 47.47,
-            'type' => DiscountType::AMOUNT,
             'target_type' => DiscountTargetType::PRODUCTS,
             'target_is_allow_list' => true,
+            'percentage' => null,
+        ]);
+        $discountRepository->setDiscountAmounts($discountProduct->getKey(), [
+            PriceDto::from([
+                'value' => '47.47',
+                'currency' => $this->currency,
+            ])
         ]);
 
         $discountProduct->products()->attach($product);
@@ -1200,11 +1276,10 @@ class OrderTest extends TestCase
             $discountProduct->getKey(),
             [
                 'name' => $discountProduct->name,
-                'type' => $discountProduct->type,
-                'value' => $discountProduct->value,
                 'target_type' => $discountProduct->target_type,
-                'applied' => $discountProduct->value,
+                'applied' => '4747',
                 'code' => $discountProduct->code,
+                'currency' => $this->currency,
             ],
         );
 
@@ -1212,11 +1287,10 @@ class OrderTest extends TestCase
             $discountProduct->getKey(),
             [
                 'name' => $discountProduct->name,
-                'type' => $discountProduct->type,
-                'value' => $discountProduct->value,
                 'target_type' => $discountProduct->target_type,
-                'applied' => $discountProduct->value,
+                'applied' => '4747',
                 'code' => $discountProduct->code,
+                'currency' => $this->currency,
             ],
         );
 
@@ -1232,7 +1306,7 @@ class OrderTest extends TestCase
                                     ->has(2)
                                     ->where('0.code', $discountShipping->code)
                                     ->where('1.code', $discountProduct->code)
-                                    ->where('1.applied_discount', 94.94);
+                                    ->where('1.applied_discount', '94.94');
                             })
                             // order product has 1 discounts
                             ->has('products', function ($json) use ($discountProduct): void {
@@ -1258,7 +1332,7 @@ class OrderTest extends TestCase
                     ->etc();
             });
 
-        $this->assertQueryCountLessThan(46);
+        $this->assertQueryCountLessThan(47);
     }
 
     public function testUpdateOrderStatusUnauthorized(): void

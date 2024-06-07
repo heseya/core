@@ -20,6 +20,7 @@ use Spatie\LaravelData\Attributes\MapOutputName;
 use Spatie\LaravelData\Attributes\Validation\ArrayType;
 use Spatie\LaravelData\Attributes\Validation\BooleanType;
 use Spatie\LaravelData\Attributes\Validation\Enum;
+use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\GreaterThanOrEqualTo;
 use Spatie\LaravelData\Attributes\Validation\IntegerType;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -27,6 +28,7 @@ use Spatie\LaravelData\Attributes\Validation\Min;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
 use Spatie\LaravelData\Attributes\Validation\Required;
 use Spatie\LaravelData\Attributes\Validation\StringType;
+use Spatie\LaravelData\Attributes\Validation\Uuid;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
@@ -59,7 +61,6 @@ final class ShippingMethodCreateDto extends Data
      * @param array<array<string>>|Optional $shipping_points
      * @param array<string,string>|Optional $metadata_public
      * @param array<string, string>|Optional $metadata_private
-     * @param string[]|Optional $sales_channels
      * @param array<string>|Optional $product_ids
      * @param array<string>|Optional $product_set_ids
      * @param bool $is_block_list_products
@@ -102,13 +103,13 @@ final class ShippingMethodCreateDto extends Data
         public readonly array|Optional $metadata_private,
 
         #[ArrayType]
-        public readonly array|Optional $sales_channels,
-
-        #[ArrayType]
         public readonly array|Optional $product_ids,
 
         #[ArrayType]
         public readonly array|Optional $product_set_ids,
+
+        #[Uuid, Exists('media', 'id')]
+        public readonly Optional|string|null $logo_id,
 
         #[BooleanType]
         public readonly bool $is_block_list_products = true,
@@ -145,9 +146,17 @@ final class ShippingMethodCreateDto extends Data
             'shipping_points.*.id' => ['string', 'exists:addresses,id'],
             'product_ids.*' => ['uuid', 'exists:products,id'],
             'product_set_ids.*' => ['uuid', 'exists:product_sets,id'],
-            'sales_channels' => ['array'],
-            'sales_channels.*' => ['string', 'exists:sales_channels,id'],
         ];
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function isPublic(): bool
+    {
+        return $this->public;
     }
 
     /**

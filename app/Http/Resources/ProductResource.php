@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
 use Domain\Page\PageResource;
+use Domain\Product\Resources\ProductBannerMediaResource;
 use Domain\ProductSet\ProductSet;
 use Domain\ProductSet\Resources\ProductSetResource;
 use Domain\Seo\Resources\SeoMetadataResource;
@@ -91,12 +92,13 @@ class ProductResource extends Resource
                 ? ProductAttributeResource::collection(
                     $this->resource->relationLoaded('productAttributes')
                         ? $this->resource->productAttributes
-                        : $this->resource->productAttributes()->slug($request->string('attribute_slug'))->get(),
+                        : $this->resource->productAttributes()->slug(explode(';', $request->input('attribute_slug')))->get(),
                 )
                 : [],
             'seo' => SeoMetadataResource::make($this->resource->seo),
             'sales' => SaleResource::collection($this->resource->sales),
             'attachments' => MediaAttachmentResource::collection($attachments),
+            'banner' => ProductBannerMediaResource::make($this->resource->banner),
         ];
     }
 
@@ -107,9 +109,18 @@ class ProductResource extends Resource
                 ? ProductAttributeShortResource::collection(
                     $this->resource->relationLoaded('productAttributes')
                         ? $this->resource->productAttributes
-                        : $this->resource->productAttributes()->slug($request->string('attribute_slug'))->get(),
+                        : $this->resource->productAttributes()->slug(explode(';', $request->input('attribute_slug')))->get(),
                 )
                 : [],
+            'relevancy' => [
+                'title_position' => $this->resource->title_position, // @phpstan-ignore-line,
+                'title_relevancy' => $this->resource->title_relevancy, // @phpstan-ignore-line
+                'title_natural_relevancy' => $this->resource->title_natural_relevancy, // @phpstan-ignore-line
+                'title_words_relevancy' => $this->resource->title_words_relevancy, // @phpstan-ignore-line
+                'content_natural_relevancy' => $this->resource->content_natural_relevancy, // @phpstan-ignore-line
+                'content_relevancy' => $this->resource->content_relevancy, // @phpstan-ignore-line
+                'slug_length' => $this->resource->slug_length, // @phpstan-ignore-line
+            ],
         ];
     }
 }

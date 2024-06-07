@@ -19,11 +19,13 @@ use Spatie\LaravelData\Attributes\MapOutputName;
 use Spatie\LaravelData\Attributes\Validation\ArrayType;
 use Spatie\LaravelData\Attributes\Validation\BooleanType;
 use Spatie\LaravelData\Attributes\Validation\Enum;
+use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\GreaterThanOrEqualTo;
 use Spatie\LaravelData\Attributes\Validation\IntegerType;
 use Spatie\LaravelData\Attributes\Validation\Min;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
 use Spatie\LaravelData\Attributes\Validation\StringType;
+use Spatie\LaravelData\Attributes\Validation\Uuid;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
@@ -52,7 +54,6 @@ final class ShippingMethodUpdateDto extends Data
      * @param bool|Optional $payment_on_delivery
      * @param array<array<string>>|Optional $shipping_points
      * @param array<int>|Optional $payment_methods
-     * @param string[]|Optional $sales_channels
      * @param array<string>|Optional $countries
      * @param DataCollection<int, PriceRangeDto>|Optional $price_ranges
      * @param array<string>|Optional $product_ids
@@ -93,13 +94,8 @@ final class ShippingMethodUpdateDto extends Data
 
         #[ArrayType]
         public readonly array|Optional $payment_methods,
-
-        #[ArrayType]
-        public readonly array|Optional $sales_channels,
-
         #[ArrayType]
         public readonly array|Optional $countries,
-
         #[DataCollectionOf(PriceRangeDto::class)]
         public readonly DataCollection|Optional $price_ranges,
 
@@ -112,6 +108,9 @@ final class ShippingMethodUpdateDto extends Data
         #[MapInputName('metadata')]
         public readonly array|Optional $metadata_public,
         public readonly array|Optional $metadata_private,
+
+        #[Uuid, Exists('media', 'id')]
+        public readonly Optional|string|null $logo_id,
 
         #[StringType]
         public readonly string|null $integration_key = null,
@@ -143,9 +142,17 @@ final class ShippingMethodUpdateDto extends Data
             'payment_methods' => ['array', 'prohibited_if:payment_on_delivery,true'],
             'payment_methods.*' => ['uuid', 'exists:payment_methods,id'],
             'shipping_points.*.id' => ['string', 'exists:addresses,id'],
-            'sales_channels' => ['array'],
-            'sales_channels.*' => ['string', 'exists:sales_channels,id'],
         ];
+    }
+
+    public function getName(): Optional|string
+    {
+        return $this->name;
+    }
+
+    public function isPublic(): bool|Optional
+    {
+        return $this->public;
     }
 
     /**
@@ -178,5 +185,10 @@ final class ShippingMethodUpdateDto extends Data
     public function getShippingPoints(): array|Optional
     {
         return $this->shipping_points;
+    }
+
+    public function getAppId(): string|null
+    {
+        return $this->app_id;
     }
 }

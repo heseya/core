@@ -7,13 +7,13 @@ namespace Domain\ShippingMethod\Models;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\ShippingMethodItems;
-use App\Criteria\ShippingMethodSalesChannel;
 use App\Criteria\WhereInIds;
 use App\Enums\ShippingType;
 use App\Models\Address;
 use App\Models\App;
 use App\Models\Country;
 use App\Models\IdeHelperShippingMethod;
+use App\Models\Media;
 use App\Models\Model;
 use App\Models\Order;
 use App\Models\PaymentMethod;
@@ -24,7 +24,6 @@ use App\Traits\HasMetadata;
 use Brick\Math\BigDecimal;
 use Brick\Money\Money;
 use Domain\ProductSet\ProductSet;
-use Domain\SalesChannel\Models\SalesChannel;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -65,6 +64,7 @@ final class ShippingMethod extends Model
         'app_id',
         'shipping_type',
         'payment_on_delivery',
+        'logo_id',
     ];
     /**
      * The attributes that should be cast to native types.
@@ -83,7 +83,6 @@ final class ShippingMethod extends Model
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,
-        'sales_channel_id' => ShippingMethodSalesChannel::class,
         'items' => ShippingMethodItems::class,
     ];
 
@@ -199,21 +198,6 @@ final class ShippingMethod extends Model
     }
 
     /**
-     * @return BelongsToMany<SalesChannel>
-     */
-    public function salesChannels(): BelongsToMany
-    {
-        return $this->belongsToMany(
-            SalesChannel::class,
-            'sales_channel_shipping_method',
-            'shipping_method_id',
-            'sales_channel_id',
-            'id',
-            'id',
-        );
-    }
-
-    /**
      * @return Money[]
      */
     public function getStartingPrices(): array
@@ -228,5 +212,13 @@ final class ShippingMethod extends Model
     public function getDeletableAttribute(): bool
     {
         return $this->app_id === null || $this->app_id === Auth::id();
+    }
+
+    /**
+     * @return BelongsTo<Media, self>
+     */
+    public function logo(): BelongsTo
+    {
+        return $this->belongsTo(Media::class, 'logo_id');
     }
 }

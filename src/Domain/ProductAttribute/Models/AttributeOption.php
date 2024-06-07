@@ -7,6 +7,7 @@ namespace Domain\ProductAttribute\Models;
 use App\Criteria\AttributeOptionSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\ProductSetAttributeOptionSearch;
 use App\Criteria\WhereInIds;
 use App\Models\Contracts\SortableContract;
 use App\Models\Interfaces\Translatable;
@@ -39,24 +40,29 @@ final class AttributeOption extends Model implements SortableContract, Translata
     use Sortable;
 
     public const HIDDEN_PERMISSION = 'attributes.show_hidden';
+
     protected $fillable = [
         'id',
         'name',
+        'searchable_name',
         'index',
         'value_number',
         'value_date',
         'attribute_id',
         'order',
     ];
+
     /** @var string[] */
     protected array $translatable = [
         'name',
     ];
+
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'value_number' => 'float',
     ];
+
     /** @var string[] */
     protected array $criteria = [
         'search' => AttributeOptionSearch::class,
@@ -64,7 +70,9 @@ final class AttributeOption extends Model implements SortableContract, Translata
         'metadata_private' => MetadataPrivateSearch::class,
         'name' => Like::class,
         'ids' => WhereInIds::class,
+        'product_set_slug' => ProductSetAttributeOptionSearch::class,
     ];
+
     /** @var string[] */
     protected array $sortable = [
         'name' => TranslatedColumn::class,
@@ -92,5 +100,12 @@ final class AttributeOption extends Model implements SortableContract, Translata
             'pivot_id',
         )->using(ProductAttributeOption::class)
             ->as('product_attribute_option_pivot');
+    }
+
+    protected static function booted(): void
+    {
+        self::saving(function (AttributeOption $option): void {
+            $option->searchable_name = collect($option->getTranslations('name'))->values()->map(fn (string $translation) => trim($translation))->unique()->implode(' ');
+        });
     }
 }

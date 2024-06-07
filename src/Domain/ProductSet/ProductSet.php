@@ -9,6 +9,7 @@ use App\Criteria\MetadataSearch;
 use App\Criteria\ParentIdSearch;
 use App\Criteria\ProductSetSearch;
 use App\Criteria\WhereInIds;
+use App\Criteria\WhereSlugSuffix;
 use App\Enums\DiscountTargetType;
 use App\Models\Contracts\SeoContract;
 use App\Models\Discount;
@@ -81,6 +82,7 @@ final class ProductSet extends Model implements SeoContract, Translatable
     protected array $criteria = [
         'name' => Like::class,
         'slug' => Like::class,
+        'slug_suffix' => WhereSlugSuffix::class,
         'search' => ProductSetSearch::class,
         'public',
         'metadata' => MetadataSearch::class,
@@ -151,12 +153,20 @@ final class ProductSet extends Model implements SeoContract, Translatable
         return $this->hasMany(self::class, 'parent_id');
     }
 
+    public function getChildrenDescendantProductsIds(): array
+    {
+        return $this->children->reduce(fn (array $ids, ProductSet $child) => array_merge($ids, $child->descendantProducts()->pluck('id')->toArray()), []);
+    }
+
     /**
      * @return BelongsToMany<Attribute>
      */
     public function attributes(): BelongsToMany
     {
-        return $this->belongsToMany(Attribute::class);
+        return $this->belongsToMany(Attribute::class)
+            ->withPivot('order')
+            ->orderByPivot('order')
+            ->orderBy('id', 'asc');
     }
 
     public function allChildrenPublic(): HasMany
@@ -188,6 +198,14 @@ final class ProductSet extends Model implements SeoContract, Translatable
             ->orderByPivot('order');
     }
 
+    public function descendantProducts(): BelongsToMany
+    {
+        return $this
+            ->belongsToMany(Product::class, 'product_set_product_descendant')
+            ->withPivot('order')
+            ->orderByPivot('order');
+    }
+
     public function relatedProducts(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'related_product_sets');
@@ -195,13 +213,7 @@ final class ProductSet extends Model implements SeoContract, Translatable
 
     public function allProductsIds(): Collection
     {
-        $products = $this->products()->pluck('id');
-
-        foreach ($this->children as $child) {
-            $products = $products->merge($child->allProductsIds());
-        }
-
-        return $products->unique();
+        return $this->descendantProducts()->pluck('id');
     }
 
     /**

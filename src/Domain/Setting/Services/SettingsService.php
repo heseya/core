@@ -65,7 +65,7 @@ final class SettingsService implements SettingsServiceContract
             Cache::put($name, $value);
         }
 
-        return $value;
+        return (float) $value;
     }
 
     /**

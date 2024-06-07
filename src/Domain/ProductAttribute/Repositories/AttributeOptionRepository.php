@@ -16,6 +16,7 @@ final readonly class AttributeOptionRepository
             array_merge(
                 [
                     'index' => AttributeOption::withTrashed()->where('attribute_id', '=', $dto->attribute_id)->count() + 1,
+                    'order' => AttributeOption::query()->where('attribute_id', '=', $dto->attribute_id)->count(),
                 ],
                 $dto->toArray(),
             ),

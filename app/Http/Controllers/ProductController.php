@@ -98,6 +98,13 @@ final class ProductController extends Controller
             'pricesMaxInitial',
             'pricesMin',
             'pricesMinInitial',
+            'productAttributes',
+            'productAttributes.attribute',
+            'productAttributes.attribute.metadata',
+            'productAttributes.attribute.metadataPrivate',
+            'productAttributes.options',
+            'productAttributes.options.metadata',
+            'productAttributes.options.metadataPrivate',
             'publishedTags',
             'relatedSets',
             'relatedSets.childrenPublic',
@@ -119,8 +126,11 @@ final class ProductController extends Controller
             'sets.metadata',
             'sets.metadataPrivate',
             'sets.parent',
+            'banner.media',
+            'banner.media.metadata',
+            'banner.media.metadataPrivate',
         ]);
-        $product->load(['sales' => fn (BelongsToMany|Builder $hasMany) => $hasMany->withOrdersCount()]); // @phpstan-ignore-line
+        $product->load(['sales' => fn (BelongsToMany|Builder $belongsToMany) => $belongsToMany->withOrdersCount()]); // @phpstan-ignore-line
 
         return ProductResource::make($product);
     }

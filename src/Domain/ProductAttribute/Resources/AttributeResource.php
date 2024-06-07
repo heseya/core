@@ -41,6 +41,8 @@ final class AttributeResource extends Resource
             'global' => $this->resource->global,
             'sortable' => $this->resource->sortable,
             'published' => $this->resource->published,
+            'include_in_text_search' => $this->resource->include_in_text_search,
+            'match_any' => $this->resource->match_any,
             ...$request->boolean('with_translations') ? $this->getAllTranslations('attributes.show_hidden') : [],
         ], $this->metadataResource('attributes.show_metadata_private'));
     }
