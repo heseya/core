@@ -21,6 +21,7 @@
                         @lang('mail.status-changed')<br />
                         @lang('mail.status'): <b>{{ $status }}</b>
                     </p>
+                    <p>{{ $description }}</p>
                 </mj-text>
             </mj-column>
         </mj-section>
