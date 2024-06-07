@@ -54,6 +54,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
@@ -2409,8 +2410,10 @@ class OrderCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateOrderInvalidAddress($user): void
+    public function testCreateOrderAddressNameValidation($user): void
     {
+        Config::set('flags.validate_address_fullname', true);
+
         $this->{$user}->givePermissionTo('orders.add');
 
         $productQuantity = 2;
@@ -2451,6 +2454,53 @@ class OrderCreateTest extends TestCase
             ])
             ->assertJsonMissing([
                 'billing_address.name' => [[
+                    'key' => ValidationError::FULLNAME->value,
+                    'message' => Exceptions::CLIENT_FULL_NAME->value,
+                ]]
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderAddressNameNoValidation($user): void
+    {
+        Config::set('flags.validate_address_fullname', false);
+
+        $this->{$user}->givePermissionTo('orders.add');
+
+        $productQuantity = 2;
+
+        $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => [
+                'name' => 'Jan',
+                'address' => 'Testowa',
+                'phone' => '516516516',
+                'zip' => '80-111',
+                'city' => 'Gdańsk',
+                'country' => 'PL',
+            ],
+            'billing_address' => [
+                'name' => 'Jan',
+                'address' => 'Testowa',
+                'phone' => '516516516',
+                'zip' => '80-111',
+                'city' => 'Gdańsk',
+                'country' => 'PL',
+            ],
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+        ])
+            ->assertJsonMissing([
+                'shipping_place.name' => [[
                     'key' => ValidationError::FULLNAME->value,
                     'message' => Exceptions::CLIENT_FULL_NAME->value,
                 ]]
